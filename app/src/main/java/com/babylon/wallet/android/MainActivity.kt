@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -77,7 +76,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .fillMaxHeight(),
                         verticalArrangement = Arrangement.Bottom,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         BabylonButton(title = stringResource(id = R.string.create_new_account)) {
                             /*TODO*/
@@ -99,7 +98,6 @@ fun RadarHubView(onClicked: () -> Unit) {
         modifier = Modifier
             .padding(15.dp)
             .fillMaxWidth()
-            .clickable { onClicked() }
             .padding(45.dp, 100.dp, 45.dp, 0.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -114,7 +112,7 @@ fun RadarHubView(onClicked: () -> Unit) {
         BabylonButton(
             title = stringResource(id = R.string.visit_the_radar_hub),
             modifier = Modifier.fillMaxWidth()
-        ) { }
+        ) { onClicked() }
     }
 }
 
