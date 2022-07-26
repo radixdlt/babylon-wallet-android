@@ -3,7 +3,7 @@
 
 # Versioning support
 
-Currently, minimum support version is   Android 8.0 (Oreo) sdk 26 as of 12/July/2022, with average 95% market support across Europe & North America.
+Currently, minimum support version is   Android 6.0 (Marshmallow) sdk 23 as of 12/July/2022, with average 98% market support across Europe & North America.
 
 We support only handsets, no tablets.
 
