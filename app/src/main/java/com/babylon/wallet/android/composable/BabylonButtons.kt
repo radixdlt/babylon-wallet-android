@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.compose
+package com.babylon.wallet.android.composable
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
@@ -15,11 +15,11 @@ fun BabylonButton(
     title: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    buttonClicked: () -> Unit
+    onButtonClick: () -> Unit
 ) {
     Button(
         modifier = modifier,
-        onClick = { buttonClicked() },
+        onClick = { onButtonClick() },
         enabled = enabled,
         // Custom colors for different states
         colors = ButtonDefaults.buttonColors(

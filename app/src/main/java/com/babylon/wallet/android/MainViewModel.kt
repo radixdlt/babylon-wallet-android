@@ -2,13 +2,15 @@ package com.babylon.wallet.android
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(private val mainViewRepository: MainViewRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState>
@@ -16,15 +18,9 @@ class MainViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            // Simulate network
-            delay(500)
-            // Mock data from backend for now
-            _uiState.value = UiState.Loaded(
-                WalletData(
-                    "$",
-                    "1000"
-                )
-            )
+            mainViewRepository.getWalletData().collect {
+                _uiState.value = UiState.Loaded(it)
+            }
         }
     }
 }

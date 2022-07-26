@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.compose
+package com.babylon.wallet.android.composable
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
