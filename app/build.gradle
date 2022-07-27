@@ -5,6 +5,10 @@ plugins {
     id 'kotlin-kapt'
 }
 
+apply from: "$rootDir/config/detekt.gradle"
+
+import io.gitlab.arturbosch.detekt.Detekt
+
 android {
     compileSdk 32
 
@@ -45,6 +49,11 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+}
+
+tasks.withType(Detekt).configureEach {
+    exclude("**/test/**")
+    exclude("**/androidTest/**") // but exclude our legacy internal package
 }
 
 dependencies {
