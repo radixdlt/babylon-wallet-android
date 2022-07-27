@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">BabylonWallet</string>
+    <string name="home_toolbar_title">Radar Wallet</string>
+    <string name="home_welcome_text">Welcome, here are all your accounts on the Radar Network</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="visit_the_radar_hub">Visit the Radar Hub ></string>
+    <string name="radar_network_text">Ready to get started using the Radar Network and your Wallet?</string>
+    <string name="total_value">Total value</string>
+    <string name="dollar_sign">$</string>
 </resources>
