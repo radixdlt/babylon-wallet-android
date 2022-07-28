@@ -41,18 +41,20 @@ fun WalletBalanceView(
             text = currencySignValue,
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.constrainAs(currencySignRef)
-            {
+            modifier = Modifier.constrainAs(currencySignRef) {
                 top.linkTo(parent.top, margin = 6.dp)
                 bottom.linkTo(parent.bottom, margin = 6.dp)
                 end.linkTo(valueContent.start)
-            })
+            }
+        )
 
-        Box(modifier = Modifier
-            .constrainAs(valueContent) {
-                centerVerticallyTo(parent)
-                centerHorizontallyTo(parent)
-            }) {
+        Box(
+            modifier = Modifier
+                .constrainAs(valueContent) {
+                    centerVerticallyTo(parent)
+                    centerHorizontallyTo(parent)
+                }
+        ) {
             if (balanceHidden) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -99,6 +101,5 @@ fun WalletBalanceView(
                 tint = RadixGrey2
             )
         }
-
     }
 }

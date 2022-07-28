@@ -13,5 +13,4 @@ object ApplicationModule {
 
     @Provides
     fun provideMainViewRepository(): MainViewRepository = MainViewRepositoryImpl()
-
 }
