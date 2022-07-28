@@ -13,13 +13,14 @@ import com.babylon.wallet.android.R
 
 @Composable
 fun RDXAppBar(toolbarTitle: String, onMenuItemClicked: () -> Unit) {
-    TopAppBar(title = {
-        Text(
-            text = toolbarTitle,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-    },
+    TopAppBar(
+        title = {
+            Text(
+                text = toolbarTitle,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        },
         actions = {
             IconButton(onClick = { onMenuItemClicked() }) {
                 BadgedBox(badge = { Badge() }, modifier = Modifier.padding(16.dp)) {

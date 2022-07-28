@@ -10,4 +10,3 @@ val White = Color(0xFFFFFFFF)
 val RadixGrey2 = Color(138, 143, 164)
 val RadixBackground = Color(226, 226, 226)
 val RadixCardBackground = Color(190, 189, 189)
-

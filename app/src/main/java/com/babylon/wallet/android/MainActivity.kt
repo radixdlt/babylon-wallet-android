@@ -39,7 +39,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun WalletScreen(viewModel: MainViewModel = viewModel()) {
     Column {
-        RDXAppBar(stringResource(id = R.string.home_toolbar_title)
+        RDXAppBar(
+            stringResource(id = R.string.home_toolbar_title)
         ) {}
         Text(
             text = stringResource(id = R.string.home_welcome_text),
@@ -70,12 +71,11 @@ fun WalletScreen(viewModel: MainViewModel = viewModel()) {
                     WalletBalanceView(
                         currencySignValue = result.walletData.currency,
                         value = result.walletData.amount,
-                        false,
-                        {
-                            //TODO
-                        })
+                        false
+                    ) {
+                        // TODO
+                    }
                 }
-
             }
         }
 
@@ -90,9 +90,9 @@ fun WalletScreen(viewModel: MainViewModel = viewModel()) {
                 /*TODO*/
             }
 
-            RadarHubView({
+            RadarHubView {
                 /*TODO*/
-            })
+            }
         }
     }
 }

@@ -8,10 +8,12 @@ class MainViewRepositoryImpl : MainViewRepository {
     override suspend fun getWalletData(): Flow<WalletData> {
         return flow {
             delay(500)
-            emit(WalletData(
-                "$",
-                "1000"
-            ))
+            emit(
+                WalletData(
+                    "$",
+                    "1000"
+                )
+            )
         }
     }
 }
