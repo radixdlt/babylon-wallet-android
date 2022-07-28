@@ -4,4 +4,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface MainViewRepository {
     suspend fun getWalletData(): Flow<WalletData>
+    suspend fun getAccountData(): Flow<AccountData>
 }

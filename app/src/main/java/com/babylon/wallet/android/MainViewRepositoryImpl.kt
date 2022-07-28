@@ -16,4 +16,17 @@ class MainViewRepositoryImpl : MainViewRepository {
             )
         }
     }
+    override suspend fun getAccountData(): Flow<AccountData> {
+        return flow {
+            delay(500)
+            emit(
+                AccountData(
+                    "My main account",
+                    "r32djrf920rh20dff",
+                    "25",
+                    "$"
+                )
+            )
+        }
+    }
 }
