@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.composable
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,8 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.extensions.ResponsiveText
+import com.babylon.wallet.android.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.ui.theme.RadixLightCardBackground
 
 @Composable
@@ -32,7 +36,8 @@ fun AccountCardView(
     onCopyClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(25.dp, 0.dp, 25.dp, 0.dp)
             .clickable { onCardClick() },
         shape = RoundedCornerShape(
@@ -44,32 +49,34 @@ fun AccountCardView(
         backgroundColor = RadixLightCardBackground,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(27.dp, 18.dp, 27.dp, 18.dp)
         ){
-            Row() {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
                     text = accountName,
-                    style = MaterialTheme.typography.h4
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = accountCurrency,
-                    style = MaterialTheme.typography.h4
+                    style = MaterialTheme.typography.h4,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f, false)
                 )
                 Text(
-                    text = accountValue,
+                    text = "$accountCurrency$accountValue",
                     style = MaterialTheme.typography.h4
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
             Row(
-                modifier = Modifier.padding(0.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
+                ResponsiveText(
+                    modifier = Modifier.weight(1f, false),
                     text = hashValue,
-                    style = MaterialTheme.typography.h6
+                    style = MaterialTheme.typography.h6,
+                    maxLines = 1
                 )
                 IconButton(
                     onClick = {
@@ -83,5 +90,22 @@ fun AccountCardView(
                 }
             }
         }
+    }
+}
+
+@Preview("default")
+@Preview("large font", fontScale = 2f)
+@Preview(showBackground = true)
+@Composable
+fun AccountCardPreview() {
+    BabylonWalletTheme {
+        AccountCardView(
+            {},
+            "efwffrr43tirrj932",
+            "My main account",
+            "25",
+            "$",
+            {},
+        )
     }
 }
