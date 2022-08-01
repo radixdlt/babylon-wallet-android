@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class MainViewRepositoryImpl : MainViewRepository {
-    override suspend fun getWalletData(): Flow<WalletData> {
+    override fun getWalletData(): Flow<WalletData> {
         return flow {
             delay(500)
             emit(
@@ -16,7 +16,7 @@ class MainViewRepositoryImpl : MainViewRepository {
             )
         }
     }
-    override suspend fun getAccountData(): Flow<AccountData> {
+    override fun getAccountData(): Flow<AccountData> {
         return flow {
             delay(500)
             emit(

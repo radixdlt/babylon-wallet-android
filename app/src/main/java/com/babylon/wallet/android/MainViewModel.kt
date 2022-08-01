@@ -5,38 +5,39 @@ import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val mainViewRepository: MainViewRepository,
+    mainViewRepository: MainViewRepository,
     private val clipboardManager: ClipboardManager
 ) : ViewModel() {
 
-    private val _walletUiState = MutableStateFlow<WalletUiState>(WalletUiState.Loading)
-    val walletUiState: StateFlow<WalletUiState>
-        get() = _walletUiState.asStateFlow()
-
-    private val _accountUiState = MutableStateFlow<AccountUiState>(AccountUiState.Loading)
-    val accountUiState: StateFlow<AccountUiState>
-        get() = _accountUiState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            mainViewRepository.getWalletData().collect {
-                _walletUiState.value = WalletUiState.Loaded(it)
-            }
+    val walletUiState: StateFlow<WalletUiState> = mainViewRepository
+        .getWalletData()
+        .map {
+            WalletUiState.Loaded(it)
         }
-        viewModelScope.launch {
-            mainViewRepository.getAccountData().collect {
-                _accountUiState.value = AccountUiState.Loaded(it)
-            }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = WalletUiState.Loading
+        )
+
+    val accountUiState: StateFlow<AccountUiState> = mainViewRepository
+        .getAccountData()
+        .map {
+            AccountUiState.Loaded(it)
         }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AccountUiState.Loading
+        )
 
     fun onCopy(hashValue: String) {
         val clipData = ClipData.newPlainText("accountHash", hashValue)
@@ -58,10 +59,10 @@ data class AccountData(
 
 sealed class WalletUiState {
     object Loading : WalletUiState()
-    class Loaded(val walletData: WalletData) : WalletUiState()
+    data class Loaded(val walletData: WalletData) : WalletUiState()
 }
 
 sealed class AccountUiState {
     object Loading : AccountUiState()
-    class Loaded(val accountData: AccountData) : AccountUiState()
+    data class Loaded(val accountData: AccountData) : AccountUiState()
 }
