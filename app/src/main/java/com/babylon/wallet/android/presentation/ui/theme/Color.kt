@@ -1,4 +1,5 @@
-package com.babylon.wallet.android.ui.theme
+@file:Suppress("MagicNumber")
+package com.babylon.wallet.android.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

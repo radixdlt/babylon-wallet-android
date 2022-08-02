@@ -2,8 +2,8 @@ package com.babylon.wallet.android.di
 
 import android.content.ClipboardManager
 import android.content.Context
-import com.babylon.wallet.android.MainViewRepository
-import com.babylon.wallet.android.MainViewRepositoryImpl
+import com.babylon.wallet.android.data.MainViewRepositoryImpl
+import com.babylon.wallet.android.domain.MainViewRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
