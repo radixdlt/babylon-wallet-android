@@ -1,5 +1,8 @@
-package com.babylon.wallet.android
+package com.babylon.wallet.android.data
 
+import com.babylon.wallet.android.domain.MainViewRepository
+import com.babylon.wallet.android.presentation.wallet.AccountData
+import com.babylon.wallet.android.presentation.wallet.WalletData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
