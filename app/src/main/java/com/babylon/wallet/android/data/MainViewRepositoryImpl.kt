@@ -3,27 +3,28 @@ package com.babylon.wallet.android
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlin.random.Random
 
 class MainViewRepositoryImpl : MainViewRepository {
     override fun getWalletData(): Flow<WalletData> {
         return flow {
-            delay(500)
+            delay(Random.nextLong(500, 1500))
             emit(
                 WalletData(
                     "$",
-                    "1000"
+                    "320409"
                 )
             )
         }
     }
     override fun getAccountData(): Flow<AccountData> {
         return flow {
-            delay(500)
+            delay(Random.nextLong(500, 1500))
             emit(
                 AccountData(
                     "My main account",
-                    "r32djrf920rh20dff",
-                    "25",
+                    "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
+                    "19195",
                     "$"
                 )
             )

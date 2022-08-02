@@ -34,3 +34,17 @@ fun RDXAppBar(toolbarTitle: String, onMenuItemClicked: () -> Unit) {
         }
     )
 }
+
+@Preview("default")
+@Preview("dark theme", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview("large font", fontScale = 2f)
+@Preview(showBackground = true)
+@Composable
+fun RDXAppBarPreview() {
+    BabylonWalletTheme {
+        RDXAppBar(
+            toolbarTitle = "Account",
+            onMenuItemClicked = {}
+        )
+    }
+}

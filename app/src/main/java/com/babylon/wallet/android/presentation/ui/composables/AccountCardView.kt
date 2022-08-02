@@ -52,7 +52,7 @@ fun AccountCardView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(27.dp, 18.dp, 27.dp, 18.dp)
-        ){
+        ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -100,11 +100,11 @@ fun AccountCardView(
 fun AccountCardPreview() {
     BabylonWalletTheme {
         AccountCardView(
-            {},
-            "efwffrr43tirrj932",
-            "My main account",
-            "25",
-            "$",
+            onCardClick = {},
+            hashValue = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
+            accountName = "My main account",
+            accountValue = "19195",
+            accountCurrency = "$",
             {},
         )
     }

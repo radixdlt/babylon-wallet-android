@@ -18,7 +18,6 @@ object ApplicationModule {
     fun provideMainViewRepository(): MainViewRepository = MainViewRepositoryImpl()
 
     @Provides
-    fun provideClipboardManager(@ApplicationContext context: Context): ClipboardManager
-        = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-
+    fun provideClipboardManager(@ApplicationContext context: Context): ClipboardManager =
+        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 }
