@@ -1,27 +1,47 @@
 package com.babylon.wallet.android
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val mainViewRepository: MainViewRepository) : ViewModel() {
+class MainViewModel @Inject constructor(
+    mainViewRepository: MainViewRepository,
+    private val clipboardManager: ClipboardManager
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    val uiState: StateFlow<UiState>
-        get() = _uiState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            mainViewRepository.getWalletData().collect {
-                _uiState.value = UiState.Loaded(it)
-            }
+    val walletUiState: StateFlow<WalletUiState> = mainViewRepository
+        .getWalletData()
+        .map {
+            WalletUiState.Loaded(it)
         }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = WalletUiState.Loading
+        )
+
+    val accountUiState: StateFlow<AccountUiState> = mainViewRepository
+        .getAccountData()
+        .map {
+            AccountUiState.Loaded(it)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AccountUiState.Loading
+        )
+
+    fun onCopy(hashValue: String) {
+        val clipData = ClipData.newPlainText("accountHash", hashValue)
+        clipboardManager.setPrimaryClip(clipData)
     }
 }
 
@@ -30,7 +50,19 @@ data class WalletData(
     val amount: String
 )
 
-sealed class UiState {
-    object Loading : UiState()
-    class Loaded(val walletData: WalletData) : UiState()
+data class AccountData(
+    val accountName: String,
+    val accountHash: String,
+    val accountValue: String,
+    val accountCurrency: String
+)
+
+sealed class WalletUiState {
+    object Loading : WalletUiState()
+    data class Loaded(val walletData: WalletData) : WalletUiState()
+}
+
+sealed class AccountUiState {
+    object Loading : AccountUiState()
+    data class Loaded(val accountData: AccountData) : AccountUiState()
 }
