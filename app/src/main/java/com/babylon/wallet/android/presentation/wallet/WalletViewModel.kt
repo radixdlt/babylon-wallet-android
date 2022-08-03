@@ -1,9 +1,10 @@
-package com.babylon.wallet.android
+package com.babylon.wallet.android.presentation.wallet
 
 import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.MainViewRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class WalletViewModel @Inject constructor(
     mainViewRepository: MainViewRepository,
     private val clipboardManager: ClipboardManager
 ) : ViewModel() {

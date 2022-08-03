@@ -2,6 +2,12 @@ package com.babylon.wallet.android
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import com.babylon.wallet.android.domain.MainViewRepository
+import com.babylon.wallet.android.presentation.wallet.WalletData
+import com.babylon.wallet.android.presentation.wallet.AccountData
+import com.babylon.wallet.android.presentation.wallet.WalletUiState
+import com.babylon.wallet.android.presentation.wallet.WalletViewModel
+import com.babylon.wallet.android.presentation.wallet.AccountUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -18,7 +24,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @ExperimentalCoroutinesApi
-class MainViewModelTest {
+class WalletViewModelTest {
 
     @get:Rule
     val coroutineRule = TestDispatcherRule()
@@ -44,7 +50,7 @@ class MainViewModelTest {
         val event = mutableListOf<WalletUiState>()
 
         // when
-        val viewModel = MainViewModel(mainViewRepository, clipboardManager)
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -64,7 +70,7 @@ class MainViewModelTest {
         })
 
         // when
-        val viewModel = MainViewModel(mainViewRepository, clipboardManager)
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -83,7 +89,7 @@ class MainViewModelTest {
         val event = mutableListOf<AccountUiState>()
 
         // when
-        val viewModel = MainViewModel(mainViewRepository, clipboardManager)
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
         viewModel.accountUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -103,7 +109,7 @@ class MainViewModelTest {
         })
 
         // when
-        val viewModel = MainViewModel(mainViewRepository, clipboardManager)
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
         viewModel.accountUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -123,7 +129,7 @@ class MainViewModelTest {
         // given
         val hash = "somehash2123"
         val clipData = ClipData.newPlainText("accountHash", hash)
-        val viewModel = MainViewModel(mainViewRepository, clipboardManager)
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
 
         // when
         viewModel.onCopy(hash)
