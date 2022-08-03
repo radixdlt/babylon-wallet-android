@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.composable
+package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button

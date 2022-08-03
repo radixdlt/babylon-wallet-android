@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.composable
+package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Text
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.IconButton
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,9 +22,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.extensions.ResponsiveText
-import com.babylon.wallet.android.ui.theme.BabylonWalletTheme
-import com.babylon.wallet.android.ui.theme.RadixLightCardBackground
+import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
+import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
 @Composable
 fun AccountCardView(
@@ -52,7 +51,7 @@ fun AccountCardView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(27.dp, 18.dp, 27.dp, 18.dp)
-        ){
+        ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -100,11 +99,11 @@ fun AccountCardView(
 fun AccountCardPreview() {
     BabylonWalletTheme {
         AccountCardView(
-            {},
-            "efwffrr43tirrj932",
-            "My main account",
-            "25",
-            "$",
+            onCardClick = {},
+            hashValue = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
+            accountName = "My main account",
+            accountValue = "19195",
+            accountCurrency = "$",
             {},
         )
     }
