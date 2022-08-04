@@ -34,11 +34,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
@@ -46,7 +49,7 @@ fun AccountScreen(
     onMenuItemClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    val state = viewModel.accountUiState.collectAsState().value
+    val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
     Column {
         TopAppBar(
             navigationIcon = {

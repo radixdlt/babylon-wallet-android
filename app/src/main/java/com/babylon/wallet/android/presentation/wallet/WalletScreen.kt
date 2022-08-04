@@ -13,7 +13,6 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardView
@@ -33,6 +34,7 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import java.util.Locale
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun WalletScreen(
     viewModel: WalletViewModel,
@@ -52,12 +54,14 @@ fun WalletScreen(
                 color = RadixGrey2
             )
 
+            val walletState = viewModel.walletUiState.collectAsStateWithLifecycle().value
+            val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                when (val state = viewModel.walletUiState.collectAsState().value) {
+                when (walletState) {
                     is WalletUiState.Loading -> {
                         CircularProgressIndicator(
                             color = MaterialTheme.colors.onPrimary
@@ -72,8 +76,8 @@ fun WalletScreen(
                             fontWeight = FontWeight.Bold
                         )
                         WalletBalanceView(
-                            currencySignValue = state.walletData.currency,
-                            amount = state.walletData.amount,
+                            currencySignValue = walletState.walletData.currency,
+                            amount = walletState.walletData.amount,
                             hidden = false
                         ) {
                             // TODO
@@ -89,7 +93,7 @@ fun WalletScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                when (val state = viewModel.accountUiState.collectAsState().value) {
+                when (accountState) {
                     is AccountsUiState.Loading -> {
                         CircularProgressIndicator(
                             color = MaterialTheme.colors.onPrimary
@@ -97,18 +101,18 @@ fun WalletScreen(
                     }
                     is AccountsUiState.Loaded -> {
                         // TODO build a list of cards like in the figma prototype
-                        val accountHash = state.accounts[0].hash
+                        val accountHash = accountState.accounts[0].hash
                         AccountCardView(
                             onCardClick = {
                                 onAccountClick(
-                                    state.accounts[0].id,
-                                    state.accounts[0].name
+                                    accountState.accounts[0].id,
+                                    accountState.accounts[0].name
                                 )
                             },
                             hashValue = accountHash,
-                            accountName = state.accounts[0].name,
-                            accountValue = state.accounts[0].amount,
-                            accountCurrency = state.accounts[0].currencySymbol
+                            accountName = accountState.accounts[0].name,
+                            accountValue = accountState.accounts[0].amount,
+                            accountCurrency = accountState.accounts[0].currencySymbol
                         ) {
                             viewModel.onCopy(accountHash)
                         }
