@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,7 +25,7 @@ class AccountViewModel @Inject constructor(
     private val accountId: String = Uri.decode(savedStateHandle.get<String>(ARG_ACCOUNT_ID))
 
     private val _accountUiState: MutableStateFlow<AccountUiState> = MutableStateFlow(AccountUiState.Loading)
-    val accountUiState: StateFlow<AccountUiState> = _accountUiState
+    val accountUiState = _accountUiState.asStateFlow()
 
     init {
         viewModelScope.launch {
