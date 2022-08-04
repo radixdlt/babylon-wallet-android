@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package com.babylon.wallet.android.presentation.ui.extensions
 
 fun String.truncatedHash(): String {
