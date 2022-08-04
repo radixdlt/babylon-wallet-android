@@ -27,10 +27,12 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 
+private const val NUMBER_OF_CIRCLES = 6
+
 @Composable
 fun WalletBalanceView(
     currencySignValue: String,
-    value: String,
+    amount: String,
     hidden: Boolean,
     balanceClicked: () -> Unit
 ) {
@@ -53,7 +55,7 @@ fun WalletBalanceView(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(6) {
+                repeat(NUMBER_OF_CIRCLES) {
                     Canvas(
                         modifier = Modifier
                             .size(size = 20.dp)
@@ -67,7 +69,7 @@ fun WalletBalanceView(
             }
         } else {
             Text(
-                text = value,
+                text = amount,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f, fill = false)
@@ -100,7 +102,7 @@ fun WalletBalancePreview() {
     BabylonWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
-            value = "1,232",
+            amount = "1,232",
             hidden = false,
             balanceClicked = {}
         )
@@ -115,7 +117,7 @@ fun WalletBalanceWithLongValuePreview() {
     BabylonWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
-            value = "1,879,232.32",
+            amount = "1,879,232.32",
             hidden = false,
             balanceClicked = {}
         )
@@ -130,7 +132,7 @@ fun WalletBalanceHiddenPreview() {
     BabylonWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
-            value = "1,879.32",
+            amount = "1,879.32",
             hidden = true,
             balanceClicked = {}
         )
