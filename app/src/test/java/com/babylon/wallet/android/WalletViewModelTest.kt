@@ -2,12 +2,11 @@ package com.babylon.wallet.android
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.presentation.wallet.WalletData
-import com.babylon.wallet.android.presentation.wallet.AccountData
-import com.babylon.wallet.android.presentation.wallet.WalletUiState
-import com.babylon.wallet.android.presentation.wallet.WalletViewModel
-import com.babylon.wallet.android.presentation.wallet.AccountUiState
+import com.babylon.wallet.android.mockdata.mockAccountsDto
+import com.babylon.wallet.android.mockdata.mockAccountsUI
+import com.babylon.wallet.android.presentation.wallet.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -37,12 +36,6 @@ class WalletViewModelTest {
         "$",
         "1000"
     )
-    private val accountData = AccountData(
-        "My main account",
-        "10fewfewfwe00",
-        "100",
-        "$"
-    )
 
     @Test
     fun `when view model init, verify initial value of wallet UI state is Loading`() = runTest {
@@ -65,7 +58,7 @@ class WalletViewModelTest {
     fun `when view model init, verify wallet Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-        whenever(mainViewRepository.getWalletData()).thenReturn(flow {
+        whenever(mainViewRepository.getWallet()).thenReturn(flow {
             emit(walletData)
         })
 
@@ -86,7 +79,7 @@ class WalletViewModelTest {
     @Test
     fun `when view model init, verify initial value of account UI state is Loading`() = runTest {
         // given
-        val event = mutableListOf<AccountUiState>()
+        val event = mutableListOf<AccountsUiState>()
 
         // when
         val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
@@ -97,15 +90,19 @@ class WalletViewModelTest {
         advanceUntilIdle()
 
         // then
-        assertEquals(event.first(), AccountUiState.Loading)
+        assertEquals(event.first(), AccountsUiState.Loading)
     }
 
     @Test
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
-        val event = mutableListOf<AccountUiState>()
-        whenever(mainViewRepository.getAccountData()).thenReturn(flow {
-            emit(accountData)
+        val event = mutableListOf<AccountsUiState>()
+        whenever(mainViewRepository.getAccounts()).thenReturn(flow {
+            emit(
+                mockAccountsDto.map { accountDto ->
+                    accountDto.toUiModel()
+                }
+            )
         })
 
         // when
@@ -117,11 +114,11 @@ class WalletViewModelTest {
         advanceUntilIdle()
 
         // then
-        val lastEvent = event.last() as AccountUiState.Loaded
-        assertEquals(lastEvent.accountData.accountName, accountData.accountName)
-        assertEquals(lastEvent.accountData.accountHash, accountData.accountHash)
-        assertEquals(lastEvent.accountData.accountValue, accountData.accountValue)
-        assertEquals(lastEvent.accountData.accountCurrency, accountData.accountCurrency)
+        val lastEvent = event.last() as AccountsUiState.Loaded
+        assertEquals(lastEvent.accounts[0].name, mockAccountsUI[0].name)
+        assertEquals(lastEvent.accounts[0].hash, mockAccountsUI[0].hash)
+        assertEquals(lastEvent.accounts[0].amount, mockAccountsUI[0].amount)
+        assertEquals(lastEvent.accounts[0].currencySymbol, mockAccountsUI[0].currencySymbol)
     }
 
     @Test
