@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.account
 
+import android.content.Context
+import android.content.ClipboardManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,17 +20,20 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
@@ -91,11 +96,16 @@ fun AccountScreen(
                             text = state.account.hash,
                             modifier = Modifier.weight(1f, fill = false)
                         )
-                        Icon(
-                            modifier = Modifier.align(Alignment.CenterVertically),
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "copy"
-                        )
+                        IconButton(
+                            onClick = {
+                                viewModel.onCopyAccountAddress(state.account.hash)
+                            },
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_copy),
+                                contentDescription = "copy account address"
+                            )
+                        }
                     }
                     AccountUiState.Loading -> {
                         CircularProgressIndicator(
@@ -134,6 +144,9 @@ fun AccountScreen(
 fun AccountScreenPreview() {
     val mockViewModel = AccountViewModel(
         mainViewRepository = MockMainViewRepository(),
+        clipboardManager = LocalContext
+            .current
+            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
         savedStateHandle = SavedStateHandle()
     )
     BabylonWalletTheme {

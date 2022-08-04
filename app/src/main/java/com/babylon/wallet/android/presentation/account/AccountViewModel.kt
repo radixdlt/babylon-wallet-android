@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.account
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -16,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val mainViewRepository: MainViewRepository,
+    private val clipboardManager: ClipboardManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -29,6 +32,11 @@ class AccountViewModel @Inject constructor(
             val account = mainViewRepository.getAccountBasedOnId(accountId)
             _accountUiState.value = AccountUiState.Loaded(account)
         }
+    }
+
+    fun onCopyAccountAddress(hash: String) {
+        val clipData = ClipData.newPlainText("accountHash", hash)
+        clipboardManager.setPrimaryClip(clipData)
     }
 }
 
