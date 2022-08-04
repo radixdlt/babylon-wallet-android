@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
 import androidx.compose.material.Button
@@ -67,10 +68,13 @@ fun AccountScreen(
             },
             actions = {
                 IconButton(onClick = { onMenuItemClick() }) {
-                    BadgedBox(badge = { Badge() }, modifier = Modifier.padding(16.dp)) {
+                    BadgedBox(
+                        badge = { Badge() },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            "account settings"
+                            contentDescription = "account settings"
                         )
                     }
                 }
@@ -87,16 +91,21 @@ fun AccountScreen(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
                 when (state) {
                     is AccountUiState.Loaded -> {
                         Text(
                             text = state.account.hash,
+                            fontSize = 14.sp,
                             modifier = Modifier.weight(1f, fill = false)
                         )
                         IconButton(
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(14.dp),
                             onClick = {
                                 viewModel.onCopyAccountAddress(state.account.hash)
                             },
