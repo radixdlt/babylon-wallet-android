@@ -8,7 +8,7 @@ data class AccountDto(
     val id: String,
     val name: String,
     val hash: String,
-    val value: String,
+    val value: Float,
     val currency: String
 ) {
     
@@ -24,9 +24,9 @@ data class AccountDto(
 
     // TODO the format api returns the symbol alongside the amount,
     //  so we can drop later the "currencySymbol" from the AccountUi model
-    private fun amountToUiFormat(amount: String, currencySymbol: String): String {
+    private fun amountToUiFormat(amount: Float, currencySymbol: String): String {
         val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "US"))
-        var formattedAmount = currencyFormat.format(amount.toDouble())
+        var formattedAmount = currencyFormat.format(amount)
         formattedAmount = formattedAmount.removePrefix(currencySymbol)
         return formattedAmount
     }
