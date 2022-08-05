@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
+import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
@@ -100,10 +101,10 @@ fun AccountScreen(
 
                 when (state) {
                     is AccountUiState.Loaded -> {
-                        Text(
+                        ResponsiveText(
+                            modifier = Modifier.weight(1f, false),
                             text = state.account.hash,
-                            fontSize = 14.sp,
-                            modifier = Modifier.weight(1f, fill = false)
+                            style = MaterialTheme.typography.h6
                         )
                         IconButton(
                             modifier = Modifier
