@@ -32,7 +32,8 @@ fun AccountCardView(
     accountName: String,
     accountValue: String,
     accountCurrency: String,
-    onCopyClick: () -> Unit
+    onCopyClick: () -> Unit,
+    assetsIcons: List<String>
 ) {
     Card(
         modifier = Modifier
@@ -88,6 +89,8 @@ fun AccountCardView(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(28.dp))
+            AssetIconRowView(assetsIcons)
         }
     }
 }
@@ -105,6 +108,17 @@ fun AccountCardPreview() {
             accountValue = "19195",
             accountCurrency = "$",
             {},
+            listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AssetIconRowPreview() {
+    BabylonWalletTheme {
+        AssetIconRowView(
+            listOf("XRD", "XRD", "XRD", "XRD", "XRD")
         )
     }
 }

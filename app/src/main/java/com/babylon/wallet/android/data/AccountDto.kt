@@ -9,7 +9,8 @@ data class AccountDto(
     val name: String,
     val hash: String,
     val value: Float,
-    val currency: String
+    val currency: String,
+    val accountAssets: List<String>
 ) {
     
     companion object {
@@ -18,7 +19,8 @@ data class AccountDto(
             name = name,
             hash = hash,
             amount = amountToUiFormat(value, currency),
-            currencySymbol = currency
+            currencySymbol = currency,
+            accountAssets = accountAssets
         )
     }
 
