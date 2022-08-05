@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,16 +13,19 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardView
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
@@ -29,8 +34,12 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import java.util.Locale
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
-fun WalletScreen(viewModel: WalletViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun WalletScreen(
+    viewModel: WalletViewModel,
+    onAccountClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
+) {
     Column {
         RDXAppBar(
             stringResource(id = R.string.home_toolbar_title)
@@ -45,12 +54,14 @@ fun WalletScreen(viewModel: WalletViewModel = androidx.lifecycle.viewmodel.compo
                 color = RadixGrey2
             )
 
+            val walletState = viewModel.walletUiState.collectAsStateWithLifecycle().value
+            val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                when (val result = viewModel.walletUiState.collectAsState().value) {
+                when (walletState) {
                     is WalletUiState.Loading -> {
                         CircularProgressIndicator(
                             color = MaterialTheme.colors.onPrimary
@@ -65,9 +76,9 @@ fun WalletScreen(viewModel: WalletViewModel = androidx.lifecycle.viewmodel.compo
                             fontWeight = FontWeight.Bold
                         )
                         WalletBalanceView(
-                            currencySignValue = result.walletData.currency,
-                            value = result.walletData.amount,
-                            false
+                            currencySignValue = walletState.walletData.currency,
+                            amount = walletState.walletData.amount,
+                            hidden = false
                         ) {
                             // TODO
                         }
@@ -82,22 +93,26 @@ fun WalletScreen(viewModel: WalletViewModel = androidx.lifecycle.viewmodel.compo
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                when (val result = viewModel.accountUiState.collectAsState().value) {
-                    is AccountUiState.Loading -> {
+                when (accountState) {
+                    is AccountsUiState.Loading -> {
                         CircularProgressIndicator(
                             color = MaterialTheme.colors.onPrimary
                         )
                     }
-                    is AccountUiState.Loaded -> {
-                        val accountHash = result.accountData.accountHash
+                    is AccountsUiState.Loaded -> {
+                        // TODO build a list of cards like in the figma prototype
+                        val accountHash = accountState.accounts[0].hash
                         AccountCardView(
-                            {
-                                // TODO
+                            onCardClick = {
+                                onAccountClick(
+                                    accountState.accounts[0].id,
+                                    accountState.accounts[0].name
+                                )
                             },
                             hashValue = accountHash,
-                            accountName = result.accountData.accountName,
-                            accountValue = result.accountData.accountValue,
-                            accountCurrency = result.accountData.accountCurrency
+                            accountName = accountState.accounts[0].name,
+                            accountValue = accountState.accounts[0].amount,
+                            accountCurrency = accountState.accounts[0].currencySymbol
                         ) {
                             viewModel.onCopy(accountHash)
                         }
@@ -149,8 +164,27 @@ fun RadarHubView(onClicked: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun DefaultPreview() {
+fun RadarHubPreview() {
     BabylonWalletTheme {
-        WalletScreen()
+        RadarHubView {}
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    val mockViewModel = WalletViewModel(
+        mainViewRepository = MockMainViewRepository(),
+        clipboardManager = LocalContext
+            .current
+            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    )
+
+    BabylonWalletTheme {
+        WalletScreen(
+            viewModel = mockViewModel,
+            onAccountClick = { _, _ ->
+            }
+        )
     }
 }

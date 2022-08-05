@@ -9,15 +9,18 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
 
     @Provides
+    @Singleton
     fun provideMainViewRepository(): MainViewRepository = MainViewRepositoryImpl()
 
     @Provides
+    @Singleton
     fun provideClipboardManager(@ApplicationContext context: Context): ClipboardManager =
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 }
