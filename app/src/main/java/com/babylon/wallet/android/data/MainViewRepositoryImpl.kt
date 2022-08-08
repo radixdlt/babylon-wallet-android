@@ -53,7 +53,7 @@ val mockAccountData = listOf(
         hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
         value = 19195.0F,
         currency = "$",
-        accountAssets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+        assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
     ),
     AccountDto(
         id = "a2",
@@ -61,7 +61,7 @@ val mockAccountData = listOf(
         hash = "0x589e5cb06635F67c441EAe6AF46A365278a932e1",
         value = 214945.5F,
         currency = "$",
-        accountAssets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+        assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
     ),
     AccountDto(
         id = "a2",
@@ -69,6 +69,6 @@ val mockAccountData = listOf(
         hash = "0x559e5cb66035F67c441EAe6AF46A474278a932e1",
         value = 12149455.0F,
         currency = "$",
-        accountAssets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+        assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
     )
 ).shuffled()

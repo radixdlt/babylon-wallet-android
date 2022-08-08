@@ -112,13 +112,3 @@ fun AccountCardPreview() {
         )
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun AssetIconRowPreview() {
-    BabylonWalletTheme {
-        AssetIconRowView(
-            listOf("XRD", "XRD", "XRD", "XRD", "XRD")
-        )
-    }
-}

@@ -11,11 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 
 private const val MAX_ASSETS_DISPLAYED = 10
+private const val RELATIVE_PADDING = 0.7f
 
 @Composable
 fun AssetIconRowView(
@@ -37,7 +40,7 @@ fun AssetIconRowView(
                 contentAlignment = Alignment.Center
             ) {
                 val text = if
-                    (i >= MAX_ASSETS_DISPLAYED) "+${assets.size - MAX_ASSETS_DISPLAYED}"
+                (i >= MAX_ASSETS_DISPLAYED) "+${assets.size - MAX_ASSETS_DISPLAYED}"
                 else
                     assets[i]
                 Text(
@@ -46,10 +49,20 @@ fun AssetIconRowView(
                     text = text,
                 )
             }
-            paddingStart += circleSize * 0.7f
+            paddingStart += circleSize * RELATIVE_PADDING
             if (i >= MAX_ASSETS_DISPLAYED) {
                 break
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AssetIconRowPreview() {
+    BabylonWalletTheme {
+        AssetIconRowView(
+            listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+        )
     }
 }

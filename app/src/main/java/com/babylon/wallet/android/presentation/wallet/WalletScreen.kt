@@ -114,7 +114,7 @@ fun WalletScreen(
                             accountValue = accountState.accounts[0].amount,
                             accountCurrency = accountState.accounts[0].currencySymbol,
                             onCopyClick = { viewModel.onCopy(accountHash) },
-                            assetsIcons = accountState.accounts[0].accountAssets
+                            assetsIcons = accountState.accounts[0].assets
                         )
                     }
                 }
