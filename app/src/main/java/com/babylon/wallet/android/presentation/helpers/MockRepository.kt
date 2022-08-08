@@ -25,7 +25,8 @@ class MockMainViewRepository : MainViewRepository {
                     name = "My main account",
                     hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
                     amount = "19195",
-                    currencySymbol = "$"
+                    currencySymbol = "$",
+                    assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
                 )
             )
         )
@@ -37,7 +38,8 @@ class MockMainViewRepository : MainViewRepository {
             name = "My main account",
             hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
             amount = "19195",
-            currencySymbol = "$"
+            currencySymbol = "$",
+            assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
         )
     }
 }

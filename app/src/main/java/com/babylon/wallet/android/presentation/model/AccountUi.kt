@@ -5,5 +5,6 @@ data class AccountUi(
     val name: String,
     val hash: String,
     val amount: String,
-    val currencySymbol: String
+    val currencySymbol: String,
+    val assets: List<String>
 )

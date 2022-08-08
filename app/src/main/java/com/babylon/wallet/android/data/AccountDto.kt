@@ -9,16 +9,18 @@ data class AccountDto(
     val name: String,
     val hash: String,
     val value: Float,
-    val currency: String
+    val currency: String,
+    val assets: List<String>
 ) {
-    
+
     companion object {
         fun AccountDto.toUiModel() = AccountUi(
             id = id,
             name = name,
             hash = hash,
             amount = amountToUiFormat(value, currency),
-            currencySymbol = currency
+            currencySymbol = currency,
+            assets = assets
         )
     }
 
