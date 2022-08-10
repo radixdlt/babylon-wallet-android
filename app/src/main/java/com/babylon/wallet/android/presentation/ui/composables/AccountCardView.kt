@@ -18,10 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.mockdata.mockTokenUiList
+import com.babylon.wallet.android.presentation.model.TokenUi
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
@@ -33,7 +36,7 @@ fun AccountCardView(
     accountValue: String,
     accountCurrency: String,
     onCopyClick: () -> Unit,
-    assetsIcons: List<String>
+    assets: List<TokenUi> // at the moment we pass only the tokens
 ) {
     Card(
         modifier = Modifier
@@ -90,7 +93,7 @@ fun AccountCardView(
                 }
             }
             Spacer(modifier = Modifier.height(28.dp))
-            AssetIconRowView(assetsIcons)
+            AssetIconRowView(assets)
         }
     }
 }
@@ -100,6 +103,7 @@ fun AccountCardView(
 @Preview(showBackground = true)
 @Composable
 fun AccountCardPreview() {
+    val context = LocalContext.current
     BabylonWalletTheme {
         AccountCardView(
             onCardClick = {},
@@ -107,8 +111,8 @@ fun AccountCardPreview() {
             accountName = "My main account",
             accountValue = "19195",
             accountCurrency = "$",
-            {},
-            listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+            onCopyClick = {},
+            assets = mockTokenUiList
         )
     }
 }

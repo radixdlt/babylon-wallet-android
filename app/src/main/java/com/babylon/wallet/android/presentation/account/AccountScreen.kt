@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.content.Context
 import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

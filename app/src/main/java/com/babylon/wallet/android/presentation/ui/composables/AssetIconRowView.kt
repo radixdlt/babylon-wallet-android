@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.babylon.wallet.android.data.mockdata.mockTokenUiList
+import com.babylon.wallet.android.presentation.model.TokenUi
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 
@@ -22,7 +24,7 @@ private const val RELATIVE_PADDING = 0.7f
 
 @Composable
 fun AssetIconRowView(
-    assets: List<String>,
+    assets: List<TokenUi>,
     circleSize: Int = 30,
     fontSize: Int = 10
 ) {
@@ -39,14 +41,14 @@ fun AssetIconRowView(
                     .defaultMinSize(circleSize.dp, circleSize.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val text = if
-                (i >= MAX_ASSETS_DISPLAYED) "+${assets.size - MAX_ASSETS_DISPLAYED}"
+                val text = if (i >= MAX_ASSETS_DISPLAYED)
+                    "+${assets.size - MAX_ASSETS_DISPLAYED}"
                 else
-                    assets[i]
+                    assets[i].symbol
                 Text(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = fontSize.sp,
-                    text = text,
+                    text = text.orEmpty(), // TODO
                 )
             }
             paddingStart += circleSize * RELATIVE_PADDING
@@ -62,7 +64,7 @@ fun AssetIconRowView(
 fun AssetIconRowPreview() {
     BabylonWalletTheme {
         AssetIconRowView(
-            listOf("XRD", "XRD", "XRD", "XRD", "XRD")
+            assets = mockTokenUiList
         )
     }
 }
