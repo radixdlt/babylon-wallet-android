@@ -6,5 +6,6 @@ data class AccountUi(
     val hash: String,
     val amount: String,
     val currencySymbol: String,
-    val assets: List<String>
+    val tokens: List<TokenUi> = emptyList(),
+    val nfts: List<NftClassUi> = emptyList()
 )
