@@ -9,6 +9,7 @@ on:
 jobs:
   
   lint:
+    if: ${{ github.event_name == 'pull_request' }}
     name: "Lint"
     runs-on: ubuntu-latest
 
