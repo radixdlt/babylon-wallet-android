@@ -9,7 +9,11 @@ on:
 jobs:
   
   lint:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: |
+      ${{ github.event_name == 'pull_request' }} ||
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
     name: "Lint"
     runs-on: ubuntu-latest
 
@@ -20,6 +24,11 @@ jobs:
         run: ./gradlew cleanAssemble
 
   unit_tests:
+    if: |
+      ${{ github.event_name == 'pull_request' }} ||
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
     name: "Unit tests"
     runs-on: ubuntu-latest
 
@@ -33,6 +42,11 @@ jobs:
         run: ./gradlew cleanAssemble
 
   snapshot_tests:
+    if: |
+      ${{ github.event_name == 'pull_request' }} ||
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
     name: "Snapshot tests"
     runs-on: ubuntu-latest
 
@@ -46,6 +60,11 @@ jobs:
         run: ./gradlew cleanAssemble
 
   ui_tests:
+    if: |
+      ${{ github.event_name == 'pull_request' }} ||
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
     name: "UI tests"
     runs-on: ubuntu-latest
 
@@ -59,6 +78,11 @@ jobs:
         run: ./gradlew cleanAssemble
 
   static_analysis:
+    if: |
+      ${{ github.event_name == 'pull_request' }} ||
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
     name: "Static analysis"
     runs-on: ubuntu-latest
 
@@ -72,3 +96,21 @@ jobs:
 
       - name: "Lint"
         run: ./gradlew cleanAssemble
+
+  build:
+    if: |
+      ${{ github.event_name == 'pull_request' }} ||
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
+    name: "Build"
+    runs-on: ubuntu-latest
+
+    needs:
+      - static_analysis
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Lint"
+        run: ./gradlew clean build
