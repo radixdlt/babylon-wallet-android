@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.content.Context
 import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
+import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
@@ -154,12 +155,14 @@ fun AccountScreen(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun AccountScreenPreview() {
+    val savedStateHandle = SavedStateHandle()
+    savedStateHandle[Screen.ARG_ACCOUNT_ID] = "1"
     val mockViewModel = AccountViewModel(
         mainViewRepository = MockMainViewRepository(),
         clipboardManager = LocalContext
             .current
             .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
-        savedStateHandle = SavedStateHandle()
+        savedStateHandle = savedStateHandle
     )
     BabylonWalletTheme {
         AccountScreen(

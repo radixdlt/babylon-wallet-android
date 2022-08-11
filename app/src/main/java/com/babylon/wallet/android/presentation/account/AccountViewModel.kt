@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.account
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,15 +23,20 @@ class AccountViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val accountId: String = Uri.decode(savedStateHandle.get<String>(ARG_ACCOUNT_ID))
+    private val accountId: String = Uri.decode(savedStateHandle.get<String>(ARG_ACCOUNT_ID)) ?: ""
 
     private val _accountUiState: MutableStateFlow<AccountUiState> = MutableStateFlow(AccountUiState.Loading)
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val account = mainViewRepository.getAccountBasedOnId(accountId)
-            _accountUiState.value = AccountUiState.Loaded(account)
+            if (accountId.isNotEmpty()) {
+                // TODO how to handle the case when the gateway doesn't return the account?
+                val account = mainViewRepository.getAccountBasedOnId(accountId)
+                _accountUiState.value = AccountUiState.Loaded(account)
+            } else {
+                Log.d("AccountViewModel", "arg account id is empty")
+            }
         }
     }
 
