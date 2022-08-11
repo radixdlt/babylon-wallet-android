@@ -8,9 +8,63 @@ on:
 
 jobs:
   
-  build_and_test:
-    name: "PR"
+  lint:
+    name: "Lint"
     runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Lint"
+        run: ./gradlew cleanAssemble
+
+  unit_tests:
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+
+    needs:
+      - pr_lint
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Lint"
+        run: ./gradlew cleanAssemble
+
+  snapshot_tests:
+    name: "Snapshot tests"
+    runs-on: ubuntu-latest
+
+    needs:
+      - pr_lint
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Lint"
+        run: ./gradlew cleanAssemble
+
+  ui_tests:
+    name: "UI tests"
+    runs-on: ubuntu-latest
+
+    needs:
+      - pr_lint
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Lint"
+        run: ./gradlew cleanAssemble
+
+  static_analysis:
+    name: "Static analysis"
+    runs-on: ubuntu-latest
+
+    needs:
+      - unit_tests
+      - snapshot_tests
+      - ui_tests
 
     steps:
       - uses: actions/checkout@v2
