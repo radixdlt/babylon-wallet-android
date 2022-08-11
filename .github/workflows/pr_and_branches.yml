@@ -20,6 +20,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: ruby/setup-ruby@v1.114.0
+        with:
+          ruby-version: '2.7.2'
+      - uses: maierj/fastlane-action@v2.2.1
+        with:
+          lane: 'test'
+
       - name: "Lint"
         run: ./gradlew cleanAssemble
 
