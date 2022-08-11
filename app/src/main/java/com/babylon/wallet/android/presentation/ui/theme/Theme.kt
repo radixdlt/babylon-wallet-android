@@ -59,11 +59,15 @@ fun BabylonWalletTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
-    } else {
-        LightColorPalette
-    }
+    // TODO we don't support dark theme at the moment,
+    //  if later is needed, we enable it.
+    //  Otherwise in a device with dark theme
+    //  the app's colors are different and not consistent
+    val colors = LightColorPalette //if (darkTheme) {
+//        DarkColorPalette
+//    } else {
+//        LightColorPalette
+//    }
 
     MaterialTheme(
         colors = colors,
