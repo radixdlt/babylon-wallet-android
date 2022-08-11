@@ -1,0 +1,17 @@
+name: "Build and deploy"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - DO-782-ci-cd
+
+jobs:
+  
+  build_and_test:
+    name: "PR"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Lint"
+        run: ./gradlew cleanAssemble
