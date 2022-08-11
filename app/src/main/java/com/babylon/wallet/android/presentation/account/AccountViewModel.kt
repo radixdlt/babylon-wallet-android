@@ -31,6 +31,7 @@ class AccountViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
+                // TODO how to handle the case when the gateway doesn't return the account?
                 val account = mainViewRepository.getAccountBasedOnId(accountId)
                 _accountUiState.value = AccountUiState.Loaded(account)
             } else {
