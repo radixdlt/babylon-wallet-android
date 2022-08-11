@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - pr_lint
+      - lint
 
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - pr_lint
+      - lint
 
     steps:
       - uses: actions/checkout@v2
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - pr_lint
+      - lint
 
     steps:
       - uses: actions/checkout@v2
