@@ -18,8 +18,14 @@ jobs:
         with:
           ruby-version: '2.7.2'
 
+      - run: |
+          export GOOGLE_APPLICATION_CREDENTIALS
+          echo $GOOGLE_APPLICATION_CREDENTIALS
+          export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+          echo $GOOGLE_APPLICATION_CREDENTIALS
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
       - uses: maierj/fastlane-action@v2.2.1
         with:
           lane: 'prerelease'
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
