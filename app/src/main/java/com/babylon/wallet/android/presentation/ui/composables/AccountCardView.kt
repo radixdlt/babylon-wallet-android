@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -103,7 +102,6 @@ fun AccountCardView(
 @Preview(showBackground = true)
 @Composable
 fun AccountCardPreview() {
-    val context = LocalContext.current
     BabylonWalletTheme {
         AccountCardView(
             onCardClick = {},

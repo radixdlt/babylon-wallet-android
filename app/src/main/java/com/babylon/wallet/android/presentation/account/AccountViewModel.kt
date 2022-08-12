@@ -4,9 +4,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
@@ -23,10 +25,14 @@ class AccountViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val accountId: String = Uri.decode(savedStateHandle.get<String>(ARG_ACCOUNT_ID)) ?: ""
+    private val accountId: String = Uri.decode(savedStateHandle.get<String>(ARG_ACCOUNT_ID)).orEmpty()
 
     private val _accountUiState: MutableStateFlow<AccountUiState> = MutableStateFlow(AccountUiState.Loading)
     val accountUiState = _accountUiState.asStateFlow()
+
+    // Holds our currently selected asset type tab
+    private val _selectedAssetTypeTab = MutableStateFlow(AssetTypeTab.TOKEN_TAB)
+    val selectedAssetTypeTab = _selectedAssetTypeTab.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -44,9 +50,18 @@ class AccountViewModel @Inject constructor(
         val clipData = ClipData.newPlainText("accountHash", hash)
         clipboardManager.setPrimaryClip(clipData)
     }
+
+    fun onAssetTypeTabSelected(assetType: AssetTypeTab) {
+        _selectedAssetTypeTab.value = assetType
+    }
 }
 
 sealed class AccountUiState {
     object Loading : AccountUiState()
     data class Loaded(val account: AccountUi) : AccountUiState()
+}
+
+enum class AssetTypeTab(@StringRes val stringId: Int) {
+    TOKEN_TAB(R.string.account_asset_row_tab_tokens),
+    NTF_TAB(R.string.account_asset_row_tab_nfts),
 }
