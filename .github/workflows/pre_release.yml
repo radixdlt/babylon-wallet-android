@@ -20,4 +20,4 @@ jobs:
 
       - uses: maierj/fastlane-action@v2.2.1
         with:
-          lane: 'beta'
+          lane: 'prerelease'

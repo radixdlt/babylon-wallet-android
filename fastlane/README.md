@@ -13,13 +13,29 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
-### test
+### beta
 
 ```sh
-[bundle exec] fastlane test
+[bundle exec] fastlane beta
 ```
 
-Run tests
+Deploy master branch
+
+### prerelease
+
+```sh
+[bundle exec] fastlane prerelease
+```
+
+Deploy pre-release
+
+### release
+
+```sh
+[bundle exec] fastlane release
+```
+
+Deploy release
 
 ----
 
