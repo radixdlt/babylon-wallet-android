@@ -21,3 +21,5 @@ jobs:
       - uses: maierj/fastlane-action@v2.2.1
         with:
           lane: 'prerelease'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
