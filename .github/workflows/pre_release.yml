@@ -26,6 +26,15 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
+      - name: Decode Keystore File
+        uses: timheuer/base64-to-file@v1
+        id: firebase_keystore
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
       - uses: maierj/fastlane-action@v2.2.1
         with:
           lane: 'prerelease'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath  }}
