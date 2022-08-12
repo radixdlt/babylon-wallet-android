@@ -4,8 +4,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.mockdata.mockAccountsDto
-import com.babylon.wallet.android.mockdata.mockAccountsUI
+import com.babylon.wallet.android.mockdata.mockAccountDtoList
+import com.babylon.wallet.android.mockdata.mockAccountUiList
 import com.babylon.wallet.android.presentation.wallet.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -99,7 +99,7 @@ class WalletViewModelTest {
         val event = mutableListOf<AccountsUiState>()
         whenever(mainViewRepository.getAccounts()).thenReturn(flow {
             emit(
-                mockAccountsDto.map { accountDto ->
+                mockAccountDtoList.map { accountDto ->
                     accountDto.toUiModel()
                 }
             )
@@ -115,10 +115,10 @@ class WalletViewModelTest {
 
         // then
         val lastEvent = event.last() as AccountsUiState.Loaded
-        assertEquals(lastEvent.accounts[0].name, mockAccountsUI[0].name)
-        assertEquals(lastEvent.accounts[0].hash, mockAccountsUI[0].hash)
-        assertEquals(lastEvent.accounts[0].amount, mockAccountsUI[0].amount)
-        assertEquals(lastEvent.accounts[0].currencySymbol, mockAccountsUI[0].currencySymbol)
+        assertEquals(lastEvent.accounts[0].name, mockAccountUiList[0].name)
+        assertEquals(lastEvent.accounts[0].hash, mockAccountUiList[0].hash)
+        assertEquals(lastEvent.accounts[0].amount, mockAccountUiList[0].amount)
+        assertEquals(lastEvent.accounts[0].currencySymbol, mockAccountUiList[0].currencySymbol)
     }
 
     @Test

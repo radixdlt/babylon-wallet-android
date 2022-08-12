@@ -114,7 +114,7 @@ fun WalletScreen(
                             accountValue = accountState.accounts[0].amount,
                             accountCurrency = accountState.accounts[0].currencySymbol,
                             onCopyClick = { viewModel.onCopy(accountHash) },
-                            assetsIcons = accountState.accounts[0].assets
+                            assets = accountState.accounts[0].tokens
                         )
                     }
                 }
@@ -163,6 +163,7 @@ fun RadarHubView(onClicked: () -> Unit) {
 }
 
 @Preview(showBackground = true)
+@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun RadarHubPreview() {
     BabylonWalletTheme {
@@ -171,8 +172,9 @@ fun RadarHubPreview() {
 }
 
 @Preview(showBackground = true)
+@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun DefaultPreview() {
+fun WalletScreenPreview() {
     val mockViewModel = WalletViewModel(
         mainViewRepository = MockMainViewRepository(),
         clipboardManager = LocalContext

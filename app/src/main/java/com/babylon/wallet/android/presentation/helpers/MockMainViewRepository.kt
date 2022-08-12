@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.helpers
 
+import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
+import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
@@ -19,27 +21,13 @@ class MockMainViewRepository : MainViewRepository {
 
     override fun getAccounts(): Flow<List<AccountUi>> {
         return flowOf(
-            listOf(
-                AccountUi(
-                    id = "account id",
-                    name = "My main account",
-                    hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
-                    amount = "19195",
-                    currencySymbol = "$",
-                    assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
-                )
-            )
+            mockAccountDtoList.map { accountDto ->
+                accountDto.toUiModel()
+            }
         )
     }
 
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
-        return AccountUi(
-            id = "account id",
-            name = "My main account",
-            hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
-            amount = "19195",
-            currencySymbol = "$",
-            assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
-        )
+        return mockAccountDtoList[2].toUiModel()
     }
 }

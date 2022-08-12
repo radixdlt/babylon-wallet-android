@@ -1,8 +1,6 @@
-package com.babylon.wallet.android.mockdata
+package com.babylon.wallet.android.data.mockdata
 
 import com.babylon.wallet.android.data.AccountDto
-import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
-import com.babylon.wallet.android.data.mockdata.mockAssetDtoList
 
 val mockAccountDtoList = listOf(
     AccountDto(
@@ -29,8 +27,4 @@ val mockAccountDtoList = listOf(
         currency = "$",
         assets = mockAssetDtoList
     )
-)
-
-val mockAccountUiList = mockAccountDtoList.map { accountDto ->
-    accountDto.toUiModel()
-}
+).shuffled()

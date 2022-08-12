@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
+import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
@@ -27,7 +28,7 @@ class MainViewRepositoryImpl : MainViewRepository {
         return flow {
             delay(Random.nextLong(500, 1500))
             emit(
-                mockAccountData.map { accountDto ->
+                mockAccountDtoList.map { accountDto ->
                     accountDto.toUiModel()
                 }
             )
@@ -36,7 +37,7 @@ class MainViewRepositoryImpl : MainViewRepository {
 
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
         delay(Random.nextLong(500, 1000))
-        return mockAccountData
+        return mockAccountDtoList
             .map { accountDto ->
                 accountDto.toUiModel()
             }
@@ -45,30 +46,3 @@ class MainViewRepositoryImpl : MainViewRepository {
             }
     }
 }
-
-val mockAccountData = listOf(
-    AccountDto(
-        id = "a1",
-        name = "My main account",
-        hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
-        value = 19195.0F,
-        currency = "$",
-        assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
-    ),
-    AccountDto(
-        id = "a2",
-        name = "My fun account",
-        hash = "0x589e5cb06635F67c441EAe6AF46A365278a932e1",
-        value = 214945.5F,
-        currency = "$",
-        assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
-    ),
-    AccountDto(
-        id = "a2",
-        name = "Only NFTs",
-        hash = "0x559e5cb66035F67c441EAe6AF46A474278a932e1",
-        value = 12149455.0F,
-        currency = "$",
-        assets = listOf("XRD", "XRD", "XRD", "XRD", "XRD")
-    )
-).shuffled()
