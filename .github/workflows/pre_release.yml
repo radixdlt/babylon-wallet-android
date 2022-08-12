@@ -18,8 +18,6 @@ jobs:
         with:
           ruby-version: '2.7.2'
 
-
-
       - name: Decode Keystore File
         uses: timheuer/base64-to-file@v1
         id: firebase_keystore
