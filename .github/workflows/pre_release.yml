@@ -18,13 +18,7 @@ jobs:
         with:
           ruby-version: '2.7.2'
 
-      - run: |
-          export GOOGLE_APPLICATION_CREDENTIALS
-          echo $GOOGLE_APPLICATION_CREDENTIALS
-          export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
-          echo $GOOGLE_APPLICATION_CREDENTIALS
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
 
       - name: Decode Keystore File
         uses: timheuer/base64-to-file@v1
@@ -33,8 +27,11 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
+      - run: |
+          export GOOGLE_APPLICATION_CREDENTIALS=${{ steps.firebase_keystore.outputs.filePath }}
+
       - uses: maierj/fastlane-action@v2.2.1
         with:
           lane: 'prerelease'
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath  }}
+        # env:
+        #   GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath  }}
