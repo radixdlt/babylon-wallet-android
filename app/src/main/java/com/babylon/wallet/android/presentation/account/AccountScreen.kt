@@ -86,7 +86,8 @@ fun AccountScreen(
                     is AccountUiState.Loaded -> {
                         AccountAddressView(
                             address = state.account.hash,
-                            onCopyAccountAddressClick = viewModel::onCopyAccountAddress
+                            onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
+                            modifier = Modifier.weight(1f, false)
                         )
                     }
                     AccountUiState.Loading -> {
@@ -170,8 +171,10 @@ private fun AccountTopAppBar(
 private fun AccountAddressView(
     address: String,
     onCopyAccountAddressClick: (String) -> Unit,
+    modifier: Modifier
 ) {
     ResponsiveText(
+        modifier = modifier,
         text = address,
         style = MaterialTheme.typography.h6
     )
