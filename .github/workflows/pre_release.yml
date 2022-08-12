@@ -23,15 +23,16 @@ jobs:
           gem install bundler
           bundle install
 
-      # - name: Decode Keystore File
-      #   uses: timheuer/base64-to-file@v1
-      #   id: firebase_keystore
-      #   with:
-      #     fileName: "service_account.json"
-      #     encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      - name: Decode Keystore File
+        uses: timheuer/base64-to-file@v1
+        id: firebase_keystore
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-      # - run: |
-      #     export GOOGLE_APPLICATION_CREDENTIALS=${{ steps.firebase_keystore.outputs.filePath }}
+      - run: |
+          export GOOGLE_APPLICATION_CREDENTIALS=${{ steps.firebase_keystore.outputs.filePath }}
+          fastlane prerelease
 
       # - uses: maierj/fastlane-action@v2.2.1
       #   with:
