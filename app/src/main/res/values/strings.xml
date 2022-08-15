@@ -7,4 +7,6 @@
     <string name="radar_network_text">Ready to get started using the Radar Network and your Wallet?</string>
     <string name="total_value">Total value</string>
     <string name="dollar_sign">$</string>
+    <string name="account_asset_row_tab_tokens">Tokens</string>
+    <string name="account_asset_row_tab_nfts">NFTs</string>
 </resources>
