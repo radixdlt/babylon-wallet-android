@@ -10,59 +10,87 @@ private val mockNftDtoList = listOf(
     AssetDto.NftClassDto(
         classId = "arsenal_nft_id",
         name = "Arsenal",
-        amount = 4,
         iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        nftsInCirculation = "1000",
+        nftsInPossession = "2",
         nfts = listOf(
             AssetDto.NftClassDto.NftDto(
                 id = "arsenal_henry_nft_id",
                 name = "Henry",
-                iconUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png"
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png",
+                nftsMetadata = listOf(
+                    Pair("Type", "Kevin Durant - Dunk")
+                )
             ),
             AssetDto.NftClassDto.NftDto(
                 id = "arsenal_henry_nft_id",
                 name = "Henry",
-                iconUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png"
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png",
+                nftsMetadata = listOf(
+                    Pair("Type", "Kevin Durant - Dunk")
+                )
             ),
             AssetDto.NftClassDto.NftDto(
                 id = "arsenal_bergkamp_nft_id",
                 name = "Bergkamp",
-                iconUrl = "https://cdn-icons-png.flaticon.com/512/1273/1273729.png"
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/1273/1273729.png",
+                nftsMetadata = listOf(
+                    Pair("Type", "Kevin Durant - Dunk")
+                )
             ),
             AssetDto.NftClassDto.NftDto(
                 id = "arsenal_vieira_nft_id",
                 name = "Vieira",
-                iconUrl = null
+                iconUrl = null,
+                nftsMetadata = listOf(
+                    Pair("Type", "Kevin Durant - Dunk"),
+                    Pair("Type", "James Bond - Next")
+                )
             )
         )
     ),
     AssetDto.NftClassDto(
         classId = "black_hole_nft_id",
         name = "Black Hole",
-        amount = 1,
-        iconUrl = "https://cdn-icons.flaticon.com/png/512/2252/premium/2252143.png?token=exp=1660065097~hmac=2a56ceb1df1a25db740a6ffb9af2cefa",
+        iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        nftsInCirculation = "100",
+        nftsInPossession = "1",
         nfts = listOf(
             AssetDto.NftClassDto.NftDto(
                 id = "stellar_nft_id",
                 name = "stellar",
-                iconUrl = "https://cdn-icons.flaticon.com/png/512/1636/premium/1636920.png?token=exp=1660065129~hmac=74a06634adeba2711540c67e207296d3"
+                iconUrl = "https://cdn-icons.flaticon.com/png/512/1636/premium/1636920.png?token=exp=1660065129~hmac=74a06634adeba2711540c67e207296d3",
+                nftsMetadata = listOf(
+                    Pair("Section", "E"),
+                    Pair("Seat", "15D")
+                )
             )
         )
     ),
     AssetDto.NftClassDto(
         classId = "dog_nft_id",
         name = "Doggies",
-        amount = 2,
-        iconUrl = "https://cdn-icons.flaticon.com/png/512/2171/premium/2171990.png?token=exp=1660065662~hmac=90bbd7f1b59da1222f09431078e94894",
+        iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        nftsInCirculation = "20000",
+        nftsInPossession = "8",
         nfts = listOf(
             AssetDto.NftClassDto.NftDto(
                 id = "ghosty_nft_id",
                 name = "ghosty",
-                iconUrl = null
+                iconUrl = null,
+                nftsMetadata = listOf(
+                    Pair("Section", "E"),
+                    Pair("Seat", "15D")
+                )
             ),
             AssetDto.NftClassDto.NftDto(
                 id = "paw_nft_id",
                 name = "Paw",
-                iconUrl = "https://cdn-icons.flaticon.com/png/512/1050/premium/1050915.png?token=exp=1660065685~hmac=8bb24dea7efe56b3ea52dea9502de9a1"
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/1273/1273729.png",
+                nftsMetadata = listOf(
+                    Pair("Section", "E"),
+                    Pair("Seat", "15D")
+                )
             )
         )
     )

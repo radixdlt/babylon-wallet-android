@@ -26,21 +26,24 @@ data class AssetDto(
     data class NftClassDto(
         val classId: String, // the NFT class id
         val name: String,
-        val amount: Int, // amount of actual NFTs
         val iconUrl: String?, // the icon of the NFT class
+        val nftsInCirculation: String?,
+        val nftsInPossession: String?,
         val nfts: List<NftDto> // the list of actual NFTs
     ) {
 
         data class NftDto(
             val id: String,
             val name: String,
-            val iconUrl: String?
+            val iconUrl: String?,
+            val nftsMetadata: List<Pair<String, String>>
         ) {
 
             companion object {
                 fun NftDto.toUiModel() = NftClassUi.NftUi(
                     id = id,
-                    name = name
+                    imageUrl = iconUrl,
+                    nftsMetadata = nftsMetadata
                 )
             }
         }
@@ -48,7 +51,8 @@ data class AssetDto(
         companion object {
             fun NftClassDto.toNftClassUiModel() = NftClassUi(
                 name = name,
-                amount = amount.toString(),
+                nftsInCirculation = nftsInCirculation,
+                nftsInPossession = nftsInPossession,
                 iconUrl = iconUrl,
                 nft = nfts.map { nftDto ->
                     nftDto.toUiModel()

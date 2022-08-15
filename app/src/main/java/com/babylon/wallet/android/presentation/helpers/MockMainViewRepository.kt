@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
+import com.babylon.wallet.android.presentation.model.NftClassUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -29,5 +30,11 @@ class MockMainViewRepository : MainViewRepository {
 
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
         return mockAccountDtoList[2].toUiModel()
+    }
+
+    override fun getNftList(): Flow<List<NftClassUi>> {
+        return flowOf(
+            mockAccountDtoList.first().toUiModel().nfts
+        )
     }
 }

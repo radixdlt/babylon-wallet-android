@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
+import com.babylon.wallet.android.presentation.model.NftClassUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -44,5 +45,14 @@ class MainViewRepositoryImpl : MainViewRepository {
             .first { accountData ->
                 accountData.id == id
             }
+    }
+
+    override fun getNftList(): Flow<List<NftClassUi>> {
+        return flow {
+            delay(Random.nextLong(500, 1500))
+            emit(
+                mockAccountDtoList.first().toUiModel().nfts
+            )
+        }
     }
 }

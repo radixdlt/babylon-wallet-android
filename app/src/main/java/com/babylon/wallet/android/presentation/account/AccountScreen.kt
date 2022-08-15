@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account
 
+import android.annotation.SuppressLint
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,11 +47,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
+import com.babylon.wallet.android.presentation.ui.composables.CollapsableSection
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalPagerApi::class)
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
@@ -58,7 +68,6 @@ fun AccountScreen(
     onBackClick: () -> Unit
 ) {
     val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
-    val selectedAssetTypeTab = viewModel.selectedAssetTypeTab.collectAsStateWithLifecycle().value
 
     Scaffold(
         topBar = {
@@ -118,9 +127,52 @@ fun AccountScreen(
                 }
             }
 
-            AssetTypeTabsRow(
-                selectedAssetTypeTab = selectedAssetTypeTab,
-                onAssetTypeTabSelected = viewModel::onAssetTypeTabSelected,
+            val pagerState = rememberPagerState(pageCount = 2)
+            AssetTypeTabsRow(pagerState = pagerState)
+            // on below line we are calling tabs content
+            // for displaying our page for each tab layout
+            TabsContent(
+                pagerState = pagerState,
+                viewModel = viewModel
+            )
+        }
+    }
+}
+
+@ExperimentalPagerApi
+@Composable
+fun TabsContent(
+    pagerState: PagerState,
+    viewModel: AccountViewModel
+) {
+    HorizontalPager(state = pagerState) { page ->
+        when (page) {
+            0 -> TokenContentScreen()
+            1 -> NftContentScreen(viewModel)
+        }
+    }
+}
+
+@Composable
+private fun TokenContentScreen() {
+    //TODO
+    Text(text = "Tokens")
+}
+
+@OptIn(ExperimentalLifecycleComposeApi::class)
+@Composable
+private fun NftContentScreen(viewModel: AccountViewModel) {
+    when (val nftState = viewModel.nftsUiState.collectAsStateWithLifecycle().value) {
+        is NftListUiState.Loading -> {
+            CircularProgressIndicator(
+                color = MaterialTheme.colors.onPrimary
+            )
+        }
+        is NftListUiState.Loaded -> {
+            CollapsableLazyColumn(
+                sections = nftState.nfts.flatMap {
+                    listOf(CollapsableSection(it))
+                }
             )
         }
     }
@@ -193,26 +245,30 @@ private fun AccountAddressView(
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun AssetTypeTabsRow(
-    selectedAssetTypeTab: AssetTypeTab,
-    onAssetTypeTabSelected: (AssetTypeTab) -> Unit
+    pagerState: PagerState
 ) {
-    val selectedIndex = AssetTypeTab.values().indexOfFirst { it == selectedAssetTypeTab }
+    val scope = rememberCoroutineScope()
     ScrollableTabRow(
-        selectedTabIndex = selectedIndex,
+        selectedTabIndex = pagerState.currentPage,
         divider = {}, /* Disable the built-in divider */
         edgePadding = 24.dp,
         indicator = emptyTabIndicator
     ) {
         AssetTypeTab.values().forEachIndexed { index, assetTypeTab ->
             Tab(
-                selected = index == selectedIndex,
-                onClick = { onAssetTypeTabSelected(assetTypeTab) }
+                selected = index == pagerState.currentPage,
+                onClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                }
             ) {
                 ChoiceChipContent(
                     text = stringResource(id = assetTypeTab.stringId),
-                    selected = index == selectedIndex,
+                    selected = index == pagerState.currentPage,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp)
                 )
             }
@@ -271,14 +327,15 @@ fun AccountScreenPreview() {
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun AssetTabRowPreview() {
     BabylonWalletTheme {
+        val pagerState = rememberPagerState(pageCount = 2)
         AssetTypeTabsRow(
-            selectedAssetTypeTab = AssetTypeTab.TOKEN_TAB,
-            onAssetTypeTabSelected = {}
+            pagerState = pagerState
         )
     }
 }
