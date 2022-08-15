@@ -14,25 +14,24 @@
 # update_fastlane
 
 desc "Deploy master branch"
-lane :beta do
+lane :alpha do
   gradle(task: "assemble")
   firebase_app_distribution(
-    app: "1:949773889795:android:522cafab4d3b91ae313936",
-    service_credentials_file: "/Users/duje/repos/babylon-wallet-android/fastlane/sa_key.json",
-    android_artifact_type: "APK"
+    app: env[FIREBASE_APP_ID],
+    groups: "alpha"
   )
 end
 
 desc "Deploy pre-release"
-lane :prerelease do
+lane :beta do
   gradle(task: "assemble")
   firebase_app_distribution(
-    app: "1:949773889795:android:522cafab4d3b91ae313936",
-    android_artifact_type: "APK"
+    app: env[FIREBASE_APP_ID],
+    groups: "beta"
   )
 end
 
 desc "Deploy release"
 lane :release do
-
+  gradle(task: "bundle")
 end

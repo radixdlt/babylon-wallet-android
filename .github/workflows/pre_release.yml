@@ -1,4 +1,4 @@
-name: "Prerelease"
+name: "RC"
 
 on:
   release:
@@ -28,14 +28,11 @@ jobs:
         id: firebase_keystore
         with:
           fileName: "service_account.json"
-          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - run: |
           export GOOGLE_APPLICATION_CREDENTIALS=${{ steps.firebase_keystore.outputs.filePath }}
           fastlane prerelease
-
-      # - uses: maierj/fastlane-action@v2.2.1
-      #   with:
-      #     lane: 'prerelease'
-      #   # env:
-      #   #   GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath  }}
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}

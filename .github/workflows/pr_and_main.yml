@@ -1,4 +1,4 @@
-name: "PR and master"
+name: "PR and Alpha"
 
 on:
   pull_request:
@@ -109,4 +109,4 @@ jobs:
 
   #     - uses: maierj/fastlane-action@v2.2.1
   #       with:
-  #         lane: 'beta'
+  #         lane: 'alpha'
