@@ -8,7 +8,7 @@ on:
 jobs:
   
   lint:
-    name: "Build and distribute"
+    name: "Build beta version and distribute"
     runs-on: ubuntu-latest
 
     steps:

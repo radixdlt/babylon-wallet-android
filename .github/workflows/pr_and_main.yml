@@ -94,7 +94,7 @@ jobs:
       ${{ github.ref == 'refs/heads/main' }} ||
       ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
 
-    name: "Build and distribute"
+    name: "Build alpha version and distribute"
     runs-on: ubuntu-latest
 
     needs:

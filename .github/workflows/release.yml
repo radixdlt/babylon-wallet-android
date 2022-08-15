@@ -15,4 +15,4 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: "Lint"
-        run: ./gradlew cleanAssemble
+        run: ./gradlew bundle
