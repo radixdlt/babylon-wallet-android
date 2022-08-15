@@ -24,7 +24,7 @@ end
 
 desc "Deploy pre-release"
 lane :beta do
-  gradle(task: "assemble")
+  gradle(task: "assembleDebug")
   firebase_app_distribution(
     app: ENV["FIREBASE_APP_ID"],
     groups: "beta"
