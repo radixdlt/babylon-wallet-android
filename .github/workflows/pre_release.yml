@@ -8,7 +8,7 @@ on:
 jobs:
   
   lint:
-    name: "Lint"
+    name: "Build and distribute"
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +32,9 @@ jobs:
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - name: Build and distribute
-        run: fastlane beta
+        run: |
+          env
+          fastlane beta
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}

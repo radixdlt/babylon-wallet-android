@@ -17,7 +17,7 @@ desc "Deploy master branch"
 lane :alpha do
   gradle(task: "assemble")
   firebase_app_distribution(
-    app: env[FIREBASE_APP_ID],
+    app: ENV["FIREBASE_APP_ID"],
     groups: "alpha"
   )
 end
@@ -26,7 +26,7 @@ desc "Deploy pre-release"
 lane :beta do
   gradle(task: "assemble")
   firebase_app_distribution(
-    app: env[FIREBASE_APP_ID],
+    app: ENV["FIREBASE_APP_ID"],
     groups: "beta"
   )
 end

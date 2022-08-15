@@ -89,24 +89,39 @@ jobs:
       - name: "Lint"
         run: ./gradlew assemble
 
-  # deploy_master:
-  #   if: |
-  #     ${{ github.ref == 'refs/heads/main' }} ||
-  #     ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+  deploy_alpha:
+    if: |
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
 
-  #   name: "Firebase upload"
-  #   runs-on: ubuntu-latest
+    name: "Build and distribute"
+    runs-on: ubuntu-latest
 
-  #   needs:
-  #     - static_analysis
+    needs:
+      - static_analysis
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - uses: ruby/setup-ruby@v1.114.0
-  #       with:
-  #         ruby-version: '2.7.2'
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@v1.114.0
+        with:
+          ruby-version: '2.7.2'
 
-  #     - uses: maierj/fastlane-action@v2.2.1
-  #       with:
-  #         lane: 'alpha'
+      - name: Install fastlane
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Decode Service account credentials
+        uses: timheuer/base64-to-file@v1
+        id: firebase_keystore
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
+
+      - name: Build and distribute
+        run: fastlane alpha
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
