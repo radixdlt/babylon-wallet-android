@@ -14,7 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: ruby/setup-ruby@v1.114.0
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@v1.114.0
         with:
           ruby-version: '2.7.2'
 
@@ -23,16 +24,15 @@ jobs:
           gem install bundler
           bundle install
 
-      - name: Decode Keystore File
+      - name: Decode Service account credentials
         uses: timheuer/base64-to-file@v1
         id: firebase_keystore
         with:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
-      - run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=${{ steps.firebase_keystore.outputs.filePath }}
-          fastlane prerelease
+      - name: Build and distribute
+        run: fastlane beta
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
