@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.account
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,12 +29,15 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @Composable
 fun TokenItemCard(
-    tokenUi: TokenUi
+    tokenUi: TokenUi,
+    isFirst: Boolean = false
 ) {
     Card(
         shape = RoundedCornerShape(10),
-        modifier = Modifier.fillMaxWidth(),
-        elevation = 16.dp,
+        modifier = if (isFirst) Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp) else Modifier.fillMaxWidth(),
+        elevation = if (isFirst) 16.dp else 1.dp,
         backgroundColor = MaterialTheme.colors.primary,
     ) {
         Row(
@@ -54,20 +57,27 @@ fun TokenItemCard(
                     .clip(CircleShape)
             )
             Text(
-                modifier = Modifier.padding(start = 10.dp),
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .weight(0.4f),
                 text = tokenUi.tokenItemTitle,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.weight(1f))
-            Column {
-                Text(
-                    text = tokenUi.tokenValue ?: "empty token value",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+            Column(Modifier.weight(0.6F)) {
                 Text(
                     text = tokenUi.tokenQuantity,
-                    fontSize = 14.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = tokenUi.tokenValue.orEmpty(),
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -86,6 +96,24 @@ fun TokenItemCardPreview() {
                 symbol = "symbol",
                 tokenQuantity = "token quantity",
                 tokenValue = "token value",
+                iconUrl = "icon url"
+            )
+        )
+    }
+}
+
+@Preview("default with long name and long values")
+@Preview("large font with long name and long values", fontScale = 2f)
+@Composable
+fun TokenItemCardWithLongNameAndLongValuesPreview() {
+    BabylonWalletTheme {
+        TokenItemCard(
+            tokenUi = TokenUi(
+                id = "id",
+                name = "a very long name that might cause troubles",
+                symbol = "",
+                tokenQuantity = "24986986408506858486358909573",
+                tokenValue = "299238528240295320u9532",
                 iconUrl = "icon url"
             )
         )
