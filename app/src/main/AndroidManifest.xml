@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.babylon.wallet.android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".BabylonApplication"
         android:allowBackup="false"
