@@ -171,7 +171,7 @@ private val mockEthereumAssetDto = AssetDto(
     resourceAddress = "bcfsafxy2fafsaffafsq2n0yrf2354dp83kksgder0wlh",
     tokenQuantity = 1F,
     marketPrice = 7853886F,
-    iconUrl = null,
+    iconUrl = "https://cdn-icons-png.flaticon.com/512/1777/1777889.png",
     nftClasses = null
 )
 
@@ -188,12 +188,49 @@ private val mockAndroidAssetDto = AssetDto(
     nftClasses = null
 )
 
+// asset for a fantastic token
+private val mockFantasticAssetDto = AssetDto(
+    type = "token",
+    id = "fan_id",
+    name = "",
+    symbol = "FAN",
+    resourceAddress = "bcfsar34r2fafsafnif330yrf2354gsd3kksgder0wlh",
+    tokenQuantity = 8484023F,
+    marketPrice = null,
+    iconUrl = null,
+    nftClasses = null
+)
+
+// asset for a ghost token
+private val mockGhostAssetDto = AssetDto(
+    type = "token",
+    id = "gho_id",
+    name = "Ghost",
+    symbol = "",
+    resourceAddress = "bcfsa2rf2fafsafnif330yrf2f43f4gsd3kksgder0wlh",
+    tokenQuantity = 6.96F,
+    marketPrice = null,
+    iconUrl = null,
+    nftClasses = null
+)
+
 val mockAssetDtoList = listOf(
     mockBitcoinAssetDto, // token
+    mockGhostAssetDto, // token
     mockRadixAssetDto, // token
     mockEthereumAssetDto, // token
+    mockFantasticAssetDto, // token
     mockNtfAssetDto, // nft
     mockAndroidAssetDto // token
+)
+
+val mockAssetWithoutXrdTokenDtoList = listOf(
+    mockEthereumAssetDto, // token
+    mockFantasticAssetDto, // token
+    mockGhostAssetDto, // token
+    mockNtfAssetDto, // nft
+    mockAndroidAssetDto, // token
+    mockBitcoinAssetDto // token
 )
 
 val mockTokenUiList = mockAssetDtoList.filter { assetDto ->

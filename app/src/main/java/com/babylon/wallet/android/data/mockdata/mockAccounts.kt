@@ -25,6 +25,6 @@ val mockAccountDtoList = listOf(
         hash = "0x559e5cb66035F67c441EAe6AF46A474278a932e1",
         value = 821495.92F,
         currency = "$",
-        assets = mockAssetDtoList
+        assets = mockAssetWithoutXrdTokenDtoList
     )
 ).shuffled()
