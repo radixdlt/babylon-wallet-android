@@ -1,0 +1,60 @@
+package com.babylon.wallet.android.presentation.account
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.data.mockdata.mockTokenUiList
+import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ListOfTokenItemsView(
+    hasXrdToken: Boolean = false,
+    tokenItems: List<TokenUi>,
+    modifier: Modifier,
+    lazyListState: LazyListState,
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 32.dp),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        state = lazyListState
+    ) {
+        if (hasXrdToken) {
+            stickyHeader {
+                TokenItemCard(tokenUi = tokenItems[0], isFirst = true)
+            }
+        }
+        items(
+            items = if (hasXrdToken) tokenItems.subList(1, tokenItems.size) else tokenItems, // TODO improve this
+            key = { item: TokenUi ->
+                item.id
+            },
+            itemContent = {
+                TokenItemCard(tokenUi = it)
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Preview("large font", fontScale = 2f, showBackground = true)
+@Composable
+fun ListOfTokenItemsPreview() {
+    BabylonWalletTheme {
+        ListOfTokenItemsView(
+            tokenItems = mockTokenUiList,
+            modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
+            lazyListState = LazyListState()
+        )
+    }
+}
