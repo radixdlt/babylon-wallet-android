@@ -16,5 +16,12 @@ data class TokenUi(
      * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2844753933/Rules+for+Display+of+Assets+in+Account+Detail+View
      *
      */
-    val tokenItemTitle: String get() = symbol ?: name.orEmpty()
+    val tokenItemTitle: String
+        get() = if (symbol?.isNotBlank() == true) {
+            symbol
+        } else if (name?.isNotBlank() == true) {
+            name
+        } else {
+            ""
+        }
 }
