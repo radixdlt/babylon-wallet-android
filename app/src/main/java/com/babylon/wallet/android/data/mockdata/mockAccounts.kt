@@ -7,7 +7,7 @@ val mockAccountDtoList = listOf(
         id = "a1",
         name = "My main account",
         hash = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
-        value = 19195.0F,
+        value = 19195.07F,
         currency = "$",
         assets = mockAssetDtoList
     ),
@@ -23,7 +23,7 @@ val mockAccountDtoList = listOf(
         id = "a2",
         name = "Only NFTs",
         hash = "0x559e5cb66035F67c441EAe6AF46A474278a932e1",
-        value = 12149455.0F,
+        value = 821495.92F,
         currency = "$",
         assets = mockAssetDtoList
     )
