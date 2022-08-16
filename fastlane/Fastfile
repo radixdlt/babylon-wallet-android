@@ -27,7 +27,7 @@ lane :beta do
   gradle(task: "assembleDebug")
   firebase_app_distribution(
     app: ENV["FIREBASE_APP_ID"],
-    release:notes: ENV["RC_NUMBER"].
+    release_notes: ENV["RC_NUMBER"].
     groups: "beta"
   )
 end
