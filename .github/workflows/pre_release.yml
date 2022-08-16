@@ -18,7 +18,7 @@ jobs:
         run: |
           env
         env:
-          RC_NUMBER: ${GITHUB_REF_NAME}
+          RC_NUMBER: $GITHUB_REF_NAME
 
       - name: Download Ruby (action)
         uses: ruby/setup-ruby@v1.114.0
