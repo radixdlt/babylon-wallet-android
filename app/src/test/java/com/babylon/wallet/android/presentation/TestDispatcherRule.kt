@@ -1,4 +1,4 @@
-package com.babylon.wallet.android
+package com.babylon.wallet.android.presentation
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
