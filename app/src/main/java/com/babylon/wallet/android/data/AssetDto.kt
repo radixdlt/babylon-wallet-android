@@ -18,7 +18,7 @@ data class AssetDto(
     val symbol: String?, // short name
     val resourceAddress: String,
     val tokenQuantity: Float, // if the type is "token"
-    val marketPrice: Float?,
+    val marketPrice: Float?, // this is treated as "token"/USD trading pair at the moment
     val iconUrl: String?, // icon for the token
     val nftClasses: List<NftClassDto>? // NFT types, and each NFT type has a list of actual NFTs
 ) {
@@ -67,7 +67,7 @@ data class AssetDto(
             name = name,
             symbol = symbol,
             tokenQuantity = tokenQuantity.toString(),
-            tokenValue = (marketPrice?.times(tokenQuantity)).toString(),
+            tokenValue = if (marketPrice == null) null else (marketPrice.times(tokenQuantity)).toString(),
             iconUrl = iconUrl
         )
     }
