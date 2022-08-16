@@ -129,11 +129,9 @@ fun AccountScreen(
 
             val pagerState = rememberPagerState(pageCount = 2)
             AssetTypeTabsRow(pagerState = pagerState)
-            // on below line we are calling tabs content
-            // for displaying our page for each tab layout
             TabsContent(
                 pagerState = pagerState,
-                viewModel = viewModel
+                accountUiState = state
             )
         }
     }
@@ -143,12 +141,12 @@ fun AccountScreen(
 @Composable
 fun TabsContent(
     pagerState: PagerState,
-    viewModel: AccountViewModel
+    accountUiState: AccountUiState
 ) {
     HorizontalPager(state = pagerState) { page ->
         when (page) {
             0 -> TokenContentScreen()
-            1 -> NftContentScreen(viewModel)
+            1 -> NftContentScreen(accountUiState)
         }
     }
 }
@@ -161,18 +159,19 @@ private fun TokenContentScreen() {
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
-private fun NftContentScreen(viewModel: AccountViewModel) {
-    when (val nftState = viewModel.nftsUiState.collectAsStateWithLifecycle().value) {
-        is NftListUiState.Loading -> {
+private fun NftContentScreen(accountUiState: AccountUiState) {
+    when (accountUiState) {
+        is AccountUiState.Loading -> {
             CircularProgressIndicator(
                 color = MaterialTheme.colors.onPrimary
             )
         }
-        is NftListUiState.Loaded -> {
+        is AccountUiState.Loaded -> {
+            val sections = accountUiState.account.nftsSortedByName.map {
+                CollapsableSection(it)
+            }
             CollapsableLazyColumn(
-                sections = nftState.nfts.flatMap {
-                    listOf(CollapsableSection(it))
-                }
+                sections = sections
             )
         }
     }

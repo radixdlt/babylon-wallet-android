@@ -103,11 +103,16 @@ fun CollapsableParentItemView(
                     modifier = Modifier.padding(horizontal = 18.dp, vertical = 0.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        nftName!!,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
+                    nftName?.let { name ->
+                        if (name.isNotEmpty()) {
+                            Text(
+                                name,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 2
+                            )
+                        }
+                    }
                     Text(
                         "$nftsInPossession of $nftsInCirculation",
                         color = RadixGrey2,

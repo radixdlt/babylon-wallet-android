@@ -8,6 +8,33 @@ import com.babylon.wallet.android.domain.AssetType
 // list of NFT assets
 private val mockNftDtoList = listOf(
     AssetDto.NftClassDto(
+        classId = "puppy",
+        name = "Puppy first",
+        iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        nftsInCirculation = "20000",
+        nftsInPossession = "8",
+        nfts = listOf(
+            AssetDto.NftClassDto.NftDto(
+                id = "puppy_nft_id",
+                name = "ghosty",
+                iconUrl = null,
+                nftsMetadata = listOf(
+                    Pair("Section", "E"),
+                    Pair("Seat", "15D")
+                )
+            ),
+            AssetDto.NftClassDto.NftDto(
+                id = "puppy_small_nft_id",
+                name = "Paw",
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/1273/1273729.png",
+                nftsMetadata = listOf(
+                    Pair("Section", "E"),
+                    Pair("Seat", "15D")
+                )
+            )
+        )
+    ),
+    AssetDto.NftClassDto(
         classId = "arsenal_nft_id",
         name = "Arsenal",
         iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",

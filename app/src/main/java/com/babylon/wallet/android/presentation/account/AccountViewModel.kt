@@ -10,15 +10,10 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
-import com.babylon.wallet.android.presentation.model.NftClassUi
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,19 +30,9 @@ class AccountViewModel @Inject constructor(
     val accountUiState = _accountUiState.asStateFlow()
 
     // Holds our currently selected asset type tab
+    // I leave it here in case we will later needed. For this stage, no need to go through viewmodel
     private val _selectedAssetTypeTab = MutableStateFlow(AssetTypeTab.TOKEN_TAB)
     val selectedAssetTypeTab = _selectedAssetTypeTab.asStateFlow()
-
-    val nftsUiState: StateFlow<NftListUiState> = mainViewRepository
-        .getNftList()
-        .map {
-            NftListUiState.Loaded(it)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = NftListUiState.Loading
-        )
 
     init {
         viewModelScope.launch {
@@ -74,11 +59,6 @@ class AccountViewModel @Inject constructor(
 sealed class AccountUiState {
     object Loading : AccountUiState()
     data class Loaded(val account: AccountUi) : AccountUiState()
-}
-
-sealed class NftListUiState {
-    object Loading : NftListUiState()
-    data class Loaded(val nfts: List<NftClassUi>) : NftListUiState()
 }
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {
