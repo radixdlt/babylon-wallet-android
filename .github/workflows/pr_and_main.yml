@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Lint"
+      - name: "Run Lint"
         run: ./gradlew lintDebug
 
   unit_tests:
@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Lint"
+      - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
 
   snapshot_tests:
@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Lint"
+      - name: "Run snapshot tests"
         run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   ui_tests:
@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Lint"
+      - name: "Run UI tests"
         run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   static_analysis:
@@ -71,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Lint"
+      - name: "Run static analysis"
         run: ./gradlew detektMain
 
   build:
