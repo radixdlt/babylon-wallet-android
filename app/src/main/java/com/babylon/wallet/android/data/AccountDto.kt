@@ -50,39 +50,14 @@ data class AccountDto(
     // We might move this later to the domain layer and keep there the business logic!
     // AccountDto => Account, Token, Nft + sorting => TokenUi, NftUi, ...
     private fun sortTokens(tokensList: List<AssetDto>): List<TokenUi> {
-        val indexOfXrdToken = tokensList.indexOfFirst { assetDto ->
-            // TODO when we have the actual backend we'll update this
-            assetDto.symbol == "XRD" && assetDto.name == "Radix"
-        }
-
-        return if (indexOfXrdToken > 0) {
-            val tempTokensList = tokensList.toMutableList()
-            val xrdToken = tempTokensList.removeAt(indexOfXrdToken)
-
-            val tokensListWithoutXrd = tempTokensList.map { assetDto ->
-                assetDto.toTokenUiModel()
-            }.subList(0, tempTokensList.size)
-
-            val tokensListSortedByTokenValueWithoutXrd = tokensListWithoutXrd
-                .sortedWith(
-                    compareBy(nullsLast()) { tokenUi ->
-                        tokenUi.tokenValue
-                    }
-                )
-
-            val tokensListSortedByTokenValueWithXrdFirst = tokensListSortedByTokenValueWithoutXrd.toMutableList()
-            tokensListSortedByTokenValueWithXrdFirst.add(0, xrdToken.toTokenUiModel())
-            tokensListSortedByTokenValueWithXrdFirst
-        } else {
-            val tempTokensList = tokensList.map { assetDto ->
-                assetDto.toTokenUiModel()
-            }
-            tempTokensList.sortedWith(
-                compareBy(nullsLast()) { tokenUi ->
-                    tokenUi.tokenValue
-                }
+        return tokensList.toMutableList().sortedWith(
+            compareBy(
+                { it.symbol == "XRD" && it.name == "Radix" },
+                { it.marketPrice?.times(it.tokenQuantity) }
             )
-        }
+        ).map {
+            it.toTokenUiModel()
+        }.reversed()
     }
 
     // TODO the format api returns the symbol alongside the amount,
