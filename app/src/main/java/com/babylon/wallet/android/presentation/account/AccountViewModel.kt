@@ -4,15 +4,12 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.util.Log
 import androidx.annotation.StringRes
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
-import com.babylon.wallet.android.presentation.model.NftClassUi
-import com.babylon.wallet.android.presentation.model.TokenUi
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,11 +28,6 @@ class AccountViewModel @Inject constructor(
 
     private val _accountUiState: MutableStateFlow<AccountUiState> = MutableStateFlow(AccountUiState.Loading)
     val accountUiState = _accountUiState.asStateFlow()
-
-    // Holds our currently selected asset type tab
-    // I leave it here in case we will later needed. For this stage, no need to go through viewmodel
-    private val _selectedAssetTypeTab = MutableStateFlow(AssetTypeTab.TOKEN_TAB)
-    val selectedAssetTypeTab = _selectedAssetTypeTab.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(true)
     val isRefreshing = _isRefreshing.asStateFlow()
@@ -62,10 +54,6 @@ class AccountViewModel @Inject constructor(
     fun onCopyAccountAddress(hash: String) {
         val clipData = ClipData.newPlainText("accountHash", hash)
         clipboardManager.setPrimaryClip(clipData)
-    }
-
-    fun onAssetTypeTabSelected(assetType: AssetTypeTab) {
-        _selectedAssetTypeTab.value = assetType
     }
 }
 
