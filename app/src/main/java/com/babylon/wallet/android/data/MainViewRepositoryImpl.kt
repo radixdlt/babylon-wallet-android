@@ -2,10 +2,11 @@ package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,7 +14,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
-class MainViewRepositoryImpl : MainViewRepository {
+@Suppress("MagicNumber") // TODO this is temporarily here.
+class MainViewRepositoryImpl(
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : MainViewRepository {
 
     override fun getWallet(): Flow<WalletData> {
         return flow {
@@ -24,7 +28,7 @@ class MainViewRepositoryImpl : MainViewRepository {
                     "320409"
                 )
             )
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(ioDispatcher)
     }
 
     override fun getAccounts(): Flow<List<AccountUi>> {
@@ -35,11 +39,11 @@ class MainViewRepositoryImpl : MainViewRepository {
                     accountDto.toUiModel()
                 }
             )
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(ioDispatcher)
     }
 
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             delay(Random.nextLong(500, 1000))
             mockAccountDtoList
                 .map { accountDto ->
