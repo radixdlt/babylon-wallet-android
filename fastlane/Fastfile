@@ -13,12 +13,13 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
-desc "Deploy master branch"
-lane :alpha do
+desc "Manual trigger"
+lane :manual do
   gradle(task: "assemble")
   firebase_app_distribution(
     app: ENV["FIREBASE_APP_ID"],
-    groups: "alpha"
+    release_notes: ENV["RELEASE_NOTES"],
+    groups: ENV["GROUPS"]
   )
 end
 

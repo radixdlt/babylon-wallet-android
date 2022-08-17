@@ -2,6 +2,15 @@ name: "Manual trigger to distribute"
 
 on:
   workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "(Optional) Release notes for version you want to distribute"
+        required: false
+        default: ''
+      groups:
+        description: "(Optional) Name of the group you want to notify about new version"
+        required: false
+        default: ''
 
 jobs:
 
@@ -13,11 +22,11 @@ jobs:
     name: "Build and distribute"
     runs-on: ubuntu-latest
 
-    needs:
-      - static_analysis
-
     steps:
       - uses: actions/checkout@v2
+
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1.2.1
 
       - name: Download Ruby (action)
         uses: ruby/setup-ruby@v1.114.0
@@ -37,7 +46,9 @@ jobs:
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - name: Build and distribute
-        run: fastlane alpha
+        run: fastlane manual
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+          GROUPS: ${{ github.event.inputs.groups }}
