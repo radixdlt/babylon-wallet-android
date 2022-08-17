@@ -8,39 +8,6 @@ on:
 
 jobs:
 
-  test:
-    name: "Build beta version and distribute"
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Download Ruby (action)
-        uses: ruby/setup-ruby@v1.114.0
-        with:
-          ruby-version: '2.7.2'
-
-      - name: Install fastlane
-        run: |
-          gem install bundler
-          bundle install
-
-      - name: Decode Service account credentials
-        uses: timheuer/base64-to-file@v1
-        id: firebase_keystore
-        with:
-          fileName: "service_account.json"
-          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
-
-      - name: Build and distribute
-        run: |
-          env
-          fastlane beta
-        env:
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
-          RC_NUMBER: ${{ github.ref_name }}
-
   lint:
     name: "Lint"
     runs-on: ubuntu-latest
@@ -113,14 +80,21 @@ jobs:
     name: "Build PR"
     runs-on: ubuntu-latest
 
-    needs:
-      - static_analysis
+    # needs:
+    #   - static_analysis
 
     steps:
       - uses: actions/checkout@v2
 
       - name: "Lint"
         run: ./gradlew assemble
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.pull_request.number }}.zip
+          path: app/build/outputs/apk/debug/apk-debug.apk
+          retention-days: 1
 
   deploy_alpha:
     if: |
