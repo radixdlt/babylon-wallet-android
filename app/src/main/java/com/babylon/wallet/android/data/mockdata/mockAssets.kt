@@ -1,3 +1,6 @@
+// this is a file just for mock data, we don't care about its formatting
+@file:Suppress("MaximumLineLength", "MaxLineLength")
+
 package com.babylon.wallet.android.data.mockdata
 
 import com.babylon.wallet.android.data.AssetDto
