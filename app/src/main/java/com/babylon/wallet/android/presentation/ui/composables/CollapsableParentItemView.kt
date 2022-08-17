@@ -132,12 +132,40 @@ fun CollapsableParentItemView(
 @Composable
 fun CollapsableParentItemPreview() {
     CollapsableParentItemView(
-        "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-        "Rypto Punks",
-        "300,000",
-        "1",
-        3,
-        false,
-        stringResource(id = R.string.show_plus)
+        nftImageUrl = "url",
+        nftName = "Rypto Punks",
+        nftsInCirculation = "300,000",
+        nftsInPossession = "1",
+        nftChildCount = 3,
+        collapsed = false,
+        arrowText = stringResource(id = R.string.show_plus)
+    ) { }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ExpandedParentItemPreview() {
+    CollapsableParentItemView(
+        nftImageUrl = "url",
+        nftName = "Rypto Punks",
+        nftsInCirculation = "300,000",
+        nftsInPossession = "1",
+        nftChildCount = 3,
+        collapsed = true,
+        arrowText = stringResource(id = R.string.show_plus)
+    ) { }
+}
+
+@Preview(fontScale = 2f, showBackground = true)
+@Composable
+fun CollapsableParentItemWithLargeFontPreview() {
+    CollapsableParentItemView(
+        nftImageUrl = "url",
+        nftName = "Rypto Punks",
+        nftsInCirculation = "300,000",
+        nftsInPossession = "1",
+        nftChildCount = 3,
+        collapsed = false,
+        arrowText = stringResource(id = R.string.show_plus)
     ) { }
 }
