@@ -14,5 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1.2.1
+        
       - name: "Lint"
         run: ./gradlew bundle
