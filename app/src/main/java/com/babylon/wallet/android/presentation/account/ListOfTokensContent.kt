@@ -17,8 +17,8 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ListOfTokenItemsView(
-    hasXrdToken: Boolean = false,
+fun ListOfTokensContent(
+    xrdTokenUi: TokenUi? = null,
     tokenItems: List<TokenUi>,
     modifier: Modifier,
     lazyListState: LazyListState,
@@ -29,13 +29,13 @@ fun ListOfTokenItemsView(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         state = lazyListState
     ) {
-        if (hasXrdToken) {
+        if (xrdTokenUi != null) {
             stickyHeader {
-                TokenItemCard(tokenUi = tokenItems[0], isFirst = true)
+                TokenItemCard(tokenUi = xrdTokenUi, isFirst = true)
             }
         }
         items(
-            items = if (hasXrdToken) tokenItems.subList(1, tokenItems.size) else tokenItems, // TODO improve this
+            items = tokenItems,
             key = { item: TokenUi ->
                 item.id
             },
@@ -51,7 +51,7 @@ fun ListOfTokenItemsView(
 @Composable
 fun ListOfTokenItemsPreview() {
     BabylonWalletTheme {
-        ListOfTokenItemsView(
+        ListOfTokensContent(
             tokenItems = mockTokenUiList,
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             lazyListState = LazyListState()
