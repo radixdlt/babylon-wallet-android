@@ -15,9 +15,6 @@ on:
 jobs:
 
   deploy_alpha:
-    if: |
-      ${{ github.ref == 'refs/heads/main' }} ||
-      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
 
     name: "Build and distribute"
     runs-on: ubuntu-latest
