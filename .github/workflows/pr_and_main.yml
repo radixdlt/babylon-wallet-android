@@ -75,7 +75,7 @@ jobs:
         run: ./gradlew detektMain
 
   build_pr:
-    if: ${{ github.event.name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' }}
 
     name: "Build PR"
     runs-on: ubuntu-latest
@@ -92,7 +92,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.pull_request.number }}.zip
+          name: ${{ github.event.number }}.zip
           path: app/build/outputs/apk/debug/apk-debug.apk
           retention-days: 1
 
