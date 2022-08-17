@@ -7,7 +7,49 @@ on:
       - DO-782-ci-cd
 
 jobs:
-  
+
+  test:
+    name: "Build beta version and distribute"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and distribute
+        run: |
+          env
+          echo $RC_NUMBER
+          echo $RC_NUMBER_2
+        env:
+          RC_NUMBER: $GITHUB_REF_NAME
+          RC_NUMBER_2: ${{ github.ref_name }}
+
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@v1.114.0
+        with:
+          ruby-version: '2.7.2'
+
+      - name: Install fastlane
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Decode Service account credentials
+        uses: timheuer/base64-to-file@v1
+        id: firebase_keystore
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
+
+      - name: Build and distribute
+        run: |
+          env
+          fastlane beta
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RC_NUMBER: ${GITHUB_REF_NAME}
+
   lint:
     name: "Lint"
     runs-on: ubuntu-latest
