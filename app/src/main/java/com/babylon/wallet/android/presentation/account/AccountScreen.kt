@@ -143,7 +143,10 @@ fun TabsContent(
     pagerState: PagerState,
     accountUiState: AccountUiState
 ) {
-    HorizontalPager(state = pagerState) { page ->
+    HorizontalPager(
+        state = pagerState,
+        dragEnabled = false
+    ) { page ->
         when (page) {
             0 -> TokenContentScreen()
             1 -> NftContentScreen(accountUiState)
@@ -154,7 +157,7 @@ fun TabsContent(
 @Composable
 private fun TokenContentScreen() {
     //TODO
-    Text(text = "Tokens")
+    Text(text = "Tokens", modifier = Modifier.fillMaxWidth())
 }
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
