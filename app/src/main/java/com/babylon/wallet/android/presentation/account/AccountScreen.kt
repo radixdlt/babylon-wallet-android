@@ -157,7 +157,7 @@ private fun AccountContent(
         }
 
         Button(onClick = { /*TODO*/ }) {
-            Text(text = "Transfer")
+            Text(text = stringResource(id = R.string.account_transfer_button_title))
         }
 
         AssetTypeTabsRow(pagerState = pagerState)
