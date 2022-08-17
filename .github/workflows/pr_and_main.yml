@@ -75,10 +75,9 @@ jobs:
       - name: "Lint"
         run: ./gradlew detektMain
 
-  build_pr:
-    if: ${{ github.event_name == 'pull_request' }}
+  build:
 
-    name: "Build PR"
+    name: "Build"
     runs-on: ubuntu-latest
 
     # needs:
