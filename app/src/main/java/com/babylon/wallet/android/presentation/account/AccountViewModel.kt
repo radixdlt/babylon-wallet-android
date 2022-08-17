@@ -30,6 +30,7 @@ class AccountViewModel @Inject constructor(
     val accountUiState = _accountUiState.asStateFlow()
 
     // Holds our currently selected asset type tab
+    // I leave it here in case we will later needed. For this stage, no need to go through viewmodel
     private val _selectedAssetTypeTab = MutableStateFlow(AssetTypeTab.TOKEN_TAB)
     val selectedAssetTypeTab = _selectedAssetTypeTab.asStateFlow()
 
