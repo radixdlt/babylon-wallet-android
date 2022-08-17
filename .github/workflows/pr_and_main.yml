@@ -15,15 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build and distribute
-        run: |
-          env
-          echo $RC_NUMBER
-          echo $RC_NUMBER_2
-        env:
-          RC_NUMBER: $GITHUB_REF_NAME
-          RC_NUMBER_2: ${{ github.ref_name }}
-
       - name: Download Ruby (action)
         uses: ruby/setup-ruby@v1.114.0
         with:
@@ -48,7 +39,7 @@ jobs:
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
-          RC_NUMBER: ${GITHUB_REF_NAME}
+          RC_NUMBER: ${{ github.ref_name }}
 
   lint:
     name: "Lint"
