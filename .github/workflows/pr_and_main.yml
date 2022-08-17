@@ -87,13 +87,15 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: "Lint"
-        run: ./gradlew assemble
+        run: |
+          ./gradlew assemble
+          ls -lah app/build/**/*
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.event.number }}.zip
-          path: app/build/outputs/apk/debug/apk-debug.apk
+          path: app/build/outputs/apk/debug/
           retention-days: 1
 
   deploy_alpha:
