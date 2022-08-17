@@ -27,13 +27,17 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.model.TokenUi
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
+private const val CORNER_SHAPE_PERCENT = 10
+private const val WEIGHT_OF_TOKEN_NAME = 0.4F
+private const val WEIGHT_OF_TOKEN_VALUE = 0.6F
+
 @Composable
 fun TokenItemCard(
     tokenUi: TokenUi,
     isFirst: Boolean = false
 ) {
     Card(
-        shape = RoundedCornerShape(10),
+        shape = RoundedCornerShape(CORNER_SHAPE_PERCENT),
         modifier = if (isFirst) Modifier
             .fillMaxWidth()
             .padding(bottom = 10.dp) else Modifier.fillMaxWidth(),
@@ -59,13 +63,13 @@ fun TokenItemCard(
             Text(
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
-                    .weight(0.4f),
+                    .weight(WEIGHT_OF_TOKEN_NAME),
                 text = tokenUi.tokenItemTitle,
                 fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Column(Modifier.weight(0.6F)) {
+            Column(Modifier.weight(WEIGHT_OF_TOKEN_VALUE)) {
                 Text(
                     text = tokenUi.tokenQuantity,
                     fontWeight = FontWeight.Bold,
