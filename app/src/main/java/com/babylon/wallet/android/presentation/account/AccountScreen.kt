@@ -33,7 +33,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -56,11 +58,12 @@ import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyCol
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalPagerApi::class)
@@ -108,9 +111,8 @@ fun AccountScreen(
                     content = {
                         AccountContent(
                             account = state.account,
+                            pagerState = pagerState,
                             onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
-                            selectedAssetTypeTab = selectedAssetTypeTab,
-                            onAssetTypeTabSelected = viewModel::onAssetTypeTabSelected,
                             tokenLazyListState = tokenLazyListState,
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         )
@@ -121,13 +123,13 @@ fun AccountScreen(
     }
 }
 
+@ExperimentalPagerApi
 @Composable
 private fun AccountContent(
     account: AccountUi,
+    pagerState: PagerState,
     onCopyAccountAddressClick: (String) -> Unit,
-    onAssetTypeTabSelected: (AssetTypeTab) -> Unit,
     tokenLazyListState: LazyListState,
-    selectedAssetTypeTab: AssetTypeTab,
     modifier: Modifier
 ) {
     Column(
@@ -159,55 +161,51 @@ private fun AccountContent(
         }
 
         AssetTypeTabsRow(pagerState = pagerState)
-        TabsContent(
-            pagerState = pagerState,
-            accountUiState = state
-        )
 
-        ListOfTokenItemsView(
-            hasXrdToken = account.hasXrdToken,
-            tokenItems = account.tokens,
-            modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
-            lazyListState = tokenLazyListState
+        AssetsContent(
+            pagerState = pagerState,
+            tokenLazyListState = tokenLazyListState,
+            account = account
         )
     }
 }
 
+@ExperimentalPagerApi
 @Composable
-fun TabsContent(
+fun AssetsContent(
     pagerState: PagerState,
-    accountUiState: AccountUiState
+    account: AccountUi,
+    tokenLazyListState: LazyListState
 ) {
     HorizontalPager(
         state = pagerState,
         dragEnabled = false
     ) { page ->
         when (page) {
-            0 -> TokenContentScreen()
-            1 -> NftContentScreen(accountUiState)
-        }
-    }
-}
+            0 -> {
+                val xrdToken = if (account.hasXrdToken) account.tokens[0] else null
+                val tokensToShow = if (account.hasXrdToken) {
+                    account.tokens.subList(1, account.tokens.size)
+                } else {
+                    account.tokens
+                }
 
-@Composable
-private fun TokenContentScreen() {
-    //TODO
-    Text(text = "Tokens", modifier = Modifier.fillMaxWidth())
-}
-
-@Composable
-private fun NftContentScreen(accountUiState: AccountUiState) {
-    when (accountUiState) {
-        is AccountUiState.Loading -> {
-            CircularProgressIndicator(
-                color = MaterialTheme.colors.onPrimary
-            )
-        }
-        is AccountUiState.Loaded -> {
-            val sections = accountUiState.account.nftsSortedByName
-            CollapsableLazyColumn(
-                sections = sections
-            )
+                ListOfTokensContent(
+                    xrdTokenUi = xrdToken,
+                    tokenItems = tokensToShow,
+                    modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
+                    lazyListState = tokenLazyListState
+                )
+            }
+            1 -> {
+                val nftSections = account.nfts
+                val collapsedState = remember(nftSections) { nftSections.map { true }.toMutableStateList() }
+                CollapsableLazyColumn(
+                    collapsedState = collapsedState,
+                    sections = nftSections,
+                    modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
+                )
+            }
         }
     }
 }
@@ -279,6 +277,7 @@ private fun AccountAddressView(
     }
 }
 
+@ExperimentalPagerApi
 @Composable
 private fun AssetTypeTabsRow(
     pagerState: PagerState
@@ -360,6 +359,7 @@ fun AccountScreenPreview() {
     }
 }
 
+@ExperimentalPagerApi
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
