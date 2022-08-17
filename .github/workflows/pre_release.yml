@@ -1,4 +1,4 @@
-name: "RC"
+name: "Pre-release (RC)"
 
 on:
   release:

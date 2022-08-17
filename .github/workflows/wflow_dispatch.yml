@@ -1,4 +1,4 @@
-name: "PR and Alpha"
+name: "Manual trigger to distribute"
 
 on:
   workflow_dispatch:
