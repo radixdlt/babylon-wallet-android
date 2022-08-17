@@ -1,0 +1,54 @@
+name: "Manual trigger to distribute"
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "(Optional) Release notes for version you want to distribute"
+        required: false
+        default: ''
+      groups:
+        description: "(Optional) Name of the group you want to notify about new version"
+        required: false
+        default: ''
+
+jobs:
+
+  deploy_alpha:
+    if: |
+      ${{ github.ref == 'refs/heads/main' }} ||
+      ${{ github.ref == 'refs/heads/DO-782-ci-cd' }}
+
+    name: "Build and distribute"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1.2.1
+
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@v1.114.0
+        with:
+          ruby-version: '2.7.2'
+
+      - name: Install fastlane
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Decode Service account credentials
+        uses: timheuer/base64-to-file@v1
+        id: firebase_keystore
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
+
+      - name: Build and distribute
+        run: fastlane manual
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+          GROUPS: ${{ github.event.inputs.groups }}

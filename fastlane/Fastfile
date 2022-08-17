@@ -1,0 +1,39 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+desc "Manual trigger"
+lane :manual do
+  gradle(task: "assemble")
+  firebase_app_distribution(
+    app: ENV["FIREBASE_APP_ID"],
+    release_notes: ENV["RELEASE_NOTES"],
+    groups: ENV["GROUPS"]
+  )
+end
+
+desc "Deploy pre-release"
+lane :beta do
+  gradle(task: "assembleDebug")
+  firebase_app_distribution(
+    app: ENV["FIREBASE_APP_ID"],
+    release_notes: ENV["RC_NUMBER"],
+    groups: "beta"
+  )
+end
+
+desc "Deploy release"
+lane :release do
+  gradle(task: "bundle")
+end
