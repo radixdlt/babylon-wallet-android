@@ -48,7 +48,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
-import com.babylon.wallet.android.presentation.ui.composables.CollapsableSection
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
@@ -68,6 +67,7 @@ fun AccountScreen(
     onBackClick: () -> Unit
 ) {
     val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
+    val pagerState = rememberPagerState(pageCount = 2)
 
     Scaffold(
         topBar = {
@@ -127,7 +127,6 @@ fun AccountScreen(
                 }
             }
 
-            val pagerState = rememberPagerState(pageCount = 2)
             AssetTypeTabsRow(pagerState = pagerState)
             TabsContent(
                 pagerState = pagerState,
@@ -160,7 +159,6 @@ private fun TokenContentScreen() {
     Text(text = "Tokens", modifier = Modifier.fillMaxWidth())
 }
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 private fun NftContentScreen(accountUiState: AccountUiState) {
     when (accountUiState) {
@@ -170,9 +168,7 @@ private fun NftContentScreen(accountUiState: AccountUiState) {
             )
         }
         is AccountUiState.Loaded -> {
-            val sections = accountUiState.account.nftsSortedByName.map {
-                CollapsableSection(it)
-            }
+            val sections = accountUiState.account.nftsSortedByName
             CollapsableLazyColumn(
                 sections = sections
             )

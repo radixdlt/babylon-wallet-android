@@ -16,21 +16,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 
 @Composable
 fun CollapsableChildItemView(
     bottomCornersRounded: Boolean = false,
-    nftId: String = "238589090",
-    imageUrl: String? = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
+    nftId: String,
+    imageUrl: String?,
     nftMetadata: List<Pair<String, String>> = emptyList()
 ) {
     val bottomCorners = if (bottomCornersRounded) 8.dp else 0.dp
@@ -47,12 +46,9 @@ fun CollapsableChildItemView(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .error(R.drawable.img_placeholder)
-                        .apply(block = fun ImageRequest.Builder.() {
-                            placeholder(R.drawable.img_placeholder)
-                        }).build()
+                    model = imageUrl,
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    fallback = painterResource(id = R.drawable.img_placeholder)
                 ),
                 contentDescription = "Nft image",
                 contentScale = ContentScale.FillWidth,
@@ -98,6 +94,8 @@ fun CollapsableChildItemView(
 @Composable
 fun CollapsableChildItemPreview() {
     CollapsableChildItemView(
+        nftId = "123",
+        imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
         nftMetadata = listOf(
             Pair("Type", "Devin Booker - Dunk"),
             Pair("Type", "Reggie Jackson - Jump Shot")

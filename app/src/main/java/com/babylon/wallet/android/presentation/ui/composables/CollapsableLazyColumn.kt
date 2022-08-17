@@ -9,11 +9,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.mockdata.mockNftUiList
 import com.babylon.wallet.android.presentation.model.NftClassUi
 
 @Composable
 fun CollapsableLazyColumn(
-    sections: List<CollapsableSection>,
+    sections: List<NftClassUi>,
     modifier: Modifier = Modifier
 ) {
     val collapsedState = remember(sections) { sections.map { true }.toMutableStateList() }
@@ -22,11 +23,11 @@ fun CollapsableLazyColumn(
             val collapsed = collapsedState[i]
             item(key = "header_$i") {
                 CollapsableParentItemView(
-                    nftImageUrl = dataItem.nftClass.iconUrl,
-                    nftName = dataItem.nftClass.name,
-                    nftsInCirculation = dataItem.nftClass.nftsInCirculation,
-                    nftsInPossession = dataItem.nftClass.nftsInPossession,
-                    nftChildCount = dataItem.nftClass.nft.size,
+                    nftImageUrl = dataItem.iconUrl,
+                    nftName = dataItem.name,
+                    nftsInCirculation = dataItem.nftsInCirculation,
+                    nftsInPossession = dataItem.nftsInPossession,
+                    nftChildCount = dataItem.nft.size,
                     collapsed = collapsed,
                     arrowText = if (collapsed)
                         stringResource(id = R.string.show_plus)
@@ -37,9 +38,9 @@ fun CollapsableLazyColumn(
                 }
             }
             if (!collapsed) {
-                items(dataItem.nftClass.nft) { row ->
+                items(dataItem.nft) { row ->
                     var bottomCornersRounded = false
-                    if (dataItem.nftClass.nft.last() == row) {
+                    if (dataItem.nft.last() == row) {
                         bottomCornersRounded = true
                     }
                     CollapsableChildItemView(
@@ -58,64 +59,6 @@ fun CollapsableLazyColumn(
 @Composable
 fun CollapsableLazyColumnPreview() {
     CollapsableLazyColumn(
-        sections = listOf(
-            CollapsableSection(
-                nftClass = NftClassUi(
-                    name = "NBA Top Shot",
-                    nftsInPossession = "1",
-                    nftsInCirculation = "250000",
-                    iconUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                    nft = listOf(
-                        NftClassUi.NftUi(
-                            id = "238589090",
-                            imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                            nftsMetadata = listOf(Pair("Type", "Devin Booker - Dunk"))
-                        )
-                    )
-                )
-            ),
-            CollapsableSection(
-                nftClass = NftClassUi(
-                    name = "NBA Top 2222",
-                    nftsInPossession = "3",
-                    nftsInCirculation = "250000",
-                    iconUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                    nft = listOf(
-                        NftClassUi.NftUi(
-                            id = "238589090",
-                            imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                            nftsMetadata = listOf(Pair("Type", "Devin Booker - Dunk"))
-                        ),
-                        NftClassUi.NftUi(
-                            id = "238543534",
-                            imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                            nftsMetadata = listOf(Pair("Type", "James Bond"))
-                        ),
-                        NftClassUi.NftUi(
-                            id = "342402342",
-                            imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                            nftsMetadata = listOf(Pair("Type", "Kevin home alone"))
-                        )
-                    )
-                )
-            ),
-            CollapsableSection(
-                nftClass = NftClassUi(
-                    name = "NBA Top 3333",
-                    nftsInPossession = "11",
-                    nftsInCirculation = "250000",
-                    iconUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                    nft = listOf(
-                        NftClassUi.NftUi(
-                            id = "238589090",
-                            imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
-                            nftsMetadata = listOf(Pair("Type", "Devin Booker - Dunk"))
-                        )
-                    )
-                )
-            ),
-        )
+        sections = mockNftUiList
     )
 }
-
-data class CollapsableSection(val nftClass: NftClassUi)
