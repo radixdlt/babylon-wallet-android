@@ -7,59 +7,58 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-private const val UPSTREAM_FLOW_ACTIVE_PERIOD = 5_000L
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    mainViewRepository: MainViewRepository,
+    private val mainViewRepository: MainViewRepository,
     private val clipboardManager: ClipboardManager
 ) : ViewModel() {
 
-    val walletUiState: StateFlow<WalletUiState> = mainViewRepository
-        .getWallet()
-        .map {
-            WalletUiState.Loaded(it)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(UPSTREAM_FLOW_ACTIVE_PERIOD),
-            initialValue = WalletUiState.Loading
-        )
+    private val _isRefreshing = MutableStateFlow(true)
+    val isRefreshing = _isRefreshing.asStateFlow()
 
-    val accountUiState: StateFlow<AccountsUiState> = mainViewRepository
-        .getAccounts()
-        .map {
-            AccountsUiState.Loaded(it)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(UPSTREAM_FLOW_ACTIVE_PERIOD),
-            initialValue = AccountsUiState.Loading
-        )
+    private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState.Loading)
+    val walletUiState = _walletUiState.asStateFlow()
 
-    fun onCopy(hashValue: String) {
+    init {
+        refresh(fromUser = false)
+    }
+
+    fun refresh(fromUser: Boolean = true) {
+        viewModelScope.launch {
+            _isRefreshing.emit(fromUser)
+            val wallet = mainViewRepository.getWallet()
+            val accounts = mainViewRepository.getAccounts()
+            _walletUiState.emit(
+                WalletUiState.Loaded(
+                    wallet = wallet,
+                    accounts = accounts
+                )
+            )
+            if (fromUser) _isRefreshing.emit(false)
+        }
+    }
+
+    fun onCopyAccountAddress(hashValue: String) {
         val clipData = ClipData.newPlainText("accountHash", hashValue)
         clipboardManager.setPrimaryClip(clipData)
     }
+}
+
+sealed interface WalletUiState {
+    object Loading : WalletUiState
+
+    data class Loaded(
+        val wallet: WalletData,
+        val accounts: List<AccountUi>
+    ) : WalletUiState
 }
 
 data class WalletData(
     val currency: String,
     val amount: String
 )
-
-sealed class WalletUiState {
-    object Loading : WalletUiState()
-    data class Loaded(val walletData: WalletData) : WalletUiState()
-}
-
-sealed class AccountsUiState {
-    object Loading : AccountsUiState()
-    data class Loaded(val accounts: List<AccountUi>) : AccountsUiState()
-}
