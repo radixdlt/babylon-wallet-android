@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.presentation.ui.extensions.formatDecimalSeparator
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 
@@ -69,7 +70,7 @@ fun WalletBalanceView(
             }
         } else {
             Text(
-                text = amount,
+                text = amount.formatDecimalSeparator(),
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f, fill = false)
@@ -102,7 +103,7 @@ fun WalletBalancePreview() {
     BabylonWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
-            amount = "1,232",
+            amount = "1232",
             hidden = false,
             balanceClicked = {}
         )
@@ -117,7 +118,7 @@ fun WalletBalanceWithLongValuePreview() {
     BabylonWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
-            amount = "1,879,232.32",
+            amount = "1879232.32",
             hidden = false,
             balanceClicked = {}
         )
@@ -132,7 +133,7 @@ fun WalletBalanceHiddenPreview() {
     BabylonWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
-            amount = "1,879.32",
+            amount = "1879.32",
             hidden = true,
             balanceClicked = {}
         )
