@@ -11,7 +11,7 @@ fun String.truncatedHash(): String {
 
 fun String.formatDecimalSeparator(): String {
     if (isEmpty()) return this
-    val formatter = DecimalFormat("#,###.00")
+    val formatter = DecimalFormat("#,###.##")
     return try {
         formatter.format(toDouble())
     } catch (e: NumberFormatException) {
