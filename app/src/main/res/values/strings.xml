@@ -11,4 +11,5 @@
     <string name="account_asset_row_tab_nfts">NFTs</string>
     <string name="show_plus">+ Show</string>
     <string name="hide_minus">- Hide</string>
+    <string name="account_transfer_button_title">Transfer</string>
 </resources>

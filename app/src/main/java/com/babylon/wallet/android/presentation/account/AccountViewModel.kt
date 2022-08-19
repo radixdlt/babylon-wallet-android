@@ -29,17 +29,22 @@ class AccountViewModel @Inject constructor(
     private val _accountUiState: MutableStateFlow<AccountUiState> = MutableStateFlow(AccountUiState.Loading)
     val accountUiState = _accountUiState.asStateFlow()
 
-    // Holds our currently selected asset type tab
-    // I leave it here in case we will later needed. For this stage, no need to go through viewmodel
-    private val _selectedAssetTypeTab = MutableStateFlow(AssetTypeTab.TOKEN_TAB)
-    val selectedAssetTypeTab = _selectedAssetTypeTab.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(true)
+    val isRefreshing = _isRefreshing.asStateFlow()
 
     init {
+        refresh()
+    }
+
+    fun refresh() {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
+                _isRefreshing.value = true
                 // TODO how to handle the case when the gateway doesn't return the account?
+                // TODO this should probably change to flow later
                 val account = mainViewRepository.getAccountBasedOnId(accountId)
                 _accountUiState.value = AccountUiState.Loaded(account)
+                _isRefreshing.value = false
             } else {
                 Log.d("AccountViewModel", "arg account id is empty")
             }
@@ -50,15 +55,14 @@ class AccountViewModel @Inject constructor(
         val clipData = ClipData.newPlainText("accountHash", hash)
         clipboardManager.setPrimaryClip(clipData)
     }
-
-    fun onAssetTypeTabSelected(assetType: AssetTypeTab) {
-        _selectedAssetTypeTab.value = assetType
-    }
 }
 
-sealed class AccountUiState {
-    object Loading : AccountUiState()
-    data class Loaded(val account: AccountUi) : AccountUiState()
+sealed interface AccountUiState {
+    object Loading : AccountUiState
+
+    data class Loaded(
+        val account: AccountUi
+    ) : AccountUiState
 }
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {

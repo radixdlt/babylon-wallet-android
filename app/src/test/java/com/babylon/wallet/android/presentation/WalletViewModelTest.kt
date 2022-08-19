@@ -1,4 +1,4 @@
-package com.babylon.wallet.android
+package com.babylon.wallet.android.presentation
 
 import android.content.ClipData
 import android.content.ClipboardManager

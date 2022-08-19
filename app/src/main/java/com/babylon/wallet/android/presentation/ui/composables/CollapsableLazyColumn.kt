@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -14,10 +15,11 @@ import com.babylon.wallet.android.presentation.model.NftClassUi
 
 @Composable
 fun CollapsableLazyColumn(
+    collapsedState: SnapshotStateList<Boolean>,
     sections: List<NftClassUi>,
     modifier: Modifier = Modifier
 ) {
-    val collapsedState = remember(sections) { sections.map { true }.toMutableStateList() }
+
     LazyColumn(modifier) {
         sections.forEachIndexed { i, dataItem ->
             val collapsed = collapsedState[i]
@@ -59,6 +61,25 @@ fun CollapsableLazyColumn(
 @Composable
 fun CollapsableLazyColumnPreview() {
     CollapsableLazyColumn(
-        sections = mockNftUiList
+        sections = mockNftUiList,
+        collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ExpandedLazyColumnPreview() {
+    CollapsableLazyColumn(
+        sections = mockNftUiList,
+        collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() }
+    )
+}
+
+@Preview(showBackground = true, fontScale = 2f)
+@Composable
+fun ExpandedLazyColumnWithLargeFontPreview() {
+    CollapsableLazyColumn(
+        sections = mockNftUiList,
+        collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() }
     )
 }

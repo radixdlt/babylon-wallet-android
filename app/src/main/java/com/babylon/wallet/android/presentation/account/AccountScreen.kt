@@ -1,16 +1,20 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.annotation.SuppressLint
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
 import androidx.compose.material.Button
@@ -29,7 +33,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -46,6 +52,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
+import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
@@ -55,9 +62,10 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.launch
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalPagerApi::class)
 @Composable
 fun AccountScreen(
@@ -69,6 +77,9 @@ fun AccountScreen(
     val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
     val pagerState = rememberPagerState(pageCount = 2)
 
+    val tokenLazyListState = rememberLazyListState()
+    val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
+
     Scaffold(
         topBar = {
             AccountTopAppBar(
@@ -77,101 +88,124 @@ fun AccountScreen(
                 onBackClick = onBackClick
             )
         }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = 32.dp, start = 14.dp, end = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(30.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+    ) { innerPadding ->
 
-                when (state) {
-                    is AccountUiState.Loaded -> {
-                        AccountAddressView(
-                            address = state.account.hash,
-                            onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
-                            modifier = Modifier.weight(1f, false)
-                        )
-                    }
-                    AccountUiState.Loading -> {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colors.onPrimary
-                        )
-                    }
-                }
-            }
-
-            when (state) {
-                is AccountUiState.Loaded -> {
-                    WalletBalanceView(
-                        currencySignValue = state.account.currencySymbol,
-                        amount = state.account.amount,
-                        hidden = false
-                    ) {
-                    }
-
-                    Button(onClick = { /*TODO*/ }) {
-                        Text(text = "Transfer")
-                    }
-                }
-                AccountUiState.Loading -> {
+        when (state) {
+            AccountUiState.Loading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colors.onPrimary
                     )
                 }
             }
-
-            AssetTypeTabsRow(pagerState = pagerState)
-            TabsContent(
-                pagerState = pagerState,
-                accountUiState = state
-            )
+            is AccountUiState.Loaded -> {
+                SwipeRefresh(
+                    state = swipeRefreshState,
+                    onRefresh = { viewModel.refresh() },
+                    indicatorPadding = innerPadding,
+                    refreshTriggerDistance = 100.dp,
+                    content = {
+                        AccountContent(
+                            account = state.account,
+                            pagerState = pagerState,
+                            onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
+                            tokenLazyListState = tokenLazyListState,
+                            modifier = Modifier.verticalScroll(rememberScrollState())
+                        )
+                    }
+                )
+            }
         }
     }
 }
 
 @ExperimentalPagerApi
 @Composable
-fun TabsContent(
+private fun AccountContent(
+    account: AccountUi,
     pagerState: PagerState,
-    accountUiState: AccountUiState
+    onCopyAccountAddressClick: (String) -> Unit,
+    tokenLazyListState: LazyListState,
+    modifier: Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp) // temp space value
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AccountAddressView(
+                address = account.hash,
+                onCopyAccountAddressClick = onCopyAccountAddressClick,
+                modifier = Modifier.weight(1f, false)
+            )
+        }
+
+        WalletBalanceView(
+            currencySignValue = account.currencySymbol,
+            amount = account.amount,
+            hidden = false
+        ) {
+        }
+
+        Button(onClick = { /*TODO*/ }) {
+            Text(text = stringResource(id = R.string.account_transfer_button_title))
+        }
+
+        AssetTypeTabsRow(pagerState = pagerState)
+
+        AssetsContent(
+            pagerState = pagerState,
+            tokenLazyListState = tokenLazyListState,
+            account = account
+        )
+    }
+}
+
+@ExperimentalPagerApi
+@Composable
+fun AssetsContent(
+    pagerState: PagerState,
+    account: AccountUi,
+    tokenLazyListState: LazyListState
 ) {
     HorizontalPager(
         state = pagerState,
         dragEnabled = false
     ) { page ->
         when (page) {
-            0 -> TokenContentScreen()
-            1 -> NftContentScreen(accountUiState)
-        }
-    }
-}
+            0 -> {
+                val xrdToken = if (account.hasXrdToken) account.tokens[0] else null
+                val tokensToShow = if (account.hasXrdToken) {
+                    account.tokens.subList(1, account.tokens.size)
+                } else {
+                    account.tokens
+                }
 
-@Composable
-private fun TokenContentScreen() {
-    //TODO
-    Text(text = "Tokens", modifier = Modifier.fillMaxWidth())
-}
-
-@Composable
-private fun NftContentScreen(accountUiState: AccountUiState) {
-    when (accountUiState) {
-        is AccountUiState.Loading -> {
-            CircularProgressIndicator(
-                color = MaterialTheme.colors.onPrimary
-            )
-        }
-        is AccountUiState.Loaded -> {
-            val sections = accountUiState.account.nftsSortedByName
-            CollapsableLazyColumn(
-                sections = sections
-            )
+                ListOfTokensContent(
+                    xrdTokenUi = xrdToken,
+                    tokenItems = tokensToShow,
+                    modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
+                    lazyListState = tokenLazyListState
+                )
+            }
+            1 -> {
+                val nftSections = account.nfts
+                val collapsedState = remember(nftSections) { nftSections.map { true }.toMutableStateList() }
+                CollapsableLazyColumn(
+                    collapsedState = collapsedState,
+                    sections = nftSections,
+                    modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
+                )
+            }
         }
     }
 }
@@ -243,7 +277,7 @@ private fun AccountAddressView(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@ExperimentalPagerApi
 @Composable
 private fun AssetTypeTabsRow(
     pagerState: PagerState
@@ -319,13 +353,13 @@ fun AccountScreenPreview() {
         AccountScreen(
             viewModel = mockViewModel,
             accountName = "account name",
+            onMenuItemClick = {},
             onBackClick = {},
-            onMenuItemClick = {}
         )
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@ExperimentalPagerApi
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable

@@ -1,3 +1,6 @@
+// this is a file just for mock data, we don't care about its formatting
+@file:Suppress("MaximumLineLength", "MaxLineLength")
+
 package com.babylon.wallet.android.data.mockdata
 
 import com.babylon.wallet.android.data.AssetDto
@@ -10,14 +13,14 @@ private val mockNftDtoList = listOf(
     AssetDto.NftClassDto(
         classId = "puppy",
         name = "Puppy first",
-        iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        iconUrl = "https://cdn-icons.flaticon.com/png/512/1959/premium/1959967.png?token=exp=1660766251~hmac=b8325bdbfd9672118eb37db5c94f36d3",
         nftsInCirculation = "20000",
         nftsInPossession = "8",
         nfts = listOf(
             AssetDto.NftClassDto.NftDto(
                 id = "puppy_nft_id",
-                name = "ghosty",
-                iconUrl = null,
+                name = "Paw",
+                iconUrl = "https://cdn-icons.flaticon.com/png/512/3659/premium/3659348.png?token=exp=1660766278~hmac=fa6356948d90761300dc4adede9598e9",
                 nftsMetadata = listOf(
                     Pair("Section", "E"),
                     Pair("Seat", "15D")
@@ -25,8 +28,8 @@ private val mockNftDtoList = listOf(
             ),
             AssetDto.NftClassDto.NftDto(
                 id = "puppy_small_nft_id",
-                name = "Paw",
-                iconUrl = "https://cdn-icons-png.flaticon.com/512/1273/1273729.png",
+                name = "ghosty",
+                iconUrl = null,
                 nftsMetadata = listOf(
                     Pair("Section", "E"),
                     Pair("Seat", "15D")
@@ -79,14 +82,14 @@ private val mockNftDtoList = listOf(
     AssetDto.NftClassDto(
         classId = "black_hole_nft_id",
         name = "Black Hole",
-        iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        iconUrl = "https://www.snexplores.org/wp-content/uploads/2022/06/042922_kk_blackhole_feat-1030x580.jpg",
         nftsInCirculation = "100",
         nftsInPossession = "1",
         nfts = listOf(
             AssetDto.NftClassDto.NftDto(
                 id = "stellar_nft_id",
                 name = "stellar",
-                iconUrl = "https://cdn-icons.flaticon.com/png/512/1636/premium/1636920.png?token=exp=1660065129~hmac=74a06634adeba2711540c67e207296d3",
+                iconUrl = "https://www.nasa.gov/sites/default/files/images/624540main_igr_665.jpg",
                 nftsMetadata = listOf(
                     Pair("Section", "E"),
                     Pair("Seat", "15D")
@@ -97,7 +100,7 @@ private val mockNftDtoList = listOf(
     AssetDto.NftClassDto(
         classId = "dog_nft_id",
         name = "Doggies",
-        iconUrl = "https://cdn-icons-png.flaticon.com/512/824/824719.png",
+        iconUrl = "https://cdn-icons.flaticon.com/png/512/2171/premium/2171990.png?token=exp=1660766196~hmac=c86617654a238796df350ca072882cb9",
         nftsInCirculation = "20000",
         nftsInPossession = "8",
         nfts = listOf(
@@ -113,7 +116,7 @@ private val mockNftDtoList = listOf(
             AssetDto.NftClassDto.NftDto(
                 id = "paw_nft_id",
                 name = "Paw",
-                iconUrl = "https://cdn-icons-png.flaticon.com/512/1273/1273729.png",
+                iconUrl = "https://cdn-icons.flaticon.com/png/512/2475/premium/2475265.png?token=exp=1660766224~hmac=26cc3d1a4d76eaae95d6f179efaccacd",
                 nftsMetadata = listOf(
                     Pair("Section", "E"),
                     Pair("Seat", "15D")
@@ -171,7 +174,7 @@ private val mockEthereumAssetDto = AssetDto(
     resourceAddress = "bcfsafxy2fafsaffafsq2n0yrf2354dp83kksgder0wlh",
     tokenQuantity = 1F,
     marketPrice = 7853886F,
-    iconUrl = null,
+    iconUrl = "https://cdn-icons-png.flaticon.com/512/1777/1777889.png",
     nftClasses = null
 )
 
@@ -188,12 +191,49 @@ private val mockAndroidAssetDto = AssetDto(
     nftClasses = null
 )
 
+// asset for a fantastic token
+private val mockFantasticAssetDto = AssetDto(
+    type = "token",
+    id = "fan_id",
+    name = "",
+    symbol = "FAN",
+    resourceAddress = "bcfsar34r2fafsafnif330yrf2354gsd3kksgder0wlh",
+    tokenQuantity = 8484023F,
+    marketPrice = null,
+    iconUrl = null,
+    nftClasses = null
+)
+
+// asset for a ghost token
+private val mockGhostAssetDto = AssetDto(
+    type = "token",
+    id = "gho_id",
+    name = "Ghost",
+    symbol = "",
+    resourceAddress = "bcfsa2rf2fafsafnif330yrf2f43f4gsd3kksgder0wlh",
+    tokenQuantity = 6.96F,
+    marketPrice = null,
+    iconUrl = null,
+    nftClasses = null
+)
+
 val mockAssetDtoList = listOf(
     mockBitcoinAssetDto, // token
+    mockGhostAssetDto, // token
     mockRadixAssetDto, // token
     mockEthereumAssetDto, // token
+    mockFantasticAssetDto, // token
     mockNtfAssetDto, // nft
     mockAndroidAssetDto // token
+)
+
+val mockAssetWithoutXrdTokenDtoList = listOf(
+    mockEthereumAssetDto, // token
+    mockFantasticAssetDto, // token
+    mockGhostAssetDto, // token
+    mockNtfAssetDto, // nft
+    mockAndroidAssetDto, // token
+    mockBitcoinAssetDto // token
 )
 
 val mockTokenUiList = mockAssetDtoList.filter { assetDto ->

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -51,8 +52,9 @@ fun CollapsableChildItemView(
                     fallback = painterResource(id = R.drawable.img_placeholder)
                 ),
                 contentDescription = "Nft image",
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.FillHeight,
                 modifier = Modifier
+                    .heightIn(min = 180.dp, max = 240.dp)
                     .fillMaxWidth()
                     .padding(16.dp)
             )
@@ -95,7 +97,7 @@ fun CollapsableChildItemView(
 fun CollapsableChildItemPreview() {
     CollapsableChildItemView(
         nftId = "123",
-        imageUrl = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=130&q=80",
+        imageUrl = "url",
         nftMetadata = listOf(
             Pair("Type", "Devin Booker - Dunk"),
             Pair("Type", "Reggie Jackson - Jump Shot")
