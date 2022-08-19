@@ -90,7 +90,7 @@ fun CollapsableParentItemView(
                     painter = rememberAsyncImagePainter(
                         model = nftImageUrl,
                         placeholder = painterResource(id = R.drawable.img_placeholder),
-                        fallback = painterResource(id = R.drawable.img_placeholder)
+                        error = painterResource(id = R.drawable.img_placeholder)
                     ),
                     contentDescription = "Nft icon",
                     contentScale = ContentScale.FillWidth
