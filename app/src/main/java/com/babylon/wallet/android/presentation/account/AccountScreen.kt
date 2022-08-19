@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.content.ClipboardManager
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,7 +37,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,13 +44,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
+import com.babylon.wallet.android.data.mockdata.mockAccountUiList
 import com.babylon.wallet.android.presentation.model.AccountUi
-import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
@@ -260,7 +255,8 @@ private fun AccountAddressView(
     ResponsiveText(
         modifier = modifier,
         text = address,
-        style = MaterialTheme.typography.h6
+        style = MaterialTheme.typography.h6,
+        maxLines = 1
     )
     IconButton(
         modifier = Modifier
@@ -336,25 +332,34 @@ private fun ChoiceChipContent(
 
 private val emptyTabIndicator: @Composable (List<TabPosition>) -> Unit = {}
 
+@OptIn(ExperimentalPagerApi::class)
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun AccountScreenPreview() {
-    val savedStateHandle = SavedStateHandle()
-    savedStateHandle[Screen.ARG_ACCOUNT_ID] = "1"
-    val mockViewModel = AccountViewModel(
-        mainViewRepository = MockMainViewRepository(),
-        clipboardManager = LocalContext
-            .current
-            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
-        savedStateHandle = savedStateHandle
-    )
+fun AccountContentPreview() {
     BabylonWalletTheme {
-        AccountScreen(
-            viewModel = mockViewModel,
-            accountName = "account name",
-            onMenuItemClick = {},
-            onBackClick = {},
+        AccountContent(
+            account = mockAccountUiList[1],
+            pagerState = PagerState(pageCount = 2, currentPage = 0),
+            onCopyAccountAddressClick = {},
+            tokenLazyListState = LazyListState(),
+            modifier = Modifier
+        )
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Preview(showBackground = true)
+@Preview("large font", fontScale = 2f, showBackground = true)
+@Composable
+fun AccountContentPreview2() {
+    BabylonWalletTheme {
+        AccountContent(
+            account = mockAccountUiList[0],
+            pagerState = PagerState(pageCount = 2, currentPage = 1),
+            onCopyAccountAddressClick = {},
+            tokenLazyListState = LazyListState(),
+            modifier = Modifier
         )
     }
 }
