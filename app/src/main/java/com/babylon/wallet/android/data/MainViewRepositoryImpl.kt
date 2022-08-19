@@ -8,9 +8,6 @@ import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
@@ -19,27 +16,25 @@ class MainViewRepositoryImpl(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : MainViewRepository {
 
-    override fun getWallet(): Flow<WalletData> {
-        return flow {
+    override suspend fun getWallet(): WalletData {
+        return withContext(ioDispatcher) {
             delay(Random.nextLong(500, 1500))
-            emit(
-                WalletData(
-                    "$",
-                    "320409"
-                )
+            WalletData(
+                "$",
+                Random.nextDouble(9999.999, 99999.999).toString()
             )
-        }.flowOn(ioDispatcher)
+        }
     }
 
-    override fun getAccounts(): Flow<List<AccountUi>> {
-        return flow {
+    override suspend fun getAccounts(): List<AccountUi> {
+        return withContext(ioDispatcher) {
             delay(Random.nextLong(500, 1500))
-            emit(
-                mockAccountDtoList.map { accountDto ->
+            mockAccountDtoList
+                .shuffled()
+                .map { accountDto ->
                     accountDto.toUiModel()
                 }
-            )
-        }.flowOn(ioDispatcher)
+        }
     }
 
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
