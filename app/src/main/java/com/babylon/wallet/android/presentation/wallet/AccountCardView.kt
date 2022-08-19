@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.mockdata.mockTokenUiList
 import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
+import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
@@ -35,13 +37,11 @@ fun AccountCardView(
     accountValue: String,
     accountCurrency: String,
     onCopyClick: () -> Unit,
-    assets: List<TokenUi> // at the moment we pass only the tokens
+    assets: List<TokenUi>, // at the moment we pass only the tokens
+    modifier: Modifier
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(25.dp, 0.dp, 25.dp, 0.dp)
-            .clickable { onCardClick() },
+        modifier = modifier.clickable { onCardClick() },
         shape = RoundedCornerShape(
             topStart = 8.dp,
             topEnd = 8.dp,
@@ -110,7 +110,8 @@ fun AccountCardPreview() {
             accountValue = "19195",
             accountCurrency = "$",
             onCopyClick = {},
-            assets = mockTokenUiList
+            assets = mockTokenUiList,
+            modifier = Modifier.padding(bottom = 20.dp)
         )
     }
 }

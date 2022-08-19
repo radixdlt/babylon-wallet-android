@@ -39,7 +39,8 @@ fun RDXAppBar(toolbarTitle: String, onMenuItemClicked: () -> Unit) {
                     )
                 }
             }
-        }
+        },
+        elevation = 0.dp
     )
 }
 
