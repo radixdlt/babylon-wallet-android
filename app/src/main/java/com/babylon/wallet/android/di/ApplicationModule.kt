@@ -2,8 +2,10 @@ package com.babylon.wallet.android.di
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.SharedPreferences
-import com.babylon.wallet.android.PreferencesManager
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import com.babylon.wallet.android.DataStoreManager
 import com.babylon.wallet.android.data.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
@@ -18,6 +20,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
+
+    val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
+        name = "rdx_datastore"
+    )
 
     @Provides
     @Singleton
@@ -34,13 +40,15 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideSharedPreferences(
+    fun provideDataStore(
         @ApplicationContext context: Context
-    ): SharedPreferences = context.getSharedPreferences("rdx_prefs", Context.MODE_PRIVATE)
+    ): DataStore<Preferences> {
+        return context.userDataStore
+    }
 
     @Provides
     @Singleton
     fun providePreferencesManager(
-        sharedPreferences: SharedPreferences
-    ): PreferencesManager = PreferencesManager(sharedPreferences)
+        dataStore: DataStore<Preferences>
+    ): DataStoreManager = DataStoreManager(dataStore)
 }

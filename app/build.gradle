@@ -82,6 +82,8 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager:0.25.1"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.25.1"
 
+    // Datastore
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
 
     // Hilt
     implementation 'com.google.dagger:hilt-android:2.43.2'

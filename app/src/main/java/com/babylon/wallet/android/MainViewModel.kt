@@ -6,13 +6,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: DataStoreManager
 ) : ViewModel() {
 
     fun showOnboarding(): Boolean {
-        val showOnboarding = preferencesManager.showOnboarding
+        val showOnboarding = preferencesManager.showOnboarding()
         if (showOnboarding) {
-            preferencesManager.showOnboarding = false
+            preferencesManager.setShowOnboarding(false)
         }
         return showOnboarding
     }

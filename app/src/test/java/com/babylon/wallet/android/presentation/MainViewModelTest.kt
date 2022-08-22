@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation
 
 import com.babylon.wallet.android.MainViewModel
-import com.babylon.wallet.android.PreferencesManager
+import com.babylon.wallet.android.DataStoreManager
 import org.junit.Assert
 import org.junit.Test
 import org.mockito.Mockito
@@ -10,7 +10,7 @@ import org.mockito.kotlin.whenever
 
 class MainViewModelTest {
 
-    private val preferencesManager = Mockito.mock(PreferencesManager::class.java)
+    private val preferencesManager = Mockito.mock(DataStoreManager::class.java)
 
     @Test
     fun `given show onboarding, when view model asked, verify onboarding shown`() {
