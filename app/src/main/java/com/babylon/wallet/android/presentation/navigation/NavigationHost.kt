@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.navigation
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -7,19 +8,41 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.MainViewModel
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
+import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
+import com.google.accompanist.pager.ExperimentalPagerApi
 
+@ExperimentalPagerApi
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun NavigationHost() {
+fun NavigationHost(viewModel: MainViewModel) {
     val navController = rememberNavController()
+
+    val showOnboarding = viewModel.showOnboarding()
+    val startDestination = if (showOnboarding) {
+        Screen.OnboardingDestination.route
+    } else {
+        Screen.WalletDestination.route
+    }
 
     NavHost(
         navController = navController,
-        startDestination = Screen.WalletDestination.route
+        startDestination = startDestination
     ) {
+        if (showOnboarding) {
+            composable(route = Screen.OnboardingDestination.route) {
+                OnboardingScreen(
+                    newRadarWalletUserClick = {
+                        navController.navigate(Screen.WalletDestination.route)
+                    },
+                    restoreWalletFromBackup = {}
+                )
+            }
+        }
         composable(route = Screen.WalletDestination.route) {
             WalletScreen(
                 viewModel = hiltViewModel(),
