@@ -16,5 +16,4 @@ class MainViewModel @Inject constructor(
         }
         return showOnboarding
     }
-
 }

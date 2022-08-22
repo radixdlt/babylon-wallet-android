@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -46,8 +47,8 @@ fun OnboardingPreview() {
 @ExperimentalPagerApi
 @Composable
 fun OnboardingScreen(
-    newRadarWalletUserClick:() -> Unit,
-    restoreWalletFromBackup:() -> Unit,
+    newRadarWalletUserClick: () -> Unit,
+    restoreWalletFromBackup: () -> Unit,
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
 
@@ -101,7 +102,7 @@ fun OnboardingScreen(
                     onClick = { restoreWalletFromBackup() },
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = Color.Transparent,
-                        contentColor = Color(0xFF1C1C1C),
+                        contentColor = MaterialTheme.colors.onBackground
                     )
                 ) {
                     Text(
@@ -113,7 +114,6 @@ fun OnboardingScreen(
                 }
             }
         }
-
     }
 }
 
