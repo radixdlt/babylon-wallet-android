@@ -157,6 +157,7 @@ data class Page(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
+@Suppress("InjectDispatcher")
 fun OnboardingPreview() {
     val dataStoreManager = DataStoreManager(
         LocalContext.current.userDataStore

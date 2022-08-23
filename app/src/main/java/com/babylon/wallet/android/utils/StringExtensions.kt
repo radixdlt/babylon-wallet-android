@@ -1,5 +1,5 @@
 @file:Suppress("MagicNumber")
-package com.babylon.wallet.android.presentation.ui.extensions
+package com.babylon.wallet.android.utils
 
 import java.text.DecimalFormat
 

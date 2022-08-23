@@ -24,9 +24,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.ui.extensions.formatDecimalSeparator
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
+import com.babylon.wallet.android.utils.formatDecimalSeparator
 
 private const val NUMBER_OF_CIRCLES = 6
 
