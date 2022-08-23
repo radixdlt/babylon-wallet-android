@@ -31,7 +31,6 @@ object CoroutinesDispatchersModule {
     @Provides
     fun providesMainImmediateDispatcher(): CoroutineDispatcher = Dispatchers.Main.immediate
 
-
     @InstallIn(SingletonComponent::class)
     @Module
     object CoroutinesDispatchersModule {
