@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import com.babylon.wallet.android.data.DataStoreManager
 import com.babylon.wallet.android.presentation.onboarding.OnboardingViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -21,10 +21,11 @@ class OnboardingViewModelTest {
     @Test
     fun `when set to show onboarding verify shown`() = runTest {
         // given
-        val viewModel = OnboardingViewModel(UnconfinedTestDispatcher(testScheduler), dataStoreManager)
+        val viewModel = OnboardingViewModel(dataStoreManager)
 
         // when
         viewModel.setShowOnboarding(true)
+        advanceUntilIdle()
 
         // then
         verify(dataStoreManager).setShowOnboarding(true)
@@ -33,10 +34,11 @@ class OnboardingViewModelTest {
     @Test
     fun `when set to not show onboarding, verify not shown`() = runTest {
         // given
-        val viewModel = OnboardingViewModel(UnconfinedTestDispatcher(testScheduler), dataStoreManager)
+        val viewModel = OnboardingViewModel(dataStoreManager)
 
         // when
         viewModel.setShowOnboarding(false)
+        advanceUntilIdle()
 
         // then
         verify(dataStoreManager).setShowOnboarding(false)
