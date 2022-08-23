@@ -33,15 +33,6 @@ object CoroutinesDispatchersModule {
 
     @InstallIn(SingletonComponent::class)
     @Module
-    object CoroutinesDispatchersModule {
-
-        @DefaultDispatcher
-        @Provides
-        fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
-    }
-
-    @InstallIn(SingletonComponent::class)
-    @Module
     object CoroutinesScopesModule {
 
         @Singleton
