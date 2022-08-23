@@ -2,6 +2,9 @@ package com.babylon.wallet.android.di
 
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
@@ -17,6 +20,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
 
+    val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
+        name = "rdx_datastore"
+    )
+
     @Provides
     @Singleton
     fun provideMainViewRepository(
@@ -29,4 +36,12 @@ object ApplicationModule {
         @ApplicationContext context: Context
     ): ClipboardManager =
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    @Provides
+    @Singleton
+    fun provideDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return context.userDataStore
+    }
 }

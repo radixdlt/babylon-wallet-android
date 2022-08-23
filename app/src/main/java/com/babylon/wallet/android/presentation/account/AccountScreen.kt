@@ -70,7 +70,7 @@ fun AccountScreen(
     onBackClick: () -> Unit
 ) {
     val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
-    val pagerState = rememberPagerState(pageCount = 2)
+    val pagerState = rememberPagerState(initialPage = 0)
 
     val tokenLazyListState = rememberLazyListState()
     val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
@@ -173,8 +173,9 @@ fun AssetsContent(
     tokenLazyListState: LazyListState
 ) {
     HorizontalPager(
+        count = 2, // TODO
         state = pagerState,
-        dragEnabled = false
+        userScrollEnabled = false
     ) { page ->
         when (page) {
             0 -> {
@@ -340,7 +341,7 @@ fun AccountContentPreview() {
     BabylonWalletTheme {
         AccountContent(
             account = mockAccountUiList[1],
-            pagerState = PagerState(pageCount = 2, currentPage = 0),
+            pagerState = PagerState(currentPage = 0),
             onCopyAccountAddressClick = {},
             tokenLazyListState = LazyListState(),
             modifier = Modifier
@@ -356,7 +357,7 @@ fun AccountContentPreview2() {
     BabylonWalletTheme {
         AccountContent(
             account = mockAccountUiList[0],
-            pagerState = PagerState(pageCount = 2, currentPage = 1),
+            pagerState = PagerState(currentPage = 1),
             onCopyAccountAddressClick = {},
             tokenLazyListState = LazyListState(),
             modifier = Modifier
@@ -370,7 +371,7 @@ fun AccountContentPreview2() {
 @Composable
 fun AssetTabRowPreview() {
     BabylonWalletTheme {
-        val pagerState = rememberPagerState(pageCount = 2)
+        val pagerState = rememberPagerState(initialPage = 0)
         AssetTypeTabsRow(
             pagerState = pagerState
         )
