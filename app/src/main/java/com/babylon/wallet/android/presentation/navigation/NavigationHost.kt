@@ -8,7 +8,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.MainViewModel
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
@@ -19,29 +18,23 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 @ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun NavigationHost(viewModel: MainViewModel) {
+fun NavigationHost(
+    startDestination: String
+) {
     val navController = rememberNavController()
-
-    val showOnboarding = viewModel.showOnboarding()
-    val startDestination = if (showOnboarding) {
-        Screen.OnboardingDestination.route
-    } else {
-        Screen.WalletDestination.route
-    }
 
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        if (showOnboarding) {
-            composable(route = Screen.OnboardingDestination.route) {
-                OnboardingScreen(
-                    newRadarWalletUserClick = {
-                        navController.navigate(Screen.WalletDestination.route)
-                    },
-                    restoreWalletFromBackup = {}
-                )
-            }
+        composable(route = Screen.OnboardingDestination.route) {
+            OnboardingScreen(
+                viewModel = hiltViewModel(),
+                newRadarWalletUserClick = {
+                    navController.navigate(Screen.WalletDestination.route)
+                },
+                restoreWalletFromBackup = {}
+            )
         }
         composable(route = Screen.WalletDestination.route) {
             WalletScreen(
