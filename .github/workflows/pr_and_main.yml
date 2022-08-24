@@ -59,7 +59,7 @@ jobs:
         run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   static_analysis:
-    name: "Static analysis"
+    name: "Static analysis and SonarCloud"
     runs-on: ubuntu-latest
 
     continue-on-error: true
@@ -72,8 +72,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Run static analysis"
-        run: ./gradlew detektMain
+      - name: "Run static analysis and Sonarcloud"
+        run: |
+          ./gradlew detektMain sonarqube
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build:
 
@@ -92,13 +96,6 @@ jobs:
       - name: "Build"
         run: |
           ./gradlew assembleDebug
-
-      - name: SonarCloud Scan
-        run: |
-          ./gradlew detektMain sonarqube
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload APK from PR
         if: ${{ github.event_name == 'pull_request' }}
