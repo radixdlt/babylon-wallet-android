@@ -15,7 +15,6 @@
 
 desc "Manual trigger"
 lane :manual do
-  gradle(task: "assembleDebug")
   latest_release = firebase_app_distribution_get_latest_release(
     app: ENV["FIREBASE_APP_ID"],
   )
