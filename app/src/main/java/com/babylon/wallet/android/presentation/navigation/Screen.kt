@@ -12,6 +12,7 @@ interface Destination {
 
 sealed class Screen(override val route: String) : Destination {
 
+    object OnboardingDestination : Screen("onboarding_route")
     object WalletDestination : Screen("wallet_route")
     object AccountDestination : Screen("account_route")
 

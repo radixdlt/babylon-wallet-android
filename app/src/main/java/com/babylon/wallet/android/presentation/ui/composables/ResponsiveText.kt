@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import com.babylon.wallet.android.presentation.ui.extensions.truncatedHash
+import com.babylon.wallet.android.utils.truncatedHash
 
 @Composable
 fun ResponsiveText(
