@@ -73,7 +73,6 @@ jobs:
 
       - name: "Run static analysis and Sonarcloud"
         run: |
-          ls -lah app/build/**/*
           ./gradlew lintDebug detektMain sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
