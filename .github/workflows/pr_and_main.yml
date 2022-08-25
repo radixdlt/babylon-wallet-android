@@ -18,12 +18,6 @@ jobs:
       - name: "Run Lint"
         run: ./gradlew lintDebug
 
-      - name: Cache Lint reports
-        uses: actions/cache@v1
-        with:
-          path: app/build/reports/
-          key: ${{ runner.os }}-lint-report
-
   unit_tests:
     name: "Unit tests"
     runs-on: ubuntu-latest
@@ -37,37 +31,31 @@ jobs:
       - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
 
-      - name: Cache Lint reports
-        uses: actions/cache@v1
-        with:
-          path: ~/app/build/reports/tests
-          key: ${{ runner.os }}-lint-report
+  snapshot_tests:
+    name: "Snapshot tests"
+    runs-on: ubuntu-latest
 
-  # snapshot_tests:
-  #   name: "Snapshot tests"
-  #   runs-on: ubuntu-latest
+    needs:
+      - lint
 
-  #   needs:
-  #     - lint
+    steps:
+      - uses: actions/checkout@v2
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+      - name: "Run snapshot tests"
+        run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
-  #     - name: "Run snapshot tests"
-  #       run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  ui_tests:
+    name: "UI tests"
+    runs-on: ubuntu-latest
 
-  # ui_tests:
-  #   name: "UI tests"
-  #   runs-on: ubuntu-latest
+    needs:
+      - lint
 
-  #   needs:
-  #     - lint
+    steps:
+      - uses: actions/checkout@v2
 
-  #   steps:
-  #     - uses: actions/checkout@v2
-
-  #     - name: "Run UI tests"
-  #       run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+      - name: "Run UI tests"
+        run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   static_analysis:
     name: "Static analysis and SonarCloud"
@@ -77,8 +65,8 @@ jobs:
 
     needs:
       - unit_tests
-      # - snapshot_tests
-      # - ui_tests
+      - snapshot_tests
+      - ui_tests
 
     steps:
       - uses: actions/checkout@v2
@@ -86,7 +74,7 @@ jobs:
       - name: "Run static analysis and Sonarcloud"
         run: |
           ls -lah app/build/**/*
-          ./gradlew detektMain sonarqube
+          ./gradlew lintDebug detektMain sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
