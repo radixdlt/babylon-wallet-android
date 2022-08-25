@@ -73,7 +73,9 @@ jobs:
 
       - name: "Run static analysis and Sonarcloud"
         run: |
-          ./gradlew lintDebug detektMain sonarqube
+          ./gradlew lintDebug 
+          ./gradlew detektMain 
+          ./gradlew sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
