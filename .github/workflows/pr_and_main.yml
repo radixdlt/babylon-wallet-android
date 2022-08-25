@@ -77,8 +77,8 @@ jobs:
 
     needs:
       - unit_tests
-      - snapshot_tests
-      - ui_tests
+      # - snapshot_tests
+      # - ui_tests
 
     steps:
       - uses: actions/checkout@v2
