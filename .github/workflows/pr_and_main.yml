@@ -21,7 +21,7 @@ jobs:
       - name: Cache Lint reports
         uses: actions/cache@v1
         with:
-          path: ~/app/build/reports/
+          path: app/build/reports/
           key: ${{ runner.os }}-lint-report
 
   unit_tests:
