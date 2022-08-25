@@ -18,6 +18,12 @@ jobs:
       - name: "Run Lint"
         run: ./gradlew lintDebug
 
+      - name: Cache Lint reports
+        uses: actions/cache@v1
+        with:
+          path: ~/app/build/reports/
+          key: ${{ runner.os }}-lint-report
+
   unit_tests:
     name: "Unit tests"
     runs-on: ubuntu-latest
@@ -31,31 +37,37 @@ jobs:
       - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
 
-  snapshot_tests:
-    name: "Snapshot tests"
-    runs-on: ubuntu-latest
+      - name: Cache Lint reports
+        uses: actions/cache@v1
+        with:
+          path: ~/app/build/reports/tests
+          key: ${{ runner.os }}-lint-report
 
-    needs:
-      - lint
+  # snapshot_tests:
+  #   name: "Snapshot tests"
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
+  #   needs:
+  #     - lint
 
-      - name: "Run snapshot tests"
-        run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-  ui_tests:
-    name: "UI tests"
-    runs-on: ubuntu-latest
+  #     - name: "Run snapshot tests"
+  #       run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
-    needs:
-      - lint
+  # ui_tests:
+  #   name: "UI tests"
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
+  #   needs:
+  #     - lint
 
-      - name: "Run UI tests"
-        run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: "Run UI tests"
+  #       run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   static_analysis:
     name: "Static analysis and SonarCloud"
@@ -73,10 +85,11 @@ jobs:
 
       - name: "Run static analysis and Sonarcloud"
         run: |
+          ls -lah app/build/**/*
           ./gradlew detektMain sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
 
   build:
 
