@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
@@ -125,7 +126,8 @@ fun OnboardingScreen(
                     }
                 }
                 OnboardingViewModel.OnboardingUiAction.ShowSecurityWarning -> {
-                    // TODO ABW-282 show warning dialog
+                    // TODO ABW-282 show warning dialog, toast to be removed, just keep it for now
+                    Toast.makeText(context, "No security method setup", Toast.LENGTH_SHORT).show()
                 }
             }
         })

@@ -24,7 +24,7 @@ class OnboardingViewModel @Inject constructor(
             if (securityHelper.isDeviceSecure()) {
                 _onboardingUiAction.emit(OnboardingUiAction.AuthenticateWithBiometric)
             } else {
-                _onboardingUiAction.emit(OnboardingUiAction.AuthenticateWithBiometric)
+                _onboardingUiAction.emit(OnboardingUiAction.ShowSecurityWarning)
             }
         }
     }
