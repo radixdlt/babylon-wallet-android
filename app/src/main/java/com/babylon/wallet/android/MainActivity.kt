@@ -1,8 +1,8 @@
 package com.babylon.wallet.android
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
@@ -16,7 +16,8 @@ import javax.inject.Inject
 @ExperimentalLifecycleComposeApi
 @OptIn(ExperimentalPagerApi::class)
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+// Extending from FragmentActivity because of Biometric
+class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var showOnboardingUseCase: ShowOnboardingUseCase
@@ -25,8 +26,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             BabylonWalletTheme {
-                val showOnboarding = showOnboardingUseCase.showOnboarding.collectAsStateWithLifecycle()
-                if (showOnboarding.value) {
+                val showOnboarding = showOnboardingUseCase.showOnboarding.collectAsStateWithLifecycle().value
+                if (showOnboarding) {
                     NavigationHost(
                         Screen.OnboardingDestination.route
                     )

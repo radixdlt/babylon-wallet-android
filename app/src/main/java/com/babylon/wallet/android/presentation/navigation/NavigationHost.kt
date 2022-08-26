@@ -30,9 +30,6 @@ fun NavigationHost(
         composable(route = Screen.OnboardingDestination.route) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
-                newRadarWalletUserClick = {
-                    navController.navigate(Screen.WalletDestination.route)
-                },
                 restoreWalletFromBackup = {}
             )
         }
