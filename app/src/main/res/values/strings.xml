@@ -20,4 +20,5 @@
     <string name="onboarding_body_3">Connect and transact securely with a world of web3 dApps, tokens, NFTs, and much more</string>
     <string name="im_new_radar_wallet_user">I\'m a new Radar Wallet user</string>
     <string name="restore_wallet_from_backup">Restore Wallet from Backup</string>
+    <string name="biometric_prompt_title">Use your biometric to continue</string>
 </resources>
