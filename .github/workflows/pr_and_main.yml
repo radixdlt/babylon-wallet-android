@@ -81,6 +81,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: lint-results
+          path: app/build/reports/
 
       - name: "Run static analysis and Sonarcloud"
         run: |
