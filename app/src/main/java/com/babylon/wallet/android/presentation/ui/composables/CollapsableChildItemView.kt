@@ -45,19 +45,21 @@ fun CollapsableChildItemView(
             modifier = Modifier
                 .padding(20.dp)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = imageUrl,
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder)
-                ),
-                contentDescription = "Nft image",
-                contentScale = ContentScale.FillHeight,
-                modifier = Modifier
-                    .heightIn(min = 180.dp, max = 240.dp)
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+            if (imageUrl != null && imageUrl.isNotEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = imageUrl,
+                        placeholder = painterResource(id = R.drawable.img_placeholder),
+                        error = painterResource(id = R.drawable.img_placeholder)
+                    ),
+                    contentDescription = "Nft image",
+                    contentScale = ContentScale.FillHeight,
+                    modifier = Modifier
+                        .heightIn(min = 180.dp, max = 240.dp)
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+            }
             Text(
                 nftId,
                 color = RadixGrey2,
