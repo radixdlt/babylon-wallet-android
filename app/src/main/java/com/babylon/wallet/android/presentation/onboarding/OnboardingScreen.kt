@@ -166,22 +166,3 @@ fun AlertDialogView(
         )
     }
 }
-
-//TODO This cannot run when casting LocalContext.current to MainActivity above. Preview activity cannot be casted to FragmentActivity
-// I will leave out preview for now to unblock entire feature and do something with it later
-//@OptIn(ExperimentalAnimationApi::class, ExperimentalPagerApi::class)
-//@Preview(showBackground = true)
-//@Preview("large font", fontScale = 2f, showBackground = true)
-//@Composable
-//fun OnboardingPreview() {
-//    val dataStoreManager = DataStoreManager(
-//        LocalContext.current.userDataStore
-//    )
-//    val securityHelper = DeviceSecurityHelper(LocalContext.current)
-//
-//    val onboardingViewModel = OnboardingViewModel(dataStoreManager, securityHelper)
-//    OnboardingScreen(
-//        viewModel = onboardingViewModel,
-//        restoreWalletFromBackup = {}
-//    )
-//}
