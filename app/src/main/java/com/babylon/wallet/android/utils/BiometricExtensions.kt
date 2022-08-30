@@ -7,11 +7,22 @@ import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.R
 
 fun FragmentActivity.biometricAuthenticate(
-    successfulAuthentication: () -> Unit
+    authenticate: Boolean,
+    authenticationCallback: (successful: Boolean) -> Unit,
 ) {
+    if (!authenticate) return
+
     val authCallback = object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            successfulAuthentication()
+            authenticationCallback(true)
+        }
+
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            authenticationCallback(false)
+        }
+
+        override fun onAuthenticationFailed() {
+            authenticationCallback(false)
         }
     }
 

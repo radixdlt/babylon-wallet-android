@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import com.babylon.wallet.android.data.DataStoreManager
 import com.babylon.wallet.android.presentation.onboarding.OnboardingViewModel
-import com.babylon.wallet.android.utils.SecurityHelper
+import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -25,58 +25,142 @@ class OnboardingViewModelTest {
 
     private val dataStoreManager = Mockito.mock(DataStoreManager::class.java)
 
-    private val securityHelper = Mockito.mock(SecurityHelper::class.java)
+    private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
 
     @Test
-    fun `given device security is setup, when proceeding next, verify biometric auth happens`() = runTest {
+    fun `when not on the last page, verify buttons dont show`() = runTest {
         // given
-        whenever(securityHelper.isDeviceSecure()).thenReturn(true)
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiAction>()
-        val viewModel = OnboardingViewModel(dataStoreManager, securityHelper)
+        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
 
         // when
-        viewModel.onboardingUiAction
+        viewModel.onPageSelected(0, 2)
+        viewModel.onboardingUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
-        viewModel.onProceedClick()
 
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiAction.AuthenticateWithBiometric)
+        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(showButtons = false))
     }
 
     @Test
-    fun `given device security is not setup, when proceeding next, verify security warning shown`() = runTest {
+    fun `when on the last page, verify buttons show`() = runTest {
         // given
-        whenever(securityHelper.isDeviceSecure()).thenReturn(false)
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiAction>()
-        val viewModel = OnboardingViewModel(dataStoreManager, securityHelper)
+        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
 
         // when
-        viewModel.onboardingUiAction
+        viewModel.onPageSelected(1, 2)
+        viewModel.onboardingUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
-        viewModel.onProceedClick()
 
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiAction.ShowSecurityWarning)
+        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(showButtons = true))
     }
 
     @Test
-    fun `when user authenticated, verify onboarding not shown anymore`() = runTest {
+    fun `when alert accepted, go next`() = runTest {
         // given
-        val viewModel = OnboardingViewModel(dataStoreManager, securityHelper)
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
 
         // when
-        viewModel.onUserAuthenticated()
+        viewModel.onAlertClicked(true)
+
         advanceUntilIdle()
 
         // then
         verify(dataStoreManager).setShowOnboarding(false)
+    }
+
+    @Test
+    fun `when alert not accepted, do not show external warning`() = runTest {
+        // given
+        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+
+        // when
+        viewModel.onAlertClicked(false)
+        viewModel.onboardingUiState
+            .onEach { event.add(it) }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        advanceUntilIdle()
+
+        // then
+        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(showWarning = false))
+    }
+
+    @Test
+    fun `when user authenticated successfully, go next`() = runTest {
+        // given
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+
+        // when
+        viewModel.onUserAuthenticated(true)
+
+        advanceUntilIdle()
+
+        // then
+        verify(dataStoreManager).setShowOnboarding(false)
+    }
+
+    @Test
+    fun `when user not authenticated successfully, do not go next and dismiss`() = runTest {
+        // given
+        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+
+        // when
+        viewModel.onUserAuthenticated(false)
+        viewModel.onboardingUiState
+            .onEach { event.add(it) }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+
+        advanceUntilIdle()
+
+        // then
+        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(authenticateWithBiometric = false))
+    }
+
+    @Test
+    fun `given device is secure, when proceed button clicked, verify authentication prompt shown`() = runTest {
+        // given
+        whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(true)
+        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+
+        // when
+        viewModel.onProceedClick()
+        viewModel.onboardingUiState
+            .onEach { event.add(it) }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+
+        advanceUntilIdle()
+
+        // then
+        Assert.assertEquals(event.last(), OnboardingViewModel.OnboardingUiState(authenticateWithBiometric = true))
+    }
+
+    @Test
+    fun `given device is not secure, when proceed button clicked, show warning`() = runTest {
+        // given
+        whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(false)
+        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+
+        // when
+        viewModel.onProceedClick()
+        viewModel.onboardingUiState
+            .onEach { event.add(it) }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+
+        advanceUntilIdle()
+
+        // then
+        Assert.assertEquals(event.last(), OnboardingViewModel.OnboardingUiState(showWarning = true))
     }
 }

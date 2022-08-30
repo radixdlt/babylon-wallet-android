@@ -15,10 +15,15 @@
     <string name="onboarding_title_1">Welcome to Radar Wallet</string>
     <string name="onboarding_title_2">Your wallet holds your accounts, assets, and identity</string>
     <string name="onboarding_title_3">Your phone is your login</string>
+    <string name="onboarding_title_4">Let\'s get started</string>
     <string name="onboarding_body_1">Your direct connection to the Radar Network</string>
     <string name="onboarding_body_2">The Radar Network protects you and your stuff – without needing to trust a company or bank</string>
     <string name="onboarding_body_3">Connect and transact securely with a world of web3 dApps, tokens, NFTs, and much more</string>
     <string name="im_new_radar_wallet_user">I\'m a new Radar Wallet user</string>
     <string name="restore_wallet_from_backup">Restore Wallet from Backup</string>
     <string name="biometric_prompt_title">Use your biometric to continue</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="please_confirm_dialog_title">Please confirm</string>
+    <string name="please_confirm_dialog_body">Should I continue with the requested action?</string>
 </resources>
