@@ -17,7 +17,7 @@ data class AssetDto(
     val name: String?,
     val symbol: String?, // short name
     val resourceAddress: String,
-    val tokenQuantity: Float, // if the type is "token"
+    val tokenQuantity: Double, // if the type is "token"
     val marketPrice: Float?, // this is treated as "token"/USD trading pair at the moment
     val iconUrl: String?, // icon for the token
     val nftClasses: List<NftClassDto>? // NFT types, and each NFT type has a list of actual NFTs
