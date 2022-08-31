@@ -3,8 +3,9 @@ package com.babylon.wallet.android.presentation
 import com.babylon.wallet.android.presentation.model.TokenUi
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.math.BigDecimal
 
-class TokenItemDisplayTest {
+class TokenItemTitleDisplayTest {
 
     @Test
     fun `given a token ui model, when not null symbol and not null name, then tokenItemTitle has the symbol value`() {
@@ -12,7 +13,7 @@ class TokenItemDisplayTest {
             id = "id",
             name = "name",
             symbol = "symbol",
-            tokenQuantity = "token quantity",
+            tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
             iconUrl = "icon url"
         )
@@ -26,7 +27,7 @@ class TokenItemDisplayTest {
             id = "id",
             name = null,
             symbol = "symbol",
-            tokenQuantity = "token quantity",
+            tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
             iconUrl = "icon url"
         )
@@ -40,7 +41,7 @@ class TokenItemDisplayTest {
             id = "id",
             name = "name",
             symbol = null,
-            tokenQuantity = "token quantity",
+            tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
             iconUrl = "icon url"
         )
@@ -54,7 +55,7 @@ class TokenItemDisplayTest {
             id = "id",
             name = null,
             symbol = null,
-            tokenQuantity = "token quantity",
+            tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
             iconUrl = "icon url"
         )
@@ -68,7 +69,7 @@ class TokenItemDisplayTest {
             id = "id",
             name = "name",
             symbol = " ",
-            tokenQuantity = "token quantity",
+            tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
             iconUrl = "icon url"
         )
@@ -82,7 +83,7 @@ class TokenItemDisplayTest {
             id = "id",
             name = "",
             symbol = " ",
-            tokenQuantity = "token quantity",
+            tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
             iconUrl = "icon url"
         )
