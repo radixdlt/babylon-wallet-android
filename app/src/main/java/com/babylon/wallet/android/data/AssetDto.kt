@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data
 import com.babylon.wallet.android.data.AssetDto.NftClassDto.NftDto.Companion.toUiModel
 import com.babylon.wallet.android.presentation.model.NftClassUi
 import com.babylon.wallet.android.presentation.model.TokenUi
+import java.math.BigDecimal
 
 // WARNING: this is not the actual data structure of the data transfer object and
 // might change completely in the future, since we don't have any knowledge of the backend.
@@ -66,7 +67,7 @@ data class AssetDto(
             id = id,
             name = name,
             symbol = symbol,
-            tokenQuantity = tokenQuantity.toString(),
+            tokenQuantity = BigDecimal.valueOf(tokenQuantity),
             tokenValue = if (marketPrice == null) null else (marketPrice.times(tokenQuantity)).toString(),
             iconUrl = iconUrl
         )
