@@ -102,6 +102,9 @@ dependencies {
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
     kapt 'com.google.dagger:hilt-android-compiler:2.43.2'
 
+    // Biometric
+    implementation 'androidx.biometric:biometric-ktx:1.2.0-alpha04'
+
     // Coil
     implementation("io.coil-kt:coil-compose:2.1.0")
 
