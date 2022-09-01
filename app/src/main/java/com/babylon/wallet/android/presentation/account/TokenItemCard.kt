@@ -26,6 +26,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.model.TokenUi
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
+import java.math.BigDecimal
 
 private const val CORNER_SHAPE_PERCENT = 10
 private const val WEIGHT_OF_TOKEN_NAME = 0.4F
@@ -71,7 +72,7 @@ fun TokenItemCard(
             )
             Column(Modifier.weight(WEIGHT_OF_TOKEN_VALUE)) {
                 Text(
-                    text = tokenUi.tokenQuantity,
+                    text = tokenUi.tokenQuantityToDisplay,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     maxLines = 1,
@@ -98,7 +99,7 @@ fun TokenItemCardPreview() {
                 id = "id",
                 name = "name",
                 symbol = "symbol",
-                tokenQuantity = "token quantity",
+                tokenQuantity = BigDecimal(1234.5678),
                 tokenValue = "token value",
                 iconUrl = "icon url"
             )
@@ -116,7 +117,7 @@ fun TokenItemCardWithLongNameAndLongValuesPreview() {
                 id = "id",
                 name = "a very long name that might cause troubles",
                 symbol = "",
-                tokenQuantity = "24986986408506858486358909573",
+                tokenQuantity = BigDecimal(1234567.890123),
                 tokenValue = "299238528240295320u9532",
                 iconUrl = "icon url"
             )
