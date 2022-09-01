@@ -52,16 +52,13 @@ data class TokenUi(
     // the token amount to display on token card
     val tokenQuantityToDisplay: String
         get() = if (integralPartLength >= MAX_TOKEN_DIGITS_LENGTH && decimalPartLength == 0) {
-            val result = decimalFormat.format(tokenQuantity)
-            result
+            decimalFormat.format(tokenQuantity)
         } else if (integralPartLength >= MAX_TOKEN_DIGITS_LENGTH && decimalPartLength > 0) {
             decimalFormat.maximumFractionDigits = 1
-            val result = decimalFormat.format(tokenQuantity)
-            result
+            decimalFormat.format(tokenQuantity)
         } else if (integralPartLength + decimalPartLength <= MAX_TOKEN_DIGITS_LENGTH) {
             decimalFormat.minimumFractionDigits = decimalPartLength
-            val result = decimalFormat.format(tokenQuantity)
-            result
+            decimalFormat.format(tokenQuantity)
         } else if (integralPartLength == 0 && decimalPartLength >= MAX_TOKEN_DIGITS_LENGTH - 1) {
             val roundTokenQuantity = tokenQuantity.setScale(MAX_TOKEN_DIGITS_LENGTH, RoundingMode.FLOOR)
             val roundTokenQuantityStr = roundTokenQuantity.toPlainString()
@@ -73,8 +70,7 @@ data class TokenUi(
             }
         } else {
             decimalFormat.maximumFractionDigits = MAX_TOKEN_DIGITS_LENGTH - integralPartLength
-            val result = decimalFormat.format(tokenQuantity)
-            result
+            decimalFormat.format(tokenQuantity)
         }
 
     companion object {

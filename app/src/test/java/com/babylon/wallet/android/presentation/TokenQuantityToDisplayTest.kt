@@ -198,4 +198,20 @@ class TokenQuantityToDisplayTest {
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
     }
+
+    @Test
+    fun `given a token quantity of 1234567,19 then the token amount to display is 1,234,567-dot-2`() {
+        val expectedTokenQuantityToDisplay = "1,234,567.2"
+
+        val tokenUi = TokenUi(
+            id = "id",
+            name = "name",
+            symbol = "symbol",
+            tokenQuantity = BigDecimal(1234567.19),
+            tokenValue = "token value",
+            iconUrl = "icon url"
+        )
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
+    }
 }
