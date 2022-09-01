@@ -38,31 +38,31 @@ jobs:
       - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
 
-  snapshot_tests:
-    name: "Snapshot tests"
-    runs-on: ubuntu-latest
+  # snapshot_tests:
+  #   name: "Snapshot tests"
+  #   runs-on: ubuntu-latest
 
-    needs:
-      - lint
+  #   needs:
+  #     - lint
 
-    steps:
-      - uses: actions/checkout@v2
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: "Run snapshot tests"
-        run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  #     - name: "Run snapshot tests"
+  #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
-  ui_tests:
-    name: "UI tests"
-    runs-on: ubuntu-latest
+  # ui_tests:
+  #   name: "UI tests"
+  #   runs-on: ubuntu-latest
 
-    needs:
-      - lint
+  #   needs:
+  #     - lint
 
-    steps:
-      - uses: actions/checkout@v2
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: "Run UI tests"
-        run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  #     - name: "Run UI tests"
+  #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   static_analysis:
     name: "Static analysis and SonarCloud"
@@ -72,8 +72,8 @@ jobs:
 
     needs:
       - unit_tests
-      - snapshot_tests
-      - ui_tests
+      # - snapshot_tests
+      # - ui_tests
 
     steps:
       - uses: actions/checkout@v2
