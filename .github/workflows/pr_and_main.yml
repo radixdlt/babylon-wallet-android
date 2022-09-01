@@ -18,6 +18,13 @@ jobs:
       - name: "Run Lint"
         run: ./gradlew lintDebug
 
+      - name: Upload lint results
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-results
+          path: app/build/reports/lint-results-debug.xml
+          retention-days: 1
+
   unit_tests:
     name: "Unit tests"
     runs-on: ubuntu-latest
@@ -31,48 +38,58 @@ jobs:
       - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
 
-  snapshot_tests:
-    name: "Snapshot tests"
-    runs-on: ubuntu-latest
+  # snapshot_tests:
+  #   name: "Snapshot tests"
+  #   runs-on: ubuntu-latest
 
-    needs:
-      - lint
+  #   needs:
+  #     - lint
 
-    steps:
-      - uses: actions/checkout@v2
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: "Run snapshot tests"
-        run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  #     - name: "Run snapshot tests"
+  #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
-  ui_tests:
-    name: "UI tests"
-    runs-on: ubuntu-latest
+  # ui_tests:
+  #   name: "UI tests"
+  #   runs-on: ubuntu-latest
 
-    needs:
-      - lint
+  #   needs:
+  #     - lint
 
-    steps:
-      - uses: actions/checkout@v2
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: "Run UI tests"
-        run: ./gradlew testDebugUnitTest # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+  #     - name: "Run UI tests"
+  #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
   static_analysis:
-    name: "Static analysis"
+    name: "Static analysis and SonarCloud"
     runs-on: ubuntu-latest
 
     continue-on-error: true
 
     needs:
       - unit_tests
-      - snapshot_tests
-      - ui_tests
+      # - snapshot_tests
+      # - ui_tests
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Run static analysis"
-        run: ./gradlew detektMain
+      - uses: actions/download-artifact@v3
+        with:
+          name: lint-results
+          path: app/build/reports/
+
+      - name: "Run static analysis and Sonarcloud"
+        run: |
+          ./gradlew detektMain 
+          ./gradlew sonarqube
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
 
   build:
 

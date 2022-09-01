@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-kapt'
+    id "org.sonarqube" version "3.0"
 }
 
 apply from: "$rootDir/config/detekt.gradle"
@@ -51,6 +52,17 @@ android {
     }
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.sourceEncoding", "UTF-8"
+        property 'sonar.projectKey', 'radixdlt_babylon-wallet-android'
+        property 'sonar.projectName', 'babylon-wallet-android'
+        property 'sonar.organization', 'radixdlt-github'
+        property 'sonar.androidLint.reportPaths', 'build/reports/lint-results-debug.xml'
+        property 'sonar.kotlin.detekt.reportPaths', 'build/reports/detekt/debug.xml'
     }
 }
 

@@ -15,7 +15,7 @@
 
 desc "Manual trigger"
 lane :manual do
-  gradle(task: "assemble")
+  gradle(task: "assembleDebug")
   firebase_app_distribution(
     app: ENV["FIREBASE_APP_ID"],
     release_notes: ENV["RELEASE_NOTES"],
