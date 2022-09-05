@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
+import com.babylon.wallet.android.presentation.account_creation.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -40,6 +41,11 @@ fun NavigationHost(
                     navController.navigate(
                         Screen.AccountDestination.routeWithArgs(accountId, accountName)
                     )
+                },
+                onAccountCreationClick = {
+                    navController.navigate(
+                        Screen.AccountCreationDestination.route
+                    )
                 }
             )
         }
@@ -57,6 +63,11 @@ fun NavigationHost(
             ) {
                 navController.navigateUp()
             }
+        }
+        composable(route = Screen.AccountCreationDestination.route) {
+            CreateAccountScreen(
+                onBackClick = { navController.navigateUp() }
+            )
         }
     }
 }

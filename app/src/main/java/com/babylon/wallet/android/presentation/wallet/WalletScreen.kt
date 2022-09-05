@@ -45,6 +45,7 @@ import java.util.Locale
 fun WalletScreen(
     viewModel: WalletViewModel,
     onAccountClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
+    onAccountCreationClick: () -> Unit
 ) {
 
     val state: WalletUiState by viewModel.walletUiState.collectAsStateWithLifecycle()
@@ -81,6 +82,7 @@ fun WalletScreen(
                             accounts = (state as WalletUiState.Loaded).accounts,
                             onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
                             onAccountClick = onAccountClick,
+                            onAccountCreationClick = onAccountCreationClick,
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         )
                     }
@@ -96,6 +98,7 @@ private fun WalletContent(
     accounts: List<AccountUi>,
     onCopyAccountAddressClick: (String) -> Unit,
     onAccountClick: (String, String) -> Unit,
+    onAccountCreationClick: () -> Unit,
     modifier: Modifier
 ) {
     Column(
@@ -158,7 +161,7 @@ private fun WalletContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             BabylonButton(title = stringResource(id = R.string.create_new_account)) {
-                /*TODO*/
+                onAccountCreationClick()
             }
 
             RadarHubView {
@@ -213,6 +216,7 @@ fun WalletContentPreview() {
             accounts = mockAccountUiList,
             onCopyAccountAddressClick = {},
             onAccountClick = { _, _ -> },
+            onAccountCreationClick = { },
             modifier = Modifier
         )
     }
@@ -233,7 +237,8 @@ fun WalletScreenPreview() {
         WalletScreen(
             viewModel = mockViewModel,
             onAccountClick = { _, _ ->
-            }
+            },
+            onAccountCreationClick = {}
         )
     }
 }

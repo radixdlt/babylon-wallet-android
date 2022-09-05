@@ -15,6 +15,7 @@ sealed class Screen(override val route: String) : Destination {
     object OnboardingDestination : Screen("onboarding_route")
     object WalletDestination : Screen("wallet_route")
     object AccountDestination : Screen("account_route")
+    object AccountCreationDestination : Screen("account_creation_route")
 
     fun routeWithArgs(vararg args: String): String {
         return buildString {
