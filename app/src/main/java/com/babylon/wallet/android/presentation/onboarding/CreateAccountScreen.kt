@@ -51,7 +51,7 @@ fun CreateAccountScreen(
     onContinueClick: () -> Unit
 ) {
     var buttonEnabled by rememberSaveable { mutableStateOf(false) }
-    var text by rememberSaveable { mutableStateOf("") }
+    var accountName by rememberSaveable { mutableStateOf("") }
     val maxLength = 20
 
     Column(
@@ -93,10 +93,10 @@ fun CreateAccountScreen(
                 Spacer(modifier = Modifier.height(30.dp))
                 Column(modifier = Modifier.fillMaxWidth()) {
                     TextField(
-                        value = text,
+                        value = accountName,
                         onValueChange = {
                             buttonEnabled = it.isNotEmpty()
-                            text = it.take(maxLength)
+                            accountName = it.take(maxLength)
                         },
                         modifier = Modifier
                             .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))
