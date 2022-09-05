@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
@@ -46,7 +47,8 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CreateAccountScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onContinueClick: () -> Unit
 ) {
     var buttonEnabled by rememberSaveable { mutableStateOf(false) }
     var text by rememberSaveable { mutableStateOf("") }
@@ -77,6 +79,7 @@ fun CreateAccountScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = stringResource(id = R.string.create_new_account),
+                    textAlign = TextAlign.Center,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -118,7 +121,7 @@ fun CreateAccountScreen(
                 Spacer(Modifier.weight(1f))
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { },
+                    onClick = { onContinueClick() },
                     enabled = buttonEnabled,
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = RadixButtonBackground,
@@ -134,4 +137,14 @@ fun CreateAccountScreen(
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Preview("large font", fontScale = 2f, showBackground = true)
+@Composable
+fun CreateAccountPreview() {
+    CreateAccountScreen(
+        onBackClick = {},
+        onContinueClick = {}
+    )
 }

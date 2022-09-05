@@ -66,7 +66,8 @@ fun NavigationHost(
         }
         composable(route = Screen.AccountCreationDestination.route) {
             CreateAccountScreen(
-                onBackClick = { navController.navigateUp() }
+                onBackClick = { navController.navigateUp() },
+                onContinueClick = { /* TODO */ }
             )
         }
     }
