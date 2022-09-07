@@ -24,6 +24,10 @@
     <string name="biometric_prompt_title">Use your biometric to continue</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
-    <string name="please_confirm_dialog_title">Please confirm</string>
-    <string name="please_confirm_dialog_body">Should I continue with the requested action?</string>
+    <string name="please_confirm_dialog_title">Your device is not secured</string>
+    <string name="please_confirm_dialog_body">Do you want to continue?</string>
+    <string name="account_creation_text">What would you like to call your account?</string>
+    <string name="this_can_be_changed_any_time">This can be changed any time</string>
+    <string name="account_name">Account Name</string>
+    <string name="continue_button_title">Continue</string>
 </resources>
