@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.onboarding
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -44,7 +43,6 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.White
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CreateAccountScreen(
     onBackClick: () -> Unit,
