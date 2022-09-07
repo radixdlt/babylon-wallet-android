@@ -2,13 +2,11 @@ package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,77 +59,74 @@ fun CreateAccountScreen(
                 contentDescription = "navigate back"
             )
         }
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 30.dp, vertical = 16.dp)
-                    .heightIn(min = maxHeight)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.img_account_creation),
-                    contentDescription = "account_creation_image"
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 30.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(R.drawable.img_account_creation),
+                contentDescription = "account_creation_image"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(id = R.string.create_new_account),
+                textAlign = TextAlign.Center,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+            Text(
+                text = stringResource(id = R.string.account_creation_text),
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Normal
+            )
+            Spacer(modifier = Modifier.height(30.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                TextField(
+                    value = accountName,
+                    onValueChange = {
+                        buttonEnabled = it.isNotEmpty()
+                        accountName = it.take(maxLength)
+                    },
+                    modifier = Modifier
+                        .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))
+                        .fillMaxWidth(),
+                    label = { Text(stringResource(id = R.string.account_name)) },
+                    shape = RoundedCornerShape(4.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        backgroundColor = Color.LightGray,
+                    )
+                )
+                Text(
+                    text = stringResource(id = R.string.this_can_be_changed_any_time),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = RadixGrey2
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(id = R.string.create_new_account),
-                    textAlign = TextAlign.Center,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold
+            }
+            Spacer(Modifier.weight(1f))
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onContinueClick() },
+                enabled = buttonEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = RadixButtonBackground,
+                    disabledBackgroundColor = RadixBackground
                 )
-                Spacer(modifier = Modifier.height(40.dp))
+            ) {
                 Text(
-                    text = stringResource(id = R.string.account_creation_text),
-                    textAlign = TextAlign.Center,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Normal
+                    color = White,
+                    text = stringResource(id = R.string.continue_button_title),
+                    modifier = Modifier.padding(26.dp, 8.dp, 26.dp, 8.dp)
                 )
-                Spacer(modifier = Modifier.height(30.dp))
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    TextField(
-                        value = accountName,
-                        onValueChange = {
-                            buttonEnabled = it.isNotEmpty()
-                            accountName = it.take(maxLength)
-                        },
-                        modifier = Modifier
-                            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))
-                            .fillMaxWidth(),
-                        label = { Text(stringResource(id = R.string.account_name)) },
-                        shape = RoundedCornerShape(4.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            backgroundColor = Color.LightGray,
-                        )
-                    )
-                    Text(
-                        text = stringResource(id = R.string.this_can_be_changed_any_time),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = RadixGrey2
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                Spacer(Modifier.weight(1f))
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onContinueClick() },
-                    enabled = buttonEnabled,
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = RadixButtonBackground,
-                        disabledBackgroundColor = RadixBackground
-                    )
-                ) {
-                    Text(
-                        color = White,
-                        text = stringResource(id = R.string.continue_button_title),
-                        modifier = Modifier.padding(26.dp, 8.dp, 26.dp, 8.dp)
-                    )
-                }
             }
         }
     }
