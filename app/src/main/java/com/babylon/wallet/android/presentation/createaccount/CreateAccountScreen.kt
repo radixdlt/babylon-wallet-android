@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.onboarding
+package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border

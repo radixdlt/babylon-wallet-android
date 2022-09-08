@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.onboarding
+package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -97,12 +97,12 @@ fun CreateAccountConfirmationScreen(
         }
         Spacer(modifier = Modifier.height(22.dp))
         Text(
+            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp),
             text = stringResource(id = R.string.account_created_info),
             textAlign = TextAlign.Center,
             fontSize = 18.sp,
             fontWeight = FontWeight.Normal
         )
-        Spacer(Modifier.height(16.dp))
         Spacer(Modifier.weight(1f))
         Button(
             modifier = Modifier.fillMaxWidth(),

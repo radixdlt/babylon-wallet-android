@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.presentation.onboarding.CreateAccountConfirmationViewModel
+import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
