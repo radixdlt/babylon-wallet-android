@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
+import com.babylon.wallet.android.presentation.onboarding.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.onboarding.CreateAccountScreen
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
@@ -67,7 +68,25 @@ fun NavigationHost(
         composable(route = Screen.CreateAccountDestination.route) {
             CreateAccountScreen(
                 onBackClick = { navController.navigateUp() },
-                onContinueClick = { /* TODO */ }
+                onContinueClick = { accountId, accountName ->
+                    navController.navigate(
+                        Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName)
+                    )
+                }
+            )
+        }
+        composable(
+            route = Screen.AccountCompletionDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+            arguments = listOf(
+                navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
+                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType }
+            )
+        ) {
+            CreateAccountConfirmationScreen(
+                viewModel = hiltViewModel(),
+                goHomeClick = {
+                    navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                }
             )
         }
     }

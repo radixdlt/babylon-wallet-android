@@ -44,7 +44,7 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 @Composable
 fun CreateAccountScreen(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
 ) {
     var buttonEnabled by rememberSaveable { mutableStateOf(false) }
     var accountName by rememberSaveable { mutableStateOf("") }
@@ -115,7 +115,9 @@ fun CreateAccountScreen(
             Spacer(Modifier.weight(1f))
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { onContinueClick() },
+                // TODO Im gonna revist this to handle that from viewmodel nicely.
+                //  In the meantime, we dont have account generation so i put hardcoded stuff here
+                onClick = { onContinueClick("di20ejdnd2e20e2", accountName) },
                 enabled = buttonEnabled,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = RadixButtonBackground,
@@ -138,6 +140,6 @@ fun CreateAccountScreen(
 fun CreateAccountPreview() {
     CreateAccountScreen(
         onBackClick = {},
-        onContinueClick = {}
+        onContinueClick = { _, _ -> }
     )
 }
