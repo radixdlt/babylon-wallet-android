@@ -30,4 +30,8 @@
     <string name="this_can_be_changed_any_time">This can be changed any time</string>
     <string name="account_name">Account Name</string>
     <string name="continue_button_title">Continue</string>
+    <string name="congratulations">Congratulations</string>
+    <string name="you_created_account">You\'ve created your account.</string>
+    <string name="account_created_info">Your account lives on the Radar Network and you can access it anytime in Radar Wallet.</string>
+    <string name="go_to_home">Go to Home</string>
 </resources>

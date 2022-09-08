@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -36,9 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,8 +46,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.mockdata.mockAccountUiList
 import com.babylon.wallet.android.presentation.model.AccountUi
+import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
-import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -245,33 +242,6 @@ private fun AccountTopAppBar(
         },
         elevation = 0.dp
     )
-}
-
-@Composable
-private fun AccountAddressView(
-    address: String,
-    onCopyAccountAddressClick: (String) -> Unit,
-    modifier: Modifier
-) {
-    ResponsiveText(
-        modifier = modifier,
-        text = address,
-        style = MaterialTheme.typography.h6,
-        maxLines = 1
-    )
-    IconButton(
-        modifier = Modifier
-            .padding(start = 8.dp)
-            .size(14.dp),
-        onClick = {
-            onCopyAccountAddressClick(address)
-        },
-    ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_copy),
-            contentDescription = "copy account address"
-        )
-    }
 }
 
 @ExperimentalPagerApi
