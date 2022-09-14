@@ -30,9 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.MainActivity
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
@@ -107,7 +107,7 @@ fun OnboardingScreen(
                 }
             }
 
-            val context = LocalContext.current as MainActivity
+            val context = LocalContext.current as FragmentActivity
             context.biometricAuthenticate(state.authenticateWithBiometric) { authenticatedSuccessfully ->
                 viewModel.onUserAuthenticated(authenticatedSuccessfully)
             }
