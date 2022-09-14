@@ -44,6 +44,7 @@ import java.util.Locale
 @Composable
 fun WalletScreen(
     viewModel: WalletViewModel,
+    modifier: Modifier = Modifier,
     onAccountClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
     onAccountCreationClick: () -> Unit
 ) {
@@ -99,7 +100,7 @@ private fun WalletContent(
     onCopyAccountAddressClick: (String) -> Unit,
     onAccountClick: (String, String) -> Unit,
     onAccountCreationClick: () -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -172,7 +173,10 @@ private fun WalletContent(
 }
 
 @Composable
-fun RadarHubView(onClicked: () -> Unit) {
+fun RadarHubView(
+    modifier: Modifier = Modifier,
+    onClicked: () -> Unit
+) {
     Column(
         modifier = Modifier
             .padding(15.dp)

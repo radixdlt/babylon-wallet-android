@@ -46,9 +46,9 @@ fun CollapsableLazyColumn(
                         bottomCornersRounded = true
                     }
                     CollapsableChildItemView(
-                        bottomCornersRounded = bottomCornersRounded,
                         nftId = row.id,
                         imageUrl = row.imageUrl,
+                        bottomCornersRounded = bottomCornersRounded,
                         nftMetadata = row.nftsMetadata
                     )
                 }

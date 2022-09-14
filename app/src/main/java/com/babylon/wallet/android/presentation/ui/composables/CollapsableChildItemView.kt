@@ -28,9 +28,10 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 
 @Composable
 fun CollapsableChildItemView(
-    bottomCornersRounded: Boolean = false,
     nftId: String,
     imageUrl: String?,
+    modifier: Modifier = Modifier,
+    bottomCornersRounded: Boolean = false,
     nftMetadata: List<Pair<String, String>> = emptyList()
 ) {
     val bottomCorners = if (bottomCornersRounded) 8.dp else 0.dp

@@ -25,8 +25,9 @@ private const val RELATIVE_PADDING = 0.7f
 @Composable
 fun AssetIconRowView(
     assets: List<TokenUi>,
+    modifier: Modifier = Modifier,
     circleSize: Int = 30,
-    fontSize: Int = 10
+    fontSize: Int = 10,
 ) {
     Box(
         modifier = Modifier.fillMaxWidth()

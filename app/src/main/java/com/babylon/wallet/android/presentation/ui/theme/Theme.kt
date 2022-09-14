@@ -6,6 +6,15 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+// TODO - IMPORTANT
+//  The resource-theme of the app has been switched from Material 2 to Material 3.
+//  The reason was to fix the bug that caused a crash with the biometric dialog on Android 6 to 8.1.
+//  Although the resource-theme is set to Material 3,
+//  the rest of the UI components and the UI theme is still in Material 2.
+//  Once we have a design system we should update the Theme file following the Material Design 3 guidelines
+//  and switch the UI components from Material 2 to 3 if it is needed!
+//  For samples have a look at Jetsurvey and JetNews
+
 // private val DarkColorPalette = darkColors(
 //    primary = Purple200,
 //    primaryVariant = Purple700,

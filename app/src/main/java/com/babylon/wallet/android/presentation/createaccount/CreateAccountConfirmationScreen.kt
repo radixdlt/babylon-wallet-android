@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -36,10 +35,11 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.White
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun CreateAccountConfirmationScreen(
     viewModel: CreateAccountConfirmationViewModel,
+    modifier: Modifier = Modifier,
     goHomeClick: () -> Unit
 ) {
     val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value

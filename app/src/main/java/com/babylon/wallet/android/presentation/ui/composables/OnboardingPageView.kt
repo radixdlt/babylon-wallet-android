@@ -18,7 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun OnboardingPageView(page: OnboardingPage) {
+fun OnboardingPageView(
+    page: OnboardingPage,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = Modifier.padding(horizontal = 40.dp, vertical = 0.dp),
         horizontalAlignment = Alignment.CenterHorizontally

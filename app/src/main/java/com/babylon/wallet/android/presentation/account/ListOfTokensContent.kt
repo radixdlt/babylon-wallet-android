@@ -18,10 +18,10 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListOfTokensContent(
-    xrdTokenUi: TokenUi? = null,
     tokenItems: List<TokenUi>,
-    modifier: Modifier,
     lazyListState: LazyListState,
+    modifier: Modifier = Modifier,
+    xrdTokenUi: TokenUi? = null,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 32.dp),
@@ -53,8 +53,8 @@ fun ListOfTokenItemsPreview() {
     BabylonWalletTheme {
         ListOfTokensContent(
             tokenItems = mockTokenUiList,
-            modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
-            lazyListState = LazyListState()
+            lazyListState = LazyListState(),
+            modifier = Modifier.heightIn(min = 200.dp, max = 600.dp)
         )
     }
 }

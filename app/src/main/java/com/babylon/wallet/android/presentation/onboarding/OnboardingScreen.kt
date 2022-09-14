@@ -30,9 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.MainActivity
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
@@ -49,6 +49,7 @@ import com.google.accompanist.pager.rememberPagerState
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
+    modifier: Modifier = Modifier,
     restoreWalletFromBackup: () -> Unit,
 ) {
     val state = viewModel.onboardingUiState.collectAsStateWithLifecycle().value
@@ -107,12 +108,12 @@ fun OnboardingScreen(
                 }
             }
 
-            val context = LocalContext.current as MainActivity
+            val context = LocalContext.current as FragmentActivity
             context.biometricAuthenticate(state.authenticateWithBiometric) { authenticatedSuccessfully ->
                 viewModel.onUserAuthenticated(authenticatedSuccessfully)
             }
 
-            AlertDialogView(state.showWarning) { accepted ->
+            AlertDialogView(show = state.showWarning) { accepted ->
                 viewModel.onAlertClicked(accepted)
             }
 
@@ -148,7 +149,7 @@ fun OnboardingScreen(
 }
 
 @Composable
-fun AlertDialogView(
+private fun AlertDialogView(
     show: Boolean,
     finish: (accepted: Boolean) -> Unit
 ) {

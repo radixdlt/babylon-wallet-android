@@ -64,6 +64,7 @@ fun AccountScreen(
     viewModel: AccountViewModel,
     accountName: String,
     onMenuItemClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit
 ) {
     val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
@@ -122,7 +123,7 @@ private fun AccountContent(
     pagerState: PagerState,
     onCopyAccountAddressClick: (String) -> Unit,
     tokenLazyListState: LazyListState,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
@@ -167,7 +168,8 @@ private fun AccountContent(
 fun AssetsContent(
     pagerState: PagerState,
     account: AccountUi,
-    tokenLazyListState: LazyListState
+    tokenLazyListState: LazyListState,
+    modifier: Modifier = Modifier
 ) {
     HorizontalPager(
         count = 2, // TODO
@@ -184,10 +186,10 @@ fun AssetsContent(
                 }
 
                 ListOfTokensContent(
-                    xrdTokenUi = xrdToken,
                     tokenItems = tokensToShow,
+                    lazyListState = tokenLazyListState,
+                    xrdTokenUi = xrdToken,
                     modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
-                    lazyListState = tokenLazyListState
                 )
             }
             1 -> {
