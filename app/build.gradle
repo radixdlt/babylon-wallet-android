@@ -11,12 +11,12 @@ apply from: "$rootDir/config/detekt.gradle"
 import io.gitlab.arturbosch.detekt.Detekt
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.babylon.wallet.android"
         minSdk 23
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -72,10 +72,10 @@ tasks.withType(Detekt).configureEach {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0-alpha01"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-alpha01"
-    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.0-alpha01"
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0-alpha02"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-alpha02"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.0-alpha02"
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.runtime:runtime:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -90,9 +90,9 @@ dependencies {
     implementation "androidx.compose.material3:material3:1.0.0-beta02"
 
     // Accompanist
-    implementation "com.google.accompanist:accompanist-swiperefresh:0.25.1"
-    implementation "com.google.accompanist:accompanist-pager:0.25.1"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.25.1"
+    implementation "com.google.accompanist:accompanist-swiperefresh:0.26.3-beta"
+    implementation "com.google.accompanist:accompanist-pager:0.26.3-beta"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.26.3-beta"
 
     // Datastore
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
@@ -106,7 +106,7 @@ dependencies {
     implementation 'androidx.biometric:biometric-ktx:1.2.0-alpha04'
 
     // Coil
-    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation("io.coil-kt:coil-compose:2.2.0")
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
