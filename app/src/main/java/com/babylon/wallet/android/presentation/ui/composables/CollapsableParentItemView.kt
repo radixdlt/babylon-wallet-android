@@ -37,8 +37,9 @@ fun CollapsableParentItemView(
     nftsInCirculation: String?,
     nftsInPossession: String?,
     nftChildCount: Int,
-    collapsed: Boolean = false,
     arrowText: String,
+    modifier: Modifier = Modifier,
+    collapsed: Boolean = false,
     parentSectionClick: () -> Unit,
 ) {
     val bottomPadding = if (collapsed) 8.dp else 0.dp

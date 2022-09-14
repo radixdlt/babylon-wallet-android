@@ -35,6 +35,7 @@ fun WalletBalanceView(
     currencySignValue: String,
     amount: String,
     hidden: Boolean,
+    modifier: Modifier = Modifier,
     balanceClicked: () -> Unit
 ) {
     var balanceHidden by rememberSaveable { mutableStateOf(hidden) }

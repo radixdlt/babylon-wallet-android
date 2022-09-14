@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 @Composable
 fun CreateAccountScreen(
     onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onContinueClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
 ) {
     var buttonEnabled by rememberSaveable { mutableStateOf(false) }

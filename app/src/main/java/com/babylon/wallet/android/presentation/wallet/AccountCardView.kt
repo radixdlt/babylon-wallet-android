@@ -38,7 +38,7 @@ fun AccountCardView(
     accountCurrency: String,
     onCopyClick: () -> Unit,
     assets: List<TokenUi>, // at the moment we pass only the tokens
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.clickable { onCardClick() },
@@ -92,7 +92,7 @@ fun AccountCardView(
                 }
             }
             Spacer(modifier = Modifier.height(28.dp))
-            AssetIconRowView(assets)
+            AssetIconRowView(assets = assets)
         }
     }
 }

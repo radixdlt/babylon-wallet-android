@@ -20,7 +20,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @Composable
-fun RDXAppBar(toolbarTitle: String, onMenuItemClicked: () -> Unit) {
+fun RDXAppBar(
+    toolbarTitle: String,
+    modifier: Modifier = Modifier,
+    onMenuItemClicked: () -> Unit
+) {
     TopAppBar(
         title = {
             Text(

@@ -35,6 +35,7 @@ private const val WEIGHT_OF_TOKEN_VALUE = 0.6F
 @Composable
 fun TokenItemCard(
     tokenUi: TokenUi,
+    modifier: Modifier = Modifier,
     isFirst: Boolean = false
 ) {
     Card(

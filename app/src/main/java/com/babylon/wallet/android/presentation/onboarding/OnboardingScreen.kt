@@ -49,6 +49,7 @@ import com.google.accompanist.pager.rememberPagerState
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
+    modifier: Modifier = Modifier,
     restoreWalletFromBackup: () -> Unit,
 ) {
     val state = viewModel.onboardingUiState.collectAsStateWithLifecycle().value
@@ -112,7 +113,7 @@ fun OnboardingScreen(
                 viewModel.onUserAuthenticated(authenticatedSuccessfully)
             }
 
-            AlertDialogView(state.showWarning) { accepted ->
+            AlertDialogView(show = state.showWarning) { accepted ->
                 viewModel.onAlertClicked(accepted)
             }
 
@@ -148,7 +149,7 @@ fun OnboardingScreen(
 }
 
 @Composable
-fun AlertDialogView(
+private fun AlertDialogView(
     show: Boolean,
     finish: (accepted: Boolean) -> Unit
 ) {

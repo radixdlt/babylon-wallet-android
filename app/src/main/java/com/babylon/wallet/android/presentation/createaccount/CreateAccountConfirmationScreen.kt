@@ -39,6 +39,7 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 @Composable
 fun CreateAccountConfirmationScreen(
     viewModel: CreateAccountConfirmationViewModel,
+    modifier: Modifier = Modifier,
     goHomeClick: () -> Unit
 ) {
     val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value
