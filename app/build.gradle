@@ -4,9 +4,11 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'kotlin-kapt'
     id "org.sonarqube" version "3.0"
+    id "jacoco"
 }
 
 apply from: "$rootDir/config/detekt.gradle"
+apply from: "$rootDir/config/jacoco.gradle"
 
 import io.gitlab.arturbosch.detekt.Detekt
 
@@ -27,6 +29,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -63,6 +68,7 @@ sonarqube {
         property 'sonar.organization', 'radixdlt-github'
         property 'sonar.androidLint.reportPaths', 'build/reports/lint-results-debug.xml'
         property 'sonar.kotlin.detekt.reportPaths', 'build/reports/detekt/debug.xml'
+        property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
     }
 }
 

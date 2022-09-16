@@ -19,6 +19,6 @@ detekt {
 
     dependencies {
         detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0"
-        detektPlugins "com.twitter.compose.rules:detekt:0.0.8"
+        detektPlugins "com.twitter.compose.rules:detekt:0.0.10"
     }
 }
