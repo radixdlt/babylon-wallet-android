@@ -77,16 +77,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+        with:
+          fetch-depth: 0
+          
       - uses: actions/download-artifact@v3
         with:
           name: lint-results
           path: app/build/reports/
 
-      - name: "Run static analysis and Sonarcloud"
+      - name: "Run detekt"
         run: |
           ./gradlew detektMain 
-          ./gradlew jacocoTestReport sonarqube
+
+      - name: "Run jacoco"
+        run: |
+          ./gradlew jacocoTestReport
+
+      - name: "Run Sonarcloud"
+        run: |
+          ./gradlew sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
