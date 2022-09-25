@@ -1,5 +1,4 @@
-## How to structure and name packages, classes, and properties
-
+# How to structure and name packages, classes, and properties
 Since the implementation is based on the [Android app architecture guidelines](https://developer.android.com/topic/architecture) and [clean architecture](https://www.raywenderlich.com/3595916-clean-architecture-tutorial-for-android-getting-started) concepts
 the naming and package structure will be based on those, too.
 
@@ -12,6 +11,8 @@ the naming and package structure will be based on those, too.
 
 The rest can be configuration or helper packages.
 
+## Package structure and name of packages and classes
+Let's see the structure and names per layer.
 ### domain package
 - **repositories** package
   - suffix: `Repository`, e.g. _PriceRepository_, _AccountRepository_
@@ -53,3 +54,9 @@ classes that are related to the feature! For example:
   - _AccountScreen_, main screen suffix: `Screen`
   - _ListOfAccountsContent_ (composable that implements a list of accounts)
   - _AccountUi_, presentation model suffix: `Ui`
+
+
+## Name of variables
+### presentation package
+- Name the properties of the data classes with their actual name. For example, an _account_ has the following properties: _name_, _address_, _phone_. Then the the `AccountUi` data model has the properties `name`, `address`, `phone`. Avoid the names `accountName`, `accountAddress`, `accountPhone`.
+- The (main) state of the composables can be named as `state`. If more than one state is needed in the composables e.g. the scroll state then this specfic one can be named as `scrollState`.
