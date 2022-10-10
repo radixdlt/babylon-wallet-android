@@ -16,7 +16,7 @@ In short for architecture:
 - The data layer mostly uses the [repository pattern](https://developer.android.com/static/codelabs/basic-android-kotlin-training-repository-pattern/img/69021c8142d29198.png).
 - Domain layer is used to hold the repository interfaces. And later those interfaces will be used for use cases if a use case is needed.
 - Domain layer can have its own data models if it is needed. (e.g. to manipulate the data from the data layer, or to combine two or more different data models from the data layer to one in the domain layer.)
-- Use cases can provide real benefits in some scenarios, please see 4 bullets [here](https://developer.android.com/topic/architecture/domain-layer). Another example of a use case is the `ShowOnboardingUseCase`.
+- Use cases (they live in domain layer) can provide real benefits in some scenarios, please see 4 bullets [here](https://developer.android.com/topic/architecture/domain-layer). Another example of a use case is the `ShowOnboardingUseCase`.
 - MVVM for the presentation layer
 
 The tech stack:
