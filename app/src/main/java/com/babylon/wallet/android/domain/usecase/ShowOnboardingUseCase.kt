@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.usecase
+package com.babylon.wallet.android.domain.usecase
 
 import com.babylon.wallet.android.data.DataStoreManager
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
