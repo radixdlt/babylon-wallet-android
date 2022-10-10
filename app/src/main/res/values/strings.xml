@@ -34,4 +34,13 @@
     <string name="you_created_account">You\'ve created your account.</string>
     <string name="account_created_info">Your account lives on the Radar Network and you can access it anytime in Radar Wallet.</string>
     <string name="go_to_home">Go to Home</string>
+    <string name="dapp_connection_request">dApp Connection Request</string>
+    <string name="radaswap_wants_to_connect_wallet">Radaswap wants to connect to your wallet</string>
+    <string name="for_this_dapp_to_function">For this dApp to function, it needs the following:</string>
+    <!-- I leave bullet points here for simplicity until we know how those data come and in what form-->
+    <string name="dapp_condition1">"\u2022 A dApp Login, including the following information:
+        \u2022 Name
+        \u2022 Email address
+        "</string>
+    <string name="dapp_condition2">\u2022 Permission to view at least one account</string>
 </resources>
