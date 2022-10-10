@@ -5,7 +5,7 @@ An Android wallet for interacting with the Radix DLT ledger.
 - [Android 8.1](https://developer.android.com/about/versions/oreo/android-8.1) minimum Android version
 - Support of handsets and no tablets.
 
-## Architecture and tech stack
+## Architecture and tech stack ⚙️
 The architecture is based on the [Android app architecture](https://developer.android.com/topic/architecture) which follows some concepts of the [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
 So first, please read this one! :) 
 In short for architecture:
@@ -19,7 +19,7 @@ In short for architecture:
 - Use cases (they live in domain layer) can provide real benefits in some scenarios, please see 4 bullets [here](https://developer.android.com/topic/architecture/domain-layer). Another example of a use case is the `ShowOnboardingUseCase`.
 - MVVM for the presentation layer
 
-The tech stack:
+🏗️ The tech stack:
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) for UI
 - [Material 3](https://m3.material.io/) it is actually enabled but not correctly/heavily used. (Dark mode support will be provided and implemented as we develop features.)
 - [Retrofit](https://square.github.io/retrofit/) + [okhttp](https://square.github.io/okhttp/) for REST
