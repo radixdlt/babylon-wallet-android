@@ -40,6 +40,7 @@ For the beginning, we developers require to have unit tests as the development p
 - Write your code, leave it aside for one week, come back and read it. If you don't get what your code does in less than a minute, then probably you overengineering!
 - Comments are helpful. :) 
 - Watch this [video](https://www.youtube.com/watch?v=OMPfEXIlTVE), really! It helps you understand when to (not) use abstraction, inheritance, and when to use composition + DI.
+- Read the [conventions](https://github.com/radixdlt/babylon-wallet-android/blob/main/docs/Conventions.md) doc
 
 Some useful Kotlin resources
 - [Value classes](https://quickbirdstudios.com/blog/kotlin-value-classes/)
