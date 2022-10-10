@@ -60,3 +60,12 @@ classes that are related to the feature! For example:
 ### presentation package
 - Name the properties of the data classes with their actual name. For example, an _account_ has the following properties: _name_, _address_, _phone_. Then the the `AccountUi` data model has the properties `name`, `address`, `phone`. Avoid the names `accountName`, `accountAddress`, `accountPhone`.
 - The (main) state of the composables can be named as `state`. If more than one state is needed in the composables e.g. the scroll state then this specfic one can be named as `scrollState`.
+
+
+# Kotlin codestyle
+Some tips and style recommendations to make Kotlin more understandable.
+- For 2 or more constructor arguments, prefer not to keep the properties on the same line as the class name in the constructor definition but as a stack of parameters.
+- Avoid all usage of the implicit argument name `it` inside multi-line expressions or multi-line lambdas.
+- Specify a name instead of the implicit argument name it inside map, flatMap, switchMap, flatMapLatest and so on lambda argument, and in any function that follows it.
+- Use named arguments for lambda arguments, if 2 or more lambdas are being passed to a function.
+- Specify the return type of a function, if the function is public (and isn’t coming from `override` of an interface function).
