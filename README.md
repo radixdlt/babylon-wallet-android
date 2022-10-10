@@ -31,22 +31,22 @@ The tech stack:
 
 We try to stay with native libraries as much as possible. As less third party dependencies as possible.
 
-## Testing strategy (Pyramid of UI, Linear Image regression, Unit from top to bottom, etc.)
+### Testing strategy (Pyramid of UI, Linear Image regression, Unit from top to bottom, etc.)
 
 For the beginning, we developers require to have unit tests as the development process. This will be the only part of the testing pyramid for now. At the later point, UI tests are likely to be introduced. TBC.
 
 ## Useful tips/resources and best practices (IMPORTANT)
 - [Keep It Simple](https://imageio.forbes.com/specials-images/imageserve/6141f431cb79cea26593300b/Shortcut-From-Point-A-to-Point-B-Concept/960x0.jpg?format=jpg&width=960)
 
-## CI/CD and Git
-- [Git branching strategy](https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2826076188/Git+branching+strategy)
-- How to create [GitHub repository](https://radixdlt.atlassian.net/wiki/spaces/EN/pages/2804023327/Github+repositories)
-- At the moment we use GitHub Actions + [fastlane](https://fastlane.tools/)
-
-## Security rules
+### Security rules
 - For the security reason we prefer not to store confidential data (tokens, user password, confidential data fetched from backend) on the phone. If we really need to, they should be encrypted up to the best known standards. 
 - SSL pinning (Certificate or Public Key pinning) would be preferred to secure http data transfer. 
 - Strict code reviews, ideally followed by manual smoke test 
 - No change should be committed without ticket associated with it
+
+## CI/CD and Git
+- [Git branching strategy](https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2826076188/Git+branching+strategy)
+- How to create [GitHub repository](https://radixdlt.atlassian.net/wiki/spaces/EN/pages/2804023327/Github+repositories)
+- At the moment we use GitHub Actions + [fastlane](https://fastlane.tools/)
 
 
