@@ -41,7 +41,7 @@ For the beginning, we developers require to have unit tests as the development p
 - Comments are helpful. :) 
 - Watch this [video](https://www.youtube.com/watch?v=OMPfEXIlTVE), really! It helps you understand when to (not) use abstraction, inheritance, and when to use composition + DI.
 
-Some Kotlin useful Kotlin resources
+Some useful Kotlin resources
 - [Value classes](https://quickbirdstudios.com/blog/kotlin-value-classes/)
 - [Sealed interfaces](https://quickbirdstudios.com/blog/sealed-interfaces-kotlin/ )
 
