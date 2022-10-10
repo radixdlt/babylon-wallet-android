@@ -66,6 +66,5 @@ classes that are related to the feature! For example:
 Some tips and style recommendations to make Kotlin more understandable.
 - For 2 or more constructor arguments, prefer not to keep the properties on the same line as the class name in the constructor definition but as a stack of parameters.
 - Avoid all usage of the implicit argument name `it` inside multi-line expressions or multi-line lambdas.
-- Specify a name instead of the implicit argument name it inside map, flatMap, switchMap, flatMapLatest and so on lambda argument, and in any function that follows it.
+- Specify a name instead of the implicit argument name `it` inside `map`, `flatMap`, `switchMap`, `flatMapLatest` and so on lambda argument, and in any function that follows it.
 - Use named arguments for lambda arguments, if 2 or more lambdas are being passed to a function.
-- Specify the return type of a function, if the function is public (and isn’t coming from `override` of an interface function).
