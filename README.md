@@ -37,6 +37,13 @@ For the beginning, we developers require to have unit tests as the development p
 
 ## Useful tips/resources and best practices (IMPORTANT)
 - [Keep It Simple](https://imageio.forbes.com/specials-images/imageserve/6141f431cb79cea26593300b/Shortcut-From-Point-A-to-Point-B-Concept/960x0.jpg?format=jpg&width=960)
+- Write your code, leave it aside for one week, come back and read it. If you don't get what your code does in less than a minute, then probably you overengineering!
+- Comments are helpful. :) 
+- Watch this [video](https://www.youtube.com/watch?v=OMPfEXIlTVE), really! It helps you understand when to (not) use abstraction, inheritance, and when to use composition + DI.
+
+Some Kotlin useful Kotlin resources
+- [Value classes](https://quickbirdstudios.com/blog/kotlin-value-classes/)
+- [Sealed interfaces](https://quickbirdstudios.com/blog/sealed-interfaces-kotlin/ )
 
 ### Security rules
 - For the security reason we prefer not to store confidential data (tokens, user password, confidential data fetched from backend) on the phone. If we really need to, they should be encrypted up to the best known standards. 
