@@ -39,7 +39,7 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 
 @Composable
 fun DAppConnectionRequestScreen(
-    onBackClick: () -> Unit,
+    onCloseClick: () -> Unit,
     onContinueClick: () -> Unit,
     imageUrl: String,
     labels: List<String>,
@@ -49,7 +49,7 @@ fun DAppConnectionRequestScreen(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(onClick = onCloseClick) {
             Icon(
                 imageVector = Icons.Filled.Clear,
                 contentDescription = "navigate back"
@@ -132,7 +132,7 @@ fun DAppConnectionRequestScreen(
 @Composable
 fun DAppConnectionRequestScreenPreview() {
     DAppConnectionRequestScreen(
-        onBackClick = {},
+        onCloseClick = {},
         onContinueClick = { },
         imageUrl = "",
         labels = listOf(
