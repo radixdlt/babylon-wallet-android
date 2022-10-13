@@ -1,0 +1,35 @@
+package com.babylon.wallet.android.presentation.dapp
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.dapp.model.DAppConnectionData
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class ChooseDAppLoginViewModel @Inject constructor(
+    private val dAppConnectionRepository: DAppConnectionRepository
+) : ViewModel() {
+
+    var uiState by mutableStateOf(ChooseDAppLoginUiState())
+        private set
+
+    init {
+        viewModelScope.launch {
+            val dAppConnectionData = dAppConnectionRepository.getChooseDAppLoginData()
+            uiState = uiState.copy(
+                loading = false,
+                dAppData = dAppConnectionData
+            )
+        }
+    }
+}
+
+data class ChooseDAppLoginUiState(
+    val loading: Boolean = true,
+    val dAppData: DAppConnectionData? = null
+)
