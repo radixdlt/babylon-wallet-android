@@ -26,6 +26,7 @@ fun RDXAppBar(
     onMenuItemClicked: () -> Unit
 ) {
     TopAppBar(
+        modifier = modifier,
         title = {
             Text(
                 text = toolbarTitle,

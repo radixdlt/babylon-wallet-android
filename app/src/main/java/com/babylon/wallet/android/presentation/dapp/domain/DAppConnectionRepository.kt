@@ -1,6 +1,6 @@
-package com.babylon.wallet.android.presentation.dapp
+package com.babylon.wallet.android.presentation.dapp.domain
 
-import com.babylon.wallet.android.presentation.dapp.model.DAppConnectionData
+import com.babylon.wallet.android.presentation.dapp.data.DAppConnectionData
 
 interface DAppConnectionRepository {
     suspend fun getDAppConnectionData(): DAppConnectionData

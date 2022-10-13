@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.model
+package com.babylon.wallet.android.presentation.dapp.data
 
 data class DAppAccount(
     val accountName: String,

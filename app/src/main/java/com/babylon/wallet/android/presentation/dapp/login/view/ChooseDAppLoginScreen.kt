@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp
+package com.babylon.wallet.android.presentation.dapp.login.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -15,13 +15,20 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,44 +40,50 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressScreen
-import com.babylon.wallet.android.presentation.dapp.model.DAppConnectionData
+import com.babylon.wallet.android.presentation.dapp.custom.DAppAccountCard
+import com.babylon.wallet.android.presentation.dapp.data.DAppAccount
+import com.babylon.wallet.android.presentation.dapp.data.DAppConnectionData
+import com.babylon.wallet.android.presentation.dapp.login.viewmodel.ChooseDAppLoginViewModel
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.White
 
 @Composable
-fun DAppConnectionRequestScreen(
-    viewModel: DAppConnectionRequestViewModel,
-    onCloseClick: () -> Unit,
+fun ChooseDAppLoginScreen(
+    viewModel: ChooseDAppLoginViewModel,
+    onBackClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
+
     if (viewModel.uiState.loading) {
         FullscreenCircularProgressScreen()
     }
 
-    viewModel.uiState.dAppConnectionData?.let { dAppConnectionData ->
-        DAppConnectionRequestContent(
-            onCloseClick = onCloseClick,
+    viewModel.uiState.dAppData?.let { dAppData ->
+        ChooseDAppLoginContent(
+            onBackClick = onBackClick,
             onContinueClick = onContinueClick,
-            dAppConnectionData = dAppConnectionData
+            dAppData = dAppData
         )
     }
 }
 
 @Composable
-fun DAppConnectionRequestContent(
-    onCloseClick: () -> Unit,
+fun ChooseDAppLoginContent(
+    onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
-    dAppConnectionData: DAppConnectionData,
+    dAppData: DAppConnectionData,
     modifier: Modifier = Modifier
 ) {
+    var selected by rememberSaveable { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
     ) {
-        IconButton(onClick = onCloseClick) {
+        IconButton(onClick = onBackClick) {
             Icon(
-                imageVector = Icons.Filled.Clear,
+                imageVector = Icons.Filled.ArrowBack,
                 contentDescription = "navigate back"
             )
         }
@@ -82,20 +95,13 @@ fun DAppConnectionRequestContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(id = R.string.dapp_connection_request),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(40.dp))
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = dAppConnectionData.imageUrl,
+                    model = dAppData.imageUrl,
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder)
                 ),
-                contentDescription = null,
+                contentDescription = "choose_dapp_login_image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(110.dp)
@@ -103,7 +109,7 @@ fun DAppConnectionRequestContent(
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
-                text = stringResource(id = R.string.radaswap_wants_to_connect_wallet),
+                text = stringResource(id = R.string.choose_dapp_login_title),
                 textAlign = TextAlign.Center,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
@@ -111,26 +117,49 @@ fun DAppConnectionRequestContent(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 color = RadixGrey2,
-                text = stringResource(id = R.string.for_this_dapp_to_function),
+                text = stringResource(id = R.string.choose_dapp_login_body),
                 textAlign = TextAlign.Center,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
-            Spacer(modifier = Modifier.height(34.dp))
-            dAppConnectionData.labels.forEach { labelTitleResource ->
+            Spacer(modifier = Modifier.height(40.dp))
+
+            dAppData.dAppAccount?.let { dAppAccount ->
+                DAppAccountCard(
+                    accountName = dAppAccount.accountName,
+                    name = dAppAccount.name,
+                    emailAddress = dAppAccount.emailAddress,
+                    selected = selected,
+                    onCardClick = {
+                        selected = !selected
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            TextButton(
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.Transparent,
+                    contentColor = MaterialTheme.colors.onBackground
+                ),
+                onClick = { /* TODO */ }
+            ) {
                 Text(
-                    text = labelTitleResource,
-                    textAlign = TextAlign.Start,
+                    text = stringResource(id = R.string.create_dapp_login_button_title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
             }
+
             Spacer(Modifier.weight(1f))
+
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 0.dp, vertical = 30.dp),
                 onClick = { onContinueClick() },
+                enabled = selected,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = RadixButtonBackground,
                     disabledBackgroundColor = RadixBackground
@@ -149,19 +178,24 @@ fun DAppConnectionRequestContent(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun DAppConnectionRequestContentPreview() {
-    val dAppConnectionData = DAppConnectionData(
+fun ChooseDAppLoginContentPreview() {
+    val dAppData = DAppConnectionData(
         labels = listOf(
             "• A dApp Login, including the following information:\n" +
                 "        • Name\n" +
                 "        • Email address",
             "• Permission to view at least one account"
         ),
-        imageUrl = "INVALID_URL"
+        imageUrl = "INVALID_URL",
+        dAppAccount = DAppAccount(
+            accountName = "Account name",
+            name = "Name",
+            emailAddress = "test@gmail.com"
+        )
     )
-    DAppConnectionRequestContent(
-        onCloseClick = {},
+    ChooseDAppLoginContent(
+        onBackClick = {},
         onContinueClick = {},
-        dAppConnectionData = dAppConnectionData
+        dAppData = dAppData
     )
 }

@@ -23,7 +23,7 @@ fun OnboardingPageView(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier.padding(horizontal = 40.dp, vertical = 0.dp),
+        modifier = modifier.padding(horizontal = 40.dp, vertical = 0.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

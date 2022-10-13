@@ -1,6 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.model
-
-import com.babylon.wallet.android.presentation.dapp.model.DAppAccount
+package com.babylon.wallet.android.presentation.dapp.data
 
 data class DAppConnectionData(
     val labels: List<String> = emptyList(),

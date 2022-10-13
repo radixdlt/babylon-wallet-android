@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp
+package com.babylon.wallet.android.presentation.dapp.custom
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

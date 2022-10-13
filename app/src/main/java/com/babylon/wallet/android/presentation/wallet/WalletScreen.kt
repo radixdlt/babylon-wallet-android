@@ -53,6 +53,7 @@ fun WalletScreen(
     val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             RDXAppBar(
                 stringResource(id = R.string.home_toolbar_title)
@@ -178,7 +179,7 @@ fun RadarHubView(
     onClicked: () -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(15.dp)
             .fillMaxWidth()
             .padding(start = 45.dp, top = 40.dp, end = 45.dp, bottom = 0.dp),

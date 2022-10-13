@@ -74,6 +74,7 @@ fun AccountScreen(
     val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             AccountTopAppBar(
                 accountName = accountName,
@@ -172,6 +173,7 @@ fun AssetsContent(
     modifier: Modifier = Modifier
 ) {
     HorizontalPager(
+        modifier = modifier,
         count = 2, // TODO
         state = pagerState,
         userScrollEnabled = false
