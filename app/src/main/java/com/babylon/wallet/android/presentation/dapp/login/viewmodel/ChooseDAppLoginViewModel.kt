@@ -16,6 +16,9 @@ class ChooseDAppLoginViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository
 ) : ViewModel() {
 
+    var selected by mutableStateOf(false)
+        private set
+
     var uiState by mutableStateOf(ChooseDAppLoginUiState())
         private set
 
@@ -27,6 +30,10 @@ class ChooseDAppLoginViewModel @Inject constructor(
                 dAppData = dAppConnectionData
             )
         }
+    }
+
+    fun onSelectChange(selected: Boolean) {
+        this.selected = selected
     }
 }
 

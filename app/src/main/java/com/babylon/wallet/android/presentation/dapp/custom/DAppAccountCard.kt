@@ -23,16 +23,16 @@ fun DAppAccountCard(
     accountName: String,
     name: String,
     emailAddress: String,
+    selected: Boolean,
     modifier: Modifier = Modifier,
-    selected: Boolean = false,
-    onCardClick: () -> Unit
+    onSelectedChange: (Boolean) -> Unit
 ) {
 
     Card(
         modifier = modifier
             .padding(1.dp)
             .clickable {
-                onCardClick()
+                onSelectedChange(!selected)
             },
         shape = RoundedCornerShape(6.dp),
         backgroundColor = RadixLightCardBackground
@@ -63,7 +63,7 @@ fun DAppAccountCard(
             }
             RadioButton(
                 selected = selected,
-                onClick = { onCardClick() }
+                onClick = { onSelectedChange(!selected) }
             )
         }
     }
@@ -74,9 +74,10 @@ fun DAppAccountCard(
 @Composable
 fun DAppAccountCardPreview() {
     DAppAccountCard(
-        onCardClick = {},
         accountName = "My Main",
         name = "John Smith",
-        emailAddress = "jsmith@gmail.com"
+        emailAddress = "jsmith@gmail.com",
+        selected = true,
+        onSelectedChange = {}
     )
 }
