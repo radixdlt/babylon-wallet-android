@@ -10,11 +10,13 @@ fun DAppConnectionRequestScreen(
     onCloseClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
-    if (viewModel.uiState.loading) {
+    val uiState = viewModel.uiState
+
+    if (uiState.loading) {
         FullscreenCircularProgressScreen()
     }
 
-    viewModel.uiState.dAppConnectionData?.let { dAppConnectionData ->
+    uiState.dAppConnectionData?.let { dAppConnectionData ->
         DAppConnectionRequestContent(
             onCloseClick = onCloseClick,
             onContinueClick = onContinueClick,

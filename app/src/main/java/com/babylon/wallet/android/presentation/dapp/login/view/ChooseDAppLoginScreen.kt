@@ -11,11 +11,13 @@ fun ChooseDAppLoginScreen(
     onContinueClick: () -> Unit
 ) {
 
-    if (viewModel.uiState.loading) {
+    val uiState = viewModel.uiState
+
+    if (uiState.loading) {
         FullscreenCircularProgressScreen()
     }
 
-    viewModel.uiState.dAppData?.let { dAppData ->
+    uiState.dAppData?.let { dAppData ->
         ChooseDAppLoginContent(
             onBackClick = onBackClick,
             onContinueClick = onContinueClick,
