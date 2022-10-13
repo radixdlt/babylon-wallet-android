@@ -19,12 +19,18 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,14 +51,15 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
-fun DAppConnectionRequestScreen(
-    viewModel: DAppConnectionRequestViewModel,
-    onCloseClick: () -> Unit,
+fun ChooseDAppLoginScreen(
+    viewModel: ChooseDAppLoginViewModel,
+    onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    when (val state: DAppConnectionUiState = viewModel.dAppConnectionUiState.collectAsStateWithLifecycle().value) {
-        DAppConnectionUiState.Loading -> {
+
+    when (val state: ChooseDAppLoginUiState = viewModel.chooseDAppLoginUiState.collectAsStateWithLifecycle().value) {
+        ChooseDAppLoginUiState.Loading -> {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -63,13 +70,15 @@ fun DAppConnectionRequestScreen(
                 )
             }
         }
-        is DAppConnectionUiState.Loaded -> {
+        is ChooseDAppLoginUiState.Loaded -> {
+            var selected by rememberSaveable { mutableStateOf(false) }
             Column(
-                modifier = modifier.fillMaxSize()
+                modifier = modifier
+                    .fillMaxSize()
             ) {
-                IconButton(onClick = onCloseClick) {
+                IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.Filled.Clear,
+                        imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "navigate back"
                     )
                 }
@@ -81,20 +90,13 @@ fun DAppConnectionRequestScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(id = R.string.dapp_connection_request),
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(modifier = Modifier.height(40.dp))
                     Image(
                         painter = rememberAsyncImagePainter(
-                            model = state.wallet.imageUrl,
+                            model = state.dAppData.imageUrl,
                             placeholder = painterResource(id = R.drawable.img_placeholder),
                             error = painterResource(id = R.drawable.img_placeholder)
                         ),
-                        contentDescription = null,
+                        contentDescription = "choose_dapp_login_image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(110.dp)
@@ -102,7 +104,7 @@ fun DAppConnectionRequestScreen(
                     )
                     Spacer(modifier = Modifier.height(40.dp))
                     Text(
-                        text = stringResource(id = R.string.radaswap_wants_to_connect_wallet),
+                        text = stringResource(id = R.string.choose_dapp_login_title),
                         textAlign = TextAlign.Center,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
@@ -110,26 +112,49 @@ fun DAppConnectionRequestScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         color = RadixGrey2,
-                        text = stringResource(id = R.string.for_this_dapp_to_function),
+                        text = stringResource(id = R.string.choose_dapp_login_body),
                         textAlign = TextAlign.Center,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal
                     )
-                    Spacer(modifier = Modifier.height(34.dp))
-                    state.wallet.labels.forEach { labelTitleResource ->
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    state.dAppData.dAppAccount?.let { dAppAccount ->
+                        DAppAccountCard(
+                            accountName = dAppAccount.accountName,
+                            name = dAppAccount.name,
+                            emailAddress = dAppAccount.emailAddress,
+                            selected = selected,
+                            onCardClick = {
+                                selected = !selected
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    TextButton(
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Color.Transparent,
+                            contentColor = MaterialTheme.colors.onBackground
+                        ),
+                        onClick = { /* TODO */ }
+                    ) {
                         Text(
-                            text = labelTitleResource,
-                            textAlign = TextAlign.Start,
+                            text = stringResource(id = R.string.create_dapp_login_button_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Normal
                         )
                     }
+
                     Spacer(Modifier.weight(1f))
+
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 0.dp, vertical = 30.dp),
                         onClick = { onContinueClick() },
+                        enabled = selected,
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = RadixButtonBackground,
                             disabledBackgroundColor = RadixBackground
@@ -150,10 +175,10 @@ fun DAppConnectionRequestScreen(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun DAppConnectionRequestScreenPreview() {
-    DAppConnectionRequestScreen(
-        viewModel = DAppConnectionRequestViewModel(MockDAppConnectionRepository()),
-        onCloseClick = {},
-        onContinueClick = {},
+fun ChooseDAppLoginScreenPreview() {
+    ChooseDAppLoginScreen(
+        viewModel = ChooseDAppLoginViewModel(MockDAppConnectionRepository()),
+        onBackClick = {},
+        onContinueClick = {}
     )
 }

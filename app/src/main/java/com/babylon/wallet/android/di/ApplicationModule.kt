@@ -8,6 +8,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
+import com.babylon.wallet.android.presentation.dapp.DAppConnectionRepository
+import com.babylon.wallet.android.presentation.dapp.DAppConnectionRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,4 +46,10 @@ object ApplicationModule {
     ): DataStore<Preferences> {
         return context.userDataStore
     }
+
+    @Provides
+    @Singleton
+    fun provideDAppConnectionRepository(
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
+    ): DAppConnectionRepository = DAppConnectionRepositoryImpl(ioDispatcher)
 }
