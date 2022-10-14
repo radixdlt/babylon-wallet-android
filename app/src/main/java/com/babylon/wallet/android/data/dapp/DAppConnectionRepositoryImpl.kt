@@ -1,7 +1,7 @@
-package com.babylon.wallet.android.presentation.dapp.data
+package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.presentation.dapp.domain.DAppConnectionRepository
+import com.babylon.wallet.android.domain.dapp.DAppConnectionRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext

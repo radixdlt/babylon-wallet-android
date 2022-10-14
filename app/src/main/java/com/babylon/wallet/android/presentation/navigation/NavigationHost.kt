@@ -11,8 +11,8 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
-import com.babylon.wallet.android.presentation.dapp.connectionrequest.view.DAppConnectionRequestScreen
-import com.babylon.wallet.android.presentation.dapp.login.view.ChooseDAppLoginScreen
+import com.babylon.wallet.android.presentation.dapp.connectionrequest.DAppConnectionRequestScreen
+import com.babylon.wallet.android.presentation.dapp.login.ChooseDAppLoginScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen

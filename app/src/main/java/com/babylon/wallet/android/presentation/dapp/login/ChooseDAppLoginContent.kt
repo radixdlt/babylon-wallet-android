@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.login.view
+package com.babylon.wallet.android.presentation.dapp.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -35,9 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.dapp.DAppAccount
+import com.babylon.wallet.android.data.dapp.DAppConnectionData
 import com.babylon.wallet.android.presentation.dapp.custom.DAppAccountCard
-import com.babylon.wallet.android.presentation.dapp.data.DAppAccount
-import com.babylon.wallet.android.presentation.dapp.data.DAppConnectionData
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2

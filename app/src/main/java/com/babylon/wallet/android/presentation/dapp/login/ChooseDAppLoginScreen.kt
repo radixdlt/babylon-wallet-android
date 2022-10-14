@@ -1,8 +1,7 @@
-package com.babylon.wallet.android.presentation.dapp.login.view
+package com.babylon.wallet.android.presentation.dapp.login
 
 import androidx.compose.runtime.Composable
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressScreen
-import com.babylon.wallet.android.presentation.dapp.login.viewmodel.ChooseDAppLoginViewModel
 
 @Composable
 fun ChooseDAppLoginScreen(
@@ -11,13 +10,13 @@ fun ChooseDAppLoginScreen(
     onContinueClick: () -> Unit
 ) {
 
-    val uiState = viewModel.uiState
+    val state = viewModel.state
 
-    if (uiState.loading) {
+    if (state.loading) {
         FullscreenCircularProgressScreen()
     }
 
-    uiState.dAppData?.let { dAppData ->
+    state.dAppData?.let { dAppData ->
         ChooseDAppLoginContent(
             onBackClick = onBackClick,
             onContinueClick = onContinueClick,

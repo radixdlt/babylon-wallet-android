@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.connectionrequest.view
+package com.babylon.wallet.android.presentation.dapp.connectionrequest
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.dapp.data.DAppConnectionData
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
@@ -42,7 +41,8 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 fun DAppConnectionRequestContent(
     onCloseClick: () -> Unit,
     onContinueClick: () -> Unit,
-    dAppConnectionData: DAppConnectionData,
+    imageUrl: String,
+    labels: List<String>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -71,7 +71,7 @@ fun DAppConnectionRequestContent(
             Spacer(modifier = Modifier.height(40.dp))
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = dAppConnectionData.imageUrl,
+                    model = imageUrl,
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder)
                 ),
@@ -97,7 +97,7 @@ fun DAppConnectionRequestContent(
                 fontWeight = FontWeight.Normal
             )
             Spacer(modifier = Modifier.height(34.dp))
-            dAppConnectionData.labels.forEach { labelTitleResource ->
+            labels.forEach { labelTitleResource ->
                 Text(
                     text = labelTitleResource,
                     textAlign = TextAlign.Start,
@@ -130,7 +130,9 @@ fun DAppConnectionRequestContent(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun DAppConnectionRequestContentPreview() {
-    val dAppConnectionData = DAppConnectionData(
+    DAppConnectionRequestContent(
+        onCloseClick = {},
+        onContinueClick = {},
         labels = listOf(
             "• A dApp Login, including the following information:\n" +
                 "        • Name\n" +
@@ -138,10 +140,5 @@ fun DAppConnectionRequestContentPreview() {
             "• Permission to view at least one account"
         ),
         imageUrl = "INVALID_URL"
-    )
-    DAppConnectionRequestContent(
-        onCloseClick = {},
-        onContinueClick = {},
-        dAppConnectionData = dAppConnectionData
     )
 }

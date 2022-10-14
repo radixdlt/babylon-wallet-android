@@ -6,10 +6,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.MainViewRepositoryImpl
+import com.babylon.wallet.android.data.dapp.DAppConnectionRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.presentation.dapp.data.DAppConnectionRepositoryImpl
-import com.babylon.wallet.android.presentation.dapp.domain.DAppConnectionRepository
+import com.babylon.wallet.android.domain.dapp.DAppConnectionRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

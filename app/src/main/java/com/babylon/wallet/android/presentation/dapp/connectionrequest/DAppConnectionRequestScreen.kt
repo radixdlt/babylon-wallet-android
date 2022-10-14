@@ -1,8 +1,7 @@
-package com.babylon.wallet.android.presentation.dapp.connectionrequest.view
+package com.babylon.wallet.android.presentation.dapp.connectionrequest
 
 import androidx.compose.runtime.Composable
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressScreen
-import com.babylon.wallet.android.presentation.dapp.connectionrequest.viewmodel.DAppConnectionRequestViewModel
 
 @Composable
 fun DAppConnectionRequestScreen(
@@ -10,17 +9,18 @@ fun DAppConnectionRequestScreen(
     onCloseClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
-    val uiState = viewModel.uiState
+    val state = viewModel.state
 
-    if (uiState.loading) {
+    if (state.loading) {
         FullscreenCircularProgressScreen()
     }
 
-    uiState.dAppConnectionData?.let { dAppConnectionData ->
+    state.dAppConnectionData?.let { dAppConnectionData ->
         DAppConnectionRequestContent(
             onCloseClick = onCloseClick,
             onContinueClick = onContinueClick,
-            dAppConnectionData = dAppConnectionData
+            imageUrl = dAppConnectionData.imageUrl,
+            labels = dAppConnectionData.labels
         )
     }
 }
