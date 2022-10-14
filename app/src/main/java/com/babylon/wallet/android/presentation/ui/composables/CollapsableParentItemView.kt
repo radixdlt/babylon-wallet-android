@@ -44,7 +44,7 @@ fun CollapsableParentItemView(
 ) {
     val bottomPadding = if (collapsed) 8.dp else 0.dp
     Box(
-        modifier = Modifier
+        modifier = modifier
             .animateContentSize()
             .padding(20.dp, 10.dp, 20.dp, bottomPadding)
             .clickable { parentSectionClick() }

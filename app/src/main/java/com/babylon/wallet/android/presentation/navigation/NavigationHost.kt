@@ -11,6 +11,8 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
+import com.babylon.wallet.android.presentation.dapp.connectionrequest.DAppConnectionRequestScreen
+import com.babylon.wallet.android.presentation.dapp.login.ChooseDAppLoginScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -60,7 +62,12 @@ fun NavigationHost(
             AccountScreen(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
-                onMenuItemClick = { }
+                onMenuItemClick = {
+                    /* TODO For now i init flow here for testing */
+                    navController.navigate(
+                        Screen.DAppConnectionRequestDestination.route
+                    )
+                }
             ) {
                 navController.navigateUp()
             }
@@ -86,6 +93,28 @@ fun NavigationHost(
                 viewModel = hiltViewModel(),
                 goHomeClick = {
                     navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                }
+            )
+        }
+
+        composable(route = Screen.DAppConnectionRequestDestination.route) {
+            DAppConnectionRequestScreen(
+                viewModel = hiltViewModel(),
+                onCloseClick = { navController.navigateUp() },
+                onContinueClick = {
+                    navController.navigate(
+                        Screen.DAppChooseLoginDestination.route
+                    )
+                }
+            )
+        }
+
+        composable(route = Screen.DAppChooseLoginDestination.route) {
+            ChooseDAppLoginScreen(
+                viewModel = hiltViewModel(),
+                onBackClick = { navController.navigateUp() },
+                onContinueClick = {
+                    // TODO
                 }
             )
         }

@@ -30,7 +30,7 @@ fun AssetIconRowView(
     fontSize: Int = 10,
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
 
         var paddingStart = 0f

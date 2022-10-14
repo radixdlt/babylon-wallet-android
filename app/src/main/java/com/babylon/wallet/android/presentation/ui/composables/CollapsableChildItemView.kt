@@ -36,7 +36,7 @@ fun CollapsableChildItemView(
 ) {
     val bottomCorners = if (bottomCornersRounded) 8.dp else 0.dp
     Card(
-        modifier = Modifier.animateContentSize()
+        modifier = modifier.animateContentSize()
             .fillMaxWidth()
             .padding(20.dp, 0.dp, 20.dp, 1.dp),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),

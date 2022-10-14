@@ -41,7 +41,7 @@ fun WalletBalanceView(
     var balanceHidden by rememberSaveable { mutableStateOf(hidden) }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {

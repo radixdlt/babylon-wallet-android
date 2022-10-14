@@ -54,7 +54,7 @@ fun OnboardingScreen(
 ) {
     val state = viewModel.onboardingUiState.collectAsStateWithLifecycle().value
     val pagerState = rememberPagerState(initialPage = state.currentPagerPage)
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .heightIn(min = maxHeight)

@@ -38,9 +38,7 @@
     <string name="radaswap_wants_to_connect_wallet">Radaswap wants to connect to your wallet</string>
     <string name="for_this_dapp_to_function">For this dApp to function, it needs the following:</string>
     <!-- I leave bullet points here for simplicity until we know how those data come and in what form-->
-    <string name="dapp_condition1">"\u2022 A dApp Login, including the following information:
-        \u2022 Name
-        \u2022 Email address
-        "</string>
-    <string name="dapp_condition2">\u2022 Permission to view at least one account</string>
+    <string name="choose_dapp_login_title">Choose an dApp Login</string>
+    <string name="choose_dapp_login_body">This will be the Login that Radaswap recognizes you by in the future</string>
+    <string name="create_dapp_login_button_title">+ Create a new dApp Login</string>
 </resources>
