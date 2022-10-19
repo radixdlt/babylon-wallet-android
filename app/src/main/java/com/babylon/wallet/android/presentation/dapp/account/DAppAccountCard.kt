@@ -24,12 +24,12 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
 @Composable
 fun DAppAccountCard(
-    modifier: Modifier = Modifier,
     accountName: String,
     hashValue: String,
     accountCurrency: String,
     accountValue: String,
     checked: Boolean,
+    modifier: Modifier = Modifier,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Card(

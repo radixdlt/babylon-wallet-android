@@ -26,12 +26,10 @@ class ChooseDAppAccountViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val dAppAccountsData = dAppConnectionRepository.getChooseDAppAccountsData()
-            selectedIndexes.apply {
-                List(dAppAccountsData.dAppAccounts.size) { index ->
-                    index to false
-                }.toMap().also {
-                    putAll(it)
-                }
+            List(dAppAccountsData.dAppAccounts.size) { index ->
+                index to false
+            }.toMap().also {
+                selectedIndexes.putAll(it)
             }
             state = state.copy(
                 loading = false,

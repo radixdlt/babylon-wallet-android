@@ -45,10 +45,10 @@ import com.babylon.wallet.android.presentation.ui.theme.White
 fun ChooseDAppAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
-    modifier: Modifier = Modifier,
     imageUrl: String,
     dAppAccounts: List<DAppAccountData>,
     dAppSelectedIndexes: Map<Int, Boolean>,
+    modifier: Modifier = Modifier,
     onDAppAccountSelected: (selected: Boolean, index: Int) -> Unit
 ) {
     Column(

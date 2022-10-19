@@ -45,7 +45,7 @@ fun CreateAccountConfirmationScreen(
     val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 30.dp, vertical = 16.dp)
             .verticalScroll(rememberScrollState()),
