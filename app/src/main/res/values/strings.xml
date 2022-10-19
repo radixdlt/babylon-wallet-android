@@ -41,4 +41,7 @@
     <string name="choose_dapp_login_title">Choose an dApp Login</string>
     <string name="choose_dapp_login_body">This will be the Login that Radaswap recognizes you by in the future</string>
     <string name="create_dapp_login_button_title">+ Create a new dApp Login</string>
+    <string name="choose_dapp_accounts_title">Choose Accounts</string>
+    <string name="choose_dapp_accounts_body">Choose the account(s) you wish Radaswap to know about</string>
+    <string name="create_dapp_accounts_button_title">+ Create a new Account</string>
 </resources>

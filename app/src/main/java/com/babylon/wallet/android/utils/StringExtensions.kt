@@ -4,6 +4,9 @@ package com.babylon.wallet.android.utils
 import java.text.DecimalFormat
 
 fun String.truncatedHash(): String {
+    if (length <= 9) {
+        return this
+    }
     val first = substring(IntRange(0, 3))
     val last = substring(IntRange(length - 9, length - 1))
     return "$first...$last"

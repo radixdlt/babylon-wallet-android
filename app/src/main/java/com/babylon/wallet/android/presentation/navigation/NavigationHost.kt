@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
+import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountScreen
 import com.babylon.wallet.android.presentation.dapp.connectionrequest.DAppConnectionRequestScreen
 import com.babylon.wallet.android.presentation.dapp.login.ChooseDAppLoginScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
@@ -111,6 +112,18 @@ fun NavigationHost(
 
         composable(route = Screen.DAppChooseLoginDestination.route) {
             ChooseDAppLoginScreen(
+                viewModel = hiltViewModel(),
+                onBackClick = { navController.navigateUp() },
+                onContinueClick = {
+                    navController.navigate(
+                        Screen.DAppChooseAccountDestination.route
+                    )
+                }
+            )
+        }
+
+        composable(route = Screen.DAppChooseAccountDestination.route) {
+            ChooseDAppAccountScreen(
                 viewModel = hiltViewModel(),
                 onBackClick = { navController.navigateUp() },
                 onContinueClick = {

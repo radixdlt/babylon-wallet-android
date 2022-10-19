@@ -19,6 +19,7 @@ sealed class Screen(override val route: String) : Destination {
     object AccountCompletionDestination : Screen("account_completion_route")
     object DAppConnectionRequestDestination : Screen("dapp_connection_request_route")
     object DAppChooseLoginDestination : Screen("dapp_choose_login_route")
+    object DAppChooseAccountDestination : Screen("dapp_choose_account_route")
 
     fun routeWithArgs(vararg args: String): String {
         return buildString {

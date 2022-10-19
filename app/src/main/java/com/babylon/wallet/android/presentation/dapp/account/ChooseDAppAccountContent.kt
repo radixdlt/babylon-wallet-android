@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.login
+package com.babylon.wallet.android.presentation.dapp.account
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -35,27 +35,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.DAppLoginData
-import com.babylon.wallet.android.data.dapp.DAppConnectionData
-import com.babylon.wallet.android.presentation.dapp.custom.DAppLoginAccountCard
+import com.babylon.wallet.android.data.dapp.DAppAccountData
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.White
 
 @Composable
-fun ChooseDAppLoginContent(
+fun ChooseDAppAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
-    selected: Boolean,
-    onSelectedChange: (Boolean) -> Unit,
-    dAppData: DAppConnectionData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageUrl: String,
+    dAppAccounts: List<DAppAccountData>,
+    dAppSelectedIndexes: Map<Int, Boolean>,
+    onDAppAccountSelected: (selected: Boolean, index: Int) -> Unit
 ) {
-
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
@@ -65,15 +64,13 @@ fun ChooseDAppLoginContent(
         }
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 50.dp, vertical = 16.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(horizontal = 50.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = dAppData.imageUrl,
+                    model = imageUrl,
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder)
                 ),
@@ -85,7 +82,7 @@ fun ChooseDAppLoginContent(
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
-                text = stringResource(id = R.string.choose_dapp_login_title),
+                text = stringResource(id = R.string.choose_dapp_accounts_title),
                 textAlign = TextAlign.Center,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
@@ -93,24 +90,29 @@ fun ChooseDAppLoginContent(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 color = RadixGrey2,
-                text = stringResource(id = R.string.choose_dapp_login_body),
+                text = stringResource(id = R.string.choose_dapp_accounts_body),
                 textAlign = TextAlign.Center,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
             Spacer(modifier = Modifier.height(40.dp))
 
-            dAppData.dAppAccount?.let { dAppAccount ->
-                DAppLoginAccountCard(
-                    accountName = dAppAccount.accountName,
-                    name = dAppAccount.name,
-                    emailAddress = dAppAccount.emailAddress,
-                    selected = selected,
-                    onSelectedChange = onSelectedChange
-                )
-            }
+            Column {
 
-            Spacer(modifier = Modifier.height(30.dp))
+                dAppAccounts.forEachIndexed { index, dAppAccount ->
+                    DAppAccountCard(
+                        accountName = dAppAccount.accountName,
+                        hashValue = dAppAccount.accountHash,
+                        accountCurrency = dAppAccount.accountCurrency,
+                        accountValue = dAppAccount.accountValue,
+                        checked = dAppSelectedIndexes[index] == true,
+                        onCheckedChange = { selected ->
+                            onDAppAccountSelected(selected, index)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
 
             TextButton(
                 colors = ButtonDefaults.buttonColors(
@@ -120,7 +122,7 @@ fun ChooseDAppLoginContent(
                 onClick = { /* TODO */ }
             ) {
                 Text(
-                    text = stringResource(id = R.string.create_dapp_login_button_title),
+                    text = stringResource(id = R.string.create_dapp_accounts_button_title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
@@ -133,7 +135,7 @@ fun ChooseDAppLoginContent(
                     .fillMaxWidth()
                     .padding(horizontal = 0.dp, vertical = 30.dp),
                 onClick = { onContinueClick() },
-                enabled = selected,
+                enabled = dAppSelectedIndexes.containsValue(true),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = RadixButtonBackground,
                     disabledBackgroundColor = RadixBackground
@@ -150,28 +152,44 @@ fun ChooseDAppLoginContent(
 }
 
 @Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun ChooseDAppLoginContentPreview() {
-    val dAppData = DAppConnectionData(
-        labels = listOf(
-            "• A dApp Login, including the following information:\n" +
-                "        • Name\n" +
-                "        • Email address",
-            "• Permission to view at least one account"
-        ),
-        imageUrl = "INVALID_URL",
-        dAppAccount = DAppLoginData(
-            accountName = "Account name",
-            name = "Name",
-            emailAddress = "test@gmail.com"
-        )
-    )
-    ChooseDAppLoginContent(
+fun ChooseDAppAccountContentPreview() {
+    ChooseDAppAccountContent(
         onBackClick = {},
         onContinueClick = {},
-        selected = true,
-        onSelectedChange = {},
-        dAppData = dAppData
+        imageUrl = "",
+        dAppAccounts = listOf(
+            DAppAccountData(
+                accountName = "Account name1",
+                accountValue = "1000",
+                accountCurrency = "$",
+                accountHash = "43432423rf43g32g34"
+            ),
+            DAppAccountData(
+                accountName = "Account name2",
+                accountValue = "2000",
+                accountCurrency = "$",
+                accountHash = "d12j392dk02g43g43"
+            ),
+            DAppAccountData(
+                accountName = "Account name3",
+                accountValue = "3000",
+                accountCurrency = "$",
+                accountHash = "dj39f322dk02g43g43"
+            ),
+            DAppAccountData(
+                accountName = "Account name4",
+                accountValue = "4000",
+                accountCurrency = "$",
+                accountHash = "dj392dkg4302g2g42"
+            )
+        ),
+        dAppSelectedIndexes = mapOf(
+            0 to false,
+            1 to false,
+            2 to false,
+            3 to false
+        ),
+        onDAppAccountSelected = { _, _ -> }
     )
 }

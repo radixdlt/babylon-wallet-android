@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
 @Composable
-fun DAppAccountCard(
+fun DAppLoginAccountCard(
     accountName: String,
     name: String,
     emailAddress: String,
@@ -73,7 +73,7 @@ fun DAppAccountCard(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun DAppAccountCardPreview() {
-    DAppAccountCard(
+    DAppLoginAccountCard(
         accountName = "My Main",
         name = "John Smith",
         emailAddress = "jsmith@gmail.com",
