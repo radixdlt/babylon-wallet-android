@@ -2,6 +2,8 @@ package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.AssetDto.Companion.toTokenUiModel
 import com.babylon.wallet.android.data.AssetDto.NftClassDto.Companion.toNftClassUiModel
+import com.babylon.wallet.android.data.profile.Account
+import com.babylon.wallet.android.data.profile.Address
 import com.babylon.wallet.android.domain.AssetType
 import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.model.TokenUi
@@ -39,6 +41,12 @@ data class AccountDto(
                     nftClassDto.toNftClassUiModel()
                 }.orEmpty()
             }
+        )
+        fun AccountDto.toDAppUiModel() = Account(
+            name = name,
+            address = Address(hash),
+            value = value.toString(),
+            currency = currency
         )
     }
 

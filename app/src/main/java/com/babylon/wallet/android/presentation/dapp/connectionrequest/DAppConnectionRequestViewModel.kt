@@ -5,32 +5,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DAppConnectionData
-import com.babylon.wallet.android.domain.dapp.DAppConnectionRepository
+import com.babylon.wallet.android.domain.dapp.ConnectDAppUseCase
+import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DAppConnectionRequestViewModel @Inject constructor(
-    private val dAppConnectionRepository: DAppConnectionRepository
+    private val connectDAppUseCase: ConnectDAppUseCase
 ) : ViewModel() {
 
-    var state by mutableStateOf(DAppConnectionUiState())
+    var state by mutableStateOf(ConnectionRequestUiState())
         private set
 
     init {
         viewModelScope.launch {
-            val dAppConnectionData = dAppConnectionRepository.getDAppConnectionData()
+            val result = connectDAppUseCase("")
             state = state.copy(
-                loading = false,
-                dAppConnectionData = dAppConnectionData
+                labels = result.payloadFields,
+                destination = Screen.DAppChoosePersonaDestination
             )
         }
     }
 }
 
-data class DAppConnectionUiState(
-    val loading: Boolean = true,
-    val dAppConnectionData: DAppConnectionData? = null
+data class ConnectionRequestUiState(
+    val labels: List<String>? = null,
+    val destination: Screen? = null
 )

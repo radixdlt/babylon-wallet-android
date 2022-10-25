@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.login
+package com.babylon.wallet.android.presentation.dapp.persona
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -20,7 +20,9 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,32 +37,63 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.DAppConnectionData
-import com.babylon.wallet.android.data.dapp.DAppLoginData
-import com.babylon.wallet.android.presentation.dapp.custom.DAppLoginAccountCard
+import com.babylon.wallet.android.data.dapp.PersonaEntityUiState
+import com.babylon.wallet.android.data.profile.PersonaEntity
+import com.babylon.wallet.android.domain.dapp.DAppState
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dapp.DAppViewModel
+import com.babylon.wallet.android.presentation.dapp.custom.DAppPersonaCard
+import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.White
 
 @Composable
-fun ChooseDAppLoginContent(
+fun ChooseDAppPersonaScreen(
+    viewModel: ChooseDAppPersonaViewModel,
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit,
-    selected: Boolean,
-    onSelectedChange: (Boolean) -> Unit,
-    dAppData: DAppConnectionData,
-    modifier: Modifier = Modifier
+    onContinueClick: (Screen) -> Unit,
 ) {
 
+    viewModel.personasState.let { personasState ->
+        personasState.personas?.let { personas ->
+            ChooseDAppPersonaContent(
+                onBackClick = onBackClick,
+                onContinueClick = {
+                    personasState.destination?.let { destination ->
+                        onContinueClick(destination)
+                    }
+                },
+                initialPage = personasState.initialPage,
+                onPersonaSelected = viewModel::onPersonaSelect,
+                imageUrl = "",
+                personas = personas
+            )
+        } ?: run {
+            FullscreenCircularProgressContent()
+        }
+    }
+}
+
+@Composable
+fun ChooseDAppPersonaContent(
+    onBackClick: () -> Unit,
+    onContinueClick: () -> Unit,
+    initialPage: Boolean,
+    onPersonaSelected: (personaEntity: PersonaEntityUiState) -> Unit,
+    imageUrl: String,
+    personas: List<PersonaEntityUiState>,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
-                imageVector = Icons.Filled.ArrowBack,
-                contentDescription = "navigate back"
+                imageVector = if (initialPage) Icons.Filled.Clear else Icons.Filled.ArrowBack,
+                contentDescription =  if (initialPage) "clear" else "navigate back"
             )
         }
         Column(
@@ -73,7 +106,7 @@ fun ChooseDAppLoginContent(
             Spacer(modifier = Modifier.height(16.dp))
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = dAppData.imageUrl,
+                    model = imageUrl,
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder)
                 ),
@@ -100,14 +133,17 @@ fun ChooseDAppLoginContent(
             )
             Spacer(modifier = Modifier.height(40.dp))
 
-            dAppData.dAppAccount?.let { dAppAccount ->
-                DAppLoginAccountCard(
-                    accountName = dAppAccount.accountName,
-                    name = dAppAccount.name,
-                    emailAddress = dAppAccount.emailAddress,
-                    selected = selected,
-                    onSelectedChange = onSelectedChange
+            personas.forEach { personaEntityUiState ->
+                DAppPersonaCard(
+                    accountName = personaEntityUiState.personaEntity.accountName,
+                    name = personaEntityUiState.personaEntity.name,
+                    emailAddress = personaEntityUiState.personaEntity.emailAddress,
+                    selected = personaEntityUiState.selected,
+                    onSelectedChange = { selected ->
+                        onPersonaSelected(personaEntityUiState)
+                    }
                 )
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -133,7 +169,7 @@ fun ChooseDAppLoginContent(
                     .fillMaxWidth()
                     .padding(horizontal = 0.dp, vertical = 30.dp),
                 onClick = { onContinueClick() },
-                enabled = selected,
+                enabled = personas.any { it.selected },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = RadixButtonBackground,
                     disabledBackgroundColor = RadixBackground
@@ -152,26 +188,30 @@ fun ChooseDAppLoginContent(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun ChooseDAppLoginContentPreview() {
-    val dAppData = DAppConnectionData(
-        labels = listOf(
-            "• A dApp Login, including the following information:\n" +
-                "        • Name\n" +
-                "        • Email address",
-            "• Permission to view at least one account"
-        ),
-        imageUrl = "INVALID_URL",
-        dAppAccount = DAppLoginData(
-            accountName = "Account name",
-            name = "Name",
-            emailAddress = "test@gmail.com"
-        )
-    )
-    ChooseDAppLoginContent(
-        onBackClick = {},
-        onContinueClick = {},
-        selected = true,
-        onSelectedChange = {},
-        dAppData = dAppData
-    )
+fun ChooseDAppPersonaScreenPreview() {
+//    ChooseDAppPersonaScreen(
+//        onBackClick = {},
+//        onContinueClick = {},
+//        dismiss = false,
+//        onPersonaSelected = { _, _ -> },
+//        imageUrl = "",
+//        personas = listOf(
+//            PersonaEntityUiState(
+//                personaEntity = PersonaEntity(
+//                    accountName = "Account Name",
+//                    name = "Name",
+//                    emailAddress = "email@gmail.com",
+//                ),
+//                selected = false
+//            ),
+//            PersonaEntityUiState(
+//                personaEntity = PersonaEntity(
+//                    accountName = "Account Name",
+//                    name = "Name",
+//                    emailAddress = "email@gmail.com",
+//                ),
+//                selected = false
+//            )
+//        )
+//    )
 }
