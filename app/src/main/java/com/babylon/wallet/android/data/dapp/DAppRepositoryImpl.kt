@@ -6,15 +6,11 @@ import javax.inject.Inject
 import kotlin.random.Random
 
 class DAppRepositoryImpl @Inject constructor(
-//    private val webRtcManager: WebRtcManager
+//    private val webRtcManager: WebRtcManager // TODO
 //    private val gatewayClient: GatewayClient
 ) : DAppRepository {
 
     override suspend fun getDAppRequest(connectionId: String): RequestMethodWalletRequest {
-        // webRtcManager.init(connectionId)
-        // webRtcManager.getDAppRequest()
-
-        // gatewayClient.checkHappy() path for now, check passes
         delay(Random.nextLong(500, 1500))
         return RequestMethodWalletRequest(
             "",
@@ -40,7 +36,28 @@ class DAppRepositoryImpl @Inject constructor(
             RequestMethodWalletRequest.RequestMethodMetadata(
                 "",
                 "",
+                dAppId = ""
             )
+        )
+    }
+
+    override suspend fun fetchWellKnown(host: String): DAppWellKnownResponse {
+        delay(Random.nextLong(500, 1500))
+        return DAppWellKnownResponse(
+            listOf(
+                DApp(
+                    id = "",
+                    definitionAddress = ""
+                )
+            )
+        )
+    }
+
+    override suspend fun fetchDAppDetails(dAppId: String): DAppDetailsResponse {
+        delay(Random.nextLong(500, 1500))
+        return DAppDetailsResponse(
+            imageUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png",
+            dAppName = "Radaswap"
         )
     }
 }

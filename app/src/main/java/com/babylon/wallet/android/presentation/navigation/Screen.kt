@@ -36,5 +36,6 @@ sealed class Screen(override val route: String) : Destination {
     companion object {
         const val ARG_ACCOUNT_ID = "arg_account_id"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
+        const val ARG_DAPP_NAME = "arg_dapp_name"
     }
 }

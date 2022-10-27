@@ -1,25 +1,19 @@
 package com.babylon.wallet.android.presentation.navigation
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
-import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountScreen
-import com.babylon.wallet.android.presentation.dapp.connectionrequest.DAppConnectionRequestScreen
-import com.babylon.wallet.android.presentation.dapp.persona.ChooseDAppPersonaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
+import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -103,61 +97,5 @@ fun NavigationHost(
         }
 
         dAppConnectionGraph(navController)
-    }
-}
-
-fun NavGraphBuilder.dAppConnectionGraph(
-    navController: NavController
-) {
-    navigation(
-        startDestination = Screen.DAppConnectionRequestDestination.route,
-        route = Screen.DAppDestination.route
-    ) {
-        composable(route = Screen.DAppConnectionRequestDestination.route) { backStackEntry ->
-//            val dAppEntry = remember(backStackEntry) {
-//                navController.getBackStackEntry(Screen.DAppDestination.route)
-//            }
-            DAppConnectionRequestScreen(
-                viewModel = hiltViewModel(),
-                onCloseClick = {
-                    navController.navigateUp()
-                },
-                navigate = { screen ->
-                    navController.navigate(screen.route)
-                }
-            )
-        }
-
-        composable(route = Screen.DAppChoosePersonaDestination.route) { backStackEntry ->
-//            val dAppEntry = remember(backStackEntry) {
-//                navController.getBackStackEntry(Screen.DAppDestination.route)
-//            }
-            ChooseDAppPersonaScreen(
-                viewModel = hiltViewModel(),
-                onBackClick = {
-                    navController.navigateUp()
-                },
-                onContinueClick = { screen ->
-                    navController.navigate(screen.route)
-                },
-            )
-        }
-
-        composable(route = Screen.DAppChooseAccountDestination.route) {
-            ChooseDAppAccountScreen(
-                viewModel = hiltViewModel(),
-                onBackClick = {
-                    navController.navigateUp()
-                },
-                onContinueClick = { screen ->
-                    navController.navigate(screen.route)
-                }
-            )
-        }
-
-        composable(route = Screen.DAppCompleteDestination.route) {
-            // TODO
-            Text(text = "Finished")
-        }
     }
 }

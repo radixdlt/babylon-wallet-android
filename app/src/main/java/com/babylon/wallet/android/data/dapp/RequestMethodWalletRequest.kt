@@ -25,6 +25,8 @@ data class RequestMethodWalletRequest(
 
     data class RequestMethodMetadata(
         val networkId: String,
-        val origin: String
+        val origin: String,
+        val dAppId: String
     )
+
 }
