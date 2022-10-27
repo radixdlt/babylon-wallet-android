@@ -16,5 +16,4 @@ class DAppCompletionViewModel @Inject constructor(
 
     var dAppName by mutableStateOf(savedStateHandle.get<String>(Screen.ARG_DAPP_NAME).orEmpty())
         private set
-
 }

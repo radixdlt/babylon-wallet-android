@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlin.random.Random
 
+@Suppress("MagicNumber") // TODO this is temporarily here.
 class DAppRepositoryImpl @Inject constructor(
 //    private val webRtcManager: WebRtcManager // TODO
 //    private val gatewayClient: GatewayClient

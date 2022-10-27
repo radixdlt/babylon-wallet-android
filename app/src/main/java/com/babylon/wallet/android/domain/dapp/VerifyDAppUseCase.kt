@@ -17,37 +17,42 @@ class VerifyDAppUseCase @Inject constructor(
      * Later we will use definitionAddress, which is old DAppEntity
      */
     suspend operator fun invoke(
-        connectionId: String = "Connection Id"//TODO this is to be provided when integrating with WebRtc
+        connectionId: String = "Connection Id" // TODO this is to be provided when integrating with WebRtc
     ): DAppVerifyResult {
         val dAppPayloadRequest = dAppRepository.getDAppRequest(connectionId)
         val dAppId = dAppPayloadRequest.metadata.dAppId
         val origin = dAppPayloadRequest.metadata.origin
 
-        val dAppWellKnown = dAppRepository.fetchWellKnown(host = origin)
-        dAppWellKnown.dApps.forEach { dApp ->
-            if (dApp.id == dAppId) {
-                var accountAddresses = 0
-                val dAppDetails = dAppRepository.fetchDAppDetails(dAppId)
-                dAppPayloadRequest.payload.forEach { payload ->
-                    when (payload) {
-                        is RequestMethodWalletRequest.AccountAddressesRequestMethodWalletRequest -> {
-                            payload.numberOfAddresses?.let { numberOfAddresses ->
-                                accountAddresses = numberOfAddresses
-                            }
-                        }
-                        else -> {}
+        var accountAddresses = 0
+        dAppPayloadRequest.payload.forEach { payload ->
+            when (payload) {
+                is RequestMethodWalletRequest.AccountAddressesRequestMethodWalletRequest -> {
+                    payload.numberOfAddresses?.let { numberOfAddresses ->
+                        accountAddresses = numberOfAddresses
                     }
                 }
-                return DAppVerifyResult(
-                    verified = true,
-                    dAppResult = DAppResult(
-                        dAppDetails = dAppDetails,
-                        accountAddresses = accountAddresses
-                    )
-                )
+                else -> {}
             }
         }
-        return DAppVerifyResult(verified = false)
+
+        // Fetch well-known.json
+        val dAppWellKnown = dAppRepository.fetchWellKnown(host = origin)
+
+        // Find dApp that we are attempting to connect to
+        val wellKnownDApp = dAppWellKnown.dApps.find { dApp ->
+            dApp.id == dAppId
+        } ?: return DAppVerifyResult(verified = false)
+
+        // Fetch dApp details i.e. url, dApp name etc
+        val dAppDetails = dAppRepository.fetchDAppDetails(wellKnownDApp.id)
+
+        return DAppVerifyResult(
+            verified = true,
+            dAppResult = DAppResult(
+                dAppDetails = dAppDetails,
+                accountAddresses = accountAddresses
+            )
+        )
     }
 }
 

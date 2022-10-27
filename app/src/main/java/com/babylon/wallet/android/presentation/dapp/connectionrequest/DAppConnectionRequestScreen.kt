@@ -1,51 +1,51 @@
 // TODO this might be reverted later on
-//package com.babylon.wallet.android.presentation.dapp.connectionrequest
+// package com.babylon.wallet.android.presentation.dapp.connectionrequest
 //
-//import androidx.compose.foundation.Image
-//import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.layout.Spacer
-//import androidx.compose.foundation.layout.fillMaxSize
-//import androidx.compose.foundation.layout.fillMaxWidth
-//import androidx.compose.foundation.layout.height
-//import androidx.compose.foundation.layout.padding
-//import androidx.compose.foundation.layout.size
-//import androidx.compose.foundation.rememberScrollState
-//import androidx.compose.foundation.shape.RoundedCornerShape
-//import androidx.compose.foundation.verticalScroll
-//import androidx.compose.material.Button
-//import androidx.compose.material.ButtonDefaults
-//import androidx.compose.material.Icon
-//import androidx.compose.material.IconButton
-//import androidx.compose.material.Text
-//import androidx.compose.material.icons.Icons
-//import androidx.compose.material.icons.filled.Clear
-//import androidx.compose.runtime.Composable
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.draw.clip
-//import androidx.compose.ui.layout.ContentScale
-//import androidx.compose.ui.res.painterResource
-//import androidx.compose.ui.res.stringResource
-//import androidx.compose.ui.text.font.FontWeight
-//import androidx.compose.ui.text.style.TextAlign
-//import androidx.compose.ui.tooling.preview.Preview
-//import androidx.compose.ui.unit.dp
-//import androidx.compose.ui.unit.sp
-//import coil.compose.rememberAsyncImagePainter
-//import com.babylon.wallet.android.R
-//import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-//import com.babylon.wallet.android.presentation.navigation.Screen
-//import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
-//import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
-//import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
-//import com.babylon.wallet.android.presentation.ui.theme.White
+// import androidx.compose.foundation.Image
+// import androidx.compose.foundation.layout.Column
+// import androidx.compose.foundation.layout.Spacer
+// import androidx.compose.foundation.layout.fillMaxSize
+// import androidx.compose.foundation.layout.fillMaxWidth
+// import androidx.compose.foundation.layout.height
+// import androidx.compose.foundation.layout.padding
+// import androidx.compose.foundation.layout.size
+// import androidx.compose.foundation.rememberScrollState
+// import androidx.compose.foundation.shape.RoundedCornerShape
+// import androidx.compose.foundation.verticalScroll
+// import androidx.compose.material.Button
+// import androidx.compose.material.ButtonDefaults
+// import androidx.compose.material.Icon
+// import androidx.compose.material.IconButton
+// import androidx.compose.material.Text
+// import androidx.compose.material.icons.Icons
+// import androidx.compose.material.icons.filled.Clear
+// import androidx.compose.runtime.Composable
+// import androidx.compose.ui.Alignment
+// import androidx.compose.ui.Modifier
+// import androidx.compose.ui.draw.clip
+// import androidx.compose.ui.layout.ContentScale
+// import androidx.compose.ui.res.painterResource
+// import androidx.compose.ui.res.stringResource
+// import androidx.compose.ui.text.font.FontWeight
+// import androidx.compose.ui.text.style.TextAlign
+// import androidx.compose.ui.tooling.preview.Preview
+// import androidx.compose.ui.unit.dp
+// import androidx.compose.ui.unit.sp
+// import coil.compose.rememberAsyncImagePainter
+// import com.babylon.wallet.android.R
+// import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+// import com.babylon.wallet.android.presentation.navigation.Screen
+// import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
+// import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
+// import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
+// import com.babylon.wallet.android.presentation.ui.theme.White
 //
-//@Composable
-//fun DAppConnectionRequestScreen(
+// @Composable
+// fun DAppConnectionRequestScreen(
 //    viewModel: DAppConnectionRequestViewModel,
 //    onCloseClick: () -> Unit,
 //    navigate: (Screen) -> Unit
-//) {
+// ) {
 //    viewModel.state.let { state ->
 //        state.labels?.let { labels ->
 //            DAppConnectionRequestContent(
@@ -62,16 +62,16 @@
 //            FullscreenCircularProgressContent()
 //        }
 //    }
-//}
+// }
 //
-//@Composable
-//fun DAppConnectionRequestContent(
+// @Composable
+// fun DAppConnectionRequestContent(
 //    imageUrl: String,
 //    labels: List<String>,
 //    onCloseClick: () -> Unit,
 //    onContinueClick: () -> Unit,
 //    modifier: Modifier = Modifier
-//) {
+// ) {
 //    Column(
 //        modifier = modifier.fillMaxSize()
 //    ) {
@@ -151,21 +151,21 @@
 //            }
 //        }
 //    }
-//}
+// }
 //
-//@Preview(showBackground = true)
-//@Preview("large font", fontScale = 2f, showBackground = true)
-//@Composable
-//fun DAppConnectionRequestScreenPreview() {
-////    DAppConnectionRequestScreen(
-////        onCloseClick = {},
-////        onContinueClick = {},
-////        labels = listOf(
-////            "• A dApp Login, including the following information:\n" +
-////                    "        • Name\n" +
-////                    "        • Email address",
-////            "• Permission to view at least one account"
-////        ),
-////        imageUrl = "INVALID_URL"
-////    )
-//}
+// @Preview(showBackground = true)
+// @Preview("large font", fontScale = 2f, showBackground = true)
+// @Composable
+// fun DAppConnectionRequestScreenPreview() {
+// //    DAppConnectionRequestScreen(
+// //        onCloseClick = {},
+// //        onContinueClick = {},
+// //        labels = listOf(
+// //            "• A dApp Login, including the following information:\n" +
+// //                    "        • Name\n" +
+// //                    "        • Email address",
+// //            "• Permission to view at least one account"
+// //        ),
+// //        imageUrl = "INVALID_URL"
+// //    )
+// }

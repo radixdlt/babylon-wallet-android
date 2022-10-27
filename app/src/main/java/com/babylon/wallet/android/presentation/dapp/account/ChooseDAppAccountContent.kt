@@ -157,9 +157,11 @@ fun ChooseDAppAccountContent(
 fun DAppAlertDialog(
     title: String,
     body: String,
-    dismissErrorDialog: () -> Unit
+    dismissErrorDialog: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     AlertDialog(
+        modifier = modifier,
         onDismissRequest = {},
         title = { Text(text = title, color = Color.Black) },
         text = { Text(text = body, color = Color.Black) },

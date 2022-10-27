@@ -28,5 +28,4 @@ data class RequestMethodWalletRequest(
         val origin: String,
         val dAppId: String
     )
-
 }

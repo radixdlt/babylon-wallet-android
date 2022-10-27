@@ -10,16 +10,16 @@ fun ChooseDAppAccountScreen(
     viewModel: ChooseDAppAccountViewModel,
     onBackClick: () -> Unit,
     onContinueClick: (String) -> Unit,
-    dismissErrorDialog:() -> Unit
+    dismissErrorDialog: () -> Unit
 ) {
     viewModel.accountsState.let { accountsState ->
         accountsState.accounts?.let { accounts ->
             ChooseDAppAccountContent(
                 onBackClick = onBackClick,
                 onContinueClick = {
-                    onContinueClick(accountsState.dAppDetails?.dAppName ?: "")
+                    onContinueClick(accountsState.dAppDetails?.dAppName.orEmpty())
                 },
-                imageUrl = accountsState.dAppDetails?.imageUrl ?: "",
+                imageUrl = accountsState.dAppDetails?.imageUrl.orEmpty(),
                 continueButtonEnabled = accountsState.continueButtonEnabled,
                 dAppAccounts = accounts,
                 accountSelected = viewModel::onAccountSelect
