@@ -72,8 +72,6 @@ class ChooseDAppAccountViewModel @Inject constructor(
                 updatedAccount.selected
             }
 
-            // We require user to select at least accountAddresses amount of accounts
-
             accountsState = accountsState.copy(
                 accounts = updatedAccounts,
                 // We require user to select at least accountAddresses amount of accounts
