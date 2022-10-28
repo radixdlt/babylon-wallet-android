@@ -57,6 +57,12 @@ class ChooseDAppAccountViewModel @Inject constructor(
         val accountAddresses = accountsState.accountAddresses ?: 0
 
         accountsState.accounts?.let { accounts ->
+            val currentlySelectedAccountsCount = accounts.count { it.selected }
+            // If already selected max number of accounts (accountAddresses) and want to select more, skip
+            if (currentlySelectedAccountsCount >= accountAddresses && !account.selected) {
+                return
+            }
+
             val updatedAccounts = accounts.map { accountUiState ->
                 if (accountUiState == account) {
                     accountUiState.copy(

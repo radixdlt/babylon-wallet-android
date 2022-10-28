@@ -37,7 +37,7 @@ class DAppRepositoryImpl @Inject constructor(
             RequestMethodWalletRequest.RequestMethodMetadata(
                 "",
                 "",
-                dAppId = ""
+                dAppId = "DAppId007"
             )
         )
     }
@@ -47,7 +47,7 @@ class DAppRepositoryImpl @Inject constructor(
         return DAppWellKnownResponse(
             listOf(
                 DApp(
-                    id = "",
+                    id = "DAppId007",
                     definitionAddress = ""
                 )
             )

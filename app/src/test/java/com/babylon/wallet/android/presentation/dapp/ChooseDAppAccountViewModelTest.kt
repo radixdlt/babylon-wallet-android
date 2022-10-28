@@ -366,4 +366,75 @@ class ChooseDAppAccountViewModelTest {
             viewModel.accountsState
         )
     }
+
+    @Test
+    fun `given max accounts selection 1, when trying to select more than 1, the 2nd account not selected`() = runTest {
+        // given
+        val verifyUseCase = DAppVerifyResult(
+            verified = true,
+            dAppResult = DAppResult(
+                dAppDetails = DAppDetailsResponse(
+                    "url",
+                    "Radaswap"
+                ),
+                accountAddresses = 1
+            )
+        )
+        val updatedAccounts = listOf(
+            DAppAccountUiState(
+                account = Account(
+                    name = "Name",
+                    address = Address("df32f23f"),
+                    value = "1000",
+                    currency = "$"
+                ),
+                selected = true
+            ),
+            DAppAccountUiState(
+                account = Account(
+                    name = "Name2",
+                    address = Address("1132vve3"),
+                    value = "2000",
+                    currency = "$"
+                ),
+                selected = false
+            ),
+            DAppAccountUiState(
+                account = Account(
+                    name = "Name3",
+                    address = Address("kfer9k9if"),
+                    value = "3000",
+                    currency = "$"
+                ),
+                selected = false
+            )
+        )
+        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
+        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+
+        val selectedAccount = accounts[0]
+        val selectedSecondAccount = accounts[1]
+        val viewModel = ChooseDAppAccountViewModel(
+            getDAppAccountsUseCase,
+            verifyDAppUseCase
+        )
+
+        advanceUntilIdle()
+
+        // when
+        viewModel.onAccountSelect(selectedAccount)
+        viewModel.onAccountSelect(selectedSecondAccount)
+
+        // then
+        Assert.assertEquals(
+            ChooseAccountUiState(
+                accounts = updatedAccounts,
+                dAppDetails = verifyUseCase.dAppResult?.dAppDetails,
+                accountAddresses = 1,
+                continueButtonEnabled = true,
+                error = false
+            ),
+            viewModel.accountsState
+        )
+    }
 }
