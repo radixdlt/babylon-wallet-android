@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
-import com.babylon.wallet.android.domain.dapp.GetDAppAccountsUseCase
+import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.domain.dapp.VerifyDAppUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChooseDAppAccountViewModel @Inject constructor(
-    private val getDAppAccountsUseCase: GetDAppAccountsUseCase,
+    private val getDAppAccountsUseCase: GetAccountsUseCase,
     private val verifyDAppUseCase: VerifyDAppUseCase
 ) : ViewModel() {
 
@@ -31,7 +31,7 @@ class ChooseDAppAccountViewModel @Inject constructor(
 
                 val dAppDetails = verifyResult.dAppResult?.dAppDetails
 
-                val accounts = getDAppAccountsUseCase.getDAppAccounts()
+                val accounts = getDAppAccountsUseCase.getAccounts()
 
                 accountsState = accountsState.copy(
                     accounts = accounts,

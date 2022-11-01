@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.DAppAccountUiState
-import com.babylon.wallet.android.data.profile.Account
-import com.babylon.wallet.android.data.profile.Address
+import com.babylon.wallet.android.data.profile.model.Account
+import com.babylon.wallet.android.data.profile.model.Address
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2

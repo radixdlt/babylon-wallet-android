@@ -6,10 +6,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetDAppAccountsUseCase @Inject constructor(
+class GetAccountsUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
-    suspend fun getDAppAccounts(): List<DAppAccountUiState> = profileRepository.getAccounts().map { account ->
+    suspend fun getAccounts(): List<DAppAccountUiState> = profileRepository.getAccounts().map { account ->
         DAppAccountUiState(account, false)
     }
 }

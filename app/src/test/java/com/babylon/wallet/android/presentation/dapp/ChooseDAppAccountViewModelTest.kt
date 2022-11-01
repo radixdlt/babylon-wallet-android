@@ -2,11 +2,11 @@ package com.babylon.wallet.android.presentation.dapp
 
 import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
-import com.babylon.wallet.android.data.profile.Account
-import com.babylon.wallet.android.data.profile.Address
+import com.babylon.wallet.android.data.profile.model.Account
+import com.babylon.wallet.android.data.profile.model.Address
 import com.babylon.wallet.android.domain.dapp.DAppResult
 import com.babylon.wallet.android.domain.dapp.DAppVerifyResult
-import com.babylon.wallet.android.domain.dapp.GetDAppAccountsUseCase
+import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.domain.dapp.VerifyDAppUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountUiState
@@ -26,7 +26,7 @@ class ChooseDAppAccountViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val getDAppAccountsUseCase = Mockito.mock(GetDAppAccountsUseCase::class.java)
+    private val getDAppAccountsUseCase = Mockito.mock(GetAccountsUseCase::class.java)
 
     private val verifyDAppUseCase = Mockito.mock(VerifyDAppUseCase::class.java)
 

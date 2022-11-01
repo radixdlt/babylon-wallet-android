@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.dapp
 
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
-import com.babylon.wallet.android.data.dapp.RequestMethodWalletRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,13 +24,8 @@ class VerifyDAppUseCase @Inject constructor(
 
         var accountAddresses = 0
         dAppPayloadRequest.payload.forEach { payload ->
-            when (payload) {
-                is RequestMethodWalletRequest.AccountAddressesRequestMethodWalletRequest -> {
-                    payload.numberOfAddresses?.let { numberOfAddresses ->
-                        accountAddresses = numberOfAddresses
-                    }
-                }
-                else -> {}
+            payload.numberOfAddresses?.let { numberOfAddresses ->
+                accountAddresses = numberOfAddresses
             }
         }
 

@@ -2,6 +2,8 @@ package com.babylon.wallet.android.data.profile
 
 import com.babylon.wallet.android.data.AccountDto.Companion.toDAppUiModel
 import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
+import com.babylon.wallet.android.data.profile.model.Account
+import com.babylon.wallet.android.data.profile.model.PersonaEntity
 import com.babylon.wallet.android.domain.profile.ProfileRepository
 
 class ProfileRepositoryImpl : ProfileRepository {

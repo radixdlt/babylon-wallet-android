@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.RequestMethodWalletRequest
 import com.babylon.wallet.android.domain.dapp.DAppRepository
 import kotlinx.coroutines.delay
 import javax.inject.Inject
@@ -18,20 +19,8 @@ class DAppRepositoryImpl @Inject constructor(
             "",
             payload = listOf(
                 RequestMethodWalletRequest.AccountAddressesRequestMethodWalletRequest(
-                    requestType = "",
-                    numberOfAddresses = 1,
-                    ongoing = false,
-                    reset = false
-                ),
-                RequestMethodWalletRequest.PersonaDataRequestMethodWalletRequest(
-                    requestType = "",
-                    fields = listOf(
-                        "email address",
-                        "name"
-                    ),
-                    ongoing = false,
-                    reset = false,
-                    revokeOngoingAccess = listOf()
+                    requestType = "accountAddresses",
+                    numberOfAddresses = 1
                 )
             ),
             RequestMethodWalletRequest.RequestMethodMetadata(

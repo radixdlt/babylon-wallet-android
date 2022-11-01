@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.profile
+package com.babylon.wallet.android.data.profile.model
 
 data class Profile(
     val address: Address,
