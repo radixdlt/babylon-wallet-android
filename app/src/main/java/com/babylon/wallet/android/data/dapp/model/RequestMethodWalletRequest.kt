@@ -14,6 +14,11 @@ data class RequestMethodWalletRequest(
     @SerialName("metadata")
     val metadata: RequestMethodMetadata
 ) {
+    // TODO Remember to add PersonaDataRequestMethodWalletRequest when needed
+    //  {
+    //       "requestType": "personaData",
+    //       "fields": ["firstName", "email"]
+    //    }
     @Serializable
     data class AccountAddressesRequestMethodWalletRequest(
         @SerialName("requestType")
