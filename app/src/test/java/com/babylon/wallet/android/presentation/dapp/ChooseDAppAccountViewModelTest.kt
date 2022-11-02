@@ -109,7 +109,8 @@ class ChooseDAppAccountViewModelTest {
                 accounts = accounts,
                 dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 1,
-                error = false
+                error = false,
+                showProgress = false
             ),
             viewModel.accountsState
         )
@@ -137,7 +138,8 @@ class ChooseDAppAccountViewModelTest {
                 accounts = null,
                 dAppDetails = null,
                 accountAddresses = null,
-                error = true
+                error = true,
+                showProgress = false
             ),
             viewModel.accountsState
         )
@@ -204,7 +206,8 @@ class ChooseDAppAccountViewModelTest {
                 dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 1,
                 continueButtonEnabled = true,
-                error = false
+                error = false,
+                showProgress = false
             ),
             viewModel.accountsState
         )
@@ -271,7 +274,8 @@ class ChooseDAppAccountViewModelTest {
                 dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 2,
                 continueButtonEnabled = false,
-                error = false
+                error = false,
+                showProgress = false
             ),
             viewModel.accountsState
         )
@@ -340,7 +344,8 @@ class ChooseDAppAccountViewModelTest {
                 dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 2,
                 continueButtonEnabled = true,
-                error = false
+                error = false,
+                showProgress = false
             ),
             viewModel.accountsState
         )
@@ -409,7 +414,8 @@ class ChooseDAppAccountViewModelTest {
                 dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 1,
                 continueButtonEnabled = true,
-                error = false
+                error = false,
+                showProgress = false
             ),
             viewModel.accountsState
         )
