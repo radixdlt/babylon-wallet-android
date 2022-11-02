@@ -19,7 +19,7 @@ class DAppRepositoryImpl @Inject constructor(
             "",
             payload = listOf(
                 RequestMethodWalletRequest.AccountAddressesRequestMethodWalletRequest(
-                    requestType = "accountAddresses",
+                    requestType = RequestMethodWalletRequest.RequestType.ACCOUNT_ADDRESSES.value,
                     numberOfAddresses = 1
                 )
             ),

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-//TODO this will be sent back to WebRtc
+// TODO this will be sent back to WebRtc
 data class ResponseMethodWalletResponse(
     val accountAddresses: List<AccountAddress>
 )

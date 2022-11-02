@@ -74,7 +74,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
@@ -100,7 +100,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
@@ -136,7 +136,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
@@ -201,7 +201,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         val selectedAccount = accounts.first()
         val viewModel = ChooseDAppAccountViewModel(
@@ -270,7 +270,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         val selectedAccount = accounts[0]
         val viewModel = ChooseDAppAccountViewModel(
@@ -339,7 +339,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         val selectedAccount = accounts[0]
         val selectedSecondAccount = accounts[1]
@@ -410,7 +410,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getDAppAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
 
         val selectedAccount = accounts[0]
         val selectedSecondAccount = accounts[1]
