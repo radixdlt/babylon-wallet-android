@@ -24,7 +24,9 @@ fun ChooseDAppAccountScreen(
                 dAppAccounts = accounts,
                 accountSelected = viewModel::onAccountSelect
             )
-        } ?: run {
+        }
+
+        if (accountsState.showProgress) {
             FullscreenCircularProgressContent()
         }
 

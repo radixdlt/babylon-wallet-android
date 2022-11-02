@@ -2,12 +2,11 @@ package com.babylon.wallet.android.presentation.dapp
 
 import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
+import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.data.profile.model.Address
-import com.babylon.wallet.android.domain.dapp.DAppResult
-import com.babylon.wallet.android.domain.dapp.DAppVerifyResult
+import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
-import com.babylon.wallet.android.domain.dapp.VerifyDAppUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountUiState
 import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountViewModel
@@ -27,8 +26,6 @@ class ChooseDAppAccountViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     private val getDAppAccountsUseCase = Mockito.mock(GetAccountsUseCase::class.java)
-
-    private val verifyDAppUseCase = Mockito.mock(VerifyDAppUseCase::class.java)
 
     private val accounts = listOf(
         DAppAccountUiState(
@@ -63,8 +60,8 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `when view model init, verify view state is in default state`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = true,
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
             dAppResult = DAppResult(
                 dAppDetails = DAppDetailsResponse(
                     "url",
@@ -73,13 +70,11 @@ class ChooseDAppAccountViewModelTest {
                 accountAddresses = 1
             )
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         // then
@@ -89,8 +84,8 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `when view model init, verify all accounts unselected and continue button disabled`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = true,
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
             dAppResult = DAppResult(
                 dAppDetails = DAppDetailsResponse(
                     "url",
@@ -99,13 +94,11 @@ class ChooseDAppAccountViewModelTest {
                 accountAddresses = 1
             )
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         advanceUntilIdle()
@@ -114,7 +107,7 @@ class ChooseDAppAccountViewModelTest {
         Assert.assertEquals(
             ChooseAccountUiState(
                 accounts = accounts,
-                dAppDetails = verifyUseCase.dAppResult?.dAppDetails,
+                dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 1,
                 error = false
             ),
@@ -125,23 +118,15 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `given dApp not verified, when view model init, verify error shown`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = false,
-            dAppResult = DAppResult(
-                dAppDetails = DAppDetailsResponse(
-                    "url",
-                    "Radaswap"
-                ),
-                accountAddresses = 1
-            )
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
+            dAppResult = null
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         advanceUntilIdle()
@@ -161,8 +146,8 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `given one account required, when one account selected, verify continue button enabled`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = true,
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
             dAppResult = DAppResult(
                 dAppDetails = DAppDetailsResponse(
                     "url",
@@ -200,13 +185,11 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         val selectedAccount = accounts.first()
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         advanceUntilIdle()
@@ -218,7 +201,7 @@ class ChooseDAppAccountViewModelTest {
         Assert.assertEquals(
             ChooseAccountUiState(
                 accounts = updatedAccounts,
-                dAppDetails = verifyUseCase.dAppResult?.dAppDetails,
+                dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 1,
                 continueButtonEnabled = true,
                 error = false
@@ -230,8 +213,8 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `given two accounts required, when one account selected, verify continue button disabled`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = true,
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
             dAppResult = DAppResult(
                 dAppDetails = DAppDetailsResponse(
                     "url",
@@ -269,13 +252,11 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         val selectedAccount = accounts[0]
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         advanceUntilIdle()
@@ -287,7 +268,7 @@ class ChooseDAppAccountViewModelTest {
         Assert.assertEquals(
             ChooseAccountUiState(
                 accounts = updatedAccounts,
-                dAppDetails = verifyUseCase.dAppResult?.dAppDetails,
+                dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 2,
                 continueButtonEnabled = false,
                 error = false
@@ -299,8 +280,8 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `given two accounts required, when two accounts selected, verify continue button enabled`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = true,
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
             dAppResult = DAppResult(
                 dAppDetails = DAppDetailsResponse(
                     "url",
@@ -338,14 +319,12 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         val selectedAccount = accounts[0]
         val selectedSecondAccount = accounts[1]
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         advanceUntilIdle()
@@ -358,7 +337,7 @@ class ChooseDAppAccountViewModelTest {
         Assert.assertEquals(
             ChooseAccountUiState(
                 accounts = updatedAccounts,
-                dAppDetails = verifyUseCase.dAppResult?.dAppDetails,
+                dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 2,
                 continueButtonEnabled = true,
                 error = false
@@ -370,8 +349,8 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `given max accounts selection 1, when trying to select more than 1, the 2nd account not selected`() = runTest {
         // given
-        val verifyUseCase = DAppVerifyResult(
-            verified = true,
+        val dAppAccountsResult = DAppAccountsResult(
+            accounts = accounts,
             dAppResult = DAppResult(
                 dAppDetails = DAppDetailsResponse(
                     "url",
@@ -409,14 +388,12 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(verifyDAppUseCase()).thenReturn(verifyUseCase)
-        whenever(getDAppAccountsUseCase.getAccounts()).thenReturn(accounts)
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(dAppAccountsResult)
 
         val selectedAccount = accounts[0]
         val selectedSecondAccount = accounts[1]
         val viewModel = ChooseDAppAccountViewModel(
-            getDAppAccountsUseCase,
-            verifyDAppUseCase
+            getDAppAccountsUseCase
         )
 
         advanceUntilIdle()
@@ -429,7 +406,7 @@ class ChooseDAppAccountViewModelTest {
         Assert.assertEquals(
             ChooseAccountUiState(
                 accounts = updatedAccounts,
-                dAppDetails = verifyUseCase.dAppResult?.dAppDetails,
+                dAppDetails = dAppAccountsResult.dAppResult?.dAppDetails,
                 accountAddresses = 1,
                 continueButtonEnabled = true,
                 error = false

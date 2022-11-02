@@ -1,12 +1,15 @@
 package com.babylon.wallet.android.domain.dapp
 
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
+import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.data.dapp.DAppWellKnownResponse
 import com.babylon.wallet.android.data.dapp.model.RequestMethodWalletRequest
 
 interface DAppRepository {
 
-    suspend fun getDAppRequest(connectionId: String): RequestMethodWalletRequest
+    suspend fun verifyDApp(): DAppResult?
+
+    suspend fun getDAppRequest(): RequestMethodWalletRequest
 
     suspend fun fetchWellKnown(host: String): DAppWellKnownResponse
 

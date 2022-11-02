@@ -12,7 +12,42 @@ class DAppRepositoryImpl @Inject constructor(
 //    private val gatewayClient: GatewayClient
 ) : DAppRepository {
 
-    override suspend fun getDAppRequest(connectionId: String): RequestMethodWalletRequest {
+    /**
+     * Get origin and dAppId from request payload metadata
+     * Fetch well-known.json with origin(host)
+     * Compare dAppIds to check if dApp is correct.
+     * Later we will use definitionAddress, which is old DAppEntity
+     */
+    override suspend fun verifyDApp(): DAppResult? {
+        val dAppPayloadRequest = getDAppRequest()
+        val dAppId = dAppPayloadRequest.metadata.dAppId
+        val origin = dAppPayloadRequest.metadata.origin
+
+        var accountAddresses = 0
+        dAppPayloadRequest.payload.forEach { payload ->
+            payload.numberOfAddresses?.let { numberOfAddresses ->
+                accountAddresses = numberOfAddresses
+            }
+        }
+
+        // Fetch well-known.json
+        val dAppWellKnown = fetchWellKnown(host = origin)
+
+        // Find dApp that we are attempting to connect to
+        val wellKnownDApp = dAppWellKnown.dApps.find { dApp ->
+            dApp.id == dAppId
+        } ?: return null
+
+        // Fetch dApp details i.e. url, dApp name etc
+        val dAppDetails = fetchDAppDetails(wellKnownDApp.id)
+
+        return DAppResult(
+            dAppDetails = dAppDetails,
+            accountAddresses = accountAddresses
+        )
+    }
+
+    override suspend fun getDAppRequest(): RequestMethodWalletRequest {
         delay(Random.nextLong(500, 1500))
         return RequestMethodWalletRequest(
             "",
@@ -51,3 +86,8 @@ class DAppRepositoryImpl @Inject constructor(
         )
     }
 }
+
+data class DAppResult(
+    val dAppDetails: DAppDetailsResponse,
+    val accountAddresses: Int
+)

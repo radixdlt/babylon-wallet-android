@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
+import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
-import com.babylon.wallet.android.domain.dapp.VerifyDAppUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ChooseDAppAccountViewModel @Inject constructor(
     private val getDAppAccountsUseCase: GetAccountsUseCase,
-    private val verifyDAppUseCase: VerifyDAppUseCase
 ) : ViewModel() {
 
     var accountsState by mutableStateOf(ChooseAccountUiState())
@@ -24,27 +23,22 @@ class ChooseDAppAccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val verifyResult = verifyDAppUseCase()
-
-            if (verifyResult.verified) {
-                val accountAddresses = verifyResult.dAppResult?.accountAddresses
-
-                val dAppDetails = verifyResult.dAppResult?.dAppDetails
-
-                val accounts = getDAppAccountsUseCase.getAccounts()
-
+            val accountsResult: DAppAccountsResult = getDAppAccountsUseCase.getAccountsResult()
+            accountsResult.dAppResult?.let { dAppResult ->
                 accountsState = accountsState.copy(
-                    accounts = accounts,
-                    dAppDetails = dAppDetails,
-                    accountAddresses = accountAddresses,
-                    error = false
+                    accounts = accountsResult.accounts,
+                    dAppDetails = dAppResult.dAppDetails,
+                    accountAddresses = dAppResult.accountAddresses,
+                    error = false,
+                    showProgress = false
                 )
-            } else {
+            } ?: run {
                 accountsState = accountsState.copy(
                     accounts = null,
                     dAppDetails = null,
                     accountAddresses = null,
-                    error = true
+                    error = true,
+                    showProgress = false
                 )
             }
         }
@@ -92,5 +86,6 @@ data class ChooseAccountUiState(
     val dAppDetails: DAppDetailsResponse? = null,
     val accountAddresses: Int? = null,
     val continueButtonEnabled: Boolean = false,
-    val error: Boolean = false
+    val error: Boolean = false,
+    val showProgress: Boolean = true
 )
