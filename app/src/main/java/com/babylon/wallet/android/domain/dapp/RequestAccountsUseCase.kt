@@ -1,20 +1,20 @@
 package com.babylon.wallet.android.domain.dapp
 
-import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.domain.profile.ProfileRepository
+import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiState
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetAccountsUseCase @Inject constructor(
+class RequestAccountsUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val dAppRepository: DAppRepository
 ) {
     suspend fun getAccountsResult(): DAppAccountsResult {
         return DAppAccountsResult(
             accounts = profileRepository.getAccounts().map { account ->
-                DAppAccountUiState(account, false)
+                SelectedAccountUiState(account, false)
             },
             dAppResult = dAppRepository.verifyDApp()
         )
@@ -22,6 +22,6 @@ class GetAccountsUseCase @Inject constructor(
 }
 
 data class DAppAccountsResult(
-    val accounts: List<DAppAccountUiState>,
+    val accounts: List<SelectedAccountUiState>,
     val dAppResult: DAppResult?
 )

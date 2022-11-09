@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.data.profile.model.Address
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
@@ -45,13 +44,13 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.White
 
 @Composable
-fun ChooseDAppAccountContent(
+fun ChooseAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
     imageUrl: String,
     continueButtonEnabled: Boolean,
-    dAppAccounts: List<DAppAccountUiState>,
-    accountSelected: (DAppAccountUiState) -> Unit,
+    dAppAccounts: List<SelectedAccountUiState>,
+    accountSelected: (SelectedAccountUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -102,7 +101,7 @@ fun ChooseDAppAccountContent(
 
             Column {
                 dAppAccounts.forEachIndexed { index, dAppAccount ->
-                    DAppAccountCard(
+                    AccountCard(
                         accountName = dAppAccount.account.name,
                         hashValue = dAppAccount.account.address.address,
                         accountCurrency = dAppAccount.account.currency,
@@ -177,14 +176,14 @@ fun DAppAlertDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun ChooseDAppAccountContentPreview() {
-    ChooseDAppAccountContent(
+fun ChooseAccountContentPreview() {
+    ChooseAccountContent(
         onBackClick = {},
         onContinueClick = {},
         imageUrl = "",
         continueButtonEnabled = true,
         dAppAccounts = listOf(
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Account name 1",
                     address = Address("fdj209d9320"),
@@ -193,7 +192,7 @@ fun ChooseDAppAccountContentPreview() {
                 ),
                 selected = true
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Account name 2",
                     address = Address("342f23f2"),

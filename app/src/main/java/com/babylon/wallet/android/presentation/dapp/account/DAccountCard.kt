@@ -23,7 +23,7 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
 @Composable
-fun DAppAccountCard(
+fun AccountCard(
     accountName: String,
     hashValue: String,
     accountCurrency: String,
@@ -85,7 +85,7 @@ fun DAppAccountCard(
 @Preview(showBackground = true)
 @Composable
 fun DAppAccountCardPreview() {
-    DAppAccountCard(
+    AccountCard(
         accountName = "Account name",
         hashValue = "jf932j9f32o",
         accountCurrency = "$",
@@ -99,7 +99,7 @@ fun DAppAccountCardPreview() {
 @Preview("large font", fontScale = 2f)
 @Composable
 fun DAppAccountCardLargeFontPreview() {
-    DAppAccountCard(
+    AccountCard(
         accountName = "Account name",
         hashValue = "jf932j9f32o",
         accountCurrency = "$",

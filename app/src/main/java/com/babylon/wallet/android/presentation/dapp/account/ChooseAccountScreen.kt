@@ -14,7 +14,7 @@ fun ChooseDAppAccountScreen(
 ) {
     viewModel.accountsState.let { accountsState ->
         accountsState.accounts?.let { accounts ->
-            ChooseDAppAccountContent(
+            ChooseAccountContent(
                 onBackClick = onBackClick,
                 onContinueClick = {
                     onContinueClick(accountsState.dAppDetails?.dAppName.orEmpty())

@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.presentation.dapp
 
-import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.data.profile.model.Address
 import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
-import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
+import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountUiState
 import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountViewModel
+import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -25,10 +25,10 @@ class ChooseDAppAccountViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val getDAppAccountsUseCase = Mockito.mock(GetAccountsUseCase::class.java)
+    private val getDAppAccountsUseCase = Mockito.mock(RequestAccountsUseCase::class.java)
 
     private val accounts = listOf(
-        DAppAccountUiState(
+        SelectedAccountUiState(
             account = Account(
                 name = "Name",
                 address = Address("df32f23f"),
@@ -37,7 +37,7 @@ class ChooseDAppAccountViewModelTest {
             ),
             selected = false
         ),
-        DAppAccountUiState(
+        SelectedAccountUiState(
             account = Account(
                 name = "Name2",
                 address = Address("1132vve3"),
@@ -46,7 +46,7 @@ class ChooseDAppAccountViewModelTest {
             ),
             selected = false
         ),
-        DAppAccountUiState(
+        SelectedAccountUiState(
             account = Account(
                 name = "Name3",
                 address = Address("kfer9k9if"),
@@ -159,7 +159,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         val updatedAccounts = listOf(
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name",
                     address = Address("df32f23f"),
@@ -168,7 +168,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = true
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name2",
                     address = Address("1132vve3"),
@@ -177,7 +177,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = false
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name3",
                     address = Address("kfer9k9if"),
@@ -227,7 +227,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         val updatedAccounts = listOf(
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name",
                     address = Address("df32f23f"),
@@ -236,7 +236,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = true
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name2",
                     address = Address("1132vve3"),
@@ -245,7 +245,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = false
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name3",
                     address = Address("kfer9k9if"),
@@ -295,7 +295,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         val updatedAccounts = listOf(
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name",
                     address = Address("df32f23f"),
@@ -304,7 +304,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = true
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name2",
                     address = Address("1132vve3"),
@@ -313,7 +313,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = true
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name3",
                     address = Address("kfer9k9if"),
@@ -365,7 +365,7 @@ class ChooseDAppAccountViewModelTest {
             )
         )
         val updatedAccounts = listOf(
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name",
                     address = Address("df32f23f"),
@@ -374,7 +374,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = true
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name2",
                     address = Address("1132vve3"),
@@ -383,7 +383,7 @@ class ChooseDAppAccountViewModelTest {
                 ),
                 selected = false
             ),
-            DAppAccountUiState(
+            SelectedAccountUiState(
                 account = Account(
                     name = "Name3",
                     address = Address("kfer9k9if"),

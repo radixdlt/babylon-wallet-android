@@ -5,17 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DAppAccountUiState
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
+import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
-import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
+import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseDAppAccountViewModel @Inject constructor(
-    private val getDAppAccountsUseCase: GetAccountsUseCase,
+    private val getDAppAccountsUseCase: RequestAccountsUseCase,
 ) : ViewModel() {
 
     var accountsState by mutableStateOf(ChooseAccountUiState())
@@ -44,7 +44,7 @@ class ChooseDAppAccountViewModel @Inject constructor(
         }
     }
 
-    fun onAccountSelect(account: DAppAccountUiState) {
+    fun onAccountSelect(account: SelectedAccountUiState) {
         if (accountsState.accounts == null) return
 
         // Required number of selected accounts
@@ -82,10 +82,15 @@ class ChooseDAppAccountViewModel @Inject constructor(
 }
 
 data class ChooseAccountUiState(
-    val accounts: List<DAppAccountUiState>? = null,
+    val accounts: List<SelectedAccountUiState>? = null,
     val dAppDetails: DAppDetailsResponse? = null,
     val accountAddresses: Int? = null,
     val continueButtonEnabled: Boolean = false,
     val error: Boolean = false,
     val showProgress: Boolean = true
+)
+
+data class SelectedAccountUiState(
+    val account: Account,
+    val selected: Boolean = false
 )
