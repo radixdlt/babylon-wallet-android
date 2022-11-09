@@ -30,10 +30,10 @@ fun ChooseDAppAccountScreen(
             FullscreenCircularProgressContent()
         }
 
-        if (accountsState.error) {
+        accountsState.error?.let { error ->
             DAppAlertDialog(
                 title = stringResource(id = R.string.dapp_verification_error_title),
-                body = stringResource(id = R.string.dapp_verification_error_body),
+                body = error,
                 dismissErrorDialog = dismissErrorDialog
             )
         }

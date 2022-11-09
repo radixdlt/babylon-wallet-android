@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.RequestMethodWalletRequest
 import com.babylon.wallet.android.domain.dapp.DAppRepository
+import com.babylon.wallet.android.domain.Result
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlin.random.Random
@@ -18,7 +19,7 @@ class DAppRepositoryImpl @Inject constructor(
      * Compare dAppIds to check if dApp is correct.
      * Later we will use definitionAddress, which is old DAppEntity
      */
-    override suspend fun verifyDApp(): DAppResult? {
+    override suspend fun verifyDApp(): Result<DAppResult> {
         val dAppPayloadRequest = getDAppRequest()
         val dAppId = dAppPayloadRequest.metadata.dAppId
         val origin = dAppPayloadRequest.metadata.origin
@@ -36,14 +37,18 @@ class DAppRepositoryImpl @Inject constructor(
         // Find dApp that we are attempting to connect to
         val wellKnownDApp = dAppWellKnown.dApps.find { dApp ->
             dApp.id == dAppId
-        } ?: return null
+        } ?: return Result.Error(
+            "Failed to verify dApp"
+        )
 
         // Fetch dApp details i.e. url, dApp name etc
         val dAppDetails = fetchDAppDetails(wellKnownDApp.id)
 
-        return DAppResult(
-            dAppDetails = dAppDetails,
-            accountAddresses = accountAddresses
+        return Result.Success(
+            DAppResult(
+                dAppDetails = dAppDetails,
+                accountAddresses = accountAddresses
+            )
         )
     }
 

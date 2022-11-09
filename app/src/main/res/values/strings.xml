@@ -48,5 +48,4 @@
     <string name="dapp_successful_body">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
     <string name="dapp_successful_button_title">Go to %s</string>
     <string name="dapp_verification_error_title">DApp error</string>
-    <string name="dapp_verification_error_body">DApp not verified, please try again</string>
 </resources>
