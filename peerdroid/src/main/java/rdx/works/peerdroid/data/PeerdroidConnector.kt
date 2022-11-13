@@ -72,15 +72,11 @@ internal class PeerdroidConnectorImpl(
     // if any error occurred during the flow will return a Result.Error along with an error message.
     private lateinit var dataChannelDeferred: CompletableDeferred<Result<DataChannelWrapper>>
 
-    // this will be used to encrypt/decrypt data
-    private lateinit var encryptionKey: ByteArray
-
     // here we collect the local ice candidates
     private val localIceCandidatesList = mutableListOf<PeerConnectionEvent.IceCandidate.Data>()
 
     override suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper> {
         Log.d("CONNECTOR_WEB_RTC", "initialize data channel")
-        this.encryptionKey = encryptionKey
         dataChannelDeferred = CompletableDeferred()
 
         withContext(ioDispatcher) {
