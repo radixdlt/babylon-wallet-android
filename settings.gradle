@@ -13,4 +13,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "BabylonWallet"
+include ':webrtc-library'
 include ':app'
