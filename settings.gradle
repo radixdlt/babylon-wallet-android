@@ -13,5 +13,6 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "BabylonWallet"
-include ':webrtc-library'
 include ':app'
+include ':webrtc-library'
+include ':peerdroid'
