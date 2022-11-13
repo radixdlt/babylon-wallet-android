@@ -14,5 +14,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "BabylonWallet"
 include ':app'
-include ':webrtc-library'
 include ':peerdroid'
+include ':webrtc-library'
