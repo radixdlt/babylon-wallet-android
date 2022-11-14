@@ -137,7 +137,6 @@ internal class PeerdroidConnectorImpl(
                     }
                     is PeerConnectionEvent.IceCandidate -> { // triggered during the IceGatheringChangeEvent.State = GATHERING
                         localIceCandidatesList.add(event.data)
-                        Log.d("CONNECTOR_WEB_RTC", "ice candidate collected")
                     }
                     is PeerConnectionEvent.SignalingState -> {
                         Log.d("CONNECTOR_WEB_RTC", "signaling state changed: ${event.message}")
@@ -290,7 +289,7 @@ internal class PeerdroidConnectorImpl(
             }
 
             ensureActive()
-            Log.d("CONNECTOR_WEB_RTC", "send ice candidates to the extension")
+            Log.d("CONNECTOR_WEB_RTC", "send ${localIceCandidatesList.size} ice candidates to the extension")
             webSocketClient.sendIceCandidatesMessage(localIceCandidatesList.toJsonArrayPayload())
         }
     }
@@ -298,9 +297,10 @@ internal class PeerdroidConnectorImpl(
     private suspend fun addRemoteIceCandidatesInWebRtc(
         browserExtensionIceCandidates: SignalingServerIncomingMessage.BrowserExtensionIceCandidates
     ) {
-        Log.d("CONNECTOR_WEB_RTC", "set remote ice candidates in local WebRTC")
+        val remoteIceCandidates =  browserExtensionIceCandidates.remoteIceCandidates
+        Log.d("CONNECTOR_WEB_RTC", "set ${remoteIceCandidates.size} remote ice candidates in local WebRTC")
         webRtcManager.addRemoteIceCandidates(
-            remoteIceCandidates = browserExtensionIceCandidates.remoteIceCandidates
+            remoteIceCandidates = remoteIceCandidates
         )
     }
 

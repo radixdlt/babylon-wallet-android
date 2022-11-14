@@ -146,12 +146,10 @@ internal suspend fun PeerConnection.addSuspendingIceCandidate(
 
     val observer = object : AddIceObserver {
         override fun onAddSuccess() {
-            Log.d("WEB_RTC", "added successfully ice candidate")
             continuation.resume(true)
         }
 
         override fun onAddFailure(p0: String?) {
-            Log.e("WEB_RTC", "failed to add ice candidate: $p0")
             continuation.resume(false)
         }
     }

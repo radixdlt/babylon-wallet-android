@@ -152,8 +152,10 @@ internal class WebRtcManagerImpl @Inject constructor(
         }
 
         return if (areAllIceCandidatesAdded) {
+            Log.d("WEB_RTC", "added successfully ice candidates")
             Result.Success(Unit)
         } else {
+            Log.d("WEB_RTC", "failed to add all ice candidates")
             Result.Error("failed to add all ice candidates")
         }
     }
