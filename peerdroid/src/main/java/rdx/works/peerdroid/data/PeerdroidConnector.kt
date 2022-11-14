@@ -179,7 +179,7 @@ internal class PeerdroidConnectorImpl(
                             "CONNECTOR_WEB_SOCKET",
                             "missing remote client error, request id: ${incomingMessage.requestId}"
                         )
-                        closePeerdroidConnector()
+                        closePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.RemoteClientDisconnected -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "remote client disconnected")
@@ -204,11 +204,11 @@ internal class PeerdroidConnectorImpl(
                     }
                     SignalingServerIncomingMessage.UnknownMessage -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "unknown incoming message")
-                        closePeerdroidConnector()
+                        closePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.UnknownError -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "unknown error")
-                        closePeerdroidConnector()
+                        closePeerdroidConnectorWithError()
                     }
                 }
             }
@@ -304,7 +304,7 @@ internal class PeerdroidConnectorImpl(
         )
     }
 
-    private suspend fun closePeerdroidConnector() {
+    private suspend fun closePeerdroidConnectorWithError() {
         close()
         dataChannelDeferred.complete(Result.Error("an error occurred"))
     }
