@@ -230,7 +230,7 @@ internal class PeerdroidConnectorImpl(
                     sessionDescriptionValue = sessionDescriptionValue
                 )
                 // first set the local session description
-                val isSet = setLocalDescriptionFromAnswerAndObserveDataChannelState(
+                val isSet = setLocalDescriptionFromOfferAndObserveDataChannelState(
                     localSessionDescription = localSessionDescription
                 )
                 if (isSet) {
@@ -249,7 +249,7 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-    private suspend fun setLocalDescriptionFromAnswerAndObserveDataChannelState(
+    private suspend fun setLocalDescriptionFromOfferAndObserveDataChannelState(
         localSessionDescription: SessionDescriptionWrapper
     ): Boolean {
         Log.d("CONNECTOR_WEB_RTC", "set local session description in local WebRTC")
