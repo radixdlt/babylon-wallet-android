@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.domain.dapp
 
 import com.babylon.wallet.android.data.dapp.DAppResult
-import com.babylon.wallet.android.domain.profile.ProfileRepository
 import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.profile.ProfileRepository
 import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiState
 import javax.inject.Inject
 import javax.inject.Singleton

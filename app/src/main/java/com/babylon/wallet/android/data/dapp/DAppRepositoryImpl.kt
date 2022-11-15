@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.RequestMethodWalletRequest
-import com.babylon.wallet.android.domain.dapp.DAppRepository
 import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.dapp.DAppRepository
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlin.random.Random
