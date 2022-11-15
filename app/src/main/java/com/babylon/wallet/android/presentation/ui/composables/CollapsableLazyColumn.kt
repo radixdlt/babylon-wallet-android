@@ -41,7 +41,10 @@ fun CollapsableLazyColumn(
                 }
             }
             if (!collapsed) {
-                items(dataItem.nft) { row ->
+                items(
+                    dataItem.nft,
+                    key = { nft: NftClassUi.NftUi -> nft.id }
+                ) { row ->
                     var bottomCornersRounded = false
                     if (dataItem.nft.last() == row) {
                         bottomCornersRounded = true

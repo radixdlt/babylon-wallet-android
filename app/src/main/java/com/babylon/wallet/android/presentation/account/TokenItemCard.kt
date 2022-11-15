@@ -40,9 +40,9 @@ fun TokenItemCard(
 ) {
     Card(
         shape = RoundedCornerShape(CORNER_SHAPE_PERCENT),
-        modifier = if (isFirst) Modifier
+        modifier = if (isFirst) modifier
             .fillMaxWidth()
-            .padding(bottom = 10.dp) else Modifier.fillMaxWidth(),
+            .padding(bottom = 10.dp) else modifier.fillMaxWidth(),
         elevation = if (isFirst) 16.dp else 1.dp,
         backgroundColor = MaterialTheme.colors.primary,
     ) {

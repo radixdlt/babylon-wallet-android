@@ -1,6 +1,6 @@
-package com.babylon.wallet.android.data.dapp
+package com.babylon.wallet.android.data.profile.model
 
-data class DAppAccount(
+data class PersonaEntity(
     val accountName: String,
     val name: String,
     val emailAddress: String

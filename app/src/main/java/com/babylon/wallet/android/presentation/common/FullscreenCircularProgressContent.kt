@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun FullscreenCircularProgressScreen(
+fun FullscreenCircularProgressContent(
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -27,6 +27,6 @@ fun FullscreenCircularProgressScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun FullscreenCircularProgressScreenPreview() {
-    FullscreenCircularProgressScreen()
+fun FullscreenCircularProgressContentPreview() {
+    FullscreenCircularProgressContent()
 }

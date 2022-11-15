@@ -17,8 +17,9 @@ sealed class Screen(override val route: String) : Destination {
     object AccountDestination : Screen("account_route")
     object CreateAccountDestination : Screen("create_account_route")
     object AccountCompletionDestination : Screen("account_completion_route")
-    object DAppConnectionRequestDestination : Screen("dapp_connection_request_route")
-    object DAppChooseLoginDestination : Screen("dapp_choose_login_route")
+    object DAppDestination : Screen("dapp_route")
+    object DAppChooseAccountDestination : Screen("dapp_choose_account_route")
+    object DAppCompleteDestination : Screen("dapp_completion_route")
 
     fun routeWithArgs(vararg args: String): String {
         return buildString {
@@ -32,5 +33,6 @@ sealed class Screen(override val route: String) : Destination {
     companion object {
         const val ARG_ACCOUNT_ID = "arg_account_id"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
+        const val ARG_DAPP_NAME = "arg_dapp_name"
     }
 }

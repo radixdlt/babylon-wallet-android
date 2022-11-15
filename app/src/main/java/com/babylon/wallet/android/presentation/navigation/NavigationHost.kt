@@ -11,10 +11,9 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
-import com.babylon.wallet.android.presentation.dapp.connectionrequest.DAppConnectionRequestScreen
-import com.babylon.wallet.android.presentation.dapp.login.ChooseDAppLoginScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
+import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -65,7 +64,7 @@ fun NavigationHost(
                 onMenuItemClick = {
                     /* TODO For now i init flow here for testing */
                     navController.navigate(
-                        Screen.DAppConnectionRequestDestination.route
+                        Screen.DAppDestination.route
                     )
                 }
             ) {
@@ -97,26 +96,6 @@ fun NavigationHost(
             )
         }
 
-        composable(route = Screen.DAppConnectionRequestDestination.route) {
-            DAppConnectionRequestScreen(
-                viewModel = hiltViewModel(),
-                onCloseClick = { navController.navigateUp() },
-                onContinueClick = {
-                    navController.navigate(
-                        Screen.DAppChooseLoginDestination.route
-                    )
-                }
-            )
-        }
-
-        composable(route = Screen.DAppChooseLoginDestination.route) {
-            ChooseDAppLoginScreen(
-                viewModel = hiltViewModel(),
-                onBackClick = { navController.navigateUp() },
-                onContinueClick = {
-                    // TODO
-                }
-            )
-        }
+        dAppConnectionGraph(navController)
     }
 }
