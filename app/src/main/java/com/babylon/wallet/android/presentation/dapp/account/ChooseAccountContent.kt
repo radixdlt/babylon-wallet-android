@@ -43,6 +43,7 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.babylon.wallet.android.presentation.ui.theme.White
 
+@Suppress("UnstableCollections")
 @Composable
 fun ChooseAccountContent(
     onBackClick: () -> Unit,

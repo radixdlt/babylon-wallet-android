@@ -26,6 +26,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 
+@Suppress("UnstableCollections")
 @Composable
 fun CollapsableChildItemView(
     nftId: String,

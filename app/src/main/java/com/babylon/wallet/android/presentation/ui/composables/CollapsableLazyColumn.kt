@@ -13,7 +13,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.mockdata.mockNftUiList
 import com.babylon.wallet.android.presentation.model.NftClassUi
 
-@Suppress("MutableParams")
+@Suppress("MutableParams", "UnstableCollections")
 @Composable
 fun CollapsableLazyColumn(
     collapsedState: SnapshotStateList<Boolean>, // TODO use an immutable object!

@@ -94,6 +94,7 @@ fun WalletScreen(
     }
 }
 
+@Suppress("UnstableCollections")
 @Composable
 private fun WalletContent(
     wallet: WalletData,
