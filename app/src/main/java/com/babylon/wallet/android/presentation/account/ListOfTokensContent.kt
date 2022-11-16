@@ -15,6 +15,7 @@ import com.babylon.wallet.android.data.mockdata.mockTokenUiList
 import com.babylon.wallet.android.presentation.model.TokenUi
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
+@Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListOfTokensContent(

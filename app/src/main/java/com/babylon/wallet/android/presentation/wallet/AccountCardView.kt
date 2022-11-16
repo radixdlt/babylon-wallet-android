@@ -29,6 +29,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 
+@Suppress("UnstableCollections")
 @Composable
 fun AccountCardView(
     onCardClick: () -> Unit,

@@ -22,6 +22,7 @@ import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 private const val MAX_ASSETS_DISPLAYED = 10
 private const val RELATIVE_PADDING = 0.7f
 
+@Suppress("UnstableCollections")
 @Composable
 fun AssetIconRowView(
     assets: List<TokenUi>,
