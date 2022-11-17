@@ -1,24 +1,13 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import android.content.ClipboardManager
-import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,7 +18,6 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.mockdata.mockAccountUiList
-import com.babylon.wallet.android.presentation.helpers.MockMainViewRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
@@ -38,7 +26,7 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -49,9 +37,30 @@ fun WalletScreen(
     onAccountCreationClick: () -> Unit
 ) {
 
-    val state: WalletUiState by viewModel.walletUiState.collectAsStateWithLifecycle()
-    val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
+    val state by viewModel.walletUiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    WalletScreenContent(
+        modifier = modifier,
+        state = state,
+        onAccountClick = onAccountClick,
+        onAccountCreationClick = onAccountCreationClick,
+        isRefreshing = isRefreshing,
+        onRefresh = viewModel::refresh,
+        onCopyAccountAddressClick = viewModel::onCopyAccountAddress
+    )
+}
 
+@Composable
+private fun WalletScreenContent(
+    modifier: Modifier,
+    state: WalletUiState,
+    onAccountClick: (accountId: String, accountName: String) -> Unit,
+    onAccountCreationClick: () -> Unit,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    onCopyAccountAddressClick: (String) -> Unit
+) {
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -75,14 +84,14 @@ fun WalletScreen(
             is WalletUiState.Loaded -> {
                 SwipeRefresh(
                     state = swipeRefreshState,
-                    onRefresh = { viewModel.refresh() },
+                    onRefresh = onRefresh,
                     indicatorPadding = innerPadding,
                     refreshTriggerDistance = 100.dp,
                     content = {
-                        WalletContent(
-                            wallet = (state as WalletUiState.Loaded).wallet,
-                            accounts = (state as WalletUiState.Loaded).accounts,
-                            onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
+                        WalletAccountList(
+                            wallet = state.wallet,
+                            accounts = state.accounts,
+                            onCopyAccountAddressClick = onCopyAccountAddressClick,
                             onAccountClick = onAccountClick,
                             onAccountCreationClick = onAccountCreationClick,
                             modifier = Modifier.verticalScroll(rememberScrollState())
@@ -96,7 +105,7 @@ fun WalletScreen(
 
 @Suppress("UnstableCollections")
 @Composable
-private fun WalletContent(
+private fun WalletAccountList(
     wallet: WalletData,
     accounts: List<AccountUi>,
     onCopyAccountAddressClick: (String) -> Unit,
@@ -214,37 +223,19 @@ fun RadarHubPreview() {
 @Composable
 fun WalletContentPreview() {
     BabylonWalletTheme {
-        WalletContent(
-            wallet = WalletData(
-                currency = "$",
-                amount = "236246"
+        WalletScreenContent(
+            modifier = Modifier.fillMaxSize(),
+            state = WalletUiState.Loaded(
+                WalletData(
+                    currency = "$",
+                    amount = "236246"
+                ), mockAccountUiList
             ),
-            accounts = mockAccountUiList,
-            onCopyAccountAddressClick = {},
             onAccountClick = { _, _ -> },
             onAccountCreationClick = { },
-            modifier = Modifier
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
-@Composable
-fun WalletScreenPreview() {
-    val mockViewModel = WalletViewModel(
-        mainViewRepository = MockMainViewRepository(),
-        clipboardManager = LocalContext
-            .current
-            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    )
-
-    BabylonWalletTheme {
-        WalletScreen(
-            viewModel = mockViewModel,
-            onAccountClick = { _, _ ->
-            },
-            onAccountCreationClick = {}
+            isRefreshing = false,
+            onRefresh = { },
+            onCopyAccountAddressClick = {}
         )
     }
 }

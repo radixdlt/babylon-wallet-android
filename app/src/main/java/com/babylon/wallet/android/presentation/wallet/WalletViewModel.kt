@@ -2,9 +2,13 @@ package com.babylon.wallet.android.presentation.wallet
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.gateway.HammunetGatewayTestConstants
 import com.babylon.wallet.android.domain.MainViewRepository
+import com.babylon.wallet.android.domain.repository.entity.EntityRepository
+import com.babylon.wallet.android.domain.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.presentation.model.AccountUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
