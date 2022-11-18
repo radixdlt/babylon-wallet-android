@@ -15,12 +15,6 @@ class MockMainViewRepository : MainViewRepository {
         )
     }
 
-    override suspend fun getAccounts(): List<AccountUi> {
-        return mockAccountDtoList.map { accountDto ->
-            accountDto.toUiModel()
-        }
-    }
-
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
         return mockAccountDtoList[2].toUiModel()
     }

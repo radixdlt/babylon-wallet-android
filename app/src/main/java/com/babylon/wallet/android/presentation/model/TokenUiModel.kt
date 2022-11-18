@@ -1,12 +1,13 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
 import java.text.DecimalFormat
-import java.util.Locale
+import java.util.*
 
-data class TokenUi(
+data class TokenUiModel(
     val id: String,
     val name: String?,
     val symbol: String?, // short capitalized name
@@ -76,4 +77,15 @@ data class TokenUi(
     companion object {
         private const val MAX_TOKEN_DIGITS_LENGTH = 8
     }
+}
+
+fun OwnedFungibleToken.toTokenUi(): TokenUiModel {
+    return TokenUiModel(
+        id = address,
+        name = token.getTokenName(),
+        symbol = token.getTokenSymbol(),
+        tokenQuantity = amount,
+        tokenValue = "",
+        iconUrl = token.getImageUrl()
+    )
 }

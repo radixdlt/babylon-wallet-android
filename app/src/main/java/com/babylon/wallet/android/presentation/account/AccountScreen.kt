@@ -44,8 +44,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.mockdata.mockAccountUiList
-import com.babylon.wallet.android.presentation.model.AccountUi
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.presentation.model.toNftUiModel
+import com.babylon.wallet.android.presentation.model.toTokenUi
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
@@ -120,7 +122,7 @@ fun AccountScreen(
 @ExperimentalPagerApi
 @Composable
 private fun AccountContent(
-    account: AccountUi,
+    account: AccountResources,
     pagerState: PagerState,
     onCopyAccountAddressClick: (String) -> Unit,
     tokenLazyListState: LazyListState,
@@ -137,15 +139,15 @@ private fun AccountContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AccountAddressView(
-                address = account.hash,
+                address = account.address,
                 onCopyAccountAddressClick = onCopyAccountAddressClick,
                 modifier = Modifier.weight(1f, false)
             )
         }
 
         WalletBalanceView(
-            currencySignValue = account.currencySymbol,
-            amount = account.amount,
+            currencySignValue = "$",
+            amount = "10",
             hidden = false
         ) {
         }
@@ -168,7 +170,7 @@ private fun AccountContent(
 @Composable
 fun AssetsContent(
     pagerState: PagerState,
-    account: AccountUi,
+    account: AccountResources,
     tokenLazyListState: LazyListState,
     modifier: Modifier = Modifier
 ) {
@@ -180,22 +182,22 @@ fun AssetsContent(
     ) { page ->
         when (page) {
             0 -> {
-                val xrdToken = if (account.hasXrdToken) account.tokens[0] else null
-                val tokensToShow = if (account.hasXrdToken) {
-                    account.tokens.subList(1, account.tokens.size)
+                val xrdToken = if (account.hasXrdToken()) account.fungibleTokens[0] else null
+                val tokensToShow = if (account.hasXrdToken()) {
+                    account.fungibleTokens.subList(1, account.fungibleTokens.size)
                 } else {
-                    account.tokens
+                    account.fungibleTokens
                 }
 
                 ListOfTokensContent(
-                    tokenItems = tokensToShow,
+                    tokenItems = tokensToShow.map { it.toTokenUi() },
                     lazyListState = tokenLazyListState,
-                    xrdTokenUi = xrdToken,
+                    xrdTokenUi = xrdToken?.toTokenUi(),
                     modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
                 )
             }
             1 -> {
-                val nftSections = account.nfts
+                val nftSections = account.nonFungibleTokens.map { it.toNftUiModel() }
                 val collapsedState = remember(nftSections) { nftSections.map { true }.toMutableStateList() }
                 CollapsableLazyColumn(
                     collapsedState = collapsedState,
@@ -313,13 +315,15 @@ private val emptyTabIndicator: @Composable (List<TabPosition>) -> Unit = {}
 @Composable
 fun AccountContentPreview() {
     BabylonWalletTheme {
-        AccountContent(
-            account = mockAccountUiList[1],
-            pagerState = PagerState(currentPage = 0),
-            onCopyAccountAddressClick = {},
-            tokenLazyListState = LazyListState(),
-            modifier = Modifier
-        )
+        with(SampleDataProvider()) {
+            AccountContent(
+                account = sampleAccountResource(),
+                pagerState = PagerState(currentPage = 0),
+                onCopyAccountAddressClick = {},
+                tokenLazyListState = LazyListState(),
+                modifier = Modifier
+            )
+        }
     }
 }
 
@@ -329,13 +333,15 @@ fun AccountContentPreview() {
 @Composable
 fun AccountContentPreview2() {
     BabylonWalletTheme {
-        AccountContent(
-            account = mockAccountUiList[0],
-            pagerState = PagerState(currentPage = 1),
-            onCopyAccountAddressClick = {},
-            tokenLazyListState = LazyListState(),
-            modifier = Modifier
-        )
+        with(SampleDataProvider()) {
+            AccountContent(
+                account = sampleAccountResource(),
+                pagerState = PagerState(currentPage = 1),
+                onCopyAccountAddressClick = {},
+                tokenLazyListState = LazyListState(),
+                modifier = Modifier
+            )
+        }
     }
 }
 

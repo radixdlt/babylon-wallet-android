@@ -26,17 +26,6 @@ class MainViewRepositoryImpl(
         }
     }
 
-    override suspend fun getAccounts(): List<AccountUi> {
-        return withContext(ioDispatcher) {
-            delay(Random.nextLong(500, 1500))
-            mockAccountDtoList
-                .shuffled()
-                .map { accountDto ->
-                    accountDto.toUiModel()
-                }
-        }
-    }
-
     override suspend fun getAccountBasedOnId(id: String): AccountUi {
         return withContext(ioDispatcher) {
             delay(Random.nextLong(500, 1000))

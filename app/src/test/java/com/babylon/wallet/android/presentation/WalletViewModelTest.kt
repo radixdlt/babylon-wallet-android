@@ -2,11 +2,13 @@ package com.babylon.wallet.android.presentation
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.mockdata.mockAccountDtoList
-import com.babylon.wallet.android.mockdata.mockAccountUiList
-import com.babylon.wallet.android.presentation.wallet.*
+import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
+import com.babylon.wallet.android.presentation.wallet.WalletData
+import com.babylon.wallet.android.presentation.wallet.WalletUiState
+import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -15,9 +17,11 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -27,8 +31,9 @@ class WalletViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
+    private lateinit var vm: WalletViewModel
     private val mainViewRepository = mock(MainViewRepository::class.java)
-
+    private val requestAccountsUseCase = mock(RequestAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
 
     private val walletData = WalletData(
@@ -36,14 +41,20 @@ class WalletViewModelTest {
         "1000"
     )
 
+    private val sampleData = SampleDataProvider().sampleAccountResource()
+
+    @Before
+    fun setUp() {
+        vm = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase)
+    }
+
     @Test
     fun `when view model init, verify initial value of wallet UI state is Loading`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
 
         // when
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
-        viewModel.walletUiState
+        vm.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -58,11 +69,9 @@ class WalletViewModelTest {
         // given
         val event = mutableListOf<WalletUiState>()
         whenever(mainViewRepository.getWallet()).thenReturn(walletData)
-        whenever(mainViewRepository.getAccounts()).thenReturn(mockAccountUiList)
-
+        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
         // when
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
-        viewModel.walletUiState
+        vm.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -80,8 +89,7 @@ class WalletViewModelTest {
         val event = mutableListOf<WalletUiState>()
 
         // when
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
-        viewModel.walletUiState
+        vm.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -96,13 +104,9 @@ class WalletViewModelTest {
         // given
         val event = mutableListOf<WalletUiState>()
         whenever(mainViewRepository.getWallet()).thenReturn(walletData)
-        whenever(mainViewRepository.getAccounts()).thenReturn(
-            mockAccountDtoList.map { accountDto ->
-                accountDto.toUiModel()
-            })
-
         // when
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase)
+        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -111,10 +115,6 @@ class WalletViewModelTest {
 
         // then
         val lastEvent = event.last() as WalletUiState.Loaded
-        assertEquals(lastEvent.accounts[0].name, mockAccountUiList[0].name)
-        assertEquals(lastEvent.accounts[0].hash, mockAccountUiList[0].hash)
-        assertEquals(lastEvent.accounts[0].amount, mockAccountUiList[0].amount)
-        assertEquals(lastEvent.accounts[0].currencySymbol, mockAccountUiList[0].currencySymbol)
     }
 
     @Test
@@ -122,10 +122,7 @@ class WalletViewModelTest {
         // given
         val hash = "somehash2123"
         val clipData = ClipData.newPlainText("accountHash", hash)
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager)
-
-        // when
-        viewModel.onCopyAccountAddress(hash)
+        vm.onCopyAccountAddress(hash)
 
         // then
         verify(clipboardManager).setPrimaryClip(clipData)

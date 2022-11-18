@@ -12,17 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.data.mockdata.mockTokenUiList
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListOfTokensContent(
-    tokenItems: List<TokenUi>,
+    tokenItems: List<TokenUiModel>,
     lazyListState: LazyListState,
     modifier: Modifier = Modifier,
-    xrdTokenUi: TokenUi? = null,
+    xrdTokenUi: TokenUiModel? = null,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 32.dp),
@@ -32,16 +32,16 @@ fun ListOfTokensContent(
     ) {
         if (xrdTokenUi != null) {
             stickyHeader {
-                TokenItemCard(tokenUi = xrdTokenUi, isFirst = true)
+                TokenItemCard(token = xrdTokenUi, isFirst = true)
             }
         }
         items(
             items = tokenItems,
-            key = { item: TokenUi ->
+            key = { item: TokenUiModel ->
                 item.id
             },
             itemContent = {
-                TokenItemCard(tokenUi = it)
+                TokenItemCard(token = it)
             }
         )
     }

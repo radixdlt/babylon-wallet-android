@@ -1,7 +1,15 @@
 package com.babylon.wallet.android.domain.repository.transaction
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.*
+import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
 import com.babylon.wallet.android.domain.Result
 import com.babylon.wallet.android.domain.repository.performHttpRequest
 import javax.inject.Inject

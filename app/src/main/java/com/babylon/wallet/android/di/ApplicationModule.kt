@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -82,13 +83,19 @@ object ApplicationModule {
         return OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
     }
 
+    @Provides
+    @Singleton
+    fun provideJsonDeserializer(): Json {
+        return Serializer.kotlinxSerializationJson
+    }
+
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
     fun provideGatewayApi(): GatewayApi {
         val retrofitBuilder = Retrofit.Builder().client(provideOkHttpClient())
             .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(Serializer.kotlinxSerializationJson.asConverterFactory(Serializer.MIME_TYPE.toMediaType())).build()
+            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType())).build()
         return retrofitBuilder.create(GatewayApi::class.java)
     }
 }

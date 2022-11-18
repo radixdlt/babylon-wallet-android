@@ -14,8 +14,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.babylon.wallet.android.data.mockdata.mockTokenUiList
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.OwnedFungibleToken
+import com.babylon.wallet.android.domain.model.TokenMetadataConstants
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 
@@ -25,7 +26,7 @@ private const val RELATIVE_PADDING = 0.7f
 @Suppress("UnstableCollections")
 @Composable
 fun AssetIconRowView(
-    assets: List<TokenUi>,
+    assets: List<OwnedFungibleToken>,
     modifier: Modifier = Modifier,
     circleSize: Int = 30,
     fontSize: Int = 10,
@@ -46,7 +47,7 @@ fun AssetIconRowView(
                 val text = if (i >= MAX_ASSETS_DISPLAYED)
                     "+${assets.size - MAX_ASSETS_DISPLAYED}"
                 else
-                    assets[i].symbol
+                    assets[i].token?.metadata?.get(TokenMetadataConstants.KEY_SYMBOL)
                 Text(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = fontSize.sp,
@@ -65,8 +66,10 @@ fun AssetIconRowView(
 @Composable
 fun AssetIconRowPreview() {
     BabylonWalletTheme {
-        AssetIconRowView(
-            assets = mockTokenUiList
-        )
+        with(SampleDataProvider()) {
+            AssetIconRowView(
+                assets = sampleFungibleTokens()
+            )
+        }
     }
 }

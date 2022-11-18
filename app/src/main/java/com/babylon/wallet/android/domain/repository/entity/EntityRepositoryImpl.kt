@@ -1,8 +1,16 @@
 package com.babylon.wallet.android.domain.repository.entity
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.*
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
 import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.model.AccountResourcesSlim
+import com.babylon.wallet.android.domain.model.toAccountResourceSlim
 import com.babylon.wallet.android.domain.repository.performHttpRequest
 import javax.inject.Inject
 
@@ -16,11 +24,11 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
         })
     }
 
-    override suspend fun entityResources(address: String): Result<EntityResourcesResponse> {
+    override suspend fun getAccountResources(address: String): Result<AccountResourcesSlim> {
         return performHttpRequest(call = {
             gatewayApi.entityResources(EntityResourcesRequest(address))
-        }, map = {
-            it
+        }, map = { response ->
+            response.toAccountResourceSlim()
         })
     }
 

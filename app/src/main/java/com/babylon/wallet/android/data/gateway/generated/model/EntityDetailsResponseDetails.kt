@@ -55,7 +55,7 @@ data class EntityDetailsResponseDetails(
     @SerialName(value = "ids")
     val ids: EntityDetailsResponseNonFungibleResourceDetailsIds? = null,
     @SerialName(value = "code_hex")
-    val codeHex: kotlin.String,
+    val codeHex: kotlin.String? = null,
     /* The Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null

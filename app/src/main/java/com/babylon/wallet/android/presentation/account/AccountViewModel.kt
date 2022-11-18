@@ -2,24 +2,26 @@ package com.babylon.wallet.android.presentation.account
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.presentation.model.AccountUi
+import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.onValue
+import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val mainViewRepository: MainViewRepository,
+    private val requestAccountResourcesUseCase: RequestAccountResourcesUseCase,
     private val clipboardManager: ClipboardManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -42,11 +44,15 @@ class AccountViewModel @Inject constructor(
                 _isRefreshing.value = true
                 // TODO how to handle the case when the gateway doesn't return the account?
                 // TODO this should probably change to flow later
-                val account = mainViewRepository.getAccountBasedOnId(accountId)
-                _accountUiState.value = AccountUiState.Loaded(account)
+                val account = requestAccountResourcesUseCase.getAccountResources(accountId)
+                account.onValue { accountResource ->
+                    _accountUiState.update {
+                        AccountUiState.Loaded(accountResource)
+                    }
+                }
                 _isRefreshing.value = false
             } else {
-                Log.d("AccountViewModel", "arg account id is empty")
+                Timber.d("arg account id is empty")
             }
         }
     }
@@ -61,7 +67,7 @@ sealed interface AccountUiState {
     object Loading : AccountUiState
 
     data class Loaded(
-        val account: AccountUi
+        val account: AccountResources
     ) : AccountUiState
 }
 

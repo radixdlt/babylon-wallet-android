@@ -3,13 +3,12 @@ package com.babylon.wallet.android.domain.repository.entity
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
 import com.babylon.wallet.android.domain.Result
-import kotlinx.coroutines.flow.Flow
+import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 
 interface EntityRepository {
     suspend fun entityDetails(address: String) : Result<EntityDetailsResponse>
-    suspend fun entityResources(address: String): Result<EntityResourcesResponse>
+    suspend fun getAccountResources(address: String): Result<AccountResourcesSlim>
     suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse>
     suspend fun entityMetadata(address: String, page: String? = null, limit: Int? = null): Result<EntityMetadataResponse>
 }

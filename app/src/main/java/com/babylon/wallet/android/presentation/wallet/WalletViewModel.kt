@@ -2,48 +2,57 @@ package com.babylon.wallet.android.presentation.wallet
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.gateway.HammunetGatewayTestConstants
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.presentation.model.AccountUi
+import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.onValue
+import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val mainViewRepository: MainViewRepository,
-    private val clipboardManager: ClipboardManager
+    private val clipboardManager: ClipboardManager,
+    private val requestAccountsUseCase: RequestAccountResourcesUseCase
 ) : ViewModel() {
 
-    private val _isRefreshing = MutableStateFlow(true)
+    private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
     private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState.Loading)
     val walletUiState = _walletUiState.asStateFlow()
 
     init {
-        refresh(fromUser = false)
+        viewModelScope.launch {
+            loadResourceData()
+        }
     }
 
-    fun refresh(fromUser: Boolean = true) {
-        viewModelScope.launch {
-            _isRefreshing.emit(fromUser)
-            val wallet = mainViewRepository.getWallet()
-            val accounts = mainViewRepository.getAccounts()
-            _walletUiState.emit(
+    private suspend fun loadResourceData() {
+        val callResult = requestAccountsUseCase.getAccountResources(HammunetGatewayTestConstants.SAMPLE_ACCOUNT)
+        val wallet = mainViewRepository.getWallet()
+        callResult.onValue { accountResources ->
+            _walletUiState.update { state ->
                 WalletUiState.Loaded(
                     wallet = wallet,
-                    accounts = accounts
+                    resources = listOf(accountResources)
                 )
-            )
-            if (fromUser) _isRefreshing.emit(false)
+            }
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.emit(true)
+            loadResourceData()
+            _isRefreshing.emit(false)
         }
     }
 
@@ -58,7 +67,7 @@ sealed interface WalletUiState {
 
     data class Loaded(
         val wallet: WalletData,
-        val accounts: List<AccountUi>
+        val resources: List<AccountResources> = emptyList()
     ) : WalletUiState
 }
 

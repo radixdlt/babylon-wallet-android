@@ -35,11 +35,11 @@ data class ErrorResponse (
 
     /* A numeric code corresponding to the given error type, roughly aligned with HTTP Status Code semantics (eg 400/404/500). */
     @SerialName(value = "code")
-    val code: kotlin.Int,
+    val code: kotlin.Int? = null,
 
     /* A human-readable error message. */
     @SerialName(value = "message")
-    val message: kotlin.String,
+    val message: kotlin.String? = null,
 
     @SerialName(value = "details")
     val details: GatewayError? = null,

@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.AssetDto.NftClassDto.NftDto.Companion.toUiModel
-import com.babylon.wallet.android.presentation.model.NftClassUi
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.model.NftUiModel
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import java.math.BigDecimal
 
 // WARNING: this is not the actual data structure of the data transfer object and
@@ -21,7 +21,7 @@ data class AssetDto(
     val tokenQuantity: Double, // if the type is "token"
     val marketPrice: Float?, // this is treated as "token"/USD trading pair at the moment
     val iconUrl: String?, // icon for the token
-    val nftClasses: List<NftClassDto>? // NFT types, and each NFT type has a list of actual NFTs
+    val nftClasses: List<NftClassDto>?// NFT types, and each NFT type has a list of actual NFTs
 ) {
 
     data class NftClassDto(
@@ -41,7 +41,7 @@ data class AssetDto(
         ) {
 
             companion object {
-                fun NftDto.toUiModel() = NftClassUi.NftUi(
+                fun NftDto.toUiModel() = NftUiModel.NftUi(
                     id = id,
                     imageUrl = iconUrl,
                     nftsMetadata = nftsMetadata
@@ -50,10 +50,8 @@ data class AssetDto(
         }
 
         companion object {
-            fun NftClassDto.toNftClassUiModel() = NftClassUi(
+            fun NftClassDto.toNftClassUiModel() = NftUiModel(
                 name = name,
-                nftsInCirculation = nftsInCirculation,
-                nftsInPossession = nftsInPossession,
                 iconUrl = iconUrl,
                 nft = nfts.map { nftDto ->
                     nftDto.toUiModel()
@@ -63,7 +61,7 @@ data class AssetDto(
     }
 
     companion object {
-        fun AssetDto.toTokenUiModel() = TokenUi(
+        fun AssetDto.toTokenUiModel() = TokenUiModel(
             id = id,
             name = name,
             symbol = symbol,

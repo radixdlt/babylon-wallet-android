@@ -1,6 +1,10 @@
 package com.babylon.wallet.android.domain.repository.transaction
 
-import com.babylon.wallet.android.data.gateway.generated.model.*
+import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
 import com.babylon.wallet.android.domain.Result
 
 interface TransactionRepository {
