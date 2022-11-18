@@ -1,3 +1,4 @@
+@file:Suppress("SpreadOperator")
 package com.babylon.wallet.android.data.gateway.generated.converter
 
 class CollectionFormats {

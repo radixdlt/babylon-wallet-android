@@ -2,7 +2,6 @@ package com.babylon.wallet.android.di
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -95,7 +94,8 @@ object ApplicationModule {
     fun provideGatewayApi(): GatewayApi {
         val retrofitBuilder = Retrofit.Builder().client(provideOkHttpClient())
             .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType())).build()
+            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .build()
         return retrofitBuilder.create(GatewayApi::class.java)
     }
 }

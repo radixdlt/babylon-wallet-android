@@ -15,26 +15,11 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.AccountIdentifier
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-/**
- * 
- *
- * @param name 
- * @param description 
- * @param iconUrl 
- * @param url 
- * @param symbol 
- * @param isSupplyMutable If true, the token is allowed to be minted/burned by the owner.
- * @param granularity The string-encoded decimal representing the amount
- * @param owner 
- */
 @Serializable
-
-data class TokenProperties (
+data class TokenProperties(
 
     @SerialName(value = "name")
     val name: kotlin.String,
@@ -63,4 +48,3 @@ data class TokenProperties (
     val owner: AccountIdentifier? = null
 
 )
-

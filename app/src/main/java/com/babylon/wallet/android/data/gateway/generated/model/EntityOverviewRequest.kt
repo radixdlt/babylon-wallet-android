@@ -15,21 +15,15 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.PartialLedgerStateIdentifier
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
- * @param addresses 
- * @param atStateIdentifier 
- */
+ * *
+ * @param addresses * @param atStateIdentifier */
 @Serializable
 
-data class EntityOverviewRequest (
+data class EntityOverviewRequest(
 
     @SerialName(value = "addresses")
     val addresses: kotlin.collections.List<kotlin.String>,
@@ -38,4 +32,3 @@ data class EntityOverviewRequest (
     val atStateIdentifier: PartialLedgerStateIdentifier? = null
 
 )
-

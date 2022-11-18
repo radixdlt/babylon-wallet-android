@@ -1,9 +1,17 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,25 +48,25 @@ fun WalletScreen(
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     WalletScreenContent(
-        modifier = modifier,
         state = state,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
-        onCopyAccountAddressClick = viewModel::onCopyAccountAddress
+        onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
+        modifier = modifier
     )
 }
 
 @Composable
 private fun WalletScreenContent(
-    modifier: Modifier,
     state: WalletUiState,
     onAccountClick: (accountId: String, accountName: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    onCopyAccountAddressClick: (String) -> Unit
+    onCopyAccountAddressClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
     Scaffold(
@@ -90,10 +98,10 @@ private fun WalletScreenContent(
                     content = {
                         WalletAccountList(
                             wallet = state.wallet,
-                            accounts = state.resources,
                             onCopyAccountAddressClick = onCopyAccountAddressClick,
                             onAccountClick = onAccountClick,
                             onAccountCreationClick = onAccountCreationClick,
+                            accounts = state.resources,
                             modifier = Modifier
                         )
                     }
@@ -110,8 +118,8 @@ private fun WalletAccountList(
     onCopyAccountAddressClick: (String) -> Unit,
     onAccountClick: (String, String) -> Unit,
     onAccountCreationClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    accounts: List<AccountResources>
+    accounts: List<AccountResources>,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
         item {
@@ -226,18 +234,19 @@ fun WalletContentPreview() {
     BabylonWalletTheme {
         with(SampleDataProvider()) {
             WalletScreenContent(
-                modifier = Modifier.fillMaxSize(),
                 state = WalletUiState.Loaded(
                     wallet = WalletData(
                         currency = "$",
                         amount = "236246"
-                    ), resources = listOf(sampleAccountResource(), sampleAccountResource())
+                    ),
+                    resources = listOf(sampleAccountResource(), sampleAccountResource())
                 ),
                 onAccountClick = { _, _ -> },
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },
-                onCopyAccountAddressClick = {}
+                onCopyAccountAddressClick = {},
+                modifier = Modifier.fillMaxSize()
             )
         }
     }

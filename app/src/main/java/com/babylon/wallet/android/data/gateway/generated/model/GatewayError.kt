@@ -10,19 +10,17 @@
     "ArrayInDataClass",
     "EnumEntryName",
     "RemoveRedundantQualifierName",
-    "UnusedImport"
+    "UnusedImport",
+    "UnnecessaryAbstractClass"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
+ * *
  * @param type The type of error. Each subtype may have its own additional structured fields.
  */
 @Serializable
@@ -32,4 +30,3 @@ abstract class GatewayError {
     @SerialName(value = "type")
     abstract val type: kotlin.String
 }
-

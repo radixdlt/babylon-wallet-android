@@ -15,29 +15,27 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
- *
+ * *
  * Values: fungibleResource,nonFungibleResource,`package`,accountComponent
  */
 @Serializable
 enum class EntityDetailsResponseDetailsType(val value: kotlin.String) {
 
     @SerialName(value = "fungible_resource")
-    fungibleResource("fungible_resource"),
+    FungibleResource("fungible_resource"),
 
     @SerialName(value = "non_fungible_resource")
-    nonFungibleResource("non_fungible_resource"),
+    NonFungibleResource("non_fungible_resource"),
 
     @SerialName(value = "package")
-    `package`("package"),
+    Package("package"),
 
     @SerialName(value = "account_component")
-    accountComponent("account_component");
+    AccountComponent("account_component");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use
@@ -58,11 +56,10 @@ enum class EntityDetailsResponseDetailsType(val value: kotlin.String) {
          * Returns a valid [EntityDetailsResponseDetailsType] for [data], null otherwise.
          */
         fun decode(data: kotlin.Any?): EntityDetailsResponseDetailsType? = data?.let {
-          val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
-            it == value || normalizedData == "$value".lowercase()
-          }
+            val normalizedData = "$it".lowercase()
+            values().firstOrNull { value ->
+                it == value || normalizedData == "$value".lowercase()
+            }
         }
     }
 }
-

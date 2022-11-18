@@ -7,46 +7,25 @@
  */
 
 @file:Suppress(
-    "ArrayInDataClass",
-    "EnumEntryName",
-    "RemoveRedundantQualifierName",
-    "UnusedImport"
+    "ArrayInDataClass", "EnumEntryName", "RemoveRedundantQualifierName", "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.GatewayError
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
-/**
- * 
- *
- * @param code A numeric code corresponding to the given error type, roughly aligned with HTTP Status Code semantics (eg 400/404/500).
- * @param message A human-readable error message.
- * @param details 
- * @param traceId A GUID to be used when reporting errors, to allow correlation with the Gateway API's error logs.
- */
 @Serializable
+data class ErrorResponse(
 
-data class ErrorResponse (
-
-    /* A numeric code corresponding to the given error type, roughly aligned with HTTP Status Code semantics (eg 400/404/500). */
-    @SerialName(value = "code")
-    val code: kotlin.Int? = null,
+    @SerialName(value = "code") val code: kotlin.Int? = null,
 
     /* A human-readable error message. */
-    @SerialName(value = "message")
-    val message: kotlin.String? = null,
+    @SerialName(value = "message") val message: kotlin.String? = null,
 
-    @SerialName(value = "details")
-    val details: GatewayError? = null,
+    @SerialName(value = "details") val details: GatewayError? = null,
 
     /* A GUID to be used when reporting errors, to allow correlation with the Gateway API's error logs. */
-    @SerialName(value = "trace_id")
-    val traceId: kotlin.String? = null
+    @SerialName(value = "trace_id") val traceId: kotlin.String? = null
 
 )
-

@@ -15,30 +15,10 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseAccountComponentDetails
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseFungibleResourceDetails
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIds
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponsePackageDetails
-import com.babylon.wallet.android.data.gateway.generated.model.TokenAmount
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-/**
- * 
- *
- * @param discriminator 
- * @param divisibility 
- * @param totalSupply 
- * @param totalMinted 
- * @param totalBurnt 
- * @param ids 
- * @param codeHex 
- * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
- */
 @Serializable
 data class EntityDetailsResponseDetails(
 
@@ -60,4 +40,3 @@ data class EntityDetailsResponseDetails(
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null
 )
-

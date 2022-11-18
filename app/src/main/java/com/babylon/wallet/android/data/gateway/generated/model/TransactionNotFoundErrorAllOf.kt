@@ -15,23 +15,17 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
- * @param transactionNotFound 
- */
+ * *
+ * @param transactionNotFound */
 @Serializable
 
-data class TransactionNotFoundErrorAllOf (
+data class TransactionNotFoundErrorAllOf(
 
     @SerialName(value = "transaction_not_found")
     val transactionNotFound: TransactionLookupIdentifier
 
 )
-

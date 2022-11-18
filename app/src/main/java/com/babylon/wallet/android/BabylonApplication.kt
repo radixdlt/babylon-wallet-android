@@ -1,7 +1,6 @@
 package com.babylon.wallet.android
 
 import android.app.Application
-import android.os.Build
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
@@ -15,4 +14,3 @@ class BabylonApplication : Application() {
         }
     }
 }
-

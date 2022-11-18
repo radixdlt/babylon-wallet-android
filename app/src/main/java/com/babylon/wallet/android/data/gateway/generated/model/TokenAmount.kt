@@ -15,28 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
+ *
  *
  * @param `value` The string-encoded decimal representing the amount
  * @param address The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  */
 @Serializable
-
-data class TokenAmount (
+data class TokenAmount(
 
     /* The string-encoded decimal representing the amount */
     @SerialName(value = "value")
-    val `value`: kotlin.String,
+    val value: kotlin.String,
 
     /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "address")
     val address: kotlin.String? = null
 
 )
-

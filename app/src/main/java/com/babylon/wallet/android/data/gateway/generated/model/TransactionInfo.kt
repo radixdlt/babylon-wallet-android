@@ -15,24 +15,20 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.TokenAmount
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param transactionStatus 
- * @param payloadHashHex 
- * @param intentHashHex 
- * @param feePaid 
+ *
+ * @param transactionStatus
+ * @param payloadHashHex
+ * @param intentHashHex
+ * @param feePaid
  */
 @Serializable
 
-data class TransactionInfo (
+data class TransactionInfo(
 
     @SerialName(value = "transaction_status")
     val transactionStatus: TransactionStatus,
@@ -47,4 +43,3 @@ data class TransactionInfo (
     val feePaid: TokenAmount? = null
 
 )
-

@@ -17,35 +17,41 @@ class RequestAccountResourcesUseCase @Inject constructor(
         return when (val accountResourcesResult = entityRepository.getAccountResources(address)) {
             is Result.Error -> Result.Error(accountResourcesResult.message)
             is Result.Success -> {
-                return Result.Success(data = accountResourcesResult.data.let { accountResources ->
-                    val fungibleTokens = mutableListOf<OwnedFungibleToken>()
-                    accountResources.simpleFungibleTokens.forEach { fungibleToken ->
-                        entityRepository.entityDetails(fungibleToken.address).onValue { response ->
-                            fungibleTokens.add(
-                                OwnedFungibleToken(
-                                    fungibleToken.owner,
-                                    fungibleToken.amount,
-                                    fungibleToken.address,
-                                    response.toFungibleToken()
+                return Result.Success(
+                    data = accountResourcesResult.data.let { accountResources ->
+                        val fungibleTokens = mutableListOf<OwnedFungibleToken>()
+                        accountResources.simpleFungibleTokens.forEach { fungibleToken ->
+                            entityRepository.entityDetails(fungibleToken.address).onValue { response ->
+                                fungibleTokens.add(
+                                    OwnedFungibleToken(
+                                        fungibleToken.owner,
+                                        fungibleToken.amount,
+                                        fungibleToken.address,
+                                        response.toFungibleToken()
+                                    )
                                 )
-                            )
+                            }
                         }
-                    }
-                    val nonFungibleTokens = mutableListOf<OwnedNonFungibleToken>()
-                    accountResources.simpleNonFungibleTokens.forEach { nonFungibleToken ->
-                        entityRepository.entityDetails(nonFungibleToken.tokenResourceAddress).onValue { response ->
-                            nonFungibleTokens.add(
-                                OwnedNonFungibleToken(
-                                    nonFungibleToken.owner,
-                                    nonFungibleToken.amount,
-                                    nonFungibleToken.tokenResourceAddress,
-                                    response.toNonFungibleToken()
+                        val nonFungibleTokens = mutableListOf<OwnedNonFungibleToken>()
+                        accountResources.simpleNonFungibleTokens.forEach { nonFungibleToken ->
+                            entityRepository.entityDetails(nonFungibleToken.tokenResourceAddress).onValue { response ->
+                                nonFungibleTokens.add(
+                                    OwnedNonFungibleToken(
+                                        nonFungibleToken.owner,
+                                        nonFungibleToken.amount,
+                                        nonFungibleToken.tokenResourceAddress,
+                                        response.toNonFungibleToken()
+                                    )
                                 )
-                            )
+                            }
                         }
+                        AccountResources(
+                            address,
+                            fungibleTokens = fungibleTokens.toList(),
+                            nonFungibleTokens = nonFungibleTokens.toList()
+                        )
                     }
-                    AccountResources(address, fungibleTokens = fungibleTokens.toList(), nonFungibleTokens = nonFungibleTokens.toList())
-                })
+                )
             }
         }
     }

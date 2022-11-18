@@ -7,20 +7,16 @@
  */
 
 @file:Suppress(
-    "ArrayInDataClass",
-    "EnumEntryName",
-    "RemoveRedundantQualifierName",
-    "UnusedImport"
+    "ArrayInDataClass", "EnumEntryName", "RemoveRedundantQualifierName", "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
-
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
+ *
  *
  * Values: intent,signedIntent,notarized,payload
  */
@@ -28,16 +24,16 @@ import kotlinx.serialization.Serializable
 enum class TransactionLookupOrigin(val value: kotlin.String) {
 
     @SerialName(value = "intent")
-    intent("intent"),
+    Intent("intent"),
 
     @SerialName(value = "signed_intent")
-    signedIntent("signed_intent"),
+    SignedIntent("signed_intent"),
 
     @SerialName(value = "notarized")
-    notarized("notarized"),
+    Notarized("notarized"),
 
     @SerialName(value = "payload")
-    payload("payload");
+    Payload("payload");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use
@@ -58,11 +54,10 @@ enum class TransactionLookupOrigin(val value: kotlin.String) {
          * Returns a valid [TransactionLookupOrigin] for [data], null otherwise.
          */
         fun decode(data: kotlin.Any?): TransactionLookupOrigin? = data?.let {
-          val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
-            it == value || normalizedData == "$value".lowercase()
-          }
+            val normalizedData = "$it".lowercase()
+            values().firstOrNull { value ->
+                it == value || normalizedData == "$value".lowercase()
+            }
         }
     }
 }
-

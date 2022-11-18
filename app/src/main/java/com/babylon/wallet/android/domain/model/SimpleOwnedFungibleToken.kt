@@ -9,10 +9,14 @@ data class SimpleOwnedFungibleToken(
     val address: String,
 )
 
-fun EntityResourcesResponseFungibleResources.toSimpleFungibleTokens(ownerAddress: String): List<SimpleOwnedFungibleToken> {
-    return items.map { fungibleResourceItem -> SimpleOwnedFungibleToken(
-        owner = AccountAddress(ownerAddress),
-        amount = BigDecimal(fungibleResourceItem.amount.value),
-        address = fungibleResourceItem.address
-    ) }
+fun EntityResourcesResponseFungibleResources.toSimpleFungibleTokens(
+    ownerAddress: String
+): List<SimpleOwnedFungibleToken> {
+    return items.map { fungibleResourceItem ->
+        SimpleOwnedFungibleToken(
+            owner = AccountAddress(ownerAddress),
+            amount = BigDecimal(fungibleResourceItem.amount.value),
+            address = fungibleResourceItem.address
+        )
+    }
 }

@@ -15,23 +15,18 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseFungibleResourcesItem
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
- * @param items 
- * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
+ * *
+ * @param items * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
  * @param previousCursor TBD (maybe we should use HATEOAS-like permalinks?)
  * @param nextCursor TBD (maybe we should use HATEOAS-like permalinks?)
  */
 @Serializable
 
-data class EntityResourcesResponseFungibleResources (
+data class EntityResourcesResponseFungibleResources(
 
     @SerialName(value = "items")
     val items: kotlin.collections.List<EntityResourcesResponseFungibleResourcesItem>,
@@ -49,4 +44,3 @@ data class EntityResourcesResponseFungibleResources (
     val nextCursor: kotlin.String? = null
 
 )
-

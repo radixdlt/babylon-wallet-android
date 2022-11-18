@@ -15,25 +15,22 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
-import com.babylon.wallet.android.data.gateway.generated.model.TokenAmount
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param discriminator 
- * @param divisibility 
- * @param totalSupply 
- * @param totalMinted 
- * @param totalBurnt 
+ *
+ * @param discriminator
+ * @param divisibility
+ * @param totalSupply
+ * @param totalMinted
+ * @param totalBurnt
  */
 @Serializable
 
-data class EntityDetailsResponseFungibleResourceDetails (
+data class EntityDetailsResponseFungibleResourceDetails(
 
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
@@ -51,4 +48,3 @@ data class EntityDetailsResponseFungibleResourceDetails (
     val totalBurnt: TokenAmount
 
 )
-

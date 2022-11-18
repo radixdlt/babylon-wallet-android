@@ -6,11 +6,7 @@ data class AccountResourcesSlim(
     val address: String,
     val simpleFungibleTokens: List<SimpleOwnedFungibleToken> = emptyList(),
     val simpleNonFungibleTokens: List<SimpleOwnedNonFungibleToken> = emptyList()
-) {
-//    fun hasXrdToken(): Boolean {
-//        return fungibleTokens.any { it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD }
-//    }
-}
+)
 
 fun EntityResourcesResponse.toAccountResourceSlim(): AccountResourcesSlim {
     return AccountResourcesSlim(

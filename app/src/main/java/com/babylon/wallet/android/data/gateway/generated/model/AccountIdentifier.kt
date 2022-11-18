@@ -15,23 +15,19 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
+ * *
  * @param address The radix address of the account.
  */
 @Serializable
 
-data class AccountIdentifier (
+data class AccountIdentifier(
 
     /* The radix address of the account. */
     @SerialName(value = "address")
     val address: kotlin.String
 
 )
-

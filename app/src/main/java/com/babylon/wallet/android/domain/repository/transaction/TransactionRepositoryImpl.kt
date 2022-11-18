@@ -16,36 +16,43 @@ import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : TransactionRepository {
 
-    override suspend fun getRecentTransactions(address: String, page: String?, limit: Int?): Result<RecentTransactionsResponse> {
+    override suspend fun getRecentTransactions(
+        address: String,
+        page: String?,
+        limit: Int?
+    ): Result<RecentTransactionsResponse> {
         return performHttpRequest(call = {
             gatewayApi.recentTransactions(RecentTransactionsRequest(cursor = page, limit = limit))
         }, map = {
-            it
-        })
+                it
+            })
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {
         return performHttpRequest(call = {
             gatewayApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
         }, map = {
-            it
-        })
+                it
+            })
     }
 
-    override suspend fun getTransactionStatus(identifier: TransactionLookupIdentifier): Result<TransactionStatusResponse> {
+    override suspend fun getTransactionStatus(
+        identifier: TransactionLookupIdentifier
+    ): Result<TransactionStatusResponse> {
         return performHttpRequest(call = {
             gatewayApi.transactionStatus(TransactionStatusRequest(identifier))
         }, map = {
-            it
-        })
+                it
+            })
     }
 
-    override suspend fun getTransactionDetails(identifier: TransactionLookupIdentifier): Result<TransactionDetailsResponse> {
+    override suspend fun getTransactionDetails(
+        identifier: TransactionLookupIdentifier
+    ): Result<TransactionDetailsResponse> {
         return performHttpRequest(call = {
             gatewayApi.transactionDetails(TransactionDetailsRequest(identifier))
         }, map = {
-            it
-        })
+                it
+            })
     }
-
 }

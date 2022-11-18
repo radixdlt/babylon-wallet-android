@@ -11,7 +11,7 @@ import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface RepositoryModule {
+interface DataModule {
 
     @Binds
     fun bindsEntityRepository(
@@ -22,5 +22,4 @@ interface RepositoryModule {
     fun bindsTransactionRepository(
         transactionRepository: TransactionRepositoryImpl
     ): TransactionRepository
-
 }

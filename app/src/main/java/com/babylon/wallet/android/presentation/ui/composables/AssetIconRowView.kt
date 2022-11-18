@@ -47,7 +47,7 @@ fun AssetIconRowView(
                 val text = if (i >= MAX_ASSETS_DISPLAYED)
                     "+${assets.size - MAX_ASSETS_DISPLAYED}"
                 else
-                    assets[i].token?.metadata?.get(TokenMetadataConstants.KEY_SYMBOL)
+                    assets[i].token.metadata[TokenMetadataConstants.KEY_SYMBOL]
                 Text(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = fontSize.sp,

@@ -15,21 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-/**
- * 
- *
- * @param discriminator 
- * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
- */
 @Serializable
-
-data class EntityDetailsResponseAccountComponentDetails (
+data class EntityDetailsResponseAccountComponentDetails(
 
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
@@ -39,4 +30,3 @@ data class EntityDetailsResponseAccountComponentDetails (
     val packageAddress: kotlin.String
 
 )
-

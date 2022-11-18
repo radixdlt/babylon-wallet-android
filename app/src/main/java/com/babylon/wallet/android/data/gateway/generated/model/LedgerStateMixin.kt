@@ -15,23 +15,19 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.LedgerState
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param ledgerState 
+ *
+ * @param ledgerState
  */
 @Serializable
 
-data class LedgerStateMixin (
+data class LedgerStateMixin(
 
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState
 
 )
-

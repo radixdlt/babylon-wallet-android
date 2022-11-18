@@ -15,15 +15,11 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataItem
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
+ * *
  * @param items TBD
  * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
  * @param previousCursor TBD (maybe we should use HATEOAS-like permalinks?)
@@ -31,7 +27,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class EntityMetadataCollection (
+data class EntityMetadataCollection(
 
     /* TBD */
     @SerialName(value = "items")
@@ -50,4 +46,3 @@ data class EntityMetadataCollection (
     val nextCursor: kotlin.String? = null
 
 )
-

@@ -9,7 +9,6 @@ sealed interface Result<out T> {
         val data: T? = null,
         val exception: Throwable? = null
     ) : Result<T>
-
 }
 
 suspend fun <T> Result<T>.onValue(action: suspend (T) -> Unit) {

@@ -15,22 +15,18 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.GatewayInfoResponseKnownTarget
-import com.babylon.wallet.android.data.gateway.generated.model.GatewayInfoResponseReleaseInfo
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param knownTarget 
- * @param releaseInfo 
+ *
+ * @param knownTarget
+ * @param releaseInfo
  */
 @Serializable
 
-data class GatewayInfoResponseAllOf (
+data class GatewayInfoResponseAllOf(
 
     @SerialName(value = "known_target")
     val knownTarget: GatewayInfoResponseKnownTarget,
@@ -39,4 +35,3 @@ data class GatewayInfoResponseAllOf (
     val releaseInfo: GatewayInfoResponseReleaseInfo
 
 )
-

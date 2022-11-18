@@ -15,23 +15,19 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionInfo
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param transaction 
+ *
+ * @param transaction
  */
 @Serializable
 
-data class TransactionStatusResponseAllOf (
+data class TransactionStatusResponseAllOf(
 
     @SerialName(value = "transaction")
     val transaction: TransactionInfo
 
 )
-

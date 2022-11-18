@@ -20,32 +20,31 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
         return performHttpRequest(call = {
             gatewayApi.entityDetails(EntityDetailsRequest(address))
         }, map = {
-            it
-        })
+                it
+            })
     }
 
     override suspend fun getAccountResources(address: String): Result<AccountResourcesSlim> {
         return performHttpRequest(call = {
             gatewayApi.entityResources(EntityResourcesRequest(address))
         }, map = { response ->
-            response.toAccountResourceSlim()
-        })
+                response.toAccountResourceSlim()
+            })
     }
 
     override suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse> {
         return performHttpRequest(call = {
             gatewayApi.entityOverview(EntityOverviewRequest(addresses))
         }, map = {
-            it
-        })
+                it
+            })
     }
 
     override suspend fun entityMetadata(address: String, page: String?, limit: Int?): Result<EntityMetadataResponse> {
         return performHttpRequest(call = {
             gatewayApi.entityMetadata(EntityMetadataRequest(address, cursor = page, limit = limit))
         }, map = {
-            it
-        })
+                it
+            })
     }
-
 }

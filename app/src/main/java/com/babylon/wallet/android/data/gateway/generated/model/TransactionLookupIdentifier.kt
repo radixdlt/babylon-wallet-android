@@ -15,21 +15,16 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupOrigin
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
- * @param origin 
- * @param valueHex 
- */
+ * *
+ * @param origin * @param valueHex */
 @Serializable
 
-data class TransactionLookupIdentifier (
+data class TransactionLookupIdentifier(
 
     @Contextual @SerialName(value = "origin")
     val origin: TransactionLookupOrigin,
@@ -38,4 +33,3 @@ data class TransactionLookupIdentifier (
     val valueHex: kotlin.String
 
 )
-

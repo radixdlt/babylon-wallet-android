@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.data.gateway.generated.converter
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.net.URI
+import java.net.URL
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import java.net.URI
-import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong

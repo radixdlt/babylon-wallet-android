@@ -9,10 +9,14 @@ data class SimpleOwnedNonFungibleToken(
     val tokenResourceAddress: String
 )
 
-fun EntityResourcesResponseNonFungibleResources.toSimpleNonFungibleTokens(ownerAddress: String): List<SimpleOwnedNonFungibleToken> {
-    return items.map { nftResource -> SimpleOwnedNonFungibleToken(
-        owner = AccountAddress(ownerAddress),
-        amount = nftResource.amount,
-        tokenResourceAddress = nftResource.address
-    ) }
+fun EntityResourcesResponseNonFungibleResources.toSimpleNonFungibleTokens(
+    ownerAddress: String
+): List<SimpleOwnedNonFungibleToken> {
+    return items.map { nftResource ->
+        SimpleOwnedNonFungibleToken(
+            owner = AccountAddress(ownerAddress),
+            amount = nftResource.amount,
+            tokenResourceAddress = nftResource.address
+        )
+    }
 }

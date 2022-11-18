@@ -6,6 +6,8 @@ data class AccountResources(
     val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList()
 ) {
     fun hasXrdToken(): Boolean {
-        return fungibleTokens.any { it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD }
+        return fungibleTokens.any {
+            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD
+        }
     }
 }

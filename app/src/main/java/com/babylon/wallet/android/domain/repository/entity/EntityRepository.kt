@@ -7,8 +7,12 @@ import com.babylon.wallet.android.domain.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 
 interface EntityRepository {
-    suspend fun entityDetails(address: String) : Result<EntityDetailsResponse>
+    suspend fun entityDetails(address: String): Result<EntityDetailsResponse>
     suspend fun getAccountResources(address: String): Result<AccountResourcesSlim>
     suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse>
-    suspend fun entityMetadata(address: String, page: String? = null, limit: Int? = null): Result<EntityMetadataResponse>
+    suspend fun entityMetadata(
+        address: String,
+        page: String? = null,
+        limit: Int? = null
+    ): Result<EntityMetadataResponse>
 }

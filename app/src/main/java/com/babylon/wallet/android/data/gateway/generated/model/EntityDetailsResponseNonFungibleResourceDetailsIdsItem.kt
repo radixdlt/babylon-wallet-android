@@ -15,21 +15,19 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param idHex 
- * @param immutableDataHex 
- * @param mutableDataHex 
+ *
+ * @param idHex
+ * @param immutableDataHex
+ * @param mutableDataHex
  */
 @Serializable
 
-data class EntityDetailsResponseNonFungibleResourceDetailsIdsItem (
+data class EntityDetailsResponseNonFungibleResourceDetailsIdsItem(
 
     @SerialName(value = "id_hex")
     val idHex: kotlin.String? = null,
@@ -41,4 +39,3 @@ data class EntityDetailsResponseNonFungibleResourceDetailsIdsItem (
     val mutableDataHex: kotlin.String? = null
 
 )
-

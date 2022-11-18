@@ -15,17 +15,13 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.LedgerState
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionInfo
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param ledgerState 
+ *
+ * @param ledgerState
  * @param items The page of user transactions.
  * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
  * @param previousCursor TBD (maybe we should use HATEOAS-like permalinks?)
@@ -33,7 +29,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class RecentTransactionsResponse (
+data class RecentTransactionsResponse(
 
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState,
@@ -55,4 +51,3 @@ data class RecentTransactionsResponse (
     val nextCursor: kotlin.String? = null
 
 )
-

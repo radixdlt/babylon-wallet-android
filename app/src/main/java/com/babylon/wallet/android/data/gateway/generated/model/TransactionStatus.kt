@@ -15,21 +15,16 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
- * @param status 
- * @param stateVersion 
- * @param confirmedAt 
- */
+ * *
+ * @param status * @param stateVersion * @param confirmedAt */
 @Serializable
 
-data class TransactionStatus (
+data class TransactionStatus(
 
     @SerialName(value = "status")
     val status: TransactionStatus.Status,
@@ -43,16 +38,14 @@ data class TransactionStatus (
 ) {
 
     /**
-     * 
-     *
+     * *
      * Values: succeeded,failed,rejected,pending
      */
     @Serializable
     enum class Status(val value: kotlin.String) {
-        @SerialName(value = "succeeded") succeeded("succeeded"),
-        @SerialName(value = "failed") failed("failed"),
-        @SerialName(value = "rejected") rejected("rejected"),
-        @SerialName(value = "pending") pending("pending");
+        @SerialName(value = "succeeded") Succeeded("succeeded"),
+        @SerialName(value = "failed") Failed("failed"),
+        @SerialName(value = "rejected") Rejected("rejected"),
+        @SerialName(value = "pending") Pending("pending");
     }
 }
-

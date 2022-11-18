@@ -15,21 +15,18 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
+ * *
  * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
  * @param previousCursor TBD (maybe we should use HATEOAS-like permalinks?)
  * @param nextCursor TBD (maybe we should use HATEOAS-like permalinks?)
  */
 @Serializable
 
-data class ResultSetCursorMixin (
+data class ResultSetCursorMixin(
 
     /* TBD (make it nullable when we're dealing with unknown result set sizes?) */
     @SerialName(value = "total_count")
@@ -44,4 +41,3 @@ data class ResultSetCursorMixin (
     val nextCursor: kotlin.String? = null
 
 )
-

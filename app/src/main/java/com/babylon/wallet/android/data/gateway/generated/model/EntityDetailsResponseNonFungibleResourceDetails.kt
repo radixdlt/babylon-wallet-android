@@ -15,22 +15,16 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIds
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- * 
- *
- * @param discriminator 
- * @param ids 
- */
+ * *
+ * @param discriminator * @param ids */
 @Serializable
 
-data class EntityDetailsResponseNonFungibleResourceDetails (
+data class EntityDetailsResponseNonFungibleResourceDetails(
 
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
@@ -39,4 +33,3 @@ data class EntityDetailsResponseNonFungibleResourceDetails (
     val ids: EntityDetailsResponseNonFungibleResourceDetailsIds
 
 )
-

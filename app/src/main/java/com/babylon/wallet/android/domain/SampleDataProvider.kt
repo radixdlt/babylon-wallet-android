@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.domain.model.AccountAddress
@@ -12,7 +13,7 @@ class SampleDataProvider {
     fun randomTokenAddress(): String {
         val characters = "abcdefghijklmnopqrstuvwxyz0123456789"
         val sb = StringBuilder()
-        (0 until 26).forEach {
+        repeat((0 until 26).count()) {
             sb.append(characters.random())
         }
         return sb.toString()

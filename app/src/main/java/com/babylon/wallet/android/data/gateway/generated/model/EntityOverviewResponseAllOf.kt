@@ -15,23 +15,19 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponseEntityItem
-
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param entities 
+ *
+ * @param entities
  */
 @Serializable
 
-data class EntityOverviewResponseAllOf (
+data class EntityOverviewResponseAllOf(
 
     @SerialName(value = "entities")
     val entities: kotlin.collections.List<EntityOverviewResponseEntityItem>
 
 )
-
