@@ -14,7 +14,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -46,9 +45,7 @@ class AccountViewModel @Inject constructor(
                 // TODO this should probably change to flow later
                 val account = requestAccountResourcesUseCase.getAccountResources(accountId)
                 account.onValue { accountResource ->
-                    _accountUiState.update {
-                        AccountUiState.Loaded(accountResource)
-                    }
+                    _accountUiState.emit(AccountUiState.Loaded(accountResource))
                 }
                 _isRefreshing.value = false
             } else {

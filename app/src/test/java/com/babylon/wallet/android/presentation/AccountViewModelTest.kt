@@ -40,17 +40,16 @@ class AccountViewModelTest {
     private val sampleData = SampleDataProvider().sampleAccountResource()
 
     @Before
-    fun setUp() {
-        vm = AccountViewModel(requestAccountsUseCase, clipboardManager, savedStateHandle)
+    fun setUp() = runTest {
+        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
+        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
     }
 
     @Test
     fun `when viewmodel init, verify loading displayed before loading account ui`() = runTest {
         // given
-        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
         val event = mutableListOf<AccountUiState>()
-
+        vm = AccountViewModel(requestAccountsUseCase, clipboardManager, savedStateHandle)
         vm.accountUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -64,10 +63,8 @@ class AccountViewModelTest {
     @Test
     fun `when viewmodel init, verify accountUi loaded after loading`() = runTest {
         // given
-        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
         val event = mutableListOf<AccountUiState>()
-
+        vm = AccountViewModel(requestAccountsUseCase, clipboardManager, savedStateHandle)
         vm.accountUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
