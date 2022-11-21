@@ -16,7 +16,9 @@ import dagger.hilt.components.SingletonComponent
 interface DataModule {
 
     @Binds
-    fun bindDAppRepository(dAppRepository: DAppRepositoryImpl): DAppRepository
+    fun bindDAppRepository(
+        dAppRepository: DAppRepositoryImpl
+    ): DAppRepository
 
     @Binds
     fun bindsEntityRepository(

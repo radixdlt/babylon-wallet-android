@@ -9,7 +9,6 @@ import dagger.hilt.components.SingletonComponent
 import rdx.works.peerdroid.data.PeerdroidConnector
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {

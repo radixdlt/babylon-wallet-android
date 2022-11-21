@@ -5,10 +5,9 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.babylon.wallet.android.BuildConfig\
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.GatewayApi
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
-import com.babylon.wallet.android.data.MainViewRepositoryImpl
 import com.babylon.wallet.android.data.profile.ProfileRepositoryImpl
 import com.babylon.wallet.android.data.repository.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
