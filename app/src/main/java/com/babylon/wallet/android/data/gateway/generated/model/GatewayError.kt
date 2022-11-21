@@ -16,6 +16,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+import com.babylon.wallet.android.data.gateway.GatewayErrorSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -23,7 +24,7 @@ import kotlinx.serialization.Serializable
  * *
  * @param type The type of error. Each subtype may have its own additional structured fields.
  */
-@Serializable
+@Serializable(with = GatewayErrorSerializer::class)
 abstract class GatewayError {
 
     /* The type of error. Each subtype may have its own additional structured fields. */

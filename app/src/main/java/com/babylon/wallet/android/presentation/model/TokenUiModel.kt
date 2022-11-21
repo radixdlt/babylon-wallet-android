@@ -79,7 +79,7 @@ data class TokenUiModel(
     }
 }
 
-fun OwnedFungibleToken.toTokenUi(): TokenUiModel {
+fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
     return TokenUiModel(
         id = address,
         name = token.getTokenName(),

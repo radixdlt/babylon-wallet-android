@@ -1,13 +1,13 @@
 package com.babylon.wallet.android.domain.usecase.wallet
 
+import com.babylon.wallet.android.data.gateway.toFungibleToken
+import com.babylon.wallet.android.data.gateway.toNonFungibleToken
+import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.Result
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import com.babylon.wallet.android.domain.model.toFungibleToken
-import com.babylon.wallet.android.domain.model.toNonFungibleToken
 import com.babylon.wallet.android.domain.onValue
-import com.babylon.wallet.android.domain.repository.entity.EntityRepository
 import javax.inject.Inject
 
 class RequestAccountResourcesUseCase @Inject constructor(

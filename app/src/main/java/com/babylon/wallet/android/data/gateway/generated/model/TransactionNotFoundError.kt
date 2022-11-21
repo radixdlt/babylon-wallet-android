@@ -23,7 +23,6 @@ import kotlinx.serialization.Serializable
  * @param type The type of error. Each subtype may have its own additional structured fields.
  * @param transactionNotFound */
 @Serializable
-
 data class TransactionNotFoundError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */

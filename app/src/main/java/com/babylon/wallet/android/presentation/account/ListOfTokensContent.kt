@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,15 +19,13 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 @Composable
 fun ListOfTokensContent(
     tokenItems: List<TokenUiModel>,
-    lazyListState: LazyListState,
     modifier: Modifier = Modifier,
     xrdTokenUi: TokenUiModel? = null,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 32.dp),
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        state = lazyListState
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         if (xrdTokenUi != null) {
             stickyHeader {
@@ -54,7 +51,6 @@ fun ListOfTokenItemsPreview() {
     BabylonWalletTheme {
         ListOfTokensContent(
             tokenItems = mockTokenUiList,
-            lazyListState = LazyListState(),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp)
         )
     }

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import java.math.BigDecimal
 
 data class FungibleToken(
@@ -25,14 +24,4 @@ data class FungibleToken(
     fun getTokenDescription(): String? {
         return metadata[TokenMetadataConstants.KEY_DESCRIPTION]
     }
-}
-
-fun EntityDetailsResponse.toFungibleToken(): FungibleToken {
-    return FungibleToken(
-        address = address,
-        totalSupply = BigDecimal(details.totalSupply?.value),
-        totalMinted = BigDecimal(details.totalMinted?.value),
-        totalBurnt = BigDecimal(details.totalBurnt?.value),
-        metadata = metadata.items.associate { it.key to it.value }
-    )
 }

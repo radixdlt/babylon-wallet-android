@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data
+package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.data.mockdata.mockAccountDtoList

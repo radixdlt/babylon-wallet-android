@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,19 +43,21 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.presentation.model.toNftUiModel
-import com.babylon.wallet.android.presentation.model.toTokenUi
+import com.babylon.wallet.android.presentation.model.NftUiModel
+import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalPagerApi::class)
@@ -70,9 +70,6 @@ fun AccountScreen(
     onBackClick: () -> Unit
 ) {
     val state = viewModel.accountUiState.collectAsStateWithLifecycle().value
-    val pagerState = rememberPagerState(initialPage = 0)
-
-    val tokenLazyListState = rememberLazyListState()
     val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
 
     Scaffold(
@@ -106,10 +103,11 @@ fun AccountScreen(
                     refreshTriggerDistance = 100.dp,
                     content = {
                         AccountContent(
-                            account = state.account,
-                            pagerState = pagerState,
                             onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
-                            tokenLazyListState = tokenLazyListState,
+                            accountAddress = state.accountAddress,
+                            xrdToken = state.xrdToken,
+                            fungibleTokens = state.fungibleTokens,
+                            nonFungibleTokens = state.nonFungibleTokens,
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         )
                     }
@@ -122,10 +120,11 @@ fun AccountScreen(
 @ExperimentalPagerApi
 @Composable
 private fun AccountContent(
-    account: AccountResources,
-    pagerState: PagerState,
     onCopyAccountAddressClick: (String) -> Unit,
-    tokenLazyListState: LazyListState,
+    accountAddress: String,
+    xrdToken: TokenUiModel?,
+    fungibleTokens: ImmutableList<TokenUiModel>,
+    nonFungibleTokens: ImmutableList<NftUiModel>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -139,7 +138,7 @@ private fun AccountContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AccountAddressView(
-                address = account.address,
+                address = accountAddress,
                 onCopyAccountAddressClick = onCopyAccountAddressClick,
                 modifier = Modifier.weight(1f, false)
             )
@@ -156,12 +155,10 @@ private fun AccountContent(
             Text(text = stringResource(id = R.string.account_transfer_button_title))
         }
 
-        AssetTypeTabsRow(pagerState = pagerState)
+        AssetTypeTabsRow()
 
         AssetsContent(
-            pagerState = pagerState,
-            tokenLazyListState = tokenLazyListState,
-            account = account
+            xrdToken, fungibleTokens, nonFungibleTokens
         )
     }
 }
@@ -169,39 +166,30 @@ private fun AccountContent(
 @ExperimentalPagerApi
 @Composable
 fun AssetsContent(
-    pagerState: PagerState,
-    account: AccountResources,
-    tokenLazyListState: LazyListState,
+    xrdToken: TokenUiModel?,
+    fungibleTokens: ImmutableList<TokenUiModel>,
+    nonFungibleTokens: ImmutableList<NftUiModel>,
     modifier: Modifier = Modifier
 ) {
     HorizontalPager(
         modifier = modifier,
         count = 2, // TODO
-        state = pagerState,
+        state = rememberPagerState(),
         userScrollEnabled = false
     ) { page ->
         when (page) {
             0 -> {
-                val xrdToken = if (account.hasXrdToken()) account.fungibleTokens[0] else null
-                val tokensToShow = if (account.hasXrdToken()) {
-                    account.fungibleTokens.subList(1, account.fungibleTokens.size)
-                } else {
-                    account.fungibleTokens
-                }
-
                 ListOfTokensContent(
-                    tokenItems = tokensToShow.map { it.toTokenUi() },
-                    lazyListState = tokenLazyListState,
-                    xrdTokenUi = xrdToken?.toTokenUi(),
+                    tokenItems = fungibleTokens,
+                    xrdTokenUi = xrdToken,
                     modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
                 )
             }
             1 -> {
-                val nftSections = account.nonFungibleTokens.map { it.toNftUiModel() }
-                val collapsedState = remember(nftSections) { nftSections.map { true }.toMutableStateList() }
+                val collapsedState = remember(nonFungibleTokens) { nonFungibleTokens.map { true }.toMutableStateList() }
                 CollapsableLazyColumn(
                     collapsedState = collapsedState,
-                    sections = nftSections,
+                    sections = nonFungibleTokens,
                     modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
                 )
             }
@@ -252,9 +240,8 @@ private fun AccountTopAppBar(
 
 @ExperimentalPagerApi
 @Composable
-private fun AssetTypeTabsRow(
-    pagerState: PagerState
-) {
+private fun AssetTypeTabsRow() {
+    val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
     ScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
@@ -317,10 +304,11 @@ fun AccountContentPreview() {
     BabylonWalletTheme {
         with(SampleDataProvider()) {
             AccountContent(
-                account = sampleAccountResource(),
-                pagerState = PagerState(currentPage = 0),
                 onCopyAccountAddressClick = {},
-                tokenLazyListState = LazyListState(),
+                accountAddress = randomTokenAddress(),
+                xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
+                fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
+                nonFungibleTokens = persistentListOf(),
                 modifier = Modifier
             )
         }
@@ -335,11 +323,12 @@ fun AccountContentPreview2() {
     BabylonWalletTheme {
         with(SampleDataProvider()) {
             AccountContent(
-                account = sampleAccountResource(),
-                pagerState = PagerState(currentPage = 1),
                 onCopyAccountAddressClick = {},
-                tokenLazyListState = LazyListState(),
-                modifier = Modifier
+                modifier = Modifier,
+                nonFungibleTokens = persistentListOf(),
+                fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
+                accountAddress = randomTokenAddress(),
+                xrdToken = sampleFungibleTokens().first().toTokenUiModel()
             )
         }
     }
@@ -351,10 +340,7 @@ fun AccountContentPreview2() {
 @Composable
 fun AssetTabRowPreview() {
     BabylonWalletTheme {
-        val pagerState = rememberPagerState(initialPage = 0)
-        AssetTypeTabsRow(
-            pagerState = pagerState
-        )
+        AssetTypeTabsRow()
     }
 }
 

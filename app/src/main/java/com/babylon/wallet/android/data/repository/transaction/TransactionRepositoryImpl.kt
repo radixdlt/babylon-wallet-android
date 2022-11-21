@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.repository.transaction
+package com.babylon.wallet.android.data.repository.transaction
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
 import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsRequest
@@ -10,10 +10,11 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
+import com.babylon.wallet.android.data.repository.performHttpRequest
 import com.babylon.wallet.android.domain.Result
-import com.babylon.wallet.android.domain.repository.performHttpRequest
 import javax.inject.Inject
 
+// TODO translate from network models to domain models
 class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : TransactionRepository {
 
     override suspend fun getRecentTransactions(

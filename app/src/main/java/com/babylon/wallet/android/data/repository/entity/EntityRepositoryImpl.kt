@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.repository.entity
+package com.babylon.wallet.android.data.repository.entity
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsRequest
@@ -8,10 +8,10 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataRes
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
+import com.babylon.wallet.android.data.repository.performHttpRequest
 import com.babylon.wallet.android.domain.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 import com.babylon.wallet.android.domain.model.toAccountResourceSlim
-import com.babylon.wallet.android.domain.repository.performHttpRequest
 import javax.inject.Inject
 
 class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : EntityRepository {

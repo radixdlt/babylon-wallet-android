@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.di
 
-import com.babylon.wallet.android.domain.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.repository.entity.EntityRepositoryImpl
-import com.babylon.wallet.android.domain.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.repository.transaction.TransactionRepositoryImpl
+import com.babylon.wallet.android.data.repository.entity.EntityRepository
+import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
+import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.data.repository.transaction.TransactionRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
