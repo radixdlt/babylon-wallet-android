@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.data.profile.model.Address
 import com.babylon.wallet.android.domain.AssetType
 import com.babylon.wallet.android.presentation.model.AccountUi
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -57,7 +57,7 @@ data class AccountDto(
     //
     // We might move this later to the domain layer and keep there the business logic!
     // AccountDto => Account, Token, Nft + sorting => TokenUi, NftUi, ...
-    private fun sortTokens(tokensList: List<AssetDto>): List<TokenUi> {
+    private fun sortTokens(tokensList: List<AssetDto>): List<TokenUiModel> {
         return tokensList.toMutableList().sortedWith(
             compareBy(
                 { it.symbol == "XRD" && it.name == "Radix" },

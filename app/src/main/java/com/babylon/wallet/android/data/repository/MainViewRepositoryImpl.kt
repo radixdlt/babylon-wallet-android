@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data
+package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
 import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
@@ -23,17 +23,6 @@ class MainViewRepositoryImpl(
                 "$",
                 Random.nextDouble(9999.999, 99999.999).toString()
             )
-        }
-    }
-
-    override suspend fun getAccounts(): List<AccountUi> {
-        return withContext(ioDispatcher) {
-            delay(Random.nextLong(500, 1500))
-            mockAccountDtoList
-                .shuffled()
-                .map { accountDto ->
-                    accountDto.toUiModel()
-                }
         }
     }
 

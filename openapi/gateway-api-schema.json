@@ -1,0 +1,1430 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Radix Babylon Gateway API",
+    "description": "See https://docs.radixdlt.com/main/apis/introduction.html\n",
+    "license": {
+      "name": "The Radix License, Version 1.0",
+      "url": "https://www.radixfoundation.org/licenses/LICENSE-v1"
+    },
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://hammunet-gateway.radixdlt.com:443/"
+    }
+  ],
+  "paths": {
+    "/gateway": {
+      "post": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Get Gateway Info",
+        "description": "Returns the Gateway API version, network and current ledger state.",
+        "operationId": "GatewayInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GatewayInfoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The Network",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/recent": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Get Recent Transactions",
+        "description": "Returns user-initiated transactions which have been succesfully committed to the ledger.\nThe transactions are returned in a paginated format, ordered by most recent.\n",
+        "operationId": "RecentTransactions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecentTransactionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "A page of the most recent transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentTransactionsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/preview": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Preview Transaction",
+        "description": "Previews transaction against the network.\n",
+        "operationId": "PreviewTransaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/submit": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Submit Transaction",
+        "description": "Submits a signed transaction payload to the network.\nThe transaction identifier from finalize or submit can then be used to track the transaction status.\n",
+        "operationId": "SubmitTransaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionSubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Submission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionSubmitResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/status": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Transaction Status",
+        "description": "Returns the status and contents of the transaction with the given transaction identifier. Transaction identifiers which aren't recognised as either belonging to a committed transaction or a transaction submitted through this Network Gateway may return a `TransactionNotFoundError`. Transaction identifiers relating to failed transactions will, after a delay, also be reported as a `TransactionNotFoundError`.\n",
+        "operationId": "TransactionStatus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/details": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Transaction Details",
+        "description": "Returns the status and contents of the transaction with the given transaction identifier. Transaction identifiers which aren't recognised as either belonging to a committed transaction or a transaction submitted through this Network Gateway may return a `TransactionNotFoundError`. Transaction identifiers relating to failed transactions will, after a delay, also be reported as a `TransactionNotFoundError`.\n",
+        "operationId": "TransactionDetails",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionDetailsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionDetailsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entity/resources": {
+      "post": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Entity Resources",
+        "description": "TBD\n",
+        "operationId": "EntityResources",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntityResourcesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Entity Resources",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityResourcesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entity/details": {
+      "post": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Entity Details",
+        "description": "TBD\n",
+        "operationId": "EntityDetails",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntityDetailsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Entity Details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityDetailsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entity/overview": {
+      "post": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Entity Overview",
+        "description": "TBD\n",
+        "operationId": "EntityOverview",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntityOverviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Entity Details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityOverviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entity/metadata": {
+      "post": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Entity Metadata",
+        "description": "TBD\n",
+        "operationId": "EntityMetadata",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntityMetadataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Entity Metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityMetadataResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EntityAddress": {
+        "type": "string",
+        "description": "The Bech32m-encoded human readable version of the entity's global address."
+      },
+      "ResourceAddress": {
+        "type": "string",
+        "description": "The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address."
+      },
+      "BigDecimal": {
+        "type": "string",
+        "description": "The string-encoded decimal representing the amount"
+      },
+      "LedgerState": {
+        "required": [
+          "network",
+          "state_version",
+          "timestamp",
+          "epoch",
+          "round"
+        ],
+        "type": "object",
+        "properties": {
+          "network": {
+            "type": "string",
+            "description": "The name of the network against which the request is made."
+          },
+          "state_version": {
+            "type": "integer",
+            "description": "The state version of the ledger. Each transaction increments the state version by 1.",
+            "format": "int64"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "The round timestamp of the consensus round when this transaction was committed to ledger. This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set. If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated information, or the network has stalled.\n"
+          },
+          "epoch": {
+            "type": "integer",
+            "description": "The epoch number of the ledger at this state version.",
+            "format": "int64"
+          },
+          "round": {
+            "type": "integer",
+            "description": "The consensus round in the epoch that this state version was committed in.",
+            "format": "int64"
+          }
+        },
+        "description": "The ledger state against which the response was generated. Can be used to detect if the Network Gateway is returning up-to-date information.\n"
+      },
+      "PartialLedgerStateIdentifier": {
+        "type": "object",
+        "properties": {
+          "state_version": {
+            "type": "integer",
+            "description": "If the version is provided, the latest ledger state <= the given version is returned.",
+            "format": "int64",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "If a timestamp is provided, the latest ledger state <= the given timestamp is returned.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "epoch": {
+            "type": "integer",
+            "description": "If an epoch is provided, the ledger state at the given epoch <= the given round (else round 0) is returned.",
+            "format": "int64",
+            "nullable": true
+          },
+          "round": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "description": "Allows a client to request a response referencing an earlier (`at_*` properties) or later (`from_*` properties) ledger state.",
+        "nullable": true
+      },
+      "EntityMetadataCollection": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResultSetCursorMixin"
+          },
+          {
+            "required": [
+              "items"
+            ],
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityMetadataItem"
+                },
+                "description": "TBD"
+              }
+            }
+          }
+        ]
+      },
+      "EntityMetadataItem": {
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "TransactionInfo": {
+        "required": [
+          "transaction_status",
+          "payload_hash_hex",
+          "intent_hash_hex"
+        ],
+        "type": "object",
+        "properties": {
+          "transaction_status": {
+            "$ref": "#/components/schemas/TransactionStatus"
+          },
+          "payload_hash_hex": {
+            "type": "string"
+          },
+          "intent_hash_hex": {
+            "type": "string"
+          },
+          "fee_paid": {
+            "$ref": "#/components/schemas/TokenAmount"
+          }
+        }
+      },
+      "TransactionStatus": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed",
+              "rejected",
+              "pending"
+            ],
+            "type": "string"
+          },
+          "state_version": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "TokenAmount": {
+        "required": [
+          "value",
+          "token_identifier"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/BigDecimal"
+          },
+          "address": {
+            "$ref": "#/components/schemas/ResourceAddress"
+          }
+        }
+      },
+      "LedgerStateMixin": {
+        "required": [
+          "ledger_state"
+        ],
+        "type": "object",
+        "properties": {
+          "ledger_state": {
+            "$ref": "#/components/schemas/LedgerState"
+          }
+        }
+      },
+      "ResultSetCursorMixin": {
+        "type": "object",
+        "properties": {
+          "total_count": {
+            "type": "integer",
+            "description": "TBD (make it nullable when we're dealing with unknown result set sizes?)",
+            "nullable": true
+          },
+          "previous_cursor": {
+            "type": "string",
+            "description": "TBD (maybe we should use HATEOAS-like permalinks?)",
+            "nullable": true
+          },
+          "next_cursor": {
+            "type": "string",
+            "description": "TBD (maybe we should use HATEOAS-like permalinks?)",
+            "nullable": true
+          }
+        }
+      },
+      "GatewayInfoRequest": {
+        "type": "object"
+      },
+      "GatewayInfoResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "known_target",
+              "release_info"
+            ],
+            "type": "object",
+            "properties": {
+              "known_target": {
+                "$ref": "#/components/schemas/GatewayInfoResponseKnownTarget"
+              },
+              "release_info": {
+                "$ref": "#/components/schemas/GatewayInfoResponseReleaseInfo"
+              }
+            }
+          }
+        ]
+      },
+      "GatewayInfoResponseKnownTarget": {
+        "required": [
+          "state_version"
+        ],
+        "type": "object",
+        "properties": {
+          "state_version": {
+            "type": "integer",
+            "description": "The latest-seen state version of the tip of the network's ledger. If this is significantly ahead of the current LedgerState version, the Network Gateway is possibly behind and may be reporting outdated information.\n",
+            "format": "int64"
+          }
+        }
+      },
+      "GatewayInfoResponseReleaseInfo": {
+        "required": [
+          "release_version",
+          "open_api_schema_version"
+        ],
+        "type": "object",
+        "properties": {
+          "release_version": {
+            "type": "string",
+            "description": "The release that is currently deployed to the Gateway API."
+          },
+          "open_api_schema_version": {
+            "type": "string",
+            "description": "The Open API Schema version that was used to generate the API models."
+          }
+        }
+      },
+      "RecentTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          },
+          "from_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "This cursor allows forward pagination, by providing the cursor from the previous request.",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The page size requested.",
+            "nullable": true
+          }
+        },
+        "example": {
+          "limit": 5
+        }
+      },
+      "RecentTransactionsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResultSetCursorMixin"
+              },
+              {
+                "required": [
+                  "items"
+                ],
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TransactionInfo"
+                    },
+                    "description": "The page of user transactions."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "TransactionSubmitRequest": {
+        "required": [
+          "notarized_transaction"
+        ],
+        "type": "object",
+        "properties": {
+          "notarized_transaction": {
+            "type": "string",
+            "description": "The notarized transaction payload which can be submitted, hex encoded."
+          }
+        }
+      },
+      "TransactionSubmitResponse": {
+        "required": [
+          "duplicate"
+        ],
+        "type": "object",
+        "properties": {
+          "duplicate": {
+            "type": "boolean",
+            "description": "Is true if the transaction is a duplicate of an existing pending transaction."
+          }
+        }
+      },
+      "TransactionStatusRequest": {
+        "required": [
+          "transaction_identifier"
+        ],
+        "type": "object",
+        "properties": {
+          "transaction_identifier": {
+            "$ref": "#/components/schemas/TransactionLookupIdentifier"
+          },
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          }
+        },
+        "example": {
+          "transaction_identifier": {
+            "origin": "payload",
+            "value_hex": "14a44f62dc9ec93291c3bd3ae01aa9af6981b5b02d4a0b297fda6691f102eb6b"
+          }
+        }
+      },
+      "TransactionStatusResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "transaction"
+            ],
+            "type": "object",
+            "properties": {
+              "transaction": {
+                "$ref": "#/components/schemas/TransactionInfo"
+              }
+            }
+          }
+        ]
+      },
+      "TransactionDetailsRequest": {
+        "required": [
+          "transaction_identifier"
+        ],
+        "type": "object",
+        "properties": {
+          "transaction_identifier": {
+            "$ref": "#/components/schemas/TransactionLookupIdentifier"
+          },
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          }
+        },
+        "example": {
+          "transaction_identifier": {
+            "origin": "payload",
+            "value_hex": "14a44f62dc9ec93291c3bd3ae01aa9af6981b5b02d4a0b297fda6691f102eb6b"
+          }
+        }
+      },
+      "TransactionDetailsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "transaction",
+              "details"
+            ],
+            "type": "object",
+            "properties": {
+              "transaction": {
+                "$ref": "#/components/schemas/TransactionInfo"
+              },
+              "details": {
+                "$ref": "#/components/schemas/TransactionDetails"
+              }
+            }
+          }
+        ]
+      },
+      "EntityResourcesRequest": {
+        "required": [
+          "address"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EntityAddress"
+          },
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          }
+        },
+        "example": {
+          "address": "<component-entity-address>"
+        }
+      },
+      "EntityResourcesResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "address",
+              "fungible_resources",
+              "non_fungible_resources"
+            ],
+            "type": "object",
+            "properties": {
+              "address": {
+                "$ref": "#/components/schemas/EntityAddress"
+              },
+              "fungible_resources": {
+                "$ref": "#/components/schemas/EntityResourcesResponseFungibleResources"
+              },
+              "non_fungible_resources": {
+                "$ref": "#/components/schemas/EntityResourcesResponseNonFungibleResources"
+              }
+            }
+          }
+        ]
+      },
+      "EntityResourcesResponseFungibleResources": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResultSetCursorMixin"
+          },
+          {
+            "required": [
+              "items"
+            ],
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityResourcesResponseFungibleResourcesItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EntityResourcesResponseFungibleResourcesItem": {
+        "required": [
+          "address",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/ResourceAddress"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/TokenAmount"
+          }
+        }
+      },
+      "EntityResourcesResponseNonFungibleResources": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResultSetCursorMixin"
+          },
+          {
+            "required": [
+              "items"
+            ],
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityResourcesResponseNonFungibleResourcesItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EntityResourcesResponseNonFungibleResourcesItem": {
+        "required": [
+          "address",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/ResourceAddress"
+          },
+          "amount": {
+            "type": "number"
+          }
+        }
+      },
+      "EntityDetailsRequest": {
+        "required": [
+          "address"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EntityAddress"
+          },
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          }
+        },
+        "example": {
+          "address": "resource_tdx_22_1qzxcrac59cy2v9lpcpmf82qel3cjj25v3k5m09rxurgqfpm3gw"
+        }
+      },
+      "EntityDetailsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "address",
+              "metadata",
+              "details"
+            ],
+            "type": "object",
+            "properties": {
+              "address": {
+                "$ref": "#/components/schemas/EntityAddress"
+              },
+              "metadata": {
+                "$ref": "#/components/schemas/EntityMetadataCollection"
+              },
+              "details": {
+                "$ref": "#/components/schemas/EntityDetailsResponseDetails"
+              }
+            }
+          }
+        ]
+      },
+      "EntityDetailsResponseDetailsType": {
+        "enum": [
+          "fungible_resource",
+          "non_fungible_resource",
+          "package",
+          "account_component"
+        ],
+        "type": "string"
+      },
+      "EntityDetailsResponseDetails": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/EntityDetailsResponseFungibleResourceDetails"
+          },
+          {
+            "$ref": "#/components/schemas/EntityDetailsResponseNonFungibleResourceDetails"
+          },
+          {
+            "$ref": "#/components/schemas/EntityDetailsResponsePackageDetails"
+          },
+          {
+            "$ref": "#/components/schemas/EntityDetailsResponseAccountComponentDetails"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "discriminator",
+          "mapping": {
+            "fungible_resource": "#/components/schemas/EntityDetailsResponseFungibleResourceDetails",
+            "non_fungible_resource": "#/components/schemas/EntityDetailsResponseNonFungibleResourceDetails",
+            "package": "#/components/schemas/EntityDetailsResponsePackageDetails",
+            "account_component": "#/components/schemas/EntityDetailsResponseAccountComponentDetails"
+          }
+        }
+      },
+      "EntityDetailsResponseFungibleResourceDetails": {
+        "required": [
+          "discriminator",
+          "divisibility",
+          "total_supply",
+          "total_minted",
+          "total_burnt"
+        ],
+        "type": "object",
+        "properties": {
+          "discriminator": {
+            "$ref": "#/components/schemas/EntityDetailsResponseDetailsType"
+          },
+          "divisibility": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64"
+          },
+          "total_supply": {
+            "$ref": "#/components/schemas/TokenAmount"
+          },
+          "total_minted": {
+            "$ref": "#/components/schemas/TokenAmount"
+          },
+          "total_burnt": {
+            "$ref": "#/components/schemas/TokenAmount"
+          }
+        }
+      },
+      "EntityDetailsResponseNonFungibleResourceDetails": {
+        "required": [
+          "discriminator",
+          "ids"
+        ],
+        "type": "object",
+        "properties": {
+          "discriminator": {
+            "$ref": "#/components/schemas/EntityDetailsResponseDetailsType"
+          },
+          "ids": {
+            "$ref": "#/components/schemas/EntityDetailsResponseNonFungibleResourceDetailsIds"
+          }
+        }
+      },
+      "EntityDetailsResponseNonFungibleResourceDetailsIds": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResultSetCursorMixin"
+          },
+          {
+            "required": [
+              "items"
+            ],
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityDetailsResponseNonFungibleResourceDetailsIdsItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EntityDetailsResponseNonFungibleResourceDetailsIdsItem": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id_hex": {
+            "type": "string"
+          },
+          "immutable_data_hex": {
+            "type": "string"
+          },
+          "mutable_data_hex": {
+            "type": "string"
+          }
+        }
+      },
+      "EntityDetailsResponsePackageDetails": {
+        "required": [
+          "discriminator",
+          "code_hex"
+        ],
+        "type": "object",
+        "properties": {
+          "discriminator": {
+            "$ref": "#/components/schemas/EntityDetailsResponseDetailsType"
+          },
+          "code_hex": {
+            "type": "string"
+          }
+        }
+      },
+      "EntityDetailsResponseAccountComponentDetails": {
+        "required": [
+          "discriminator",
+          "package_address"
+        ],
+        "type": "object",
+        "properties": {
+          "discriminator": {
+            "$ref": "#/components/schemas/EntityDetailsResponseDetailsType"
+          },
+          "package_address": {
+            "$ref": "#/components/schemas/EntityAddress"
+          }
+        }
+      },
+      "EntityOverviewRequest": {
+        "required": [
+          "addresses"
+        ],
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityAddress"
+            }
+          },
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          }
+        },
+        "example": {
+          "addresses": [
+            "resource_tdx_22_1qzxcrac59cy2v9lpcpmf82qel3cjj25v3k5m09rxurgqfpm3gw"
+          ]
+        }
+      },
+      "EntityOverviewResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "entities"
+            ],
+            "type": "object",
+            "properties": {
+              "entities": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityOverviewResponseEntityItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EntityOverviewResponseEntityItem": {
+        "required": [
+          "address",
+          "metadata"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EntityAddress"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/EntityMetadataCollection"
+          }
+        }
+      },
+      "EntityMetadataRequest": {
+        "required": [
+          "address"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EntityAddress"
+          },
+          "at_state_identifier": {
+            "$ref": "#/components/schemas/PartialLedgerStateIdentifier"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "This cursor allows forward pagination, by providing the cursor from the previous request.",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The page size requested.",
+            "nullable": true
+          }
+        },
+        "example": {
+          "address": "resource_tdx_22_1qzxcrac59cy2v9lpcpmf82qel3cjj25v3k5m09rxurgqfpm3gw"
+        }
+      },
+      "EntityMetadataResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LedgerStateMixin"
+          },
+          {
+            "required": [
+              "address",
+              "metadata"
+            ],
+            "type": "object",
+            "properties": {
+              "address": {
+                "$ref": "#/components/schemas/EntityAddress"
+              },
+              "metadata": {
+                "$ref": "#/components/schemas/EntityMetadataCollection"
+              }
+            }
+          }
+        ]
+      },
+      "TransactionDetails": {
+        "required": [
+          "raw_hex",
+          "referenced_global_entities"
+        ],
+        "type": "object",
+        "properties": {
+          "raw_hex": {
+            "type": "string",
+            "description": "The raw transaction payload, hex encoded."
+          },
+          "referenced_global_entities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "message_hex": {
+            "type": "string",
+            "description": "The message bytes, hex encoded."
+          }
+        }
+      },
+      "ValidatorIdentifier": {
+        "required": [
+          "address"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The radix address of the validator."
+          }
+        }
+      },
+      "TokenIdentifier": {
+        "required": [
+          "rri"
+        ],
+        "type": "object",
+        "properties": {
+          "rri": {
+            "type": "string",
+            "description": "The radix resource identifier of the token."
+          }
+        }
+      },
+      "TransactionLookupOrigin": {
+        "enum": [
+          "intent",
+          "signed_intent",
+          "notarized",
+          "payload"
+        ],
+        "type": "string"
+      },
+      "TransactionLookupIdentifier": {
+        "required": [
+          "origin",
+          "value_hex"
+        ],
+        "type": "object",
+        "properties": {
+          "origin": {
+            "$ref": "#/components/schemas/TransactionLookupOrigin"
+          },
+          "value_hex": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "A numeric code corresponding to the given error type, roughly aligned with HTTP Status Code semantics (eg 400/404/500)."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable error message."
+          },
+          "details": {
+            "$ref": "#/components/schemas/GatewayError"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "A GUID to be used when reporting errors, to allow correlation with the Gateway API's error logs."
+          }
+        }
+      },
+      "GatewayError": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of error. Each subtype may have its own additional structured fields."
+          }
+        },
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "NotSyncedUpError": "#/components/schemas/NotSyncedUpError",
+            "InvalidRequestError": "#/components/schemas/InvalidRequestError",
+            "InvalidTransactionError": "#/components/schemas/InvalidTransactionError",
+            "TransactionNotFoundError": "#/components/schemas/TransactionNotFoundError",
+            "InternalServerError": "#/components/schemas/InternalServerError"
+          }
+        }
+      },
+      "NotSyncedUpError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GatewayError"
+          },
+          {
+            "required": [
+              "request_type",
+              "current_sync_delay_seconds",
+              "max_allowed_sync_delay_seconds"
+            ],
+            "type": "object",
+            "properties": {
+              "request_type": {
+                "type": "string",
+                "description": "The request type that triggered this exception."
+              },
+              "current_sync_delay_seconds": {
+                "type": "integer",
+                "description": "The current delay between the Gateway DB and the network ledger round timestamp.",
+                "format": "int64"
+              },
+              "max_allowed_sync_delay_seconds": {
+                "type": "integer",
+                "description": "The maximum allowed delay between the Gateway DB and the network ledger round timestamp for this `request_type`.",
+                "format": "int64"
+              }
+            }
+          }
+        ]
+      },
+      "InvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GatewayError"
+          },
+          {
+            "required": [
+              "validation_errors"
+            ],
+            "type": "object",
+            "properties": {
+              "validation_errors": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ValidationErrorsAtPath"
+                },
+                "description": "One or more validation errors which occurred when validating the request."
+              }
+            }
+          }
+        ]
+      },
+      "ValidationErrorsAtPath": {
+        "required": [
+          "path",
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GatewayError"
+          },
+          {
+            "required": [
+              "exception",
+              "cause"
+            ],
+            "type": "object",
+            "properties": {
+              "exception": {
+                "type": "string",
+                "description": "Gives an error type which occurred within the Gateway API when serving the request."
+              },
+              "cause": {
+                "type": "string",
+                "description": "Gives a human readable message - likely just a trace ID for reporting the error."
+              }
+            }
+          }
+        ]
+      },
+      "InvalidTransactionError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GatewayError"
+          }
+        ]
+      },
+      "TransactionNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GatewayError"
+          },
+          {
+            "required": [
+              "transaction_not_found"
+            ],
+            "type": "object",
+            "properties": {
+              "transaction_not_found": {
+                "$ref": "#/components/schemas/TransactionLookupIdentifier"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Status",
+      "description": "To query information about the Gateway API status.",
+      "x-displayName": "Status Endpoints"
+    },
+    {
+      "name": "Transaction",
+      "description": "To build, finalize and submit transactions, and to query transaction status and contents.",
+      "x-displayName": "Transaction Endpoints"
+    },
+    {
+      "name": "Entity",
+      "description": "TBD",
+      "x-displayName": "Entity State Endpoints"
+    }
+  ]
+}

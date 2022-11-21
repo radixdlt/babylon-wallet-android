@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.account
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,9 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import java.math.BigDecimal
 
@@ -34,7 +33,7 @@ private const val WEIGHT_OF_TOKEN_VALUE = 0.6F
 
 @Composable
 fun TokenItemCard(
-    tokenUi: TokenUi,
+    token: TokenUiModel,
     modifier: Modifier = Modifier,
     isFirst: Boolean = false
 ) {
@@ -50,12 +49,10 @@ fun TokenItemCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = tokenUi.iconUrl,
-                    placeholder = painterResource(id = R.drawable.ic_launcher_background), // TODO will change icon
-                    fallback = painterResource(id = R.drawable.ic_launcher_background) // TODO will change icon
-                ),
+            AsyncImage(
+                model = token.iconUrl,
+                placeholder = painterResource(id = R.drawable.ic_launcher_background), // TODO will change icon
+                fallback = painterResource(id = R.drawable.ic_launcher_background), // TODO will change icon
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -66,21 +63,21 @@ fun TokenItemCard(
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
                     .weight(WEIGHT_OF_TOKEN_NAME),
-                text = tokenUi.tokenItemTitle,
+                text = token.symbol.orEmpty(),
                 fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Column(Modifier.weight(WEIGHT_OF_TOKEN_VALUE)) {
                 Text(
-                    text = tokenUi.tokenQuantityToDisplay,
+                    text = token.tokenQuantityToDisplay,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = tokenUi.tokenValue.orEmpty(),
+                    text = token.tokenItemTitle,
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -96,7 +93,7 @@ fun TokenItemCard(
 fun TokenItemCardPreview() {
     BabylonWalletTheme {
         TokenItemCard(
-            tokenUi = TokenUi(
+            token = TokenUiModel(
                 id = "id",
                 name = "name",
                 symbol = "symbol",
@@ -114,7 +111,7 @@ fun TokenItemCardPreview() {
 fun TokenItemCardWithLongNameAndLongValuesPreview() {
     BabylonWalletTheme {
         TokenItemCard(
-            tokenUi = TokenUi(
+            token = TokenUiModel(
                 id = "id",
                 name = "a very long name that might cause troubles",
                 symbol = "",

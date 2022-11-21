@@ -11,13 +11,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.mockdata.mockNftUiList
-import com.babylon.wallet.android.presentation.model.NftClassUi
+import com.babylon.wallet.android.presentation.model.NftUiModel
 
 @Suppress("MutableParams", "UnstableCollections")
 @Composable
 fun CollapsableLazyColumn(
     collapsedState: SnapshotStateList<Boolean>, // TODO use an immutable object!
-    sections: List<NftClassUi>,
+    sections: List<NftUiModel>,
     modifier: Modifier = Modifier
 ) {
 
@@ -28,8 +28,8 @@ fun CollapsableLazyColumn(
                 CollapsableParentItemView(
                     nftImageUrl = dataItem.iconUrl,
                     nftName = dataItem.name,
-                    nftsInCirculation = dataItem.nftsInCirculation,
-                    nftsInPossession = dataItem.nftsInPossession,
+                    nftsInCirculation = "?",
+                    nftsInPossession = "?",
                     nftChildCount = dataItem.nft.size,
                     collapsed = collapsed,
                     arrowText = if (collapsed)
@@ -43,7 +43,7 @@ fun CollapsableLazyColumn(
             if (!collapsed) {
                 items(
                     dataItem.nft,
-                    key = { nft: NftClassUi.NftUi -> nft.id }
+                    key = { nft: NftUiModel.NftUi -> nft.id }
                 ) { row ->
                     var bottomCornersRounded = false
                     if (dataItem.nft.last() == row) {

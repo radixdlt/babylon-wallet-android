@@ -53,7 +53,7 @@ classes that are related to the feature! For example:
   - _AccountViewModel_, viewmodel suffix: `ViewModel`
   - _AccountScreen_, main screen suffix: `Screen`
   - _ListOfAccountsContent_ (composable that implements a list of accounts)
-  - _AccountUi_, presentation model suffix: `Ui`
+  - _AccountUiModel_, presentation model suffix: `UiModel`
 
 
 ## Name of variables

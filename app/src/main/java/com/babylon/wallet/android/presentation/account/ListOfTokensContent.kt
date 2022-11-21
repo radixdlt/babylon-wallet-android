@@ -5,43 +5,40 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.data.mockdata.mockTokenUiList
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListOfTokensContent(
-    tokenItems: List<TokenUi>,
-    lazyListState: LazyListState,
+    tokenItems: List<TokenUiModel>,
     modifier: Modifier = Modifier,
-    xrdTokenUi: TokenUi? = null,
+    xrdTokenUi: TokenUiModel? = null,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 32.dp),
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        state = lazyListState
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         if (xrdTokenUi != null) {
             stickyHeader {
-                TokenItemCard(tokenUi = xrdTokenUi, isFirst = true)
+                TokenItemCard(token = xrdTokenUi, isFirst = true)
             }
         }
         items(
             items = tokenItems,
-            key = { item: TokenUi ->
+            key = { item: TokenUiModel ->
                 item.id
             },
             itemContent = {
-                TokenItemCard(tokenUi = it)
+                TokenItemCard(token = it)
             }
         )
     }
@@ -54,7 +51,6 @@ fun ListOfTokenItemsPreview() {
     BabylonWalletTheme {
         ListOfTokensContent(
             tokenItems = mockTokenUiList,
-            lazyListState = LazyListState(),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp)
         )
     }

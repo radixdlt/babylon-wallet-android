@@ -7,7 +7,5 @@ interface MainViewRepository {
 
     suspend fun getWallet(): WalletData
 
-    suspend fun getAccounts(): List<AccountUi>
-
     suspend fun getAccountBasedOnId(id: String): AccountUi
 }

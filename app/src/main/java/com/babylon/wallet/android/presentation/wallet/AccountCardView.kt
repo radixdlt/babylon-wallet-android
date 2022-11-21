@@ -22,12 +22,14 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.mockdata.mockTokenUiList
-import com.babylon.wallet.android.presentation.model.TokenUi
+import com.babylon.wallet.android.domain.model.AccountAddress
+import com.babylon.wallet.android.domain.model.FungibleToken
+import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
+import java.math.BigDecimal
 
 @Suppress("UnstableCollections")
 @Composable
@@ -38,7 +40,7 @@ fun AccountCardView(
     accountValue: String,
     accountCurrency: String,
     onCopyClick: () -> Unit,
-    assets: List<TokenUi>, // at the moment we pass only the tokens
+    assets: List<OwnedFungibleToken>, // at the moment we pass only the tokens
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -111,7 +113,20 @@ fun AccountCardPreview() {
             accountValue = "19195",
             accountCurrency = "$",
             onCopyClick = {},
-            assets = mockTokenUiList,
+            assets = listOf(
+                OwnedFungibleToken(
+                    AccountAddress("123"),
+                    BigDecimal.valueOf(100000),
+                    "1234",
+                    FungibleToken(
+                        "1234",
+                        totalSupply = BigDecimal.valueOf(10000000000),
+                        totalMinted = BigDecimal.valueOf(1000000),
+                        totalBurnt = BigDecimal.valueOf(100),
+                        metadata = mapOf("symbol" to "XRD")
+                    )
+                )
+            ),
             modifier = Modifier.padding(bottom = 20.dp)
         )
     }

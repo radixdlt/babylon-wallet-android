@@ -6,14 +6,14 @@ data class AccountUi(
     val hash: String,
     val amount: String,
     val currencySymbol: String,
-    val tokens: List<TokenUi> = emptyList(),
-    val nfts: List<NftClassUi> = emptyList()
+    val tokens: List<TokenUiModel> = emptyList(),
+    val nfts: List<NftUiModel> = emptyList()
 ) {
 
     val hasXrdToken: Boolean
         get() = tokens[0].symbol == "XRD"
 
-    val nftsSortedByName: List<NftClassUi> get() = nfts.sortedBy {
+    val nftsSortedByName: List<NftUiModel> get() = nfts.sortedBy {
         it.name
     }
 }
