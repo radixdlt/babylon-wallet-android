@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.dapp
 
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onEach
@@ -8,6 +7,7 @@ import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.helpers.Result
+import timber.log.Timber
 
 interface PeerdroidClient {
 
@@ -45,7 +45,9 @@ class PeerdroidClientImpl(
     }
 
     override suspend fun sendMessage(message: String): Result<Unit> {
-        return dataChannel?.sendMessage(message) ?: Result.Error("data channel is null")
+        return dataChannel
+            ?.sendMessage(message)
+            ?: Result.Error("data channel is null")
     }
 
     override fun listenForEvents(): Flow<DataChannelEvent> {
@@ -53,7 +55,7 @@ class PeerdroidClientImpl(
             ?.dataChannelEvents
             ?.onEach { dataChannelEvent ->
                 if (dataChannelEvent is DataChannelEvent.UnknownError) {
-                    Log.d("PEERDROID_CLIENT", "an error occurred: ${dataChannelEvent.message}")
+                    Timber.e("an unknown error occurred: ${dataChannelEvent.message}")
                 }
             }
             ?: emptyFlow()
