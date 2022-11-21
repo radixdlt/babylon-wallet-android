@@ -34,7 +34,7 @@ import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import java.util.*
+import java.util.Locale
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
