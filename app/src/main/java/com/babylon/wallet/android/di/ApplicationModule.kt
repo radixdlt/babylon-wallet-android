@@ -5,15 +5,14 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.babylon.wallet.android.BuildConfig
-import com.babylon.wallet.android.data.dapp.DAppRepositoryImpl
+import com.babylon.wallet.android.BuildConfig\
 import com.babylon.wallet.android.data.gateway.GatewayApi
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
+import com.babylon.wallet.android.data.MainViewRepositoryImpl
 import com.babylon.wallet.android.data.profile.ProfileRepositoryImpl
 import com.babylon.wallet.android.data.repository.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.dapp.DAppRepository
 import com.babylon.wallet.android.domain.profile.ProfileRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -35,7 +34,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
 
-    val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
+    private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
         name = "rdx_datastore"
     )
 
@@ -58,12 +57,6 @@ object ApplicationModule {
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
         return context.userDataStore
-    }
-
-    @Provides
-    @Singleton
-    fun provideDAppRepository(): DAppRepository {
-        return DAppRepositoryImpl()
     }
 
     @Provides
