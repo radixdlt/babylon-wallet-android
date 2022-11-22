@@ -1,13 +1,14 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.domain.model.ConnectionState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.helpers.Result
-import timber.log.Timber
 
 interface PeerdroidClient {
 
@@ -15,9 +16,11 @@ interface PeerdroidClient {
 
     suspend fun sendMessage(message: String): Result<Unit>
 
-    fun listenForEvents(): Flow<DataChannelEvent>
+    fun listenForEvents(): Flow<ConnectionState>
 
     suspend fun close()
+
+    val isAlreadyOpen: Boolean
 }
 
 class PeerdroidClientImpl(
@@ -25,6 +28,9 @@ class PeerdroidClientImpl(
 ) : PeerdroidClient {
 
     private var dataChannel: DataChannelWrapper? = null
+
+    override val isAlreadyOpen: Boolean
+        get() = dataChannel?.state == DataChannelEvent.StateChanged.OPEN
 
     override suspend fun connectToRemoteClientWithEncryptionKey(
         encryptionKey: ByteArray
@@ -50,12 +56,27 @@ class PeerdroidClientImpl(
             ?: Result.Error("data channel is null")
     }
 
-    override fun listenForEvents(): Flow<DataChannelEvent> {
+    override fun listenForEvents(): Flow<ConnectionState> {
         return dataChannel
             ?.dataChannelEvents
-            ?.onEach { dataChannelEvent ->
-                if (dataChannelEvent is DataChannelEvent.UnknownError) {
-                    Timber.e("an unknown error occurred: ${dataChannelEvent.message}")
+            ?.filterIsInstance<DataChannelEvent.StateChanged>()
+            ?.map { stateChanged ->
+                when (stateChanged) {
+                    DataChannelEvent.StateChanged.CONNECTING -> {
+                        ConnectionState.CONNECTING
+                    }
+                    DataChannelEvent.StateChanged.OPEN -> {
+                        ConnectionState.OPEN
+                    }
+                    DataChannelEvent.StateChanged.CLOSING -> {
+                        ConnectionState.CLOSE
+                    }
+                    DataChannelEvent.StateChanged.CLOSE -> {
+                        ConnectionState.CLOSE
+                    }
+                    DataChannelEvent.StateChanged.UNKNOWN -> {
+                        ConnectionState.ERROR
+                    }
                 }
             }
             ?: emptyFlow()
