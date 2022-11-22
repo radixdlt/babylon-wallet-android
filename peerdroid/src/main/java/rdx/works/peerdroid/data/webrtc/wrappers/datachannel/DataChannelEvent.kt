@@ -32,17 +32,12 @@ sealed interface DataChannelEvent {
         object MessageHashMismatch : IncomingMessage
     }
 
-    data class StateChanged(
-        val state: State
-    ) : DataChannelEvent {
-
-        enum class State {
-            CONNECTING,
-            OPEN,
-            CLOSING,
-            CLOSE,
-            UNKNOWN
-        }
+    enum class StateChanged : DataChannelEvent {
+        CONNECTING,
+        OPEN,
+        CLOSING,
+        CLOSE,
+        UNKNOWN
     }
 
     object BufferedAmountChange : DataChannelEvent

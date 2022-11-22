@@ -25,13 +25,13 @@ value class DataChannelWrapper(
     private val webRtcDataChannel: DataChannel
 ) {
 
-    val state: DataChannelEvent.StateChanged.State
+    val state: DataChannelEvent.StateChanged
         get() = when (webRtcDataChannel.state()) {
-            DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.State.CONNECTING
-            DataChannel.State.OPEN -> DataChannelEvent.StateChanged.State.OPEN
-            DataChannel.State.CLOSING -> DataChannelEvent.StateChanged.State.CLOSING
-            DataChannel.State.CLOSED -> DataChannelEvent.StateChanged.State.CLOSE
-            else -> DataChannelEvent.StateChanged.State.UNKNOWN
+            DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.CONNECTING
+            DataChannel.State.OPEN -> DataChannelEvent.StateChanged.OPEN
+            DataChannel.State.CLOSING -> DataChannelEvent.StateChanged.CLOSING
+            DataChannel.State.CLOSED -> DataChannelEvent.StateChanged.CLOSE
+            else -> DataChannelEvent.StateChanged.UNKNOWN
         }
 
     suspend fun sendMessage(message: String): Result<Unit> {
