@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +40,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
+import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.theme.White
 
 @Composable
@@ -52,7 +54,9 @@ fun CreateAccountScreen(
     val maxLength = 20
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .systemBarsPadding()
+            .fillMaxSize()
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
@@ -63,7 +67,10 @@ fun CreateAccountScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 30.dp, vertical = 16.dp)
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                    vertical = RadixTheme.dimensions.paddingDefault
+                )
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -71,7 +78,7 @@ fun CreateAccountScreen(
                 painter = painterResource(R.drawable.img_account_creation),
                 contentDescription = "account_creation_image"
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.create_new_account),
                 textAlign = TextAlign.Center,
@@ -94,7 +101,7 @@ fun CreateAccountScreen(
                         accountName = it.take(maxLength)
                     },
                     modifier = Modifier
-                        .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))
+                        .border(width = 1.dp, color = Color.Black, shape = RadixTheme.shapes.roundedRectXSmall)
                         .fillMaxWidth(),
                     label = { Text(stringResource(id = R.string.account_name)) },
                     shape = RoundedCornerShape(4.dp),
@@ -111,7 +118,7 @@ fun CreateAccountScreen(
                     fontWeight = FontWeight.Normal,
                     color = RadixGrey2
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             Spacer(Modifier.weight(1f))
             Button(
@@ -128,7 +135,10 @@ fun CreateAccountScreen(
                 Text(
                     color = White,
                     text = stringResource(id = R.string.continue_button_title),
-                    modifier = Modifier.padding(26.dp, 8.dp, 26.dp, 8.dp)
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    )
                 )
             }
         }

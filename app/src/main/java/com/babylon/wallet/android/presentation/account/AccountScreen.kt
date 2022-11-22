@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +51,7 @@ import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
+import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -73,7 +75,7 @@ fun AccountScreen(
     val swipeRefreshState = rememberSwipeRefreshState(viewModel.isRefreshing.collectAsStateWithLifecycle().value)
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.systemBarsPadding(),
         topBar = {
             AccountTopAppBar(
                 accountName = accountName,
@@ -130,7 +132,7 @@ private fun AccountContent(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp) // temp space value
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall) // temp space value
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

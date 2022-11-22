@@ -2,6 +2,7 @@ package com.babylon.wallet.android
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,6 +24,7 @@ class MainActivity : FragmentActivity() {
     lateinit var showOnboardingUseCase: ShowOnboardingUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setContent {
             BabylonWalletTheme {

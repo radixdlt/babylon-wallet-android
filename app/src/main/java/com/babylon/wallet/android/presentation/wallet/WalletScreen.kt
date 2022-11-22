@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
@@ -32,6 +33,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
+import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import java.util.Locale
@@ -54,7 +56,7 @@ fun WalletScreen(
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
         onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
-        modifier = modifier
+        modifier = modifier.systemBarsPadding()
     )
 }
 
@@ -75,7 +77,9 @@ private fun WalletScreenContent(
             RDXAppBar(
                 stringResource(id = R.string.home_toolbar_title)
             ) {}
-        }
+        },
+        contentColor = RadixTheme.colors.defaultText,
+        backgroundColor = RadixTheme.colors.defaultBackground
     ) { innerPadding ->
         when (state) {
             WalletUiState.Loading -> {
@@ -125,7 +129,11 @@ private fun WalletAccountList(
         item {
             Text(
                 text = stringResource(id = R.string.home_welcome_text),
-                modifier = Modifier.padding(top = 10.dp, start = 16.dp, end = 16.dp),
+                modifier = Modifier.padding(
+                    top = RadixTheme.dimensions.paddingMedium,
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault
+                ),
                 style = MaterialTheme.typography.body1,
                 color = RadixGrey2
             )
@@ -134,7 +142,7 @@ private fun WalletAccountList(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp, bottom = 20.dp),
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -169,14 +177,18 @@ private fun WalletAccountList(
                 assets = account.fungibleTokens,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 25.dp, end = 25.dp, bottom = 20.dp)
+                    .padding(
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        bottom = RadixTheme.dimensions.paddingDefault
+                    )
             )
         }
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 0.dp, top = 48.dp, end = 0.dp, bottom = 0.dp),
+                    .padding(top = 48.dp),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -199,9 +211,9 @@ fun RadarHubView(
 ) {
     Column(
         modifier = modifier
-            .padding(15.dp)
+            .padding(RadixTheme.dimensions.paddingDefault)
             .fillMaxWidth()
-            .padding(start = 45.dp, top = 40.dp, end = 45.dp, bottom = 0.dp),
+            .padding(start = 45.dp, top = 40.dp, end = 45.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card {

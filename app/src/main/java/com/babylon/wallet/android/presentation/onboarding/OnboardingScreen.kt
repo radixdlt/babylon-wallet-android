@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -28,7 +29,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -37,6 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
+import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -54,7 +55,7 @@ fun OnboardingScreen(
 ) {
     val state = viewModel.onboardingUiState.collectAsStateWithLifecycle().value
     val pagerState = rememberPagerState(initialPage = state.currentPagerPage)
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.systemBarsPadding().fillMaxSize()) {
         Column(
             modifier = Modifier
                 .heightIn(min = maxHeight)
@@ -65,7 +66,7 @@ fun OnboardingScreen(
                 pagerState = pagerState,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(16.dp),
+                    .padding(RadixTheme.dimensions.paddingDefault),
                 activeColor = colorResource(R.color.purple_500)
             )
 
@@ -121,7 +122,7 @@ fun OnboardingScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth().fillMaxHeight()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     BabylonButton(title = stringResource(id = R.string.im_new_radar_wallet_user)) {
