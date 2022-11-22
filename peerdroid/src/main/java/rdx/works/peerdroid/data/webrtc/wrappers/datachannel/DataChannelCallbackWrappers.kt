@@ -52,13 +52,13 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
         override fun onStateChange() {
             Log.d("DATA_CHANNEL", "state changed: ${this@eventFlow.state()}")
             val state = when (this@eventFlow.state()) {
-                DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.State.CONNECTING
-                DataChannel.State.OPEN -> DataChannelEvent.StateChanged.State.OPEN
-                DataChannel.State.CLOSING -> DataChannelEvent.StateChanged.State.CLOSING
-                DataChannel.State.CLOSED -> DataChannelEvent.StateChanged.State.CLOSE
-                else -> DataChannelEvent.StateChanged.State.UNKNOWN
+                DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.CONNECTING
+                DataChannel.State.OPEN -> DataChannelEvent.StateChanged.OPEN
+                DataChannel.State.CLOSING -> DataChannelEvent.StateChanged.CLOSING
+                DataChannel.State.CLOSED -> DataChannelEvent.StateChanged.CLOSE
+                else -> DataChannelEvent.StateChanged.UNKNOWN
             }
-            trySend(DataChannelEvent.StateChanged(state))
+            trySend(state)
         }
 
         override fun onMessage(p0: DataChannel.Buffer?) {
