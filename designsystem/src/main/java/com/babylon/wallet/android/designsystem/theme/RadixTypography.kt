@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.designsystem.theme
 
+import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.Typography
 import com.babylon.wallet.android.designsystem.R
 
 private val IBMPlex = FontFamily(
@@ -42,9 +42,9 @@ data class RadixTypography(
     var body1StandaloneLink: TextStyle = semibold.copy(fontSize = 16.sp, lineHeight = 23.sp),
     var body1Link: TextStyle = medium.copy(fontSize = 16.sp, lineHeight = 23.sp),
     var body2Header: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var body2HighImportance: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var body2Regular: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var body2Link: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
+    var body2HighImportance: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp),
+    var body2Regular: TextStyle = regular.copy(fontSize = 14.sp, lineHeight = 18.sp),
+    var body2Link: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp),
     var button: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
 ) {
     private companion object {
