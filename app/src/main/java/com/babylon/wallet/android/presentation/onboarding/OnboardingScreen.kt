@@ -34,10 +34,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
-import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager

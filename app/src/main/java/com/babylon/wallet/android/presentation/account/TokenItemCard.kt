@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 import java.math.BigDecimal
 
 private const val CORNER_SHAPE_PERCENT = 10

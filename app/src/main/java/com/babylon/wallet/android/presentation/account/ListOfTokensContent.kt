@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.data.mockdata.mockTokenUiList
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)

@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.model.NftUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
@@ -50,8 +52,6 @@ import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.CollapsableLazyColumn
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
-import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState

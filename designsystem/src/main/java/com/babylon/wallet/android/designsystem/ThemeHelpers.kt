@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui
+package com.babylon.wallet.android.designsystem
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
+import com.babylon.wallet.android.designsystem.theme.RadixGrey2
 
 @Suppress("UnstableCollections")
 @Composable

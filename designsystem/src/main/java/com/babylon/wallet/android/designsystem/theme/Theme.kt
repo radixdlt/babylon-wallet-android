@@ -1,5 +1,5 @@
 @file:Suppress("MagicNumber", "LongParameterList", "CompositionLocalAllowlist")
-package com.babylon.wallet.android.presentation.ui.theme
+package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.babylon.wallet.android.presentation.ui.SetStatusBarColor
+import com.babylon.wallet.android.designsystem.SetStatusBarColor
 
 // TODO - IMPORTANT
 //  The resource-theme of the app has been switched from Material 2 to Material 3.
@@ -30,12 +30,6 @@ import com.babylon.wallet.android.presentation.ui.SetStatusBarColor
 //  Once we have a design system we should update the Theme file following the Material Design 3 guidelines
 //  and switch the UI components from Material 2 to 3 if it is needed!
 //  For samples have a look at Jetsurvey and JetNews
-
-// private val DarkColorPalette = darkColors(
-//    primary = Purple200,
-//    primaryVariant = Purple700,
-//    secondary = Teal200
-// )
 
 @Stable
 class RadixColors(

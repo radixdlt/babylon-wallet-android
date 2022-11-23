@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 
 @Composable
 fun RDXAppBar(

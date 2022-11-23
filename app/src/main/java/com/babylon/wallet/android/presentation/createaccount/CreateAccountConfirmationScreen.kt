@@ -30,11 +30,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.RadixBackground
+import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.theme.White
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable

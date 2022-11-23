@@ -1,6 +1,6 @@
 @file:Suppress("MagicNumber")
 
-package com.babylon.wallet.android.presentation.ui.theme
+package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush

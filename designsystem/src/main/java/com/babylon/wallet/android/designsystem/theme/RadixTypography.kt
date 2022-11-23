@@ -1,13 +1,13 @@
-package com.babylon.wallet.android.presentation.ui.theme
+package com.babylon.wallet.android.designsystem.theme
 
-import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.babylon.wallet.android.R
+import androidx.compose.material.Typography
+import com.babylon.wallet.android.designsystem.R
 
 private val IBMPlex = FontFamily(
     Font(

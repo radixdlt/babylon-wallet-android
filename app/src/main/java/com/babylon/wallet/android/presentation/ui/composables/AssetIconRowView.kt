@@ -14,11 +14,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixBackground
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.TokenMetadataConstants
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 
 private const val MAX_ASSETS_DISPLAYED = 10
 private const val RELATIVE_PADDING = 0.7f

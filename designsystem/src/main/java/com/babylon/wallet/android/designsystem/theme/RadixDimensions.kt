@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.theme
+package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp

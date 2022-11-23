@@ -22,13 +22,13 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixLightCardBackground
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
 import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
-import com.babylon.wallet.android.presentation.ui.theme.RadixLightCardBackground
 import java.math.BigDecimal
 
 @Suppress("UnstableCollections")

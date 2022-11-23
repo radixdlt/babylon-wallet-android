@@ -37,11 +37,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
-import com.babylon.wallet.android.presentation.ui.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.theme.White
+import com.babylon.wallet.android.designsystem.theme.RadixBackground
+import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
+import com.babylon.wallet.android.designsystem.theme.RadixGrey2
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 
 @Composable
 fun CreateAccountScreen(
