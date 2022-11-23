@@ -35,7 +35,9 @@ interface PeerdroidConnector {
 
     suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper>
 
-    suspend fun close()
+    suspend fun close(
+        shouldCloseConnectionToSignalingServer: Boolean = false
+    )
 }
 
 /*
@@ -178,7 +180,7 @@ internal class PeerdroidConnectorImpl(
                             "CONNECTOR_WEB_SOCKET",
                             "missing remote client error, request id: ${incomingMessage.requestId}"
                         )
-                        closePeerdroidConnectorWithError()
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.RemoteClientDisconnected -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "remote client disconnected")
@@ -203,11 +205,11 @@ internal class PeerdroidConnectorImpl(
                     }
                     SignalingServerIncomingMessage.UnknownMessage -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "unknown incoming message")
-                        closePeerdroidConnectorWithError()
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.UnknownError -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "unknown error")
-                        closePeerdroidConnectorWithError()
+                        terminatePeerdroidConnectorWithError()
                     }
                 }
             }
@@ -304,13 +306,22 @@ internal class PeerdroidConnectorImpl(
         )
     }
 
-    private suspend fun closePeerdroidConnectorWithError() {
-        close()
+    override suspend fun close(shouldCloseConnectionToSignalingServer: Boolean) {
+        if (shouldCloseConnectionToSignalingServer) {
+            terminate()
+            return
+        }
+        webRtcJob?.cancel()
+        iceCandidatesJob?.cancel()
+    }
+
+    private suspend fun terminatePeerdroidConnectorWithError() {
+        terminate()
         dataChannelDeferred.complete(Result.Error("an error occurred"))
     }
 
-    override suspend fun close() {
-        webRtcJob?.cancel() // TODO if you want to restore/restart you might need to keep this open
+    private suspend fun terminate() {
+        webRtcJob?.cancel()
         iceCandidatesJob?.cancel()
         webSocketClient.closeSession()
         webSocketJob?.cancel()

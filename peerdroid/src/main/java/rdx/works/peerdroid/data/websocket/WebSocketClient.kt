@@ -63,6 +63,12 @@ internal class WebSocketClientImpl(
             this.encryptionKey = encryptionKey
             this.connectionId = encryptionKey.sha256().toHexString()
 
+            // we need to restart the WebRTC flow
+            // but we don't need to restart the connection to signaling server
+            if (socket?.isActive == true) {
+                Log.d("WEB_SOCKET", "already connected to signaling server")
+                return Result.Success(Unit)
+            }
             // this block has a normal http request builder
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
