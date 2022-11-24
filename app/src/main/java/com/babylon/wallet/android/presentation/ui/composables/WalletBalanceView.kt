@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,8 +31,9 @@ fun WalletBalanceView(
     currencySignValue: String,
     amount: String,
     hidden: Boolean,
+    balanceClicked: () -> Unit,
     modifier: Modifier = Modifier,
-    balanceClicked: () -> Unit
+    contentColor: Color = RadixTheme.colors.gray1
 ) {
     var balanceHidden by rememberSaveable { mutableStateOf(hidden) }
 
@@ -45,7 +47,7 @@ fun WalletBalanceView(
             modifier = Modifier.align(Alignment.CenterVertically),
             text = currencySignValue,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = contentColor
         )
 
         if (balanceHidden) {
@@ -69,7 +71,7 @@ fun WalletBalanceView(
                 modifier = Modifier.weight(1f, fill = false),
                 text = amount.formatDecimalSeparator(),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = contentColor
             )
         }
 

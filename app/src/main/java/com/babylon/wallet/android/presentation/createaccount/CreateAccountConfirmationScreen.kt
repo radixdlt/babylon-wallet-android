@@ -46,7 +46,8 @@ fun CreateAccountConfirmationScreen(
     val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value
 
     Column(
-        modifier = modifier.systemBarsPadding()
+        modifier = modifier
+            .systemBarsPadding()
             .fillMaxSize()
             .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault)
             .verticalScroll(rememberScrollState()),
@@ -116,7 +117,10 @@ fun CreateAccountConfirmationScreen(
             Text(
                 color = White,
                 text = stringResource(id = R.string.go_to_home),
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge, vertical = 8.dp)
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                )
             )
         }
     }

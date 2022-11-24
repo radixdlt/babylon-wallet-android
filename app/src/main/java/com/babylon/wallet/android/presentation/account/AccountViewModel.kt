@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -33,21 +34,25 @@ class AccountViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
+    private val gradientIndex = savedStateHandle[ARG_GRADIENT_INDEX] ?: 0
 
-    private val _accountUiState: MutableStateFlow<AccountUiState> = MutableStateFlow(AccountUiState.Loading)
+    private val _accountUiState = MutableStateFlow(AccountUiState(gradientIndex = gradientIndex))
     val accountUiState = _accountUiState.asStateFlow()
 
-    private val _isRefreshing = MutableStateFlow(true)
-    val isRefreshing = _isRefreshing.asStateFlow()
-
     init {
-        refresh()
+        loadInitialData()
     }
 
     fun refresh() {
+        _accountUiState.update { state ->
+            state.copy(isRefreshing = true)
+        }
+        loadInitialData()
+    }
+
+    private fun loadInitialData() {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                _isRefreshing.value = true
                 // TODO how to handle the case when the gateway doesn't return the account?
                 // TODO this should probably change to flow later
                 val account = requestAccountResourcesUseCase.getAccountResources(accountId)
@@ -58,8 +63,10 @@ class AccountViewModel @Inject constructor(
                     } else {
                         accountResource.fungibleTokens
                     }
-                    _accountUiState.update {
-                        AccountUiState.Loaded(
+                    _accountUiState.update { state ->
+                        state.copy(
+                            isRefreshing = false,
+                            isLoading = false,
                             accountAddress = accountResource.address,
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.map { token -> token.toTokenUiModel() }.toPersistentList(),
@@ -68,7 +75,6 @@ class AccountViewModel @Inject constructor(
                         )
                     }
                 }
-                _isRefreshing.value = false
             } else {
                 Timber.d("arg account id is empty")
             }
@@ -81,16 +87,15 @@ class AccountViewModel @Inject constructor(
     }
 }
 
-sealed interface AccountUiState {
-    object Loading : AccountUiState
-
-    data class Loaded(
-        val accountAddress: String = "",
-        val xrdToken: TokenUiModel? = null,
-        val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
-        val nonFungibleTokens: ImmutableList<NftUiModel> = persistentListOf()
-    ) : AccountUiState
-}
+data class AccountUiState(
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+    val gradientIndex: Int = 0,
+    val accountAddress: String = "",
+    val xrdToken: TokenUiModel? = null,
+    val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
+    val nonFungibleTokens: ImmutableList<NftUiModel> = persistentListOf()
+)
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {
     TOKEN_TAB(R.string.account_asset_row_tab_tokens),

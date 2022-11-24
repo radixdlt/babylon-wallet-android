@@ -14,6 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,6 +30,9 @@ fun RadixSecondaryButton(
     text: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
+    containerColor: Color = RadixTheme.colors.gray4,
+    contentColor: Color = RadixTheme.colors.gray1,
+    shape: Shape = RadixTheme.shapes.roundedRectSmall,
     icon: (@Composable () -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -35,11 +40,11 @@ fun RadixSecondaryButton(
     Button(
         modifier = modifier,
         onClick = onClick,
-        shape = RadixTheme.shapes.roundedRectSmall,
+        shape = shape,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            contentColor = RadixTheme.colors.gray1,
-            containerColor = if (isPressed) RadixTheme.colors.gray4.darken(0.1f) else RadixTheme.colors.gray4,
+            contentColor = contentColor,
+            containerColor = if (isPressed) containerColor.darken(0.1f) else containerColor,
             disabledContainerColor = RadixTheme.colors.gray4,
             disabledContentColor = RadixTheme.colors.gray3
         )

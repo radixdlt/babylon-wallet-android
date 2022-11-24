@@ -49,4 +49,5 @@
     <string name="dapp_successful_button_title">Go to %s</string>
     <string name="dapp_verification_error_title">DApp error</string>
     <string name="empty_content_description" />
+    <string name="history">History</string>
 </resources>

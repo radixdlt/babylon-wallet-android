@@ -47,7 +47,7 @@ import java.util.Locale
 fun WalletScreen(
     viewModel: WalletViewModel,
     modifier: Modifier = Modifier,
-    onAccountClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit = { _, _, _ -> },
     onAccountCreationClick: () -> Unit
 ) {
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()
@@ -59,19 +59,21 @@ fun WalletScreen(
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
         onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
-        modifier = modifier.systemBarsPadding()
+        modifier = modifier.systemBarsPadding(),
+        balanceClicked = {}
     )
 }
 
 @Composable
 private fun WalletScreenContent(
     state: WalletUiState,
-    onAccountClick: (accountId: String, accountName: String) -> Unit,
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onCopyAccountAddressClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    balanceClicked: () -> Unit
 ) {
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
     Scaffold(
@@ -117,7 +119,8 @@ private fun WalletScreenContent(
                             onAccountClick = onAccountClick,
                             onAccountCreationClick = onAccountCreationClick,
                             accounts = state.resources,
-                            modifier = Modifier
+                            modifier = Modifier,
+                            balanceClicked = balanceClicked
                         )
                     }
                 )
@@ -131,10 +134,11 @@ private fun WalletScreenContent(
 private fun WalletAccountList(
     wallet: WalletData,
     onCopyAccountAddressClick: (String) -> Unit,
-    onAccountClick: (String, String) -> Unit,
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    balanceClicked: () -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         item {
@@ -165,14 +169,14 @@ private fun WalletAccountList(
                 WalletBalanceView(
                     currencySignValue = wallet.currency,
                     amount = wallet.amount,
-                    hidden = false
-                ) {
-                    // TODO
-                }
+                    hidden = false,
+                    balanceClicked = balanceClicked
+                )
             }
         }
         itemsIndexed(accounts) { index, account ->
-            val gradientColors = AccountGradientList[index % AccountGradientList.size]
+            val gradientIndex = index % AccountGradientList.size
+            val gradientColors = AccountGradientList[gradientIndex]
             AccountCardView(
                 hashValue = account.address,
                 accountName = account.address,
@@ -185,7 +189,7 @@ private fun WalletAccountList(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .clickable {
-                        onAccountClick(account.address, account.address)
+                        onAccountClick(account.address, account.address, gradientIndex)
                     }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -261,12 +265,13 @@ fun WalletContentPreview() {
                     ),
                     resources = listOf(sampleAccountResource(), sampleAccountResource())
                 ),
-                onAccountClick = { _, _ -> },
+                onAccountClick = { _, _, _ -> },
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },
                 onCopyAccountAddressClick = {},
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                balanceClicked = {}
             )
         }
     }
