@@ -332,7 +332,7 @@ fun BabylonWalletTheme(
     }
     ProvideRadixThemeConfig(isDarkMode = darkTheme) {
         ProvideRadixColors(colors) {
-            SetStatusBarColor(color = colors.blue1, useDarkIcons = false)
+            SetStatusBarColor(color = colors.defaultBackground, useDarkIcons = !darkTheme)
             ProvideRadixTypography {
                 ProvideRadixDimensions {
                     ProvideRadixShapes {

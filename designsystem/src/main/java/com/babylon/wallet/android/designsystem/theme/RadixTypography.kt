@@ -35,7 +35,7 @@ private val IBMPlex = FontFamily(
 data class RadixTypography(
     var title: TextStyle = bold.copy(fontSize = 32.sp, lineHeight = 36.sp),
     var header: TextStyle = semibold.copy(fontSize = 20.sp, lineHeight = 23.sp),
-    var secondarHeader: TextStyle = semibold.copy(fontSize = 18.sp, lineHeight = 23.sp),
+    var secondaryHeader: TextStyle = semibold.copy(fontSize = 18.sp, lineHeight = 23.sp),
     var body1Header: TextStyle = semibold.copy(fontSize = 16.sp, lineHeight = 23.sp),
     var body1HighImportance: TextStyle = medium.copy(fontSize = 16.sp, lineHeight = 23.sp),
     var body1Regular: TextStyle = regular.copy(fontSize = 16.sp, lineHeight = 23.sp),

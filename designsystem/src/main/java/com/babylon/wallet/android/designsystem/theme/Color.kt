@@ -52,15 +52,31 @@ val GradientBrand2 = Brush.linearGradient(
     listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F))
 )
 
-val GradientAccount1 = Brush.linearGradient(listOf(Color(0xFF052CC0), Color(0xFF01E2A0)))
-val GradientAccount2 = Brush.linearGradient(listOf(Color(0xFF052CC0), Color(0xFFFF43CA)))
-val GradientAccount3 = Brush.linearGradient(listOf(Color(0xFF052CC0), Color(0xFF20E4FF)))
-val GradientAccount4 = Brush.linearGradient(listOf(Color(0xFF00AB84), Color(0xFF052CC0)))
-val GradientAccount5 = Brush.linearGradient(listOf(Color(0xFFCE0D98), Color(0xFF052CC0)))
-val GradientAccount6 = Brush.linearGradient(listOf(Color(0xFF0DCAE4), Color(0xFF052CC0)))
-val GradientAccount7 = Brush.linearGradient(listOf(Color(0xFF003057), Color(0xFF03D497)))
-val GradientAccount8 = Brush.linearGradient(listOf(Color(0xFF003057), Color(0xFFF31DBE)))
-val GradientAccount9 = Brush.linearGradient(listOf(Color(0xFF052CC0), Color(0xFF003057)))
-val GradientAccount10 = Brush.linearGradient(listOf(Color(0xFF0BA97D), Color(0xFF1AF4B5)))
-val GradientAccount11 = Brush.linearGradient(listOf(Color(0xFF7E0D5F), Color(0xFFE225B3)))
-val GradientAccount12 = Brush.linearGradient(listOf(Color(0xFF040B72), Color(0xFF1F48E2)))
+val GradientAccount1 = listOf(Color(0xFF052CC0), Color(0xFF01E2A0))
+val GradientAccount2 = listOf(Color(0xFF052CC0), Color(0xFFFF43CA))
+val GradientAccount3 = listOf(Color(0xFF052CC0), Color(0xFF20E4FF))
+val GradientAccount4 = listOf(Color(0xFF00AB84), Color(0xFF052CC0))
+val GradientAccount5 = listOf(Color(0xFFCE0D98), Color(0xFF052CC0))
+val GradientAccount6 = listOf(Color(0xFF0DCAE4), Color(0xFF052CC0))
+val GradientAccount7 = listOf(Color(0xFF003057), Color(0xFF03D497))
+val GradientAccount8 = listOf(Color(0xFF003057), Color(0xFFF31DBE))
+val GradientAccount9 = listOf(Color(0xFF052CC0), Color(0xFF003057))
+val GradientAccount10 = listOf(Color(0xFF0BA97D), Color(0xFF1AF4B5))
+val GradientAccount11 = listOf(Color(0xFF7E0D5F), Color(0xFFE225B3))
+val GradientAccount12 = listOf(Color(0xFF040B72), Color(0xFF1F48E2))
+
+val AccountGradientList =
+    listOf(
+        GradientAccount1,
+        GradientAccount2,
+        GradientAccount3,
+        GradientAccount4,
+        GradientAccount5,
+        GradientAccount6,
+        GradientAccount7,
+        GradientAccount8,
+        GradientAccount9,
+        GradientAccount10,
+        GradientAccount11,
+        GradientAccount12,
+    )

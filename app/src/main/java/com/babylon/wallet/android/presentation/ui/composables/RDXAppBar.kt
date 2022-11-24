@@ -12,12 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
 fun RDXAppBar(
@@ -27,20 +25,22 @@ fun RDXAppBar(
 ) {
     TopAppBar(
         modifier = modifier,
+        backgroundColor = RadixTheme.colors.defaultBackground,
         title = {
             Text(
                 text = toolbarTitle,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.SemiBold
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1
             )
         },
         actions = {
             IconButton(onClick = { onMenuItemClicked() }) {
-                BadgedBox(badge = { Badge() }, modifier = Modifier.padding(16.dp)) {
+                BadgedBox(badge = { Badge() }, modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)) {
                     Icon(
                         imageVector =
-                        ImageVector.vectorResource(id = R.drawable.ic_home_settings),
-                        ""
+                        ImageVector.vectorResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.gray1
                     )
                 }
             }

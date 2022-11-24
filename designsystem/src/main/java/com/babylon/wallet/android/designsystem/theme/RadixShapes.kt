@@ -8,5 +8,6 @@ import androidx.compose.ui.unit.dp
 data class RadixShapes(
     val circle: CornerBasedShape = CircleShape,
     val roundedRectXSmall: CornerBasedShape = RoundedCornerShape(4.dp),
-    val roundedRectSmall: CornerBasedShape = RoundedCornerShape(8.dp)
+    val roundedRectSmall: CornerBasedShape = RoundedCornerShape(8.dp),
+    val roundedRectMedium: CornerBasedShape = RoundedCornerShape(12.dp)
 )
