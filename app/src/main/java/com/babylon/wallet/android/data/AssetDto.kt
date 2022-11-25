@@ -67,7 +67,9 @@ data class AssetDto(
             symbol = symbol,
             tokenQuantity = BigDecimal.valueOf(tokenQuantity),
             tokenValue = if (marketPrice == null) null else (marketPrice.times(tokenQuantity)).toString(),
-            iconUrl = iconUrl
+            iconUrl = iconUrl,
+            description = null,
+            metadata = emptyMap()
         )
     }
 }

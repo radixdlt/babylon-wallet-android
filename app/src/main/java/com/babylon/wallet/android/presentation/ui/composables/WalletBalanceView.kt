@@ -71,7 +71,7 @@ fun WalletBalanceView(
                 modifier = Modifier.weight(1f, fill = false),
                 text = amount.formatDecimalSeparator(),
                 style = RadixTheme.typography.title,
-                color = contentColor
+                color = contentColor,
             )
         }
 
@@ -109,7 +109,6 @@ fun WalletBalancePreview() {
 }
 
 @Preview("default with long value", showBackground = true)
-@Preview("large font with long value", fontScale = 2f, showBackground = true)
 @Preview(showBackground = true)
 @Composable
 fun WalletBalanceWithLongValuePreview() {
@@ -124,7 +123,6 @@ fun WalletBalanceWithLongValuePreview() {
 }
 
 @Preview("default", showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
 @Preview(showBackground = true)
 @Composable
 fun WalletBalanceHiddenPreview() {

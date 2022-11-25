@@ -18,6 +18,24 @@ data class NftUiModel(
 fun OwnedNonFungibleToken.toNftUiModel(): NftUiModel {
     return NftUiModel(
         name = token?.getTokenName().orEmpty(),
-        iconUrl = token?.getImageUrl().orEmpty()
+        iconUrl = token?.getImageUrl().orEmpty(),
+//        Test data to test NFT List
+//        nft = listOf(
+//            NftUiModel.NftUi(
+//                Random.nextInt(100000, 100000000).toString(),
+//                null,
+//                listOf(Random.nextInt(100000).toString() to Random.nextInt(100000).toString())
+//            ),
+//            NftUiModel.NftUi(
+//                Random.nextInt(100000, 100000000).toString(),
+//                null,
+//                listOf(Random.nextInt(100000).toString() to Random.nextInt(100000).toString())
+//            ),
+//            NftUiModel.NftUi(
+//                Random.nextInt(100000, 100000000).toString(),
+//                null,
+//                listOf(Random.nextInt(100000).toString() to Random.nextInt(100000).toString())
+//            )
+//        )
     )
 }

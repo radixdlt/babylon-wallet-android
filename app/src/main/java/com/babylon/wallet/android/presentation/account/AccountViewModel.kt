@@ -64,11 +64,33 @@ class AccountViewModel @Inject constructor(
                         accountResource.fungibleTokens
                     }
                     _accountUiState.update { state ->
+//                        var fTokens = accountResource.fungibleTokens
+//                        repeat(5) {
+//                            fTokens = fTokens + fTokens
+//                        }
+//                        fTokens = fTokens.map {
+//                            val randomAddress = SampleDataProvider().randomTokenAddress()
+//                            it.copy(address = randomAddress, token = it.token.copy(address = randomAddress))
+//                        }
+//                        var nftTokens = accountResource.nonFungibleTokens
+//                        repeat(5) {
+//                            nftTokens = nftTokens + nftTokens
+//                        }
+//                        nftTokens = nftTokens.map {
+//                            val randomAddress = SampleDataProvider().randomTokenAddress()
+//                            it.copy(
+//                                tokenResourceAddress = randomAddress,
+//                                token = it.token?.copy(address = randomAddress)
+//                            )
+//                        }
                         state.copy(
                             isRefreshing = false,
                             isLoading = false,
                             accountAddress = accountResource.address,
                             xrdToken = xrdToken?.toTokenUiModel(),
+//                            fungibleTokens = fTokens.map { token -> token.toTokenUiModel() }.toPersistentList(),
+//                            nonFungibleTokens = nftTokens.map { token -> token.toNftUiModel() }
+//                                .toPersistentList()
                             fungibleTokens = fungibleTokens.map { token -> token.toTokenUiModel() }.toPersistentList(),
                             nonFungibleTokens = accountResource.nonFungibleTokens.map { token -> token.toNftUiModel() }
                                 .toPersistentList()
@@ -85,6 +107,10 @@ class AccountViewModel @Inject constructor(
         val clipData = ClipData.newPlainText("accountHash", hash)
         clipboardManager.setPrimaryClip(clipData)
     }
+
+    fun onFungibleTokenClick(token: TokenUiModel) {
+        _accountUiState.update { it.copy(tokenDetails = token) }
+    }
 }
 
 data class AccountUiState(
@@ -93,6 +119,7 @@ data class AccountUiState(
     val gradientIndex: Int = 0,
     val accountAddress: String = "",
     val xrdToken: TokenUiModel? = null,
+    val tokenDetails: TokenUiModel? = null,
     val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
     val nonFungibleTokens: ImmutableList<NftUiModel> = persistentListOf()
 )
