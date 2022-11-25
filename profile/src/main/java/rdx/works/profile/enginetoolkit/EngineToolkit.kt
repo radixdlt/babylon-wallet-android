@@ -1,7 +1,7 @@
 package rdx.works.profile.enginetoolkit
 
 import com.radixdlt.hex.extensions.toHexString
-import rdx.works.profile.model.pernetwork.EntityAddress
+import rdx.works.profile.data.model.pernetwork.EntityAddress
 
 /**
  * This will depend on KotlinEngineToolkit

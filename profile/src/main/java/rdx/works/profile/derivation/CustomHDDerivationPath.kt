@@ -1,6 +1,7 @@
 package rdx.works.profile.derivation
 
 import com.radixdlt.bip44.BIP44
+import com.radixdlt.bip44.BIP44Element
 import com.radixdlt.bip44.BIP44_PREFIX
 import rdx.works.profile.derivation.model.CoinType
 
@@ -24,4 +25,30 @@ data class CustomHDDerivationPath(
             bip44.toString().startsWith("$BIP44_PREFIX/44/${coinType.value}")
         ) bip44.toString() else throw IllegalArgumentException("Invalid derivation path")
 
+    companion object {
+        /**
+         * https://radixdlt.atlassian.net/wiki/spaces/~5c1cdd7dad984b5210851e01/pages/2897772650/
+         * CAP-26+SLIP10+HD+Derivation+Path+Scheme
+         */
+        private const val GET_ID = 365
+
+        val getId = CustomHDDerivationPath(
+            bip44 = BIP44(
+                path = listOf(
+                    BIP44Element(
+                        hardened = true,
+                        number = 44
+                    ),
+                    BIP44Element(
+                        hardened = true,
+                        number = CoinType.RadixDlt.value
+                    ),
+                    BIP44Element(
+                        hardened = true,
+                        number = GET_ID
+                    )
+                )
+            )
+        )
+    }
 }
