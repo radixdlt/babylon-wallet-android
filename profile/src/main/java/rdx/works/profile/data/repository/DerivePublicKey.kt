@@ -1,4 +1,4 @@
-package rdx.works.profile.data
+package rdx.works.profile.data.repository
 
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.toSeed

@@ -11,7 +11,7 @@ import rdx.works.profile.data.crypto.Crypto
 import javax.inject.Inject
 
 //TODO provide encryption as this is sensitive
-class GenerateMnemonicUseCase @Inject constructor(
+class GetMnemonicUseCase @Inject constructor(
     private val crypto: Crypto,
     private val dataStore: DataStore<Preferences>
 ) {

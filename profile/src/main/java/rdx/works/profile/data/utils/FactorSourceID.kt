@@ -1,4 +1,4 @@
-package rdx.works.profile.data
+package rdx.works.profile.data.utils
 
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
 import com.radixdlt.extensions.removeLeadingZero

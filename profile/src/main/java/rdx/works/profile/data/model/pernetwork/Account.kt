@@ -3,14 +3,18 @@ package rdx.works.profile.data.model.pernetwork
 import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.AccountDerivationPath
-import rdx.works.profile.data.AccountIndex
-import rdx.works.profile.data.CompressedPublicKey
-import rdx.works.profile.data.UnsecuredSecurityState
-import rdx.works.profile.data.createNewVirtualAccount
+import rdx.works.profile.data.repository.AccountDerivationPath
+import rdx.works.profile.data.repository.CompressedPublicKey
+import rdx.works.profile.data.repository.UnsecuredSecurityState
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.enginetoolkit.EngineToolkitImpl
 import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.repository.AccountIndex
+import rdx.works.profile.data.repository.CreateSecurityState
+import rdx.works.profile.data.repository.DerivePublicKey
+import rdx.works.profile.data.repository.EntityDerivationPath
+import rdx.works.profile.data.repository.EntityIndex
+import rdx.works.profile.enginetoolkit.EngineToolkit
 
 @Serializable
 data class Account(
@@ -57,8 +61,7 @@ data class Account(
      */
     @SerialName("securityState")
     val securityState: SecurityState
-)
-{
+) {
     companion object {
         /**
          * Creates initial account upon new profile creation
@@ -89,4 +92,34 @@ data class Account(
             )
         }
     }
+}
+
+fun createNewVirtualAccount(
+    displayName: String,
+    engineToolkit: EngineToolkit,
+    entityDerivationPath: EntityDerivationPath,
+    entityIndex: EntityIndex,
+    derivePublicKey: DerivePublicKey,
+    createSecurityState: CreateSecurityState
+): Account {
+    val derivationPath = entityDerivationPath.path()
+
+    val compressedPublicKey = derivePublicKey.derive(derivationPath)
+    val address = engineToolkit.deriveAddress(compressedPublicKey)
+
+    val unsecuredSecurityState = createSecurityState.create(
+        derivationPath = DerivationPath.accountDerivationPath(
+            derivationPath = derivationPath
+        ),
+        compressedPublicKey = compressedPublicKey
+    )
+
+    return Account(
+        address = address,
+        appearanceID = 0,//TODO add some gradient later on
+        derivationPath = derivationPath,
+        displayName = displayName,
+        index = entityIndex.index(),
+        securityState = unsecuredSecurityState
+    )
 }

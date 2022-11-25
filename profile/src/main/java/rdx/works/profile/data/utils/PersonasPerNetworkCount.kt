@@ -1,4 +1,4 @@
-package rdx.works.profile.data
+package rdx.works.profile.data.utils
 
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.pernetwork.PerNetwork

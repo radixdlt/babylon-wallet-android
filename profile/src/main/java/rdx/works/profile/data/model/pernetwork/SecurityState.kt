@@ -4,7 +4,7 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.hashToFactorId
+import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.data.model.factorsources.FactorSources
 import java.util.Date
 

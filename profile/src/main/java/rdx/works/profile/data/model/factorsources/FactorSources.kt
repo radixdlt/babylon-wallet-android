@@ -7,7 +7,7 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.slip10.toKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.hashToFactorId
+import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.CustomHDDerivationPath
 import java.util.Date
 

@@ -1,10 +1,12 @@
-package rdx.works.profile.data
+package rdx.works.profile.data.repository
 
 import rdx.works.profile.derivation.AccountHDDerivationPath
 import rdx.works.profile.derivation.IdentityHDDerivationPath
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.pernetwork.PerNetwork
+import rdx.works.profile.data.utils.accountsPerNetworkCount
+import rdx.works.profile.data.utils.personasPerNetworkCount
 
 interface EntityDerivationPath {
     fun path(): String

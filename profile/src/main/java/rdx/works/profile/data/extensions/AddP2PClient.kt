@@ -1,4 +1,4 @@
-package rdx.works.profile.data
+package rdx.works.profile.data.extensions
 
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences

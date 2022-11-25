@@ -1,4 +1,4 @@
-package rdx.works.profile.data
+package rdx.works.profile.data.repository
 
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.DerivationPath

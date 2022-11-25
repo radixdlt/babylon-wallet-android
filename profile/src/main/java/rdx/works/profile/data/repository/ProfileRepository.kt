@@ -1,4 +1,4 @@
-package rdx.works.profile.data.profile
+package rdx.works.profile.data.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

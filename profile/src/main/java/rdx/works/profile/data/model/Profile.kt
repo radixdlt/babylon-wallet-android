@@ -42,7 +42,7 @@ data class Profile(
         fun init(
             networkAndGateway: NetworkAndGateway,
             mnemonic: MnemonicWords,
-            firstAccountDisplayName: String
+            firstAccountDisplayName: String = "Main"
         ): Profile {
 
             val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource =
