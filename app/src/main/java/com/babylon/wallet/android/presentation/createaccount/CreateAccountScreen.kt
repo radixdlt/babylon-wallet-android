@@ -22,16 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
-import com.babylon.wallet.android.designsystem.theme.RadixGrey2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
@@ -73,16 +69,14 @@ fun CreateAccountScreen(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.create_new_account),
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold
+                style = RadixTheme.typography.header,
+                color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = R.string.account_creation_text),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Normal
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.height(30.dp))
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -93,14 +87,12 @@ fun CreateAccountScreen(
                         accountName = it.take(maxLength)
                     },
                     value = accountName,
-                    leftLabel = stringResource(id = R.string.account_name),
                     hint = stringResource(id = R.string.account_name)
                 )
                 Text(
                     text = stringResource(id = R.string.this_can_be_changed_any_time),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = RadixGrey2
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }

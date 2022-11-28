@@ -257,6 +257,7 @@ private fun AlertDialogView(
             },
             title = { Text(text = stringResource(id = R.string.please_confirm_dialog_title)) },
             text = { Text(text = stringResource(id = R.string.please_confirm_dialog_body)) }
+
         )
     }
 }
