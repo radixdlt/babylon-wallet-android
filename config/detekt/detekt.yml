@@ -598,7 +598,7 @@ style:
   MayBeConst:
     active: true
   ModifierOrder:
-    active: true
+    active: false
   MultilineLambdaItParameter:
     active: false
   NestedClassesVisibility:
@@ -895,7 +895,7 @@ TwitterCompose:
   ModifierReused:
     active: true
   ModifierWithoutDefault:
-    active: true
+    active: false
   MultipleEmitters:
     active: true
   MutableParams:

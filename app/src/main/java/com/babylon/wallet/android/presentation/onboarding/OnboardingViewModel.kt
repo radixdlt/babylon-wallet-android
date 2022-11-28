@@ -20,17 +20,6 @@ class OnboardingViewModel @Inject constructor(
     private val _onboardingUiState: MutableStateFlow<OnboardingUiState> = MutableStateFlow(OnboardingUiState())
     val onboardingUiState = _onboardingUiState.asStateFlow()
 
-    private var showButtons: Boolean = false
-
-    fun onPageSelected(currentPageIndex: Int, pageCount: Int) {
-        _onboardingUiState.update {
-            if (!showButtons) {
-                showButtons = currentPageIndex == pageCount - 1
-            }
-            it.copy(showButtons = showButtons)
-        }
-    }
-
     fun onProceedClick() {
         viewModelScope.launch {
             if (deviceSecurityHelper.isDeviceSecure()) {

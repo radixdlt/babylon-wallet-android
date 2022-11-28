@@ -2,47 +2,56 @@ package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @ExperimentalAnimationApi
@@ -53,23 +62,48 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier,
     restoreWalletFromBackup: () -> Unit,
 ) {
-    val state = viewModel.onboardingUiState.collectAsStateWithLifecycle().value
-    val pagerState = rememberPagerState(initialPage = state.currentPagerPage)
-    BoxWithConstraints(modifier = modifier.systemBarsPadding().fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .heightIn(min = maxHeight)
-                .verticalScroll(rememberScrollState())
+    val state by viewModel.onboardingUiState.collectAsStateWithLifecycle()
+    OnboardingScreenContent(
+        currentPage = state.currentPagerPage,
+        restoreWalletFromBackup = restoreWalletFromBackup,
+        onProceedClick = viewModel::onProceedClick,
+        showWarning = state.showWarning,
+        authenticateWithBiometric = state.authenticateWithBiometric,
+        onUserAuthenticated = viewModel::onUserAuthenticated,
+        onAlertClicked = viewModel::onAlertClicked,
+        modifier = modifier
+    )
+}
 
-        ) {
-            HorizontalPagerIndicator(
+@ExperimentalPagerApi
+@Composable
+private fun OnboardingScreenContent(
+    currentPage: Int,
+    restoreWalletFromBackup: () -> Unit,
+    onProceedClick: () -> Unit,
+    showWarning: Boolean,
+    authenticateWithBiometric: Boolean,
+    onUserAuthenticated: (Boolean) -> Unit,
+    onAlertClicked: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+
+) {
+    val pagerState = rememberPagerState(initialPage = currentPage)
+    BoxWithConstraints(
+        modifier = modifier
+            .systemBarsPadding()
+            .fillMaxSize()
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            RadixOnboardingPagerIndicator(
                 pagerState = pagerState,
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                activeColor = colorResource(R.color.purple_500)
+                    .wrapContentSize()
+                    .align(Alignment.CenterHorizontally),
+                indicatorWidth = 48.dp,
+                indicatorHeight = 4.dp,
             )
-
             val onboardPages = listOf(
                 OnboardingPage(
                     title = stringResource(id = R.string.onboarding_title_1),
@@ -96,56 +130,114 @@ fun OnboardingScreen(
             HorizontalPager(
                 count = onboardPages.size,
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             ) { page ->
                 OnboardingPageView(page = onboardPages[page])
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            LaunchedEffect(pagerState) {
-                snapshotFlow { pagerState.currentPage }.collect { page ->
-                    viewModel.onPageSelected(page, onboardPages.size)
+            // TODO this definitely looks like potential bug. This code is called multiple times
+            LocalContext.current.findFragmentActivity()?.let { activity ->
+                activity.biometricAuthenticate(authenticateWithBiometric) { authenticatedSuccessfully ->
+                    onUserAuthenticated(authenticatedSuccessfully)
                 }
             }
 
-            val context = LocalContext.current as FragmentActivity
-            context.biometricAuthenticate(state.authenticateWithBiometric) { authenticatedSuccessfully ->
-                viewModel.onUserAuthenticated(authenticatedSuccessfully)
-            }
-
-            AlertDialogView(show = state.showWarning) { accepted ->
-                viewModel.onAlertClicked(accepted)
-            }
-
-            AnimatedVisibility(visible = state.showButtons) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth().fillMaxHeight()
-                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    BabylonButton(title = stringResource(id = R.string.im_new_radar_wallet_user)) {
-                        // TODO Is Device Factor Present probably in separate ticket
-                        viewModel.onProceedClick()
-                    }
-                    TextButton(
-                        onClick = { restoreWalletFromBackup() },
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color.Transparent,
-                            contentColor = MaterialTheme.colors.onBackground
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.restore_wallet_from_backup),
-                            textAlign = TextAlign.Center,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.W400
-                        )
-                    }
-                }
+            AlertDialogView(show = showWarning) { accepted ->
+                onAlertClicked(accepted)
             }
         }
+        AnimatedVisibility(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            visible = pagerState.currentPage == pagerState.pageCount - 1
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                RadixPrimaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.im_new_radar_wallet_user),
+                    onClick = onProceedClick
+                )
+                RadixTextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = restoreWalletFromBackup,
+                    text = stringResource(id = R.string.restore_wallet_from_backup)
+                )
+                Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+            }
+        }
+    }
+}
+
+@ExperimentalPagerApi
+@Composable
+fun RadixOnboardingPagerIndicator(
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
+    pageCount: Int = pagerState.pageCount,
+    pageIndexMapping: (Int) -> Int = { it },
+    inactiveColor: Color = RadixTheme.colors.gray4,
+    indicatorWidth: Dp = 8.dp,
+    indicatorHeight: Dp = indicatorWidth,
+    spacing: Dp = RadixTheme.dimensions.paddingSmall,
+    indicatorShape: Shape = CircleShape,
+) {
+
+    val indicatorWidthPx = LocalDensity.current.run { indicatorWidth.roundToPx() }
+    val spacingPx = LocalDensity.current.run { spacing.roundToPx() }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(spacing),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val indicatorModifier = Modifier
+                .size(width = indicatorWidth, height = indicatorHeight)
+                .background(color = inactiveColor, shape = indicatorShape)
+
+            repeat(pageCount) {
+                Box(indicatorModifier)
+            }
+        }
+
+        Box(
+            Modifier
+                .offset {
+                    val position = pageIndexMapping(pagerState.currentPage)
+                    val offset = pagerState.currentPageOffset
+                    val next = pageIndexMapping(pagerState.currentPage + offset.sign.toInt())
+                    val scrollPosition = ((next - position) * offset.absoluteValue + position)
+                        .coerceIn(
+                            0f,
+                            (pageCount - 1)
+                                .coerceAtLeast(0)
+                                .toFloat()
+                        )
+
+                    IntOffset(
+                        x = ((spacingPx + indicatorWidthPx) * scrollPosition).toInt(),
+                        y = 0
+                    )
+                }
+                .size(width = indicatorWidth / 2, height = indicatorHeight)
+                .then(
+                    if (pageCount > 0) Modifier.background(
+                        brush = GradientBrand2,
+                        shape = indicatorShape,
+                    )
+                    else Modifier
+                )
+        )
     }
 }
 
@@ -165,6 +257,24 @@ private fun AlertDialogView(
             },
             title = { Text(text = stringResource(id = R.string.please_confirm_dialog_title)) },
             text = { Text(text = stringResource(id = R.string.please_confirm_dialog_body)) }
+        )
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Preview
+@Composable
+fun OnboardingScreenPreview() {
+    BabylonWalletTheme {
+        OnboardingScreenContent(
+            currentPage = 0,
+            restoreWalletFromBackup = {},
+            onProceedClick = {},
+            showWarning = false,
+            authenticateWithBiometric = true,
+            onUserAuthenticated = {},
+            {},
+            Modifier.fillMaxSize()
         )
     }
 }

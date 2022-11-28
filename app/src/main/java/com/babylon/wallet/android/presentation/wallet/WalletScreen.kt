@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -22,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -34,7 +32,6 @@ import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -207,47 +204,8 @@ private fun WalletAccountList(
                     text = stringResource(id = R.string.create_new_account),
                     onClick = onAccountCreationClick
                 )
-
-                RadarHubView {
-                    /*TODO*/
-                }
             }
         }
-    }
-}
-
-@Composable
-fun RadarHubView(
-    modifier: Modifier = Modifier,
-    onClicked: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .padding(RadixTheme.dimensions.paddingDefault)
-            .fillMaxWidth()
-            .padding(start = 45.dp, top = 40.dp, end = 45.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card {
-            Text(
-                stringResource(id = R.string.radar_network_text),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(45.dp)
-            )
-        }
-        BabylonButton(
-            title = stringResource(id = R.string.visit_the_radar_hub),
-            modifier = Modifier.fillMaxWidth()
-        ) { onClicked() }
-    }
-}
-
-@Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
-@Composable
-fun RadarHubPreview() {
-    BabylonWalletTheme {
-        RadarHubView {}
     }
 }
 

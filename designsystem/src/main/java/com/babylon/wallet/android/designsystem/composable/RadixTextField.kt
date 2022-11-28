@@ -25,22 +25,24 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun RadixTextField(
     modifier: Modifier,
-    value: String,
-    label: String,
-    hint: String,
     onValueChanged: (String) -> Unit,
+    value: String,
+    leftLabel: String? = null,
+    hint: String? = null,
     error: String? = null,
-    optionalLabel: String? = null,
+    rightLabel: String? = null,
     optionalHint: String? = null
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                text = label,
-                style = RadixTheme.typography.body1HighImportance,
-                color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1
-            )
-            optionalLabel?.let { hint ->
+            leftLabel?.let { label ->
+                Text(
+                    text = label,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+                )
+            }
+            rightLabel?.let { hint ->
                 Text(text = hint, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
             }
         }
@@ -58,7 +60,7 @@ fun RadixTextField(
                 errorBorderColor = RadixTheme.colors.red1
             ),
             placeholder = {
-                Text(text = hint)
+                hint?.let { Text(text = it) }
             },
             isError = error != null
         )
@@ -89,10 +91,10 @@ fun RadixTextField() {
     BabylonWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = "",
-            label = "Label",
-            hint = "Placeholder",
             onValueChanged = {},
+            value = "",
+            leftLabel = "Label",
+            hint = "Placeholder",
             optionalHint = "This is a hint text, It should be short and sweet"
         )
     }
@@ -104,11 +106,11 @@ fun RadixTextFieldFilled() {
     BabylonWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = "Input Text",
-            label = "Label",
-            hint = "Placeholder",
-            optionalLabel = "7/10",
             onValueChanged = {},
+            value = "Input Text",
+            leftLabel = "Label",
+            hint = "Placeholder",
+            rightLabel = "7/10",
             optionalHint = "This is a hint text, It should be short and sweet"
         )
     }
@@ -120,12 +122,12 @@ fun RadixTextErrorField() {
     BabylonWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = "",
-            label = "Label",
-            hint = "Placeholder",
             onValueChanged = {},
-            optionalHint = "This is a hint text, It should be short and sweet",
-            error = "Error"
+            value = "",
+            leftLabel = "Label",
+            hint = "Placeholder",
+            error = "Error",
+            optionalHint = "This is a hint text, It should be short and sweet"
         )
     }
 }
