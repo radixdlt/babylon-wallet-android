@@ -6,23 +6,24 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.profile.data.AccountDerivationPath
-import rdx.works.profile.data.AccountIndex
-import rdx.works.profile.data.CompressedPublicKey
-import rdx.works.profile.data.IdentityDerivationPath
-import rdx.works.profile.data.PersonaIndex
+import rdx.works.profile.data.extensions.addAccountOnNetwork
+import rdx.works.profile.data.extensions.addP2PClient
+import rdx.works.profile.data.extensions.addPersonaOnNetwork
+import rdx.works.profile.data.repository.AccountDerivationPath
+import rdx.works.profile.data.repository.AccountIndex
+import rdx.works.profile.data.repository.CompressedPublicKey
+import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.UnsecuredSecurityState
-import rdx.works.profile.data.addAccountOnNetwork
-import rdx.works.profile.data.addP2PClient
-import rdx.works.profile.data.addPersonaOnNetwork
-import rdx.works.profile.data.createNewPersona
-import rdx.works.profile.data.createNewVirtualAccount
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.enginetoolkit.EngineToolkitImpl
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.PersonaField
+import rdx.works.profile.data.model.pernetwork.createNewPersona
+import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
+import rdx.works.profile.data.repository.PersonaIndex
+import rdx.works.profile.data.repository.UnsecuredSecurityState
 import java.io.File
 
 class ProfileTest {
@@ -105,9 +106,12 @@ class ProfileTest {
 
         Assert.assertEquals(updatedProfile.perNetwork.first().personas.count(), 1)
 
-        updatedProfile = updatedProfile.addP2PClient(
+        val p2pClient = P2PClient.init(
             connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
             displayName = "Brave browser on Mac Studio"
+        )
+        updatedProfile = updatedProfile.addP2PClient(
+            p2pClient = p2pClient
         )
 
         Assert.assertEquals(updatedProfile.appPreferences.p2pClients.count(), 1)
@@ -118,7 +122,7 @@ class ProfileTest {
     }
 
     @Test
-    fun testVector() {
+    fun `test again profile json vector`() {
         val hammunetProfileTestVector = File("src/test/resources/raw/profile_snapshot_hammunet.json").readText()
 
         val hammunetProfile = Json.decodeFromString<Profile>(hammunetProfileTestVector)
@@ -237,9 +241,13 @@ class ProfileTest {
             networkID = networkId
         )
 
-        profile = profile.addP2PClient(
+        val p2pClient = P2PClient.init(
             connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
             displayName = "Brave browser on Mac Studio"
+        )
+
+        profile = profile.addP2PClient(
+            p2pClient = p2pClient
         )
 
         // Network and gateway

@@ -13,7 +13,7 @@ data class AppPreferences(
     val networkAndGateway: NetworkAndGateway,
 
     @SerialName("p2pClients")
-    val p2pClients: List<P2PClients>
+    val p2pClients: List<P2PClient>
 )
 
 @Serializable
@@ -35,7 +35,7 @@ data class NetworkAndGateway(
 }
 
 @Serializable
-data class P2PClients(
+data class P2PClient(
     @SerialName("connectionPassword")
     val connectionPassword: String,
 
@@ -55,12 +55,13 @@ data class P2PClients(
         fun init(
             connectionPassword: String,
             displayName: String
-        ): P2PClients {
-            return P2PClients(
+        ): P2PClient {
+            val now = Date().toString()
+            return P2PClient(
                 connectionPassword = connectionPassword,
                 displayName = displayName,
-                firstEstablishedOn = Date().toString(),
-                lastUsedOn = Date().toString(),
+                firstEstablishedOn = now,
+                lastUsedOn = now,
             )
         }
     }

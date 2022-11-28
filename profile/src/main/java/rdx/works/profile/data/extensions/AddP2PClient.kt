@@ -2,23 +2,17 @@ package rdx.works.profile.data.extensions
 
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
-import rdx.works.profile.data.model.apppreferences.P2PClients
-import java.util.Date
+import rdx.works.profile.data.model.apppreferences.P2PClient
 
 fun Profile.addP2PClient(
-    connectionPassword: String,
-    displayName: String
+    p2pClient: P2PClient
 ): Profile {
-    val now = Date().toString()
     val updatedP2PClients = appPreferences.p2pClients.toMutableList()
+
     updatedP2PClients.add(
-        P2PClients(
-            connectionPassword = connectionPassword,
-            displayName = displayName,
-            firstEstablishedOn = now,
-            lastUsedOn = now
-        )
+        p2pClient
     )
+
     val newAppPreferences =
         AppPreferences(
         display = appPreferences.display,
