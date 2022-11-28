@@ -1,4 +1,5 @@
 @file:Suppress("MagicNumber")
+
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.domain.model.AccountAddress
@@ -23,46 +24,27 @@ class SampleDataProvider {
         return AccountResources(address, fungibleTokens = sampleFungibleTokens(address))
     }
 
-    fun sampleFungibleTokens(address: String = randomTokenAddress()): List<OwnedFungibleToken> {
-        val tokenAddress = randomTokenAddress()
-        return listOf(
-            OwnedFungibleToken(
-                AccountAddress(address),
-                BigDecimal.valueOf(100000),
-                tokenAddress,
-                FungibleToken(
-                    tokenAddress,
-                    totalSupply = BigDecimal.valueOf(10000000000),
-                    totalMinted = BigDecimal.valueOf(1000000),
-                    totalBurnt = BigDecimal.valueOf(100),
-                    metadata = mapOf("symbol" to "XRD")
+    fun sampleFungibleTokens(ownerAddress: String = randomTokenAddress()): List<OwnedFungibleToken> {
+        val result = mutableListOf<OwnedFungibleToken>()
+        return result.apply {
+            repeat(3) {
+                val tokenAddress = randomTokenAddress()
+                add(
+                    OwnedFungibleToken(
+                        AccountAddress(ownerAddress),
+                        BigDecimal.valueOf(100000),
+                        tokenAddress,
+                        FungibleToken(
+                            tokenAddress,
+                            totalSupply = BigDecimal.valueOf(10000000000),
+                            totalMinted = BigDecimal.valueOf(1000000),
+                            totalBurnt = BigDecimal.valueOf(100),
+                            metadata = mapOf("symbol" to "XRD")
+                        )
+                    )
                 )
-            ),
-            OwnedFungibleToken(
-                AccountAddress(address),
-                BigDecimal.valueOf(100000),
-                tokenAddress,
-                FungibleToken(
-                    tokenAddress,
-                    totalSupply = BigDecimal.valueOf(10000000000),
-                    totalMinted = BigDecimal.valueOf(1000000),
-                    totalBurnt = BigDecimal.valueOf(100),
-                    metadata = mapOf("symbol" to "XRD")
-                )
-            ),
-            OwnedFungibleToken(
-                AccountAddress(address),
-                BigDecimal.valueOf(100000),
-                tokenAddress,
-                FungibleToken(
-                    tokenAddress,
-                    totalSupply = BigDecimal.valueOf(10000000000),
-                    totalMinted = BigDecimal.valueOf(1000000),
-                    totalBurnt = BigDecimal.valueOf(100),
-                    metadata = mapOf("symbol" to "XRD")
-                )
-            )
-        )
+            }
+        }
     }
 
     fun sampleSimpleFungibleTokens(address: String = randomTokenAddress()): List<SimpleOwnedFungibleToken> {

@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -7,35 +9,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.R
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.data.mockdata.mockNftUiList
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.model.NftUiModel
 
 @Suppress("MutableParams", "UnstableCollections")
 @Composable
-fun CollapsableLazyColumn(
+fun NftTokenList(
     collapsedState: SnapshotStateList<Boolean>, // TODO use an immutable object!
-    sections: List<NftUiModel>,
+    item: List<NftUiModel>,
     modifier: Modifier = Modifier
 ) {
-
     LazyColumn(modifier) {
-        sections.forEachIndexed { i, dataItem ->
+        item.forEachIndexed { i, dataItem ->
             val collapsed = collapsedState[i]
             item(key = "header_$i") {
-                CollapsableParentItemView(
+                NftTokenHeaderItem(
                     nftImageUrl = dataItem.iconUrl,
                     nftName = dataItem.name,
                     nftsInCirculation = "?",
                     nftsInPossession = "?",
                     nftChildCount = dataItem.nft.size,
-                    collapsed = collapsed,
-                    arrowText = if (collapsed)
-                        stringResource(id = R.string.show_plus)
-                    else
-                        stringResource(id = R.string.hide_minus)
+                    collapsed = collapsed
                 ) {
                     collapsedState[i] = !collapsed
                 }
@@ -43,47 +40,45 @@ fun CollapsableLazyColumn(
             if (!collapsed) {
                 items(
                     dataItem.nft,
-                    key = { nft: NftUiModel.NftUi -> nft.id }
-                ) { row ->
+                    key = { nft -> nft.id }
+                ) { item ->
                     var bottomCornersRounded = false
-                    if (dataItem.nft.last() == row) {
+                    if (dataItem.nft.last() == item) {
                         bottomCornersRounded = true
                     }
-                    CollapsableChildItemView(
-                        nftId = row.id,
-                        imageUrl = row.imageUrl,
+                    NftTokenDetailItem(
+                        nftId = item.id,
+                        imageUrl = item.imageUrl,
                         bottomCornersRounded = bottomCornersRounded,
-                        nftMetadata = row.nftsMetadata
+                        nftMetadata = item.nftsMetadata
                     )
                 }
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun CollapsableLazyColumnPreview() {
-    CollapsableLazyColumn(
-        sections = mockNftUiList,
-        collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() }
-    )
+fun NftTokenListPreview() {
+    BabylonWalletTheme {
+        NftTokenList(
+            item = mockNftUiList,
+            collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() }
+        )
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ExpandedLazyColumnPreview() {
-    CollapsableLazyColumn(
-        sections = mockNftUiList,
-        collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() }
-    )
-}
-
-@Preview(showBackground = true, fontScale = 2f)
-@Composable
-fun ExpandedLazyColumnWithLargeFontPreview() {
-    CollapsableLazyColumn(
-        sections = mockNftUiList,
-        collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() }
-    )
+fun NftTokenListExpandedPreview() {
+    BabylonWalletTheme {
+        NftTokenList(
+            item = mockNftUiList,
+            collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() }
+        )
+    }
 }

@@ -1,38 +1,44 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
-import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import java.util.Locale
 
@@ -41,10 +47,9 @@ import java.util.Locale
 fun WalletScreen(
     viewModel: WalletViewModel,
     modifier: Modifier = Modifier,
-    onAccountClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit = { _, _, _ -> },
     onAccountCreationClick: () -> Unit
 ) {
-
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     WalletScreenContent(
@@ -54,19 +59,21 @@ fun WalletScreen(
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
         onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
-        modifier = modifier
+        modifier = modifier.systemBarsPadding(),
+        balanceClicked = {}
     )
 }
 
 @Composable
 private fun WalletScreenContent(
     state: WalletUiState,
-    onAccountClick: (accountId: String, accountName: String) -> Unit,
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onCopyAccountAddressClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    balanceClicked: () -> Unit
 ) {
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
     Scaffold(
@@ -75,7 +82,9 @@ private fun WalletScreenContent(
             RDXAppBar(
                 stringResource(id = R.string.home_toolbar_title)
             ) {}
-        }
+        },
+        contentColor = RadixTheme.colors.defaultText,
+        backgroundColor = RadixTheme.colors.defaultBackground
     ) { innerPadding ->
         when (state) {
             WalletUiState.Loading -> {
@@ -85,7 +94,7 @@ private fun WalletScreenContent(
                     verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(
-                        color = MaterialTheme.colors.onPrimary
+                        color = RadixTheme.colors.gray1
                     )
                 }
             }
@@ -94,6 +103,14 @@ private fun WalletScreenContent(
                     state = swipeRefreshState,
                     onRefresh = onRefresh,
                     indicatorPadding = innerPadding,
+                    indicator = { state, dp ->
+                        SwipeRefreshIndicator(
+                            state = state,
+                            refreshTriggerDistance = dp,
+                            contentColor = RadixTheme.colors.gray1,
+                            backgroundColor = RadixTheme.colors.defaultBackground,
+                        )
+                    },
                     refreshTriggerDistance = 100.dp,
                     content = {
                         WalletAccountList(
@@ -102,7 +119,8 @@ private fun WalletScreenContent(
                             onAccountClick = onAccountClick,
                             onAccountCreationClick = onAccountCreationClick,
                             accounts = state.resources,
-                            modifier = Modifier
+                            modifier = Modifier,
+                            balanceClicked = balanceClicked
                         )
                     }
                 )
@@ -116,51 +134,50 @@ private fun WalletScreenContent(
 private fun WalletAccountList(
     wallet: WalletData,
     onCopyAccountAddressClick: (String) -> Unit,
-    onAccountClick: (String, String) -> Unit,
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    balanceClicked: () -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         item {
             Text(
                 text = stringResource(id = R.string.home_welcome_text),
-                modifier = Modifier.padding(top = 10.dp, start = 16.dp, end = 16.dp),
-                style = MaterialTheme.typography.body1,
-                color = RadixGrey2
+                modifier = Modifier.padding(
+                    top = RadixTheme.dimensions.paddingMedium,
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault
+                ),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
             )
         }
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp, bottom = 20.dp),
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = stringResource(id = R.string.total_value).uppercase(
                         Locale.getDefault()
                     ),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                    style = RadixTheme.typography.body2Header,
                 )
                 WalletBalanceView(
                     currencySignValue = wallet.currency,
                     amount = wallet.amount,
-                    hidden = false
-                ) {
-                    // TODO
-                }
+                    hidden = false,
+                    balanceClicked = balanceClicked
+                )
             }
         }
-        items(accounts) { account ->
+        itemsIndexed(accounts) { index, account ->
+            val gradientIndex = index % AccountGradientList.size
+            val gradientColors = AccountGradientList[gradientIndex]
             AccountCardView(
-                onCardClick = {
-                    onAccountClick(
-                        account.address,
-                        account.address
-                    )
-                },
                 hashValue = account.address,
                 accountName = account.address,
                 accountValue = "10",
@@ -169,20 +186,27 @@ private fun WalletAccountList(
                 assets = account.fungibleTokens,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 25.dp, end = 25.dp, bottom = 20.dp)
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                    .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
+                    .clickable {
+                        onAccountClick(account.address, account.address, gradientIndex)
+                    }
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 0.dp, top = 48.dp, end = 0.dp, bottom = 0.dp),
+                    .padding(top = RadixTheme.dimensions.paddingDefault),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                BabylonButton(title = stringResource(id = R.string.create_new_account)) {
-                    onAccountCreationClick()
-                }
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(0.8f),
+                    text = stringResource(id = R.string.create_new_account),
+                    onClick = onAccountCreationClick
+                )
 
                 RadarHubView {
                     /*TODO*/
@@ -199,9 +223,9 @@ fun RadarHubView(
 ) {
     Column(
         modifier = modifier
-            .padding(15.dp)
+            .padding(RadixTheme.dimensions.paddingDefault)
             .fillMaxWidth()
-            .padding(start = 45.dp, top = 40.dp, end = 45.dp, bottom = 0.dp),
+            .padding(start = 45.dp, top = 40.dp, end = 45.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card {
@@ -241,12 +265,13 @@ fun WalletContentPreview() {
                     ),
                     resources = listOf(sampleAccountResource(), sampleAccountResource())
                 ),
-                onAccountClick = { _, _ -> },
+                onAccountClick = { _, _, _ -> },
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },
                 onCopyAccountAddressClick = {},
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                balanceClicked = {}
             )
         }
     }

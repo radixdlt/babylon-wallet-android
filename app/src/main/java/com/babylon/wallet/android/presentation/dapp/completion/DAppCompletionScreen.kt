@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
@@ -23,10 +24,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
-import com.babylon.wallet.android.presentation.ui.theme.White
+import com.babylon.wallet.android.designsystem.theme.RadixBackground
+import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
+import com.babylon.wallet.android.designsystem.theme.RadixGrey2
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 
 @Composable
 fun DAppCompletionScreen(
@@ -49,9 +51,10 @@ fun DAppCompletionContent(
 ) {
     Column(
         modifier = modifier
+            .systemBarsPadding()
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 50.dp, vertical = 16.dp),
+            .padding(horizontal = 50.dp, vertical = RadixTheme.dimensions.paddingSmall),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(40.dp))
@@ -66,7 +69,7 @@ fun DAppCompletionContent(
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
             color = RadixGrey2,
             text = stringResource(id = R.string.dapp_successful_body, dAppName),
@@ -79,7 +82,7 @@ fun DAppCompletionContent(
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 0.dp, vertical = 30.dp),
+                .padding(horizontal = 0.dp, vertical = RadixTheme.dimensions.paddingXLarge),
             onClick = { onContinueClick() },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = RadixButtonBackground,
@@ -89,7 +92,10 @@ fun DAppCompletionContent(
             Text(
                 color = White,
                 text = stringResource(id = R.string.dapp_successful_button_title, dAppName),
-                modifier = Modifier.padding(26.dp, 8.dp, 26.dp, 8.dp)
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                )
             )
         }
     }

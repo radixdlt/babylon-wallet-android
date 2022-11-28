@@ -15,7 +15,8 @@ class TokenItemTitleDisplayTest {
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
-            iconUrl = "icon url"
+            iconUrl = "icon url",
+            description = null
         )
 
         assertEquals(tokenUi.symbol, tokenUi.tokenItemTitle)
@@ -29,7 +30,8 @@ class TokenItemTitleDisplayTest {
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
-            iconUrl = "icon url"
+            iconUrl = "icon url",
+            description = null
         )
 
         assertEquals(tokenUi.symbol, tokenUi.tokenItemTitle)
@@ -43,7 +45,8 @@ class TokenItemTitleDisplayTest {
             symbol = null,
             tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
-            iconUrl = "icon url"
+            iconUrl = "icon url",
+            description = null
         )
 
         assertEquals(tokenUi.name, tokenUi.tokenItemTitle)
@@ -57,7 +60,8 @@ class TokenItemTitleDisplayTest {
             symbol = null,
             tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
-            iconUrl = "icon url"
+            iconUrl = "icon url",
+            description = null
         )
 
         assertEquals("", tokenUi.tokenItemTitle)
@@ -71,7 +75,8 @@ class TokenItemTitleDisplayTest {
             symbol = " ",
             tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
-            iconUrl = "icon url"
+            iconUrl = "icon url",
+            description = null
         )
 
         assertEquals(tokenUi.name, tokenUi.tokenItemTitle)
@@ -85,7 +90,8 @@ class TokenItemTitleDisplayTest {
             symbol = " ",
             tokenQuantity = BigDecimal(1234.5678),
             tokenValue = "token value",
-            iconUrl = "icon url"
+            iconUrl = "icon url",
+            description = null
         )
 
         assertEquals("", tokenUi.tokenItemTitle)

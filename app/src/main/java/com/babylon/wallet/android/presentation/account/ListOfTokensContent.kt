@@ -1,18 +1,27 @@
 package com.babylon.wallet.android.presentation.account
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.data.mockdata.mockTokenUiList
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
 
 @Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)
@@ -21,26 +30,64 @@ fun ListOfTokensContent(
     tokenItems: List<TokenUiModel>,
     modifier: Modifier = Modifier,
     xrdTokenUi: TokenUiModel? = null,
+    onFungibleTokenClick: (TokenUiModel) -> Unit,
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         if (xrdTokenUi != null) {
             stickyHeader {
-                TokenItemCard(token = xrdTokenUi, isFirst = true)
+                TokenItemCard(
+                    token = xrdTokenUi,
+                    modifier = Modifier
+                        .shadow(4.dp, RadixTheme.shapes.roundedRectMedium)
+                        .fillMaxWidth()
+                        .background(
+                            RadixTheme.colors.defaultBackground,
+                            RadixTheme.shapes.roundedRectMedium
+                        ).clip(RadixTheme.shapes.roundedRectMedium)
+                        .clickable {
+                            onFungibleTokenClick(xrdTokenUi)
+                        },
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         }
-        items(
+        itemsIndexed(
             items = tokenItems,
-            key = { item: TokenUiModel ->
+            key = { _, item: TokenUiModel ->
                 item.id
             },
-            itemContent = {
-                TokenItemCard(token = it)
+            itemContent = { index, item ->
+                val lastItem = index == tokenItems.size - 1
+                val shape = when {
+                    index == 0 && lastItem -> RadixTheme.shapes.roundedRectMedium
+                    index == 0 -> RadixTheme.shapes.roundedRectTopMedium
+                    lastItem -> RadixTheme.shapes.roundedRectBottomMedium
+                    else -> RectangleShape
+                }
+                TokenItemCard(
+                    token = item,
+                    modifier = Modifier
+//                        .shadow(elevation = 4.dp, shape = shape)
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.defaultBackground, shape)
+                        .clip(shape)
+                        .clickable {
+                            onFungibleTokenClick(item)
+                        }
+                )
+                if (!lastItem) {
+                    Divider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray5)
+                }
             }
         )
+        item {
+            Spacer(modifier = Modifier.height(100.dp))
+        }
     }
 }
 
@@ -51,7 +98,8 @@ fun ListOfTokenItemsPreview() {
     BabylonWalletTheme {
         ListOfTokensContent(
             tokenItems = mockTokenUiList,
-            modifier = Modifier.heightIn(min = 200.dp, max = 600.dp)
+            modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
+            onFungibleTokenClick = {}
         )
     }
 }

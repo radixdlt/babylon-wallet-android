@@ -24,4 +24,8 @@ data class FungibleToken(
     fun getTokenDescription(): String? {
         return metadata[TokenMetadataConstants.KEY_DESCRIPTION]
     }
+
+    fun getMetadataWithoutDescription(): Map<String, String> {
+        return metadata.filterKeys { it != TokenMetadataConstants.KEY_DESCRIPTION }
+    }
 }

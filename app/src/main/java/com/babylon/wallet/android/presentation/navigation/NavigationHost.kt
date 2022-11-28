@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfir
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
@@ -39,9 +40,9 @@ fun NavigationHost(
         composable(route = Screen.WalletDestination.route) {
             WalletScreen(
                 viewModel = hiltViewModel(),
-                onAccountClick = { accountId, accountName ->
+                onAccountClick = { accountId, accountName, gradientIndex ->
                     navController.navigate(
-                        Screen.AccountDestination.routeWithArgs(accountId, accountName)
+                        Screen.AccountDestination.routeWithArgs(accountId, accountName, gradientIndex)
                     )
                 },
                 onAccountCreationClick = {
@@ -52,10 +53,11 @@ fun NavigationHost(
             )
         }
         composable(
-            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_GRADIENT_INDEX}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
-                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType }
+                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
+                navArgument(ARG_GRADIENT_INDEX) { type = NavType.IntType }
             )
         ) { navBackStackEntry ->
             AccountScreen(

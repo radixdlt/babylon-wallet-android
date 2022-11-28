@@ -18,6 +18,6 @@ data class NftUiModel(
 fun OwnedNonFungibleToken.toNftUiModel(): NftUiModel {
     return NftUiModel(
         name = token?.getTokenName().orEmpty(),
-        iconUrl = token?.getImageUrl().orEmpty()
+        iconUrl = token?.getImageUrl().orEmpty(),
     )
 }

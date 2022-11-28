@@ -38,10 +38,10 @@ import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.data.profile.model.Address
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixGrey2
-import com.babylon.wallet.android.presentation.ui.theme.White
+import com.babylon.wallet.android.designsystem.theme.RadixBackground
+import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
+import com.babylon.wallet.android.designsystem.theme.RadixGrey2
+import com.babylon.wallet.android.designsystem.theme.White
 
 @Suppress("UnstableCollections")
 @Composable
