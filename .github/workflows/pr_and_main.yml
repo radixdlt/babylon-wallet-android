@@ -18,7 +18,7 @@ jobs:
       - name: Access GPR_USER
         env:
           APOD_API_KEY: ${{ secrets.GPR_USER }}
-        run: echo GPR_USER=\"$GPR_USER\" >> ./gradle.properties
+        run: echo GPR_USER=\"\n$GPR_USER\" >> ./gradle.properties
 
       - name: Access GPR_TOKEN
         env:
