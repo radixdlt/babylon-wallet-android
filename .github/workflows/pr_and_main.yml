@@ -40,6 +40,9 @@ jobs:
 
       - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
   # snapshot_tests:
   #   name: "Snapshot tests"
