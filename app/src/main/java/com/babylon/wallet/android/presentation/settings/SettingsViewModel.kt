@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.ConnectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -65,8 +66,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun listenForIncomingRequests() {
-        viewModelScope.launch {
+        listenIncomingMessagesJob = viewModelScope.launch {
             peerdroidClient.listenForEvents()
+                .cancellable()
                 .onEach { state ->
                     Timber.d("state: $state")
                     settingsState = settingsState.copy(
