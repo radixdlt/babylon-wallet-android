@@ -2,11 +2,10 @@ package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.repository.CreateSecurityState
 import rdx.works.profile.data.repository.DerivePublicKey
 import rdx.works.profile.data.repository.EntityDerivationPath
-import rdx.works.profile.data.repository.EntityIndex
-import rdx.works.profile.enginetoolkit.EngineToolkit
 
 /**
  * Persona is very similar to Account but it adds fields
@@ -57,16 +56,15 @@ data class Persona(
 fun createNewPersona(
     displayName: String,
     fields: List<PersonaField>,
-    engineToolkit: EngineToolkit,
     entityDerivationPath: EntityDerivationPath,
-    entityIndex: EntityIndex,
+    entityIndex: Int,
     derivePublicKey: DerivePublicKey,
     createSecurityState: CreateSecurityState
 ): Persona {
     val derivationPath = entityDerivationPath.path()
 
     val compressedPublicKey = derivePublicKey.derive(derivationPath)
-    val address = engineToolkit.deriveAddress(compressedPublicKey)
+    val address = deriveAddress(compressedPublicKey)
 
     val unsecuredSecurityState = createSecurityState.create(
         derivationPath = DerivationPath.identityDerivationPath(
@@ -80,7 +78,7 @@ fun createNewPersona(
         derivationPath = derivationPath,
         displayName = displayName,
         fields = fields,
-        index = entityIndex.index(),
+        index = entityIndex,
         securityState = unsecuredSecurityState
     )
 }

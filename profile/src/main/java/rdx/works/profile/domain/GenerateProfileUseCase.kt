@@ -10,17 +10,14 @@ class GenerateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke(
-        displayName: String
-    ): Profile {
+    suspend operator fun invoke(): Profile {
         val mnemonic = generateMnemonicUseCase()
 
         val networkAndGateway = NetworkAndGateway.hammunet
 
         val profile = Profile.init(
             networkAndGateway = networkAndGateway,
-            mnemonic = mnemonic,
-            firstAccountDisplayName = displayName
+            mnemonic = mnemonic
         )
 
         val readProfile = profileRepository.readProfile()

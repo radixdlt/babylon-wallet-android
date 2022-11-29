@@ -29,4 +29,11 @@ data class PerNetwork(
      */
     @SerialName("personas")
     val personas: List<Persona>
-)
+) {
+    init {
+        /**
+         * We always require any per network instance to have at least one account
+         */
+        assert(accounts.isNotEmpty())
+    }
+}

@@ -6,16 +6,14 @@ import rdx.works.profile.data.repository.UnsecuredSecurityState
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
-import rdx.works.profile.data.repository.AccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.enginetoolkit.EngineToolkit
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
-    private val profileRepository: ProfileRepository,
-    private val engineToolkit: EngineToolkit,
+    private val profileRepository: ProfileRepository
 ) {
 
     suspend operator fun invoke(
@@ -29,17 +27,13 @@ class CreateAccountUseCase @Inject constructor(
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
-                engineToolkit = engineToolkit,
                 entityDerivationPath = AccountDerivationPath(
                     perNetwork = profile.perNetwork,
                     networkId = networkID
                 ),
-                entityIndex = AccountIndex(
-                    perNetwork = profile.perNetwork,
-                    networkId = networkID
-                ),
+                entityIndex = profile.perNetwork.accountsPerNetworkCount(networkID),
                 derivePublicKey = CompressedPublicKey(
-                    mnemonic = generateMnemonicUseCase.invoke()
+                    mnemonic = generateMnemonicUseCase()
                 ),
                 createSecurityState = UnsecuredSecurityState(
                     factorSources = profile.factorSources

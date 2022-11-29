@@ -2,7 +2,6 @@ package rdx.works.profile
 
 import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Test
@@ -14,8 +13,8 @@ import rdx.works.profile.data.repository.AccountIndex
 import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.enginetoolkit.EngineToolkitImpl
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
@@ -47,12 +46,9 @@ class ProfileTest {
 
         println("Profile generated $profile")
 
-        val engineToolkit = EngineToolkitImpl()
-
         val networkId = NetworkId.Hammunet
         val firstAccount = createNewVirtualAccount(
             displayName = "Second",
-            engineToolkit = engineToolkit,
             entityDerivationPath = AccountDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
@@ -82,7 +78,6 @@ class ProfileTest {
                 PersonaField.init("firstName", "Alice"),
                 PersonaField.init("lastName", "Anderson")
             ),
-            engineToolkit = engineToolkit,
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
@@ -115,17 +110,19 @@ class ProfileTest {
         )
 
         Assert.assertEquals(updatedProfile.appPreferences.p2pClients.count(), 1)
-
-        val updatedProfileString = Json.encodeToString(updatedProfile)
-
-        println("Updated profile $updatedProfileString")
     }
 
     @Test
     fun `test again profile json vector`() {
         val hammunetProfileTestVector = File("src/test/resources/raw/profile_snapshot_hammunet.json").readText()
 
-        val hammunetProfile = Json.decodeFromString<Profile>(hammunetProfileTestVector)
+        val hammunetProfileSnapshot = Json.decodeFromString<ProfileSnapshot>(hammunetProfileTestVector)
+        val hammunetProfile = Profile(
+            appPreferences = hammunetProfileSnapshot.appPreferences,
+            factorSources = hammunetProfileSnapshot.factorSources,
+            perNetwork = hammunetProfileSnapshot.perNetwork,
+            version = hammunetProfileSnapshot.version
+        )
 
         val mnemonic = MnemonicWords("bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
                 "humble limb repeat video sudden possible story mask neutral prize goose mandate")
@@ -138,11 +135,8 @@ class ProfileTest {
             firstAccountDisplayName = "First"
         )
 
-        val engineToolkit = EngineToolkitImpl()
-
         val secondAccount = createNewVirtualAccount(
             displayName = "Second",
-            engineToolkit = engineToolkit,
             entityDerivationPath = AccountDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
@@ -165,7 +159,6 @@ class ProfileTest {
 
         val thirdAccount = createNewVirtualAccount(
             displayName = "Third",
-            engineToolkit = engineToolkit,
             entityDerivationPath = AccountDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
@@ -193,7 +186,6 @@ class ProfileTest {
                 PersonaField.init("firstName", "Jane"),
                 PersonaField.init("lastName", "Incognitoson")
             ),
-            engineToolkit = engineToolkit,
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
@@ -220,7 +212,6 @@ class ProfileTest {
                 PersonaField.init("firstName", "Maria"),
                 PersonaField.init("lastName", "Publicson")
             ),
-            engineToolkit = engineToolkit,
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
@@ -269,10 +260,9 @@ class ProfileTest {
             profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.count(),
             hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.count())
 
-        //TODO
-//        Assert.assertEquals(
-//            profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID,
-//            hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID)
+        Assert.assertEquals(
+            profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID,
+            hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID)
 
 
         // Per Network count
@@ -328,11 +318,10 @@ class ProfileTest {
             hammunetProfile.perNetwork.first().accounts.first()
                 .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
 
-        //TODO
-//        Assert.assertEquals(profile.perNetwork.first().accounts.first()
-//            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
-//            hammunetProfile.perNetwork.first().accounts.first()
-//                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
+        Assert.assertEquals(profile.perNetwork.first().accounts.first()
+            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
+            hammunetProfile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
 
         //2nd
         Assert.assertEquals(profile.perNetwork.first().accounts[1].displayName,
@@ -454,11 +443,10 @@ class ProfileTest {
             hammunetProfile.perNetwork.first().personas.first()
                 .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
 
-        //TODO
-//        Assert.assertEquals(profile.perNetwork.first().personas.first()
-//            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
-//            hammunetProfile.perNetwork.first().personas.first()
-//                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
+        Assert.assertEquals(profile.perNetwork.first().personas.first()
+            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
+            hammunetProfile.perNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
 
 
         // Profile version
