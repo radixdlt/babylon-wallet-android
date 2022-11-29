@@ -12,7 +12,6 @@ import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
@@ -110,13 +109,7 @@ class ProfileTest {
     fun `test again profile json vector`() {
         val hammunetProfileTestVector = File("src/test/resources/raw/profile_snapshot_hammunet.json").readText()
 
-        val hammunetProfileSnapshot = Json.decodeFromString<ProfileSnapshot>(hammunetProfileTestVector)
-        val hammunetProfile = Profile(
-            appPreferences = hammunetProfileSnapshot.appPreferences,
-            factorSources = hammunetProfileSnapshot.factorSources,
-            perNetwork = hammunetProfileSnapshot.perNetwork,
-            version = hammunetProfileSnapshot.version
-        )
+        val hammunetProfile = Json.decodeFromString<Profile>(hammunetProfileTestVector)
 
         val mnemonic = MnemonicWords("bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
                 "humble limb repeat video sudden possible story mask neutral prize goose mandate")
