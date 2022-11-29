@@ -15,6 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Access GPR_USER
+        env:
+          APOD_API_KEY: ${{ secrets.GPR_USER }}
+        run: echo GPR_USER=\"$GPR_USER\" >> ./gradle.properties
+
+      - name: Access GPR_TOKEN
+        env:
+          APOD_API_KEY: ${{ secrets.GPR_TOKEN }}
+        run: echo GPR_TOKEN=\"$GPR_TOKEN\" >> ./gradle.properties
+
       - name: "Run Lint"
         run: ./gradlew lintDebug
 
@@ -99,16 +109,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
-
-      - name: Access GPR_USER
-        env:
-          APOD_API_KEY: ${{ secrets.GPR_USER }}
-        run: echo GPR_USER=\"$GPR_USER\" >> ./gradle.properties
-
-      - name: Access GPR_TOKEN
-        env:
-          APOD_API_KEY: ${{ secrets.GPR_TOKEN }}
-        run: echo GPR_TOKEN=\"$GPR_TOKEN\" >> ./gradle.properties
 
   build:
 
