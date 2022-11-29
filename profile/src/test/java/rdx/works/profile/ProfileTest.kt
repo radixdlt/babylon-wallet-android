@@ -9,7 +9,6 @@ import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.AccountIndex
 import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.data.model.Profile
@@ -21,8 +20,9 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.createNewPersona
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
-import rdx.works.profile.data.repository.PersonaIndex
 import rdx.works.profile.data.repository.UnsecuredSecurityState
+import rdx.works.profile.data.utils.accountsPerNetworkCount
+import rdx.works.profile.data.utils.personasPerNetworkCount
 import java.io.File
 
 class ProfileTest {
@@ -53,10 +53,7 @@ class ProfileTest {
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
-            entityIndex = AccountIndex(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
+            entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
@@ -82,10 +79,7 @@ class ProfileTest {
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
-            entityIndex = PersonaIndex(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
+            entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
@@ -141,10 +135,7 @@ class ProfileTest {
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
-            entityIndex = AccountIndex(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
+            entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
@@ -163,10 +154,7 @@ class ProfileTest {
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
-            entityIndex = AccountIndex(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
+            entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
@@ -190,10 +178,7 @@ class ProfileTest {
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
-            entityIndex = PersonaIndex(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
+            entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
@@ -216,10 +201,7 @@ class ProfileTest {
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
-            entityIndex = PersonaIndex(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
+            entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
