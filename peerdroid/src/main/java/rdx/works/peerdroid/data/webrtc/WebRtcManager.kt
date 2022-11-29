@@ -35,7 +35,7 @@ private const val TURN_SERVER_PASSWORD = "password"
 
 internal interface WebRtcManager {
 
-    fun createPeerConnection(): Flow<PeerConnectionEvent>
+    fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent>
 
     suspend fun createOffer(): Result<SessionDescriptionValue>
 
@@ -106,13 +106,13 @@ internal class WebRtcManagerImpl @Inject constructor(
         Log.d("WEB_RTC", "initialize WebRTC manager")
     }
 
-    override fun createPeerConnection(): Flow<PeerConnectionEvent> =
+    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> =
         peerConnectionFactory.createPeerConnectionFlow(
             rtcConfiguration = rtcConfiguration,
             initializePeerConnection = { peerConnection ->
                 initializePeerConnection(peerConnection)
             },
-            createRtcDataChannel = ::createRtcDataChannel
+            createRtcDataChannel = { createRtcDataChannel(connectionId) }
         )
 
     private fun initializePeerConnection(peerConnection: PeerConnection?) {
@@ -122,8 +122,8 @@ internal class WebRtcManagerImpl @Inject constructor(
         } ?: Log.e("WEB_RTC", "failed to create a peer connection")
     }
 
-    private fun createRtcDataChannel() {
-        dataChannel = peerConnection.createDataChannel("peerdroid data channel", dataChannelInit)
+    private fun createRtcDataChannel(connectionId: String) {
+        dataChannel = peerConnection.createDataChannel(connectionId, dataChannelInit)
         Log.d("WEB_RTC", "created a RTC data channel")
     }
 
