@@ -14,8 +14,9 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -28,12 +29,14 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerResponse
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.helpers.decryptWithAes
 import rdx.works.peerdroid.helpers.encryptWithAes
-import rdx.works.peerdroid.helpers.sha256
 import rdx.works.peerdroid.helpers.toHexString
 
 internal interface WebSocketClient {
 
-    suspend fun initSession(encryptionKey: ByteArray): Result<Unit>
+    suspend fun initSession(
+        connectionId: String,
+        encryptionKey: ByteArray
+    ): Result<Unit>
 
     suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload)
 
@@ -58,17 +61,14 @@ internal class WebSocketClientImpl(
     private lateinit var connectionId: String
     private lateinit var encryptionKey: ByteArray
 
-    override suspend fun initSession(encryptionKey: ByteArray): Result<Unit> {
+    override suspend fun initSession(
+        connectionId: String,
+        encryptionKey: ByteArray
+    ): Result<Unit> {
         return try {
+            this.connectionId = connectionId
             this.encryptionKey = encryptionKey
-            this.connectionId = encryptionKey.sha256().toHexString()
 
-            // we need to restart the WebRTC flow
-            // but we don't need to restart the connection to signaling server
-            if (socket?.isActive == true) {
-                Log.d("WEB_SOCKET", "already connected to signaling server")
-                return Result.Success(Unit)
-            }
             // this block has a normal http request builder
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
@@ -77,6 +77,8 @@ internal class WebSocketClientImpl(
             }
             if (socket?.isActive == true) {
                 Log.d("WEB_SOCKET", "successfully connected to signaling server")
+                Log.d("WEB_SOCKET", "waiting remote peer to connect to signaling server")
+                waitUntilRemotePeerIsConnected()
                 Result.Success(Unit)
             } else {
                 Log.d("WEB_SOCKET", "failed to connect to signaling server")
@@ -86,9 +88,24 @@ internal class WebSocketClientImpl(
             if (exception is CancellationException) {
                 throw exception
             }
-            Log.d("WEB_SOCKET", "connection exception: ${exception.printStackTrace()}")
+            Log.e("WEB_SOCKET", "connection exception: ${exception.localizedMessage}")
             Result.Error(exception.localizedMessage ?: "Unknown error")
         }
+    }
+
+    private suspend fun waitUntilRemotePeerIsConnected() {
+        socket?.incoming
+            ?.receiveAsFlow()
+            ?.filterIsInstance<Frame.Text>()
+            ?.mapNotNull { frameText ->
+                val responseJsonString = frameText.readText()
+                decodeAndParseResponseFromJson(responseJsonString)
+            }
+            ?.takeWhile { signalingServerIncomingMessage ->
+                signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected
+                        && signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
+            }
+            ?.collect()
     }
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
@@ -144,20 +161,13 @@ internal class WebSocketClientImpl(
             socket?.incoming // web socket channel
                 ?.receiveAsFlow()
                 ?.filterIsInstance<Frame.Text>()
-                ?.mapNotNull {
-                    val responseString = it.readText()
-                    val responseJson = decodeJsonFromString(responseString)
-                    if (responseJson != null) {
-                        val response = parseResponseFromJson(responseJson)
-                        Log.d("WEB_SOCKET", "<= received message from signaling server")
-                        response
-                    } else {
-                        Log.e("WEB_SOCKET", "<= received message from signaling server but failed to parse it")
-                        SignalingServerIncomingMessage.ParsingResponseError
-                    }
-                } ?: flowOf(SignalingServerIncomingMessage.UnknownError)
+                ?.mapNotNull { frameText ->
+                    val responseJsonString = frameText.readText()
+                    decodeAndParseResponseFromJson(responseJsonString)
+                }
+                ?: flowOf(SignalingServerIncomingMessage.UnknownError)
         } catch (exception: Exception) {
-            Log.d("WEB_SOCKET", "incoming message exception")
+            Log.e("WEB_SOCKET", "incoming message exception")
             exception.printStackTrace()
             flowOf(SignalingServerIncomingMessage.UnknownError)
         }
@@ -167,16 +177,8 @@ internal class WebSocketClientImpl(
         socket?.close()
     }
 
-    private fun decodeJsonFromString(response: String): SignalingServerResponse? {
-        return try {
-            Json.decodeFromString(response)
-        } catch (se: SerializationException) {
-            Log.e("WEB_SOCKET", "decoding signaling server response json failed: ${se.localizedMessage}")
-            null
-        }
-    }
-
-    private fun parseResponseFromJson(responseJson: SignalingServerResponse): SignalingServerIncomingMessage {
+    private fun decodeAndParseResponseFromJson(responseJsonString: String): SignalingServerIncomingMessage {
+        val responseJson = Json.decodeFromString<SignalingServerResponse>(responseJsonString)
         // based on the info of the response return the corresponding SignalingServerIncomingMessage data model
         // if info is remoteData then encapsulate the encrypted payload in the SignalingServerIncomingMessage data model
         return when (SignalingServerResponse.Info.from(responseJson.info)) {
@@ -209,20 +211,20 @@ internal class WebSocketClientImpl(
         responseJson: SignalingServerResponse
     ): SignalingServerIncomingMessage {
         // check if the request id and payload is not null, otherwise return an UnknownMessage
-        return if (responseJson.requestId != null && responseJson.data != null) {
+        if (responseJson.requestId != null && responseJson.data != null) {
             // check if client's connection id is equal to extension's connection id, and if not return an error
             if (connectionId != responseJson.data.connectionId) {
-                SignalingServerIncomingMessage.RemoteConnectionIdNotMatchedError
+                return SignalingServerIncomingMessage.RemoteConnectionIdNotMatchedError
             }
             // check if remote's source is "extension", and if not return an error
             if (responseJson.data.source != RpcMessage.ClientSource.BROWSER_EXTENSION.value) {
-                SignalingServerIncomingMessage.RemoteClientSourceError
+                return SignalingServerIncomingMessage.RemoteClientSourceError
             }
             // Check whether the method is "answer" or "iceCandidates" and build the
             // corresponding SignalingServerIncomingMessage data model.
             // We do not handle the "offer" because the wallet initiates the WebRTC communication,
             // therefore in case an "offer" is received we return a UnknownMessage.
-            when (RpcMessage.RpcMethod.from(responseJson.data.method)) {
+            return when (RpcMessage.RpcMethod.from(responseJson.data.method)) {
                 RpcMessage.RpcMethod.ANSWER -> {
                     decryptAndParseAnswerPayload(responseJson)
                 }
@@ -234,7 +236,7 @@ internal class WebSocketClientImpl(
                 }
             }
         } else {
-            SignalingServerIncomingMessage.UnknownMessage
+            return SignalingServerIncomingMessage.UnknownMessage
         }
     }
 
