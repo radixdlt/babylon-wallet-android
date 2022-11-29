@@ -14,8 +14,8 @@ dependencyResolutionManagement {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/radixdlt/maven-pkg")
             credentials {
-                username = System.getenv("GPR_USER")
-                password = System.getenv("GPR_TOKEN")
+                username = GPR_USER
+                password = GPR_TOKEN
             }
         }
         maven { url 'https://jitpack.io' }
