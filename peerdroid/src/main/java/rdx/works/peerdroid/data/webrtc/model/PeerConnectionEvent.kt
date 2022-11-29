@@ -29,5 +29,7 @@ internal sealed interface PeerConnectionEvent {
 
     object RenegotiationNeeded : PeerConnectionEvent
 
+    object Connected : PeerConnectionEvent
+
     object Disconnected : PeerConnectionEvent
 }

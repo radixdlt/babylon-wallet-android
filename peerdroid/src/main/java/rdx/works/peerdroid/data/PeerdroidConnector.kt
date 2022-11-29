@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.webrtc.DataChannel
@@ -22,7 +20,6 @@ import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.stateFlow
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonArrayPayload
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.OfferPayload.Companion.toPayload
@@ -30,6 +27,8 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.peerdroid.helpers.sha256
+import rdx.works.peerdroid.helpers.toHexString
 
 interface PeerdroidConnector {
 
@@ -54,9 +53,9 @@ interface PeerdroidConnector {
  * 10. WebSocketClient receives remote ice candidates from the extension
  * 11. WebRtcManager set remote ice candidates in its WebRTC
  *
- * At the time the PeerdroidConnector set the remote session description,
- * it also starts observing the state of the data channel.
- * Once the data channel is open the flow stops and the PeerdroidConnector returns the data channel.
+ * Once the peer connection state changes (observeWebRtcEvents) to CONNECTED
+ * it means the data channel is open therefor the PeerdroidConnector completes its flow
+ * and returns the data channel (dataChannelDeferred).
  */
 internal class PeerdroidConnectorImpl(
     private val webRtcManager: WebRtcManager,
@@ -69,10 +68,16 @@ internal class PeerdroidConnectorImpl(
     private var webSocketJob: Job? = null
     private var iceCandidatesJob: Job? = null
 
+    // used as parameter for the web socket connection
+    // and for as a label name of the WebRTC data channel
+    private lateinit var connectionId: String
+    private lateinit var encryptionKey: ByteArray
+
     // This CompletableDeferred will return the data channel.
     // if the whole flow is complete (step 11) and no errors occurred will return in a Result.Success
     // if any error occurred during the flow will return a Result.Error along with an error message.
     private lateinit var dataChannelDeferred: CompletableDeferred<Result<DataChannelWrapper>>
+    private lateinit var dataChannel: DataChannel // the data channel to return
 
     // here we collect the local ice candidates
     private val localIceCandidatesList = mutableListOf<PeerConnectionEvent.IceCandidate.Data>()
@@ -80,9 +85,13 @@ internal class PeerdroidConnectorImpl(
     override suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper> {
         Log.d("CONNECTOR_WEB_RTC", "initialize data channel")
         dataChannelDeferred = CompletableDeferred()
+        // get connection id from encryption key
+        this.connectionId = encryptionKey.sha256().toHexString()
+        this.encryptionKey = encryptionKey
 
         withContext(ioDispatcher) {
             val result = webSocketClient.initSession(
+                connectionId = connectionId,
                 encryptionKey = encryptionKey
             )
             when (result) {
@@ -99,27 +108,10 @@ internal class PeerdroidConnectorImpl(
         return dataChannelDeferred.await()
     }
 
-    // this will be observing the state of the data channel until is open: `takeWhile { isOpen`
-    // once it is open it will return the dataChannelDeferred with the data channel
-    private fun observeDataChannelStateUntilOpen(dataChannel: DataChannel) {
-        dataChannel.stateFlow()
-            .takeWhile { isOpen ->
-                dataChannelDeferred.complete(
-                    Result.Success(
-                        data = DataChannelWrapper(webRtcDataChannel = dataChannel)
-                    )
-                )
-                isOpen
-            }.onCompletion {
-                // unregister the observer because we will register
-                // a new one (eventFlow) for incoming messages and state changes
-                dataChannel.unregisterObserver()
-            }
-            .launchIn(applicationScope)
-    }
-
     private fun observeWebRtcEvents() {
-        webRtcJob = webRtcManager.createPeerConnection()
+        webRtcJob = webRtcManager
+            .createPeerConnection(connectionId)
+            .cancellable()
             .onEach { event ->
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
@@ -143,6 +135,13 @@ internal class PeerdroidConnectorImpl(
                     is PeerConnectionEvent.SignalingState -> {
                         Log.d("CONNECTOR_WEB_RTC", "signaling state changed: ${event.message}")
                     }
+                    PeerConnectionEvent.Connected -> {
+                        dataChannelDeferred.complete(
+                            Result.Success(
+                                data = DataChannelWrapper(webRtcDataChannel = dataChannel)
+                            )
+                        )
+                    }
                     PeerConnectionEvent.Disconnected -> {
                         Log.d("CONNECTOR_WEB_RTC", "signaling state changed: peer connection disconnected")
                     }
@@ -153,12 +152,13 @@ internal class PeerdroidConnectorImpl(
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
             .flowOn(ioDispatcher)
-            .cancellable()
             .launchIn(applicationScope)
     }
 
     private fun listenForIncomingMessagesFromSignalingServer() {
-        webSocketJob = webSocketClient.observeMessages()
+        webSocketJob = webSocketClient
+            .observeMessages()
+            .cancellable()
             .onEach { incomingMessage ->
                 when (incomingMessage) {
                     is SignalingServerIncomingMessage.BrowserExtensionAnswer -> {
@@ -180,7 +180,6 @@ internal class PeerdroidConnectorImpl(
                             "CONNECTOR_WEB_SOCKET",
                             "missing remote client error, request id: ${incomingMessage.requestId}"
                         )
-                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.RemoteClientDisconnected -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "remote client disconnected")
@@ -193,15 +192,14 @@ internal class PeerdroidConnectorImpl(
                     }
                     SignalingServerIncomingMessage.RemoteClientSourceError -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "remote client source error")
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.RemoteConnectionIdNotMatchedError -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "remote connection id not matched")
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.ValidationError -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "validation error")
-                    }
-                    SignalingServerIncomingMessage.ParsingResponseError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "parsing response error")
                     }
                     SignalingServerIncomingMessage.UnknownMessage -> {
                         Log.d("CONNECTOR_WEB_SOCKET", "unknown incoming message")
@@ -218,7 +216,6 @@ internal class PeerdroidConnectorImpl(
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
             .flowOn(ioDispatcher)
-            .cancellable()
             .launchIn(applicationScope)
     }
 
@@ -257,9 +254,7 @@ internal class PeerdroidConnectorImpl(
         return when (webRtcManager.setLocalDescription(localSessionDescription)) {
             is Result.Success -> {
                 Log.d("CONNECTOR_WEB_RTC", "local description set, now start observing the data channel state")
-                observeDataChannelStateUntilOpen(
-                    dataChannel = webRtcManager.getDataChannel()
-                )
+                dataChannel = webRtcManager.getDataChannel()
                 true
             }
             is Result.Error -> {
@@ -290,8 +285,8 @@ internal class PeerdroidConnectorImpl(
                 Log.d("CONNECTOR", "no ice candidates collected")
             }
 
-            ensureActive()
             Log.d("CONNECTOR_WEB_RTC", "send ${localIceCandidatesList.size} ice candidates to the extension")
+            ensureActive()
             webSocketClient.sendIceCandidatesMessage(localIceCandidatesList.toJsonArrayPayload())
         }
     }
@@ -299,7 +294,7 @@ internal class PeerdroidConnectorImpl(
     private suspend fun addRemoteIceCandidatesInWebRtc(
         browserExtensionIceCandidates: SignalingServerIncomingMessage.BrowserExtensionIceCandidates
     ) {
-        val remoteIceCandidates =  browserExtensionIceCandidates.remoteIceCandidates
+        val remoteIceCandidates = browserExtensionIceCandidates.remoteIceCandidates
         Log.d("CONNECTOR_WEB_RTC", "set ${remoteIceCandidates.size} remote ice candidates in local WebRTC")
         webRtcManager.addRemoteIceCandidates(
             remoteIceCandidates = remoteIceCandidates
@@ -311,8 +306,9 @@ internal class PeerdroidConnectorImpl(
             terminate()
             return
         }
-        webRtcJob?.cancel()
+        Log.d("CONNECTOR_WEB_RTC", "close")
         iceCandidatesJob?.cancel()
+        webRtcJob?.cancel()
     }
 
     private suspend fun terminatePeerdroidConnectorWithError() {
@@ -321,6 +317,7 @@ internal class PeerdroidConnectorImpl(
     }
 
     private suspend fun terminate() {
+        Log.d("CONNECTOR_WEB_RTC", "terminate")
         webRtcJob?.cancel()
         iceCandidatesJob?.cancel()
         webSocketClient.closeSession()

@@ -74,6 +74,15 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
                 trySend(PeerConnectionEvent.Disconnected)
             }
         }
+
+        // used only to check when the peer connection state is connected
+        // which means the data channel is open
+        override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+            super.onConnectionChange(newState)
+            if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                trySend(PeerConnectionEvent.Connected)
+            }
+        }
     }
 
     val peerConnection = createPeerConnection(rtcConfiguration, observer)

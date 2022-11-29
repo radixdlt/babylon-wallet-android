@@ -13,31 +13,6 @@ import rdx.works.peerdroid.data.PackageMessageDto.Companion.toChunk
 import rdx.works.peerdroid.data.PackageMessageDto.Companion.toMetadata
 import rdx.works.peerdroid.domain.BasePackage
 
-internal fun DataChannel.stateFlow(): Flow<Boolean> = callbackFlow {
-
-    val callback = object : DataChannel.Observer {
-        override fun onBufferedAmountChange(p0: Long) {}
-
-        override fun onStateChange() {
-            val state = this@stateFlow.state()
-            Log.d("DATA_CHANNEL", "data channel state is $state")
-            if (state == DataChannel.State.OPEN) {
-                trySend(true)
-            } else {
-                trySend(false)
-            }
-        }
-
-        override fun onMessage(p0: DataChannel.Buffer?) {}
-    }
-
-    registerObserver(callback)
-
-    awaitClose {
-        Log.d("DATA_CHANNEL", "stateFlow: awaitClose")
-    }
-}
-
 // Once the WebRTC flow is complete & data channel is open
 // then this will be used to observe the incoming messages & the state changes.
 internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
@@ -50,7 +25,6 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
         }
 
         override fun onStateChange() {
-            Log.d("DATA_CHANNEL", "state changed: ${this@eventFlow.state()}")
             val state = when (this@eventFlow.state()) {
                 DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.CONNECTING
                 DataChannel.State.OPEN -> DataChannelEvent.StateChanged.OPEN
