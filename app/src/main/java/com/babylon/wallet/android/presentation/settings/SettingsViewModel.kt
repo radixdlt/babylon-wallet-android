@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.ConnectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -24,6 +25,10 @@ class SettingsViewModel @Inject constructor(
     var settingsState by mutableStateOf(SettingsUiState())
         private set
 
+    // TODO we later store this in the profile
+    private var currentConnectionPassword: String = ""
+    private var listenIncomingMessagesJob: Job? = null
+
     init {
         settingsState = settingsState.copy(
             isLoading = false,
@@ -31,20 +36,26 @@ class SettingsViewModel @Inject constructor(
         )
     }
 
-    fun onConnectionClick(connectionId: String) {
+    fun onConnectionClick(connectionPassword: String) {
+        if (listenIncomingMessagesJob?.isActive == true) {
+            listenIncomingMessagesJob?.cancel()
+        }
+
         viewModelScope.launch {
             settingsState = settingsState.copy(isLoading = true)
-            val encryptionKey = parseEncryptionKeyFromConnectionId(
-                connectionId = connectionId
+            val encryptionKey = parseEncryptionKeyFromConnectionPassword(
+                connectionPassword = connectionPassword
             )
             if (encryptionKey != null) {
-                val result = peerdroidClient.connectToRemoteClientWithEncryptionKey(encryptionKey)
+                val result = peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)
                 settingsState = when (result) {
                     is Result.Success -> {
+                        currentConnectionPassword = connectionPassword
                         listenForIncomingRequests()
                         settingsState.copy(isConnectionOpen = true)
                     }
                     is Result.Error -> {
+                        retryConnection()
                         settingsState.copy(isConnectionOpen = false)
                     }
                 }
@@ -55,18 +66,29 @@ class SettingsViewModel @Inject constructor(
 
     private fun listenForIncomingRequests() {
         viewModelScope.launch {
-            peerdroidClient.listenForEvents().onEach { state ->
-                settingsState = settingsState.copy(
-                    isLoading = state == ConnectionState.CONNECTING,
-                    isConnectionOpen = state == ConnectionState.OPEN
-                )
-            }.collect()
+            peerdroidClient.listenForEvents()
+                .onEach { state ->
+                    Timber.d("state: $state")
+                    settingsState = settingsState.copy(
+                        isLoading = state == ConnectionState.CONNECTING,
+                        isConnectionOpen = state == ConnectionState.OPEN
+                    )
+                    if (state == ConnectionState.CLOSE) {
+                        retryConnection()
+                    }
+                }.collect()
         }
     }
 
-    private fun parseEncryptionKeyFromConnectionId(connectionId: String): ByteArray? {
+    private suspend fun retryConnection() {
+        Timber.d("retry connection")
+        peerdroidClient.close()
+        onConnectionClick(currentConnectionPassword)
+    }
+
+    private fun parseEncryptionKeyFromConnectionPassword(connectionPassword: String): ByteArray? {
         return try {
-            connectionId.decodeHex().toByteArray()
+            connectionPassword.decodeHex().toByteArray()
         } catch (iae: IllegalArgumentException) {
             Timber.e("failed to parse encryption key from connection id: ${iae.localizedMessage}")
             null
