@@ -65,9 +65,9 @@ fun WalletScreen(
 
 @Composable
 private fun WalletScreenContent(
-    state: WalletUiState, -> Unit,
+    state: WalletUiState,
     onMenuClick: () -> Unit,
-    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int),
+    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
