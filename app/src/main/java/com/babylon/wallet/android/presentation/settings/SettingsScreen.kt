@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -45,8 +46,9 @@ private fun SettingsContent(
 ) {
     Column(
         modifier = modifier
+            .systemBarsPadding()
             .fillMaxSize()
-            .padding(12.dp),
+            .padding(horizontal = 12.dp),
         horizontalAlignment = Alignment.Start
     ) {
         Text(
