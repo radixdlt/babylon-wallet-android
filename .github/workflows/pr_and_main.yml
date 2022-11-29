@@ -17,12 +17,12 @@ jobs:
 
       - name: Access GPR_USER
         env:
-          APOD_API_KEY: ${{ secrets.GPR_USER }}
-        run: echo GPR_USER=\"\n$GPR_USER\" >> ./gradle.properties
+          GPR_USER: ${{ secrets.GPR_USER }}
+        run: echo GPR_USER=\"$GPR_USER\" >> ./gradle.properties
 
       - name: Access GPR_TOKEN
         env:
-          APOD_API_KEY: ${{ secrets.GPR_TOKEN }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
         run: echo GPR_TOKEN=\"$GPR_TOKEN\" >> ./gradle.properties
 
       - name: Upload Gradle.properties
