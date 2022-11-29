@@ -93,7 +93,10 @@ jobs:
 
       - name: "Run detekt"
         run: |
-          ./gradlew detektMain 
+          ./gradlew detektMain
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: "Run jacoco"
         run: |
@@ -123,6 +126,9 @@ jobs:
       - name: "Build"
         run: |
           ./gradlew assembleDebug
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: Upload APK from PR
         if: ${{ github.event_name == 'pull_request' }}
