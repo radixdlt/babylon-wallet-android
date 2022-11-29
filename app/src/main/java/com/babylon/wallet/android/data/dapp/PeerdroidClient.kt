@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.ConnectionState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
@@ -9,10 +10,11 @@ import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.helpers.Result
+import timber.log.Timber
 
 interface PeerdroidClient {
 
-    suspend fun connectToRemoteClientWithEncryptionKey(encryptionKey: ByteArray): Result<Unit>
+    suspend fun connectToRemotePeerWithEncryptionKey(encryptionKey: ByteArray): Result<Unit>
 
     suspend fun sendMessage(message: String): Result<Unit>
 
@@ -32,10 +34,9 @@ class PeerdroidClientImpl(
     override val isAlreadyOpen: Boolean
         get() = dataChannel?.state == DataChannelEvent.StateChanged.OPEN
 
-    override suspend fun connectToRemoteClientWithEncryptionKey(
+    override suspend fun connectToRemotePeerWithEncryptionKey(
         encryptionKey: ByteArray
     ): Result<Unit> {
-
         val result = peerdroidConnector.createDataChannel(
             encryptionKey = encryptionKey
         )
@@ -45,6 +46,7 @@ class PeerdroidClientImpl(
                 Result.Success(Unit)
             }
             is Result.Error -> {
+                Timber.d("data channel failed to initialize")
                 Result.Error("data channel failed to initialize")
             }
         }
@@ -59,6 +61,15 @@ class PeerdroidClientImpl(
     override fun listenForEvents(): Flow<ConnectionState> {
         return dataChannel
             ?.dataChannelEvents
+            ?.onStart {
+                // we don't know when the collection will start
+                // so check if the data channel is already closed
+                if (dataChannel?.state == DataChannelEvent.StateChanged.CLOSING
+                    || dataChannel?.state == DataChannelEvent.StateChanged.CLOSE
+                ) {
+                    emit(DataChannelEvent.StateChanged.CLOSE)
+                }
+            }
             ?.filterIsInstance<DataChannelEvent.StateChanged>()
             ?.map { stateChanged ->
                 when (stateChanged) {
@@ -69,7 +80,7 @@ class PeerdroidClientImpl(
                         ConnectionState.OPEN
                     }
                     DataChannelEvent.StateChanged.CLOSING -> {
-                        ConnectionState.CLOSE
+                        ConnectionState.CLOSING
                     }
                     DataChannelEvent.StateChanged.CLOSE -> {
                         ConnectionState.CLOSE
