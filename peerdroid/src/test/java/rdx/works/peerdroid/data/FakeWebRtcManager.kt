@@ -19,12 +19,14 @@ internal class FakeWebRtcManager @Inject constructor(
     private val withError: Boolean = false
 ) : WebRtcManager {
 
-    override fun createPeerConnection(): Flow<PeerConnectionEvent> {
+    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> {
         return flow {
             emit(PeerConnectionEvent.RenegotiationNeeded)
             delay(100)
-            emit(PeerConnectionEvent.IceGatheringChange(
-                state = PeerConnectionEvent.IceGatheringChange.State.GATHERING)
+            emit(
+                PeerConnectionEvent.IceGatheringChange(
+                    state = PeerConnectionEvent.IceGatheringChange.State.GATHERING
+                )
             )
             delay(100)
             emit(
