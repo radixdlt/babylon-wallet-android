@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,17 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,20 +20,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.RadixBackground
-import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
-import com.babylon.wallet.android.designsystem.theme.RadixGrey2
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextField
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.White
 
 @Composable
 fun CreateAccountScreen(
@@ -60,7 +47,8 @@ fun CreateAccountScreen(
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
-                imageVector = Icons.Filled.Clear,
+                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                tint = RadixTheme.colors.gray1,
                 contentDescription = "navigate back"
             )
         }
@@ -81,66 +69,42 @@ fun CreateAccountScreen(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.create_new_account),
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold
+                style = RadixTheme.typography.header,
+                color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = R.string.account_creation_text),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Normal
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.height(30.dp))
             Column(modifier = Modifier.fillMaxWidth()) {
-                TextField(
-                    value = accountName,
-                    onValueChange = {
+                RadixTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    onValueChanged = {
                         buttonEnabled = it.isNotEmpty()
                         accountName = it.take(maxLength)
                     },
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.Black, shape = RadixTheme.shapes.roundedRectXSmall)
-                        .fillMaxWidth(),
-                    label = { Text(stringResource(id = R.string.account_name)) },
-                    shape = RoundedCornerShape(4.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        backgroundColor = Color.LightGray,
-                    )
+                    value = accountName,
+                    hint = stringResource(id = R.string.account_name)
                 )
                 Text(
                     text = stringResource(id = R.string.this_can_be_changed_any_time),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = RadixGrey2
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             Spacer(Modifier.weight(1f))
-            Button(
+            RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
                 // TODO Im gonna revist this to handle that from viewmodel nicely.
                 //  In the meantime, we dont have account generation so i put hardcoded stuff here
                 onClick = { onContinueClick("di20ejdnd2e20e2", accountName) },
                 enabled = buttonEnabled,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = RadixButtonBackground,
-                    disabledBackgroundColor = RadixBackground
-                )
-            ) {
-                Text(
-                    color = White,
-                    text = stringResource(id = R.string.continue_button_title),
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    )
-                )
-            }
+                text = stringResource(id = R.string.continue_button_title)
+            )
         }
     }
 }
@@ -149,8 +113,10 @@ fun CreateAccountScreen(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountPreview() {
-    CreateAccountScreen(
-        onBackClick = {},
-        onContinueClick = { _, _ -> }
-    )
+    BabylonWalletTheme {
+        CreateAccountScreen(
+            onBackClick = {},
+            onContinueClick = { _, _ -> }
+        )
+    }
 }

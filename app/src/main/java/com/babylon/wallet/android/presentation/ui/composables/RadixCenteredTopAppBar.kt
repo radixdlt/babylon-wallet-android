@@ -22,7 +22,7 @@ fun RadixCenteredTopAppBar(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentColor: Color = RadixTheme.colors.white,
-    actions: @Composable() (RowScope.() -> Unit) = {},
+    actions: @Composable RowScope.() -> Unit = {},
     backIconType: BackIconType = BackIconType.Back
 ) {
     CenterAlignedTopAppBar(
