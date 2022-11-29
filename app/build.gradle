@@ -14,12 +14,12 @@ apply from: "$rootDir/config/jacoco.gradle"
 import io.gitlab.arturbosch.detekt.Detekt
 
 android {
-    compileSdk 33
+    compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
         applicationId "com.babylon.wallet.android"
         minSdk 27
-        targetSdk 33
+        targetSdk rootProject.ext.targetSdk
         versionCode 1
         versionName "1.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
@@ -51,7 +51,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion "1.3.2"
+        kotlinCompilerExtensionVersion rootProject.ext.kotlinCompilerExtensionVersion
     }
     packagingOptions {
         resources {
@@ -96,6 +96,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-compose:2.5.3'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.compose.material3:material3:1.0.1'
+    implementation 'androidx.compose.material3:material3-window-size-class:1.1.0-alpha02'
 
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
@@ -103,6 +104,7 @@ dependencies {
     implementation 'com.google.accompanist:accompanist-swiperefresh:0.27.0'
     implementation 'com.google.accompanist:accompanist-pager:0.27.0'
     implementation 'com.google.accompanist:accompanist-pager-indicators:0.27.0'
+    implementation 'com.google.accompanist:accompanist-drawablepainter:0.27.0'
 
     // Datastore
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
@@ -134,6 +136,8 @@ dependencies {
     // Peerdroid
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')
+
+    implementation project(path: ':designsystem')
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'

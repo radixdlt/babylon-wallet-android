@@ -21,7 +21,7 @@ sealed class Screen(override val route: String) : Destination {
     object DAppChooseAccountDestination : Screen("dapp_choose_account_route")
     object DAppCompleteDestination : Screen("dapp_completion_route")
 
-    fun routeWithArgs(vararg args: String): String {
+    fun routeWithArgs(vararg args: Any): String {
         return buildString {
             append(route)
             args.forEach { arg ->
@@ -33,6 +33,7 @@ sealed class Screen(override val route: String) : Destination {
     companion object {
         const val ARG_ACCOUNT_ID = "arg_account_id"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
+        const val ARG_GRADIENT_INDEX = "arg_gradient_index"
         const val ARG_DAPP_NAME = "arg_dapp_name"
     }
 }

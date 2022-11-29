@@ -57,7 +57,7 @@ class AccountViewModelTest {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.first(), AccountUiState.Loading)
+        Assert.assertEquals(event.first().isLoading, true)
     }
 
     @Test
@@ -73,8 +73,7 @@ class AccountViewModelTest {
 
         // then
         with (event.last()) {
-            assert(this is AccountUiState.Loaded)
-            this as AccountUiState.Loaded
+            assert(!this.isLoading)
             assert(accountAddress == sampleData.address)
             assert(xrdToken != null)
             assert(sampleData.fungibleTokens.size == 3)

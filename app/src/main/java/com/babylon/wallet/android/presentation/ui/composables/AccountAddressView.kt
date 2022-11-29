@@ -1,41 +1,41 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
 fun AccountAddressView(
     address: String,
     onCopyAccountAddressClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentColor: Color = RadixTheme.colors.defaultText
 ) {
-    Row(modifier = modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
         ResponsiveText(
             text = address,
-            style = MaterialTheme.typography.h6,
+            style = RadixTheme.typography.body2HighImportance,
+            color = contentColor,
             maxLines = 1
         )
         IconButton(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .size(14.dp),
+            modifier = Modifier.size(14.dp),
             onClick = {
                 onCopyAccountAddressClick(address)
             },
         ) {
             Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_copy),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
+                tint = contentColor,
                 contentDescription = "copy account address"
             )
         }

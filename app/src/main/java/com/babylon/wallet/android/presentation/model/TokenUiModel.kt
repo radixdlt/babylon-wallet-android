@@ -10,10 +10,12 @@ import java.util.Locale
 data class TokenUiModel(
     val id: String,
     val name: String?,
+    val description: String?,
     val symbol: String?, // short capitalized name
     val tokenQuantity: BigDecimal, // the amount of the token held
     val tokenValue: String?, // the current value in currency the user has selected for the wallet
-    val iconUrl: String?
+    val iconUrl: String?,
+    val metadata: Map<String, String> = emptyMap()
 ) {
     /**
      * The title to show in the token list item of the Account screen.
@@ -86,6 +88,8 @@ fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
         symbol = token.getTokenSymbol(),
         tokenQuantity = amount,
         tokenValue = "",
-        iconUrl = token.getImageUrl()
+        iconUrl = token.getImageUrl(),
+        description = token.getTokenDescription(),
+        metadata = token.getMetadataWithoutDescription()
     )
 }

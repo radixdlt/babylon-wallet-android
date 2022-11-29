@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -30,10 +30,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.RadixBackground
+import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
-import com.babylon.wallet.android.presentation.ui.theme.RadixButtonBackground
-import com.babylon.wallet.android.presentation.ui.theme.White
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -46,12 +47,13 @@ fun CreateAccountConfirmationScreen(
 
     Column(
         modifier = modifier
+            .systemBarsPadding()
             .fillMaxSize()
-            .padding(horizontal = 30.dp, vertical = 16.dp)
+            .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Image(
             painter = painterResource(R.drawable.img_account_creation),
             contentDescription = "account_creation_image"
@@ -62,7 +64,7 @@ fun CreateAccountConfirmationScreen(
             fontSize = 24.sp,
             fontWeight = FontWeight.SemiBold
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             text = stringResource(id = R.string.you_created_account),
             textAlign = TextAlign.Center,
@@ -72,7 +74,7 @@ fun CreateAccountConfirmationScreen(
         Spacer(modifier = Modifier.height(60.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
+            shape = RadixTheme.shapes.roundedRectSmall,
             // TODO this is different gray so will have to be unified, marking as TODO
             backgroundColor = Color(0xFFD9D9D9),
         ) {
@@ -88,7 +90,7 @@ fun CreateAccountConfirmationScreen(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 AccountAddressView(
                     address = accountState.second,
                     onCopyAccountAddressClick = {}
@@ -97,7 +99,7 @@ fun CreateAccountConfirmationScreen(
         }
         Spacer(modifier = Modifier.height(22.dp))
         Text(
-            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp),
+            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.account_created_info),
             textAlign = TextAlign.Center,
             fontSize = 18.sp,
@@ -115,7 +117,10 @@ fun CreateAccountConfirmationScreen(
             Text(
                 color = White,
                 text = stringResource(id = R.string.go_to_home),
-                modifier = Modifier.padding(26.dp, 8.dp, 26.dp, 8.dp)
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                )
             )
         }
     }

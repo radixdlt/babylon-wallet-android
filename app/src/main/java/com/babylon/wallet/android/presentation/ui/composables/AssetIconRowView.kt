@@ -5,20 +5,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.TokenMetadataConstants
-import com.babylon.wallet.android.presentation.ui.theme.BabylonWalletTheme
-import com.babylon.wallet.android.presentation.ui.theme.RadixBackground
 
 private const val MAX_ASSETS_DISPLAYED = 10
 private const val RELATIVE_PADDING = 0.7f
@@ -34,30 +34,43 @@ fun AssetIconRowView(
     Box(
         modifier = modifier.fillMaxWidth()
     ) {
-
         var paddingStart = 0f
+        val overflowingAssetsCount = assets.size - MAX_ASSETS_DISPLAYED
         for (i in assets.indices) {
-            Box(
-                modifier = Modifier
-                    .offset(paddingStart.dp, 0.dp)
-                    .background(RadixBackground, shape = CircleShape)
-                    .defaultMinSize(circleSize.dp, circleSize.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                val text = if (i >= MAX_ASSETS_DISPLAYED)
-                    "+${assets.size - MAX_ASSETS_DISPLAYED}"
-                else
-                    assets[i].token.metadata[TokenMetadataConstants.KEY_SYMBOL]
-                Text(
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = fontSize.sp,
-                    text = text.orEmpty(), // TODO
-                )
+            if (i >= MAX_ASSETS_DISPLAYED) {
+                Box(
+                    modifier = Modifier
+                        .zIndex(assets.size - i.toFloat())
+                        .offset(paddingStart.dp - (circleSize * RELATIVE_PADDING).dp, 0.dp)
+                        .background(RadixTheme.colors.white.copy(alpha = 0.3f), shape = RadixTheme.shapes.circle)
+                        .defaultMinSize((circleSize * 1.8).dp, circleSize.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier.padding(start = (circleSize * 0.8).dp),
+                        text = "+$overflowingAssetsCount",
+                        style = RadixTheme.typography.body2Regular.copy(fontSize = fontSize.sp),
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+                break
+            } else {
+                Box(
+                    modifier = Modifier
+                        .zIndex(assets.size - i.toFloat())
+                        .offset(paddingStart.dp, 0.dp)
+                        .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+                        .defaultMinSize(circleSize.dp, circleSize.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = assets[i].token.metadata[TokenMetadataConstants.KEY_SYMBOL].orEmpty(),
+                        style = RadixTheme.typography.body2Regular.copy(fontSize = fontSize.sp),
+                        color = RadixTheme.colors.gray1
+                    )
+                }
             }
             paddingStart += circleSize * RELATIVE_PADDING
-            if (i >= MAX_ASSETS_DISPLAYED) {
-                break
-            }
         }
     }
 }
@@ -69,6 +82,19 @@ fun AssetIconRowPreview() {
         with(SampleDataProvider()) {
             AssetIconRowView(
                 assets = sampleFungibleTokens()
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AssetIconRowOverflowPreview() {
+    BabylonWalletTheme {
+        with(SampleDataProvider()) {
+            AssetIconRowView(
+                assets = sampleFungibleTokens() +
+                    sampleFungibleTokens() + sampleFungibleTokens() + sampleFungibleTokens()
             )
         }
     }

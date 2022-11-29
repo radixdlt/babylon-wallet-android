@@ -25,4 +25,5 @@ rootProject.name = "BabylonWallet"
 include ':app'
 include ':peerdroid'
 include ':webrtc-library'
+include ':designsystem'
 include ':profile'

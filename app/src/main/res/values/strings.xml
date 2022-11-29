@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">BabylonWallet</string>
-    <string name="home_toolbar_title">Radar Wallet</string>
-    <string name="home_welcome_text">Welcome, here are all your accounts on the Radar Network</string>
+    <string name="home_toolbar_title">Radix Wallet</string>
+    <string name="home_welcome_text">Welcome, here are all your\naccounts on the Radix Network</string>
     <string name="create_new_account">Create New Account</string>
     <string name="visit_the_radar_hub">Visit the Radar Hub ></string>
     <string name="radar_network_text">Ready to get started using the Radar Network and your Wallet?</string>
@@ -48,4 +48,6 @@
     <string name="dapp_successful_body">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
     <string name="dapp_successful_button_title">Go to %s</string>
     <string name="dapp_verification_error_title">DApp error</string>
+    <string name="empty_content_description" />
+    <string name="history">History</string>
 </resources>
