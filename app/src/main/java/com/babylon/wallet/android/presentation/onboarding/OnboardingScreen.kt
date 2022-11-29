@@ -22,6 +22,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -139,10 +140,15 @@ private fun OnboardingScreenContent(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // TODO this definitely looks like potential bug. This code is called multiple times
-            LocalContext.current.findFragmentActivity()?.let { activity ->
-                activity.biometricAuthenticate(authenticateWithBiometric) { authenticatedSuccessfully ->
-                    onUserAuthenticated(authenticatedSuccessfully)
+            // TODO I think this could be triggered outside of composable, maybe in main activity or via view model
+            val context = LocalContext.current
+            LaunchedEffect(authenticateWithBiometric) {
+                if (authenticateWithBiometric) {
+                    context.findFragmentActivity()?.let { activity ->
+                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                            onUserAuthenticated(authenticatedSuccessfully)
+                        }
+                    }
                 }
             }
 
