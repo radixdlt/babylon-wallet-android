@@ -11,6 +11,7 @@ import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
+import javax.inject.Inject
 
 interface PeerdroidClient {
 
@@ -25,7 +26,7 @@ interface PeerdroidClient {
     val isAlreadyOpen: Boolean
 }
 
-class PeerdroidClientImpl(
+class PeerdroidClientImpl @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector
 ) : PeerdroidClient {
 

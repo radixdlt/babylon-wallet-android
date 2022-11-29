@@ -49,7 +49,7 @@ internal interface WebRtcManager {
 }
 
 /*
- * WebRtcManager flow in summary:
+ * WebRtcManager flow in summary (the first three steps must be in this order):
  * 1. create peer connection
  * 2. create data channel
  * 3. create offer

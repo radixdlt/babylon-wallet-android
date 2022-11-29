@@ -71,13 +71,11 @@ internal class PeerdroidConnectorImpl(
     // used as parameter for the web socket connection
     // and for as a label name of the WebRTC data channel
     private lateinit var connectionId: String
-    private lateinit var encryptionKey: ByteArray
 
     // This CompletableDeferred will return the data channel.
     // if the whole flow is complete (step 11) and no errors occurred will return in a Result.Success
     // if any error occurred during the flow will return a Result.Error along with an error message.
     private lateinit var dataChannelDeferred: CompletableDeferred<Result<DataChannelWrapper>>
-    private lateinit var dataChannel: DataChannel // the data channel to return
 
     // here we collect the local ice candidates
     private val localIceCandidatesList = mutableListOf<PeerConnectionEvent.IceCandidate.Data>()
@@ -87,7 +85,6 @@ internal class PeerdroidConnectorImpl(
         dataChannelDeferred = CompletableDeferred()
         // get connection id from encryption key
         this.connectionId = encryptionKey.sha256().toHexString()
-        this.encryptionKey = encryptionKey
 
         withContext(ioDispatcher) {
             val result = webSocketClient.initSession(
@@ -138,7 +135,7 @@ internal class PeerdroidConnectorImpl(
                     PeerConnectionEvent.Connected -> {
                         dataChannelDeferred.complete(
                             Result.Success(
-                                data = DataChannelWrapper(webRtcDataChannel = dataChannel)
+                                data = DataChannelWrapper(webRtcDataChannel = webRtcManager.getDataChannel())
                             )
                         )
                     }
@@ -254,7 +251,6 @@ internal class PeerdroidConnectorImpl(
         return when (webRtcManager.setLocalDescription(localSessionDescription)) {
             is Result.Success -> {
                 Log.d("CONNECTOR_WEB_RTC", "local description set, now start observing the data channel state")
-                dataChannel = webRtcManager.getDataChannel()
                 true
             }
             is Result.Error -> {
@@ -288,6 +284,7 @@ internal class PeerdroidConnectorImpl(
             Log.d("CONNECTOR_WEB_RTC", "send ${localIceCandidatesList.size} ice candidates to the extension")
             ensureActive()
             webSocketClient.sendIceCandidatesMessage(localIceCandidatesList.toJsonArrayPayload())
+            localIceCandidatesList.clear()
         }
     }
 
@@ -309,6 +306,7 @@ internal class PeerdroidConnectorImpl(
         Log.d("CONNECTOR_WEB_RTC", "close")
         iceCandidatesJob?.cancel()
         webRtcJob?.cancel()
+        localIceCandidatesList.clear()
     }
 
     private suspend fun terminatePeerdroidConnectorWithError() {
