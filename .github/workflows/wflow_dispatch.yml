@@ -11,6 +11,7 @@ on:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
         default: ''
+        type: choice
         options:
           - "internal"
 
