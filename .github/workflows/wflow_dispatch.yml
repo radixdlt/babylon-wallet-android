@@ -10,10 +10,11 @@ on:
       groups:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
-        default: ''
+        default: 'no'
         type: choice
         options:
           - "internal"
+          - "no"
 
 jobs:
 
@@ -47,7 +48,12 @@ jobs:
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - name: Build and distribute
-        run: bundle exec fastlane manual
+        run:
+          if [ "$GROUPS" == "no" ]; then
+            GROUPS=''
+          fi
+          env
+          bundle exec fastlane manual
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
