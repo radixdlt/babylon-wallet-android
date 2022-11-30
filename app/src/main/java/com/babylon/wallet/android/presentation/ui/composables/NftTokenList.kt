@@ -1,5 +1,10 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -19,6 +24,7 @@ import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.account.AssetEmptyState
 import com.babylon.wallet.android.presentation.model.NftUiModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Suppress("MutableParams", "UnstableCollections")
 @Composable
 fun NftTokenList(
@@ -51,11 +57,15 @@ fun NftTokenList(
                         collapsedState[i] = !collapsed
                     }
                 }
-                if (!collapsed) {
-                    items(
-                        dataItem.nft,
-                        key = { nft -> nft.id }
-                    ) { item ->
+                items(
+                    dataItem.nft,
+                    key = { nft -> nft.id }
+                ) { item ->
+                    AnimatedVisibility(
+                        visible = !collapsed,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(animationSpec = tween(150))
+                    ) {
                         var bottomCornersRounded = false
                         if (dataItem.nft.last() == item) {
                             bottomCornersRounded = true

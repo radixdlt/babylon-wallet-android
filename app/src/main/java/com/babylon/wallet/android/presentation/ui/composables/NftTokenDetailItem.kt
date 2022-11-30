@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.SpaceBetween
@@ -42,7 +41,6 @@ fun NftTokenDetailItem(
     val bottomCorners by animateDpAsState(targetValue = if (bottomCornersRounded) 12.dp else 0.dp)
     Card(
         modifier = modifier
-            .animateContentSize()
             .fillMaxWidth()
             .padding(20.dp, 0.dp, 20.dp, 1.dp),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
