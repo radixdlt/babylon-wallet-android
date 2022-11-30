@@ -1,6 +1,5 @@
 package rdx.works.peerdroid.data.webrtc
 
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import org.webrtc.DataChannel
 import org.webrtc.MediaConstraints
@@ -16,6 +15,7 @@ import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingO
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingLocalDescription
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingRemoteDescription
 import rdx.works.peerdroid.helpers.Result
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +35,7 @@ private const val TURN_SERVER_PASSWORD = "password"
 
 internal interface WebRtcManager {
 
-    fun createPeerConnection(): Flow<PeerConnectionEvent>
+    fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent>
 
     suspend fun createOffer(): Result<SessionDescriptionValue>
 
@@ -49,7 +49,7 @@ internal interface WebRtcManager {
 }
 
 /*
- * WebRtcManager flow in summary:
+ * WebRtcManager flow in summary (the first three steps must be in this order):
  * 1. create peer connection
  * 2. create data channel
  * 3. create offer
@@ -103,28 +103,28 @@ internal class WebRtcManagerImpl @Inject constructor(
     }
 
     init {
-        Log.d("WEB_RTC", "initialize WebRTC manager")
+        Timber.d("initialize WebRTC manager")
     }
 
-    override fun createPeerConnection(): Flow<PeerConnectionEvent> =
+    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> =
         peerConnectionFactory.createPeerConnectionFlow(
             rtcConfiguration = rtcConfiguration,
             initializePeerConnection = { peerConnection ->
                 initializePeerConnection(peerConnection)
             },
-            createRtcDataChannel = ::createRtcDataChannel
+            createRtcDataChannel = { createRtcDataChannel(connectionId) }
         )
 
     private fun initializePeerConnection(peerConnection: PeerConnection?) {
         peerConnection?.let {
             this.peerConnection = it
-            Log.d("WEB_RTC", "created a peer connection")
-        } ?: Log.e("WEB_RTC", "failed to create a peer connection")
+            Timber.d("created a peer connection")
+        } ?: Timber.e("failed to create a peer connection")
     }
 
-    private fun createRtcDataChannel() {
-        dataChannel = peerConnection.createDataChannel("peerdroid data channel", dataChannelInit)
-        Log.d("WEB_RTC", "created a RTC data channel")
+    private fun createRtcDataChannel(connectionId: String) {
+        dataChannel = peerConnection.createDataChannel(connectionId, dataChannelInit)
+        Timber.d("created a RTC data channel")
     }
 
     override suspend fun createOffer(): Result<SessionDescriptionValue> =
@@ -152,10 +152,10 @@ internal class WebRtcManagerImpl @Inject constructor(
         }
 
         return if (areAllIceCandidatesAdded) {
-            Log.d("WEB_RTC", "added successfully ice candidates")
+            Timber.d("added successfully ice candidates")
             Result.Success(Unit)
         } else {
-            Log.d("WEB_RTC", "failed to add all ice candidates")
+            Timber.d("failed to add all ice candidates")
             Result.Error("failed to add all ice candidates")
         }
     }

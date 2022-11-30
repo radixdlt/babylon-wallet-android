@@ -1,6 +1,5 @@
 package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 
-import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +17,7 @@ import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.messagechunking.assembleChunks
 import rdx.works.peerdroid.messagechunking.splitMessage
 import rdx.works.peerdroid.messagechunking.verifyAssembledMessage
+import timber.log.Timber
 import java.nio.ByteBuffer
 
 @JvmInline
@@ -50,13 +50,13 @@ value class DataChannelWrapper(
             }
             Result.Success(Unit)
         } catch (iobe: IndexOutOfBoundsException) {
-            Log.e("DATA_CHANNEL", "failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
+            Timber.d("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
             Result.Error("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Log.e("DATA_CHANNEL", "failed to convert and send the message: ${exception.localizedMessage}")
+            Timber.d("failed to convert and send the message: ${exception.localizedMessage}")
             Result.Error("failed to send message with exception: ${exception.localizedMessage}")
         }
     }

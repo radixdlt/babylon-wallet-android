@@ -43,6 +43,7 @@ import java.util.Locale
 @Composable
 fun WalletScreen(
     viewModel: WalletViewModel,
+    onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit = { _, _, _ -> },
     onAccountCreationClick: () -> Unit
@@ -51,6 +52,7 @@ fun WalletScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     WalletScreenContent(
         state = state,
+        onMenuClick = onMenuClick,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         isRefreshing = isRefreshing,
@@ -64,6 +66,7 @@ fun WalletScreen(
 @Composable
 private fun WalletScreenContent(
     state: WalletUiState,
+    onMenuClick: () -> Unit,
     onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
@@ -77,8 +80,9 @@ private fun WalletScreenContent(
         modifier = modifier,
         topBar = {
             RDXAppBar(
-                stringResource(id = R.string.home_toolbar_title)
-            ) {}
+                toolbarTitle = stringResource(id = R.string.home_toolbar_title),
+                onMenuClick = onMenuClick
+            )
         },
         contentColor = RadixTheme.colors.defaultText,
         backgroundColor = RadixTheme.colors.defaultBackground
@@ -223,6 +227,7 @@ fun WalletContentPreview() {
                     ),
                     resources = listOf(sampleAccountResource(), sampleAccountResource())
                 ),
+                onMenuClick = {},
                 onAccountClick = { _, _, _ -> },
                 onAccountCreationClick = { },
                 isRefreshing = false,
