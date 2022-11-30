@@ -104,6 +104,7 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
     val accountAddress: String = "",
+    val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,
     val assetDetails: AssetUiModel? = null,
     val selectedNft: NftCollectionUiModel.NftItemUiModel? = null,

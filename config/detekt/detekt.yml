@@ -903,7 +903,7 @@ TwitterCompose:
   ComposableNaming:
     active: true
   ComposableParamOrder:
-    active: true
+    active: false
   PreviewPublic:
     active: true
   RememberMissing:

@@ -84,7 +84,11 @@ fun NavigationHost(
                 navController.navigateUp()
             }
         }
-        composable(route = Screen.CreateAccountDestination.route) {
+        composable(route = Screen.CreateAccountDestination.route, enterTransition = {
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+        }, exitTransition = {
+                slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            }) {
             CreateAccountScreen(
                 onBackClick = { navController.navigateUp() },
                 onContinueClick = { accountId, accountName ->

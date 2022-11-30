@@ -10,6 +10,8 @@ import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.onValue
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -23,10 +25,7 @@ class WalletViewModel @Inject constructor(
     private val requestAccountsUseCase: RequestAccountResourcesUseCase
 ) : ViewModel() {
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing.asStateFlow()
-
-    private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState.Loading)
+    private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState())
     val walletUiState = _walletUiState.asStateFlow()
 
     init {
@@ -40,19 +39,16 @@ class WalletViewModel @Inject constructor(
         val wallet = mainViewRepository.getWallet()
         callResult.onValue { accountResources ->
             _walletUiState.update { state ->
-                WalletUiState.Loaded(
-                    wallet = wallet,
-                    resources = listOf(accountResources)
-                )
+                state.copy(wallet = wallet, resources = persistentListOf(accountResources), isLoading = false)
             }
         }
     }
 
     fun refresh() {
         viewModelScope.launch {
-            _isRefreshing.emit(true)
+            _walletUiState.update { it.copy(isRefreshing = true) }
             loadResourceData()
-            _isRefreshing.emit(false)
+            _walletUiState.update { it.copy(isRefreshing = false) }
         }
     }
 
@@ -62,14 +58,12 @@ class WalletViewModel @Inject constructor(
     }
 }
 
-sealed interface WalletUiState {
-    object Loading : WalletUiState
-
-    data class Loaded(
-        val wallet: WalletData,
-        val resources: List<AccountResources> = emptyList()
-    ) : WalletUiState
-}
+data class WalletUiState(
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+    val wallet: WalletData? = null,
+    val resources: ImmutableList<AccountResources> = persistentListOf()
+)
 
 data class WalletData(
     val currency: String,

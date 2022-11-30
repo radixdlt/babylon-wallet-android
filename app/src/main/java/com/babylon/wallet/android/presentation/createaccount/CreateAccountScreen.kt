@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,7 +43,7 @@ fun CreateAccountScreen(
 
     Column(
         modifier = modifier
-            .systemBarsPadding()
+            .systemBarsPadding().background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
         IconButton(onClick = onBackClick) {

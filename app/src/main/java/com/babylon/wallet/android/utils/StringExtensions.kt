@@ -8,7 +8,7 @@ fun String.truncatedHash(): String {
         return this
     }
     val first = substring(IntRange(0, 3))
-    val last = substring(IntRange(length - 9, length - 1))
+    val last = substring(IntRange(length - 6, length - 1))
     return "$first...$last"
 }
 

@@ -1,6 +1,10 @@
 package com.babylon.wallet.android.presentation.account
 
 import android.graphics.drawable.ColorDrawable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -48,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -68,6 +74,8 @@ import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NftTokenList
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
+import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -76,6 +84,7 @@ import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
+import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -113,6 +122,7 @@ fun AccountScreen(
         assetDetails = state.assetDetails,
         onNftClick = viewModel::onNonFungibleTokenClick,
         selectedNft = state.selectedNft,
+        walletFiatBalance = state.walletFiatBalance,
         modifier = modifier
     )
 }
@@ -138,6 +148,7 @@ private fun AccountScreenContent(
     assetDetails: AssetUiModel?,
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
     selectedNft: NftCollectionUiModel.NftItemUiModel?,
+    walletFiatBalance: String?,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.background(Brush.horizontalGradient(AccountGradientList[gradientIndex]))) {
@@ -180,95 +191,230 @@ private fun AccountScreenContent(
                 }
             },
         ) {
-            Scaffold(
-                modifier = Modifier
-                    .systemBarsPadding()
-                    .fillMaxSize(),
-                topBar = {
-                    RadixCenteredTopAppBar(
-                        title = accountName,
-                        onBackClick = onBackClick,
-                        actions = {
-                            IconButton(onClick = { onMenuItemClick() }) {
-                                Icon(
-                                    painterResource(
-                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
-                                    ),
-                                    tint = RadixTheme.colors.white,
-                                    contentDescription = "account settings"
-                                )
-                            }
-                        }
-                    )
-                },
-                backgroundColor = Color.Transparent
-            ) { innerPadding ->
-                val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
-                if (isLoading) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = RadixTheme.colors.gray1
-                        )
-                    }
-                } else {
-                    SwipeRefresh(
-                        modifier = Modifier.fillMaxSize(),
-                        state = swipeRefreshState,
-                        onRefresh = onRefresh,
-                        indicatorPadding = innerPadding,
-                        indicator = { state, dp ->
-                            SwipeRefreshIndicator(
-                                state = state,
-                                refreshTriggerDistance = dp,
-                                contentColor = RadixTheme.colors.gray1,
-                                backgroundColor = RadixTheme.colors.defaultBackground,
-                            )
-                        },
-                        refreshTriggerDistance = 100.dp,
-                        content = {
-                            AccountContent(
-                                onCopyAccountAddressClick = onCopyAccountAddress,
-                                accountAddress = accountAddress,
-                                xrdToken = xrdToken,
-                                fungibleTokens = fungibleTokens,
-                                nonFungibleTokens = nonFungibleTokens,
-                                onTransferClick = onTransferClick,
-                                onFungibleTokenClick = {
-                                    onFungibleTokenClick(it)
-                                    scope.launch {
-                                        bottomSheetState.show()
-                                    }
-                                },
-                                modifier = Modifier.fillMaxSize(),
-                                onNftClick = onNftClick
-                            )
-                        }
+//            val density = LocalDensity.current
+//            val headerScrollState = rememberScrollableHeaderViewScrollState()
+            val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+            if (isLoading) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = RadixTheme.colors.gray1
                     )
                 }
             }
-        }
-        RadixSecondaryButton(
-            text = stringResource(id = R.string.history),
-            onClick = onHistoryClick,
-            modifier = Modifier
-                .padding(bottom = RadixTheme.dimensions.paddingXXLarge)
-                .size(174.dp, 50.dp)
-                .align(Alignment.BottomCenter),
-            containerColor = RadixTheme.colors.gray2,
-            contentColor = RadixTheme.colors.white,
-            shape = RadixTheme.shapes.circle
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-                tint = RadixTheme.colors.white,
-                contentDescription = null
+//            AnimatedVisibility(
+//                visible = !isLoading,
+//                enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }),
+//                content = AccountContentWithScrollableHeader(
+//                    swipeRefreshState = swipeRefreshState,
+//                    onRefresh = onRefresh,
+//                    headerScrollState = headerScrollState,
+//                    accountName = accountName,
+//                    onBackClick = onBackClick,
+//                    onMenuItemClick = onMenuItemClick,
+//                    accountAddress = accountAddress,
+//                    walletFiatBalance = walletFiatBalance,
+//                    onCopyAccountAddress = onCopyAccountAddress,
+//                    onTransferClick = onTransferClick,
+//                    xrdToken = xrdToken,
+//                    fungibleTokens = fungibleTokens,
+//                    nonFungibleTokens = nonFungibleTokens,
+//                    onFungibleTokenClick = onFungibleTokenClick,
+//                    onNftClick = onNftClick,
+//                    density = density
+//                )
+//            )
+            AnimatedVisibility(
+                visible = !isLoading,
+                enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }),
+                content = {
+                    Scaffold(
+                        modifier = Modifier
+                            .systemBarsPadding()
+                            .fillMaxSize(),
+                        topBar = {
+                            RadixCenteredTopAppBar(
+                                title = accountName,
+                                onBackClick = onBackClick,
+                                actions = {
+                                    IconButton(onClick = { onMenuItemClick() }) {
+                                        Icon(
+                                            painterResource(
+                                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
+                                            ),
+                                            tint = RadixTheme.colors.white,
+                                            contentDescription = "account settings"
+                                        )
+                                    }
+                                }
+                            )
+                        },
+                        backgroundColor = Color.Transparent
+                    ) { innerPadding ->
+                        if (isLoading) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = RadixTheme.colors.gray1
+                                )
+                            }
+                        } else {
+                            SwipeRefresh(
+                                modifier = Modifier.fillMaxSize(),
+                                state = swipeRefreshState,
+                                onRefresh = onRefresh,
+                                indicatorPadding = innerPadding,
+                                indicator = { state, dp ->
+                                    SwipeRefreshIndicator(
+                                        state = state,
+                                        refreshTriggerDistance = dp,
+                                        contentColor = RadixTheme.colors.gray1,
+                                        backgroundColor = RadixTheme.colors.defaultBackground,
+                                    )
+                                },
+                                refreshTriggerDistance = 100.dp,
+                                content = {
+                                    AccountContent(
+                                        onCopyAccountAddressClick = onCopyAccountAddress,
+                                        accountAddress = accountAddress,
+                                        xrdToken = xrdToken,
+                                        fungibleTokens = fungibleTokens,
+                                        nonFungibleTokens = nonFungibleTokens,
+                                        onTransferClick = onTransferClick,
+                                        onFungibleTokenClick = {
+                                            onFungibleTokenClick(it)
+                                            scope.launch {
+                                                bottomSheetState.show()
+                                            }
+                                        },
+                                        onNftClick = { nftCollection, nftItem ->
+                                            onNftClick(nftCollection, nftItem)
+                                            scope.launch {
+                                                bottomSheetState.show()
+                                            }
+                                        },
+                                        walletFiatBalance = walletFiatBalance,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
             )
         }
+        AnimatedVisibility(modifier = Modifier.align(Alignment.BottomCenter), visible = !isLoading, enter = fadeIn()) {
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.history),
+                onClick = onHistoryClick,
+                modifier = Modifier
+                    .padding(bottom = RadixTheme.dimensions.paddingXXLarge)
+                    .size(174.dp, 50.dp),
+                containerColor = RadixTheme.colors.gray2,
+                contentColor = RadixTheme.colors.white,
+                shape = RadixTheme.shapes.circle
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
+                    tint = RadixTheme.colors.white,
+                    contentDescription = null
+                )
+            }
+        }
     }
+}
+
+@Composable
+@OptIn(ExperimentalPagerApi::class)
+fun AccountContentWithScrollableHeader(
+    swipeRefreshState: SwipeRefreshState,
+    onRefresh: () -> Unit,
+    headerScrollState: ScrollableHeaderViewScrollState,
+    accountName: String,
+    onBackClick: () -> Unit,
+    onMenuItemClick: () -> Unit,
+    accountAddress: String,
+    walletFiatBalance: String?,
+    onCopyAccountAddress: (String) -> Unit,
+    onTransferClick: () -> Unit,
+    xrdToken: TokenUiModel?,
+    fungibleTokens: ImmutableList<TokenUiModel>,
+    nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
+    onFungibleTokenClick: (TokenUiModel) -> Unit,
+    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
+    density: Density
+): @Composable (AnimatedVisibilityScope.() -> Unit) = {
+    SwipeRefresh(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding(),
+        state = swipeRefreshState,
+        onRefresh = onRefresh,
+        indicator = { state, dp ->
+            SwipeRefreshIndicator(
+                state = state,
+                refreshTriggerDistance = dp,
+                contentColor = RadixTheme.colors.gray1,
+                backgroundColor = RadixTheme.colors.defaultBackground,
+            )
+        },
+        refreshTriggerDistance = 100.dp,
+        indicatorPadding = PaddingValues(top = 150.dp),
+        content = {
+            ScrollableHeaderView(
+                modifier = Modifier.fillMaxWidth(),
+                state = headerScrollState,
+                header = {
+                    Column(Modifier.fillMaxWidth()) {
+                        RadixCenteredTopAppBar(
+                            title = accountName,
+                            onBackClick = onBackClick,
+                            actions = {
+                                IconButton(onClick = { onMenuItemClick() }) {
+                                    Icon(
+                                        painterResource(
+                                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
+                                        ),
+                                        tint = RadixTheme.colors.white,
+                                        contentDescription = "account settings"
+                                    )
+                                }
+                            }
+                        )
+                        AccountSummaryContent(
+                            modifier = Modifier.fillMaxWidth(),
+                            accountAddress = accountAddress,
+                            walletFiatBalance = walletFiatBalance,
+                            onCopyAccountAddressClick = onCopyAccountAddress,
+                            onTransferClick = onTransferClick
+                        )
+                    }
+                },
+                content = {
+                    AssetsContent(
+                        xrdToken = xrdToken,
+                        fungibleTokens = fungibleTokens,
+                        nonFungibleTokens = nonFungibleTokens,
+                        onFungibleTokenClick = onFungibleTokenClick,
+                        modifier = Modifier
+                            .background(
+                                color = RadixTheme.colors.gray5,
+                                shape = RadixTheme.shapes.roundedRectTopDefault
+                            )
+                            .clip(RadixTheme.shapes.roundedRectTopDefault),
+                        onNftClick = onNftClick
+                    )
+                },
+                topBarHeightPx = with(density) { 64.dp.toPx() }.toInt()
+            )
+        }
+    )
 }
 
 @Composable
@@ -285,41 +431,41 @@ private fun NonFungibleTokenBottomSheetDetails(
         RadixCenteredTopAppBar(
             title = stringResource(id = R.string.empty),
             onBackClick = onCloseClick,
-            modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,
             backIconType = BackIconType.Close
         )
-        AsyncImage(
-            model = asset.iconUrl,
-            placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-            fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(RadixTheme.colors.gray3, RadixTheme.shapes.circle)
-                .clip(RadixTheme.shapes.roundedRectMedium)
-        )
-        Spacer(modifier = Modifier.height(22.dp))
-        AssetMetadataRow(
-            modifier = Modifier.fillMaxWidth(),
-            key = stringResource(id = R.string.nft_id),
-            value = selectedNft.id
-        )
-        selectedNft.nftsMetadata.forEach {
-            AssetMetadataRow(
-                modifier = Modifier.fillMaxWidth(),
-                key = it.first,
-                value = it.second
-            )
-        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            AsyncImage(
+                model = asset.iconUrl,
+                placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
+                fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectMedium)
+                    .clip(RadixTheme.shapes.roundedRectMedium)
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            AssetMetadataRow(
+                modifier = Modifier.fillMaxWidth(),
+                key = stringResource(id = R.string.nft_id),
+                value = selectedNft.id
+            )
+            selectedNft.nftsMetadata.forEach {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                AssetMetadataRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    key = it.first,
+                    value = it.second
+                )
+            }
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
@@ -429,38 +575,21 @@ private fun AccountContent(
     nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
     onTransferClick: () -> Unit,
     onFungibleTokenClick: (TokenUiModel) -> Unit,
-    modifier: Modifier = Modifier,
-    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit
+    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
+    walletFiatBalance: String?,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AccountAddressView(
-            address = accountAddress,
+        AccountSummaryContent(
+            modifier = Modifier.fillMaxWidth(),
+            accountAddress = accountAddress,
+            walletFiatBalance = walletFiatBalance,
             onCopyAccountAddressClick = onCopyAccountAddressClick,
-            contentColor = RadixTheme.colors.white
+            onTransferClick = onTransferClick
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        WalletBalanceView(
-            currencySignValue = "$",
-            amount = "10",
-            hidden = false, balanceClicked = {}, contentColor = RadixTheme.colors.white
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-        RadixSecondaryButton(
-            text = stringResource(id = R.string.account_transfer_button_title),
-            onClick = onTransferClick,
-            containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-            contentColor = RadixTheme.colors.white,
-            shape = RadixTheme.shapes.circle
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                tint = RadixTheme.colors.white,
-                contentDescription = null
-            )
-        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         AssetsContent(
             xrdToken = xrdToken,
@@ -475,6 +604,50 @@ private fun AccountContent(
                 .clip(RadixTheme.shapes.roundedRectTopDefault),
             onNftClick = onNftClick
         )
+    }
+}
+
+@Composable
+private fun AccountSummaryContent(
+    modifier: Modifier,
+    accountAddress: String,
+    walletFiatBalance: String?,
+    onCopyAccountAddressClick: (String) -> Unit,
+    onTransferClick: () -> Unit
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (accountAddress.isNotEmpty()) {
+            AccountAddressView(
+                address = accountAddress,
+                onCopyAccountAddressClick = onCopyAccountAddressClick,
+                contentColor = RadixTheme.colors.white
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        }
+        walletFiatBalance?.let { value ->
+            WalletBalanceView(
+                currencySignValue = "$",
+                amount = value,
+                hidden = false, balanceClicked = {}, contentColor = RadixTheme.colors.white
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.account_transfer_button_title),
+                onClick = onTransferClick,
+                containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
+                contentColor = RadixTheme.colors.white,
+                shape = RadixTheme.shapes.circle
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                    tint = RadixTheme.colors.white,
+                    contentDescription = null
+                )
+            }
+        }
     }
 }
 
@@ -587,6 +760,7 @@ fun AccountContentPreview() {
                 assetDetails = null,
                 onNftClick = { _, _ -> },
                 selectedNft = null,
+                walletFiatBalance = "1000",
                 modifier = Modifier
             )
         }
@@ -618,6 +792,7 @@ fun AccountContentDarkPreview() {
                 assetDetails = null,
                 onNftClick = { _, _ -> },
                 selectedNft = null,
+                walletFiatBalance = "1000",
                 modifier = Modifier
             )
         }
