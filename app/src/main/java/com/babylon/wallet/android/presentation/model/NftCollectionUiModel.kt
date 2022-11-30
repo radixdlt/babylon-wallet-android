@@ -3,25 +3,26 @@ package com.babylon.wallet.android.presentation.model
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import okio.ByteString.Companion.decodeHex
 
-data class NftUiModel(
+data class NftCollectionUiModel(
     val name: String,
     val iconUrl: String?,
-    val nft: List<NftUi> = emptyList()
-) {
+    val nft: List<NftItemUiModel> = emptyList()
+) : AssetUiModel() {
 
-    data class NftUi(
+    data class NftItemUiModel(
         val id: String,
+        val nftImage: String? = null,
         val nftsMetadata: List<Pair<String, String>> = emptyList()
     )
 }
 
-fun OwnedNonFungibleToken.toNftUiModel(): NftUiModel {
+fun OwnedNonFungibleToken.toNftUiModel(): NftCollectionUiModel {
     String()
-    return NftUiModel(
+    return NftCollectionUiModel(
         name = token?.getTokenName().orEmpty(),
         iconUrl = token?.getImageUrl().orEmpty(),
         nft = token?.nonFungibleIdContainer?.ids?.map {
-            NftUiModel.NftUi(id = it.idHex?.decodeHex()?.toString().orEmpty())
+            NftCollectionUiModel.NftItemUiModel(id = it.idHex?.decodeHex()?.toString().orEmpty())
         }.orEmpty()
     )
 }

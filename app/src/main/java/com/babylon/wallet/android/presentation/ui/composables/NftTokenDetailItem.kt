@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
+@OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
 @Composable
 fun NftTokenDetailItem(
@@ -36,7 +38,8 @@ fun NftTokenDetailItem(
     imageUrl: String?,
     modifier: Modifier = Modifier,
     bottomCornersRounded: Boolean = false,
-    nftMetadata: List<Pair<String, String>> = emptyList()
+    nftMetadata: List<Pair<String, String>> = emptyList(),
+    onNftClick: (String) -> Unit
 ) {
     val bottomCorners by animateDpAsState(targetValue = if (bottomCornersRounded) 12.dp else 0.dp)
     Card(
@@ -45,6 +48,9 @@ fun NftTokenDetailItem(
             .padding(20.dp, 0.dp, 20.dp, 1.dp),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
         backgroundColor = RadixTheme.colors.defaultBackground,
+        onClick = {
+            onNftClick(nftId)
+        }
     ) {
         Column(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -102,7 +108,8 @@ fun CollapsableChildItemPreview() {
             nftMetadata = listOf(
                 Pair("Type", "Devin Booker - Dunk"),
                 Pair("Type", "Reggie Jackson - Jump Shot")
-            )
+            ),
+            onNftClick = { }
         )
     }
 }

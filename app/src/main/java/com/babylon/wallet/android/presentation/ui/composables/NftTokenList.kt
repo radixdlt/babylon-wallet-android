@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -22,23 +21,21 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.mockdata.mockNftUiList
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.presentation.account.AssetEmptyState
-import com.babylon.wallet.android.presentation.model.NftUiModel
+import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 
-@OptIn(ExperimentalFoundationApi::class)
 @Suppress("MutableParams", "UnstableCollections")
 @Composable
 fun NftTokenList(
     collapsedState: SnapshotStateList<Boolean>, // TODO use an immutable object!
-    item: List<NftUiModel>,
-    modifier: Modifier = Modifier
+    item: List<NftCollectionUiModel>,
+    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     if (item.isEmpty()) {
         AssetEmptyState(
             modifier = Modifier.fillMaxSize(),
             title = stringResource(id = R.string.you_have_no_nfts),
-            subtitle = stringResource(
-                R.string.what_are_nfts
-            ),
+            subtitle = stringResource(R.string.what_are_nfts),
             onInfoClick = {}
         )
     } else {
@@ -74,7 +71,10 @@ fun NftTokenList(
                             nftId = item.id,
                             imageUrl = null, // TODO do we have image per ntf?
                             bottomCornersRounded = bottomCornersRounded,
-                            nftMetadata = item.nftsMetadata
+                            nftMetadata = item.nftsMetadata,
+                            onNftClick = { nftId ->
+                                onNftClick(dataItem, dataItem.nft.first { it.id == nftId })
+                            }
                         )
                     }
                 }
@@ -92,7 +92,8 @@ fun NftTokenListEmpty() {
     BabylonWalletTheme {
         NftTokenList(
             item = emptyList(),
-            collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() }
+            collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() },
+            onNftClick = { _, _ -> }
         )
     }
 }
@@ -103,7 +104,8 @@ fun NftTokenListPreview() {
     BabylonWalletTheme {
         NftTokenList(
             item = mockNftUiList,
-            collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() }
+            collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() },
+            onNftClick = { _, _ -> }
         )
     }
 }
@@ -114,7 +116,8 @@ fun NftTokenListExpandedPreview() {
     BabylonWalletTheme {
         NftTokenList(
             item = mockNftUiList,
-            collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() }
+            collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() },
+            onNftClick = { _, _ -> }
         )
     }
 }

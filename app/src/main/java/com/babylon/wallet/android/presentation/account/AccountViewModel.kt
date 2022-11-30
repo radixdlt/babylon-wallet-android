@@ -9,7 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.onValue
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
-import com.babylon.wallet.android.presentation.model.NftUiModel
+import com.babylon.wallet.android.presentation.model.AssetUiModel
+import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
@@ -87,7 +88,14 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onFungibleTokenClick(token: TokenUiModel) {
-        _accountUiState.update { it.copy(tokenDetails = token) }
+        _accountUiState.update { it.copy(assetDetails = token) }
+    }
+
+    fun onNonFungibleTokenClick(
+        nftCollectionUiModel: NftCollectionUiModel,
+        nftItemUiModel: NftCollectionUiModel.NftItemUiModel
+    ) {
+        _accountUiState.update { it.copy(assetDetails = nftCollectionUiModel, selectedNft = nftItemUiModel) }
     }
 }
 
@@ -97,9 +105,10 @@ data class AccountUiState(
     val gradientIndex: Int = 0,
     val accountAddress: String = "",
     val xrdToken: TokenUiModel? = null,
-    val tokenDetails: TokenUiModel? = null,
+    val assetDetails: AssetUiModel? = null,
+    val selectedNft: NftCollectionUiModel.NftItemUiModel? = null,
     val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
-    val nonFungibleTokens: ImmutableList<NftUiModel> = persistentListOf()
+    val nonFungibleTokens: ImmutableList<NftCollectionUiModel> = persistentListOf()
 )
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {

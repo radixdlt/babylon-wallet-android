@@ -3,11 +3,9 @@ package com.babylon.wallet.android.data.gateway
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIdsItem
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseFungibleResources
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseNonFungibleResources
 import com.babylon.wallet.android.domain.model.AccountAddress
-import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
@@ -24,14 +22,6 @@ fun EntityDetailsResponse.toFungibleToken(): FungibleToken {
         totalMinted = BigDecimal(details.totalMinted?.value),
         totalBurnt = BigDecimal(details.totalBurnt?.value),
         metadata = metadata.items.associate { it.key to it.value }
-    )
-}
-
-fun EntityResourcesResponse.toAccountResourceSlim(): AccountResourcesSlim {
-    return AccountResourcesSlim(
-        address = address,
-        simpleFungibleTokens = fungibleResources.toSimpleFungibleTokens(address),
-        simpleNonFungibleTokens = nonFungibleResources.toSimpleNonFungibleTokens(address)
     )
 }
 
