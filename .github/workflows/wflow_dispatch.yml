@@ -11,29 +11,32 @@ on:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
         default: ''
+        options:
+          - "internal"
 
 jobs:
 
-  deploy_alpha:
+  deploy:
 
     name: "Build and distribute"
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
       - name: Dump context
-        uses: crazy-max/ghaction-dump-context@v1.2.1
+        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
 
       - name: Download Ruby (action)
-        uses: ruby/setup-ruby@v1.114.0
+        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
         with:
-          ruby-version: '2.7.2'
+          ruby-version: '3.1.2'
+          bundler-cache: true
 
-      - name: Install fastlane
-        run: |
-          gem install bundler
-          bundle install
+      # - name: Install fastlane
+      #   run: |
+      #     gem install bundler
+      #     bundle install
 
       - name: Decode Service account credentials
         uses: timheuer/base64-to-file@v1
@@ -43,7 +46,7 @@ jobs:
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - name: Build and distribute
-        run: fastlane manual
+        run: bundle exec fastlane manual
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
