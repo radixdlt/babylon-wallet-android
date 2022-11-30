@@ -204,9 +204,9 @@ private fun WalletAccountList(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(0.8f),
                     text = stringResource(id = R.string.create_new_account),
-                    onClick = onAccountCreationClick
+                    onClick = onAccountCreationClick,
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 )
             }
         }

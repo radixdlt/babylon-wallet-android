@@ -17,5 +17,4 @@ class RadixRippleTheme(private val color: Color, private val darkTheme: Boolean)
     override fun rippleAlpha(): RippleAlpha {
         return RippleTheme.defaultRippleAlpha(color.darken(0.1f), darkTheme)
     }
-
 }

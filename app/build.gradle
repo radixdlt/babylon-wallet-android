@@ -8,10 +8,7 @@ plugins {
     id 'kotlinx-serialization'
 }
 
-apply from: "$rootDir/config/detekt.gradle"
 apply from: "$rootDir/config/jacoco.gradle"
-
-import io.gitlab.arturbosch.detekt.Detekt
 
 android {
     compileSdk rootProject.ext.compileSdk
@@ -73,11 +70,6 @@ sonarqube {
         property 'sonar.kotlin.detekt.reportPaths', 'build/reports/detekt/debug.xml'
         property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
     }
-}
-
-tasks.withType(Detekt).configureEach {
-    exclude("**/test/**")
-    exclude("**/androidTest/**")
 }
 
 dependencies {

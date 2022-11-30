@@ -38,8 +38,10 @@ fun EntityResourcesResponse.toAccountResourceSlim(): AccountResourcesSlim {
 fun EntityDetailsResponse.toNonFungibleToken(): NonFungibleToken {
     return NonFungibleToken(
         address = address,
-        nonFungibleIdContainer = NonFungibleTokenIdContainer(details.ids?.items?.map { it.toNonFungibleId() }
-            ?: emptyList(), nextCursor = details.ids?.nextCursor, previousCursor = details.ids?.previousCursor),
+        nonFungibleIdContainer = NonFungibleTokenIdContainer(
+            details.ids?.items?.map { it.toNonFungibleId() }.orEmpty(),
+            nextCursor = details.ids?.nextCursor, previousCursor = details.ids?.previousCursor
+        ),
         metadataContainer = metadata.toNonFungibleMetadataContainer()
     )
 }

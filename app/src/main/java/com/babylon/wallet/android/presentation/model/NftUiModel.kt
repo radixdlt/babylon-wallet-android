@@ -22,6 +22,6 @@ fun OwnedNonFungibleToken.toNftUiModel(): NftUiModel {
         iconUrl = token?.getImageUrl().orEmpty(),
         nft = token?.nonFungibleIdContainer?.ids?.map {
             NftUiModel.NftUi(id = it.idHex?.decodeHex()?.toString().orEmpty())
-        } ?: emptyList()
+        }.orEmpty()
     )
 }

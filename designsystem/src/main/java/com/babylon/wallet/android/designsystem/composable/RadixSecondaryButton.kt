@@ -26,14 +26,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
 fun RadixSecondaryButton(
-    modifier: Modifier = Modifier,
     text: String,
     onClick: () -> Unit,
-    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
     containerColor: Color = RadixTheme.colors.gray4,
     contentColor: Color = RadixTheme.colors.gray1,
     shape: Shape = RadixTheme.shapes.roundedRectSmall,
-    icon: (@Composable () -> Unit)? = null
+    enabled: Boolean = true,
+    icon: @Composable() (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -63,7 +63,7 @@ fun RadixSecondaryButton(
 @Composable
 fun RadixSecondaryButtonPreview() {
     BabylonWalletTheme {
-        RadixSecondaryButton(modifier = Modifier.size(200.dp, 50.dp), text = "Secondary button", onClick = {})
+        RadixSecondaryButton(text = "Secondary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
     }
 }
 
@@ -71,9 +71,9 @@ fun RadixSecondaryButtonPreview() {
 @Composable
 fun RadixSecondaryButtonWithIconPreview() {
     BabylonWalletTheme {
-        RadixSecondaryButton(modifier = Modifier.size(200.dp, 50.dp), text = "Secondary button", onClick = {}, icon = {
+        RadixSecondaryButton(text = "Secondary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp)) {
             Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
-        })
+        }
     }
 }
 
@@ -82,9 +82,9 @@ fun RadixSecondaryButtonWithIconPreview() {
 fun RadixSecondaryButtonDisabledPreview() {
     BabylonWalletTheme {
         RadixSecondaryButton(
-            modifier = Modifier.size(200.dp, 50.dp),
             text = "Secondary button",
             onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp),
             enabled = false
         )
     }

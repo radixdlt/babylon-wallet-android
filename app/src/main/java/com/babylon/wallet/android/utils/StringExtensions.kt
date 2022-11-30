@@ -24,7 +24,7 @@ fun String.formatDecimalSeparator(): String {
 }
 
 fun String.decodeHex(): String {
-    require(length % 2 == 0) {"Must have an even length"}
+    require(length % 2 == 0) { "Must have an even length" }
     return String(
         chunked(2)
             .map { it.toInt(16).toByte() }

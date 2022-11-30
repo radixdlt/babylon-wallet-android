@@ -72,7 +72,7 @@ class AccountViewModelTest {
         advanceUntilIdle()
 
         // then
-        with (event.last()) {
+        with(event.last()) {
             assert(!this.isLoading)
             assert(accountAddress == sampleData.address)
             assert(xrdToken != null)

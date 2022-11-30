@@ -232,23 +232,22 @@ private fun AccountScreenContent(
             }
         }
         RadixSecondaryButton(
+            text = stringResource(id = R.string.history),
+            onClick = onHistoryClick,
             modifier = Modifier
                 .padding(bottom = RadixTheme.dimensions.paddingXXLarge)
                 .size(174.dp, 50.dp)
                 .align(Alignment.BottomCenter),
-            text = stringResource(id = R.string.history),
-            onClick = onHistoryClick,
-            contentColor = RadixTheme.colors.white,
             containerColor = RadixTheme.colors.gray2,
-            shape = RadixTheme.shapes.circle,
-            icon = {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-                    tint = RadixTheme.colors.white,
-                    contentDescription = null
-                )
-            }
-        )
+            contentColor = RadixTheme.colors.white,
+            shape = RadixTheme.shapes.circle
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
+                tint = RadixTheme.colors.white,
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -374,17 +373,16 @@ private fun AccountContent(
         RadixSecondaryButton(
             text = stringResource(id = R.string.account_transfer_button_title),
             onClick = onTransferClick,
-            contentColor = RadixTheme.colors.white,
             containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-            shape = RadixTheme.shapes.circle,
-            icon = {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                    tint = RadixTheme.colors.white,
-                    contentDescription = null
-                )
-            }
-        )
+            contentColor = RadixTheme.colors.white,
+            shape = RadixTheme.shapes.circle
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                tint = RadixTheme.colors.white,
+                contentDescription = null
+            )
+        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         AssetsContent(
             modifier = Modifier

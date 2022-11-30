@@ -48,7 +48,7 @@ fun NftTokenList(
                     }
                     NftTokenDetailItem(
                         nftId = item.id,
-                        imageUrl = null,//TODO do we have image per ntf?
+                        imageUrl = null, // TODO do we have image per ntf?
                         bottomCornersRounded = bottomCornersRounded,
                         nftMetadata = item.nftsMetadata
                     )
