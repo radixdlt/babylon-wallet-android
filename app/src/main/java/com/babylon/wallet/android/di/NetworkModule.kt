@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.di
 
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.GatewayApi
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory

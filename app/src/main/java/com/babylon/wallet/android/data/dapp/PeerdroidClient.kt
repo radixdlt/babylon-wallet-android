@@ -2,10 +2,10 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.ConnectionState
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
@@ -65,8 +65,8 @@ class PeerdroidClientImpl @Inject constructor(
             ?.onStart {
                 // we don't know when the collection will start
                 // so check if the data channel is already closed
-                if (dataChannel?.state == DataChannelEvent.StateChanged.CLOSING
-                    || dataChannel?.state == DataChannelEvent.StateChanged.CLOSE
+                if (dataChannel?.state == DataChannelEvent.StateChanged.CLOSING ||
+                    dataChannel?.state == DataChannelEvent.StateChanged.CLOSE
                 ) {
                     emit(DataChannelEvent.StateChanged.CLOSE)
                 }

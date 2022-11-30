@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.presentation.settings
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
