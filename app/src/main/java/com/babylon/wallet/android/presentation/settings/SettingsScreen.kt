@@ -84,7 +84,7 @@ private fun EnterConnectionId(
     modifier: Modifier = Modifier,
     onConnectionClick: (String) -> Unit
 ) {
-    var connectionIdText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+    var connectionPasswordText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
     }
 
@@ -92,8 +92,8 @@ private fun EnterConnectionId(
         FullscreenCircularProgressContent()
     } else {
         TextField(
-            value = connectionIdText,
-            onValueChange = { connectionIdText = it },
+            value = connectionPasswordText,
+            onValueChange = { connectionPasswordText = it },
             label = { Text("Enter the connection id") }
         )
 
@@ -101,7 +101,7 @@ private fun EnterConnectionId(
 
         Button(
             onClick = {
-                onConnectionClick(connectionIdText.text)
+                onConnectionClick(connectionPasswordText.text)
             }
         ) {
             Text(
