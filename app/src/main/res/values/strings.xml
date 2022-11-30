@@ -50,6 +50,10 @@
     <string name="dapp_verification_error_title">DApp error</string>
     <string name="empty_content_description" />
     <string name="history">History</string>
+    <string name="you_have_no_tokens">You have no Tokens</string>
+    <string name="what_are_tokens">What are Tokens?</string>
+    <string name="you_have_no_nfts">You have no NFTs</string>
+    <string name="what_are_nfts">What are NFTs?</string>
     <string name="settings">Settings</string>
     <string name="p2p_connections">P2P CONNECTIONS</string>
     <string name="debug">DEBUG</string>
