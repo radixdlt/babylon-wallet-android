@@ -1,6 +1,5 @@
 package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 
-import android.util.Log
 import io.ktor.util.moveToByteArray
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +11,7 @@ import rdx.works.peerdroid.data.PackageMessageDto
 import rdx.works.peerdroid.data.PackageMessageDto.Companion.toChunk
 import rdx.works.peerdroid.data.PackageMessageDto.Companion.toMetadata
 import rdx.works.peerdroid.domain.BasePackage
+import timber.log.Timber
 
 // Once the WebRTC flow is complete & data channel is open
 // then this will be used to observe the incoming messages & the state changes.
@@ -20,7 +20,7 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
     val callback = object : DataChannel.Observer {
 
         override fun onBufferedAmountChange(p0: Long) {
-            Log.d("DATA_CHANNEL", "onBufferedAmountChange")
+            Timber.d("onBufferedAmountChange")
             trySend(DataChannelEvent.BufferedAmountChange)
         }
 
@@ -41,15 +41,12 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
             } else {
                 try {
                     val jsonString = p0.data.moveToByteArray().decodeToString()
-                    Log.d("DATA_CHANNEL", "package message json is: $jsonString")
+                    Timber.d("package message json is: $jsonString")
                     // parse json string to a PackageMessageDto object
                     val packageMessageDto = Json.decodeFromString<PackageMessageDto>(jsonString)
                     parsePackageDto(packageMessageDto = packageMessageDto)
                 } catch (exception: Exception) {
-                    Log.d(
-                        "DATA_CHANNEL",
-                        "an error occurred while decoding the message: ${exception.localizedMessage}"
-                    )
+                    Timber.e("an error occurred while decoding the message: ${exception.localizedMessage}")
                 }
             }
         }
@@ -73,10 +70,7 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
                     try {
                         parseChunkAndSendEventIfListIsComplete(packageMessageDto.toChunk())
                     } catch (exception: Exception) {
-                        Log.e(
-                            "DATA_CHANNEL",
-                            "an exception occurred while parsing chunk packages: ${exception.localizedMessage}"
-                        )
+                        Timber.e("an exception occurred while parsing chunk packages: ${exception.localizedMessage}")
                         trySend(
                             DataChannelEvent.UnknownError(
                                 message = "exception occurred while parsing chunk packages: ${exception.localizedMessage}"
@@ -144,7 +138,7 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
     registerObserver(callback)
 
     awaitClose {
-        Log.d("DATA_CHANNEL", "eventFlow: awaitClose: unregister observer")
+        Timber.d("eventFlow: awaitClose: unregister observer")
         unregisterObserver()
     }
 }

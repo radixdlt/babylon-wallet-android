@@ -1,6 +1,5 @@
 package rdx.works.peerdroid.data.websocket
 
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.url
@@ -30,6 +29,7 @@ import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.helpers.decryptWithAes
 import rdx.works.peerdroid.helpers.encryptWithAes
 import rdx.works.peerdroid.helpers.toHexString
+import timber.log.Timber
 
 internal interface WebSocketClient {
 
@@ -76,19 +76,21 @@ internal class WebSocketClientImpl(
                 url("$BASE_URL$connectionId?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
-                Log.d("WEB_SOCKET", "successfully connected to signaling server")
-                Log.d("WEB_SOCKET", "waiting remote peer to connect to signaling server")
+                Timber.d("successfully connected to signaling server")
+//                Timber.d("successfully connected to signaling server")
+                Timber.d("waiting remote peer to connect to signaling server")
+//                Timber.d("waiting remote peer to connect to signaling server")
                 waitUntilRemotePeerIsConnected()
                 Result.Success(Unit)
             } else {
-                Log.d("WEB_SOCKET", "failed to connect to signaling server")
+                Timber.d("failed to connect to signaling server")
                 Result.Error("Couldn't establish a connection.")
             }
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Log.e("WEB_SOCKET", "connection exception: ${exception.localizedMessage}")
+            Timber.e("connection exception: ${exception.localizedMessage}")
             Result.Error(exception.localizedMessage ?: "Unknown error")
         }
     }
@@ -123,7 +125,7 @@ internal class WebSocketClientImpl(
         )
 
         val message = Json.encodeToString(rpcMessage)
-        Log.d("WEB_SOCKET", "=> sending offer with requestId: ${rpcMessage.requestId}")
+        Timber.d("=> sending offer with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
 
@@ -140,7 +142,7 @@ internal class WebSocketClientImpl(
         )
 
         val message = Json.encodeToString(rpcMessage)
-        Log.d("WEB_SOCKET", "=> sending ice candidates with requestId: ${rpcMessage.requestId}")
+        Timber.d("=> sending ice candidates with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
 
@@ -151,7 +153,7 @@ internal class WebSocketClientImpl(
             if (exception is CancellationException) {
                 throw exception
             }
-            Log.d("WEB_SOCKET", "failed to send message")
+            Timber.d("failed to send message")
             exception.printStackTrace()
         }
     }
@@ -167,7 +169,7 @@ internal class WebSocketClientImpl(
                 }
                 ?: flowOf(SignalingServerIncomingMessage.UnknownError)
         } catch (exception: Exception) {
-            Log.e("WEB_SOCKET", "incoming message exception")
+            Timber.e("incoming message exception")
             exception.printStackTrace()
             flowOf(SignalingServerIncomingMessage.UnknownError)
         }

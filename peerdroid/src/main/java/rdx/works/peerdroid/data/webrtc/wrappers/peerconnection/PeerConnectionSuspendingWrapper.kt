@@ -1,6 +1,5 @@
 package rdx.works.peerdroid.data.webrtc.wrappers.peerconnection
 
-import android.util.Log
 import org.webrtc.AddIceObserver
 import org.webrtc.MediaConstraints
 import org.webrtc.PeerConnection
@@ -12,6 +11,7 @@ import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.Companion.toWebRtcSessionDescription
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.helpers.Result
+import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -29,7 +29,7 @@ internal suspend fun PeerConnection.createSuspendingOffer(
         // from this suspending callback we are only interested in creating an offer
         // thus return success only in case of the "onCreateSuccess"
         override fun onCreateSuccess(p0: SessionDescription?) {
-            Log.d("WEB_RTC", "WebRTC peer connection created successfully an offer")
+            Timber.d("WebRTC peer connection created successfully an offer")
 
             p0?.let {
                 continuation.resume(
@@ -43,17 +43,17 @@ internal suspend fun PeerConnection.createSuspendingOffer(
         }
 
         override fun onSetSuccess() {
-            Log.d("WEB_RTC", "createOffer, onSetSuccess")
+            Timber.d("createOffer, onSetSuccess")
             continuation.resume(Result.Error(""))
         }
 
         override fun onCreateFailure(p0: String?) {
-            Log.d("WEB_RTC", "createOffer, onCreateFailure $p0")
+            Timber.d("createOffer, onCreateFailure $p0")
             continuation.resume(Result.Error("failed to create offer: $p0"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Log.d("WEB_RTC", "createOffer, onSetFailure: $p0")
+            Timber.d("createOffer, onSetFailure: $p0")
             continuation.resume(Result.Error(""))
         }
     }
@@ -72,24 +72,24 @@ internal suspend fun PeerConnection.setSuspendingLocalDescription(
 
     val observer = object : SdpObserver {
         override fun onCreateSuccess(p0: SessionDescription?) {
-            Log.d("WEB_RTC", "created successfully local session description: $p0")
+            Timber.d("created successfully local session description: $p0")
             // we want to SET the local session description, not to create one
             // thus return Error result
             continuation.resume(Result.Error("on create success"))
         }
 
         override fun onSetSuccess() {
-            Log.d("WEB_RTC", "set successfully local session description")
+            Timber.d("set successfully local session description")
             continuation.resume(Result.Success(Unit))
         }
 
         override fun onCreateFailure(p0: String?) {
-            Log.d("WEB_RTC", "failed to create local session description: $p0")
+            Timber.d("failed to create local session description: $p0")
             continuation.resume(Result.Error("on create failure"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Log.d("WEB_RTC", "failed to set local session description: $p0")
+            Timber.d("failed to set local session description: $p0")
             continuation.resume(Result.Error("on set failure"))
         }
     }
@@ -109,24 +109,24 @@ internal suspend fun PeerConnection.setSuspendingRemoteDescription(
 
     val observer = object : SdpObserver {
         override fun onCreateSuccess(p0: SessionDescription?) {
-            Log.d("WEB_RTC", "created successfully remote session description: $p0")
+            Timber.d("created successfully remote session description: $p0")
             // we want to SET the remote session description, not to create one
             // thus return Error result
             continuation.resume(Result.Error("on create success"))
         }
 
         override fun onSetSuccess() {
-            Log.d("WEB_RTC", "set successfully remote session description")
+            Timber.d("set successfully remote session description")
             continuation.resume(Result.Success(Unit))
         }
 
         override fun onCreateFailure(p0: String?) {
-            Log.d("WEB_RTC", "failed to create remote session description: $p0")
+            Timber.d("failed to create remote session description: $p0")
             continuation.resume(Result.Error("on create failure"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Log.d("WEB_RTC", "failed to set remote session description: $p0")
+            Timber.d("failed to set remote session description: $p0")
             continuation.resume(Result.Error("on set failure"))
         }
     }
