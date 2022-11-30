@@ -30,7 +30,7 @@ fun NftTokenList(
                     nftImageUrl = dataItem.iconUrl,
                     nftName = dataItem.name,
                     nftsInCirculation = "?",
-                    nftsInPossession = "?",
+                    nftsInPossession = dataItem.nft.size.toString(),
                     nftChildCount = dataItem.nft.size,
                     collapsed = collapsed
                 ) {
@@ -48,7 +48,7 @@ fun NftTokenList(
                     }
                     NftTokenDetailItem(
                         nftId = item.id,
-                        imageUrl = item.imageUrl,
+                        imageUrl = null,//TODO do we have image per ntf?
                         bottomCornersRounded = bottomCornersRounded,
                         nftMetadata = item.nftsMetadata
                     )

@@ -43,7 +43,6 @@ data class AssetDto(
             companion object {
                 fun NftDto.toUiModel() = NftUiModel.NftUi(
                     id = id,
-                    imageUrl = iconUrl,
                     nftsMetadata = nftsMetadata
                 )
             }

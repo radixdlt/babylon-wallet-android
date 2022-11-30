@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account
 
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -27,9 +28,7 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Surface
 import androidx.compose.material.Tab
-import androidx.compose.material.TabPosition
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
@@ -50,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -71,8 +71,10 @@ import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -199,6 +201,14 @@ private fun AccountScreenContent(
                         state = swipeRefreshState,
                         onRefresh = onRefresh,
                         indicatorPadding = innerPadding,
+                        indicator = { state, dp ->
+                            SwipeRefreshIndicator(
+                                state = state,
+                                refreshTriggerDistance = dp,
+                                contentColor = RadixTheme.colors.gray1,
+                                backgroundColor = RadixTheme.colors.defaultBackground,
+                            )
+                        },
                         refreshTriggerDistance = 100.dp,
                         content = {
                             AccountContent(
@@ -403,32 +413,46 @@ fun AssetsContent(
     Column(modifier = modifier) {
         val pagerState = rememberPagerState()
         val scope = rememberCoroutineScope()
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         ScrollableTabRow(
+            modifier = Modifier.height(50.dp),
             selectedTabIndex = pagerState.currentPage,
             divider = {}, /* Disable the built-in divider */
             edgePadding = RadixTheme.dimensions.paddingLarge,
-            indicator = emptyTabIndicator,
-            backgroundColor = Color.Transparent
+            indicator = { tabPositions ->
+                if (tabPositions.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .pagerTabIndicatorOffset(pagerState, tabPositions)
+                            .fillMaxHeight()
+                            .zIndex(-1f)
+                            .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
+                    )
+                }
+            },
+            backgroundColor = Color.Transparent,
         ) {
             AssetTypeTab.values().forEachIndexed { index, assetTypeTab ->
+                val selected = index == pagerState.currentPage
                 Tab(
-                    selected = index == pagerState.currentPage,
+                    selected = selected,
                     onClick = {
                         scope.launch {
                             pagerState.animateScrollToPage(index)
                         }
-                    }
+                    },
+                    interactionSource = MutableInteractionSource()
                 ) {
-                    ChoiceChipContent(
+                    Text(
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
                         text = stringResource(id = assetTypeTab.stringId),
-                        selected = index == pagerState.currentPage,
-                        modifier = Modifier
-                            .padding(vertical = RadixTheme.dimensions.paddingMedium)
-                            .height(40.dp)
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = if (selected) RadixTheme.colors.white else RadixTheme.colors.gray1
                     )
                 }
             }
         }
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         HorizontalPager(
             modifier = Modifier
                 .fillMaxWidth()
@@ -459,40 +483,6 @@ fun AssetsContent(
         }
     }
 }
-
-@Composable
-private fun ChoiceChipContent(
-    text: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        color = when {
-            selected -> RadixTheme.colors.gray1
-            else -> Color.Transparent
-        },
-        contentColor = when {
-            selected -> RadixTheme.colors.white
-            else -> RadixTheme.colors.gray1
-        },
-        shape = RadixTheme.shapes.circle,
-        modifier = modifier
-    ) {
-        Box(modifier = Modifier.fillMaxHeight()) {
-            Text(
-                text = text,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
-                    ),
-                style = RadixTheme.typography.body1HighImportance
-            )
-        }
-    }
-}
-
-private val emptyTabIndicator: @Composable (List<TabPosition>) -> Unit = {}
 
 @Preview
 @Composable
@@ -548,18 +538,5 @@ fun AccountContentDarkPreview() {
                 modifier = Modifier
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
-@Composable
-fun ChoiceChipContentPreview() {
-    BabylonWalletTheme {
-        ChoiceChipContent(
-            text = "Tokens",
-            selected = true,
-            modifier = Modifier
-        )
     }
 }

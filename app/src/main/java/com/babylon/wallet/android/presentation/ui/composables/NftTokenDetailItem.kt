@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -15,6 +16,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -37,7 +39,7 @@ fun NftTokenDetailItem(
     bottomCornersRounded: Boolean = false,
     nftMetadata: List<Pair<String, String>> = emptyList()
 ) {
-    val bottomCorners = if (bottomCornersRounded) 12.dp else 0.dp
+    val bottomCorners by animateDpAsState(targetValue = if (bottomCornersRounded) 12.dp else 0.dp)
     Card(
         modifier = modifier
             .animateContentSize()
@@ -68,6 +70,7 @@ fun NftTokenDetailItem(
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2HighImportance
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             nftMetadata.forEach { metadata ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = SpaceBetween) {
                     Text(

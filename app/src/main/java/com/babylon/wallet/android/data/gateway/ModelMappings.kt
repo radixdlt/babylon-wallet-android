@@ -1,13 +1,18 @@
 package com.babylon.wallet.android.data.gateway
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIdsItem
+import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseFungibleResources
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseNonFungibleResources
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 import com.babylon.wallet.android.domain.model.FungibleToken
+import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
+import com.babylon.wallet.android.domain.model.NonFungibleTokenId
+import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedNonFungibleToken
 import java.math.BigDecimal
@@ -33,6 +38,25 @@ fun EntityResourcesResponse.toAccountResourceSlim(): AccountResourcesSlim {
 fun EntityDetailsResponse.toNonFungibleToken(): NonFungibleToken {
     return NonFungibleToken(
         address = address,
+        nonFungibleIdContainer = NonFungibleTokenIdContainer(details.ids?.items?.map { it.toNonFungibleId() }
+            ?: emptyList(), nextCursor = details.ids?.nextCursor, previousCursor = details.ids?.previousCursor),
+        metadataContainer = metadata.toNonFungibleMetadataContainer()
+    )
+}
+
+fun EntityMetadataCollection.toNonFungibleMetadataContainer(): NonFungibleMetadataContainer {
+    return NonFungibleMetadataContainer(
+        metadata = items.associate { it.key to it.value },
+        nextCursor = nextCursor,
+        previousCursor = previousCursor
+    )
+}
+
+fun EntityDetailsResponseNonFungibleResourceDetailsIdsItem.toNonFungibleId(): NonFungibleTokenId {
+    return NonFungibleTokenId(
+        idHex = idHex,
+        immutableDataHex = immutableDataHex,
+        mutableDataHex = mutableDataHex
     )
 }
 
