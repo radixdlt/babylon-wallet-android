@@ -9,9 +9,6 @@ import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.Persona
 import rdx.works.profile.derivation.model.NetworkId
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 fun Profile.addPersonaOnNetwork(
     persona: Persona,
@@ -95,5 +92,3 @@ fun deriveAddress(
     val shortenedPublicKey = compressedPublicKey.toHexString().subSequence(0, 25)
     return EntityAddress("mocked_account_address_$shortenedPublicKey)")
 }
-
-fun Date.formatIso8601() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.getDefault()).format(this)

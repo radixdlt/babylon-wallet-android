@@ -2,8 +2,7 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.extensions.formatIso8601
-import java.util.Date
+import java.time.Instant
 
 @Serializable
 data class AppPreferences(
@@ -57,7 +56,7 @@ data class P2PClient(
             connectionPassword: String,
             displayName: String
         ): P2PClient {
-            val now = Date().formatIso8601()
+            val now = Instant.now().toString()
             return P2PClient(
                 connectionPassword = connectionPassword,
                 displayName = displayName,

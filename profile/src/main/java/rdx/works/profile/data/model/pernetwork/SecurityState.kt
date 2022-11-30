@@ -4,10 +4,9 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.extensions.formatIso8601
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.data.model.factorsources.FactorSources
-import java.util.Date
+import java.time.Instant
 
 @Serializable
 data class SecurityState(
@@ -36,7 +35,7 @@ data class SecurityState(
                         factorSourceReference = FactorSourceReference.curve25519FactorSourceReference(
                             factorSource = factorSources
                         ),
-                        initializationDate = Date().formatIso8601(),
+                        initializationDate = Instant.now().toString(),
                         publicKey = PublicKey.curve25519PublicKey(
                             compressedPublicKey = compressedPublicKey.removeLeadingZero().toHexString()
                         )

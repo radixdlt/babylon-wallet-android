@@ -7,10 +7,9 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.slip10.toKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.extensions.formatIso8601
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.CustomHDDerivationPath
-import java.util.Date
+import java.time.Instant
 
 @Serializable
 data class FactorSources(
@@ -39,7 +38,7 @@ data class FactorSources(
                 mnemonic: MnemonicWords,
                 bip39Passphrase: String = "",
                 label: String = "DeviceFactorSource",
-                creationDate: String = Date().formatIso8601()
+                creationDate: String = Instant.now().toString()
             ): Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
                 val seed = mnemonic.toSeed(bip39Passphrase)
                 val getIdPath = CustomHDDerivationPath.getId.path
