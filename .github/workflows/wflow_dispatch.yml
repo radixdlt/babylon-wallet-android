@@ -54,6 +54,7 @@ jobs:
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
+          env
           bundle exec fastlane main
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
