@@ -55,6 +55,7 @@ jobs:
             GROUPS=''
           fi
           env
+          git config -l
           bundle exec fastlane main
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
