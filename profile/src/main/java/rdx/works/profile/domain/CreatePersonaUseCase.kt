@@ -1,5 +1,6 @@
 package rdx.works.profile.domain
 
+import com.radixdlt.bip39.model.MnemonicWords
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
@@ -35,9 +36,12 @@ class CreatePersonaUseCase @Inject constructor(
                 ),
                 entityIndex = profile.perNetwork.personasPerNetworkCount(networkID),
                 derivePublicKey = CompressedPublicKey(
-                    mnemonic = generateMnemonicUseCase(
-                        mnemonicKey = profile.factorSources
-                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID
+                    mnemonic = MnemonicWords(
+                        phrase = generateMnemonicUseCase(
+                            mnemonicKey = profile.factorSources
+                                .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
+                                .first().factorSourceID
+                        )
                     )
                 ),
                 factorSources = profile.factorSources

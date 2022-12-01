@@ -10,7 +10,6 @@ import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.extensions.factorSourceId
-import rdx.works.profile.domain.GetMnemonicUseCase.Companion.ENTROPY_STRENGTH
 import javax.inject.Inject
 
 //TODO provide encryption as this is sensitive
@@ -44,22 +43,23 @@ class GetMnemonicUseCase @Inject constructor(
      * Key is empty by default when no profile has been generated before
      * If profile exists we should pass factorSourceId here
      */
-    suspend operator fun invoke(mnemonicKey: String? = null): MnemonicWords {
+    suspend operator fun invoke(mnemonicKey: String? = null): String {
         /*
          * If key is not null, it means we have had factorSourceId and we can read existing mnemonic
          * Otherwise, we generate mnemonic, and calculate the key for it (factorSourceId)
          */
         mnemonicKey?.let { key ->
-            val deviceFactorSourceMnemonic = readMnemonic(key)
-            return MnemonicWords(
-                phrase = deviceFactorSourceMnemonic
-            )
+            return readMnemonic(key)
         } ?: run {
-            val mnemonic = generateMnemonic()
-            val key = mnemonic.factorSourceId()
+            val mnemonic = generateMnemonic(
+                strength = ENTROPY_STRENGTH,
+                wordList = WORDLIST_ENGLISH
+            )
+
+            val key = MnemonicWords(mnemonic).factorSourceId()
             saveMnemonic(
                 key = key,
-                mnemonic = mnemonic.toString()
+                mnemonic = mnemonic
             )
             return mnemonic
         }
@@ -71,13 +71,4 @@ class GetMnemonicUseCase @Inject constructor(
          */
         const val ENTROPY_STRENGTH = 256
     }
-}
-
-private fun generateMnemonic(): MnemonicWords {
-    return MnemonicWords(
-        phrase = generateMnemonic(
-            strength = ENTROPY_STRENGTH,
-            wordList = WORDLIST_ENGLISH
-        )
-    )
 }
