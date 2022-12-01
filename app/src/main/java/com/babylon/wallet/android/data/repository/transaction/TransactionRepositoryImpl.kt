@@ -38,7 +38,7 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
     }
 
     override suspend fun getTransactionStatus(
-        identifier: TransactionLookupIdentifier
+        identifier: String?
     ): Result<TransactionStatusResponse> {
         return performHttpRequest(call = {
             gatewayApi.transactionStatus(TransactionStatusRequest(identifier))

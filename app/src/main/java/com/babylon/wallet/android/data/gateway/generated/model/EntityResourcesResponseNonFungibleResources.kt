@@ -19,8 +19,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
- * @param items * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
+ *
+ *
+ * @param items
+ * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
  * @param previousCursor TBD (maybe we should use HATEOAS-like permalinks?)
  * @param nextCursor TBD (maybe we should use HATEOAS-like permalinks?)
  */

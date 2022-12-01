@@ -19,9 +19,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
- * @param ledgerState * @param address The Bech32m-encoded human readable version of the entity's global address.
- * @param fungibleResources * @param nonFungibleResources */
+ *
+ *
+ * @param ledgerState
+ * @param address The Bech32m-encoded human readable version of the entity's global address.
+ * @param fungibleResources
+ * @param nonFungibleResources
+ */
 @Serializable
 
 data class EntityResourcesResponse(
@@ -34,9 +38,9 @@ data class EntityResourcesResponse(
     val address: kotlin.String,
 
     @SerialName(value = "fungible_resources")
-    val fungibleResources: EntityResourcesResponseFungibleResources,
+    val fungibleResources: FungibleResourcesCollection,
 
     @SerialName(value = "non_fungible_resources")
-    val nonFungibleResources: EntityResourcesResponseNonFungibleResources
+    val nonFungibleResources: NonFungibleResourcesCollection
 
 )

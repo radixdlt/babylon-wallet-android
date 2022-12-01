@@ -20,8 +20,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
- * @param discriminator * @param codeHex */
+ *
+ *
+ * @param discriminator
+ * @param codeHex
+ */
 @Serializable
 
 data class EntityDetailsResponsePackageDetails(

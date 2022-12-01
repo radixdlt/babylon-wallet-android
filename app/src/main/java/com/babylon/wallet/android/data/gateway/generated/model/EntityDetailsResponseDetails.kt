@@ -21,11 +21,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EntityDetailsResponseDetails(
-
     @Contextual @SerialName(value = "discriminator")
-    val discriminator: EntityDetailsResponseDetailsType,
+    val discriminator: EntityDetailsResponseDetailsType? = null,
+    @Contextual @SerialName(value = "auth_rules")
+    val authRules: kotlin.Any? = null,
     @SerialName(value = "divisibility")
-    val divisibility: kotlin.Long? = null,
+    val divisibility: kotlin.Int? = null,
     @SerialName(value = "total_supply")
     val totalSupply: TokenAmount? = null,
     @SerialName(value = "total_minted")
@@ -38,5 +39,11 @@ data class EntityDetailsResponseDetails(
     val codeHex: kotlin.String? = null,
     /* The Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "package_address")
-    val packageAddress: kotlin.String? = null
+    val packageAddress: kotlin.String? = null,
+    @SerialName(value = "blueprint_name")
+    val blueprintName: kotlin.String? = null,
+    @Contextual @SerialName(value = "state")
+    val state: kotlin.Any? = null,
+    @Contextual @SerialName(value = "access_rules_layers")
+    val accessRulesLayers: kotlin.Any? = null
 )

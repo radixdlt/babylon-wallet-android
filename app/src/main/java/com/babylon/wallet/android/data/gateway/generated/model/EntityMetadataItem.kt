@@ -19,11 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
- * @param key
- * @param `value`
- */
+ * *
+ * @param key * @param `value` */
 @Serializable
 
 data class EntityMetadataItem(
@@ -32,6 +29,6 @@ data class EntityMetadataItem(
     val key: kotlin.String,
 
     @SerialName(value = "value")
-    val value: kotlin.String
+    val `value`: kotlin.String
 
 )

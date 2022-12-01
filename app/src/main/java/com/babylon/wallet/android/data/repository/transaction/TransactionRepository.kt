@@ -11,6 +11,6 @@ import com.babylon.wallet.android.domain.common.Result
 interface TransactionRepository {
     suspend fun getRecentTransactions(address: String, page: String?, limit: Int?): Result<RecentTransactionsResponse>
     suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse>
-    suspend fun getTransactionStatus(identifier: TransactionLookupIdentifier): Result<TransactionStatusResponse>
     suspend fun getTransactionDetails(identifier: TransactionLookupIdentifier): Result<TransactionDetailsResponse>
+    suspend fun getTransactionStatus(identifier: String?): Result<TransactionStatusResponse>
 }

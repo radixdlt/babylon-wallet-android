@@ -19,8 +19,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
- * @param addresses * @param atStateIdentifier */
+ *
+ *
+ * @param addresses
+ * @param atStateIdentifier
+ */
 @Serializable
 
 data class EntityOverviewRequest(

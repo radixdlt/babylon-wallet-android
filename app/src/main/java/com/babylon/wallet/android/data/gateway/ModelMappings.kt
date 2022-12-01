@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.data.gateway
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
+import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIdsItem
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseFungibleResources
@@ -22,6 +25,24 @@ fun EntityDetailsResponse.toFungibleToken(): FungibleToken {
         totalMinted = BigDecimal(details.totalMinted?.value),
         totalBurnt = BigDecimal(details.totalBurnt?.value),
         metadata = metadata.items.associate { it.key to it.value }
+    )
+}
+
+fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): List<SimpleOwnedFungibleToken> {
+    return items.map { fungibleResourceItem ->
+        SimpleOwnedFungibleToken(
+            owner = AccountAddress(ownerAddress),
+            amount = BigDecimal(fungibleResourceItem.amount.value),
+            address = fungibleResourceItem.address
+        )
+    }
+}
+
+fun EntityResourcesResponse.toAccountResourceSlim(): AccountResourcesSlim {
+    return AccountResourcesSlim(
+        address = address,
+        simpleFungibleTokens = fungibleResources.toSimpleFungibleTokens(address),
+        simpleNonFungibleTokens = nonFungibleResources.toSimpleNonFungibleTokens(address)
     )
 }
 
@@ -52,25 +73,13 @@ fun EntityDetailsResponseNonFungibleResourceDetailsIdsItem.toNonFungibleId(): No
     )
 }
 
-fun EntityResourcesResponseFungibleResources.toSimpleFungibleTokens(
-    ownerAddress: String
-): List<SimpleOwnedFungibleToken> {
-    return items.map { fungibleResourceItem ->
-        SimpleOwnedFungibleToken(
-            owner = AccountAddress(ownerAddress),
-            amount = BigDecimal(fungibleResourceItem.amount.value),
-            address = fungibleResourceItem.address
-        )
-    }
-}
-
-fun EntityResourcesResponseNonFungibleResources.toSimpleNonFungibleTokens(
+fun NonFungibleResourcesCollection.toSimpleNonFungibleTokens(
     ownerAddress: String
 ): List<SimpleOwnedNonFungibleToken> {
     return items.map { nftResource ->
         SimpleOwnedNonFungibleToken(
             owner = AccountAddress(ownerAddress),
-            amount = nftResource.amount,
+            amount = BigDecimal(nftResource.amount),
             tokenResourceAddress = nftResource.address
         )
     }

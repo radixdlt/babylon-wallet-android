@@ -19,9 +19,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
+ *
+ *
  * @param address The Bech32m-encoded human readable version of the entity's global address.
- * @param atStateIdentifier */
+ * @param atStateIdentifier
+ */
 @Serializable
 
 data class EntityResourcesRequest(

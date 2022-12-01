@@ -26,6 +26,6 @@ import kotlinx.serialization.Serializable
 data class TransactionNotFoundErrorAllOf(
 
     @SerialName(value = "transaction_not_found")
-    val transactionNotFound: TransactionLookupIdentifier
+    val transactionNotFound: TransactionCommittedDetailsRequestIdentifier
 
 )

@@ -19,8 +19,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
+ * *
  * @param duplicate Is true if the transaction is a duplicate of an existing pending transaction.
  */
 @Serializable

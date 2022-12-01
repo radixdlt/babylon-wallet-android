@@ -21,13 +21,16 @@ import kotlinx.serialization.Serializable
 
 /**
  * *
- * @param discriminator * @param ids */
+ * @param discriminator * @param authRules * @param ids */
 @Serializable
 
 data class EntityDetailsResponseNonFungibleResourceDetails(
 
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
+
+    @Contextual @SerialName(value = "auth_rules")
+    val authRules: kotlin.Any,
 
     @SerialName(value = "ids")
     val ids: EntityDetailsResponseNonFungibleResourceDetailsIds

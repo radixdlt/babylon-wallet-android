@@ -19,11 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
- * @param path
- * @param errors
- */
+ * *
+ * @param path * @param errors */
 @Serializable
 
 data class ValidationErrorsAtPath(

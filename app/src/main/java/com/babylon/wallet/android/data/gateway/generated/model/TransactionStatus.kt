@@ -15,37 +15,54 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
  * *
- * @param status * @param stateVersion * @param confirmedAt */
+ * Values: unknown,committedSuccess,committedFailure,pending,rejected
+ */
 @Serializable
+enum class TransactionStatus(val value: kotlin.String) {
 
-data class TransactionStatus(
+    @SerialName(value = "unknown")
+    Unknown("unknown"),
 
-    @SerialName(value = "status")
-    val status: TransactionStatus.Status,
+    @SerialName(value = "committed_success")
+    CommittedSuccess("committed_success"),
 
-    @SerialName(value = "state_version")
-    val stateVersion: kotlin.Long? = null,
+    @SerialName(value = "committed_failure")
+    CommittedFailure("committed_failure"),
 
-    @Contextual @SerialName(value = "confirmed_at")
-    val confirmedAt: java.time.OffsetDateTime? = null
+    @SerialName(value = "pending")
+    Pending("pending"),
 
-) {
+    @SerialName(value = "rejected")
+    Rejected("rejected");
 
     /**
-     * *
-     * Values: succeeded,failed,rejected,pending
+     * Override toString() to avoid using the enum variable name as the value, and instead use
+     * the actual value defined in the API spec file.
+     *
+     * This solves a problem when the variable name and its value are different, and ensures that
+     * the client sends the correct enum values to the server always.
      */
-    @Serializable
-    enum class Status(val value: kotlin.String) {
-        @SerialName(value = "succeeded") Succeeded("succeeded"),
-        @SerialName(value = "failed") Failed("failed"),
-        @SerialName(value = "rejected") Rejected("rejected"),
-        @SerialName(value = "pending") Pending("pending");
+    override fun toString(): String = value
+
+    companion object {
+        /**
+         * Converts the provided [data] to a [String] on success, null otherwise.
+         */
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionStatus) "$data" else null
+
+        /**
+         * Returns a valid [TransactionStatus] for [data], null otherwise.
+         */
+        fun decode(data: kotlin.Any?): TransactionStatus? = data?.let {
+            val normalizedData = "$it".lowercase()
+            values().firstOrNull { value ->
+                it == value || normalizedData == "$value".lowercase()
+            }
+        }
     }
 }

@@ -19,7 +19,12 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * *
+ * @param discriminator * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
+ */
 @Serializable
+
 data class EntityDetailsResponseAccountComponentDetails(
 
     @Contextual @SerialName(value = "discriminator")

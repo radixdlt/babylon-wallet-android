@@ -35,7 +35,7 @@ data class EntityMetadataCollection(
 
     /* TBD (make it nullable when we're dealing with unknown result set sizes?) */
     @SerialName(value = "total_count")
-    val totalCount: kotlin.Int? = null,
+    val totalCount: kotlin.Long? = null,
 
     /* TBD (maybe we should use HATEOAS-like permalinks?) */
     @SerialName(value = "previous_cursor")

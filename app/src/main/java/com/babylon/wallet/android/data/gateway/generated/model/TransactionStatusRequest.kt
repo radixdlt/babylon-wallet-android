@@ -21,15 +21,15 @@ import kotlinx.serialization.Serializable
 /**
  *
  *
- * @param transactionIdentifier
+ * @param intentHashHex
  * @param atStateIdentifier
  */
 @Serializable
 
 data class TransactionStatusRequest(
 
-    @SerialName(value = "transaction_identifier")
-    val transactionIdentifier: TransactionLookupIdentifier,
+    @SerialName(value = "intent_hash_hex")
+    val intentHashHex: kotlin.String? = null,
 
     @SerialName(value = "at_state_identifier")
     val atStateIdentifier: PartialLedgerStateIdentifier? = null

@@ -19,8 +19,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
+ * *
  * @param releaseVersion The release that is currently deployed to the Gateway API.
  * @param openApiSchemaVersion The Open API Schema version that was used to generate the API models.
  */

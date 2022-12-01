@@ -23,6 +23,7 @@ import kotlinx.serialization.Serializable
  *
  *
  * @param discriminator
+ * @param authRules
  * @param divisibility
  * @param totalSupply
  * @param totalMinted
@@ -35,8 +36,11 @@ data class EntityDetailsResponseFungibleResourceDetails(
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
 
+    @Contextual @SerialName(value = "auth_rules")
+    val authRules: kotlin.Any,
+
     @SerialName(value = "divisibility")
-    val divisibility: kotlin.Long,
+    val divisibility: kotlin.Int,
 
     @SerialName(value = "total_supply")
     val totalSupply: TokenAmount,

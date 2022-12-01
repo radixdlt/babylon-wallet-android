@@ -19,11 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
- * @param transaction
- * @param details
- */
+ * *
+ * @param transaction * @param details */
 @Serializable
 
 data class TransactionDetailsResponseAllOf(
