@@ -8,40 +8,43 @@ import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.data.model.factorsources.FactorSources
 import java.time.Instant
 
-@Serializable
-data class SecurityState(
-    @SerialName("discriminator")
-    val discriminator: String,
+sealed class SecurityState {
 
-    @SerialName("unsecuredEntityControl")
-    val unsecuredEntityControl: UnsecuredEntityControl
-) {
-    companion object {
-        /**
-         * A non-"securitfied" Security state used for entity (Account/Persona). Protected with single factor instance
-         * until securified, and thus protected with an "AccessControl".
-         */
-        fun unsecuredSecurityState(
-            compressedPublicKey: ByteArray,
-            derivationPath: DerivationPath,
-            factorSources: FactorSources
-        ): SecurityState {
-            return SecurityState(
-                discriminator = "unsecured",
-                unsecuredEntityControl = UnsecuredEntityControl(
-                    genesisFactorInstance = GenesisFactorInstance(
-                        derivationPath = derivationPath,
-                        factorInstanceID = compressedPublicKey.hashToFactorId(),
-                        factorSourceReference = FactorSourceReference.curve25519FactorSourceReference(
-                            factorSource = factorSources
-                        ),
-                        initializationDate = Instant.now().toString(),
-                        publicKey = PublicKey.curve25519PublicKey(
-                            compressedPublicKey = compressedPublicKey.removeLeadingZero().toHexString()
+    @Serializable
+    data class Unsecured(
+        @SerialName("discriminator")
+        val discriminator: String,
+
+        @SerialName("unsecuredEntityControl")
+        val unsecuredEntityControl: UnsecuredEntityControl
+    ): SecurityState() {
+        companion object {
+            /**
+             * A non-"securitfied" Security state used for entity (Account/Persona). Protected with single factor instance
+             * until securified, and thus protected with an "AccessControl".
+             */
+            fun unsecuredSecurityState(
+                compressedPublicKey: ByteArray,
+                derivationPath: DerivationPath,
+                factorSources: FactorSources
+            ): Unsecured {
+                return Unsecured(
+                    discriminator = "unsecured",
+                    unsecuredEntityControl = UnsecuredEntityControl(
+                        genesisFactorInstance = GenesisFactorInstance(
+                            derivationPath = derivationPath,
+                            factorInstanceID = compressedPublicKey.hashToFactorId(),
+                            factorSourceReference = FactorSourceReference.curve25519FactorSourceReference(
+                                factorSource = factorSources
+                            ),
+                            initializationDate = Instant.now().toString(),
+                            publicKey = PublicKey.curve25519PublicKey(
+                                compressedPublicKey = compressedPublicKey.removeLeadingZero().toHexString()
+                            )
                         )
                     )
                 )
-            )
+            }
         }
     }
 

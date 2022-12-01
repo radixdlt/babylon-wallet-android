@@ -8,6 +8,7 @@ import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
 import rdx.works.profile.data.repository.DerivePublicKey
 import rdx.works.profile.data.repository.EntityDerivationPath
 
@@ -55,7 +56,7 @@ data class Account(
      * Security of this account
      */
     @SerialName("securityState")
-    val securityState: SecurityState
+    val securityState: SecurityState.Unsecured
 ) {
     companion object {
         /**
@@ -95,7 +96,7 @@ fun createNewVirtualAccount(
     val compressedPublicKey = derivePublicKey.derive(derivationPath)
     val address = deriveAddress(compressedPublicKey)
 
-    val unsecuredSecurityState = SecurityState.unsecuredSecurityState(
+    val unsecuredSecurityState = unsecuredSecurityState(
         compressedPublicKey = compressedPublicKey,
         derivationPath = DerivationPath.accountDerivationPath(
             derivationPath = derivationPath

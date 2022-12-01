@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
 import rdx.works.profile.data.repository.DerivePublicKey
 import rdx.works.profile.data.repository.EntityDerivationPath
 
@@ -50,7 +51,7 @@ data class Persona(
      * Security of this persona
      */
     @SerialName("securityState")
-    val securityState: SecurityState
+    val securityState: SecurityState.Unsecured
 )
 
 fun createNewPersona(
@@ -66,7 +67,7 @@ fun createNewPersona(
     val compressedPublicKey = derivePublicKey.derive(derivationPath)
     val address = deriveAddress(compressedPublicKey)
 
-    val unsecuredSecurityState = SecurityState.unsecuredSecurityState(
+    val unsecuredSecurityState = unsecuredSecurityState(
         compressedPublicKey = compressedPublicKey,
         derivationPath = DerivationPath.identityDerivationPath(
             derivationPath = derivationPath
