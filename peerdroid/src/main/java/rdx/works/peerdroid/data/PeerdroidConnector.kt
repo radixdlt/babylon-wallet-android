@@ -1,6 +1,5 @@
 package rdx.works.peerdroid.data
 
-import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -11,18 +10,14 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.webrtc.DataChannel
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.stateFlow
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonArrayPayload
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.OfferPayload.Companion.toPayload
@@ -30,12 +25,17 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.peerdroid.helpers.sha256
+import rdx.works.peerdroid.helpers.toHexString
+import timber.log.Timber
 
 interface PeerdroidConnector {
 
     suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper>
 
-    suspend fun close()
+    suspend fun close(
+        shouldCloseConnectionToSignalingServer: Boolean = false
+    )
 }
 
 /*
@@ -52,9 +52,9 @@ interface PeerdroidConnector {
  * 10. WebSocketClient receives remote ice candidates from the extension
  * 11. WebRtcManager set remote ice candidates in its WebRTC
  *
- * At the time the PeerdroidConnector set the remote session description,
- * it also starts observing the state of the data channel.
- * Once the data channel is open the flow stops and the PeerdroidConnector returns the data channel.
+ * Once the peer connection state changes (observeWebRtcEvents) to CONNECTED
+ * it means the data channel is open therefor the PeerdroidConnector completes its flow
+ * and returns the data channel (dataChannelDeferred).
  */
 internal class PeerdroidConnectorImpl(
     private val webRtcManager: WebRtcManager,
@@ -67,6 +67,10 @@ internal class PeerdroidConnectorImpl(
     private var webSocketJob: Job? = null
     private var iceCandidatesJob: Job? = null
 
+    // used as parameter for the web socket connection
+    // and for as a label name of the WebRTC data channel
+    private lateinit var connectionId: String
+
     // This CompletableDeferred will return the data channel.
     // if the whole flow is complete (step 11) and no errors occurred will return in a Result.Success
     // if any error occurred during the flow will return a Result.Error along with an error message.
@@ -76,11 +80,14 @@ internal class PeerdroidConnectorImpl(
     private val localIceCandidatesList = mutableListOf<PeerConnectionEvent.IceCandidate.Data>()
 
     override suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper> {
-        Log.d("CONNECTOR_WEB_RTC", "initialize data channel")
+        Timber.d("initialize data channel")
         dataChannelDeferred = CompletableDeferred()
+        // get connection id from encryption key
+        this.connectionId = encryptionKey.sha256().toHexString()
 
         withContext(ioDispatcher) {
             val result = webSocketClient.initSession(
+                connectionId = connectionId,
                 encryptionKey = encryptionKey
             )
             when (result) {
@@ -97,35 +104,19 @@ internal class PeerdroidConnectorImpl(
         return dataChannelDeferred.await()
     }
 
-    // this will be observing the state of the data channel until is open: `takeWhile { isOpen`
-    // once it is open it will return the dataChannelDeferred with the data channel
-    private fun observeDataChannelStateUntilOpen(dataChannel: DataChannel) {
-        dataChannel.stateFlow()
-            .takeWhile { isOpen ->
-                dataChannelDeferred.complete(
-                    Result.Success(
-                        data = DataChannelWrapper(webRtcDataChannel = dataChannel)
-                    )
-                )
-                isOpen
-            }.onCompletion {
-                // unregister the observer because we will register
-                // a new one (eventFlow) for incoming messages and state changes
-                dataChannel.unregisterObserver()
-            }
-            .launchIn(applicationScope)
-    }
-
     private fun observeWebRtcEvents() {
-        webRtcJob = webRtcManager.createPeerConnection()
+        webRtcJob = webRtcManager
+            .createPeerConnection(connectionId)
+            .cancellable()
             .onEach { event ->
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
-                        Log.d("CONNECTOR_WEB_RTC", "renegotiation needed")
+//                        Timber.d("renegotiation needed")
+                        Timber.d("renegotiation needed")
                         createAndSendOffer()
                     }
                     is PeerConnectionEvent.IceGatheringChange -> {
-                        Log.d("CONNECTOR_WEB_RTC", "ice gathering state changed: ${event.state}")
+                        Timber.d("ice gathering state changed: ${event.state}")
                         when (event.state) {
                             PeerConnectionEvent.IceGatheringChange.State.GATHERING -> {
                                 waitForIceCandidatesAndSend()
@@ -139,84 +130,86 @@ internal class PeerdroidConnectorImpl(
                         localIceCandidatesList.add(event.data)
                     }
                     is PeerConnectionEvent.SignalingState -> {
-                        Log.d("CONNECTOR_WEB_RTC", "signaling state changed: ${event.message}")
+                        Timber.d("signaling state changed: ${event.message}")
+                    }
+                    PeerConnectionEvent.Connected -> {
+                        dataChannelDeferred.complete(
+                            Result.Success(
+                                data = DataChannelWrapper(webRtcDataChannel = webRtcManager.getDataChannel())
+                            )
+                        )
                     }
                     PeerConnectionEvent.Disconnected -> {
-                        Log.d("CONNECTOR_WEB_RTC", "signaling state changed: peer connection disconnected")
+                        Timber.d("signaling state changed: peer connection disconnected")
                     }
                 }
             }
             .catch { exception ->
-                Log.e("CONNECTOR_WEB_RTC", "an exception occurred: ${exception.localizedMessage}")
+                Timber.e("an exception occurred: ${exception.localizedMessage}")
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
             .flowOn(ioDispatcher)
-            .cancellable()
             .launchIn(applicationScope)
     }
 
     private fun listenForIncomingMessagesFromSignalingServer() {
-        webSocketJob = webSocketClient.observeMessages()
+        webSocketJob = webSocketClient
+            .observeMessages()
+            .cancellable()
             .onEach { incomingMessage ->
                 when (incomingMessage) {
                     is SignalingServerIncomingMessage.BrowserExtensionAnswer -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote client answer received")
+                        Timber.d("remote client answer received")
                         setRemoteDescriptionFromAnswer(incomingMessage)
                     }
                     is SignalingServerIncomingMessage.BrowserExtensionIceCandidates -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote client ice candidates received")
+                        Timber.d("remote client ice candidates received")
                         addRemoteIceCandidatesInWebRtc(incomingMessage)
                     }
                     is SignalingServerIncomingMessage.Confirmation -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "confirmation received")
+                        Timber.d("confirmation received")
                     }
                     is SignalingServerIncomingMessage.InvalidMessageError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "invalid message error: ${incomingMessage.errorMessage}")
+                        Timber.d("invalid message error: ${incomingMessage.errorMessage}")
                     }
                     is SignalingServerIncomingMessage.MissingRemoteClientError -> {
-                        Log.d(
-                            "CONNECTOR_WEB_SOCKET",
-                            "missing remote client error, request id: ${incomingMessage.requestId}"
-                        )
-                        closePeerdroidConnectorWithError()
+                        Timber.d("missing remote client error, request id: ${incomingMessage.requestId}")
                     }
                     SignalingServerIncomingMessage.RemoteClientDisconnected -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote client disconnected")
+                        Timber.d("remote client disconnected")
                     }
                     SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote client is already connected")
+                        Timber.d("remote client is already connected")
                     }
                     SignalingServerIncomingMessage.RemoteClientJustConnected -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote client just connected")
+                        Timber.d("remote client just connected")
                     }
                     SignalingServerIncomingMessage.RemoteClientSourceError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote client source error")
+                        Timber.d("remote client source error")
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.RemoteConnectionIdNotMatchedError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "remote connection id not matched")
+                        Timber.d("remote connection id not matched")
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.ValidationError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "validation error")
-                    }
-                    SignalingServerIncomingMessage.ParsingResponseError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "parsing response error")
+                        Timber.d("validation error")
                     }
                     SignalingServerIncomingMessage.UnknownMessage -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "unknown incoming message")
-                        closePeerdroidConnectorWithError()
+                        Timber.d("unknown incoming message")
+                        terminatePeerdroidConnectorWithError()
                     }
                     SignalingServerIncomingMessage.UnknownError -> {
-                        Log.d("CONNECTOR_WEB_SOCKET", "unknown error")
-                        closePeerdroidConnectorWithError()
+                        Timber.d("unknown error")
+                        terminatePeerdroidConnectorWithError()
                     }
                 }
             }
             .catch { exception ->
-                Log.e("CONNECTOR_WEB_SOCKET", "an exception occurred: ${exception.localizedMessage}")
+                Timber.e("an exception occurred: ${exception.localizedMessage}")
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
             .flowOn(ioDispatcher)
-            .cancellable()
             .launchIn(applicationScope)
     }
 
@@ -234,15 +227,15 @@ internal class PeerdroidConnectorImpl(
                 )
                 if (isSet) {
                     // then send the offer to the extension via signaling server
-                    Log.d("CONNECTOR_WEB_RTC", "send offer to the extension")
+                    Timber.d("send offer to the extension")
                     webSocketClient.sendOfferMessage(sessionDescriptionValue.toPayload())
                 } else {
-                    Log.e("CONNECTOR_WEB_SOCKET", "failed to set local description")
+                    Timber.e("failed to set local description")
                     dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
                 }
             }
             else -> {
-                Log.d("CONNECTOR", "failed to create offer")
+                Timber.d("failed to create offer")
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
         }
@@ -251,17 +244,14 @@ internal class PeerdroidConnectorImpl(
     private suspend fun setLocalDescriptionFromOfferAndObserveDataChannelState(
         localSessionDescription: SessionDescriptionWrapper
     ): Boolean {
-        Log.d("CONNECTOR_WEB_RTC", "set local session description in local WebRTC")
+        Timber.d("set local session description in local WebRTC")
         return when (webRtcManager.setLocalDescription(localSessionDescription)) {
             is Result.Success -> {
-                Log.d("CONNECTOR_WEB_RTC", "local description set, now start observing the data channel state")
-                observeDataChannelStateUntilOpen(
-                    dataChannel = webRtcManager.getDataChannel()
-                )
+                Timber.d("local description set, now start observing the data channel state")
                 true
             }
             is Result.Error -> {
-                Log.e("CONNECTOR_WEB_SOCKET", "failed to set local description")
+                Timber.e("failed to set local description")
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
                 false
             }
@@ -275,7 +265,7 @@ internal class PeerdroidConnectorImpl(
             type = SessionDescriptionWrapper.Type.ANSWER,
             sessionDescriptionValue = SessionDescriptionValue(browserExtensionAnswer.sdp)
         )
-        Log.d("CONNECTOR_WEB_RTC", "set remote session description in local WebRTC")
+        Timber.d("set remote session description in local WebRTC")
         webRtcManager.setRemoteDescription(sessionDescription)
     }
 
@@ -285,32 +275,45 @@ internal class PeerdroidConnectorImpl(
         iceCandidatesJob = applicationScope.launch(ioDispatcher) {
             delay(ONE_SECOND_TO_COLLECT_ICE_CANDIDATES)
             if (localIceCandidatesList.isEmpty()) {
-                Log.d("CONNECTOR", "no ice candidates collected")
+                Timber.d("no ice candidates collected")
             }
 
+            Timber.d("send ${localIceCandidatesList.size} ice candidates to the extension")
             ensureActive()
-            Log.d("CONNECTOR_WEB_RTC", "send ${localIceCandidatesList.size} ice candidates to the extension")
             webSocketClient.sendIceCandidatesMessage(localIceCandidatesList.toJsonArrayPayload())
+            localIceCandidatesList.clear()
         }
     }
 
     private suspend fun addRemoteIceCandidatesInWebRtc(
         browserExtensionIceCandidates: SignalingServerIncomingMessage.BrowserExtensionIceCandidates
     ) {
-        val remoteIceCandidates =  browserExtensionIceCandidates.remoteIceCandidates
-        Log.d("CONNECTOR_WEB_RTC", "set ${remoteIceCandidates.size} remote ice candidates in local WebRTC")
+        val remoteIceCandidates = browserExtensionIceCandidates.remoteIceCandidates
+        Timber.d("set ${remoteIceCandidates.size} remote ice candidates in local WebRTC")
         webRtcManager.addRemoteIceCandidates(
             remoteIceCandidates = remoteIceCandidates
         )
     }
 
-    private suspend fun closePeerdroidConnectorWithError() {
-        close()
+    override suspend fun close(shouldCloseConnectionToSignalingServer: Boolean) {
+        if (shouldCloseConnectionToSignalingServer) {
+            terminate()
+            return
+        }
+        Timber.d("close")
+        iceCandidatesJob?.cancel()
+        webRtcJob?.cancel()
+        localIceCandidatesList.clear()
+    }
+
+    private suspend fun terminatePeerdroidConnectorWithError() {
+        terminate()
         dataChannelDeferred.complete(Result.Error("an error occurred"))
     }
 
-    override suspend fun close() {
-        webRtcJob?.cancel() // TODO if you want to restore/restart you might need to keep this open
+    private suspend fun terminate() {
+        Timber.d("terminate")
+        webRtcJob?.cancel()
         iceCandidatesJob?.cancel()
         webSocketClient.closeSession()
         webSocketJob?.cancel()

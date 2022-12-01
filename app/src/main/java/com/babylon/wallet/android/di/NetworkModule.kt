@@ -1,17 +1,55 @@
 package com.babylon.wallet.android.di
 
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
+import com.babylon.wallet.android.data.gateway.GatewayApi
+import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.peerdroid.data.PeerdroidConnector
+import retrofit2.Retrofit
+import timber.log.Timber
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            Timber.d(message)
+        }
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        return OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideJsonDeserializer(): Json {
+        return Serializer.kotlinxSerializationJson
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Provides
+    @Singleton
+    fun provideGatewayApi(): GatewayApi {
+        val retrofitBuilder = Retrofit.Builder().client(provideOkHttpClient())
+            .baseUrl(BuildConfig.GATEWAY_API_URL)
+            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .build()
+        return retrofitBuilder.create(GatewayApi::class.java)
+    }
 
     @Provides
     @Singleton

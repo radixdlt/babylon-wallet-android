@@ -1,12 +1,12 @@
 package rdx.works.peerdroid.data.webrtc.wrappers.peerconnection
 
-import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
+import timber.log.Timber
 
 /**
  * Transform the PeerConnection.Observer callback to flow.
@@ -74,6 +74,15 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
                 trySend(PeerConnectionEvent.Disconnected)
             }
         }
+
+        // used only to check when the peer connection state is connected
+        // which means the data channel is open
+        override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+            super.onConnectionChange(newState)
+            if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                trySend(PeerConnectionEvent.Connected)
+            }
+        }
     }
 
     val peerConnection = createPeerConnection(rtcConfiguration, observer)
@@ -90,7 +99,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
      * is typically used to cleanup the resources after the completion, e.g. unregister a callback.
      */
     awaitClose {
-        Log.d("WEB_RTC", "peer connection: awaitClose")
+        Timber.d("peer connection: awaitClose")
         // peerConnection?.dispose() // TODO is dispose or close needed?
     }
 }

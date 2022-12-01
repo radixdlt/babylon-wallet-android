@@ -43,8 +43,6 @@ internal sealed interface SignalingServerIncomingMessage {
 
     object UnknownError : SignalingServerIncomingMessage
 
-    object ParsingResponseError : SignalingServerIncomingMessage
-
     object RemoteConnectionIdNotMatchedError : SignalingServerIncomingMessage
 
     object RemoteClientSourceError : SignalingServerIncomingMessage

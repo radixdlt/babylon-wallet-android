@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.pager.ExperimentalPagerApi
 
@@ -40,6 +41,9 @@ fun NavigationHost(
         composable(route = Screen.WalletDestination.route) {
             WalletScreen(
                 viewModel = hiltViewModel(),
+                onMenuClick = {
+                    navController.navigate(Screen.SettingsDestination.route)
+                },
                 onAccountClick = { accountId, accountName, gradientIndex ->
                     navController.navigate(
                         Screen.AccountDestination.routeWithArgs(accountId, accountName, gradientIndex)
@@ -50,6 +54,11 @@ fun NavigationHost(
                         Screen.CreateAccountDestination.route
                     )
                 }
+            )
+        }
+        composable(route = Screen.SettingsDestination.route) {
+            SettingsScreen(
+                viewModel = hiltViewModel()
             )
         }
         composable(
