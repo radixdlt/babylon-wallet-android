@@ -3,9 +3,9 @@ package com.babylon.wallet.android.presentation.ui.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,8 +23,7 @@ fun AccountAddressView(
     contentColor: Color = RadixTheme.colors.defaultText
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
-        TruncatedAddressText(
-            modifier = Modifier.width(200.dp),
+        Text(
             text = address,
             style = RadixTheme.typography.body2HighImportance,
             color = contentColor,

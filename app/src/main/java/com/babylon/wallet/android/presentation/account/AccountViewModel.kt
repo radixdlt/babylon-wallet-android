@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
+import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -68,7 +69,7 @@ class AccountViewModel @Inject constructor(
                         state.copy(
                             isRefreshing = false,
                             isLoading = false,
-                            accountAddress = accountResource.address,
+                            accountAddressShortened = accountResource.address.truncatedHash(),
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.map { token -> token.toTokenUiModel() }.toPersistentList(),
                             nonFungibleTokens = accountResource.nonFungibleTokens.map { token -> token.toNftUiModel() }
@@ -103,7 +104,7 @@ data class AccountUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
-    val accountAddress: String = "",
+    val accountAddressShortened: String = "",
     val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,
     val assetDetails: AssetUiModel? = null,

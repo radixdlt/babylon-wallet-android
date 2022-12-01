@@ -35,7 +35,7 @@ fun TruncatedAddressText(
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
 ) {
     var textEllipsized by remember { mutableStateOf(text) }
     Text(
@@ -58,6 +58,6 @@ fun TruncatedAddressText(
             if (it.hasVisualOverflow) {
                 textEllipsized = textEllipsized.truncatedHash()
             }
-        }
+        },
     )
 }
