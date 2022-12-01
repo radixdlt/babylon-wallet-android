@@ -20,8 +20,8 @@ android {
         applicationId "com.babylon.wallet.android"
         minSdk 27
         targetSdk rootProject.ext.targetSdk
-        versionCode 4
-        versionName "1.23.4"
+        versionCode 1
+        versionName "1.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "GATEWAY_API_URL", '"https://hammunet-gateway.radixdlt.com"'
 
