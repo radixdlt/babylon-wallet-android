@@ -19,7 +19,6 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.createNewPersona
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
-import rdx.works.profile.data.repository.UnsecuredSecurityState
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import java.io.File
@@ -56,9 +55,7 @@ class ProfileTest {
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
-            createSecurityState = UnsecuredSecurityState(
-                factorSources = profile.factorSources
-            )
+            factorSources = profile.factorSources
         )
 
         var updatedProfile = profile.addAccountOnNetwork(
@@ -82,9 +79,7 @@ class ProfileTest {
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
-            createSecurityState = UnsecuredSecurityState(
-                factorSources = profile.factorSources
-            )
+            factorSources = profile.factorSources
         )
 
         updatedProfile = updatedProfile.addPersonaOnNetwork(
@@ -132,9 +127,7 @@ class ProfileTest {
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
-            createSecurityState = UnsecuredSecurityState(
-                factorSources = profile.factorSources
-            )
+            factorSources = profile.factorSources
         )
         profile = profile.addAccountOnNetwork(
             account = secondAccount,
@@ -151,9 +144,7 @@ class ProfileTest {
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
-            createSecurityState = UnsecuredSecurityState(
-                factorSources = profile.factorSources
-            )
+            factorSources = profile.factorSources
         )
         profile = profile.addAccountOnNetwork(
             account = thirdAccount,
@@ -175,9 +166,7 @@ class ProfileTest {
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
-            createSecurityState = UnsecuredSecurityState(
-                factorSources = profile.factorSources
-            )
+            factorSources = profile.factorSources
         )
         profile = profile.addPersonaOnNetwork(
             persona = firstPersona,
@@ -198,9 +187,7 @@ class ProfileTest {
             derivePublicKey = CompressedPublicKey(
                 mnemonic = mnemonic
             ),
-            createSecurityState = UnsecuredSecurityState(
-                factorSources = profile.factorSources
-            )
+            factorSources = profile.factorSources
         )
         profile = profile.addPersonaOnNetwork(
             persona = secondPersona,

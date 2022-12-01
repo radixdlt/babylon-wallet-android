@@ -10,6 +10,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileSnapshot
 import javax.inject.Inject
 
 //TODO will have to add encryption
@@ -23,7 +24,8 @@ class ProfileRepositoryImpl @Inject constructor(
 ) : ProfileRepository {
 
     override suspend fun saveProfile(profile: Profile) {
-        val profileContent = Json.encodeToString(profile)
+        val profileSnapshot = profile.snapshot()
+        val profileContent = Json.encodeToString(profileSnapshot)
         dataStore.edit { preferences ->
             preferences[PROFILE_PREFERENCES_KEY] = profileContent
         }
@@ -37,7 +39,13 @@ class ProfileRepositoryImpl @Inject constructor(
         return if (profileContent.isEmpty()) {
             null
         } else {
-            Json.decodeFromString(profileContent)
+            val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileContent)
+            Profile(
+                appPreferences = profileSnapshot.appPreferences,
+                factorSources = profileSnapshot.factorSources,
+                perNetwork = profileSnapshot.perNetwork,
+                version = profileSnapshot.version
+            )
         }
     }
 

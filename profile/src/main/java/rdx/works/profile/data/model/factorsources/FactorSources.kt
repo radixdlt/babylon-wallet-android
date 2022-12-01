@@ -1,13 +1,10 @@
 package rdx.works.profile.data.model.factorsources
 
 import com.radixdlt.bip39.model.MnemonicWords
-import com.radixdlt.bip39.toSeed
 import com.radixdlt.crypto.ec.EllipticCurveType
-import com.radixdlt.crypto.getCompressedPublicKey
-import com.radixdlt.slip10.toKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.utils.hashToFactorId
+import rdx.works.profile.data.extensions.factorSourceId
 import rdx.works.profile.derivation.CustomHDDerivationPath
 import java.time.Instant
 
@@ -40,11 +37,11 @@ data class FactorSources(
                 label: String = "DeviceFactorSource",
                 creationDate: String = Instant.now().toString()
             ): Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
-                val seed = mnemonic.toSeed(bip39Passphrase)
-                val getIdPath = CustomHDDerivationPath.getId.path
-                val derivedKey = seed.toKey(getIdPath, EllipticCurveType.Ed25519)
-
-                val factorSourceID = derivedKey.keyPair.getCompressedPublicKey().hashToFactorId()
+                val factorSourceID = mnemonic.factorSourceId(
+                    ellipticCurveType = EllipticCurveType.Ed25519,
+                    derivationPath = CustomHDDerivationPath.getId.path,
+                    bip39Passphrase = bip39Passphrase
+                )
 
                 return Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource(
                     creationDate = creationDate,

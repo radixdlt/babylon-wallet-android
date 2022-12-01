@@ -2,7 +2,6 @@ package rdx.works.profile.domain
 
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.CompressedPublicKey
-import rdx.works.profile.data.repository.UnsecuredSecurityState
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
@@ -33,11 +32,12 @@ class CreateAccountUseCase @Inject constructor(
                 ),
                 entityIndex = profile.perNetwork.accountsPerNetworkCount(networkID),
                 derivePublicKey = CompressedPublicKey(
-                    mnemonic = generateMnemonicUseCase()
+                    mnemonic = generateMnemonicUseCase(
+                        mnemonicKey = profile.factorSources
+                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID
+                    )
                 ),
-                createSecurityState = UnsecuredSecurityState(
-                    factorSources = profile.factorSources
-                )
+                factorSources = profile.factorSources
             )
 
             // Add account to the profile

@@ -3,7 +3,7 @@ package rdx.works.profile.data.model.pernetwork
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.extensions.deriveAddress
-import rdx.works.profile.data.repository.CreateSecurityState
+import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.repository.DerivePublicKey
 import rdx.works.profile.data.repository.EntityDerivationPath
 
@@ -59,18 +59,19 @@ fun createNewPersona(
     entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
     derivePublicKey: DerivePublicKey,
-    createSecurityState: CreateSecurityState
+    factorSources: FactorSources
 ): Persona {
     val derivationPath = entityDerivationPath.path()
 
     val compressedPublicKey = derivePublicKey.derive(derivationPath)
     val address = deriveAddress(compressedPublicKey)
 
-    val unsecuredSecurityState = createSecurityState.create(
+    val unsecuredSecurityState = SecurityState.unsecuredSecurityState(
+        compressedPublicKey = compressedPublicKey,
         derivationPath = DerivationPath.identityDerivationPath(
             derivationPath = derivationPath
         ),
-        compressedPublicKey = compressedPublicKey
+        factorSources = factorSources
     )
 
     return Persona(

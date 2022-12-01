@@ -11,21 +11,21 @@ class GenerateProfileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(): Profile {
-        val mnemonic = generateMnemonicUseCase()
+        profileRepository.readProfile()?.let { profile ->
+            return profile
+        } ?: run {
+            val mnemonic = generateMnemonicUseCase()
 
-        val networkAndGateway = NetworkAndGateway.hammunet
+            val networkAndGateway = NetworkAndGateway.hammunet
 
-        val profile = Profile.init(
-            networkAndGateway = networkAndGateway,
-            mnemonic = mnemonic
-        )
+            val profile = Profile.init(
+                networkAndGateway = networkAndGateway,
+                mnemonic = mnemonic
+            )
 
-        val readProfile = profileRepository.readProfile()
+            profileRepository.saveProfile(profile)
 
-        println("Profile $readProfile")
-
-        profileRepository.saveProfile(profile)
-
-        return profile
+            return profile
+        }
     }
 }

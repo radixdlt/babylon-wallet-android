@@ -37,6 +37,15 @@ data class Profile(
     val version: String
 ) {
 
+    fun snapshot(): ProfileSnapshot {
+        return ProfileSnapshot(
+            appPreferences = appPreferences,
+            factorSources = factorSources,
+            perNetwork = perNetwork,
+            version = version
+        )
+    }
+
     companion object {
         private const val INITIAL_VERSION = "0.0.1"
         fun init(

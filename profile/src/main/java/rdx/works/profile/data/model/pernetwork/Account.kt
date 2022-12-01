@@ -6,10 +6,8 @@ import kotlinx.serialization.Serializable
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.CompressedPublicKey
-import rdx.works.profile.data.repository.UnsecuredSecurityState
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.factorsources.FactorSources
-import rdx.works.profile.data.repository.CreateSecurityState
 import rdx.works.profile.data.repository.DerivePublicKey
 import rdx.works.profile.data.repository.EntityDerivationPath
 
@@ -79,9 +77,7 @@ data class Account(
                 derivePublicKey = CompressedPublicKey(
                     mnemonic = mnemonic
                 ),
-                createSecurityState = UnsecuredSecurityState(
-                    factorSources = factorSources
-                )
+                factorSources = factorSources
             )
         }
     }
@@ -92,18 +88,19 @@ fun createNewVirtualAccount(
     entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
     derivePublicKey: DerivePublicKey,
-    createSecurityState: CreateSecurityState
+    factorSources: FactorSources
 ): Account {
     val derivationPath = entityDerivationPath.path()
 
     val compressedPublicKey = derivePublicKey.derive(derivationPath)
     val address = deriveAddress(compressedPublicKey)
 
-    val unsecuredSecurityState = createSecurityState.create(
+    val unsecuredSecurityState = SecurityState.unsecuredSecurityState(
+        compressedPublicKey = compressedPublicKey,
         derivationPath = DerivationPath.accountDerivationPath(
             derivationPath = derivationPath
         ),
-        compressedPublicKey = compressedPublicKey
+        factorSources = factorSources
     )
 
     return Account(
