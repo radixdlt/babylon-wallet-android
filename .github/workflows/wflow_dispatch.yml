@@ -45,14 +45,15 @@ jobs:
       - uses: oleksiyrudenko/gha-git-credentials@ac5b66bcf3873df4259c681d957d8c145980171f
         with:
           global: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ secrets.RADIX_BOT_USERNAME }}
+          actor: ${{ secrets.RADIX_BOT_USERNAME }}
+          token: ${{ secrets.RADIX_BOT_PAT }}
 
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
-          env
           bundle exec fastlane main
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
