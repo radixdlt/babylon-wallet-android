@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import android.content.ClipData
 import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.wallet.WalletData

@@ -7,7 +7,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.onValue
+import com.babylon.wallet.android.domain.common.UiMessage
+import com.babylon.wallet.android.domain.common.onError
+import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
@@ -58,6 +60,7 @@ class AccountViewModel @Inject constructor(
                 // TODO how to handle the case when the gateway doesn't return the account?
                 // TODO this should probably change to flow later
                 val account = requestAccountResourcesUseCase.getAccountResources(accountId)
+                account.onError { e -> _accountUiState.update { it.copy(uiMessage = UiMessage(error = e)) } }
                 account.onValue { accountResource ->
                     val xrdToken = if (accountResource.hasXrdToken()) accountResource.fungibleTokens[0] else null
                     val fungibleTokens = if (accountResource.hasXrdToken()) {
@@ -110,7 +113,8 @@ data class AccountUiState(
     val assetDetails: AssetUiModel? = null,
     val selectedNft: NftCollectionUiModel.NftItemUiModel? = null,
     val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
-    val nonFungibleTokens: ImmutableList<NftCollectionUiModel> = persistentListOf()
+    val nonFungibleTokens: ImmutableList<NftCollectionUiModel> = persistentListOf(),
+    val uiMessage: UiMessage? = null
 )
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {

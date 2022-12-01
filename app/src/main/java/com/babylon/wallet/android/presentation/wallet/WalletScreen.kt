@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,8 +34,10 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.common.UiMessage
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarErrorHandler
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
@@ -64,7 +67,8 @@ fun WalletScreen(
         balanceClicked = {},
         isLoading = state.isLoading,
         accounts = state.resources,
-        wallet = state.wallet
+        wallet = state.wallet,
+        error = state.error
     )
 }
 
@@ -80,58 +84,62 @@ private fun WalletScreenContent(
     balanceClicked: () -> Unit,
     isLoading: Boolean,
     accounts: ImmutableList<AccountResources>,
-    wallet: WalletData?
+    wallet: WalletData?,
+    error: UiMessage?
 ) {
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            RDXAppBar(
-                toolbarTitle = stringResource(id = R.string.home_toolbar_title),
-                onMenuClick = onMenuClick
-            )
-        },
-        contentColor = RadixTheme.colors.defaultText,
-        backgroundColor = RadixTheme.colors.defaultBackground
-    ) { innerPadding ->
-        if (isLoading) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator(
-                    color = RadixTheme.colors.gray1
+    Box(modifier = modifier) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                RDXAppBar(
+                    toolbarTitle = stringResource(id = R.string.home_toolbar_title),
+                    onMenuClick = onMenuClick
+                )
+            },
+            contentColor = RadixTheme.colors.defaultText,
+            backgroundColor = RadixTheme.colors.defaultBackground
+        ) { innerPadding ->
+            if (isLoading) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+            }
+            AnimatedVisibility(visible = !isLoading, enter = fadeIn()) {
+                SwipeRefresh(
+                    state = swipeRefreshState,
+                    onRefresh = onRefresh,
+                    indicatorPadding = innerPadding,
+                    indicator = { state, dp ->
+                        SwipeRefreshIndicator(
+                            state = state,
+                            refreshTriggerDistance = dp,
+                            contentColor = RadixTheme.colors.gray1,
+                            backgroundColor = RadixTheme.colors.defaultBackground,
+                        )
+                    },
+                    refreshTriggerDistance = 100.dp,
+                    content = {
+                        WalletAccountList(
+                            wallet = wallet,
+                            onCopyAccountAddressClick = onCopyAccountAddressClick,
+                            onAccountClick = onAccountClick,
+                            onAccountCreationClick = onAccountCreationClick,
+                            accounts = accounts,
+                            modifier = Modifier,
+                            balanceClicked = balanceClicked
+                        )
+                    }
                 )
             }
         }
-        AnimatedVisibility(visible = !isLoading, enter = fadeIn()) {
-            SwipeRefresh(
-                state = swipeRefreshState,
-                onRefresh = onRefresh,
-                indicatorPadding = innerPadding,
-                indicator = { state, dp ->
-                    SwipeRefreshIndicator(
-                        state = state,
-                        refreshTriggerDistance = dp,
-                        contentColor = RadixTheme.colors.gray1,
-                        backgroundColor = RadixTheme.colors.defaultBackground,
-                    )
-                },
-                refreshTriggerDistance = 100.dp,
-                content = {
-                    WalletAccountList(
-                        wallet = wallet,
-                        onCopyAccountAddressClick = onCopyAccountAddressClick,
-                        onAccountClick = onAccountClick,
-                        onAccountCreationClick = onAccountCreationClick,
-                        accounts = accounts,
-                        modifier = Modifier,
-                        balanceClicked = balanceClicked
-                    )
-                }
-            )
-        }
+        SnackbarErrorHandler(message = error)
     }
 }
 
@@ -236,11 +244,12 @@ fun WalletContentPreview() {
                 modifier = Modifier.fillMaxSize(),
                 balanceClicked = {},
                 isLoading = false,
+                accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),
                 wallet = WalletData(
                     currency = "$",
                     amount = "236246"
                 ),
-                accounts = persistentListOf(sampleAccountResource(), sampleAccountResource())
+                error = null
             )
         }
     }

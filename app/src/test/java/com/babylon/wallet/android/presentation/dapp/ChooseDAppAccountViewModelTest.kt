@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.data.profile.model.Address
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
 import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule

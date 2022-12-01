@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.profile.model.Account
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -38,7 +38,7 @@ class ChooseDAppAccountViewModel @Inject constructor(
                         accounts = null,
                         dAppDetails = null,
                         accountAddresses = null,
-                        error = accountsResult.message,
+                        error = accountsResult.exception?.message,
                         showProgress = false
                     )
                 }

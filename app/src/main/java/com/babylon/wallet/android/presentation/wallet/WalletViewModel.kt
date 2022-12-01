@@ -6,8 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.gateway.HammunetGatewayTestConstants
 import com.babylon.wallet.android.domain.MainViewRepository
+import com.babylon.wallet.android.domain.common.UiMessage
+import com.babylon.wallet.android.domain.common.onError
+import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.domain.onValue
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -37,6 +39,9 @@ class WalletViewModel @Inject constructor(
     private suspend fun loadResourceData() {
         val callResult = requestAccountsUseCase.getAccountResources(HammunetGatewayTestConstants.SAMPLE_ACCOUNT)
         val wallet = mainViewRepository.getWallet()
+        callResult.onError { error ->
+            _walletUiState.update { it.copy(error = UiMessage(error), isLoading = false) }
+        }
         callResult.onValue { accountResources ->
             _walletUiState.update { state ->
                 state.copy(wallet = wallet, resources = persistentListOf(accountResources), isLoading = false)
@@ -62,7 +67,8 @@ data class WalletUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val wallet: WalletData? = null,
-    val resources: ImmutableList<AccountResources> = persistentListOf()
+    val resources: ImmutableList<AccountResources> = persistentListOf(),
+    val error: UiMessage? = null
 )
 
 data class WalletData(

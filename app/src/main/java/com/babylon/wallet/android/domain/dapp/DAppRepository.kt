@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.data.dapp.DAppWellKnownResponse
 import com.babylon.wallet.android.data.dapp.model.RequestMethodWalletRequest
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 
 interface DAppRepository {
 

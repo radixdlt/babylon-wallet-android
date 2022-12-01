@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import android.content.ClipboardManager
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.account.AccountUiState
