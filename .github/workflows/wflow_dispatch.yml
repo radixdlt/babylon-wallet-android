@@ -54,7 +54,7 @@ jobs:
           env
           git config -l
           ls -l /**
-          cat ~/.gitconfig
+          cat /etc/gitconfig
 
       - name: Build and distribute
         run: |
