@@ -42,29 +42,26 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
-      - uses: oleksiyrudenko/gha-git-credentials@ac5b66bcf3873df4259c681d957d8c145980171f
+      - uses: webfactory/ssh-agent@v0.6.0
         with:
-          global: true
-          name: ${{ secrets.RADIX_BOT_USERNAME }}
-          actor: ${{ secrets.RADIX_BOT_USERNAME }}
-          token: ${{ secrets.RADIX_BOT_PAT }}
-
-      - name: Build and distribute
-        run: |
-          export GIT_USER=${{secrets.RADIX_BOT_USERNAME}}
-          echo $GIT_USER
+          ssh-private-key: |
+            ${{ secrets.SSH_KEY_FOR_CI_CD_PUSH_COMMITS }}
 
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
-          env
-          git config -l
+          git config user.name "test"
+          git config user.email "actions@users.noreply.github.com"
+          git log
           bundle exec fastlane main
+          git log
+          git push https://${{ secrets.RADIX_BOT_USERNAME }}:${{ secrets.RADIX_BOT_PAT }}@github.com/radixdlt/babylon-wallet-android.git DO-1022-add-manual-trigger
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
           GROUPS: ${{ github.event.inputs.groups }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
+          GITHUB_TOKEN: ${{ secrets.RADIX_BOT_PAT }}
