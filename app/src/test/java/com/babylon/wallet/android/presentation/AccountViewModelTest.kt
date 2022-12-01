@@ -2,12 +2,13 @@ package com.babylon.wallet.android.presentation
 
 import android.content.ClipboardManager
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.account.AccountUiState
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -74,7 +75,7 @@ class AccountViewModelTest {
         // then
         with(event.last()) {
             assert(!this.isLoading)
-            assert(accountAddress == sampleData.address)
+            assert(accountAddressShortened == sampleData.address.truncatedHash())
             assert(xrdToken != null)
             assert(sampleData.fungibleTokens.size == 3)
         }

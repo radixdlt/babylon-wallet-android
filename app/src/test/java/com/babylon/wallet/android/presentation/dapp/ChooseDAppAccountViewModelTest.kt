@@ -124,7 +124,7 @@ class ChooseDAppAccountViewModelTest {
 //            accounts = accounts,
 //            dAppResult = null
 //        )
-        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(Result.Error("Error"))
+        whenever(getDAppAccountsUseCase.getAccountsResult()).thenReturn(Result.Error(Exception("Error")))
 
         // when
         val viewModel = ChooseDAppAccountViewModel(
