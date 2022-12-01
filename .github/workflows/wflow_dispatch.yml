@@ -51,11 +51,8 @@ jobs:
 
       - name: Build and distribute
         run: |
-          env
-          git config -l
-          cat /etc/gitconfig
-          ls -l /**
-          cat /etc/gitconfig
+          export GIT_USER=${{secrets.RADIX_BOT_USERNAME}}
+          echo $GIT_USER
 
       - name: Build and distribute
         run: |
