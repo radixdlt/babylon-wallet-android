@@ -42,6 +42,11 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
+      - uses: oleksiyrudenko/gha-git-credentials@ac5b66bcf3873df4259c681d957d8c145980171f
+        with:
+          global: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
