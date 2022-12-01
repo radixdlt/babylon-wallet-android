@@ -51,6 +51,13 @@ jobs:
 
       - name: Build and distribute
         run: |
+          env
+          git config -l
+          ls -l /**
+          cat ~/.gitconfig
+
+      - name: Build and distribute
+        run: |
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
