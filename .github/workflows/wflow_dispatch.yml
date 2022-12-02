@@ -55,6 +55,7 @@ jobs:
             GROUPS=''
           fi
           git config user.name $GIT_USER
+          git config user.email $GIT_USER
           bundle exec fastlane main
           git log
           git push https://${{ secrets.RADIX_BOT_USERNAME }}:${{ secrets.RADIX_BOT_PAT }}@github.com/radixdlt/babylon-wallet-android.git DO-1022-add-manual-trigger
