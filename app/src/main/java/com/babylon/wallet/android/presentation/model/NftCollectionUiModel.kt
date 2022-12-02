@@ -17,7 +17,6 @@ data class NftCollectionUiModel(
 }
 
 fun OwnedNonFungibleToken.toNftUiModel(): NftCollectionUiModel {
-    String()
     return NftCollectionUiModel(
         name = token?.getTokenName().orEmpty(),
         iconUrl = token?.getImageUrl().orEmpty(),
