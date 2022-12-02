@@ -12,7 +12,6 @@ class DefaultLocaleRule : TestRule {
                 Locale.setDefault(Locale.UK)
                 base.evaluate()
             }
-
         }
     }
 }
