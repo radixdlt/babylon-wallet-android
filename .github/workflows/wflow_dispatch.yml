@@ -42,18 +42,19 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
-      - uses: oleksiyrudenko/gha-git-credentials@v2.1.1
-        with:
-          global: false
-          name: ${{ secrets.RADIX_BOT_USERNAME }}
-          actor: ${{ secrets.RADIX_BOT_USERNAME }}
-          token: ${{ secrets.RADIX_BOT_PAT }}
+      # - uses: oleksiyrudenko/gha-git-credentials@v2.1.1
+      #   with:
+      #     global: false
+      #     name: ${{ secrets.RADIX_BOT_USERNAME }}
+      #     actor: ${{ secrets.RADIX_BOT_USERNAME }}
+      #     token: ${{ secrets.RADIX_BOT_PAT }}
 
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
+          git config user.name $GIT_USER
           bundle exec fastlane main
           git log
           git push https://${{ secrets.RADIX_BOT_USERNAME }}:${{ secrets.RADIX_BOT_PAT }}@github.com/radixdlt/babylon-wallet-android.git DO-1022-add-manual-trigger
@@ -63,3 +64,4 @@ jobs:
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
           GROUPS: ${{ github.event.inputs.groups }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
