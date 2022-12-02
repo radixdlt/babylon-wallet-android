@@ -10,7 +10,7 @@ on:
       groups:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
-        default: 'no'
+        default: 'internal'
         type: choice
         options:
           - "internal"
@@ -48,7 +48,7 @@ jobs:
           fi
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane main
+          bundle exec fastlane internal
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
