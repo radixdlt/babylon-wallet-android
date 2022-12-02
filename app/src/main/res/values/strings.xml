@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BabylonWallet</string>
+    <string name="app_name">Radix Wallet</string>
     <string name="home_toolbar_title">Radix Wallet</string>
     <string name="home_welcome_text">Welcome, here are all your\naccounts on the Radix Network</string>
     <string name="create_new_account">Create New Account</string>
@@ -50,4 +50,14 @@
     <string name="dapp_verification_error_title">DApp error</string>
     <string name="empty_content_description" />
     <string name="history">History</string>
+    <string name="settings">Settings</string>
+    <string name="p2p_connections">P2P CONNECTIONS</string>
+    <string name="debug">DEBUG</string>
+    <string name="add_connection">Add Connection</string>
+    <string name="delete_all"><![CDATA[Delete all & Factor Sources]]></string>
+    <string name="edit_gateway">Edit Gateway API Endpoint</string>
+    <string name="inspect_profile">Inspect Profile</string>
+    <string name="manage_connections">Manage Connections</string>
+    <string name="new_connection">New Connection</string>
+    <string name="enter_the_connection_id">Enter the connection id</string>
 </resources>
