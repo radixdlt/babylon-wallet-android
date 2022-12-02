@@ -42,6 +42,13 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
+      - uses: oleksiyrudenko/gha-git-credentials@v2.1.1
+        with:
+          global: false
+          name: ${{ secrets.RADIX_BOT_USERNAME }}
+          actor: ${{ secrets.RADIX_BOT_USERNAME }}
+          token: ${{ secrets.RADIX_BOT_PAT }}
+
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
