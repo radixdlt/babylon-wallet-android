@@ -60,7 +60,7 @@ jobs:
           git config user.email $GIT_USER
           bundle exec fastlane main
           git log
-          git push https://${{ secrets.RADIX_BOT_USERNAME }}:${{ secrets.RADIX_BOT_PAT }}@github.com/radixdlt/babylon-wallet-android.git DO-1022-add-manual-trigger
+          #git push https://${{ secrets.RADIX_BOT_USERNAME }}:${{ secrets.RADIX_BOT_PAT }}@github.com/radixdlt/babylon-wallet-android.git DO-1022-add-manual-trigger
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}

@@ -29,9 +29,9 @@ lane :main do
         path: "./versioning/BUILD_NUMBER",
         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
     )
-    # push_to_git_remote(
-    #     tags: false
-    # )
+    push_to_git_remote(
+        tags: false
+    )
 end
 
 after_all do |main|
