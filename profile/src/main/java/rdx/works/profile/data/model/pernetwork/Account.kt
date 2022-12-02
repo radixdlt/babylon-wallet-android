@@ -3,13 +3,12 @@ package rdx.works.profile.data.model.pernetwork
 import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
-import rdx.works.profile.data.repository.DerivePublicKey
 import rdx.works.profile.data.repository.EntityDerivationPath
 
 @Serializable
@@ -58,6 +57,21 @@ data class Account(
     @SerialName("securityState")
     val securityState: SecurityState.Unsecured
 ) {
+    enum class AppearanceIdGradient {
+        Gradient1,
+        Gradient2,
+        Gradient3,
+        Gradient4,
+        Gradient5,
+        Gradient6,
+        Gradient7,
+        Gradient8,
+        Gradient9,
+        Gradient10,
+        Gradient11,
+        Gradient12,
+    }
+
     companion object {
         /**
          * Creates initial account upon new profile creation
@@ -75,9 +89,7 @@ data class Account(
                     networkId = networkId
                 ),
                 entityIndex = 0,
-                derivePublicKey = CompressedPublicKey(
-                    mnemonic = mnemonic
-                ),
+                mnemonic = mnemonic,
                 factorSources = factorSources
             )
         }
@@ -88,12 +100,14 @@ fun createNewVirtualAccount(
     displayName: String,
     entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
-    derivePublicKey: DerivePublicKey,
+    mnemonic: MnemonicWords,
     factorSources: FactorSources
 ): Account {
     val derivationPath = entityDerivationPath.path()
 
-    val compressedPublicKey = derivePublicKey.derive(derivationPath)
+    val compressedPublicKey = mnemonic.compressedPublicKey(
+        derivationPath = derivationPath
+    )
     val address = deriveAddress(compressedPublicKey)
 
     val unsecuredSecurityState = unsecuredSecurityState(
@@ -106,7 +120,7 @@ fun createNewVirtualAccount(
 
     return Account(
         address = address,
-        appearanceID = entityIndex % 12,
+        appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
         derivationPath = derivationPath,
         displayName = displayName,
         index = entityIndex,

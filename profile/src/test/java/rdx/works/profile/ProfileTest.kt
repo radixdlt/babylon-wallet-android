@@ -9,7 +9,6 @@ import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.derivation.model.NetworkId
@@ -52,9 +51,7 @@ class ProfileTest {
                 networkId = networkId
             ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
-            derivePublicKey = CompressedPublicKey(
-                mnemonic = mnemonic
-            ),
+            mnemonic = mnemonic,
             factorSources = profile.factorSources
         )
 
@@ -68,17 +65,15 @@ class ProfileTest {
         val firstPersona = createNewPersona(
             displayName = "First",
             fields = listOf(
-                PersonaField.init("firstName", "Alice"),
-                PersonaField.init("lastName", "Anderson")
+                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Alice"),
+                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Anderson")
             ),
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
-            derivePublicKey = CompressedPublicKey(
-                mnemonic = mnemonic
-            ),
+            mnemonicWords = mnemonic,
             factorSources = profile.factorSources
         )
 
@@ -124,9 +119,7 @@ class ProfileTest {
                 networkId = networkId
             ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
-            derivePublicKey = CompressedPublicKey(
-                mnemonic = mnemonic
-            ),
+            mnemonic = mnemonic,
             factorSources = profile.factorSources
         )
         profile = profile.addAccountOnNetwork(
@@ -141,9 +134,7 @@ class ProfileTest {
                 networkId = networkId
             ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
-            derivePublicKey = CompressedPublicKey(
-                mnemonic = mnemonic
-            ),
+            mnemonic = mnemonic,
             factorSources = profile.factorSources
         )
         profile = profile.addAccountOnNetwork(
@@ -155,17 +146,15 @@ class ProfileTest {
         val firstPersona = createNewPersona(
             displayName = "Mrs Incognito",
             fields = listOf(
-                PersonaField.init("firstName", "Jane"),
-                PersonaField.init("lastName", "Incognitoson")
+                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Jane"),
+                PersonaField.init(PersonaField.PersonaFieldKind.lastName, "Incognitoson")
             ),
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
-            derivePublicKey = CompressedPublicKey(
-                mnemonic = mnemonic
-            ),
+            mnemonicWords = mnemonic,
             factorSources = profile.factorSources
         )
         profile = profile.addPersonaOnNetwork(
@@ -176,17 +165,15 @@ class ProfileTest {
         val secondPersona = createNewPersona(
             displayName = "Mrs Public",
             fields = listOf(
-                PersonaField.init("firstName", "Maria"),
-                PersonaField.init("lastName", "Publicson")
+                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Maria"),
+                PersonaField.init(PersonaField.PersonaFieldKind.lastName, "Publicson")
             ),
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
                 networkId = networkId
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
-            derivePublicKey = CompressedPublicKey(
-                mnemonic = mnemonic
-            ),
+            mnemonicWords = mnemonic,
             factorSources = profile.factorSources
         )
         profile = profile.addPersonaOnNetwork(

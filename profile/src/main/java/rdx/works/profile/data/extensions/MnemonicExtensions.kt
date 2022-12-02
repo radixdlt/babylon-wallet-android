@@ -17,8 +17,21 @@ fun MnemonicWords.factorSourceId(
     derivationPath: String = CustomHDDerivationPath.getId.path,
     bip39Passphrase: String = ""
 ): String {
-    val seed = toSeed(bip39Passphrase)
+    return compressedPublicKey(
+        ellipticCurveType = ellipticCurveType,
+        derivationPath = derivationPath,
+        bip39Passphrase = bip39Passphrase
+    ).hashToFactorId()
+}
+
+fun MnemonicWords.compressedPublicKey(
+    ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
+    derivationPath: String,
+    bip39Passphrase: String = "",
+): ByteArray {
+    val seed = toSeed(passphrase = bip39Passphrase)
+
     val derivedKey = seed.toKey(derivationPath, ellipticCurveType)
 
-    return derivedKey.keyPair.getCompressedPublicKey().hashToFactorId()
+    return derivedKey.keyPair.getCompressedPublicKey()
 }

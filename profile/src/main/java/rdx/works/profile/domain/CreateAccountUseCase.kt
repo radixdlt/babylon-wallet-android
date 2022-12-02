@@ -2,7 +2,6 @@ package rdx.works.profile.domain
 
 import com.radixdlt.bip39.model.MnemonicWords
 import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.CompressedPublicKey
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
@@ -32,13 +31,11 @@ class CreateAccountUseCase @Inject constructor(
                     networkId = networkID
                 ),
                 entityIndex = profile.perNetwork.accountsPerNetworkCount(networkID),
-                derivePublicKey = CompressedPublicKey(
-                    mnemonic = MnemonicWords(
-                        phrase = generateMnemonicUseCase(
-                            mnemonicKey = profile.factorSources
-                                .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                                .first().factorSourceID
-                        )
+                mnemonic = MnemonicWords(
+                    phrase = generateMnemonicUseCase(
+                        mnemonicKey = profile.factorSources
+                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
+                            .first().factorSourceID
                     )
                 ),
                 factorSources = profile.factorSources

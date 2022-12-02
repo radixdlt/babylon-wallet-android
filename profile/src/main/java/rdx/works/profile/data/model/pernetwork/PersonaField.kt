@@ -10,14 +10,24 @@ data class PersonaField(
     val id: String,
 
     @SerialName("kind")
-    val kind: String,
+    val kind: PersonaFieldKind,
 
     @SerialName("value")
     val value: String
 ) {
+
+    @Serializable
+    enum class PersonaFieldKind {
+        firstName,
+        lastName,
+        email,
+        personalIdentificationNumber,
+        zipCode
+    }
+
     companion object {
         fun init(
-            kind: String,
+            kind: PersonaFieldKind,
             value: String
         ): PersonaField {
             return PersonaField(

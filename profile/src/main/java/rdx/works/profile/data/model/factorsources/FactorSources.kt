@@ -27,14 +27,14 @@ data class FactorSources(
         val factorSourceID: String,
 
         @SerialName("label")
-        val label: String
+        val label: String?
     ) {
         companion object {
 
             fun deviceFactorSource(
                 mnemonic: MnemonicWords,
                 bip39Passphrase: String = "",
-                label: String = "DeviceFactorSource",
+                label: String?,
                 creationDate: String = Instant.now().toString()
             ): Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
                 val factorSourceID = mnemonic.factorSourceId(
@@ -62,6 +62,6 @@ data class FactorSources(
         val factorSourceID: String,
 
         @SerialName("label")
-        val label: String
+        val label: String?
     )
 }

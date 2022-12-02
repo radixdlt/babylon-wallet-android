@@ -38,12 +38,12 @@ class CreatePersonaUseCaseTest {
             val personaFields = listOf(
                 PersonaField(
                     id = "ID213",
-                    kind = "firstName",
+                    kind = PersonaField.PersonaFieldKind.firstName,
                     value = "Emily"
                 ),
                 PersonaField(
                     id = "ID0921",
-                    kind = "lastName",
+                    kind = PersonaField.PersonaFieldKind.lastName,
                     value = "Jacobs"
                 )
             )
