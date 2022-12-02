@@ -14,7 +14,7 @@
 # update_fastlane
 
 desc "Deploy main branch"
-lane :internal do
+lane :beta do
 
     bump_build_number
     gradle(task: "assembleDebug")
@@ -34,7 +34,7 @@ lane :internal do
     )
 end
 
-after_all do |internal|
+after_all do |beta|
   slack(
     message: "New Android version of Babylon Wallet is released!",
     slack_url: ENV["SLACK_URL"],
@@ -45,7 +45,7 @@ after_all do |internal|
 )
 end
 
-error do |internal, exception|
+error do |beta, exception|
   slack(
     message: exception.message,
     success: false
@@ -63,9 +63,4 @@ lane :bump_build_number do
         gradle_file: "app/build.gradle"
     )
 
-end
-
-desc "Deploy release"
-lane :release do
-  gradle(task: "bundle")
 end
