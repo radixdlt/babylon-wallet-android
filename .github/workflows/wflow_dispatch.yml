@@ -18,7 +18,7 @@ on:
 
 jobs:
 
-  deploy:
+  deployy:
 
     name: "Build and distribute"
     runs-on: ubuntu-latest
