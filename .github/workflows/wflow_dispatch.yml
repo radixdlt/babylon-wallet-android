@@ -42,19 +42,11 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
-      - uses: webfactory/ssh-agent@v0.6.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_KEY_FOR_CI_CD_PUSH_COMMITS }}
-
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
-          git config user.name "test"
-          git config user.email "actions@users.noreply.github.com"
-          git log
           bundle exec fastlane main
           git log
           git push https://${{ secrets.RADIX_BOT_USERNAME }}:${{ secrets.RADIX_BOT_PAT }}@github.com/radixdlt/babylon-wallet-android.git DO-1022-add-manual-trigger
@@ -64,4 +56,3 @@ jobs:
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
           GROUPS: ${{ github.event.inputs.groups }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
-          GITHUB_TOKEN: ${{ secrets.RADIX_BOT_PAT }}

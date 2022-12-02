@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  cacel:
+  cancel:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
