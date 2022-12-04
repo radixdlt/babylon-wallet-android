@@ -15,7 +15,9 @@ class AddP2PClientUseCase @Inject constructor(
     ): P2PClient {
 
         // Read profile first as its needed to create account
-        profileRepository.readProfile()?.let { profile ->
+        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
+
+            val profile = profileSnapshot.toProfile()
 
             val p2pClient = P2PClient.init(
                 connectionPassword = connectionPassword,
@@ -28,7 +30,7 @@ class AddP2PClientUseCase @Inject constructor(
             )
 
             // Save updated profile
-            profileRepository.saveProfile(updatedProfile)
+            profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
 
             return p2pClient
         }

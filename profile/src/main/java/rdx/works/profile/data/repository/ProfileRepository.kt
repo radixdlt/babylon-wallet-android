@@ -9,29 +9,27 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import javax.inject.Inject
 
 //TODO will have to add encryption
 interface ProfileRepository {
-    suspend fun saveProfile(profile: Profile)
-    suspend fun readProfile(): Profile?
+    suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot)
+    suspend fun readProfileSnapshot(): ProfileSnapshot?
 }
 
 class ProfileRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) : ProfileRepository {
 
-    override suspend fun saveProfile(profile: Profile) {
-        val profileSnapshot = profile.snapshot()
+    override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {
         val profileContent = Json.encodeToString(profileSnapshot)
         dataStore.edit { preferences ->
             preferences[PROFILE_PREFERENCES_KEY] = profileContent
         }
     }
 
-    override suspend fun readProfile(): Profile? {
+    override suspend fun readProfileSnapshot(): ProfileSnapshot? {
         val profileContent = dataStore.data
             .map { preferences ->
                 preferences[PROFILE_PREFERENCES_KEY] ?: ""
@@ -39,13 +37,7 @@ class ProfileRepositoryImpl @Inject constructor(
         return if (profileContent.isEmpty()) {
             null
         } else {
-            val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileContent)
-            Profile(
-                appPreferences = profileSnapshot.appPreferences,
-                factorSources = profileSnapshot.factorSources,
-                perNetwork = profileSnapshot.perNetwork,
-                version = profileSnapshot.version
-            )
+            return Json.decodeFromString<ProfileSnapshot>(profileContent)
         }
     }
 

@@ -20,7 +20,9 @@ class CreateAccountUseCase @Inject constructor(
     ): Account {
 
         // Read profile first as its needed to create account
-        profileRepository.readProfile()?.let { profile ->
+        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
+
+            val profile = profileSnapshot.toProfile()
 
             val networkID = profile.appPreferences.networkAndGateway.network.networkId()
             // Construct new account
@@ -48,7 +50,7 @@ class CreateAccountUseCase @Inject constructor(
             )
 
             // Save updated profile
-            profileRepository.saveProfile(updatedProfile)
+            profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
 
             // Return new account
             return newAccount

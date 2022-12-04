@@ -12,8 +12,8 @@ class GenerateProfileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(): Profile {
-        profileRepository.readProfile()?.let { profile ->
-            return profile
+        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
+            return profileSnapshot.toProfile()
         } ?: run {
             val mnemonic = getMnemonicUseCase()
 
@@ -24,7 +24,7 @@ class GenerateProfileUseCase @Inject constructor(
                 mnemonic = MnemonicWords(phrase = mnemonic)
             )
 
-            profileRepository.saveProfile(profile)
+            profileRepository.saveProfileSnapshot(profile.snapshot())
 
             return profile
         }

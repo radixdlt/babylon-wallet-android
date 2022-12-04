@@ -32,4 +32,13 @@ data class ProfileSnapshot(
      */
     @SerialName("version")
     val version: String
-)
+) {
+    fun toProfile(): Profile {
+        return Profile(
+            appPreferences = appPreferences,
+            factorSources = factorSources,
+            perNetwork = perNetwork,
+            version = version
+        )
+    }
+}
