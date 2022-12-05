@@ -1,6 +1,7 @@
 @file:Suppress("MagicNumber")
 package com.babylon.wallet.android.utils
 
+import android.util.Patterns
 import java.text.DecimalFormat
 
 fun String.truncatedHash(): String {
@@ -23,11 +24,6 @@ fun String.formatDecimalSeparator(): String {
     }
 }
 
-fun String.decodeHex(): String {
-    require(length % 2 == 0) { "Must have an even length" }
-    return String(
-        chunked(2)
-            .map { it.toInt(16).toByte() }
-            .toByteArray()
-    )
+fun String.validUrl(): Boolean {
+    return Patterns.WEB_URL.matcher(this).matches()
 }

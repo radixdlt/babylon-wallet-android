@@ -66,4 +66,12 @@
     <string name="manage_connections">Manage Connections</string>
     <string name="new_connection">New Connection</string>
     <string name="enter_the_connection_id">Enter the connection id</string>
+    <string name="edit_gateway_api_url">Edit Gateway API URL</string>
+    <string name="current">Current</string>
+    <string name="network_name">Network name</string>
+    <string name="network_id">Network ID</string>
+    <string name="gateway_api_endpoint">Gateway API Endpoint</string>
+    <string name="new_url">New URL (https:// required)</string>
+    <string name="switch_to">Switch to</string>
+    <string name="gateway_api_hint">New URL</string>
 </resources>
