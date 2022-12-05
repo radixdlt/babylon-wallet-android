@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.common.UiMessage
+import com.babylon.wallet.android.presentation.common.UiMessage
 
 @Composable
 fun BoxScope.SnackbarErrorHandler(message: UiMessage?, modifier: Modifier = Modifier) {

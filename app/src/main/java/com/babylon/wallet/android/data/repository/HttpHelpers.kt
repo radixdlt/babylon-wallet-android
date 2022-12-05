@@ -5,7 +5,7 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.gateway.RadixGatewayException
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.babylon.wallet.android.data.gateway.generated.model.ErrorResponse
-import com.babylon.wallet.android.data.gateway.hasMeaningfulData
+import com.babylon.wallet.android.data.gateway.hasMessageOrDetails
 import com.babylon.wallet.android.data.gateway.model.GatewayErrorResponse
 import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.decodeFromString
@@ -41,7 +41,7 @@ private fun tryParseServerError(
         errorBodyString
     )
     var gatewayErrorResponse: GatewayErrorResponse? = null
-    if (!errorResponse.hasMeaningfulData()) {
+    if (!errorResponse.hasMessageOrDetails()) {
         gatewayErrorResponse = Serializer.kotlinxSerializationJson.decodeFromString<GatewayErrorResponse>(
             errorBodyString
         )
