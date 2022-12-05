@@ -1,13 +1,10 @@
 package com.babylon.wallet.android.data.gateway
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
-import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIdsItem
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseFungibleResources
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponseNonFungibleResources
+import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleResourcesCollection
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
@@ -36,14 +33,6 @@ fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): Li
             address = fungibleResourceItem.address
         )
     }
-}
-
-fun EntityResourcesResponse.toAccountResourceSlim(): AccountResourcesSlim {
-    return AccountResourcesSlim(
-        address = address,
-        simpleFungibleTokens = fungibleResources.toSimpleFungibleTokens(address),
-        simpleNonFungibleTokens = nonFungibleResources.toSimpleNonFungibleTokens(address)
-    )
 }
 
 fun EntityDetailsResponse.toNonFungibleToken(): NonFungibleToken {
