@@ -3,11 +3,11 @@ package com.babylon.wallet.android.domain.usecase.wallet
 import com.babylon.wallet.android.data.gateway.toFungibleToken
 import com.babylon.wallet.android.data.gateway.toNonFungibleToken
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import com.babylon.wallet.android.domain.onValue
 import javax.inject.Inject
 
 class RequestAccountResourcesUseCase @Inject constructor(
@@ -15,7 +15,7 @@ class RequestAccountResourcesUseCase @Inject constructor(
 ) {
     suspend fun getAccountResources(address: String): Result<AccountResources> {
         return when (val accountResourcesResult = entityRepository.getAccountResources(address)) {
-            is Result.Error -> Result.Error(accountResourcesResult.message)
+            is Result.Error -> Result.Error(accountResourcesResult.exception)
             is Result.Success -> {
                 return Result.Success(
                     data = accountResourcesResult.data.let { accountResources ->

@@ -14,5 +14,5 @@ data class GatewayErrorResponse(
     @SerialName(value = "status")
     val status: Int,
     @SerialName(value = "traceId")
-    val traceId: Int,
+    val traceId: String,
 )

@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetail
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 
 // TODO translate from network models to domain models
 interface TransactionRepository {

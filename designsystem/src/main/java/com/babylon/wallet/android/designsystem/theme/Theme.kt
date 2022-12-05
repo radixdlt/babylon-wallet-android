@@ -34,6 +34,7 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 @Stable
 class RadixColors(
     defaultBackground: Color,
+    backgroundAlternate: Color,
     defaultText: Color,
     blue1: Color,
     blue2: Color,
@@ -56,6 +57,8 @@ class RadixColors(
     darkMode3: Color,
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
+        private set
+    var backgroundAlternate by mutableStateOf(backgroundAlternate)
         private set
     var defaultText by mutableStateOf(defaultText)
         private set
@@ -100,6 +103,7 @@ class RadixColors(
 
     fun copy(
         defaultBackground: Color = this.defaultBackground,
+        backgroundAlternate: Color = this.backgroundAlternate,
         defaultText: Color = this.defaultText,
         blue1: Color = this.blue1,
         blue2: Color = this.blue2,
@@ -123,6 +127,7 @@ class RadixColors(
     ): RadixColors {
         return RadixColors(
             defaultBackground,
+            backgroundAlternate,
             defaultText,
             blue1,
             blue2,
@@ -173,6 +178,7 @@ class RadixColors(
 
 private val LightColorPalette = RadixColors(
     defaultBackground = White,
+    backgroundAlternate = Black,
     defaultText = Black,
     blue1 = Blue1,
     blue2 = Blue2,
@@ -197,6 +203,7 @@ private val LightColorPalette = RadixColors(
 
 private val DarkColorPalette = RadixColors(
     defaultBackground = Black,
+    backgroundAlternate = White,
     defaultText = White,
     blue1 = Blue1,
     blue2 = Blue2,

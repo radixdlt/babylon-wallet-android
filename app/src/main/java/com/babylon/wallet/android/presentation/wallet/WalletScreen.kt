@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -22,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -34,60 +35,72 @@ import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.presentation.ui.composables.BabylonButton
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarErrorHandler
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import java.util.Locale
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun WalletScreen(
     viewModel: WalletViewModel,
+    onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit = { _, _, _ -> },
     onAccountCreationClick: () -> Unit
 ) {
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()
-    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     WalletScreenContent(
-        state = state,
+        onMenuClick = onMenuClick,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
-        isRefreshing = isRefreshing,
+        isRefreshing = state.isRefreshing,
         onRefresh = viewModel::refresh,
         onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
         modifier = modifier.systemBarsPadding(),
-        balanceClicked = {}
+        balanceClicked = {},
+        isLoading = state.isLoading,
+        accounts = state.resources,
+        wallet = state.wallet,
+        error = state.error
     )
 }
 
 @Composable
 private fun WalletScreenContent(
-    state: WalletUiState,
+    onMenuClick: () -> Unit,
     onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onCopyAccountAddressClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    balanceClicked: () -> Unit
+    balanceClicked: () -> Unit,
+    isLoading: Boolean,
+    accounts: ImmutableList<AccountResources>,
+    wallet: WalletData?,
+    error: UiMessage?
 ) {
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            RDXAppBar(
-                stringResource(id = R.string.home_toolbar_title)
-            ) {}
-        },
-        contentColor = RadixTheme.colors.defaultText,
-        backgroundColor = RadixTheme.colors.defaultBackground
-    ) { innerPadding ->
-        when (state) {
-            WalletUiState.Loading -> {
+    Box(modifier = modifier) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                RDXAppBar(
+                    toolbarTitle = stringResource(id = R.string.home_toolbar_title),
+                    onMenuClick = onMenuClick
+                )
+            },
+            contentColor = RadixTheme.colors.defaultText,
+            backgroundColor = RadixTheme.colors.defaultBackground
+        ) { innerPadding ->
+            if (isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -98,7 +111,7 @@ private fun WalletScreenContent(
                     )
                 }
             }
-            is WalletUiState.Loaded -> {
+            AnimatedVisibility(visible = !isLoading, enter = fadeIn()) {
                 SwipeRefresh(
                     state = swipeRefreshState,
                     onRefresh = onRefresh,
@@ -114,11 +127,11 @@ private fun WalletScreenContent(
                     refreshTriggerDistance = 100.dp,
                     content = {
                         WalletAccountList(
-                            wallet = state.wallet,
+                            wallet = wallet,
                             onCopyAccountAddressClick = onCopyAccountAddressClick,
                             onAccountClick = onAccountClick,
                             onAccountCreationClick = onAccountCreationClick,
-                            accounts = state.resources,
+                            accounts = accounts,
                             modifier = Modifier,
                             balanceClicked = balanceClicked
                         )
@@ -126,13 +139,14 @@ private fun WalletScreenContent(
                 )
             }
         }
+        SnackbarErrorHandler(message = error)
     }
 }
 
 @Suppress("UnstableCollections")
 @Composable
 private fun WalletAccountList(
-    wallet: WalletData,
+    wallet: WalletData?,
     onCopyAccountAddressClick: (String) -> Unit,
     onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -166,12 +180,14 @@ private fun WalletAccountList(
                     ),
                     style = RadixTheme.typography.body2Header,
                 )
-                WalletBalanceView(
-                    currencySignValue = wallet.currency,
-                    amount = wallet.amount,
-                    hidden = false,
-                    balanceClicked = balanceClicked
-                )
+                wallet?.let { wallet ->
+                    WalletBalanceView(
+                        currencySignValue = wallet.currency,
+                        amount = wallet.amount,
+                        hidden = false,
+                        balanceClicked = balanceClicked
+                    )
+                }
             }
         }
         itemsIndexed(accounts) { index, account ->
@@ -203,51 +219,12 @@ private fun WalletAccountList(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(0.8f),
                     text = stringResource(id = R.string.create_new_account),
-                    onClick = onAccountCreationClick
+                    onClick = onAccountCreationClick,
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 )
-
-                RadarHubView {
-                    /*TODO*/
-                }
             }
         }
-    }
-}
-
-@Composable
-fun RadarHubView(
-    modifier: Modifier = Modifier,
-    onClicked: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .padding(RadixTheme.dimensions.paddingDefault)
-            .fillMaxWidth()
-            .padding(start = 45.dp, top = 40.dp, end = 45.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card {
-            Text(
-                stringResource(id = R.string.radar_network_text),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(45.dp)
-            )
-        }
-        BabylonButton(
-            title = stringResource(id = R.string.visit_the_radar_hub),
-            modifier = Modifier.fillMaxWidth()
-        ) { onClicked() }
-    }
-}
-
-@Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
-@Composable
-fun RadarHubPreview() {
-    BabylonWalletTheme {
-        RadarHubView {}
     }
 }
 
@@ -258,20 +235,21 @@ fun WalletContentPreview() {
     BabylonWalletTheme {
         with(SampleDataProvider()) {
             WalletScreenContent(
-                state = WalletUiState.Loaded(
-                    wallet = WalletData(
-                        currency = "$",
-                        amount = "236246"
-                    ),
-                    resources = listOf(sampleAccountResource(), sampleAccountResource())
-                ),
+                onMenuClick = {},
                 onAccountClick = { _, _, _ -> },
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },
                 onCopyAccountAddressClick = {},
                 modifier = Modifier.fillMaxSize(),
-                balanceClicked = {}
+                balanceClicked = {},
+                isLoading = false,
+                accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),
+                wallet = WalletData(
+                    currency = "$",
+                    amount = "236246"
+                ),
+                error = null
             )
         }
     }

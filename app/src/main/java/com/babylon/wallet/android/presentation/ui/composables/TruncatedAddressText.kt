@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.TextUnit
 import com.babylon.wallet.android.utils.truncatedHash
 
 @Composable
-fun ResponsiveText(
+fun TruncatedAddressText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
@@ -35,10 +35,9 @@ fun ResponsiveText(
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
 ) {
     var textEllipsized by remember { mutableStateOf(text) }
-
     Text(
         text = textEllipsized,
         modifier = modifier,
@@ -59,6 +58,6 @@ fun ResponsiveText(
             if (it.hasVisualOverflow) {
                 textEllipsized = textEllipsized.truncatedHash()
             }
-        }
+        },
     )
 }

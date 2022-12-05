@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.performHttpRequest
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
 
 // TODO translate from network models to domain models

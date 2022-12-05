@@ -14,6 +14,9 @@ sealed class Screen(override val route: String) : Destination {
 
     object OnboardingDestination : Screen("onboarding_route")
     object WalletDestination : Screen("wallet_route")
+    object SettingsDestination : Screen("settings_route")
+    object SettingsAllDestination : Screen("settings_all_route")
+    object SettingsAddConnectionDestination : Screen("settings_add_connection_route")
     object AccountDestination : Screen("account_route")
     object CreateAccountDestination : Screen("create_account_route")
     object AccountCompletionDestination : Screen("account_completion_route")

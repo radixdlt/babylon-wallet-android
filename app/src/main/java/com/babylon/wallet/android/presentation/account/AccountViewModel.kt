@@ -7,14 +7,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.onValue
+import com.babylon.wallet.android.domain.common.onError
+import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
-import com.babylon.wallet.android.presentation.model.NftUiModel
+import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.model.AssetUiModel
+import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
+import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -56,6 +60,7 @@ class AccountViewModel @Inject constructor(
                 // TODO how to handle the case when the gateway doesn't return the account?
                 // TODO this should probably change to flow later
                 val account = requestAccountResourcesUseCase.getAccountResources(accountId)
+                account.onError { e -> _accountUiState.update { it.copy(uiMessage = UiMessage(error = e)) } }
                 account.onValue { accountResource ->
                     val xrdToken = if (accountResource.hasXrdToken()) accountResource.fungibleTokens[0] else null
                     val fungibleTokens = if (accountResource.hasXrdToken()) {
@@ -67,7 +72,7 @@ class AccountViewModel @Inject constructor(
                         state.copy(
                             isRefreshing = false,
                             isLoading = false,
-                            accountAddress = accountResource.address,
+                            accountAddressShortened = accountResource.address.truncatedHash(),
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.map { token -> token.toTokenUiModel() }.toPersistentList(),
                             nonFungibleTokens = accountResource.nonFungibleTokens.map { token -> token.toNftUiModel() }
@@ -87,7 +92,14 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onFungibleTokenClick(token: TokenUiModel) {
-        _accountUiState.update { it.copy(tokenDetails = token) }
+        _accountUiState.update { it.copy(assetDetails = token) }
+    }
+
+    fun onNonFungibleTokenClick(
+        nftCollectionUiModel: NftCollectionUiModel,
+        nftItemUiModel: NftCollectionUiModel.NftItemUiModel
+    ) {
+        _accountUiState.update { it.copy(assetDetails = nftCollectionUiModel, selectedNft = nftItemUiModel) }
     }
 }
 
@@ -95,11 +107,14 @@ data class AccountUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
-    val accountAddress: String = "",
+    val accountAddressShortened: String = "",
+    val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,
-    val tokenDetails: TokenUiModel? = null,
+    val assetDetails: AssetUiModel? = null,
+    val selectedNft: NftCollectionUiModel.NftItemUiModel? = null,
     val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
-    val nonFungibleTokens: ImmutableList<NftUiModel> = persistentListOf()
+    val nonFungibleTokens: ImmutableList<NftCollectionUiModel> = persistentListOf(),
+    val uiMessage: UiMessage? = null
 )
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {

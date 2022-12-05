@@ -19,7 +19,10 @@ internal class FakeWebSocketClient @Inject constructor(
     private val withError: Boolean = false
 ) : WebSocketClient {
 
-    override suspend fun initSession(encryptionKey: ByteArray): Result<Unit> {
+    override suspend fun initSession(
+        connectionId: String,
+        encryptionKey: ByteArray
+    ): Result<Unit> {
         println("initSession")
         return Result.Success(Unit)
     }

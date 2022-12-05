@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.presentation.navigation
 
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
@@ -15,8 +13,12 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
+import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @ExperimentalPagerApi
@@ -25,9 +27,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 fun NavigationHost(
     startDestination: String
 ) {
-    val navController = rememberNavController()
+    val navController = rememberAnimatedNavController()
 
-    NavHost(
+    AnimatedNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
@@ -40,6 +42,9 @@ fun NavigationHost(
         composable(route = Screen.WalletDestination.route) {
             WalletScreen(
                 viewModel = hiltViewModel(),
+                onMenuClick = {
+                    navController.navigate(Screen.SettingsAllDestination.route)
+                },
                 onAccountClick = { accountId, accountName, gradientIndex ->
                     navController.navigate(
                         Screen.AccountDestination.routeWithArgs(accountId, accountName, gradientIndex)
@@ -58,7 +63,13 @@ fun NavigationHost(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
                 navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
                 navArgument(ARG_GRADIENT_INDEX) { type = NavType.IntType }
-            )
+            ),
+            enterTransition = {
+                slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+            },
+            exitTransition = {
+                slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            }
         ) { navBackStackEntry ->
             AccountScreen(
                 viewModel = hiltViewModel(),
@@ -73,7 +84,15 @@ fun NavigationHost(
                 navController.navigateUp()
             }
         }
-        composable(route = Screen.CreateAccountDestination.route) {
+        composable(
+            route = Screen.CreateAccountDestination.route,
+            enterTransition = {
+                slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            },
+            exitTransition = {
+                slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            }
+        ) {
             CreateAccountScreen(
                 onBackClick = { navController.navigateUp() },
                 onContinueClick = { accountId, accountName ->
@@ -97,7 +116,7 @@ fun NavigationHost(
                 }
             )
         }
-
         dAppConnectionGraph(navController)
+        settingsNavGraph(navController)
     }
 }

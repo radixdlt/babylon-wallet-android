@@ -28,42 +28,6 @@ class OnboardingViewModelTest {
     private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
 
     @Test
-    fun `when not on the last page, verify buttons dont show`() = runTest {
-        // given
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
-
-        // when
-        viewModel.onPageSelected(0, 2)
-        viewModel.onboardingUiState
-            .onEach { event.add(it) }
-            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
-        advanceUntilIdle()
-
-        // then
-        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(showButtons = false))
-    }
-
-    @Test
-    fun `when on the last page, verify buttons show`() = runTest {
-        // given
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
-
-        // when
-        viewModel.onPageSelected(1, 2)
-        viewModel.onboardingUiState
-            .onEach { event.add(it) }
-            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
-        advanceUntilIdle()
-
-        // then
-        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(showButtons = true))
-    }
-
-    @Test
     fun `when alert accepted, go next`() = runTest {
         // given
         val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
