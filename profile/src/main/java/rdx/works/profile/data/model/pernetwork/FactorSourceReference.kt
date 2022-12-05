@@ -20,7 +20,8 @@ data class FactorSourceReference(
             factorSource: FactorSources
         ): FactorSourceReference {
             return FactorSourceReference(
-                factorSourceID = factorSource.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
+                factorSourceID =
+                factorSource.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
                     .first().factorSourceID,
                 factorSourceKind = curve25510OnDeviceFactorSourceKind
             )

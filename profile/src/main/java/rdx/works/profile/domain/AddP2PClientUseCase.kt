@@ -14,28 +14,26 @@ class AddP2PClientUseCase @Inject constructor(
         connectionPassword: String
     ): P2PClient {
 
-        // Read profile first as its needed to create account
-        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
-
-            val profile = profileSnapshot.toProfile()
-
-            val p2pClient = P2PClient.init(
-                connectionPassword = connectionPassword,
-                displayName = displayName
-            )
-
-            // Add p2p client to the profile
-            val updatedProfile = profile.addP2PClient(
-                p2pClient = p2pClient
-            )
-
-            // Save updated profile
-            profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
-
-            return p2pClient
+        val profileSnapshot = profileRepository.readProfileSnapshot()
+        checkNotNull(profileSnapshot) {
+            "Profile does not exist"
         }
 
-        // We should never reach here
-        throw IllegalStateException("Profile does not exist")
+        val profile = profileSnapshot.toProfile()
+
+        val p2pClient = P2PClient.init(
+            connectionPassword = connectionPassword,
+            displayName = displayName
+        )
+
+        // Add p2p client to the profile
+        val updatedProfile = profile.addP2PClient(
+            p2pClient = p2pClient
+        )
+
+        // Save updated profile
+        profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
+
+        return p2pClient
     }
 }

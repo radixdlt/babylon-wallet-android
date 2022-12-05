@@ -12,12 +12,12 @@ import java.time.Instant
 @Serializable
 data class FactorSources(
     @SerialName("curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources")
-    val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-    : List<Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource>,
+    val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources:
+        List<Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource>,
 
     @SerialName("secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources")
-    val secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources
-    : List<Secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources>
+    val secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources:
+        List<Secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources>
 ) {
     @Serializable
     data class Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource(
@@ -54,7 +54,7 @@ data class FactorSources(
         }
     }
 
-    //TODO secp256k1 not supported for now, but it will be later on
+    // TODO secp256k1 not supported for now, but it will be later on
     @Serializable
     data class Secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources(
         @SerialName("creationDate")
@@ -69,8 +69,8 @@ data class FactorSources(
 
     companion object {
         /**
-         * This generates the key, in our case factorSourceID, which we can use to associate with mnemonics when we store it
-         * For now defaults to Ed25519 curve and getId custom derivation path
+         * This generates the key, in our case factorSourceID, which we can use to associate with mnemonics
+         * when we store it for now defaults to Ed25519 curve and getId custom derivation path
          */
         fun factorSourceId(
             mnemonic: MnemonicWords,

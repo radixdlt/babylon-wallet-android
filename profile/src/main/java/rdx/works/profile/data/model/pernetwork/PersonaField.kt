@@ -18,11 +18,16 @@ data class PersonaField(
 
     @Serializable
     enum class PersonaFieldKind {
-        firstName,
-        lastName,
-        email,
-        personalIdentificationNumber,
-        zipCode
+        @SerialName("firstName")
+        FirstName,
+        @SerialName("lastName")
+        LastName,
+        @SerialName("email")
+        Email,
+        @SerialName("personalIdentificationNumber")
+        PersonalIdentificationNumber,
+        @SerialName("zipCode")
+        ZipCode
     }
 
     companion object {

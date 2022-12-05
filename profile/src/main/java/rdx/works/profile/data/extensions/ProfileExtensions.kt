@@ -86,6 +86,7 @@ fun Profile.addP2PClient(
 /**
  * TODO Once engine toolkit ready, we will used it derive address
  */
+@Suppress("MagicNumber")
 fun deriveAddress(
     compressedPublicKey: ByteArray
 ): EntityAddress {

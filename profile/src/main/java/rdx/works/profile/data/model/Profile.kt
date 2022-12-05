@@ -55,10 +55,11 @@ data class Profile(
         ): Profile {
 
             val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource =
-                FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource.deviceFactorSource(
-                    mnemonic = mnemonic,
-                    label = firstAccountDisplayName
-                )
+                FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource
+                    .deviceFactorSource(
+                        mnemonic = mnemonic,
+                        label = firstAccountDisplayName
+                    )
 
             val network = networkAndGateway.network
 

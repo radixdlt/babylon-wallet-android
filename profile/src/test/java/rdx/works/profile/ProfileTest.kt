@@ -65,8 +65,8 @@ class ProfileTest {
         val firstPersona = createNewPersona(
             displayName = "First",
             fields = listOf(
-                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Alice"),
-                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Anderson")
+                PersonaField.init(PersonaField.PersonaFieldKind.FirstName, "Alice"),
+                PersonaField.init(PersonaField.PersonaFieldKind.LastName, "Anderson")
             ),
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
@@ -146,8 +146,8 @@ class ProfileTest {
         val firstPersona = createNewPersona(
             displayName = "Mrs Incognito",
             fields = listOf(
-                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Jane"),
-                PersonaField.init(PersonaField.PersonaFieldKind.lastName, "Incognitoson")
+                PersonaField.init(PersonaField.PersonaFieldKind.FirstName, "Jane"),
+                PersonaField.init(PersonaField.PersonaFieldKind.LastName, "Incognitoson")
             ),
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,
@@ -165,8 +165,8 @@ class ProfileTest {
         val secondPersona = createNewPersona(
             displayName = "Mrs Public",
             fields = listOf(
-                PersonaField.init(PersonaField.PersonaFieldKind.firstName, "Maria"),
-                PersonaField.init(PersonaField.PersonaFieldKind.lastName, "Publicson")
+                PersonaField.init(PersonaField.PersonaFieldKind.FirstName, "Maria"),
+                PersonaField.init(PersonaField.PersonaFieldKind.LastName, "Publicson")
             ),
             entityDerivationPath = IdentityDerivationPath(
                 perNetwork = profile.perNetwork,

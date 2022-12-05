@@ -5,11 +5,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAddress
-import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
+import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.EntityDerivationPath
+import rdx.works.profile.derivation.model.NetworkId
 
 @Serializable
 data class Account(

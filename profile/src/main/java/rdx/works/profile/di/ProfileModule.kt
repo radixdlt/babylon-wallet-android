@@ -17,5 +17,4 @@ interface ProfileModule {
     fun bindProfileRepository(
         profileRepositoryImpl: ProfileRepositoryImpl
     ): ProfileRepository
-
 }

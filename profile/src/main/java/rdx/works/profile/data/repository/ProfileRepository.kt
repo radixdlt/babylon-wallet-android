@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.ProfileSnapshot
 import javax.inject.Inject
 
-//TODO will have to add encryption
+// TODO will have to add encryption
 interface ProfileRepository {
     suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot)
     suspend fun readProfileSnapshot(): ProfileSnapshot?

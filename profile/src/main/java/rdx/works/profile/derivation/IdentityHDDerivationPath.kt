@@ -26,6 +26,6 @@ data class IdentityHDDerivationPath(
     private val entityType: EntityType = EntityType.Identity
 
     val path: String
-        get() = "$BIP44_PREFIX/44H/${coinType.value}H/${networkId.value}H/${entityType.value}H/${identityIndex}H/${keyType.value}H"
-
+        get() = "$BIP44_PREFIX/44H/${coinType.value}H/${networkId.value}H/${entityType.value}H/${identityIndex}H/" +
+            "${keyType.value}H"
 }

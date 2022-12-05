@@ -20,10 +20,14 @@ data class CustomHDDerivationPath(
      * Check if path starts with m/44'/1022' (hardened or not). Otherwise throw exception
      */
     val path: String
-        get() = if (
-            bip44.toString().startsWith("$BIP44_PREFIX/44'/${coinType.value}") ||
-            bip44.toString().startsWith("$BIP44_PREFIX/44/${coinType.value}")
-        ) bip44.toString() else throw IllegalArgumentException("Invalid derivation path")
+        get() {
+            require(
+                value =
+                bip44.toString().startsWith("$BIP44_PREFIX/44'/${coinType.value}") ||
+                    bip44.toString().startsWith("$BIP44_PREFIX/44/${coinType.value}")
+            ) { "Invalid derivation path" }
+            return bip44.toString()
+        }
 
     companion object {
         /**

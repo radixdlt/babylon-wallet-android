@@ -4,8 +4,8 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.utils.hashToFactorId
 import java.time.Instant
 
 sealed class SecurityState {
@@ -17,11 +17,11 @@ sealed class SecurityState {
 
         @SerialName("unsecuredEntityControl")
         val unsecuredEntityControl: UnsecuredEntityControl
-    ): SecurityState() {
+    ) : SecurityState() {
         companion object {
             /**
-             * A non-"securitfied" Security state used for entity (Account/Persona). Protected with single factor instance
-             * until securified, and thus protected with an "AccessControl".
+             * A non-"securitfied" Security state used for entity (Account/Persona). Protected with single
+             * factor instance until securified, and thus protected with an "AccessControl".
              */
             fun unsecuredSecurityState(
                 compressedPublicKey: ByteArray,

@@ -6,6 +6,7 @@ package rdx.works.profile.derivation.model
  * SignTransaction used 1238 cause its ASCII sum of "SIGN_TRANSACTION"
  * SignAuth used 706 cause its ASCII sum of "SIGN_AUTH"
  */
+@Suppress("MagicNumber")
 enum class KeyType(val value: Int) {
     // Key to be used for signing transactions.
     SignTransaction(1238),

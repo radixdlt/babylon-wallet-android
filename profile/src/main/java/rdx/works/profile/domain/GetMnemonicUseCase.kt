@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
 import javax.inject.Inject
 
-//TODO provide encryption as this is sensitive
+// TODO provide encryption as this is sensitive
 class GetMnemonicUseCase @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
