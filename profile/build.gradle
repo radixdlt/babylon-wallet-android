@@ -8,11 +8,11 @@ plugins {
 
 android {
     namespace 'rdx.works.profile'
-    compileSdk 33
+    compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
         minSdk 27
-        targetSdk 33
+        targetSdk rootProject.ext.targetSdk
     }
 
     buildTypes {
