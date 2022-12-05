@@ -43,7 +43,7 @@ fun NavigationHost(
             WalletScreen(
                 viewModel = hiltViewModel(),
                 onMenuClick = {
-                    navController.navigate(Screen.SettingsDestination.route)
+                    navController.navigate(Screen.SettingsAllDestination.route)
                 },
                 onAccountClick = { accountId, accountName, gradientIndex ->
                     navController.navigate(
@@ -116,7 +116,6 @@ fun NavigationHost(
                 }
             )
         }
-
         dAppConnectionGraph(navController)
         settingsNavGraph(navController)
     }
