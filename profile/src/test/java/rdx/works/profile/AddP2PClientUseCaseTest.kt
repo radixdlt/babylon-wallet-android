@@ -16,7 +16,7 @@ import rdx.works.profile.domain.AddP2PClientUseCase
 class AddP2PClientUseCaseTest {
 
     @Test
-    fun `diw fe`() = runBlocking {
+    fun `given profile exists, when adding p2p client, verify it is added properly`() = runBlocking {
         val profileRepository = mock(ProfileRepository::class.java)
         val addP2PClientUseCase = AddP2PClientUseCase(profileRepository)
 
@@ -54,7 +54,7 @@ class AddP2PClientUseCaseTest {
     }
 
     @Test(expected = IllegalStateException::class)
-    fun `diw fer3r3g534`(): Unit = runBlocking {
+    fun `when profile does not exist, verify exception thrown when adding p2pclient`(): Unit = runBlocking {
         val profileRepository = mock(ProfileRepository::class.java)
         val addP2PClientUseCase = AddP2PClientUseCase(profileRepository)
 

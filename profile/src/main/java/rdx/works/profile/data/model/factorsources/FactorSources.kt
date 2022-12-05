@@ -4,7 +4,8 @@ import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.crypto.ec.EllipticCurveType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.extensions.factorSourceId
+import rdx.works.profile.data.extensions.compressedPublicKey
+import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.CustomHDDerivationPath
 import java.time.Instant
 
@@ -37,7 +38,8 @@ data class FactorSources(
                 label: String?,
                 creationDate: String = Instant.now().toString()
             ): Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
-                val factorSourceID = mnemonic.factorSourceId(
+                val factorSourceID = factorSourceId(
+                    mnemonic = mnemonic,
                     ellipticCurveType = EllipticCurveType.Ed25519,
                     derivationPath = CustomHDDerivationPath.getId.path,
                     bip39Passphrase = bip39Passphrase
@@ -64,4 +66,23 @@ data class FactorSources(
         @SerialName("label")
         val label: String?
     )
+
+    companion object {
+        /**
+         * This generates the key, in our case factorSourceID, which we can use to associate with mnemonics when we store it
+         * For now defaults to Ed25519 curve and getId custom derivation path
+         */
+        fun factorSourceId(
+            mnemonic: MnemonicWords,
+            ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
+            derivationPath: String = CustomHDDerivationPath.getId.path,
+            bip39Passphrase: String = ""
+        ): String {
+            return mnemonic.compressedPublicKey(
+                ellipticCurveType = ellipticCurveType,
+                derivationPath = derivationPath,
+                bip39Passphrase = bip39Passphrase
+            ).hashToFactorId()
+        }
+    }
 }

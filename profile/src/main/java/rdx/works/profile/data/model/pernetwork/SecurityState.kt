@@ -31,14 +31,14 @@ sealed class SecurityState {
                 return Unsecured(
                     discriminator = "unsecured",
                     unsecuredEntityControl = UnsecuredEntityControl(
-                        genesisFactorInstance = GenesisFactorInstance(
+                        genesisFactorInstance = FactorInstance(
                             derivationPath = derivationPath,
                             factorInstanceID = compressedPublicKey.hashToFactorId(),
                             factorSourceReference = FactorSourceReference.curve25519FactorSourceReference(
                                 factorSource = factorSources
                             ),
                             initializationDate = Instant.now().toString(),
-                            publicKey = PublicKey.curve25519PublicKey(
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey(
                                 compressedPublicKey = compressedPublicKey.removeLeadingZero().toHexString()
                             )
                         )
@@ -57,6 +57,6 @@ sealed class SecurityState {
     @Serializable
     data class UnsecuredEntityControl(
         @SerialName("genesisFactorInstance")
-        val genesisFactorInstance: GenesisFactorInstance
+        val genesisFactorInstance: FactorInstance
     )
 }

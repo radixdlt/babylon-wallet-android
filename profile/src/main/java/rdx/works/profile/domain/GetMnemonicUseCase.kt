@@ -9,7 +9,7 @@ import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import rdx.works.profile.data.extensions.factorSourceId
+import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
 import javax.inject.Inject
 
 //TODO provide encryption as this is sensitive
@@ -56,7 +56,11 @@ class GetMnemonicUseCase @Inject constructor(
                 wordList = WORDLIST_ENGLISH
             )
 
-            val key = MnemonicWords(mnemonic).factorSourceId()
+            val key = factorSourceId(
+                mnemonic = MnemonicWords(
+                    phrase = mnemonic
+                )
+            )
             saveMnemonic(
                 key = key,
                 mnemonic = mnemonic

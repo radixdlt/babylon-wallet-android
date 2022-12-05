@@ -18,10 +18,9 @@ import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.GenesisFactorInstance
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.PersonaField
-import rdx.works.profile.data.model.pernetwork.PublicKey
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.NetworkId
@@ -80,7 +79,7 @@ class CreatePersonaUseCaseTest {
                                 securityState = SecurityState.Unsecured(
                                     discriminator = "dsics",
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        genesisFactorInstance = GenesisFactorInstance(
+                                        genesisFactorInstance = FactorInstance(
                                             derivationPath = DerivationPath("few", "disc"),
                                             factorInstanceID = "IDIDDIIDD",
                                             factorSourceReference = FactorSourceReference(
@@ -88,7 +87,7 @@ class CreatePersonaUseCaseTest {
                                                 factorSourceKind = "kind"
                                             ),
                                             initializationDate = "Date1",
-                                            publicKey = PublicKey.curve25519PublicKey("")
+                                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )
                                     )
                                 )
