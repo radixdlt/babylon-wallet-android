@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ fun NftTokenHeaderItem(
     val cardShape = RoundedCornerShape(12.dp, 12.dp, bottomCorners, bottomCorners)
     Box(
         modifier = modifier
-            .animateContentSize()
             .padding(20.dp, 10.dp, 20.dp, bottomPadding)
     ) {
         if (collapsed) {

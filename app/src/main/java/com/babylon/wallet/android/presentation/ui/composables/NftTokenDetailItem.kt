@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -28,6 +30,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
+@OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
 @Composable
 fun NftTokenDetailItem(
@@ -35,16 +38,19 @@ fun NftTokenDetailItem(
     imageUrl: String?,
     modifier: Modifier = Modifier,
     bottomCornersRounded: Boolean = false,
-    nftMetadata: List<Pair<String, String>> = emptyList()
+    nftMetadata: List<Pair<String, String>> = emptyList(),
+    onNftClick: (String) -> Unit
 ) {
-    val bottomCorners = if (bottomCornersRounded) 12.dp else 0.dp
+    val bottomCorners by animateDpAsState(targetValue = if (bottomCornersRounded) 12.dp else 0.dp)
     Card(
         modifier = modifier
-            .animateContentSize()
             .fillMaxWidth()
             .padding(20.dp, 0.dp, 20.dp, 1.dp),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
         backgroundColor = RadixTheme.colors.defaultBackground,
+        onClick = {
+            onNftClick(nftId)
+        }
     ) {
         Column(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -68,6 +74,7 @@ fun NftTokenDetailItem(
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2HighImportance
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             nftMetadata.forEach { metadata ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = SpaceBetween) {
                     Text(
@@ -101,7 +108,8 @@ fun CollapsableChildItemPreview() {
             nftMetadata = listOf(
                 Pair("Type", "Devin Booker - Dunk"),
                 Pair("Type", "Reggie Jackson - Jump Shot")
-            )
+            ),
+            onNftClick = { }
         )
     }
 }

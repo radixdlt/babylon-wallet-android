@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.AssetDto.NftClassDto.NftDto.Companion.toUiModel
-import com.babylon.wallet.android.presentation.model.NftUiModel
+import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import java.math.BigDecimal
 
@@ -41,16 +41,15 @@ data class AssetDto(
         ) {
 
             companion object {
-                fun NftDto.toUiModel() = NftUiModel.NftUi(
+                fun NftDto.toUiModel() = NftCollectionUiModel.NftItemUiModel(
                     id = id,
-                    imageUrl = iconUrl,
                     nftsMetadata = nftsMetadata
                 )
             }
         }
 
         companion object {
-            fun NftClassDto.toNftClassUiModel() = NftUiModel(
+            fun NftClassDto.toNftClassUiModel() = NftCollectionUiModel(
                 name = name,
                 iconUrl = iconUrl,
                 nft = nfts.map { nftDto ->

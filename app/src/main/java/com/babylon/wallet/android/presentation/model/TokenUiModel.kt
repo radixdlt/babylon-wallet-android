@@ -16,7 +16,7 @@ data class TokenUiModel(
     val tokenValue: String?, // the current value in currency the user has selected for the wallet
     val iconUrl: String?,
     val metadata: Map<String, String> = emptyMap()
-) {
+) : AssetUiModel() {
     /**
      * The title to show in the token list item of the Account screen.
      *
