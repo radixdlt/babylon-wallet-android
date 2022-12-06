@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.babylon.wallet.android.BuildConfig
-import com.babylon.wallet.android.utils.validUrl
+import com.babylon.wallet.android.utils.isValidUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
 import javax.inject.Inject
@@ -18,7 +18,7 @@ class SettingsEditGatewayViewModel @Inject constructor() : ViewModel() {
 
     fun onNewUrlChanged(newUrl: String) {
         state = state.copy(
-            newUrlValid = newUrl != state.currentNetworkData.networkEndpoint && newUrl.validUrl(),
+            newUrlValid = newUrl != state.currentNetworkData.networkEndpoint && newUrl.isValidUrl(),
             newUrl = newUrl
         )
     }

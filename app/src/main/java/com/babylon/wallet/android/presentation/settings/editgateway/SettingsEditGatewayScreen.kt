@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -74,6 +76,7 @@ private fun SettingsEditGatewayContent(
             Modifier
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5)
+                .verticalScroll(rememberScrollState())
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
 

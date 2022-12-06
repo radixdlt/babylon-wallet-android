@@ -24,6 +24,6 @@ fun String.formatDecimalSeparator(): String {
     }
 }
 
-fun String.validUrl(): Boolean {
+fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
 }

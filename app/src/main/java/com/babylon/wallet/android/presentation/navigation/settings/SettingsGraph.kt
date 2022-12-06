@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.settings.addconnection.SettingsAd
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.google.accompanist.navigation.animation.composable
 
+
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController
 ) {
