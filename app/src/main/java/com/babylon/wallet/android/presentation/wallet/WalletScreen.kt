@@ -16,8 +16,12 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -39,9 +42,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarErrorHandler
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.util.Locale
@@ -72,6 +72,7 @@ fun WalletScreen(
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun WalletScreenContent(
     onMenuClick: () -> Unit,
@@ -87,7 +88,6 @@ private fun WalletScreenContent(
     wallet: WalletData?,
     error: UiMessage?
 ) {
-    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
     Box(modifier = modifier) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -112,31 +112,25 @@ private fun WalletScreenContent(
                 }
             }
             AnimatedVisibility(visible = !isLoading, enter = fadeIn()) {
-                SwipeRefresh(
-                    state = swipeRefreshState,
-                    onRefresh = onRefresh,
-                    indicatorPadding = innerPadding,
-                    indicator = { state, dp ->
-                        SwipeRefreshIndicator(
-                            state = state,
-                            refreshTriggerDistance = dp,
-                            contentColor = RadixTheme.colors.gray1,
-                            backgroundColor = RadixTheme.colors.defaultBackground,
-                        )
-                    },
-                    refreshTriggerDistance = 100.dp,
-                    content = {
-                        WalletAccountList(
-                            wallet = wallet,
-                            onCopyAccountAddressClick = onCopyAccountAddressClick,
-                            onAccountClick = onAccountClick,
-                            onAccountCreationClick = onAccountCreationClick,
-                            accounts = accounts,
-                            modifier = Modifier,
-                            balanceClicked = balanceClicked
-                        )
-                    }
-                )
+                val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
+                Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
+                    WalletAccountList(
+                        wallet = wallet,
+                        onCopyAccountAddressClick = onCopyAccountAddressClick,
+                        onAccountClick = onAccountClick,
+                        onAccountCreationClick = onAccountCreationClick,
+                        accounts = accounts,
+                        modifier = Modifier,
+                        balanceClicked = balanceClicked
+                    )
+                    PullRefreshIndicator(
+                        refreshing = isRefreshing,
+                        state = pullRefreshState,
+                        contentColor = RadixTheme.colors.gray1,
+                        backgroundColor = RadixTheme.colors.defaultBackground,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
             }
         }
         SnackbarErrorHandler(message = error)
