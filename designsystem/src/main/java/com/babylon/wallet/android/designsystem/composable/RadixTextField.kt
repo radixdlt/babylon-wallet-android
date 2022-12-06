@@ -87,7 +87,7 @@ fun RadixTextField(
 
 @Preview
 @Composable
-fun RadixTextField() {
+fun RadixTextFieldPreview() {
     BabylonWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),

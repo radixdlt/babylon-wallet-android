@@ -24,7 +24,7 @@ import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
-import com.babylon.wallet.android.presentation.ui.composables.ResponsiveText
+import com.babylon.wallet.android.utils.truncatedHash
 import java.math.BigDecimal
 
 @Suppress("UnstableCollections")
@@ -70,9 +70,9 @@ fun AccountCardView(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                ResponsiveText(
+                Text(
                     modifier = Modifier.weight(1f, false),
-                    text = hashValue,
+                    text = hashValue.truncatedHash(),
                     color = RadixTheme.colors.white,
                     style = RadixTheme.typography.body2HighImportance,
                     maxLines = 1

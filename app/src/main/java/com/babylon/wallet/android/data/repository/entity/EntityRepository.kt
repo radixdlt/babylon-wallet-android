@@ -3,7 +3,7 @@ package com.babylon.wallet.android.data.repository.entity
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 
 // TODO translate from network models to domain models

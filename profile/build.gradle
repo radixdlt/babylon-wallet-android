@@ -1,0 +1,57 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-kapt'
+    id 'kotlinx-serialization'
+}
+
+android {
+    namespace 'rdx.works.profile'
+    compileSdk rootProject.ext.compileSdk
+
+    defaultConfig {
+        minSdk 27
+        targetSdk rootProject.ext.targetSdk
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    testOptions {
+        // Caution: Take care when setting the returnDefaultValues property to true.
+        // The null/zero return values can introduce regressions to your tests,
+        // which are hard to debug and might allow failing tests to pass.
+        //
+        // It is now used to not make the unit tests fail because of the Log class
+        unitTests.returnDefaultValues = true
+    }
+}
+
+dependencies {
+    // Hilt
+    implementation 'com.google.dagger:hilt-android:2.44.1'
+    kapt 'com.google.dagger:hilt-android-compiler:2.44.1'
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
+
+    // Datastore
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+
+    implementation 'com.radixdlt:slip10:60ebe566'
+
+    testImplementation "junit:junit:4.13.2"
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.7.21'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.0.0'
+    testImplementation 'org.mockito:mockito-inline:4.8.1'
+}

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.RequestMethodWalletRequest
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.dapp.DAppRepository
 import kotlinx.coroutines.delay
 import javax.inject.Inject
@@ -38,7 +38,7 @@ class DAppRepositoryImpl @Inject constructor(
         val wellKnownDApp = dAppWellKnown.dApps.find { dApp ->
             dApp.id == dAppId
         } ?: return Result.Error(
-            "Failed to verify dApp"
+            Exception("Failed to verify dApp")
         )
 
         // Fetch dApp details i.e. url, dApp name etc

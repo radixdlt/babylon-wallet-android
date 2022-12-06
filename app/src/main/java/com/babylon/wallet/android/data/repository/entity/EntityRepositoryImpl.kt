@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewReq
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
 import com.babylon.wallet.android.data.repository.performHttpRequest
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 import com.babylon.wallet.android.domain.model.toAccountResourceSlim
 import javax.inject.Inject

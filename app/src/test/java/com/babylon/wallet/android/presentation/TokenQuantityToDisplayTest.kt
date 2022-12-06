@@ -1,11 +1,16 @@
 package com.babylon.wallet.android.presentation
 
+import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import java.math.BigDecimal
 
 class TokenQuantityToDisplayTest {
+
+    @get:Rule
+    val defaultLocaleTestRule = DefaultLocaleRule()
 
     @Test
     fun `given a token quantity of 1234,5678, then the token amount to display is 1,234-dot-5678`() {

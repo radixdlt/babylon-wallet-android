@@ -8,10 +8,7 @@ plugins {
     id 'kotlinx-serialization'
 }
 
-apply from: "$rootDir/config/detekt.gradle"
 apply from: "$rootDir/config/jacoco.gradle"
-
-import io.gitlab.arturbosch.detekt.Detekt
 
 android {
     compileSdk rootProject.ext.compileSdk
@@ -75,11 +72,6 @@ sonarqube {
     }
 }
 
-tasks.withType(Detekt).configureEach {
-    exclude("**/test/**")
-    exclude("**/androidTest/**")
-}
-
 dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
@@ -101,10 +93,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // Accompanist
-    implementation 'com.google.accompanist:accompanist-swiperefresh:0.27.1'
+    implementation 'com.google.accompanist:accompanist-swiperefresh:0.28.0'
     implementation 'com.google.accompanist:accompanist-pager:0.28.0'
     implementation 'com.google.accompanist:accompanist-pager-indicators:0.28.0'
-    implementation 'com.google.accompanist:accompanist-drawablepainter:0.27.0'
+    implementation 'com.google.accompanist:accompanist-drawablepainter:0.28.0'
+    implementation 'com.google.accompanist:accompanist-navigation-animation:0.28.0'
 
     // Datastore
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
@@ -135,6 +128,7 @@ dependencies {
 
     // Peerdroid
     implementation project(path: ':peerdroid')
+    implementation project(path: ':profile')
 
     implementation project(path: ':designsystem')
 

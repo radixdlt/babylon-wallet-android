@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import android.content.ClipData
 import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.Result
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.wallet.WalletData
@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,7 +62,7 @@ class WalletViewModelTest {
         advanceUntilIdle()
 
         // then
-        assertEquals(event.first(), WalletUiState.Loading)
+        assertTrue(event.first().isLoading)
     }
 
     @Test
@@ -78,9 +79,9 @@ class WalletViewModelTest {
         advanceUntilIdle()
 
         // then
-        val lastEvent = event.last() as WalletUiState.Loaded
-        assertEquals(lastEvent.wallet.currency, walletData.currency)
-        assertEquals(lastEvent.wallet.amount, walletData.amount)
+        val lastEvent = event.last()
+        assertEquals(lastEvent.wallet?.currency, walletData.currency)
+        assertEquals(lastEvent.wallet?.amount, walletData.amount)
     }
 
     @Test
@@ -96,7 +97,7 @@ class WalletViewModelTest {
         advanceUntilIdle()
 
         // then
-        assertEquals(event.first(), WalletUiState.Loading)
+        assertTrue(event.first().isLoading)
     }
 
     @Test
@@ -114,7 +115,7 @@ class WalletViewModelTest {
         advanceUntilIdle()
 
         // then
-        val lastEvent = event.last() as WalletUiState.Loaded
+        assertTrue(!event.last().isLoading)
     }
 
     @Test
