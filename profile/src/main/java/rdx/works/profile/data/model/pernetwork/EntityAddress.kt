@@ -1,10 +1,10 @@
-package com.babylon.wallet.android.data.profile.model
+package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Address(
+data class EntityAddress(
     @SerialName("address")
-    val address: String
+    val address: String,
 )

@@ -17,6 +17,9 @@ jobs:
 
       - name: "Run Lint"
         run: ./gradlew lintDebug
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: Upload lint results
         uses: actions/upload-artifact@v3
@@ -37,6 +40,9 @@ jobs:
 
       - name: "Run unit tests"
         run: ./gradlew testDebugUnitTest
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
   # snapshot_tests:
   #   name: "Snapshot tests"
@@ -87,7 +93,10 @@ jobs:
 
       - name: "Run detekt"
         run: |
-          ./gradlew detektMain 
+          ./gradlew detektMain
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: "Run jacoco"
         run: |
@@ -117,6 +126,9 @@ jobs:
       - name: "Build"
         run: |
           ./gradlew assembleDebug
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: Upload APK from PR
         if: ${{ github.event_name == 'pull_request' }}

@@ -128,6 +128,7 @@ dependencies {
 
     // Peerdroid
     implementation project(path: ':peerdroid')
+    implementation project(path: ':profile')
 
     implementation project(path: ':designsystem')
 
