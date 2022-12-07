@@ -1,10 +1,9 @@
 <resources>
-    <string name="app_name">Radix Wallet</string>
     <string name="home_toolbar_title">Radix Wallet</string>
     <string name="home_welcome_text">Welcome, here are all your\naccounts on the Radix Network</string>
     <string name="create_new_account">Create New Account</string>
-    <string name="visit_the_radar_hub">Visit the Radar Hub ></string>
-    <string name="radar_network_text">Ready to get started using the Radar Network and your Wallet?</string>
+    <string name="visit_the_radix_hub">Visit the Radix Hub ></string>
+    <string name="radix_network_text">Ready to get started using the Radix Network and your Wallet?</string>
     <string name="total_value">Total value</string>
     <string name="dollar_sign">$</string>
     <string name="account_asset_row_tab_tokens">Tokens</string>
@@ -12,14 +11,14 @@
     <string name="show_plus">+ Show</string>
     <string name="hide_minus">- Hide</string>
     <string name="account_transfer_button_title">Transfer</string>
-    <string name="onboarding_title_1">Welcome to Radar Wallet</string>
+    <string name="onboarding_title_1">Welcome to Radix Wallet</string>
     <string name="onboarding_title_2">Your wallet holds your accounts, assets, and identity</string>
     <string name="onboarding_title_3">Your phone is your login</string>
     <string name="onboarding_title_4">Let\'s get started</string>
-    <string name="onboarding_body_1">Your direct connection to the Radar Network</string>
-    <string name="onboarding_body_2">The Radar Network protects you and your stuff – without needing to trust a company or bank</string>
+    <string name="onboarding_body_1">Your direct connection to the Radix Network</string>
+    <string name="onboarding_body_2">The Radix Network protects you and your stuff – without needing to trust a company or bank</string>
     <string name="onboarding_body_3">Connect and transact securely with a world of web3 dApps, tokens, NFTs, and much more</string>
-    <string name="im_new_radar_wallet_user">I\'m a new Radar Wallet user</string>
+    <string name="im_new_radix_wallet_user">I\'m a new Radix Wallet user</string>
     <string name="restore_wallet_from_backup">Restore Wallet from Backup</string>
     <string name="biometric_prompt_title">Use your biometric to continue</string>
     <string name="confirm">Confirm</string>
@@ -32,7 +31,7 @@
     <string name="continue_button_title">Continue</string>
     <string name="congratulations">Congratulations</string>
     <string name="you_created_account">You\'ve created your account.</string>
-    <string name="account_created_info">Your account lives on the Radar Network and you can access it anytime in Radar Wallet.</string>
+    <string name="account_created_info">Your account lives on the Radix Network and you can access it anytime in Radix Wallet.</string>
     <string name="go_to_home">Go to Home</string>
     <string name="dapp_connection_request">dApp Connection Request</string>
     <string name="radaswap_wants_to_connect_wallet">Radaswap wants to connect to your wallet</string>

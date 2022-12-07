@@ -168,7 +168,7 @@ private fun OnboardingScreenContent(
             ) {
                 RadixPrimaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.im_new_radar_wallet_user),
+                    text = stringResource(id = R.string.im_new_radix_wallet_user),
                     onClick = onProceedClick
                 )
                 RadixTextButton(
