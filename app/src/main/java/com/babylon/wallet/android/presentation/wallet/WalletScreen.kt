@@ -102,7 +102,7 @@ private fun WalletScreenContent(
         ) { innerPadding ->
             if (isLoading) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
