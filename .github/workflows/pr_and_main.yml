@@ -132,7 +132,7 @@ jobs:
       - name: "Build"
         run: |
           ./gradlew assembleDebugPreview
-           ls -l /app/build/outputs/*/*
+           ls -l app/build/outputs/*/*
         env:
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
