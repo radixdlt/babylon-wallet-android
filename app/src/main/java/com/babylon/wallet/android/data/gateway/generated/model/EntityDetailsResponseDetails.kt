@@ -46,10 +46,10 @@ import kotlinx.serialization.Contextual
 data class EntityDetailsResponseDetails(
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType? = null,
-    @Contextual @SerialName(value = "access_rules_chain")
-    val accessRulesChain: kotlin.Any? = null,
-    @Contextual @SerialName(value = "vault_access_rules_chain")
-    val vaultAccessRulesChain: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "access_rules_chain")
+//    val accessRulesChain: Any? = null,
+//    @Contextual @SerialName(value = "vault_access_rules_chain")
+//    val vaultAccessRulesChain: Any? = null,
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int? = null,
     /* The string-encoded decimal representing the amount */
@@ -70,7 +70,7 @@ data class EntityDetailsResponseDetails(
     val packageAddress: kotlin.String? = null,
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String? = null,
-    @Contextual @SerialName(value = "state")
-    val state: kotlin.Any? = null
+//    @Contextual @SerialName(value = "state")
+//    val state: Any? = null
 )
 

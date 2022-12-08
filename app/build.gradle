@@ -101,7 +101,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // Accompanist
-    implementation 'com.google.accompanist:accompanist-swiperefresh:0.28.0'
     implementation 'com.google.accompanist:accompanist-pager:0.28.0'
     implementation 'com.google.accompanist:accompanist-pager-indicators:0.28.0'
     implementation 'com.google.accompanist:accompanist-drawablepainter:0.28.0'
