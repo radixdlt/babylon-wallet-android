@@ -26,6 +26,7 @@ allprojects {
         apply from: "$rootDir/config/detekt.gradle"
         tasks.withType(Detekt).configureEach {
             exclude("**/test/**")
+            exclude("**/generated/**")
             exclude("**/androidTest/**")
         }
     }

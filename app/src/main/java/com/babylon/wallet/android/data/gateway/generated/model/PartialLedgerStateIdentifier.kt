@@ -7,7 +7,10 @@
  */
 
 @file:Suppress(
-    "ArrayInDataClass", "EnumEntryName", "RemoveRedundantQualifierName", "UnusedImport"
+    "ArrayInDataClass",
+    "EnumEntryName",
+    "RemoveRedundantQualifierName",
+    "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
@@ -17,13 +20,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Allows a client to request a response referencing an earlier (`at_*` properties) or later (`from_*` properties)
- * ledger state.
+ * Allows a client to request a response referencing an earlier (`at_*` properties) or later (`from_*` properties) ledger state.
  *
  * @param stateVersion If the version is provided, the latest ledger state <= the given version is returned.
  * @param timestamp If a timestamp is provided, the latest ledger state <= the given timestamp is returned.
- * @param epoch If an epoch is provided, the ledger state at the given epoch <= the given round (else round 0)
- * is returned.
+ * @param epoch If an epoch is provided, the ledger state at the given epoch <= the given round (else round 0) is returned.
  * @param round
  */
 @Serializable
@@ -31,14 +32,18 @@ import kotlinx.serialization.Serializable
 data class PartialLedgerStateIdentifier(
 
     /* If the version is provided, the latest ledger state <= the given version is returned. */
-    @SerialName(value = "state_version") val stateVersion: kotlin.Long? = null,
+    @SerialName(value = "state_version")
+    val stateVersion: kotlin.Long? = null,
 
     /* If a timestamp is provided, the latest ledger state <= the given timestamp is returned. */
-    @Contextual @SerialName(value = "timestamp") val timestamp: java.time.OffsetDateTime? = null,
+    @Contextual @SerialName(value = "timestamp")
+    val timestamp: java.time.OffsetDateTime? = null,
 
     /* If an epoch is provided, the ledger state at the given epoch <= the given round (else round 0) is returned. */
-    @SerialName(value = "epoch") val epoch: kotlin.Long? = null,
+    @SerialName(value = "epoch")
+    val epoch: kotlin.Long? = null,
 
-    @SerialName(value = "round") val round: kotlin.Long? = null
+    @SerialName(value = "round")
+    val round: kotlin.Long? = null
 
 )

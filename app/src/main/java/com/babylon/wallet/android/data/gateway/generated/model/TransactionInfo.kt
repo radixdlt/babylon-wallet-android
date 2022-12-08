@@ -19,13 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
- * @param transactionStatus
- * @param payloadHashHex
- * @param intentHashHex
- * @param feePaid
- */
+ * *
+ * @param transactionStatus * @param payloadHashHex * @param intentHashHex * @param feePaid */
 @Serializable
 
 data class TransactionInfo(

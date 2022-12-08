@@ -19,10 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
- * @param items
- */
+ * *
+ * @param items */
 @Serializable
 
 data class EntityResourcesResponseNonFungibleResourcesAllOf(

@@ -15,14 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+
+/**
+ * 
+ *
+ * @param stateVersion The latest-seen state version of the tip of the network's ledger. If this is significantly ahead of the current LedgerState version, the Network Gateway is possibly behind and may be reporting outdated information. 
+ */
 @Serializable
 
-data class GatewayInfoResponseKnownTarget(
+data class GatewayInfoResponseKnownTarget (
 
+    /* The latest-seen state version of the tip of the network's ledger. If this is significantly ahead of the current LedgerState version, the Network Gateway is possibly behind and may be reporting outdated information.  */
     @SerialName(value = "state_version")
     val stateVersion: kotlin.Long
 
 )
+

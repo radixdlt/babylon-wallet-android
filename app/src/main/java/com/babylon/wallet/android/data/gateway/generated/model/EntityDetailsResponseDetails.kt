@@ -15,28 +15,62 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseComponentDetails
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponsePackageDetails
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdType
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+
+/**
+ *
+ *
+ * @param discriminator
+ * @param accessRulesChain
+ * @param vaultAccessRulesChain
+ * @param divisibility
+ * @param totalSupply The string-encoded decimal representing the amount
+ * @param totalMinted The string-encoded decimal representing the amount
+ * @param totalBurnt The string-encoded decimal representing the amount
+ * @param nonFungibleIdType
+ * @param codeHex
+ * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
+ * @param blueprintName
+ * @param state
+ */
 @Serializable
 data class EntityDetailsResponseDetails(
-
     @Contextual @SerialName(value = "discriminator")
-    val discriminator: EntityDetailsResponseDetailsType,
+    val discriminator: EntityDetailsResponseDetailsType? = null,
+//    @Contextual @SerialName(value = "access_rules_chain")
+//    val accessRulesChain: Any? = null,
+//    @Contextual @SerialName(value = "vault_access_rules_chain")
+//    val vaultAccessRulesChain: Any? = null,
     @SerialName(value = "divisibility")
-    val divisibility: kotlin.Long? = null,
+    val divisibility: kotlin.Int? = null,
+    /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_supply")
-    val totalSupply: TokenAmount? = null,
+    val totalSupply: kotlin.String? = null,
+    /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_minted")
-    val totalMinted: TokenAmount? = null,
+    val totalMinted: kotlin.String? = null,
+    /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_burnt")
-    val totalBurnt: TokenAmount? = null,
-    @SerialName(value = "ids")
-    val ids: EntityDetailsResponseNonFungibleResourceDetailsIds? = null,
+    val totalBurnt: kotlin.String? = null,
+    @Contextual @SerialName(value = "non_fungible_id_type")
+    val nonFungibleIdType: NonFungibleIdType? = null,
     @SerialName(value = "code_hex")
     val codeHex: kotlin.String? = null,
     /* The Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "package_address")
-    val packageAddress: kotlin.String? = null
+    val packageAddress: kotlin.String? = null,
+    @SerialName(value = "blueprint_name")
+    val blueprintName: kotlin.String? = null,
+//    @Contextual @SerialName(value = "state")
+//    val state: Any? = null
 )
+

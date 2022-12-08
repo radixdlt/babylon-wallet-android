@@ -19,7 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
+ *
+ *
  * @param rri The radix resource identifier of the token.
  */
 @Serializable

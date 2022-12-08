@@ -7,25 +7,47 @@
  */
 
 @file:Suppress(
-    "ArrayInDataClass", "EnumEntryName", "RemoveRedundantQualifierName", "UnusedImport"
+    "ArrayInDataClass",
+    "EnumEntryName",
+    "RemoveRedundantQualifierName",
+    "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.babylon.wallet.android.data.gateway.generated.model.GatewayError
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+
+/**
+ * 
+ *
+ * @param type The type of error. Each subtype may have its own additional structured fields.
+ * @param requestType The request type that triggered this exception.
+ * @param currentSyncDelaySeconds The current delay between the Gateway DB and the network ledger round timestamp.
+ * @param maxAllowedSyncDelaySeconds The maximum allowed delay between the Gateway DB and the network ledger round timestamp for this `request_type`.
+ */
 @Serializable
-data class NotSyncedUpError(
+
+data class NotSyncedUpError (
 
     /* The type of error. Each subtype may have its own additional structured fields. */
-    @SerialName(value = "type") override val type: kotlin.String,
+    @SerialName(value = "type")
+    override val type: kotlin.String,
 
     /* The request type that triggered this exception. */
-    @SerialName(value = "request_type") val requestType: kotlin.String,
+    @SerialName(value = "request_type")
+    val requestType: kotlin.String,
 
-    @SerialName(value = "current_sync_delay_seconds") val currentSyncDelaySeconds: kotlin.Long,
+    /* The current delay between the Gateway DB and the network ledger round timestamp. */
+    @SerialName(value = "current_sync_delay_seconds")
+    val currentSyncDelaySeconds: kotlin.Long,
 
-    @SerialName(value = "max_allowed_sync_delay_seconds") val maxAllowedSyncDelaySeconds: kotlin.Long
+    /* The maximum allowed delay between the Gateway DB and the network ledger round timestamp for this `request_type`. */
+    @SerialName(value = "max_allowed_sync_delay_seconds")
+    val maxAllowedSyncDelaySeconds: kotlin.Long
 
 ) : GatewayError()
+

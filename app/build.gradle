@@ -20,7 +20,7 @@ android {
         versionCode 1
         versionName "1.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
-        buildConfigField "String", "GATEWAY_API_URL", '"https://hammunet-gateway.radixdlt.com"'
+        buildConfigField "String", "GATEWAY_API_URL", '"https://nebunet-gateway.radixdlt.com"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -101,7 +101,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // Accompanist
-    implementation 'com.google.accompanist:accompanist-swiperefresh:0.28.0'
     implementation 'com.google.accompanist:accompanist-pager:0.28.0'
     implementation 'com.google.accompanist:accompanist-pager-indicators:0.28.0'
     implementation 'com.google.accompanist:accompanist-drawablepainter:0.28.0'

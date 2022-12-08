@@ -4,7 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.gateway.HammunetGatewayTestConstants
+import com.babylon.wallet.android.data.gateway.GatewayTestConstants
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
@@ -37,7 +37,7 @@ class WalletViewModel @Inject constructor(
     }
 
     private suspend fun loadResourceData() {
-        val callResult = requestAccountsUseCase.getAccountResources(HammunetGatewayTestConstants.SAMPLE_ACCOUNT)
+        val callResult = requestAccountsUseCase.getAccountResources(GatewayTestConstants.SAMPLE_ACCOUNT)
         val wallet = mainViewRepository.getWallet()
         callResult.onError { error ->
             _walletUiState.update { it.copy(error = UiMessage(error), isLoading = false) }
