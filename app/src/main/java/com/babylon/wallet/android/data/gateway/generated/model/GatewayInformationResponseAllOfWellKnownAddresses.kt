@@ -15,11 +15,25 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+
+/**
+ * 
+ *
+ * @param accountPackage The Bech32m-encoded human readable version of the entity's global address.
+ * @param faucet The Bech32m-encoded human readable version of the component (normal, account, system) global address.
+ * @param epochManager The Bech32m-encoded human readable version of the entity's global address.
+ * @param clock The Bech32m-encoded human readable version of the entity's global address.
+ * @param ecdsaSecp256k1 The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param eddsaEd25519 The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param xrd The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ */
 @Serializable
-data class GatewayInformationResponseAllOfWellKnownAddresses(
+
+data class GatewayInformationResponseAllOfWellKnownAddresses (
 
     /* The Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "account_package")
@@ -28,6 +42,14 @@ data class GatewayInformationResponseAllOfWellKnownAddresses(
     /* The Bech32m-encoded human readable version of the component (normal, account, system) global address. */
     @SerialName(value = "faucet")
     val faucet: kotlin.String,
+
+    /* The Bech32m-encoded human readable version of the entity's global address. */
+    @SerialName(value = "epoch_manager")
+    val epochManager: kotlin.String,
+
+    /* The Bech32m-encoded human readable version of the entity's global address. */
+    @SerialName(value = "clock")
+    val clock: kotlin.String,
 
     /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "ecdsa_secp256k1")
@@ -42,3 +64,4 @@ data class GatewayInformationResponseAllOfWellKnownAddresses(
     val xrd: kotlin.String
 
 )
+

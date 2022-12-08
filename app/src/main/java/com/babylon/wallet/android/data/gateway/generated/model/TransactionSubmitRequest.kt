@@ -15,19 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
+ * 
+ *
  * @param notarizedTransactionHex The notarized transaction payload which can be submitted, hex encoded.
  */
 @Serializable
 
-data class TransactionSubmitRequest(
+data class TransactionSubmitRequest (
 
     /* The notarized transaction payload which can be submitted, hex encoded. */
     @SerialName(value = "notarized_transaction_hex")
     val notarizedTransactionHex: kotlin.String
 
 )
+

@@ -10,7 +10,6 @@ import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenId
-import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedNonFungibleToken
 import java.math.BigDecimal
@@ -18,9 +17,9 @@ import java.math.BigDecimal
 fun EntityDetailsResponse.toFungibleToken(): FungibleToken {
     return FungibleToken(
         address = address,
-        totalSupply = BigDecimal(details.totalSupply?.value),
-        totalMinted = BigDecimal(details.totalMinted?.value),
-        totalBurnt = BigDecimal(details.totalBurnt?.value),
+        totalSupply = BigDecimal(details.totalSupply),
+        totalMinted = BigDecimal(details.totalMinted),
+        totalBurnt = BigDecimal(details.totalBurnt),
         metadata = metadata.items.associate { it.key to it.value }
     )
 }
@@ -38,10 +37,6 @@ fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): Li
 fun EntityDetailsResponse.toNonFungibleToken(): NonFungibleToken {
     return NonFungibleToken(
         address = address,
-        nonFungibleIdContainer = NonFungibleTokenIdContainer(
-            details.ids?.items?.map { it.toNonFungibleId() }.orEmpty(),
-            nextCursor = details.ids?.nextCursor, previousCursor = details.ids?.previousCursor
-        ),
         metadataContainer = metadata.toNonFungibleMetadataContainer()
     )
 }

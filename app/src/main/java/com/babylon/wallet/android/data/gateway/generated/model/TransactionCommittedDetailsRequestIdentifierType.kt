@@ -15,11 +15,13 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
+ * 
+ *
  * Values: intentHash,signedIntentHash,payloadHash
  */
 @Serializable
@@ -47,17 +49,17 @@ enum class TransactionCommittedDetailsRequestIdentifierType(val value: kotlin.St
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? =
-            if (data is TransactionCommittedDetailsRequestIdentifierType) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionCommittedDetailsRequestIdentifierType) "$data" else null
 
         /**
          * Returns a valid [TransactionCommittedDetailsRequestIdentifierType] for [data], null otherwise.
          */
         fun decode(data: kotlin.Any?): TransactionCommittedDetailsRequestIdentifierType? = data?.let {
-            val normalizedData = "$it".lowercase()
-            values().firstOrNull { value ->
-                it == value || normalizedData == "$value".lowercase()
-            }
+          val normalizedData = "$it".lowercase()
+          values().firstOrNull { value ->
+            it == value || normalizedData == "$value".lowercase()
+          }
         }
     }
 }
+

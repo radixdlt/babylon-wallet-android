@@ -15,16 +15,22 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param payloadHashHex * @param status * @param errorMessage */
+ * 
+ *
+ * @param payloadHashHex 
+ * @param status 
+ * @param errorMessage 
+ */
 @Serializable
 
-data class TransactionStatusResponseKnownPayloadItem(
+data class TransactionStatusResponseKnownPayloadItem (
 
     @SerialName(value = "payload_hash_hex")
     val payloadHashHex: kotlin.String,
@@ -36,3 +42,4 @@ data class TransactionStatusResponseKnownPayloadItem(
     val errorMessage: kotlin.String? = null
 
 )
+

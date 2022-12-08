@@ -15,15 +15,20 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param key * @param `value` */
+ * 
+ *
+ * @param key 
+ * @param `value` 
+ */
 @Serializable
 
-data class EntityMetadataItem(
+data class EntityMetadataItem (
 
     @SerialName(value = "key")
     val key: kotlin.String,
@@ -32,3 +37,4 @@ data class EntityMetadataItem(
     val `value`: kotlin.String
 
 )
+

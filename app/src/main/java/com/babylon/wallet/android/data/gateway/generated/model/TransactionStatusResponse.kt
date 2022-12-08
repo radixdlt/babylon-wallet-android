@@ -15,16 +15,25 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.LedgerState
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponseKnownPayloadItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param ledgerState * @param status * @param knownPayloads * @param errorMessage */
+ * 
+ *
+ * @param ledgerState 
+ * @param status 
+ * @param knownPayloads 
+ * @param errorMessage 
+ */
 @Serializable
 
-data class TransactionStatusResponse(
+data class TransactionStatusResponse (
 
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState,
@@ -39,3 +48,4 @@ data class TransactionStatusResponse(
     val errorMessage: kotlin.String? = null
 
 )
+

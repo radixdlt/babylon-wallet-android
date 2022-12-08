@@ -15,30 +15,32 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
+ * 
+ *
  * Values: unknown,committedSuccess,committedFailure,pending,rejected
  */
 @Serializable
 enum class TransactionStatus(val value: kotlin.String) {
 
     @SerialName(value = "unknown")
-    Unknown("unknown"),
+    unknown("unknown"),
 
     @SerialName(value = "committed_success")
-    CommittedSuccess("committed_success"),
+    committedSuccess("committed_success"),
 
     @SerialName(value = "committed_failure")
-    CommittedFailure("committed_failure"),
+    committedFailure("committed_failure"),
 
     @SerialName(value = "pending")
-    Pending("pending"),
+    pending("pending"),
 
     @SerialName(value = "rejected")
-    Rejected("rejected");
+    rejected("rejected");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use
@@ -59,10 +61,11 @@ enum class TransactionStatus(val value: kotlin.String) {
          * Returns a valid [TransactionStatus] for [data], null otherwise.
          */
         fun decode(data: kotlin.Any?): TransactionStatus? = data?.let {
-            val normalizedData = "$it".lowercase()
-            values().firstOrNull { value ->
-                it == value || normalizedData == "$value".lowercase()
-            }
+          val normalizedData = "$it".lowercase()
+          values().firstOrNull { value ->
+            it == value || normalizedData == "$value".lowercase()
+          }
         }
     }
 }
+

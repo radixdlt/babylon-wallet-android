@@ -15,19 +15,21 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionCommittedDetailsRequestIdentifierType
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param type
- * @param valueHex
+ * @param type 
+ * @param valueHex 
  */
 @Serializable
 
-data class TransactionCommittedDetailsRequestIdentifier(
+data class TransactionCommittedDetailsRequestIdentifier (
 
     @Contextual @SerialName(value = "type")
     val type: TransactionCommittedDetailsRequestIdentifierType,
@@ -36,3 +38,4 @@ data class TransactionCommittedDetailsRequestIdentifier(
     val valueHex: kotlin.String
 
 )
+

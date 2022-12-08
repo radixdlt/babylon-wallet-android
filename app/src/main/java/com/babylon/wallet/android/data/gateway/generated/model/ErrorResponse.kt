@@ -15,20 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.GatewayError
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- *
+ * 
  *
  * @param message A human-readable error message.
  * @param code A numeric code corresponding to the given error type.
- * @param details
+ * @param details 
  * @param traceId A unique request identifier to be used when reporting errors, to allow correlation with the Gateway API's error logs.
  */
 @Serializable
 
-data class ErrorResponse(
+data class ErrorResponse (
 
     /* A human-readable error message. */
     @SerialName(value = "message")
@@ -46,3 +49,4 @@ data class ErrorResponse(
     val traceId: kotlin.String? = null
 
 )
+

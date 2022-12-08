@@ -15,17 +15,20 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
+ * 
+ *
  * @param releaseVersion The release that is currently deployed to the Gateway API.
  * @param openApiSchemaVersion The Open API Schema version that was used to generate the API models.
  */
 @Serializable
 
-data class GatewayInfoResponseReleaseInfo(
+data class GatewayInfoResponseReleaseInfo (
 
     /* The release that is currently deployed to the Gateway API. */
     @SerialName(value = "release_version")
@@ -36,3 +39,4 @@ data class GatewayInfoResponseReleaseInfo(
     val openApiSchemaVersion: kotlin.String
 
 )
+

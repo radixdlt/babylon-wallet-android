@@ -15,19 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.CommittedTransactionInfo
+import com.babylon.wallet.android.data.gateway.generated.model.LedgerState
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionCommittedDetailsResponseDetails
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param ledgerState
- * @param transaction
- * @param details
+ * @param ledgerState 
+ * @param transaction 
+ * @param details 
  */
 @Serializable
 
-data class TransactionCommittedDetailsResponse(
+data class TransactionCommittedDetailsResponse (
 
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState,
@@ -39,3 +44,4 @@ data class TransactionCommittedDetailsResponse(
     val details: TransactionCommittedDetailsResponseDetails
 
 )
+

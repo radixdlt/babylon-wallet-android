@@ -15,19 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
+ * 
+ *
  * @param duplicate Is true if the transaction is a duplicate of an existing pending transaction.
  */
 @Serializable
 
-data class TransactionSubmitResponse(
+data class TransactionSubmitResponse (
 
     /* Is true if the transaction is a duplicate of an existing pending transaction. */
     @SerialName(value = "duplicate")
     val duplicate: kotlin.Boolean
 
 )
+

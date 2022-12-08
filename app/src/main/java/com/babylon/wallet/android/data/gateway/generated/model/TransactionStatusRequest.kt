@@ -15,23 +15,27 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.LedgerStateSelector
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param intentHashHex
- * @param atStateIdentifier
+ * @param atLedgerState 
+ * @param intentHashHex 
  */
 @Serializable
 
-data class TransactionStatusRequest(
+data class TransactionStatusRequest (
+
+    @SerialName(value = "at_ledger_state")
+    val atLedgerState: LedgerStateSelector? = null,
 
     @SerialName(value = "intent_hash_hex")
-    val intentHashHex: kotlin.String? = null,
-
-    @SerialName(value = "at_state_identifier")
-    val atStateIdentifier: PartialLedgerStateIdentifier? = null
+    val intentHashHex: kotlin.String? = null
 
 )
+

@@ -15,17 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param discriminator * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
- * @param blueprintName * @param state * @param accessRulesLayers */
+ * 
+ *
+ * @param discriminator 
+ * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
+ * @param blueprintName 
+ * @param state 
+ * @param accessRulesChain 
+ */
 @Serializable
 
-data class EntityDetailsResponseComponentDetails(
+data class EntityDetailsResponseComponentDetails (
 
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
@@ -40,7 +47,8 @@ data class EntityDetailsResponseComponentDetails(
     @Contextual @SerialName(value = "state")
     val state: kotlin.Any,
 
-    @Contextual @SerialName(value = "access_rules_layers")
-    val accessRulesLayers: kotlin.Any
+    @Contextual @SerialName(value = "access_rules_chain")
+    val accessRulesChain: kotlin.Any
 
 )
+

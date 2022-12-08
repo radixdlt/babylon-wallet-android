@@ -15,11 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * Values: fungibleResource,nonFungibleResource,`package`,component
  */
@@ -57,10 +58,11 @@ enum class EntityDetailsResponseDetailsType(val value: kotlin.String) {
          * Returns a valid [EntityDetailsResponseDetailsType] for [data], null otherwise.
          */
         fun decode(data: kotlin.Any?): EntityDetailsResponseDetailsType? = data?.let {
-            val normalizedData = "$it".lowercase()
-            values().firstOrNull { value ->
-                it == value || normalizedData == "$value".lowercase()
-            }
+          val normalizedData = "$it".lowercase()
+          values().firstOrNull { value ->
+            it == value || normalizedData == "$value".lowercase()
+          }
         }
     }
 }
+

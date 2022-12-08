@@ -98,4 +98,7 @@ interface GatewayApi {
     suspend fun transactionStatus(
         @Body transactionStatusRequest: TransactionStatusRequest
     ): Response<TransactionStatusResponse>
+
+    @POST("transaction/preview")
+    suspend fun transactionPreview(@Body body: Any): Response<Any>
 }

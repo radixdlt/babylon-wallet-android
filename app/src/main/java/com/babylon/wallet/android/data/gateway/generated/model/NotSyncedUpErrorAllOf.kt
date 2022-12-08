@@ -15,18 +15,21 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
+ * 
+ *
  * @param requestType The request type that triggered this exception.
  * @param currentSyncDelaySeconds The current delay between the Gateway DB and the network ledger round timestamp.
  * @param maxAllowedSyncDelaySeconds The maximum allowed delay between the Gateway DB and the network ledger round timestamp for this `request_type`.
  */
 @Serializable
 
-data class NotSyncedUpErrorAllOf(
+data class NotSyncedUpErrorAllOf (
 
     /* The request type that triggered this exception. */
     @SerialName(value = "request_type")
@@ -41,3 +44,4 @@ data class NotSyncedUpErrorAllOf(
     val maxAllowedSyncDelaySeconds: kotlin.Long
 
 )
+

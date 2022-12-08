@@ -15,27 +15,34 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdType
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- *
+ * 
  *
  * @param address The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
- * @param nonFungibleIdHex
- * @param mutableDataHex
- * @param immutableDataHex
+ * @param nonFungibleIdType 
+ * @param nonFungibleId 
+ * @param mutableDataHex 
+ * @param immutableDataHex 
  */
 @Serializable
 
-data class NonFungibleDataResponseAllOf(
+data class NonFungibleDataResponseAllOf (
 
     /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
-    @SerialName(value = "non_fungible_id_hex")
-    val nonFungibleIdHex: kotlin.String,
+    @Contextual @SerialName(value = "non_fungible_id_type")
+    val nonFungibleIdType: NonFungibleIdType,
+
+    @SerialName(value = "non_fungible_id")
+    val nonFungibleId: kotlin.String,
 
     @SerialName(value = "mutable_data_hex")
     val mutableDataHex: kotlin.String,
@@ -44,3 +51,4 @@ data class NonFungibleDataResponseAllOf(
     val immutableDataHex: kotlin.String
 
 )
+

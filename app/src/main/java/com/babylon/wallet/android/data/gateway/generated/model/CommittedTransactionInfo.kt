@@ -7,30 +7,56 @@
  */
 
 @file:Suppress(
-    "ArrayInDataClass", "EnumEntryName", "RemoveRedundantQualifierName", "UnusedImport"
+    "ArrayInDataClass",
+    "EnumEntryName",
+    "RemoveRedundantQualifierName",
+    "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.TokenAmount
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
+/**
+ * 
+ *
+ * @param stateVersion 
+ * @param transactionStatus 
+ * @param payloadHashHex 
+ * @param intentHashHex 
+ * @param feePaid 
+ * @param confirmedAt 
+ * @param errorMessage 
+ */
 @Serializable
-data class CommittedTransactionInfo(
 
-    @SerialName(value = "state_version") val stateVersion: kotlin.Long?,
+data class CommittedTransactionInfo (
 
-    @Contextual @SerialName(value = "transaction_status") val transactionStatus: TransactionStatus,
+    @SerialName(value = "state_version")
+    val stateVersion: kotlin.Long?,
 
-    @SerialName(value = "payload_hash_hex") val payloadHashHex: kotlin.String,
+    @Contextual @SerialName(value = "transaction_status")
+    val transactionStatus: TransactionStatus,
 
-    @SerialName(value = "intent_hash_hex") val intentHashHex: kotlin.String,
+    @SerialName(value = "payload_hash_hex")
+    val payloadHashHex: kotlin.String,
 
-    @SerialName(value = "fee_paid") val feePaid: TokenAmount? = null,
+    @SerialName(value = "intent_hash_hex")
+    val intentHashHex: kotlin.String,
 
-    @Contextual @SerialName(value = "confirmed_at") val confirmedAt: java.time.OffsetDateTime? = null,
+    @SerialName(value = "fee_paid")
+    val feePaid: TokenAmount? = null,
 
-    @SerialName(value = "error_message") val errorMessage: kotlin.String? = null
+    @Contextual @SerialName(value = "confirmed_at")
+    val confirmedAt: java.time.OffsetDateTime? = null,
+
+    @SerialName(value = "error_message")
+    val errorMessage: kotlin.String? = null
 
 )
+

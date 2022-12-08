@@ -22,38 +22,50 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
         page: String?,
         limit: Int?
     ): Result<RecentTransactionsResponse> {
-        return performHttpRequest(call = {
-            gatewayApi.recentTransactions(RecentTransactionsRequest(cursor = page, limit = limit))
-        }, map = {
+        return performHttpRequest(
+            call = {
+                gatewayApi.recentTransactions(RecentTransactionsRequest(cursor = page, limit = limit))
+            },
+            map = {
                 it
-            })
+            }
+        )
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {
-        return performHttpRequest(call = {
-            gatewayApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
-        }, map = {
+        return performHttpRequest(
+            call = {
+                gatewayApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
+            },
+            map = {
                 it
-            })
+            }
+        )
     }
 
     override suspend fun getTransactionStatus(
-        identifier: String?
+        intentHashHex: String?
     ): Result<TransactionStatusResponse> {
-        return performHttpRequest(call = {
-            gatewayApi.transactionStatus(TransactionStatusRequest(identifier))
-        }, map = {
+        return performHttpRequest(
+            call = {
+                gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = intentHashHex))
+            },
+            map = {
                 it
-            })
+            }
+        )
     }
 
     override suspend fun getTransactionDetails(
         identifier: TransactionLookupIdentifier
     ): Result<TransactionDetailsResponse> {
-        return performHttpRequest(call = {
-            gatewayApi.transactionDetails(TransactionDetailsRequest(identifier))
-        }, map = {
+        return performHttpRequest(
+            call = {
+                gatewayApi.transactionDetails(TransactionDetailsRequest(identifier))
+            },
+            map = {
                 it
-            })
+            }
+        )
     }
 }

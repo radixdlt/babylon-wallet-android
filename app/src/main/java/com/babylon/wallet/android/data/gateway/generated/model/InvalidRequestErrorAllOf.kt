@@ -15,19 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.ValidationErrorsAtPath
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
+ * 
+ *
  * @param validationErrors One or more validation errors which occurred when validating the request.
  */
 @Serializable
 
-data class InvalidRequestErrorAllOf(
+data class InvalidRequestErrorAllOf (
 
     /* One or more validation errors which occurred when validating the request. */
     @SerialName(value = "validation_errors")
     val validationErrors: kotlin.collections.List<ValidationErrorsAtPath>
 
 )
+

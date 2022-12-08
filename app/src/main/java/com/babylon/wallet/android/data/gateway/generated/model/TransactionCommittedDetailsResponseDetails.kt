@@ -15,21 +15,22 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- *
+ * 
  *
  * @param rawHex The raw transaction payload, hex encoded.
- * @param receipt
- * @param referencedGlobalEntities
+ * @param receipt 
+ * @param referencedGlobalEntities 
  * @param messageHex The message bytes, hex encoded.
  */
 @Serializable
 
-data class TransactionCommittedDetailsResponseDetails(
+data class TransactionCommittedDetailsResponseDetails (
 
     /* The raw transaction payload, hex encoded. */
     @SerialName(value = "raw_hex")
@@ -46,3 +47,4 @@ data class TransactionCommittedDetailsResponseDetails(
     val messageHex: kotlin.String? = null
 
 )
+
