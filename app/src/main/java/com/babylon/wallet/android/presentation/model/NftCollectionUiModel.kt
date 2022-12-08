@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import okio.ByteString.Companion.decodeHex
 
 data class NftCollectionUiModel(
     val name: String,
@@ -21,7 +20,7 @@ fun OwnedNonFungibleToken.toNftUiModel(): NftCollectionUiModel {
         name = token?.getTokenName().orEmpty(),
         iconUrl = token?.getImageUrl().orEmpty(),
         nft = token?.nonFungibleIdContainer?.ids?.map {
-            NftCollectionUiModel.NftItemUiModel(id = it.idHex?.decodeHex()?.toString().orEmpty())
+            NftCollectionUiModel.NftItemUiModel(id = it)
         }.orEmpty()
     )
 }

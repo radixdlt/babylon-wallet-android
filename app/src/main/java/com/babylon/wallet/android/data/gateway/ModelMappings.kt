@@ -4,12 +4,14 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResp
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIdsItem
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleResourcesCollection
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenId
+import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedNonFungibleToken
 import java.math.BigDecimal
@@ -34,26 +36,29 @@ fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): Li
     }
 }
 
-fun EntityDetailsResponse.toNonFungibleToken(): NonFungibleToken {
+fun NonFungibleIdsResponse.toDomainModel(): NonFungibleTokenIdContainer {
+    return NonFungibleTokenIdContainer(ids = this.nonFungibleIds.items.map { it.nonFungibleId })
+}
+
+fun EntityDetailsResponse.toNonFungibleToken(
+    nonFungibleTokenIdContainer: NonFungibleTokenIdContainer?
+): NonFungibleToken {
     return NonFungibleToken(
         address = address,
-        metadataContainer = metadata.toNonFungibleMetadataContainer()
+        metadataContainer = metadata.toNonFungibleMetadataContainer(),
+        nonFungibleIdContainer = nonFungibleTokenIdContainer
     )
 }
 
 fun EntityMetadataCollection.toNonFungibleMetadataContainer(): NonFungibleMetadataContainer {
     return NonFungibleMetadataContainer(
-        metadata = items.associate { it.key to it.value },
-        nextCursor = nextCursor,
-        previousCursor = previousCursor
+        metadata = items.associate { it.key to it.value }, nextCursor = nextCursor, previousCursor = previousCursor
     )
 }
 
 fun EntityDetailsResponseNonFungibleResourceDetailsIdsItem.toNonFungibleId(): NonFungibleTokenId {
     return NonFungibleTokenId(
-        idHex = idHex,
-        immutableDataHex = immutableDataHex,
-        mutableDataHex = mutableDataHex
+        idHex = idHex, immutableDataHex = immutableDataHex, mutableDataHex = mutableDataHex
     )
 }
 

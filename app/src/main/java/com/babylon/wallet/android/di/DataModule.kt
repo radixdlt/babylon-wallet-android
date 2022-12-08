@@ -3,6 +3,8 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.data.dapp.DAppRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
+import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
+import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepositoryImpl
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepositoryImpl
 import com.babylon.wallet.android.domain.dapp.DAppRepository
@@ -29,4 +31,9 @@ interface DataModule {
     fun bindsTransactionRepository(
         transactionRepository: TransactionRepositoryImpl
     ): TransactionRepository
+
+    @Binds
+    fun nonFungibleRepository(
+        nonFungibleRepository: NonFungibleRepositoryImpl
+    ): NonFungibleRepository
 }
