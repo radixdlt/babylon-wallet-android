@@ -19,7 +19,7 @@ jobs:
   #   runs-on: ubuntu-latest
 
   #   steps:
-  #     - uses: actions/checkout@v2
+  #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
   #     - name: "Run Lint"
   #       run: ./gradlew lintDebug
@@ -42,7 +42,7 @@ jobs:
   #     - lint
 
   #   steps:
-  #     - uses: actions/checkout@v2
+  #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
   #     - name: "Run unit tests"
   #       run: ./gradlew testDebugUnitTest
@@ -58,7 +58,7 @@ jobs:
   # #     - lint
 
   # #   steps:
-  # #     - uses: actions/checkout@v2
+  # #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
   # #     - name: "Run snapshot tests"
   # #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
@@ -71,7 +71,7 @@ jobs:
   # #     - lint
 
   # #   steps:
-  # #     - uses: actions/checkout@v2
+  # #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
   # #     - name: "Run UI tests"
   # #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
@@ -88,11 +88,11 @@ jobs:
   #     # - ui_tests
 
   #   steps:
-  #     - uses: actions/checkout@v2
+  #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
   #       with:
   #         fetch-depth: 0
           
-  #     - uses: actions/download-artifact@v3
+  #     - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
   #       with:
   #         name: lint-results
   #         path: app/build/reports/
@@ -124,31 +124,30 @@ jobs:
       # - static_analysis
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
       - name: Dump context
-        uses: crazy-max/ghaction-dump-context@v1.2.1
+        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
 
       - name: "Build"
         run: |
           ./gradlew assembleDebugPreview
-           ls -l app/build/outputs/*/*
         env:
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: Upload APK from PR
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
         with:
           name: ${{ github.event.number }}
-          path: app/build/outputs/apk/debug/
+          path: app/build/outputs/apk/debugPreview/
           retention-days: 1
 
       - name: Upload APK from main branch
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
         with:
           name: ${{ github.ref_name }}
-          path: app/build/outputs/apk/debug/
+          path: app/build/outputs/apk/debugPreview/
           retention-days: 1
