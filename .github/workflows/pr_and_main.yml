@@ -14,28 +14,44 @@ jobs:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5
 
-  # lint:
-  #   name: "Lint"
-  #   runs-on: ubuntu-latest
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
-  #     - name: "Run Lint"
-  #       run: ./gradlew lintDebug
-  #       env:
-  #         GPR_USER: ${{ secrets.GPR_USER }}
-  #         GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+      - name: "Run Lint"
+        run: ./gradlew lintDebug
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
-  #     - name: Upload lint results
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: lint-results
-  #         path: app/build/reports/lint-results-debug.xml
-  #         retention-days: 1
+      - name: Upload lint results
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-results
+          path: app/build/reports/lint-results-debug.xml
+          retention-days: 1
 
-  # unit_tests:
-  #   name: "Unit tests"
+  unit_tests:
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+
+    needs:
+      - lint
+
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+
+      - name: "Run unit tests"
+        run: ./gradlew testDebugUnitTest
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+
+  # snapshot_tests:
+  #   name: "Snapshot tests"
   #   runs-on: ubuntu-latest
 
   #   needs:
@@ -44,84 +60,68 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
-  #     - name: "Run unit tests"
-  #       run: ./gradlew testDebugUnitTest
-  #       env:
-  #         GPR_USER: ${{ secrets.GPR_USER }}
-  #         GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+  #     - name: "Run snapshot tests"
+  #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
 
-  # # snapshot_tests:
-  # #   name: "Snapshot tests"
-  # #   runs-on: ubuntu-latest
-
-  # #   needs:
-  # #     - lint
-
-  # #   steps:
-  # #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-
-  # #     - name: "Run snapshot tests"
-  # #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
-
-  # # ui_tests:
-  # #   name: "UI tests"
-  # #   runs-on: ubuntu-latest
-
-  # #   needs:
-  # #     - lint
-
-  # #   steps:
-  # #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-
-  # #     - name: "Run UI tests"
-  # #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
-
-  # static_analysis:
-  #   name: "Static analysis and SonarCloud"
+  # ui_tests:
+  #   name: "UI tests"
   #   runs-on: ubuntu-latest
 
-  #   continue-on-error: true
-
   #   needs:
-  #     - unit_tests
-  #     # - snapshot_tests
-  #     # - ui_tests
+  #     - lint
 
   #   steps:
   #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-  #       with:
-  #         fetch-depth: 0
+
+  #     - name: "Run UI tests"
+  #       run: echo "Hello World" # JUST A PLACEHOLDER, NEEDS TO BE REPLACED
+
+  static_analysis:
+    name: "Static analysis and SonarCloud"
+    runs-on: ubuntu-latest
+
+    continue-on-error: true
+
+    needs:
+      - unit_tests
+      # - snapshot_tests
+      # - ui_tests
+
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          fetch-depth: 0
           
-  #     - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
-  #       with:
-  #         name: lint-results
-  #         path: app/build/reports/
+      - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
+        with:
+          name: lint-results
+          path: app/build/reports/
 
-  #     - name: "Run detekt"
-  #       run: |
-  #         ./gradlew detektMain
-  #       env:
-  #         GPR_USER: ${{ secrets.GPR_USER }}
-  #         GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+      - name: "Run detekt"
+        run: |
+          ./gradlew detektMain
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
-  #     - name: "Run jacoco"
-  #       run: |
-  #         ./gradlew jacocoTestReport
+      - name: "Run jacoco"
+        run: |
+          ./gradlew jacocoTestReport
 
-  #     - name: "Run Sonarcloud"
-  #       run: |
-  #         ./gradlew sonarqube
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
+      - name: "Run Sonarcloud"
+        run: |
+          ./gradlew sonarqube
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
 
   build:
 
     name: "Build"
     runs-on: ubuntu-latest
 
-    # needs:
-      # - static_analysis
+    needs:
+      - static_analysis
 
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
