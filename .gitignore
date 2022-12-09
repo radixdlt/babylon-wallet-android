@@ -36,3 +36,5 @@ google-services.json
 
 # MACos generated
 .DS_Store
+
+vendor/

@@ -1,4 +1,4 @@
-name: "Manual trigger to distribute"
+name: "Upload to Firebase"
 
 on:
   workflow_dispatch:
@@ -10,42 +10,51 @@ on:
       groups:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
-        default: ''
+        default: 'internal'
+        type: choice
+        options:
+          - "internal"
+          - "no"
 
 jobs:
 
-  deploy_alpha:
+  deploy:
 
     name: "Build and distribute"
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Dump context
-        uses: crazy-max/ghaction-dump-context@v1.2.1
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          token: ${{ secrets.RADIX_BOT_PAT }}
 
       - name: Download Ruby (action)
-        uses: ruby/setup-ruby@v1.114.0
+        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
         with:
-          ruby-version: '2.7.2'
-
-      - name: Install fastlane
-        run: |
-          gem install bundler
-          bundle install
+          ruby-version: '3.1.2'
+          bundler-cache: true
 
       - name: Decode Service account credentials
-        uses: timheuer/base64-to-file@v1
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
         id: firebase_keystore
         with:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - name: Build and distribute
-        run: fastlane manual
+        run: |
+          if [ "$GROUPS" == "no" ]; then
+            GROUPS=''
+          fi
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane beta
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
           GROUPS: ${{ github.event.inputs.groups }}
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
