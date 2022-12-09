@@ -15,18 +15,20 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- *
+ * 
  *
  * @param exception Gives an error type which occurred within the Gateway API when serving the request.
  * @param cause Gives a human readable message - likely just a trace ID for reporting the error.
  */
 @Serializable
 
-data class InternalServerErrorAllOf(
+data class InternalServerErrorAllOf (
 
     /* Gives an error type which occurred within the Gateway API when serving the request. */
     @SerialName(value = "exception")
@@ -37,3 +39,4 @@ data class InternalServerErrorAllOf(
     val cause: kotlin.String
 
 )
+

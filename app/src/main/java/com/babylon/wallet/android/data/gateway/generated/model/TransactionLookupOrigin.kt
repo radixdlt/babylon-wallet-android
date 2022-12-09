@@ -7,7 +7,10 @@
  */
 
 @file:Suppress(
-    "ArrayInDataClass", "EnumEntryName", "RemoveRedundantQualifierName", "UnusedImport"
+    "ArrayInDataClass",
+    "EnumEntryName",
+    "RemoveRedundantQualifierName",
+    "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
@@ -16,24 +19,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
+ * *
  * Values: intent,signedIntent,notarized,payload
  */
 @Serializable
 enum class TransactionLookupOrigin(val value: kotlin.String) {
 
     @SerialName(value = "intent")
-    Intent("intent"),
+    intent("intent"),
 
     @SerialName(value = "signed_intent")
-    SignedIntent("signed_intent"),
+    signedIntent("signed_intent"),
 
     @SerialName(value = "notarized")
-    Notarized("notarized"),
+    notarized("notarized"),
 
     @SerialName(value = "payload")
-    Payload("payload");
+    payload("payload");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use

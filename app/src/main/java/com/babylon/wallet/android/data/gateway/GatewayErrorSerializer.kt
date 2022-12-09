@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.data.gateway
 
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNotFoundError
 import com.babylon.wallet.android.data.gateway.generated.model.GatewayError
 import com.babylon.wallet.android.data.gateway.generated.model.InternalServerError
+import com.babylon.wallet.android.data.gateway.generated.model.InvalidEntityError
 import com.babylon.wallet.android.data.gateway.generated.model.InvalidRequestError
 import com.babylon.wallet.android.data.gateway.generated.model.InvalidTransactionError
 import com.babylon.wallet.android.data.gateway.generated.model.NotSyncedUpError
@@ -16,6 +18,8 @@ object GatewayErrorSerializer : JsonContentPolymorphicSerializer<GatewayError>(G
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out GatewayError> {
         return when (element.jsonObject["type"]?.jsonPrimitive?.content) {
             "TransactionNotFoundError" -> TransactionNotFoundError.serializer()
+            "InvalidEntityError" -> InvalidEntityError.serializer()
+            "EntityNotFoundError" -> EntityNotFoundError.serializer()
             "InvalidRequestError" -> InvalidRequestError.serializer()
             "InvalidTransactionError" -> InvalidTransactionError.serializer()
             "NotSyncedUpError" -> NotSyncedUpError.serializer()

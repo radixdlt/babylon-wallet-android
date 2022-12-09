@@ -15,36 +15,50 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param discriminator
- * @param divisibility
- * @param totalSupply
- * @param totalMinted
- * @param totalBurnt
+ * @param discriminator 
+ * @param accessRulesChain 
+ * @param vaultAccessRulesChain 
+ * @param divisibility 
+ * @param totalSupply The string-encoded decimal representing the amount
+ * @param totalMinted The string-encoded decimal representing the amount
+ * @param totalBurnt The string-encoded decimal representing the amount
  */
 @Serializable
 
-data class EntityDetailsResponseFungibleResourceDetails(
+data class EntityDetailsResponseFungibleResourceDetails (
 
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
 
+    @Contextual @SerialName(value = "access_rules_chain")
+    val accessRulesChain: kotlin.Any,
+
+    @Contextual @SerialName(value = "vault_access_rules_chain")
+    val vaultAccessRulesChain: kotlin.Any,
+
     @SerialName(value = "divisibility")
-    val divisibility: kotlin.Long,
+    val divisibility: kotlin.Int,
 
+    /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_supply")
-    val totalSupply: TokenAmount,
+    val totalSupply: kotlin.String,
 
+    /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_minted")
-    val totalMinted: TokenAmount,
+    val totalMinted: kotlin.String,
 
+    /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_burnt")
-    val totalBurnt: TokenAmount
+    val totalBurnt: kotlin.String
 
 )
+

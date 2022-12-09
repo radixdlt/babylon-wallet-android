@@ -19,12 +19,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
- *
- * @param idHex
- * @param immutableDataHex
- * @param mutableDataHex
- */
+ * *
+ * @param idHex * @param immutableDataHex * @param mutableDataHex */
 @Serializable
 
 data class EntityDetailsResponseNonFungibleResourceDetailsIdsItem(

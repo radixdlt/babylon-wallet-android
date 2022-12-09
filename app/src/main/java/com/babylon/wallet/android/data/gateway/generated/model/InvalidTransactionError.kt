@@ -15,20 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.GatewayError
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- *
+ * 
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
  */
 @Serializable
 
-data class InvalidTransactionError(
+data class InvalidTransactionError (
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")
     override val type: kotlin.String
 
 ) : GatewayError()
+

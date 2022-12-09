@@ -10,18 +10,20 @@
     "ArrayInDataClass",
     "EnumEntryName",
     "RemoveRedundantQualifierName",
-    "UnusedImport",
-    "UnnecessaryAbstractClass"
+    "UnusedImport"
 )
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+
 import com.babylon.wallet.android.data.gateway.GatewayErrorSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
+ * 
+ *
  * @param type The type of error. Each subtype may have its own additional structured fields.
  */
 @Serializable(with = GatewayErrorSerializer::class)
@@ -31,3 +33,4 @@ abstract class GatewayError {
     @SerialName(value = "type")
     abstract val type: kotlin.String
 }
+

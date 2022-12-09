@@ -15,6 +15,13 @@ suspend fun <T> Result<T>.onValue(action: suspend (T) -> Unit) {
     }
 }
 
+fun <T> Result<T>.value(): T? {
+    if (this is Result.Success) {
+        return data
+    }
+    return null
+}
+
 fun <T> Result<T>.onError(action: (Throwable?) -> Unit) {
     if (this is Result.Error) {
         action(this.exception)
