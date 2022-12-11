@@ -22,7 +22,7 @@ class ChooseDAppAccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            when (val accountsResult = getDAppAccountsUseCase.getAccountsResult(viewModelScope)) {
+            when (val accountsResult = getDAppAccountsUseCase.getAccountsResult(this)) {
                 is Result.Success -> {
                     accountsState = accountsState.copy(
                         accounts = accountsResult.data.accounts,

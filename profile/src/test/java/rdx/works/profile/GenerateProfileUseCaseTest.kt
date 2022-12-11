@@ -95,7 +95,7 @@ class GenerateProfileUseCaseTest {
         val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository)
 
         // then
-        Assert.assertEquals(generateProfileUseCase(), profile)
+        Assert.assertEquals(generateProfileUseCase("main"), profile)
     }
 
     @Test
@@ -109,7 +109,7 @@ class GenerateProfileUseCaseTest {
 
         whenever(profileRepository.readProfileSnapshot()).thenReturn(null)
 
-        val profile = generateProfileUseCase()
+        val profile = generateProfileUseCase("main")
 
         val factorSourceId = "4d8b07d0220a9b838b7626dc917b96512abc629bd912a66f60c942fc5fa2f287"
         val factorInstanceId = "873692e7b1cb8d2efa20633eedbeb9dab389cfb9ed1258b12ff4fd74dde05f02"
@@ -131,7 +131,7 @@ class GenerateProfileUseCaseTest {
 
         whenever(profileRepository.readProfileSnapshot()).thenReturn(null)
 
-        val profile = generateProfileUseCase()
+        val profile = generateProfileUseCase("main")
 
         val factorSourceId = "6e1a2745f14f9326a49d2daf8e83087920e6980630f6fc635dd566c21201934d"
         val factorInstanceId = "3d49eb91ba3d5c56c5a13cb00da3561fa8ba68182b1c0a662f8fffbcf2eddc1e"

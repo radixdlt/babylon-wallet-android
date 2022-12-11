@@ -85,22 +85,10 @@ fun Profile.addP2PClient(
 /**
  * TODO Once engine toolkit ready, we will used it derive address, for now we use mocked account address for hammunet
  */
-private val addresses = mutableListOf(
-    "account_tdx_22_1qdapljk0tmkpj98erq8hm20zwjm35y9uhahev7mejd9q05mkdl",
-    "account_tdx_22_1qm66zgzp33rctqe6uug4x3sed58sjuk67fhzwaqxhzss43g0lh",
-    "account_tdx_22_1qcf0fhxrd80x077lh5camqug4uuscd9gw2d4m26pxe7sndsaxr",
-    "account_tdx_22_1qe6j28ycnh4jwahcpje9chzzlkdn2w2ww4metq6z6qyqg8wwy9",
-    "account_tdx_22_1qctml9909t7ln2wnqhsh2d7elvz98rq3zm966huyr2vquxs0he",
-    "account_tdx_22_1qcw4z5rprtxy2kle9n9xj5g6nxarhvzkxe807d0l9jyq6mvqd9",
-    "account_tdx_22_1qmtr80h3ycf9tf5pzspal8clf6kh6kxqhsa02qsun8cskq4vq0"
-
-)
-@Suppress("UnusedPrivateMember")
+@SuppressWarnings("UnusedPrivateMember")
 fun deriveAddress(
     compressedPublicKey: ByteArray
 ): EntityAddress {
     // TODO For now pick any of valid account addresses to successfully fetch entityResources from backend
-    val randomAddress = addresses.random()
-    addresses.remove(randomAddress)
-    return EntityAddress(randomAddress)
+    return EntityAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u")
 }
