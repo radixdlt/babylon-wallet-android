@@ -5,11 +5,9 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.babylon.wallet.android.data.profile.ProfileRepositoryImpl
 import com.babylon.wallet.android.data.repository.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.profile.ProfileRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,11 +43,5 @@ object ApplicationModule {
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
         return context.userDataStore
-    }
-
-    @Provides
-    @Singleton
-    fun provideProfileRepository(): ProfileRepository {
-        return ProfileRepositoryImpl()
     }
 }

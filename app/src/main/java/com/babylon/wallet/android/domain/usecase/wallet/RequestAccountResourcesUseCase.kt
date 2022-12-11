@@ -10,18 +10,25 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
 class RequestAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
-    private val nonFungibleRepository: NonFungibleRepository
+    private val nonFungibleRepository: NonFungibleRepository,
+    private val profileRepository: ProfileRepository
 ) {
     suspend fun getAccountResources(address: String): Result<AccountResources> {
+        var accountDisplayName = ""
+        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
+            accountDisplayName = profileSnapshot.toProfile().getAccountByAddress(address)?.displayName.orEmpty()
+        }
         return when (val accountResourcesResult = entityRepository.getAccountResources(address)) {
             is Result.Error -> Result.Error(accountResourcesResult.exception)
             is Result.Success -> {
                 return Result.Success(
                     data = accountResourcesResult.data.let { accountResources ->
+                        // TODO make api calls to run simultaneously, not one by one to increase efficiency
                         val fungibleTokens = mutableListOf<OwnedFungibleToken>()
                         accountResources.simpleFungibleTokens.forEach { fungibleToken ->
                             entityRepository.entityDetails(fungibleToken.address).onValue { response ->
@@ -51,7 +58,10 @@ class RequestAccountResourcesUseCase @Inject constructor(
                             }
                         }
                         AccountResources(
-                            address,
+                            address = address,
+                            displayName = accountDisplayName,
+                            currencySymbol = "$", // TODO replace when endpoint ready
+                            value = "100",
                             fungibleTokens = fungibleTokens.toList(),
                             nonFungibleTokens = nonFungibleTokens.toList()
                         )

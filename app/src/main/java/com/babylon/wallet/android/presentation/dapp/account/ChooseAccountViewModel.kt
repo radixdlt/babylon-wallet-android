@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
-import com.babylon.wallet.android.data.profile.model.Account
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +22,7 @@ class ChooseDAppAccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            when (val accountsResult = getDAppAccountsUseCase.getAccountsResult()) {
+            when (val accountsResult = getDAppAccountsUseCase.getAccountsResult(viewModelScope)) {
                 is Result.Success -> {
                     accountsState = accountsState.copy(
                         accounts = accountsResult.data.accounts,
@@ -62,7 +61,10 @@ class ChooseDAppAccountViewModel @Inject constructor(
             val updatedAccounts = accounts.map { accountUiState ->
                 if (accountUiState == account) {
                     accountUiState.copy(
-                        account = accountUiState.account,
+                        accountName = account.accountName,
+                        accountAddress = account.accountAddress,
+                        accountCurrency = account.accountCurrency,
+                        accountValue = account.accountValue,
                         selected = !accountUiState.selected
                     )
                 } else {
@@ -93,6 +95,9 @@ data class ChooseAccountUiState(
 )
 
 data class SelectedAccountUiState(
-    val account: Account,
+    val accountName: String,
+    val accountAddress: String,
+    val accountCurrency: String,
+    val accountValue: String,
     val selected: Boolean = false
 )

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.createaccount
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,35 +16,78 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import kotlinx.coroutines.Dispatchers
+import rdx.works.profile.data.repository.ProfileRepositoryImpl
+import rdx.works.profile.domain.CreateAccountUseCase
+import rdx.works.profile.domain.GenerateProfileUseCase
+import rdx.works.profile.domain.GetMnemonicUseCase
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun CreateAccountScreen(
+    viewModel: CreateAccountViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onContinueClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
+    onContinueClick: (
+        accountId: String,
+        accountName: String,
+        profileExists: Boolean
+    ) -> Unit = { _: String, _: String, _: Boolean -> },
 ) {
-    var buttonEnabled by rememberSaveable { mutableStateOf(false) }
-    var accountName by rememberSaveable { mutableStateOf("") }
-    val maxLength = 20
 
+    val state = viewModel.state
+
+    if (state.complete) {
+        onContinueClick(state.accountId, state.accountName, state.profileExists)
+    } else if (state.loading) {
+        FullscreenCircularProgressContent()
+    } else {
+        val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
+        val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
+
+        CreateAccountContent(
+            onAccountNameChange = viewModel::onAccountNameChange,
+            onAccountCreateClick = viewModel::onAccountCreateClick,
+            accountName = accountName,
+            buttonEnabled = buttonEnabled,
+            onBackClick = onBackClick,
+            modifier = modifier
+        )
+    }
+}
+
+@Composable
+fun CreateAccountContent(
+    onAccountNameChange: (String) -> Unit,
+    onAccountCreateClick: () -> Unit,
+    accountName: String,
+    buttonEnabled: Boolean,
+    onBackClick: () -> Unit,
+    modifier: Modifier
+) {
     Column(
         modifier = modifier
-            .systemBarsPadding().background(RadixTheme.colors.defaultBackground)
+            .systemBarsPadding()
+            .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
         IconButton(onClick = onBackClick) {
@@ -83,10 +127,7 @@ fun CreateAccountScreen(
             Column(modifier = Modifier.fillMaxWidth()) {
                 RadixTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    onValueChanged = {
-                        buttonEnabled = it.isNotEmpty()
-                        accountName = it.take(maxLength)
-                    },
+                    onValueChanged = onAccountNameChange,
                     value = accountName,
                     hint = stringResource(id = R.string.account_name)
                 )
@@ -100,9 +141,7 @@ fun CreateAccountScreen(
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                // TODO Im gonna revist this to handle that from viewmodel nicely.
-                //  In the meantime, we dont have account generation so i put hardcoded stuff here
-                onClick = { onContinueClick("di20ejdnd2e20e2", accountName) },
+                onClick = onAccountCreateClick,
                 enabled = buttonEnabled,
                 text = stringResource(id = R.string.continue_button_title)
             )
@@ -110,14 +149,45 @@ fun CreateAccountScreen(
     }
 }
 
+val Context.dataStore by preferencesDataStore("test_preferences")
+
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountPreview() {
+    val dataStore: DataStore<Preferences> = LocalContext.current.dataStore
+
+    val viewModel = CreateAccountViewModel(
+        savedStateHandle = SavedStateHandle(),
+        profileRepository = ProfileRepositoryImpl(
+            dataStore = dataStore,
+            defaultDispatcher = Dispatchers.Main
+        ),
+        generateProfileUseCase = GenerateProfileUseCase(
+            getMnemonicUseCase = GetMnemonicUseCase(
+                dataStore = dataStore
+            ),
+            profileRepository = ProfileRepositoryImpl(
+                dataStore = dataStore,
+                defaultDispatcher = Dispatchers.Main
+            )
+        ),
+        createAccountUseCase = CreateAccountUseCase(
+            generateMnemonicUseCase = GetMnemonicUseCase(
+                dataStore = dataStore
+            ),
+            profileRepository = ProfileRepositoryImpl(
+                dataStore = dataStore,
+                defaultDispatcher = Dispatchers.Main
+            )
+        )
+    )
+
     BabylonWalletTheme {
         CreateAccountScreen(
+            viewModel = viewModel,
             onBackClick = {},
-            onContinueClick = { _, _ -> }
+            onContinueClick = { _, _, _ -> }
         )
     }
 }

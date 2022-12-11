@@ -11,7 +11,9 @@ class GenerateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke(): Profile {
+    suspend operator fun invoke(
+        accountDisplayName: String
+    ): Profile {
         profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
             return profileSnapshot.toProfile()
         } ?: run {
@@ -21,7 +23,8 @@ class GenerateProfileUseCase @Inject constructor(
 
             val profile = Profile.init(
                 networkAndGateway = networkAndGateway,
-                mnemonic = MnemonicWords(phrase = mnemonic)
+                mnemonic = MnemonicWords(phrase = mnemonic),
+                firstAccountDisplayName = accountDisplayName
             )
 
             profileRepository.saveProfileSnapshot(profile.snapshot())

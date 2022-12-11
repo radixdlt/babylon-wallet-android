@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_PROFILE_EXISTS
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -94,25 +95,33 @@ fun NavigationHost(
             }
         ) {
             CreateAccountScreen(
+                viewModel = hiltViewModel(),
                 onBackClick = { navController.navigateUp() },
-                onContinueClick = { accountId, accountName ->
+                onContinueClick = { accountId, accountName, profileExists ->
                     navController.navigate(
-                        Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName)
+                        Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName, profileExists)
                     )
                 }
             )
         }
         composable(
-            route = Screen.AccountCompletionDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+            route = Screen.AccountCompletionDestination.route +
+                "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_PROFILE_EXISTS}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
-                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType }
+                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
+                navArgument(ARG_PROFILE_EXISTS) { type = NavType.BoolType }
             )
         ) {
             CreateAccountConfirmationScreen(
                 viewModel = hiltViewModel(),
-                goHomeClick = {
+                dismiss = {
                     navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                },
+                goNext = {
+                    navController.navigate(Screen.WalletDestination.route) {
+                        navController.popBackStack(startDestination, inclusive = true)
+                    }
                 }
             )
         }

@@ -26,9 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixBackground
 import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
@@ -36,15 +33,36 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun CreateAccountConfirmationScreen(
     viewModel: CreateAccountConfirmationViewModel,
     modifier: Modifier = Modifier,
+    dismiss: () -> Unit,
+    goNext: () -> Unit
+) {
+    val accountState = viewModel.accountUiState
+
+    if (accountState.dismiss) {
+        dismiss()
+    } else if (accountState.goNext) {
+        goNext()
+    } else {
+        CreateAccountConfirmationContent(
+            modifier = modifier,
+            accountName = accountState.accountName,
+            accountId = accountState.accountId,
+            goHomeClick = viewModel::goHomeClick
+        )
+    }
+}
+
+@Composable
+fun CreateAccountConfirmationContent(
+    modifier: Modifier,
+    accountName: String,
+    accountId: String,
     goHomeClick: () -> Unit
 ) {
-    val accountState = viewModel.accountUiState.collectAsStateWithLifecycle().value
-
     Column(
         modifier = modifier
             .systemBarsPadding()
@@ -85,14 +103,14 @@ fun CreateAccountConfirmationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = accountState.first,
+                    text = accountName,
                     textAlign = TextAlign.Center,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 AccountAddressView(
-                    address = accountState.second,
+                    address = accountId,
                     onCopyAccountAddressClick = {}
                 )
             }
@@ -108,7 +126,7 @@ fun CreateAccountConfirmationScreen(
         Spacer(Modifier.weight(1f))
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { goHomeClick() },
+            onClick = goHomeClick,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = RadixButtonBackground,
                 disabledBackgroundColor = RadixBackground
@@ -132,12 +150,11 @@ fun CreateAccountConfirmationScreen(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun CreateAccountConfirmationPreview() {
-    val viewModel = CreateAccountConfirmationViewModel(
-        savedStateHandle = SavedStateHandle()
-    )
-    CreateAccountConfirmationScreen(
-        viewModel = viewModel,
+fun CreateAccountConfirmationContentPreview() {
+    CreateAccountConfirmationContent(
+        modifier = Modifier,
+        accountName = "My Account",
+        accountId = "mock_account_id",
         goHomeClick = {}
     )
 }
