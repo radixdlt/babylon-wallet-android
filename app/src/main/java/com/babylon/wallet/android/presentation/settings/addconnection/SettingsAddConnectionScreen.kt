@@ -87,9 +87,7 @@ private fun EnterConnection(
     modifier: Modifier = Modifier,
     onConnectionClick: (String, String) -> Unit
 ) {
-    var connectionPasswordText by rememberSaveable {
-        mutableStateOf("")
-    }
+    var connectionPasswordText by rememberSaveable { mutableStateOf("") }
     var connectionDisplayName by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = modifier) {
