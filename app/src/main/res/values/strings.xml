@@ -65,6 +65,7 @@
     <string name="manage_connections">Manage Connections</string>
     <string name="new_connection">New Connection</string>
     <string name="enter_the_connection_id">Enter the connection id</string>
+    <string name="enter_the_display_name">Enter the display name</string>
     <string name="edit_gateway_api_url">Edit Gateway API URL</string>
     <string name="current">Current</string>
     <string name="network_name">Network name</string>
