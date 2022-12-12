@@ -17,8 +17,12 @@ import javax.inject.Inject
 
 // TODO will have to add encryption
 interface ProfileRepository {
+
     suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot)
+
     suspend fun readProfileSnapshot(): ProfileSnapshot?
+
+    suspend fun saveConnectionPassword(connectionPassword: String) // TODO must be removed ⚠️
 }
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -49,7 +53,14 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun saveConnectionPassword(connectionPassword: String) {
+        dataStore.edit { preferences ->
+            preferences[CONNECTION_PASSWORD_PREFERENCES_KEY] = connectionPassword
+        }
+    }
+
     companion object {
-        private val PROFILE_PREFERENCES_KEY = stringPreferencesKey("profile")
+        private val PROFILE_PREFERENCES_KEY = stringPreferencesKey("profile_preferences_key")
+        private val CONNECTION_PASSWORD_PREFERENCES_KEY = stringPreferencesKey("connection_password_preferences_key")
     }
 }
