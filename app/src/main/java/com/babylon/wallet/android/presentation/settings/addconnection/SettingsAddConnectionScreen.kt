@@ -18,6 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -26,6 +28,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun SettingsAddConnectionScreen(
     viewModel: SettingsAddConnectionViewModel,
@@ -33,13 +36,14 @@ fun SettingsAddConnectionScreen(
     modifier: Modifier = Modifier
 ) {
 
-    val state = viewModel.state
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
     SettingsAddConnectionContent(
         modifier = modifier
             .systemBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
-        isConnectionOpen = state.isConnectionOpen,
+        hasAlreadyConnection = state.hasAlreadyConnection,
         onConnectionClick = viewModel::onConnectionClick,
         isLoading = state.isLoading,
         onBackClick = onBackClick
@@ -48,7 +52,7 @@ fun SettingsAddConnectionScreen(
 
 @Composable
 private fun SettingsAddConnectionContent(
-    isConnectionOpen: Boolean,
+    hasAlreadyConnection: Boolean,
     onConnectionClick: (String, String) -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
@@ -60,7 +64,7 @@ private fun SettingsAddConnectionContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
-        if (isConnectionOpen) {
+        if (hasAlreadyConnection) {
             ShowConnection()
         } else {
             if (isLoading) {
@@ -131,7 +135,7 @@ private fun EnterConnection(
 fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
     BabylonWalletTheme {
         SettingsAddConnectionContent(
-            isConnectionOpen = false,
+            hasAlreadyConnection = false,
             onConnectionClick = { _, _ -> },
             isLoading = false,
             onBackClick = {}
@@ -145,7 +149,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
 fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
     BabylonWalletTheme {
         SettingsAddConnectionContent(
-            isConnectionOpen = true,
+            hasAlreadyConnection = true,
             onConnectionClick = { _, _ -> },
             isLoading = false,
             onBackClick = {}

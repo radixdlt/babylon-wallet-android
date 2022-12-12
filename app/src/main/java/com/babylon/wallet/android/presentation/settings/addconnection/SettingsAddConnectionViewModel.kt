@@ -1,17 +1,20 @@
 package com.babylon.wallet.android.presentation.settings.addconnection
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.ConnectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import okio.ByteString.Companion.decodeHex
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.AddP2PClientUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -19,22 +22,29 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsAddConnectionViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
-    private val addP2PClientUseCase: AddP2PClientUseCase
+    private val addP2PClientUseCase: AddP2PClientUseCase,
+    profileRepository: ProfileRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf(SettingsAddConnectionUiState())
-        private set
+    private val loadingState = MutableStateFlow(false)
+
+    val uiState: StateFlow<SettingsAddConnectionUiState> = combine(
+        loadingState,
+        profileRepository.connectionPassword
+    ) { isLoading, connectionPassword ->
+        SettingsAddConnectionUiState(
+            isLoading = isLoading,
+            hasAlreadyConnection = connectionPassword.isEmpty().not()
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SettingsAddConnectionUiState()
+    )
 
     private var currentConnectionPassword: String = ""
     private var currentConnectionDisplayName: String = ""
     private var listenIncomingMessagesJob: Job? = null
-
-    init {
-        state = state.copy(
-            isLoading = false,
-            isConnectionOpen = peerdroidClient.isAlreadyOpen
-        )
-    }
 
     fun onConnectionClick(
         connectionPassword: String,
@@ -45,27 +55,27 @@ class SettingsAddConnectionViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            loadingState.value = true
 
             val encryptionKey = parseEncryptionKeyFromConnectionPassword(
                 connectionPassword = connectionPassword
             )
 
             if (encryptionKey != null) {
-                val result = peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)
-                state = when (result) {
+                when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
                     is Result.Success -> {
                         currentConnectionPassword = connectionPassword
                         currentConnectionDisplayName = connectionDisplayName
                         waitUntilConnectionIsEstablished()
-                        state.copy(isConnectionOpen = true)
+
                     }
                     is Result.Error -> {
-                        state.copy(isConnectionOpen = false)
+                        Timber.d("Failed to connect to remote peer.")
                     }
                 }
+            } else {
+                loadingState.value = false
             }
-            state = state.copy(isLoading = false)
         }
     }
 
@@ -94,6 +104,7 @@ class SettingsAddConnectionViewModel @Inject constructor(
                 connectionPassword = currentConnectionPassword,
                 isWithoutProfile = true
             )
+            loadingState.value = false
         }
     }
 
@@ -109,5 +120,5 @@ class SettingsAddConnectionViewModel @Inject constructor(
 
 data class SettingsAddConnectionUiState(
     val isLoading: Boolean = false,
-    val isConnectionOpen: Boolean = false
+    val hasAlreadyConnection: Boolean = false
 )
