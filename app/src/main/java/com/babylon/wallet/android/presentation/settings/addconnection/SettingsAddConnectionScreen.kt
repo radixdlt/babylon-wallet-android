@@ -49,7 +49,7 @@ fun SettingsAddConnectionScreen(
 @Composable
 private fun SettingsAddConnectionContent(
     isConnectionOpen: Boolean,
-    onConnectionClick: (String) -> Unit,
+    onConnectionClick: (String, String) -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit
@@ -63,10 +63,13 @@ private fun SettingsAddConnectionContent(
         if (isConnectionOpen) {
             ShowConnection()
         } else {
-            EnterConnectionId(
-                isLoading = isLoading,
-                onConnectionClick = onConnectionClick
-            )
+            if (isLoading) {
+                FullscreenCircularProgressContent()
+            } else {
+                EnterConnection(
+                    onConnectionClick = onConnectionClick
+                )
+            }
         }
     }
 }
@@ -80,16 +83,16 @@ private fun ShowConnection() {
 }
 
 @Composable
-private fun EnterConnectionId(
-    isLoading: Boolean,
+private fun EnterConnection(
     modifier: Modifier = Modifier,
-    onConnectionClick: (String) -> Unit
+    onConnectionClick: (String, String) -> Unit
 ) {
-    var connectionPasswordText by rememberSaveable { mutableStateOf("") }
+    var connectionPasswordText by rememberSaveable {
+        mutableStateOf("")
+    }
+    var connectionDisplayName by rememberSaveable { mutableStateOf("") }
 
-    if (isLoading) {
-        FullscreenCircularProgressContent()
-    } else {
+    Column(modifier = modifier) {
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,7 +102,18 @@ private fun EnterConnectionId(
             hint = stringResource(R.string.enter_the_connection_id)
         )
 
-        Spacer(modifier = modifier.size(RadixTheme.dimensions.paddingMedium))
+        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
+
+        RadixTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+            value = connectionDisplayName,
+            onValueChanged = { connectionDisplayName = it },
+            hint = stringResource(R.string.enter_the_display_name)
+        )
+
+        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
 
         RadixPrimaryButton(
             modifier = Modifier
@@ -107,7 +121,7 @@ private fun EnterConnectionId(
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.add_connection),
             onClick = {
-                onConnectionClick(connectionPasswordText)
+                onConnectionClick(connectionPasswordText, connectionDisplayName)
             }
         )
     }
@@ -120,7 +134,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
     BabylonWalletTheme {
         SettingsAddConnectionContent(
             isConnectionOpen = false,
-            onConnectionClick = {},
+            onConnectionClick = { _, _ -> },
             isLoading = false,
             onBackClick = {}
         )
@@ -134,7 +148,7 @@ fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
     BabylonWalletTheme {
         SettingsAddConnectionContent(
             isConnectionOpen = true,
-            onConnectionClick = {},
+            onConnectionClick = { _, _ -> },
             isLoading = false,
             onBackClick = {}
         )

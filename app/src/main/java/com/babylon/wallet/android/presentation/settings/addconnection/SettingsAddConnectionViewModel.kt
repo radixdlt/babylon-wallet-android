@@ -9,25 +9,24 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.ConnectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import okio.ByteString.Companion.decodeHex
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.profile.domain.AddP2PClientUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsAddConnectionViewModel @Inject constructor(
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
+    private val addP2PClientUseCase: AddP2PClientUseCase
 ) : ViewModel() {
 
     var state by mutableStateOf(SettingsAddConnectionUiState())
         private set
 
-    // TODO we later store this in the profile
     private var currentConnectionPassword: String = ""
+    private var currentConnectionDisplayName: String = ""
     private var listenIncomingMessagesJob: Job? = null
 
     init {
@@ -37,26 +36,31 @@ class SettingsAddConnectionViewModel @Inject constructor(
         )
     }
 
-    fun onConnectionClick(connectionPassword: String) {
+    fun onConnectionClick(
+        connectionPassword: String,
+        connectionDisplayName: String
+    ) {
         if (listenIncomingMessagesJob?.isActive == true) {
             listenIncomingMessagesJob?.cancel()
         }
 
         viewModelScope.launch {
             state = state.copy(isLoading = true)
+
             val encryptionKey = parseEncryptionKeyFromConnectionPassword(
                 connectionPassword = connectionPassword
             )
+
             if (encryptionKey != null) {
                 val result = peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)
                 state = when (result) {
                     is Result.Success -> {
                         currentConnectionPassword = connectionPassword
-                        listenForIncomingRequests()
+                        currentConnectionDisplayName = connectionDisplayName
+                        waitUntilConnectionIsEstablished()
                         state.copy(isConnectionOpen = true)
                     }
                     is Result.Error -> {
-                        retryConnection()
                         state.copy(isConnectionOpen = false)
                     }
                 }
@@ -65,27 +69,32 @@ class SettingsAddConnectionViewModel @Inject constructor(
         }
     }
 
-    private fun listenForIncomingRequests() {
+    // This function is triggered when the data channel is open
+    // and finishes its job when the channel is closed.
+    // Because that means we successfully established a connection with connector extension
+    // and the connection password has been passed to the dapp.
+    private fun waitUntilConnectionIsEstablished() {
         listenIncomingMessagesJob = viewModelScope.launch {
-            peerdroidClient.listenForEvents()
-                .cancellable()
-                .onEach { state ->
-                    Timber.d("state: $state")
-                    this@SettingsAddConnectionViewModel.state = this@SettingsAddConnectionViewModel.state.copy(
-                        isLoading = state == ConnectionState.CONNECTING,
-                        isConnectionOpen = state == ConnectionState.OPEN
-                    )
-                    if (state == ConnectionState.CLOSE) {
-                        retryConnection()
+            peerdroidClient
+                .listenForStateEvents()
+                .collect { connectionState ->
+                    if (connectionState == ConnectionState.CLOSE || connectionState == ConnectionState.CLOSING) {
+                        saveConnectionPassword()
                     }
-                }.collect()
+                }
         }
     }
 
-    private suspend fun retryConnection() {
-        Timber.d("retry connection")
-        peerdroidClient.close()
-        onConnectionClick(currentConnectionPassword)
+    private fun saveConnectionPassword() {
+        viewModelScope.launch {
+            listenIncomingMessagesJob?.cancel()
+            peerdroidClient.close()
+            addP2PClientUseCase.invoke(
+                displayName = currentConnectionDisplayName,
+                connectionPassword = currentConnectionPassword,
+                isWithoutProfile = true
+            )
+        }
     }
 
     private fun parseEncryptionKeyFromConnectionPassword(connectionPassword: String): ByteArray? {
