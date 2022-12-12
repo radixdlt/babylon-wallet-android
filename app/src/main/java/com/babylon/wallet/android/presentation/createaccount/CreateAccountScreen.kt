@@ -47,6 +47,7 @@ fun CreateAccountScreen(
     viewModel: CreateAccountViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    cancelable: Boolean,
     onContinueClick: (
         accountId: String,
         accountName: String,
@@ -69,6 +70,7 @@ fun CreateAccountScreen(
             onAccountCreateClick = viewModel::onAccountCreateClick,
             accountName = accountName,
             buttonEnabled = buttonEnabled,
+            cancelable = cancelable,
             onBackClick = onBackClick,
             modifier = modifier
         )
@@ -82,6 +84,7 @@ fun CreateAccountContent(
     accountName: String,
     buttonEnabled: Boolean,
     onBackClick: () -> Unit,
+    cancelable: Boolean,
     modifier: Modifier
 ) {
     Column(
@@ -90,12 +93,14 @@ fun CreateAccountContent(
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = "navigate back"
-            )
+        if (cancelable) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = "navigate back"
+                )
+            }
         }
         Column(
             modifier = Modifier
@@ -187,6 +192,7 @@ fun CreateAccountPreview() {
         CreateAccountScreen(
             viewModel = viewModel,
             onBackClick = {},
+            cancelable = true,
             onContinueClick = { _, _, _ -> }
         )
     }

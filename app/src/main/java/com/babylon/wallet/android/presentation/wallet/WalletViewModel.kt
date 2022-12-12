@@ -47,19 +47,31 @@ class WalletViewModel @Inject constructor(
         profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
             val profile = profileSnapshot.toProfile()
             val accountsResourcesList = mutableListOf<AccountResources>()
-
-            val results = profile.getAccounts().map { account ->
+            val accounts = profile.getAccounts()
+            val results = accounts.map { account ->
                 viewModelScope.async {
                     requestAccountsUseCase.getAccountResources(account.address.address)
                 }
             }.awaitAll()
 
-            results.forEach { accountResourcesList ->
+            results.forEachIndexed { index, accountResourcesList ->
                 accountResourcesList.onError { error ->
                     _walletUiState.update { it.copy(error = UiMessage(error), isLoading = false) }
                 }
                 accountResourcesList.onValue { accountResources ->
-                    accountsResourcesList.add(accountResources)
+                    // TODO this is temporary because we use only one account address therefore data which we fetch
+                    // would be the same. Therefore we fetch display name from the profile instead
+                    val accountName = accounts[index].displayName.orEmpty()
+                    accountsResourcesList.add(
+                        AccountResources(
+                            address = accountResources.address,
+                            displayName = accountName,
+                            currencySymbol = accountResources.currencySymbol,
+                            value = accountResources.value,
+                            fungibleTokens = accountResources.fungibleTokens,
+                            nonFungibleTokens = accountResources.nonFungibleTokens
+                        )
+                    )
                 }
             }
 
