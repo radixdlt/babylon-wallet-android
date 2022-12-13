@@ -26,7 +26,7 @@ sealed class Screen(override val route: String, override val args: String = "") 
             "$ARG_NETWORK_NAME={$ARG_NETWORK_NAME}&" +
             "$ARG_SWITCH_NETWORK={$ARG_SWITCH_NETWORK}"
     )
-
+    object TransactionApprovalDestination : Screen("transaction_approval_route")
     object AccountCompletionDestination : Screen("account_completion_route")
     object RequestAccountsDestination : Screen("request_accounts_route")
     object ChooseAccountsDestination : Screen("choose_accounts_route")
