@@ -63,10 +63,10 @@ class SettingsAddConnectionViewModel @Inject constructor(
 
             if (encryptionKey != null) {
                 when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
-                    is Result.Success -> {
+                    is Result.Success -> { // we have a data channel which is already open!
                         currentConnectionPassword = connectionPassword
                         currentConnectionDisplayName = connectionDisplayName
-                        waitUntilConnectionIsEstablished()
+                        waitUntilConnectionIsTerminated()
 
                     }
                     is Result.Error -> {
@@ -83,7 +83,7 @@ class SettingsAddConnectionViewModel @Inject constructor(
     // and finishes its job when the channel is closed.
     // Because that means we successfully established a connection with connector extension
     // and the connection password has been passed to the dapp.
-    private fun waitUntilConnectionIsEstablished() {
+    private fun waitUntilConnectionIsTerminated() {
         listenIncomingMessagesJob = viewModelScope.launch {
             peerdroidClient
                 .listenForStateEvents()
