@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.utils.SingleEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
@@ -24,6 +25,9 @@ class CreateAccountViewModel @Inject constructor(
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
 
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
+
+    private val _composeEvent = SingleEventHandler<ComposeEvent>()
+    val composeEvent by _composeEvent
 
     var state by mutableStateOf(CreateAccountState())
         private set
@@ -52,23 +56,40 @@ class CreateAccountViewModel @Inject constructor(
                 profile.perNetwork.first().accounts.first()
             }
 
+            val accountId = account.address.address
+            val accountName = accountName.value
+
             state = state.copy(
                 loading = true,
-                complete = true,
-                accountId = account.address.address,
-                accountName = accountName.value,
+                accountId = accountId,
+                accountName = accountName,
                 profileExists = profileExists
+            )
+
+            _composeEvent.sendEvent(
+                ComposeEvent.Complete(
+                    accountId = accountId,
+                    accountName = accountName,
+                    profileExists = profileExists
+                )
             )
         }
     }
 
     data class CreateAccountState(
         val loading: Boolean = false,
-        val complete: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
         val profileExists: Boolean = false
     )
+
+    sealed interface ComposeEvent {
+        data class Complete(
+            val accountId: String,
+            val accountName: String,
+            val profileExists: Boolean
+        ) : ComposeEvent
+    }
 
     companion object {
         private const val ACCOUNT_NAME_MAX_LENGTH = 20

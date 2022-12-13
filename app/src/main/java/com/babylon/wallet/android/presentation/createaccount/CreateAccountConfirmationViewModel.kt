@@ -5,8 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.utils.SingleEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,6 +21,9 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     private val accountName = savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME).orEmpty()
     private val accountId = savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID).orEmpty()
 
+    private val _composeEvent = SingleEventHandler<ComposeEvent>()
+    val composeEvent by _composeEvent
+
     var accountUiState by mutableStateOf(
         AccountConfirmationUiState(
             accountName = accountName,
@@ -27,27 +33,22 @@ class CreateAccountConfirmationViewModel @Inject constructor(
         private set
 
     fun goHomeClick() {
-        accountUiState = if (profileExists) {
-            accountUiState.copy(
-                dismiss = true,
-                goNext = false,
-                accountName = accountName,
-                accountId = accountId
-            )
-        } else {
-            accountUiState.copy(
-                dismiss = false,
-                goNext = true,
-                accountName = accountName,
-                accountId = accountId
-            )
+        viewModelScope.launch {
+            if (profileExists) {
+                _composeEvent.sendEvent(ComposeEvent.Dismiss)
+            } else {
+                _composeEvent.sendEvent(ComposeEvent.GoNext)
+            }
         }
     }
 
     data class AccountConfirmationUiState(
-        val dismiss: Boolean = false,
-        val goNext: Boolean = false,
         val accountName: String = "",
         val accountId: String = ""
     )
+
+    sealed interface ComposeEvent {
+        object GoNext : ComposeEvent
+        object Dismiss : ComposeEvent
+    }
 }

@@ -16,6 +16,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,17 +43,20 @@ fun CreateAccountConfirmationScreen(
 ) {
     val accountState = viewModel.accountUiState
 
-    if (accountState.dismiss) {
-        dismiss()
-    } else if (accountState.goNext) {
-        goNext()
-    } else {
-        CreateAccountConfirmationContent(
-            modifier = modifier,
-            accountName = accountState.accountName,
-            accountId = accountState.accountId,
-            goHomeClick = viewModel::goHomeClick
-        )
+    CreateAccountConfirmationContent(
+        modifier = modifier,
+        accountName = accountState.accountName,
+        accountId = accountState.accountId,
+        goHomeClick = viewModel::goHomeClick
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.composeEvent.collect {
+            when (it) {
+                CreateAccountConfirmationViewModel.ComposeEvent.GoNext -> goNext()
+                CreateAccountConfirmationViewModel.ComposeEvent.Dismiss -> dismiss()
+            }
+        }
     }
 }
 
