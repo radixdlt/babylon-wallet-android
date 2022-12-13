@@ -77,9 +77,7 @@ internal class WebSocketClientImpl(
             }
             if (socket?.isActive == true) {
                 Timber.d("successfully connected to signaling server")
-//                Timber.d("successfully connected to signaling server")
                 Timber.d("waiting remote peer to connect to signaling server")
-//                Timber.d("waiting remote peer to connect to signaling server")
                 waitUntilRemotePeerIsConnected()
                 Result.Success(Unit)
             } else {
