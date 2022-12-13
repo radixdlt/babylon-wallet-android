@@ -126,7 +126,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
 
     //Kotlin toolkit
-    implementation 'com.radixdlt:kotlin-engine-toolkit:1.1-snapshot'
+    implementation 'com.radixdlt:kotlin-engine-toolkit:1.2-snapshot'
     implementation 'com.radixdlt:slip10:60ebe566'
 
     //Retrofit & OkHttp

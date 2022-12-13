@@ -25,7 +25,6 @@ import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.notaryFactorSource
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetMnemonicUseCase
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.derivation.model.NetworkId
@@ -39,6 +38,7 @@ interface ProfileRepository {
     suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot)
 
     suspend fun readProfileSnapshot(): ProfileSnapshot?
+    suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
 
     val p2pClient: Flow<P2PClient?>
     suspend fun getCurrentNetworkId(): NetworkId
@@ -137,11 +137,10 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
         val profileSnapshot = readProfileSnapshot()
         val accounts = addresses.mapNotNull { address ->
-            lookupAccountByAddress(address)
+            getAccount(address)
         }
-        val factorSource = profileSnapshot?.notaryFactorSource()
         val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID ?: throw Exception()
-        val mnemonic = getMnemonicUseCase(factorSource?.factorSourceID)
+        val mnemonic = getMnemonicUseCase(factorSourceId)
         if (mnemonic.isEmpty()) {
             throw Exception()
         }
@@ -154,7 +153,7 @@ class ProfileRepositoryImpl @Inject constructor(
         return signers.toList()
     }
 
-    suspend fun getNetworkAndGateway(): NetworkAndGateway {
+    private suspend fun getNetworkAndGateway(): NetworkAndGateway {
         return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.hammunet
     }
 
@@ -166,7 +165,7 @@ class ProfileRepositoryImpl @Inject constructor(
         return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId()}?.accounts ?: emptyList()
     }
 
-    suspend fun lookupAccountByAddress(address: String): Account? {
+    private suspend fun getAccount(address: String): Account? {
         val networkId = getCurrentNetworkId()
         val perNetwork = readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == networkId }
         return perNetwork?.accounts?.firstOrNull { it.address.address == address }

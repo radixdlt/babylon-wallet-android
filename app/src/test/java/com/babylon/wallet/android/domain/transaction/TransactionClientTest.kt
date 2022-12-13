@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.domain.transaction
 
-import RadixEngineToolkit
 import builders.ManifestBuilder
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import models.Value
 import models.crypto.PublicKey
 import models.transaction.TransactionHeader
 import models.transaction.TransactionIntent
@@ -31,21 +29,7 @@ internal class TransactionClientTest {
             100_000_000u,
             0u
         ),
-        ManifestBuilder()
-            .callMethod(
-                Value.ComponentAddress("system_sim1qsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs9fh54n"),
-                "lock_fee",
-                Value.Decimal("100")
-            )
-            .callMethod(
-                Value.ComponentAddress("system_sim1qsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs9fh54n"),
-                "free_xrd",
-            )
-            .takeFromWorktop(
-                Value.ResourceAddress("resource_sim1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzqu57yag"),
-                Value.Bucket("bucket1")
-            )
-            .build()
+        ManifestBuilder().dropAllProofs().build()
     )
 
     @get:Rule
@@ -59,7 +43,7 @@ internal class TransactionClientTest {
 
     @Before
     fun setUp() = runBlocking {
-        client = TransactionClient(transactionRepository, profileRepository, RadixEngineToolkit)
+        client = TransactionClient(transactionRepository, profileRepository)
     }
 
     @Test

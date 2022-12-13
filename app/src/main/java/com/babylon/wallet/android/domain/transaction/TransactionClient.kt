@@ -25,9 +25,10 @@ import javax.inject.Inject
 
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val profileRepository: ProfileRepository,
-    private val engine: RadixEngineToolkit
+    private val profileRepository: ProfileRepository
 ) {
+
+    private val engine: RadixEngineToolkit = RadixEngineToolkit
 
     suspend fun signAndSubmitTransaction(manifest: TransactionManifest): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId()
