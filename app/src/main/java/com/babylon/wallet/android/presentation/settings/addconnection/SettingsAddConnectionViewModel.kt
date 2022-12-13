@@ -7,10 +7,10 @@ import com.babylon.wallet.android.domain.model.ConnectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import okio.ByteString.Companion.decodeHex
 import rdx.works.peerdroid.helpers.Result
@@ -18,6 +18,8 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.AddP2PClientUseCase
 import timber.log.Timber
 import javax.inject.Inject
+
+private const val FIVE_SECONDS_STOP_TIMEOUT = 5_000L
 
 @HiltViewModel
 class SettingsAddConnectionViewModel @Inject constructor(
@@ -38,7 +40,7 @@ class SettingsAddConnectionViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.WhileSubscribed(FIVE_SECONDS_STOP_TIMEOUT),
         initialValue = SettingsAddConnectionUiState()
     )
 
@@ -67,7 +69,6 @@ class SettingsAddConnectionViewModel @Inject constructor(
                         currentConnectionPassword = connectionPassword
                         currentConnectionDisplayName = connectionDisplayName
                         waitUntilConnectionIsTerminated()
-
                     }
                     is Result.Error -> {
                         Timber.d("Failed to connect to remote peer.")
