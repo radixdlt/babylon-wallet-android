@@ -13,4 +13,5 @@ interface TransactionRepository {
     suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse>
     suspend fun getTransactionDetails(identifier: TransactionLookupIdentifier): Result<TransactionDetailsResponse>
     suspend fun getTransactionStatus(identifier: String?): Result<TransactionStatusResponse>
+    suspend fun getLedgerEpoch(): Result<Long>
 }

@@ -42,3 +42,8 @@ data class ProfileSnapshot(
         )
     }
 }
+
+fun ProfileSnapshot.notaryFactorSource():
+        FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
+    return factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first()
+}

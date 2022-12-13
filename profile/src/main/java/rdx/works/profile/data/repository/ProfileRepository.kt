@@ -5,6 +5,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.crypto.toECKeyPair
+import com.radixdlt.model.PrivateKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -18,6 +21,12 @@ import rdx.works.profile.data.extensions.setNetworkAndGateway
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.notaryFactorSource
+import rdx.works.profile.data.model.pernetwork.Account
+import rdx.works.profile.data.model.pernetwork.AccountSigner
+import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.GetMnemonicUseCase
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -37,11 +46,15 @@ interface ProfileRepository {
     suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean
     val profileSnapshot: Flow<ProfileSnapshot?>
     suspend fun getCurrentNetworkBaseUrl(): String
+    suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>)
+    suspend fun getCurrentNetworkId(): Int
+    suspend fun getAccounts(): List<Account>
 }
 
 class ProfileRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    private val getMnemonicUseCase: GetMnemonicUseCase,
 ) : ProfileRepository {
 
     override val p2pClient: Flow<P2PClient?> = dataStore.data
@@ -119,6 +132,44 @@ class ProfileRepositoryImpl @Inject constructor(
         return withContext(defaultDispatcher) {
             profileSnapshot.first()
         }
+    }
+
+    override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
+        val profileSnapshot = readProfileSnapshot()
+        val accounts = addresses.mapNotNull { address ->
+            lookupAccountByAddress(address)
+        }
+        val factorSource = profileSnapshot?.notaryFactorSource()
+        val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID ?: throw Exception()
+        val mnemonic = getMnemonicUseCase(factorSource?.factorSourceID)
+        if (mnemonic.isEmpty()) {
+            throw Exception()
+        }
+        val mnemonicWords = MnemonicWords(mnemonic)
+        val signers = mutableListOf<AccountSigner>()
+        accounts.forEach {
+            val privateKey = mnemonicWords.signerPrivateKey(factorSourceId, derivationPath = it.derivationPath)
+            signers.add(AccountSigner(it, privateKey.toECKeyPair().publicKey, privateKey, listOf(privateKey)))
+        }
+        return signers.toList()
+    }
+
+    suspend fun getNetworkAndGateway(): NetworkAndGateway {
+        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.hammunet
+    }
+
+    override suspend fun getCurrentNetworkId(): Int {
+        return getNetworkAndGateway().network.id
+    }
+
+    override suspend fun getAccounts(): List<Account> {
+        return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId()}?.accounts ?: emptyList()
+    }
+
+    suspend fun lookupAccountByAddress(address: String): Account? {
+        val networkId = getCurrentNetworkId()
+        val perNetwork = readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == networkId }
+        return perNetwork?.accounts?.firstOrNull { it.address.address == address }
     }
 
     companion object {
