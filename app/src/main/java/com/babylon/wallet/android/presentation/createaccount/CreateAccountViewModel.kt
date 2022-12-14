@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.utils.SingleEventHandler
+import com.babylon.wallet.android.utils.OneOffEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
@@ -26,7 +26,7 @@ class CreateAccountViewModel @Inject constructor(
 
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
 
-    private val _composeEvent = SingleEventHandler<ComposeEvent>()
+    private val _composeEvent = OneOffEventHandler<ComposeEvent>()
     val composeEvent by _composeEvent
 
     var state by mutableStateOf(CreateAccountState())
