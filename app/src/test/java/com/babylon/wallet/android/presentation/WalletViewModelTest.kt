@@ -5,7 +5,7 @@ import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.wallet.WalletData
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
@@ -40,7 +40,7 @@ class WalletViewModelTest {
 
     private lateinit var vm: WalletViewModel
     private val mainViewRepository = mock(MainViewRepository::class.java)
-    private val requestAccountsUseCase = mock(RequestAccountResourcesUseCase::class.java)
+    private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
     private val profileRepository = mock(ProfileRepository::class.java)
 
@@ -92,7 +92,7 @@ class WalletViewModelTest {
         val event = mutableListOf<WalletUiState>()
         whenever(mainViewRepository.getWallet()).thenReturn(walletData)
         whenever(profileRepository.readProfileSnapshot()).thenReturn(profile)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
+        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
         // when
         vm.walletUiState
             .onEach { event.add(it) }
@@ -131,7 +131,7 @@ class WalletViewModelTest {
 
         // when
         val viewModel = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase, profileRepository)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
+        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

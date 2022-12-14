@@ -13,12 +13,12 @@ import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
-class RequestAccountResourcesUseCase @Inject constructor(
+class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
     private val profileRepository: ProfileRepository
 ) {
-    suspend fun getAccountResources(address: String): Result<AccountResources> {
+    suspend operator fun invoke(address: String): Result<AccountResources> {
         var accountDisplayName = ""
         profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
             accountDisplayName = profileSnapshot.toProfile().getAccountByAddress(address)?.displayName.orEmpty()

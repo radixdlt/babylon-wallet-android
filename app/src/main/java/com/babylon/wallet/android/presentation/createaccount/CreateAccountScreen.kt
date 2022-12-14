@@ -41,7 +41,7 @@ fun CreateAccountScreen(
     onContinueClick: (
         accountId: String,
         accountName: String,
-        profileExists: Boolean
+        hasProfile: Boolean
     ) -> Unit = { _: String, _: String, _: Boolean -> },
 ) {
 
@@ -68,7 +68,7 @@ fun CreateAccountScreen(
                 is CreateAccountViewModel.ComposeEvent.Complete -> onContinueClick(
                     event.accountId,
                     event.accountName,
-                    event.profileExists
+                    event.hasProfile
                 )
             }
         }

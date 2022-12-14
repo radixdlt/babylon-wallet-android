@@ -21,7 +21,7 @@ data class Persona(
      * typically used in the primary role of this persona).
      */
     @SerialName("address")
-    val address: EntityAddress,
+    val entityAddress: EntityAddress,
 
     /**
      * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
@@ -79,7 +79,7 @@ fun createNewPersona(
     )
 
     return Persona(
-        address = address,
+        entityAddress = address,
         derivationPath = derivationPath,
         displayName = displayName,
         fields = fields,

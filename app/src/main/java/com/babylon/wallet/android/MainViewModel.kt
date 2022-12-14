@@ -2,7 +2,7 @@ package com.babylon.wallet.android
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.usecase.ShowOnboardingUseCase
+import com.babylon.wallet.android.data.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -13,13 +13,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    showOnboardingUseCase: ShowOnboardingUseCase
+    preferencesManager: DataStoreManager
 ) : ViewModel() {
 
-    val state = showOnboardingUseCase.showOnboarding.map { showOnboarding ->
+    val state = preferencesManager.showOnboarding.map { showOnboarding ->
         MainUiState(
             loading = false,
-            profileExists = profileRepository.readProfileSnapshot() != null,
+            hasProfile = profileRepository.readProfileSnapshot() != null,
             showOnboarding = showOnboarding
         )
     }.stateIn(
@@ -30,7 +30,7 @@ class MainViewModel @Inject constructor(
 
     data class MainUiState(
         val loading: Boolean = true,
-        val profileExists: Boolean = false,
+        val hasProfile: Boolean = false,
         val showOnboarding: Boolean = false
     )
 

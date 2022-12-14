@@ -7,14 +7,18 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.bip39.generateMnemonic
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
+import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 // TODO provide encryption as this is sensitive
 class GetMnemonicUseCase @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     /**
@@ -51,21 +55,23 @@ class GetMnemonicUseCase @Inject constructor(
         mnemonicKey?.let { key ->
             return readMnemonic(key)
         } ?: run {
-            val mnemonic = generateMnemonic(
-                strength = ENTROPY_STRENGTH,
-                wordList = WORDLIST_ENGLISH
-            )
-
-            val key = factorSourceId(
-                mnemonic = MnemonicWords(
-                    phrase = mnemonic
+            return withContext(defaultDispatcher) {
+                val mnemonic = generateMnemonic(
+                    strength = ENTROPY_STRENGTH,
+                    wordList = WORDLIST_ENGLISH
                 )
-            )
-            saveMnemonic(
-                key = key,
-                mnemonic = mnemonic
-            )
-            return mnemonic
+
+                val key = factorSourceId(
+                    mnemonic = MnemonicWords(
+                        phrase = mnemonic
+                    )
+                )
+                saveMnemonic(
+                    key = key,
+                    mnemonic = mnemonic
+                )
+                mnemonic
+            }
         }
     }
 

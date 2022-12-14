@@ -58,7 +58,7 @@ data class Profile(
 
     fun getAccountByAddress(address: String): Account? {
         return getAccounts().find { account ->
-            account.address.address == address
+            account.entityAddress.address == address
         }
     }
 

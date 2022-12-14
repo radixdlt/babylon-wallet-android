@@ -38,7 +38,7 @@ class MainActivity : FragmentActivity() {
                         Screen.OnboardingDestination.route
                     )
                 } else {
-                    if (state.profileExists) {
+                    if (state.hasProfile) {
                         NavigationHost(
                             Screen.WalletDestination.route
                         )

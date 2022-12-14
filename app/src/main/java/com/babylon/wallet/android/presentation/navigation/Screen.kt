@@ -39,6 +39,6 @@ sealed class Screen(override val route: String) : Destination {
         const val ARG_ACCOUNT_NAME = "arg_account_name"
         const val ARG_GRADIENT_INDEX = "arg_gradient_index"
         const val ARG_DAPP_NAME = "arg_dapp_name"
-        const val ARG_PROFILE_EXISTS = "arg_profile_exists"
+        const val ARG_HAS_PROFILE = "arg_has_profile"
     }
 }

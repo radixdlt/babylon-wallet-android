@@ -38,8 +38,8 @@ import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 fun CreateAccountConfirmationScreen(
     viewModel: CreateAccountConfirmationViewModel,
     modifier: Modifier = Modifier,
-    dismiss: () -> Unit,
-    goNext: () -> Unit
+    navigateToWallet: () -> Unit,
+    navigateToHome: () -> Unit
 ) {
     val accountState = viewModel.accountUiState
 
@@ -53,8 +53,8 @@ fun CreateAccountConfirmationScreen(
     LaunchedEffect(Unit) {
         viewModel.composeEvent.collect {
             when (it) {
-                CreateAccountConfirmationViewModel.ComposeEvent.GoNext -> goNext()
-                CreateAccountConfirmationViewModel.ComposeEvent.Dismiss -> dismiss()
+                CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome -> navigateToHome()
+                CreateAccountConfirmationViewModel.ComposeEvent.NavigateToWallet -> navigateToWallet()
             }
         }
     }

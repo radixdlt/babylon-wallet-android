@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
-import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
+import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountUiState
 import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountViewModel
@@ -25,7 +25,7 @@ class ChooseDAppAccountViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val getDAppAccountsUseCase = Mockito.mock(RequestAccountsUseCase::class.java)
+    private val getDAppAccountsUseCase = Mockito.mock(GetAccountsUseCase::class.java)
 
     private val accounts = listOf(
         SelectedAccountUiState(
@@ -64,7 +64,7 @@ class ChooseDAppAccountViewModelTest {
                 accountAddresses = 1
             )
         )
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Success(dAppAccountsResult))
 
@@ -90,7 +90,7 @@ class ChooseDAppAccountViewModelTest {
                 accountAddresses = 1
             )
         )
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Success(dAppAccountsResult))
 
@@ -117,7 +117,7 @@ class ChooseDAppAccountViewModelTest {
     @Test
     fun `given dApp not verified, when view model init, verify error shown`() = runTest {
         // given
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Error(Exception("Error")))
 
@@ -177,7 +177,7 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Success(dAppAccountsResult))
 
@@ -241,7 +241,7 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Success(dAppAccountsResult))
 
@@ -305,7 +305,7 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Success(dAppAccountsResult))
 
@@ -371,7 +371,7 @@ class ChooseDAppAccountViewModelTest {
                 selected = false
             )
         )
-        whenever(getDAppAccountsUseCase.getAccountsResult(
+        whenever(getDAppAccountsUseCase(
             any()
         )).thenReturn(Result.Success(dAppAccountsResult))
 

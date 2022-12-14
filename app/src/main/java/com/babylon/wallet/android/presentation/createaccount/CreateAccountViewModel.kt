@@ -43,9 +43,9 @@ class CreateAccountViewModel @Inject constructor(
         )
         viewModelScope.launch {
 
-            val profileExists = profileRepository.readProfileSnapshot() != null
+            val hasProfile = profileRepository.readProfileSnapshot() != null
 
-            val account = if (profileExists) {
+            val account = if (hasProfile) {
                 createAccountUseCase(
                     displayName = accountName.value
                 )
@@ -56,21 +56,21 @@ class CreateAccountViewModel @Inject constructor(
                 profile.perNetwork.first().accounts.first()
             }
 
-            val accountId = account.address.address
+            val accountId = account.entityAddress.address
             val accountName = accountName.value
 
             state = state.copy(
                 loading = true,
                 accountId = accountId,
                 accountName = accountName,
-                profileExists = profileExists
+                hasProfile = hasProfile
             )
 
             _composeEvent.sendEvent(
                 ComposeEvent.Complete(
                     accountId = accountId,
                     accountName = accountName,
-                    profileExists = profileExists
+                    hasProfile = hasProfile
                 )
             )
         }
@@ -80,14 +80,14 @@ class CreateAccountViewModel @Inject constructor(
         val loading: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
-        val profileExists: Boolean = false
+        val hasProfile: Boolean = false
     )
 
     sealed interface ComposeEvent {
         data class Complete(
             val accountId: String,
             val accountName: String,
-            val profileExists: Boolean
+            val hasProfile: Boolean
         ) : ComposeEvent
     }
 

@@ -32,7 +32,7 @@ class CreateAccountConfirmationViewModelTest {
         val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
-        whenever(savedStateHandle.get<Boolean>(Screen.ARG_PROFILE_EXISTS)).thenReturn(false)
+        whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
         val viewModel = CreateAccountConfirmationViewModel(savedStateHandle)
 
         // when
@@ -52,7 +52,7 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.GoNext)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome)
     }
 
     @Test
@@ -63,7 +63,7 @@ class CreateAccountConfirmationViewModelTest {
         val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
-        whenever(savedStateHandle.get<Boolean>(Screen.ARG_PROFILE_EXISTS)).thenReturn(true)
+        whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(true)
         val viewModel = CreateAccountConfirmationViewModel(savedStateHandle)
 
         // when
@@ -83,6 +83,6 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.Dismiss)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToWallet)
     }
 }

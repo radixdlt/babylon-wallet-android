@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.dapp
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -13,12 +13,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RequestAccountsUseCase @Inject constructor(
+class GetAccountsUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val dAppRepository: DAppRepository,
-    private val requestAccountResourcesUseCase: RequestAccountResourcesUseCase
+    private val requestAccountResourcesUseCase: GetAccountResourcesUseCase
 ) {
-    suspend fun getAccountsResult(
+    suspend operator fun invoke(
         scope: CoroutineScope
     ): Result<DAppAccountsResult> {
         return when (val result = dAppRepository.verifyDApp()) {
@@ -26,14 +26,14 @@ class RequestAccountsUseCase @Inject constructor(
                 val accounts = profileRepository.readProfileSnapshot()?.toProfile()?.getAccounts().orEmpty()
                 val results = accounts.map { account ->
                     scope.async {
-                        requestAccountResourcesUseCase.getAccountResources(account.address.address)
+                        requestAccountResourcesUseCase(account.entityAddress.address)
                     }
                 }.awaitAll()
 
-                val dAppAccounts = mutableListOf<SelectedAccountUiState>()
+                val uiStateAccounts = mutableListOf<SelectedAccountUiState>()
                 results.forEach { accountResourcesResult ->
                     accountResourcesResult.onValue { accountResource ->
-                        dAppAccounts.add(
+                        uiStateAccounts.add(
                             SelectedAccountUiState(
                                 accountName = accountResource.displayName,
                                 accountAddress = accountResource.address,
@@ -46,7 +46,7 @@ class RequestAccountsUseCase @Inject constructor(
 
                 Result.Success(
                     DAppAccountsResult(
-                        accounts = dAppAccounts,
+                        accounts = uiStateAccounts,
                         dAppResult = result.data
                     )
                 )

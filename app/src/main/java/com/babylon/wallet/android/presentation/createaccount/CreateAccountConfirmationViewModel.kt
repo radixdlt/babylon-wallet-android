@@ -17,7 +17,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val profileExists = savedStateHandle.get<Boolean>(Screen.ARG_PROFILE_EXISTS) ?: false
+    private val hasProfile = savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE) ?: false
     private val accountName = savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME).orEmpty()
     private val accountId = savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID).orEmpty()
 
@@ -34,10 +34,10 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     fun goHomeClick() {
         viewModelScope.launch {
-            if (profileExists) {
-                _composeEvent.sendEvent(ComposeEvent.Dismiss)
+            if (hasProfile) {
+                _composeEvent.sendEvent(ComposeEvent.NavigateToWallet)
             } else {
-                _composeEvent.sendEvent(ComposeEvent.GoNext)
+                _composeEvent.sendEvent(ComposeEvent.NavigateToHome)
             }
         }
     }
@@ -48,7 +48,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     )
 
     sealed interface ComposeEvent {
-        object GoNext : ComposeEvent
-        object Dismiss : ComposeEvent
+        object NavigateToHome : ComposeEvent
+        object NavigateToWallet : ComposeEvent
     }
 }

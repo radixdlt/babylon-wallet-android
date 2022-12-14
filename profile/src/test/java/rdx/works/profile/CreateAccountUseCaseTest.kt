@@ -1,6 +1,9 @@
 package rdx.works.profile
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
@@ -26,11 +29,15 @@ import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CreateAccountUseCaseTest {
 
+    private val testDispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+
     @Test
-    fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() =
-        runBlocking {
+    fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() {
+        testScope.runTest {
             // given
             val accountName = "First account"
             val profile = Profile(
@@ -58,7 +65,7 @@ class CreateAccountUseCaseTest {
                     PerNetwork(
                         accounts = listOf(
                             Account(
-                                address = EntityAddress("fj3489fj348f"),
+                                entityAddress = EntityAddress("fj3489fj348f"),
                                 appearanceID = 123,
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
@@ -99,7 +106,7 @@ class CreateAccountUseCaseTest {
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             whenever(profileRepository.readProfileSnapshot()).thenReturn(profile.snapshot())
 
-            val createAccountUseCase = CreateAccountUseCase(getMnemonicUseCase, profileRepository)
+            val createAccountUseCase = CreateAccountUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
 
             val account = createAccountUseCase(
                 displayName = accountName
@@ -112,4 +119,5 @@ class CreateAccountUseCaseTest {
 
             verify(profileRepository).saveProfileSnapshot(updatedProfile.snapshot())
         }
+    }
 }

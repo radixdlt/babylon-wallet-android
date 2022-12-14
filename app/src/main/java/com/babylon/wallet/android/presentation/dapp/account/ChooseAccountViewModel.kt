@@ -7,14 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.dapp.RequestAccountsUseCase
+import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseDAppAccountViewModel @Inject constructor(
-    private val getDAppAccountsUseCase: RequestAccountsUseCase,
+    private val getAccountsUseCase: GetAccountsUseCase,
 ) : ViewModel() {
 
     var accountsState by mutableStateOf(ChooseAccountUiState())
@@ -22,7 +22,7 @@ class ChooseDAppAccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            when (val accountsResult = getDAppAccountsUseCase.getAccountsResult(this)) {
+            when (val accountsResult = getAccountsUseCase(this)) {
                 is Result.Success -> {
                     accountsState = accountsState.copy(
                         accounts = accountsResult.data.accounts,
