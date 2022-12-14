@@ -137,8 +137,20 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
 
     registerObserver(callback)
 
+    trySend(this@eventFlow.currentState())
+
     awaitClose {
         Timber.d("eventFlow: awaitClose: unregister observer")
         unregisterObserver()
+    }
+}
+
+private fun DataChannel.currentState(): DataChannelEvent.StateChanged {
+    return when(this.state()) {
+        DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.CONNECTING
+        DataChannel.State.OPEN -> DataChannelEvent.StateChanged.OPEN
+        DataChannel.State.CLOSING -> DataChannelEvent.StateChanged.OPEN
+        DataChannel.State.CLOSED -> DataChannelEvent.StateChanged.CLOSING
+        else -> DataChannelEvent.StateChanged.UNKNOWN
     }
 }

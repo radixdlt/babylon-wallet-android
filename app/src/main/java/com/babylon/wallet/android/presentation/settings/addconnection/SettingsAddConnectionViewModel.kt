@@ -1,91 +1,112 @@
 package com.babylon.wallet.android.presentation.settings.addconnection
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.ConnectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okio.ByteString.Companion.decodeHex
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.domain.AddP2PClientUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
+private const val FIVE_SECONDS_STOP_TIMEOUT = 5_000L
+
 @HiltViewModel
 class SettingsAddConnectionViewModel @Inject constructor(
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
+    private val addP2PClientUseCase: AddP2PClientUseCase,
+    profileRepository: ProfileRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf(SettingsAddConnectionUiState())
-        private set
+    private val loadingState = MutableStateFlow(false)
 
-    // TODO we later store this in the profile
+    val uiState: StateFlow<SettingsAddConnectionUiState> = combine(
+        loadingState,
+        profileRepository.connectionPassword
+    ) { isLoading, connectionPassword ->
+        SettingsAddConnectionUiState(
+            isLoading = isLoading,
+            hasAlreadyConnection = connectionPassword.isEmpty().not()
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(FIVE_SECONDS_STOP_TIMEOUT),
+        initialValue = SettingsAddConnectionUiState()
+    )
+
     private var currentConnectionPassword: String = ""
+    private var currentConnectionDisplayName: String = ""
     private var listenIncomingMessagesJob: Job? = null
 
-    init {
-        state = state.copy(
-            isLoading = false,
-            isConnectionOpen = peerdroidClient.isAlreadyOpen
-        )
-    }
-
-    fun onConnectionClick(connectionPassword: String) {
+    fun onConnectionClick(
+        connectionPassword: String,
+        connectionDisplayName: String
+    ) {
         if (listenIncomingMessagesJob?.isActive == true) {
             listenIncomingMessagesJob?.cancel()
         }
 
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            loadingState.value = true
+
             val encryptionKey = parseEncryptionKeyFromConnectionPassword(
                 connectionPassword = connectionPassword
             )
+
             if (encryptionKey != null) {
-                val result = peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)
-                state = when (result) {
-                    is Result.Success -> {
+                when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
+                    is Result.Success -> { // we have a data channel which is already open!
                         currentConnectionPassword = connectionPassword
-                        listenForIncomingRequests()
-                        state.copy(isConnectionOpen = true)
+                        currentConnectionDisplayName = connectionDisplayName
+                        waitUntilConnectionIsTerminated()
                     }
                     is Result.Error -> {
-                        retryConnection()
-                        state.copy(isConnectionOpen = false)
+                        Timber.d("Failed to connect to remote peer.")
                     }
                 }
+            } else {
+                loadingState.value = false
             }
-            state = state.copy(isLoading = false)
         }
     }
 
-    private fun listenForIncomingRequests() {
+    // This function is triggered when the data channel is open
+    // and finishes its job when the channel is closed.
+    // Because that means we successfully established a connection with connector extension
+    // and the connection password has been passed to the dapp.
+    private fun waitUntilConnectionIsTerminated() {
         listenIncomingMessagesJob = viewModelScope.launch {
-            peerdroidClient.listenForEvents()
-                .cancellable()
-                .onEach { state ->
-                    Timber.d("state: $state")
-                    this@SettingsAddConnectionViewModel.state = this@SettingsAddConnectionViewModel.state.copy(
-                        isLoading = state == ConnectionState.CONNECTING,
-                        isConnectionOpen = state == ConnectionState.OPEN
-                    )
-                    if (state == ConnectionState.CLOSE) {
-                        retryConnection()
+            peerdroidClient
+                .listenForStateEvents()
+                .collect { connectionState ->
+                    if (connectionState == ConnectionState.CLOSE || connectionState == ConnectionState.CLOSING) {
+                        saveConnectionPassword()
                     }
-                }.collect()
+                }
         }
     }
 
-    private suspend fun retryConnection() {
-        Timber.d("retry connection")
-        peerdroidClient.close()
-        onConnectionClick(currentConnectionPassword)
+    private fun saveConnectionPassword() {
+        viewModelScope.launch {
+            listenIncomingMessagesJob?.cancel()
+            peerdroidClient.close()
+            addP2PClientUseCase.invoke(
+                displayName = currentConnectionDisplayName,
+                connectionPassword = currentConnectionPassword,
+                isWithoutProfile = true
+            )
+            loadingState.value = false
+        }
     }
 
     private fun parseEncryptionKeyFromConnectionPassword(connectionPassword: String): ByteArray? {
@@ -100,5 +121,5 @@ class SettingsAddConnectionViewModel @Inject constructor(
 
 data class SettingsAddConnectionUiState(
     val isLoading: Boolean = false,
-    val isConnectionOpen: Boolean = false
+    val hasAlreadyConnection: Boolean = false
 )

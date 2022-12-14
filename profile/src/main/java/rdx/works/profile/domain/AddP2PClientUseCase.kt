@@ -11,8 +11,14 @@ class AddP2PClientUseCase @Inject constructor(
 
     suspend operator fun invoke(
         displayName: String,
-        connectionPassword: String
-    ): P2PClient {
+        connectionPassword: String,
+        isWithoutProfile: Boolean = false // TODO must be removed ⚠️
+    ) {
+
+        if (isWithoutProfile) {
+            profileRepository.saveConnectionPassword(connectionPassword)
+            return
+        }
 
         val profileSnapshot = profileRepository.readProfileSnapshot()
         checkNotNull(profileSnapshot) {
@@ -33,7 +39,5 @@ class AddP2PClientUseCase @Inject constructor(
 
         // Save updated profile
         profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
-
-        return p2pClient
     }
 }

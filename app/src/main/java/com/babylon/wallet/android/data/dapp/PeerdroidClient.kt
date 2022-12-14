@@ -2,10 +2,10 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.ConnectionState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
@@ -19,7 +19,7 @@ interface PeerdroidClient {
 
     suspend fun sendMessage(message: String): Result<Unit>
 
-    fun listenForEvents(): Flow<ConnectionState>
+    fun listenForStateEvents(): Flow<ConnectionState>
 
     suspend fun close()
 
@@ -59,18 +59,10 @@ class PeerdroidClientImpl @Inject constructor(
             ?: Result.Error("data channel is null")
     }
 
-    override fun listenForEvents(): Flow<ConnectionState> {
+    override fun listenForStateEvents(): Flow<ConnectionState> {
         return dataChannel
             ?.dataChannelEvents
-            ?.onStart {
-                // we don't know when the collection will start
-                // so check if the data channel is already closed
-                if (dataChannel?.state == DataChannelEvent.StateChanged.CLOSING ||
-                    dataChannel?.state == DataChannelEvent.StateChanged.CLOSE
-                ) {
-                    emit(DataChannelEvent.StateChanged.CLOSE)
-                }
-            }
+            ?.cancellable()
             ?.filterIsInstance<DataChannelEvent.StateChanged>()
             ?.map { stateChanged ->
                 when (stateChanged) {
@@ -95,6 +87,8 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     override suspend fun close() {
+        dataChannel?.close()
+        dataChannel = null
         peerdroidConnector.close()
     }
 }

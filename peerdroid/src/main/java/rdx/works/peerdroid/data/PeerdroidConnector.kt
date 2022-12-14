@@ -111,7 +111,6 @@ internal class PeerdroidConnectorImpl(
             .onEach { event ->
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
-//                        Timber.d("renegotiation needed")
                         Timber.d("renegotiation needed")
                         createAndSendOffer()
                     }

@@ -17,8 +17,8 @@ sealed interface DataChannelEvent {
         ) : IncomingMessage
 
         // this data class holds the assembled and decoded message
-        data class Message(
-            val decodedMessage: String
+        data class DecodedMessage(
+            val message: String
         ) : IncomingMessage
 
         // a confirmation notification from the other peer to confirm that

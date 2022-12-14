@@ -72,8 +72,8 @@ value class DataChannelWrapper(
                     when (result) {
                         is Result.Success -> {
                             val incomingMessageByteArray = result.data
-                            DataChannelEvent.IncomingMessage.Message(
-                                decodedMessage = incomingMessageByteArray.decodeToString()
+                            DataChannelEvent.IncomingMessage.DecodedMessage(
+                                message = incomingMessageByteArray.decodeToString()
                             )
                         }
                         is Result.Error -> {
@@ -135,5 +135,9 @@ value class DataChannelWrapper(
             val messageWebRtcBuffer = DataChannel.Buffer(messageByteBuffer, false)
             webRtcDataChannel.send(messageWebRtcBuffer)
         }
+    }
+
+    fun close() {
+        webRtcDataChannel.close()
     }
 }
