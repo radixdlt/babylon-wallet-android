@@ -4,7 +4,7 @@ import android.content.ClipboardManager
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.account.AccountUiState
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
@@ -32,7 +32,7 @@ class AccountViewModelTest {
 
     private lateinit var vm: AccountViewModel
 
-    private val requestAccountsUseCase = Mockito.mock(RequestAccountResourcesUseCase::class.java)
+    private val requestAccountsUseCase = Mockito.mock(GetAccountResourcesUseCase::class.java)
 
     private val clipboardManager = Mockito.mock(ClipboardManager::class.java)
 
@@ -43,7 +43,7 @@ class AccountViewModelTest {
     @Before
     fun setUp() = runTest {
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
+        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
     }
 
     @Test

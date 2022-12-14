@@ -20,7 +20,7 @@ data class Account(
      * typically used in the primary role of this account).
      */
     @SerialName("address")
-    val address: EntityAddress,
+    val entityAddress: EntityAddress,
 
     /**
      * An identifier for the gradient for this account, to be displayed in wallet
@@ -119,7 +119,7 @@ fun createNewVirtualAccount(
     )
 
     return Account(
-        address = address,
+        entityAddress = address,
         appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
         derivationPath = derivationPath,
         displayName = displayName,

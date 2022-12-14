@@ -46,12 +46,28 @@ data class Profile(
         )
     }
 
+    /**
+     * Returns list of accounts in current network
+     */
+    fun getAccounts(): List<Account> {
+        val networkId = appPreferences.networkAndGateway.network.id
+        return perNetwork.find { network ->
+            network.networkID == networkId
+        }?.accounts.orEmpty()
+    }
+
+    fun getAccountByAddress(address: String): Account? {
+        return getAccounts().find { account ->
+            account.entityAddress.address == address
+        }
+    }
+
     companion object {
         private const val INITIAL_VERSION = "0.0.1"
         fun init(
             networkAndGateway: NetworkAndGateway,
             mnemonic: MnemonicWords,
-            firstAccountDisplayName: String = "Main"
+            firstAccountDisplayName: String
         ): Profile {
 
             val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource =

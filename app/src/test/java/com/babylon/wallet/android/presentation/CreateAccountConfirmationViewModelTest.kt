@@ -25,23 +25,64 @@ class CreateAccountConfirmationViewModelTest {
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
 
     @Test
-    fun `when view model init, verify correct account state is shown`() = runTest {
+    fun `given profile did not exist, when view model init, verify correct account state and go next`() = runTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
+        val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
-        val event = mutableListOf<Pair<String, String>>()
+        whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
         val viewModel = CreateAccountConfirmationViewModel(savedStateHandle)
 
         // when
-        viewModel.accountUiState
+        viewModel.goHomeClick()
+
+        viewModel.composeEvent
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.first(), Pair(accountName, accountId))
+        Assert.assertEquals(
+            CreateAccountConfirmationViewModel.AccountConfirmationUiState(
+                accountName = accountName,
+                accountId = accountId
+            ),
+            viewModel.accountUiState
+        )
+
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome)
+    }
+
+    @Test
+    fun `given profile did exist, when view model init, verify correct account state and dismiss`() = runTest {
+        // given
+        val accountId = "12kje20k"
+        val accountName = "My main account"
+        val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
+        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
+        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
+        whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(true)
+        val viewModel = CreateAccountConfirmationViewModel(savedStateHandle)
+
+        // when
+        viewModel.goHomeClick()
+
+        viewModel.composeEvent
+            .onEach { event.add(it) }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        advanceUntilIdle()
+
+        // then
+        Assert.assertEquals(
+            CreateAccountConfirmationViewModel.AccountConfirmationUiState(
+                accountName = accountName,
+                accountId = accountId
+            ),
+            viewModel.accountUiState
+        )
+
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToWallet)
     }
 }

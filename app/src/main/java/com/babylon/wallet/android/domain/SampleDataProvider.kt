@@ -21,7 +21,13 @@ class SampleDataProvider {
     }
 
     fun sampleAccountResource(address: String = randomTokenAddress()): AccountResources {
-        return AccountResources(address, fungibleTokens = sampleFungibleTokens(address))
+        return AccountResources(
+            address = address,
+            displayName = "My account",
+            currencySymbol = "$",
+            value = "10",
+            fungibleTokens = sampleFungibleTokens(address)
+        )
     }
 
     fun sampleFungibleTokens(ownerAddress: String = randomTokenAddress()): List<OwnedFungibleToken> {

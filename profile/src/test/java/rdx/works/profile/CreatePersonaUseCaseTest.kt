@@ -1,6 +1,9 @@
 package rdx.works.profile
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
@@ -27,25 +30,30 @@ import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreatePersonaUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaUseCaseTest {
 
+    private val testDispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+
     @Test
-    fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() =
-        runBlocking {
-            // given
-            val personaName = "First persona"
-            val personaFields = listOf(
-                PersonaField(
-                    id = "ID213",
-                    kind = PersonaField.PersonaFieldKind.FirstName,
-                    value = "Emily"
-                ),
-                PersonaField(
-                    id = "ID0921",
-                    kind = PersonaField.PersonaFieldKind.LastName,
-                    value = "Jacobs"
-                )
+    fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() {
+        // given
+        val personaName = "First persona"
+        val personaFields = listOf(
+            PersonaField(
+                id = "ID213",
+                kind = PersonaField.PersonaFieldKind.FirstName,
+                value = "Emily"
+            ),
+            PersonaField(
+                id = "ID0921",
+                kind = PersonaField.PersonaFieldKind.LastName,
+                value = "Jacobs"
             )
+        )
+
+        testScope.runTest {
             val profile = Profile(
                 appPreferences = AppPreferences(
                     display = Display.default,
@@ -71,7 +79,7 @@ class CreatePersonaUseCaseTest {
                     PerNetwork(
                         accounts = listOf(
                             Account(
-                                address = EntityAddress("fj3489fj348f"),
+                                entityAddress = EntityAddress("fj3489fj348f"),
                                 appearanceID = 123,
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
@@ -112,7 +120,7 @@ class CreatePersonaUseCaseTest {
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             whenever(profileRepository.readProfileSnapshot()).thenReturn(profile.snapshot())
 
-            val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileRepository)
+            val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
 
             val newPersona = createPersonaUseCase(
                 displayName = personaName,
@@ -126,4 +134,5 @@ class CreatePersonaUseCaseTest {
 
             verify(profileRepository).saveProfileSnapshot(updatedProfile.snapshot())
         }
+    }
 }

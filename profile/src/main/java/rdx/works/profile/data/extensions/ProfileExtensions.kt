@@ -1,6 +1,5 @@
 package rdx.works.profile.data.extensions
 
-import com.radixdlt.hex.extensions.toHexString
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.P2PClient
@@ -84,12 +83,12 @@ fun Profile.addP2PClient(
 }
 
 /**
- * TODO Once engine toolkit ready, we will used it derive address
+ * TODO Once engine toolkit ready, we will used it derive address, for now we use mocked account address for hammunet
  */
-@Suppress("MagicNumber")
+@SuppressWarnings("UnusedPrivateMember")
 fun deriveAddress(
     compressedPublicKey: ByteArray
 ): EntityAddress {
-    val shortenedPublicKey = compressedPublicKey.toHexString().subSequence(0, 25)
-    return EntityAddress("mocked_account_address_$shortenedPublicKey)")
+    // TODO For now pick any of valid account addresses to successfully fetch entityResources from backend
+    return EntityAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u")
 }

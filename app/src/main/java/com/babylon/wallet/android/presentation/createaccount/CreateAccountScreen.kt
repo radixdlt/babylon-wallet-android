@@ -15,43 +15,90 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun CreateAccountScreen(
+    viewModel: CreateAccountViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onContinueClick: (accountId: String, accountName: String) -> Unit = { _: String, _: String -> },
+    cancelable: Boolean,
+    onContinueClick: (
+        accountId: String,
+        accountName: String,
+        hasProfile: Boolean
+    ) -> Unit = { _: String, _: String, _: Boolean -> },
 ) {
-    var buttonEnabled by rememberSaveable { mutableStateOf(false) }
-    var accountName by rememberSaveable { mutableStateOf("") }
-    val maxLength = 20
 
+    if (viewModel.state.loading) {
+        FullscreenCircularProgressContent()
+    } else {
+        val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
+        val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
+
+        CreateAccountContent(
+            onAccountNameChange = viewModel::onAccountNameChange,
+            onAccountCreateClick = viewModel::onAccountCreateClick,
+            accountName = accountName,
+            buttonEnabled = buttonEnabled,
+            cancelable = cancelable,
+            onBackClick = onBackClick,
+            modifier = modifier
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.composeEvent.collect { event ->
+            when (event) {
+                is CreateAccountViewModel.ComposeEvent.Complete -> onContinueClick(
+                    event.accountId,
+                    event.accountName,
+                    event.hasProfile
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CreateAccountContent(
+    onAccountNameChange: (String) -> Unit,
+    onAccountCreateClick: () -> Unit,
+    accountName: String,
+    buttonEnabled: Boolean,
+    onBackClick: () -> Unit,
+    cancelable: Boolean,
+    modifier: Modifier
+) {
     Column(
         modifier = modifier
-            .systemBarsPadding().background(RadixTheme.colors.defaultBackground)
+            .systemBarsPadding()
+            .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = "navigate back"
-            )
+        if (cancelable) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = "navigate back"
+                )
+            }
         }
         Column(
             modifier = Modifier
@@ -83,10 +130,7 @@ fun CreateAccountScreen(
             Column(modifier = Modifier.fillMaxWidth()) {
                 RadixTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    onValueChanged = {
-                        buttonEnabled = it.isNotEmpty()
-                        accountName = it.take(maxLength)
-                    },
+                    onValueChanged = onAccountNameChange,
                     value = accountName,
                     hint = stringResource(id = R.string.account_name)
                 )
@@ -100,9 +144,7 @@ fun CreateAccountScreen(
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                // TODO Im gonna revist this to handle that from viewmodel nicely.
-                //  In the meantime, we dont have account generation so i put hardcoded stuff here
-                onClick = { onContinueClick("di20ejdnd2e20e2", accountName) },
+                onClick = onAccountCreateClick,
                 enabled = buttonEnabled,
                 text = stringResource(id = R.string.continue_button_title)
             )
@@ -113,11 +155,17 @@ fun CreateAccountScreen(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun CreateAccountPreview() {
+fun CreateAccountContentPreview() {
+
     BabylonWalletTheme {
-        CreateAccountScreen(
+        CreateAccountContent(
+            onAccountNameChange = {},
+            onAccountCreateClick = {},
+            accountName = "Name",
+            buttonEnabled = false,
             onBackClick = {},
-            onContinueClick = { _, _ -> }
+            cancelable = true,
+            modifier = Modifier
         )
     }
 }

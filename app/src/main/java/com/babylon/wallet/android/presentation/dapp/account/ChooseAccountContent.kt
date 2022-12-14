@@ -36,8 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.profile.model.Account
-import com.babylon.wallet.android.data.profile.model.Address
 import com.babylon.wallet.android.designsystem.theme.RadixBackground
 import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
 import com.babylon.wallet.android.designsystem.theme.RadixGrey2
@@ -101,12 +99,12 @@ fun ChooseAccountContent(
             Spacer(modifier = Modifier.height(40.dp))
 
             Column {
-                dAppAccounts.forEachIndexed { index, dAppAccount ->
+                dAppAccounts.forEach { dAppAccount ->
                     AccountCard(
-                        accountName = dAppAccount.account.name,
-                        hashValue = dAppAccount.account.address.address,
-                        accountCurrency = dAppAccount.account.currency,
-                        accountValue = dAppAccount.account.value,
+                        accountName = dAppAccount.accountName,
+                        hashValue = dAppAccount.accountAddress,
+                        accountCurrency = dAppAccount.accountCurrency,
+                        accountValue = dAppAccount.accountValue,
                         checked = dAppAccount.selected,
                         onCheckedChange = {
                             accountSelected(dAppAccount)
@@ -185,21 +183,17 @@ fun ChooseAccountContentPreview() {
         continueButtonEnabled = true,
         dAppAccounts = listOf(
             SelectedAccountUiState(
-                account = Account(
-                    name = "Account name 1",
-                    address = Address("fdj209d9320"),
-                    value = "1000",
-                    currency = "$"
-                ),
+                accountName = "Account name 1",
+                accountAddress = "fdj209d9320",
+                accountValue = "1000",
+                accountCurrency = "$",
                 selected = true
             ),
             SelectedAccountUiState(
-                account = Account(
-                    name = "Account name 2",
-                    address = Address("342f23f2"),
-                    value = "2000",
-                    currency = "$"
-                ),
+                accountName = "Account name 2",
+                accountAddress = "342f23f2",
+                accountValue = "2000",
+                accountCurrency = "$",
                 selected = false
             )
         ),

@@ -5,7 +5,7 @@ import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.usecase.wallet.RequestAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.wallet.WalletData
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
@@ -25,6 +25,12 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.apppreferences.AppPreferences
+import rdx.works.profile.data.model.apppreferences.Display
+import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.repository.ProfileRepository
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest {
@@ -34,19 +40,34 @@ class WalletViewModelTest {
 
     private lateinit var vm: WalletViewModel
     private val mainViewRepository = mock(MainViewRepository::class.java)
-    private val requestAccountsUseCase = mock(RequestAccountResourcesUseCase::class.java)
+    private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
+    private val profileRepository = mock(ProfileRepository::class.java)
 
     private val walletData = WalletData(
         "$",
         "1000"
     )
 
+    private val profile = ProfileSnapshot(
+        appPreferences = AppPreferences(
+            display = Display.default,
+            networkAndGateway = NetworkAndGateway.hammunet,
+            p2pClients = emptyList()
+        ),
+        factorSources = FactorSources(
+            curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
+            secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
+        ),
+        perNetwork = emptyList(),
+        version = "0.0.1"
+    )
+
     private val sampleData = SampleDataProvider().sampleAccountResource()
 
     @Before
     fun setUp() {
-        vm = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase)
+        vm = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase, profileRepository)
     }
 
     @Test
@@ -70,7 +91,8 @@ class WalletViewModelTest {
         // given
         val event = mutableListOf<WalletUiState>()
         whenever(mainViewRepository.getWallet()).thenReturn(walletData)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
+        whenever(profileRepository.readProfileSnapshot()).thenReturn(profile)
+        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
         // when
         vm.walletUiState
             .onEach { event.add(it) }
@@ -105,9 +127,11 @@ class WalletViewModelTest {
         // given
         val event = mutableListOf<WalletUiState>()
         whenever(mainViewRepository.getWallet()).thenReturn(walletData)
+        whenever(profileRepository.readProfileSnapshot()).thenReturn(profile)
+
         // when
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase)
-        whenever(requestAccountsUseCase.getAccountResources(any())).thenReturn(Result.Success(sampleData))
+        val viewModel = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase, profileRepository)
+        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

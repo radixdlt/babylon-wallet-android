@@ -2,6 +2,9 @@ package com.babylon.wallet.android.domain.model
 
 data class AccountResources(
     val address: String,
+    val displayName: String,
+    val currencySymbol: String,
+    val value: String,
     val fungibleTokens: List<OwnedFungibleToken> = emptyList(),
     val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList()
 ) {

@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -94,25 +95,34 @@ fun NavigationHost(
             }
         ) {
             CreateAccountScreen(
+                viewModel = hiltViewModel(),
                 onBackClick = { navController.navigateUp() },
-                onContinueClick = { accountId, accountName ->
+                cancelable = startDestination != Screen.CreateAccountDestination.route,
+                onContinueClick = { accountId, accountName, hasProfile ->
                     navController.navigate(
-                        Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName)
+                        Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName, hasProfile)
                     )
                 }
             )
         }
         composable(
-            route = Screen.AccountCompletionDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+            route = Screen.AccountCompletionDestination.route +
+                "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
-                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType }
+                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
+                navArgument(ARG_HAS_PROFILE) { type = NavType.BoolType }
             )
         ) {
             CreateAccountConfirmationScreen(
                 viewModel = hiltViewModel(),
-                goHomeClick = {
+                navigateToWallet = {
                     navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                },
+                navigateToHome = {
+                    navController.navigate(Screen.WalletDestination.route) {
+                        navController.popBackStack(startDestination, inclusive = true)
+                    }
                 }
             )
         }

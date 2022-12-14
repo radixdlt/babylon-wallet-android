@@ -22,7 +22,7 @@ class DataStoreManager @Inject constructor(
 
     val showOnboarding: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            preferences[SHOW_ONBOARDING] ?: true
+            preferences[SHOW_ONBOARDING] ?: false
         }
 
     companion object {

@@ -1,10 +1,7 @@
 package com.babylon.wallet.android.data.repository
 
-import com.babylon.wallet.android.data.AccountDto.Companion.toUiModel
-import com.babylon.wallet.android.data.mockdata.mockAccountDtoList
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.presentation.model.AccountUi
 import com.babylon.wallet.android.presentation.wallet.WalletData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -23,19 +20,6 @@ class MainViewRepositoryImpl(
                 "$",
                 Random.nextDouble(9999.999, 99999.999).toString()
             )
-        }
-    }
-
-    override suspend fun getAccountBasedOnId(id: String): AccountUi {
-        return withContext(ioDispatcher) {
-            delay(Random.nextLong(500, 1000))
-            mockAccountDtoList
-                .map { accountDto ->
-                    accountDto.toUiModel()
-                }
-                .first { accountData ->
-                    accountData.id == id
-                }
         }
     }
 }
