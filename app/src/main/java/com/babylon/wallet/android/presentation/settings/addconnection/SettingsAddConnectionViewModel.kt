@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.ConnectionState
+import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import okio.ByteString.Companion.decodeHex
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.AddP2PClientUseCase
@@ -106,15 +106,6 @@ class SettingsAddConnectionViewModel @Inject constructor(
                 isWithoutProfile = true
             )
             loadingState.value = false
-        }
-    }
-
-    private fun parseEncryptionKeyFromConnectionPassword(connectionPassword: String): ByteArray? {
-        return try {
-            connectionPassword.decodeHex().toByteArray()
-        } catch (iae: IllegalArgumentException) {
-            Timber.e("failed to parse encryption key from connection id: ${iae.localizedMessage}")
-            null
         }
     }
 }
