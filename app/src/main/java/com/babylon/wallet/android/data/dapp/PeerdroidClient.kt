@@ -21,6 +21,8 @@ interface PeerdroidClient {
 
     fun listenForStateEvents(): Flow<ConnectionState>
 
+    fun listenForIncomingRequests(): Flow<String>
+
     suspend fun close()
 
     val isAlreadyOpen: Boolean
@@ -82,6 +84,17 @@ class PeerdroidClientImpl @Inject constructor(
                         ConnectionState.ERROR
                     }
                 }
+            }
+            ?: emptyFlow()
+    }
+
+    override fun listenForIncomingRequests(): Flow<String> {
+        return dataChannel
+            ?.dataChannelEvents
+            ?.cancellable()
+            ?.filterIsInstance<DataChannelEvent.IncomingMessage.DecodedMessage>()
+            ?.map { decodedMessage ->
+                decodedMessage.message
             }
             ?: emptyFlow()
     }
