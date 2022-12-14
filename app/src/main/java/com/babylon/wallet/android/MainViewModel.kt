@@ -43,6 +43,7 @@ class MainViewModel @Inject constructor(
         private set
 
     init {
+        // TODO don't start this if profile doesn't exist
         profileRepository.connectionPassword
             .map { connectionPassword ->
                 if (connectionPassword.isNotEmpty()) {
