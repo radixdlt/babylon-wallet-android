@@ -7,7 +7,7 @@ import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountUiState
-import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountViewModel
+import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsViewModel
 import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -20,7 +20,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ChooseDAppAccountViewModelTest {
+class ChooseAccountsViewModelTest {
 
     @get:Rule
     val coroutineRule = TestDispatcherRule()
@@ -69,7 +69,7 @@ class ChooseDAppAccountViewModelTest {
         )).thenReturn(Result.Success(dAppAccountsResult))
 
         // when
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
@@ -95,7 +95,7 @@ class ChooseDAppAccountViewModelTest {
         )).thenReturn(Result.Success(dAppAccountsResult))
 
         // when
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
@@ -122,7 +122,7 @@ class ChooseDAppAccountViewModelTest {
         )).thenReturn(Result.Error(Exception("Error")))
 
         // when
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
@@ -182,7 +182,7 @@ class ChooseDAppAccountViewModelTest {
         )).thenReturn(Result.Success(dAppAccountsResult))
 
         val selectedAccount = accounts.first()
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
@@ -246,7 +246,7 @@ class ChooseDAppAccountViewModelTest {
         )).thenReturn(Result.Success(dAppAccountsResult))
 
         val selectedAccount = accounts[0]
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
@@ -311,7 +311,7 @@ class ChooseDAppAccountViewModelTest {
 
         val selectedAccount = accounts[0]
         val selectedSecondAccount = accounts[1]
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
@@ -377,7 +377,7 @@ class ChooseDAppAccountViewModelTest {
 
         val selectedAccount = accounts[0]
         val selectedSecondAccount = accounts[1]
-        val viewModel = ChooseDAppAccountViewModel(
+        val viewModel = ChooseAccountsViewModel(
             getDAppAccountsUseCase
         )
 
