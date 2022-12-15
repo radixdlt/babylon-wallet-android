@@ -44,8 +44,12 @@ class ProfileRepositoryImpl @Inject constructor(
             }
         }.map { preferences ->
             val profileJsonString = preferences[PROFILE_PREFERENCES_KEY] ?: ""
-            val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileJsonString)
-            profileSnapshot.appPreferences.p2pClients.firstOrNull()
+            if (profileJsonString.isNotEmpty()) {
+                val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileJsonString)
+                profileSnapshot.appPreferences.p2pClients.firstOrNull()
+            } else { // profile doesn't exist
+                null
+            }
         }
 
     override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {

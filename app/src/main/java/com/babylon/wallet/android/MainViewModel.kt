@@ -43,7 +43,6 @@ class MainViewModel @Inject constructor(
         private set
 
     init {
-        // TODO don't start this if profile doesn't exist
         profileRepository.p2pClient
             .map { p2pClient ->
                 if (p2pClient != null) {
