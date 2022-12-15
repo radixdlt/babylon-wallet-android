@@ -32,11 +32,11 @@ class SettingsAddConnectionViewModel @Inject constructor(
 
     val uiState: StateFlow<SettingsAddConnectionUiState> = combine(
         loadingState,
-        profileRepository.connectionPassword
-    ) { isLoading, connectionPassword ->
+        profileRepository.p2pClient
+    ) { isLoading, p2pClient ->
         SettingsAddConnectionUiState(
             isLoading = isLoading,
-            hasAlreadyConnection = connectionPassword.isEmpty().not()
+            hasAlreadyConnection = p2pClient != null
         )
     }.stateIn(
         scope = viewModelScope,
@@ -102,8 +102,7 @@ class SettingsAddConnectionViewModel @Inject constructor(
             peerdroidClient.close()
             addP2PClientUseCase.invoke(
                 displayName = currentConnectionDisplayName,
-                connectionPassword = currentConnectionPassword,
-                isWithoutProfile = true
+                connectionPassword = currentConnectionPassword
             )
             loadingState.value = false
         }

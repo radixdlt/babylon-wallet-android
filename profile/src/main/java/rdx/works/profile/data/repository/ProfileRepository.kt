@@ -15,6 +15,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import java.io.IOException
 import javax.inject.Inject
@@ -26,9 +27,7 @@ interface ProfileRepository {
 
     suspend fun readProfileSnapshot(): ProfileSnapshot?
 
-    suspend fun saveConnectionPassword(connectionPassword: String) // TODO must be removed ⚠️
-
-    val connectionPassword: Flow<String>
+    val p2pClient: Flow<P2PClient?>
 }
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -36,7 +35,7 @@ class ProfileRepositoryImpl @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ProfileRepository {
 
-    override val connectionPassword: Flow<String> = dataStore.data
+    override val p2pClient: Flow<P2PClient?> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
@@ -44,7 +43,9 @@ class ProfileRepositoryImpl @Inject constructor(
                 throw exception
             }
         }.map { preferences ->
-            preferences[CONNECTION_PASSWORD_PREFERENCES_KEY] ?: ""
+            val profileJsonString = preferences[PROFILE_PREFERENCES_KEY] ?: ""
+            val profile = Json.decodeFromString<ProfileSnapshot>(profileJsonString)
+            profile.appPreferences.p2pClients.firstOrNull()
         }
 
     override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {
@@ -70,14 +71,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveConnectionPassword(connectionPassword: String) {
-        dataStore.edit { preferences ->
-            preferences[CONNECTION_PASSWORD_PREFERENCES_KEY] = connectionPassword
-        }
-    }
-
     companion object {
         private val PROFILE_PREFERENCES_KEY = stringPreferencesKey("profile_preferences_key")
-        private val CONNECTION_PASSWORD_PREFERENCES_KEY = stringPreferencesKey("connection_password_preferences_key")
     }
 }

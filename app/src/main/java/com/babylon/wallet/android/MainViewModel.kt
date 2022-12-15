@@ -44,11 +44,11 @@ class MainViewModel @Inject constructor(
 
     init {
         // TODO don't start this if profile doesn't exist
-        profileRepository.connectionPassword
-            .map { connectionPassword ->
-                if (connectionPassword.isNotEmpty()) {
+        profileRepository.p2pClient
+            .map { p2pClient ->
+                if (p2pClient != null) {
                     Timber.d("found connection password")
-                    connectToDapp(connectionPassword)
+                    connectToDapp(p2pClient.connectionPassword)
                 }
             }
             .launchIn(viewModelScope)
