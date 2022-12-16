@@ -74,4 +74,6 @@
     <string name="new_url">New URL (https:// required)</string>
     <string name="switch_to">Switch to</string>
     <string name="gateway_api_hint">New URL</string>
+    <string name="gateway_updated">Gateway updated!</string>
+    <string name="gateway_invalid">Gateway invalid!</string>
 </resources>

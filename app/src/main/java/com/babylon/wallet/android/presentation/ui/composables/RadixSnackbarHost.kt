@@ -14,11 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 
 @Composable
-fun BoxScope.SnackbarErrorHandler(message: UiMessage?, modifier: Modifier = Modifier) {
+fun BoxScope.SnackbarUiMessageHandler(message: UiMessage?, modifier: Modifier = Modifier, onMessageShown: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     RadixSnackbarHost(
         hostState = snackbarHostState,
@@ -26,10 +27,12 @@ fun BoxScope.SnackbarErrorHandler(message: UiMessage?, modifier: Modifier = Modi
             .align(Alignment.BottomCenter)
             .padding(RadixTheme.dimensions.paddingLarge)
     )
-    val errorMessage = message?.error?.message
-    LaunchedEffect(errorMessage, message?.timestamp) {
-        errorMessage?.let { msg ->
-            snackbarHostState.showSnackbar(msg)
+    val messageToShow =
+        message?.error?.message ?: message?.messageType?.userFriendlyDescriptionRes()?.let { stringResource(id = it) }
+    messageToShow?.let {
+        LaunchedEffect(messageToShow, message?.id) {
+            snackbarHostState.showSnackbar(message = messageToShow)
+            onMessageShown()
         }
     }
 }

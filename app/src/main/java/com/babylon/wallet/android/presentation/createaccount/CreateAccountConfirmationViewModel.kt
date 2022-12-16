@@ -35,7 +35,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     fun goHomeClick() {
         viewModelScope.launch {
             if (hasProfile) {
-                _composeEvent.sendEvent(ComposeEvent.NavigateToWallet)
+                _composeEvent.sendEvent(ComposeEvent.FinishAccountCreation)
             } else {
                 _composeEvent.sendEvent(ComposeEvent.NavigateToHome)
             }
@@ -49,6 +49,6 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     sealed interface ComposeEvent {
         object NavigateToHome : ComposeEvent
-        object NavigateToWallet : ComposeEvent
+        object FinishAccountCreation : ComposeEvent
     }
 }

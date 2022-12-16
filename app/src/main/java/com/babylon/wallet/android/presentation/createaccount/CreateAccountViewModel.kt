@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,8 +25,10 @@ class CreateAccountViewModel @Inject constructor(
 ) : ViewModel() {
 
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
-
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
+    private val networkUrlEncoded = savedStateHandle.get<String>(Screen.ARG_NETWORK_URL)
+    private val networkName = savedStateHandle.get<String>(Screen.ARG_NETWORK_NAME)
+    private val switchNetwork = savedStateHandle.get<Boolean>(Screen.ARG_SWITCH_NETWORK) ?: false
 
     private val _composeEvent = OneOffEventHandler<ComposeEvent>()
     val composeEvent by _composeEvent
@@ -44,18 +48,19 @@ class CreateAccountViewModel @Inject constructor(
         viewModelScope.launch {
 
             val hasProfile = profileRepository.readProfileSnapshot() != null
-
             val account = if (hasProfile) {
                 createAccountUseCase(
-                    displayName = accountName.value
+                    displayName = accountName.value,
+                    networkUrl = networkUrlEncoded?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) },
+                    networkName = networkName,
+                    switchNetwork = switchNetwork
                 )
             } else {
                 val profile = generateProfileUseCase(
-                    accountDisplayName = accountName.value
+                    accountDisplayName = accountName.value,
                 )
                 profile.perNetwork.first().accounts.first()
             }
-
             val accountId = account.entityAddress.address
             val accountName = accountName.value
 

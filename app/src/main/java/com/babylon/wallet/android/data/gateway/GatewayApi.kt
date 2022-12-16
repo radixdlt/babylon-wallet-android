@@ -15,7 +15,6 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewReq
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
-import com.babylon.wallet.android.data.gateway.generated.model.GatewayInfoResponse
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsRequest
@@ -36,9 +35,6 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface GatewayApi {
-
-    @POST("gateway")
-    suspend fun gatewayInfo(@Body body: Any): Response<GatewayInfoResponse>
 
     @POST("entity/details")
     suspend fun entityDetails(@Body entityDetailsRequest: EntityDetailsRequest): Response<EntityDetailsResponse>

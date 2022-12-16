@@ -39,7 +39,7 @@ fun CreateAccountConfirmationScreen(
     viewModel: CreateAccountConfirmationViewModel,
     modifier: Modifier = Modifier,
     navigateToWallet: () -> Unit,
-    navigateToHome: () -> Unit
+    finishAccountCreation: () -> Unit
 ) {
     val accountState = viewModel.accountUiState
 
@@ -53,8 +53,8 @@ fun CreateAccountConfirmationScreen(
     LaunchedEffect(Unit) {
         viewModel.composeEvent.collect {
             when (it) {
-                CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome -> navigateToHome()
-                CreateAccountConfirmationViewModel.ComposeEvent.NavigateToWallet -> navigateToWallet()
+                CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome -> navigateToWallet()
+                CreateAccountConfirmationViewModel.ComposeEvent.FinishAccountCreation -> finishAccountCreation()
             }
         }
     }

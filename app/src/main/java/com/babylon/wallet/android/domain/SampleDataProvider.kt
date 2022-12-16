@@ -7,6 +7,11 @@ import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
+import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.apppreferences.AppPreferences
+import rdx.works.profile.data.model.apppreferences.Display
+import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.factorsources.FactorSources
 import java.math.BigDecimal
 
 class SampleDataProvider {
@@ -27,6 +32,22 @@ class SampleDataProvider {
             currencySymbol = "$",
             value = "10",
             fungibleTokens = sampleFungibleTokens(address)
+        )
+    }
+
+    fun sampleProfileSnapshot(): ProfileSnapshot {
+        return ProfileSnapshot(
+            appPreferences = AppPreferences(
+                display = Display.default,
+                networkAndGateway = NetworkAndGateway.hammunet,
+                p2pClients = emptyList()
+            ),
+            factorSources = FactorSources(
+                curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
+                secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
+            ),
+            perNetwork = emptyList(),
+            version = "0.0.1"
         )
     }
 

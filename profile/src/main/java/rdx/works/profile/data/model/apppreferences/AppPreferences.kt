@@ -31,6 +31,10 @@ data class NetworkAndGateway(
             gatewayAPIEndpointURL = "https://hammunet-gateway.radixdlt.com",
             network = Network.hammunet
         )
+        val nebunet = NetworkAndGateway(
+            gatewayAPIEndpointURL = "https://nebunet-gateway.radixdlt.com",
+            network = Network.nebunet
+        )
     }
 }
 

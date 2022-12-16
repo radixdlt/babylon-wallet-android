@@ -4,20 +4,25 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
 import com.babylon.wallet.android.data.gateway.GatewayApi
+import com.babylon.wallet.android.data.gateway.GatewayInfoApi
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.peerdroid.data.PeerdroidConnector
+import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Retrofit
 import timber.log.Timber
+import java.net.URL
 import javax.inject.Singleton
 
 @Module
@@ -26,12 +31,21 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(profileRepository: ProfileRepository): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }
+        val baseUrlInterceptor = Interceptor { chain ->
+            runBlocking {
+                val baseUrl = profileRepository.getCurrentNetworkBaseUrl()
+                val url = URL(baseUrl)
+                val updatedUrl = chain.request().url.newBuilder().host(url.host).scheme(url.protocol).build()
+                val request = chain.request().newBuilder().url(updatedUrl).build()
+                chain.proceed(request)
+            }
+        }
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-        return OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
+        return OkHttpClient.Builder().addInterceptor(baseUrlInterceptor).addInterceptor(loggingInterceptor).build()
     }
 
     @Provides
@@ -43,12 +57,27 @@ object NetworkModule {
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
-    fun provideGatewayApi(): GatewayApi {
-        val retrofitBuilder = Retrofit.Builder().client(provideOkHttpClient())
+    fun provideGatewayApi(profileRepository: ProfileRepository): GatewayApi {
+        val retrofitBuilder = Retrofit.Builder().client(provideOkHttpClient(profileRepository))
             .baseUrl(BuildConfig.GATEWAY_API_URL)
             .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
             .build()
         return retrofitBuilder.create(GatewayApi::class.java)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Provides
+    fun provideGatewayInfoApi(): GatewayInfoApi {
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            Timber.d(message)
+        }
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
+        val retrofitBuilder = Retrofit.Builder().client(httpClient)
+            .baseUrl(BuildConfig.GATEWAY_API_URL)
+            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .build()
+        return retrofitBuilder.create(GatewayInfoApi::class.java)
     }
 
     @Provides

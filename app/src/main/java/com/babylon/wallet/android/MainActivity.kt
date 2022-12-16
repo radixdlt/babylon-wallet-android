@@ -44,7 +44,7 @@ class MainActivity : FragmentActivity() {
                         )
                     } else {
                         NavigationHost(
-                            Screen.CreateAccountDestination.route
+                            Screen.CreateAccountDestination.route()
                         )
                     }
                 }

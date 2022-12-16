@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationViewModel
+import com.babylon.wallet.android.presentation.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -83,6 +83,6 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToWallet)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.FinishAccountCreation)
     }
 }
