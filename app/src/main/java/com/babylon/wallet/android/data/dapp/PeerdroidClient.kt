@@ -110,9 +110,7 @@ class PeerdroidClientImpl @Inject constructor(
         val walletRequestItemsList = request.items
 
         // TODO later we should implement this in a more elegant way by parsing any kind of request
-        return if (walletRequestItemsList.isNotEmpty() &&
-            walletRequestItemsList[0] is OneTimeAccountsReadRequestItem
-        ) {
+        return if (walletRequestItemsList.firstOrNull() is OneTimeAccountsReadRequestItem) {
             val accountsReadRequest = walletRequestItemsList[0]
             (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel()
         } else {
