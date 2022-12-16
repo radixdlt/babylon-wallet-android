@@ -4,7 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,10 +20,10 @@ class DataStoreManager @Inject constructor(
         }
     }
 
-    suspend fun showOnboarding(): Boolean = dataStore.data
+    val showOnboarding: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[SHOW_ONBOARDING] ?: false
-        }.first()
+        }
 
     companion object {
         private val SHOW_ONBOARDING = booleanPreferencesKey("show_onboarding")
