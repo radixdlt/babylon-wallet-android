@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.model.IncomingRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -20,3 +21,15 @@ data class OngoingAccountsReadRequestItem(
     @SerialName("numberOfAccounts")
     val numberOfAccounts: Int? = null
 ) : WalletRequestItem()
+
+fun OneTimeAccountsReadRequestItem.toDomainModel() = IncomingRequest.AccountsRequest(
+    isOngoing = false,
+    requiresProofOfOwnership = requiresProofOfOwnership,
+    numberOfAccounts = numberOfAccounts ?: 1
+)
+
+fun OngoingAccountsReadRequestItem.toDomainModel() = IncomingRequest.AccountsRequest(
+    isOngoing = true,
+    requiresProofOfOwnership = requiresProofOfOwnership,
+    numberOfAccounts = numberOfAccounts ?: 1
+)

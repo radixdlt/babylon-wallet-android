@@ -6,8 +6,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 
 @Composable
-fun ChooseDAppAccountScreen(
-    viewModel: ChooseDAppAccountViewModel,
+fun ChooseAccountsScreen(
+    viewModel: ChooseAccountsViewModel,
     onBackClick: () -> Unit,
     onContinueClick: (String) -> Unit,
     dismissErrorDialog: () -> Unit

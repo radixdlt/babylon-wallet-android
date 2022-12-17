@@ -13,7 +13,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
-import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
+import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
@@ -78,7 +78,7 @@ fun NavigationHost(
                 onMenuItemClick = {
                     /* TODO For now i init flow here for testing */
                     navController.navigate(
-                        Screen.DAppDestination.route
+                        Screen.RequestAccountsDestination.route
                     )
                 }
             ) {
@@ -126,7 +126,7 @@ fun NavigationHost(
                 }
             )
         }
-        dAppConnectionGraph(navController)
+        dAppRequestAccountsGraph(navController)
         settingsNavGraph(navController)
     }
 }

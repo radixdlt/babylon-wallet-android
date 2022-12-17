@@ -1,11 +1,17 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsReadRequestItem
+import com.babylon.wallet.android.data.dapp.model.WalletRequest
+import com.babylon.wallet.android.data.dapp.model.toDomainModel
+import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import com.babylon.wallet.android.domain.model.ConnectionState
+import com.babylon.wallet.android.domain.model.IncomingRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.decodeFromString
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
@@ -20,6 +26,8 @@ interface PeerdroidClient {
     suspend fun sendMessage(message: String): Result<Unit>
 
     fun listenForStateEvents(): Flow<ConnectionState>
+
+    fun listenForIncomingRequests(): Flow<IncomingRequest>
 
     suspend fun close()
 
@@ -84,6 +92,30 @@ class PeerdroidClientImpl @Inject constructor(
                 }
             }
             ?: emptyFlow()
+    }
+
+    override fun listenForIncomingRequests(): Flow<IncomingRequest> {
+        return dataChannel
+            ?.dataChannelEvents
+            ?.cancellable()
+            ?.filterIsInstance<DataChannelEvent.IncomingMessage.DecodedMessage>()
+            ?.map { decodedMessage ->
+                parseIncomingMessage(messageInJsonString = decodedMessage.message)
+            }
+            ?: emptyFlow()
+    }
+
+    private fun parseIncomingMessage(messageInJsonString: String): IncomingRequest {
+        val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
+        val walletRequestItemsList = request.items
+
+        // TODO later we should implement this in a more elegant way by parsing any kind of request
+        return if (walletRequestItemsList.firstOrNull() is OneTimeAccountsReadRequestItem) {
+            val accountsReadRequest = walletRequestItemsList[0]
+            (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel()
+        } else {
+            IncomingRequest.SomeOtherRequest
+        }
     }
 
     override suspend fun close() {

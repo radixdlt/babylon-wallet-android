@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ChooseDAppAccountViewModel @Inject constructor(
+class ChooseAccountsViewModel @Inject constructor(
     private val getAccountsUseCase: GetAccountsUseCase,
 ) : ViewModel() {
 

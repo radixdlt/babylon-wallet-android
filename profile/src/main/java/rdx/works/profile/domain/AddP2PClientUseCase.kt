@@ -11,15 +11,8 @@ class AddP2PClientUseCase @Inject constructor(
 
     suspend operator fun invoke(
         displayName: String,
-        connectionPassword: String,
-        isWithoutProfile: Boolean = false // TODO must be removed ⚠️
+        connectionPassword: String
     ) {
-
-        if (isWithoutProfile) {
-            profileRepository.saveConnectionPassword(connectionPassword)
-            return
-        }
-
         val profileSnapshot = profileRepository.readProfileSnapshot()
         checkNotNull(profileSnapshot) {
             "Profile does not exist"

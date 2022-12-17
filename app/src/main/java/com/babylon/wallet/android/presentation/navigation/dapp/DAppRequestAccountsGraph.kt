@@ -7,26 +7,26 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.account.ChooseDAppAccountScreen
+import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsScreen
 import com.babylon.wallet.android.presentation.dapp.completion.DAppCompletionScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 
-fun NavGraphBuilder.dAppConnectionGraph(
+fun NavGraphBuilder.dAppRequestAccountsGraph(
     navController: NavController
 ) {
     navigation(
-        startDestination = Screen.DAppChooseAccountDestination.route,
-        route = Screen.DAppDestination.route
+        startDestination = Screen.ChooseAccountsDestination.route,
+        route = Screen.RequestAccountsDestination.route
     ) {
-        composable(route = Screen.DAppChooseAccountDestination.route) {
-            ChooseDAppAccountScreen(
+        composable(route = Screen.ChooseAccountsDestination.route) {
+            ChooseAccountsScreen(
                 viewModel = hiltViewModel(),
                 onBackClick = {
                     navController.navigateUp()
                 },
                 onContinueClick = { dAppName ->
-                    navController.navigate(Screen.DAppCompleteDestination.routeWithArgs(dAppName)) {
-                        popUpTo(Screen.DAppChooseAccountDestination.route) { inclusive = true }
+                    navController.navigate(Screen.ChooseAccountsCompleteDestination.routeWithArgs(dAppName)) {
+                        popUpTo(Screen.ChooseAccountsDestination.route) { inclusive = true }
                     }
                 },
                 dismissErrorDialog = {
@@ -36,7 +36,7 @@ fun NavGraphBuilder.dAppConnectionGraph(
         }
 
         composable(
-            route = Screen.DAppCompleteDestination.route + "/{${Screen.ARG_DAPP_NAME}}",
+            route = Screen.ChooseAccountsCompleteDestination.route + "/{${Screen.ARG_DAPP_NAME}}",
             arguments = listOf(
                 navArgument(Screen.ARG_DAPP_NAME) { type = NavType.StringType }
             )

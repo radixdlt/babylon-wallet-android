@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlin.reflect.KProperty
 
-class SingleEventHandler<T> {
+class OneOffEventHandler<T> {
 
     private val eventChannel = Channel<T>(Channel.BUFFERED)
     private val eventFlow = eventChannel.receiveAsFlow()
