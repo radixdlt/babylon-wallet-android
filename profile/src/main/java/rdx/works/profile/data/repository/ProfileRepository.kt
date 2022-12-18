@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.crypto.toECKeyPair
-import com.radixdlt.model.PrivateKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -21,14 +20,13 @@ import rdx.works.profile.data.extensions.setNetworkAndGateway
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.notaryFactorSource
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.domain.GetMnemonicUseCase
-import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.profile.domain.GetMnemonicUseCase
 import java.io.IOException
 import javax.inject.Inject
 
@@ -39,7 +37,6 @@ interface ProfileRepository {
 
     suspend fun readProfileSnapshot(): ProfileSnapshot?
     suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
-
     val p2pClient: Flow<P2PClient?>
     suspend fun getCurrentNetworkId(): NetworkId
     suspend fun setNetworkAndGateway(newUrl: String, networkName: String)
@@ -53,8 +50,8 @@ interface ProfileRepository {
 
 class ProfileRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-    private val getMnemonicUseCase: GetMnemonicUseCase,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    private val getMnemonicUseCase: GetMnemonicUseCase
 ) : ProfileRepository {
 
     override val p2pClient: Flow<P2PClient?> = dataStore.data
@@ -168,7 +165,7 @@ class ProfileRepositoryImpl @Inject constructor(
     private suspend fun getAccount(address: String): Account? {
         val networkId = getCurrentNetworkId()
         val perNetwork = readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == networkId }
-        return perNetwork?.accounts?.firstOrNull { it.address.address == address }
+        return perNetwork?.accounts?.firstOrNull { it.entityAddress.address == address }
     }
 
     companion object {

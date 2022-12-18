@@ -45,15 +45,4 @@ object ApplicationModule {
         return context.userDataStore
     }
 
-//    @Provides
-//    @Singleton
-//    fun provideRadixToolkitEngine(): RadixEngineToolkit {
-//        return RadixEngineToolkit
-//    }
-
-    @Provides
-    @Singleton
-    fun provideProfileRepository(): ProfileRepository {
-        return ProfileRepositoryImpl()
-    }
 }

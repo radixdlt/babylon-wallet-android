@@ -17,7 +17,6 @@ import models.transaction.ManifestInstructions
 import models.transaction.ManifestInstructionsKind
 import models.transaction.TransactionHeader
 import models.transaction.TransactionManifest
-import rdx.works.peerdroid.helpers.sha256
 import rdx.works.profile.data.repository.ProfileRepository
 import java.math.BigDecimal
 import java.security.SecureRandom
@@ -56,98 +55,6 @@ class TransactionClient @Inject constructor(
             }
         }
     }
-
-//    fun compileAndSign(
-//        transactionIntent: TransactionIntent,
-//        notaryAndSigners: NotaryAndSigners
-//    ): Result<CompileSignedTransactionIntentResponse> {
-//        val compiledTransactionIntent: CompileTransactionIntentResponse
-//        try {
-//            compiledTransactionIntent = engine.compileTransactionIntent(
-//                CompileTransactionIntentRequest(
-//                    transactionIntent.header,
-//                    transactionIntent.manifest
-//                )
-//            )
-//        } catch (e: Exception) {
-//            return Result.Error(
-//                TransactionApprovalException(
-//                    TransactionApprovalFailureCause.CompileTxIntent,
-//                    cause = e
-//                )
-//            )
-//        }
-//
-//        val txID: String
-//        try {
-//            txID = generateTXID(compiledTransactionIntent.compiledIntent)
-//        } catch (e: Exception) {
-//            return Result.Error(
-//                TransactionApprovalException(
-//                    TransactionApprovalFailureCause.GenerateTXId,
-//                    cause = e
-//                )
-//            )
-//        }
-//        val signaturesWithPublicKey: List<SignatureWithPublicKey>
-//        try {
-////TODO figure this out
-//            signaturesWithPublicKey = emptyList()
-//        } catch (e: Exception) {
-//            return Result.Error(
-//                TransactionApprovalException(
-//                    TransactionApprovalFailureCause.SigningIntentWithAccountSigners,
-//                    cause = e
-//                )
-//            )
-//        }
-//        //TODO not sure if we need it
-////        val engineSignaturesWithPublicKey: List<SignatureWithPublicKey>
-////        try {
-////
-////            engineSignaturesWithPublicKey = emptyList()
-////        } catch (e: Exception) {
-////            return Result.failure(
-////                TransactionApprovalException(
-////                    TransactionApprovalFailureCause.SigningIntentWithAccountSigners,
-////                    cause = e
-////                )
-////            )
-////        }
-//        val signedTransactionIntent = SignedTransactionIntent(transactionIntent, signaturesWithPublicKey.toTypedArray())
-//        Signature
-//        val compiledSignedIntent: ByteArray
-//        try {
-//            compiledSignedIntent = signedTransactionIntent.compile()
-//        } catch (e: Exception) {
-//            return Result.Error(
-//                TransactionApprovalException(
-//                    TransactionApprovalFailureCause.CompileTxIntent,
-//                    cause = e
-//                )
-//            )
-//        }
-//
-//        val notarySignatureWithPublicKey: SignatureWithPublicKey
-//        try {
-//
-//        } catch (e: Exception) {
-//
-//        }
-//        val notarizedTransaction = NotarizedTransaction(signedTransactionIntent)
-//        val compiledNotarizedTXIntent: ByteArray
-//        try {
-//            compiledNotarizedTXIntent = notarizedTransaction.compile()
-//        } catch (e: Exception) {
-//            return Result.Error(
-//                TransactionApprovalException(
-//                    TransactionApprovalFailureCause.CompileNotarizedTXIntent,
-//                    cause = e
-//                )
-//            )
-//        }
-//        return Result.Success(CompileSignedTransactionIntentResponse(compiledNotarizedTXIntent))
-//    }
 
     private suspend fun buildTransactionHeader(
         networkId: Int,
@@ -211,7 +118,7 @@ class TransactionClient @Inject constructor(
         if (manifestConversionResult is Result.Success) {
             val instructions = manifestConversionResult.data.instructions
             val addresses = getAddressesNeededToSignTransaction(version, networkId, manifest)
-            val accountAddress = addresses.firstOrNull() ?: profileRepository.getAccounts().first().address.address
+            val accountAddress = addresses.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
             val lockFeeInstruction: Instruction = Instruction.CallMethod(
                 Value.ComponentAddress(accountAddress), Value.String(MethodName.LockFee.stringValue), arrayOf(
                     Value.Decimal(
@@ -319,7 +226,4 @@ class TransactionClient @Inject constructor(
         return nonce
     }
 
-    private fun generateTXID(compiledIntent: ByteArray): String {
-        return compiledIntent.sha256().sha256().toHexString()
-    }
 }

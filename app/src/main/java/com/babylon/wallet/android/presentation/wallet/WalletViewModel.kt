@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +32,7 @@ class WalletViewModel @Inject constructor(
     private val clipboardManager: ClipboardManager,
     private val getAccountsUseCase: GetAccountResourcesUseCase,
     private val profileRepository: ProfileRepository,
+    private val transactionClient: TransactionClient
 ) : ViewModel() {
 
     private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState())
@@ -42,6 +44,9 @@ class WalletViewModel @Inject constructor(
                 loadResourceData(profileSnapshot)
             }
         }
+//        viewModelScope.launch {
+//            transactionClient.signAndSubmitTransaction(ManifestBuilder().dropAllProofs().build())
+//        }
     }
 
     private suspend fun loadResourceData(profileSnapshot: ProfileSnapshot) {
