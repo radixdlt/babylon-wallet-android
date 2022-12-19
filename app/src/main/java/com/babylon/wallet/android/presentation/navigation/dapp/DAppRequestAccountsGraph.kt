@@ -1,33 +1,43 @@
 package com.babylon.wallet.android.presentation.navigation.dapp
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsScreen
 import com.babylon.wallet.android.presentation.dapp.completion.DAppCompletionScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.google.accompanist.navigation.animation.composable
 
+@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dAppRequestAccountsGraph(
     navController: NavController
 ) {
     navigation(
         startDestination = Screen.ChooseAccountsDestination.route,
-        route = Screen.RequestAccountsDestination.route
+        route = Screen.RequestAccountsDestination.route +
+            "/{${Screen.ARG_REQUEST_ID}}/{${Screen.ARG_IS_ONGOING}}" +
+            "/{${Screen.ARG_REQUIRES_OWNERSHIP}}/{${Screen.ARG_NUMBER_OF_ACCOUNTS}}",
+        arguments = listOf(
+            navArgument(Screen.ARG_IS_ONGOING) { type = NavType.StringType },
+            navArgument(Screen.ARG_IS_ONGOING) { type = NavType.BoolType },
+            navArgument(Screen.ARG_REQUIRES_OWNERSHIP) { type = NavType.BoolType },
+            navArgument(Screen.ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType }
+        )
     ) {
-        composable(route = Screen.ChooseAccountsDestination.route) {
+        composable(
+            route = Screen.ChooseAccountsDestination.route
+        ) {
             ChooseAccountsScreen(
                 viewModel = hiltViewModel(),
                 onBackClick = {
                     navController.navigateUp()
                 },
-                onContinueClick = { dAppName ->
-                    navController.navigate(Screen.ChooseAccountsCompleteDestination.routeWithArgs(dAppName)) {
-                        popUpTo(Screen.ChooseAccountsDestination.route) { inclusive = true }
-                    }
+                exitRequestFlow = {
+                    navController.navigateUp()
                 },
                 dismissErrorDialog = {
                     navController.navigateUp()
