@@ -10,6 +10,12 @@ import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * The main responsibility of this class is to
+ * - build the (dapp) responses
+ * - to send responses to dapp
+ *
+ */
 interface DAppMessenger {
 
     suspend fun sendAccountsResponse(
