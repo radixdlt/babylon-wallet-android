@@ -31,7 +31,8 @@ fun RadixTextField(
     hint: String? = null,
     error: String? = null,
     rightLabel: String? = null,
-    optionalHint: String? = null
+    optionalHint: String? = null,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -62,6 +63,7 @@ fun RadixTextField(
             placeholder = {
                 hint?.let { Text(text = it) }
             },
+            trailingIcon = trailingIcon,
             isError = error != null
         )
         if (error != null) {
