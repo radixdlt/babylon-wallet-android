@@ -107,12 +107,13 @@ class PeerdroidClientImpl @Inject constructor(
 
     private fun parseIncomingMessage(messageInJsonString: String): IncomingRequest {
         val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
+        val requestId = request.requestId
         val walletRequestItemsList = request.items
 
         // TODO later we should implement this in a more elegant way by parsing any kind of request
         return if (walletRequestItemsList.firstOrNull() is OneTimeAccountsReadRequestItem) {
             val accountsReadRequest = walletRequestItemsList[0]
-            (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel()
+            (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel(requestId)
         } else {
             IncomingRequest.SomeOtherRequest
         }
