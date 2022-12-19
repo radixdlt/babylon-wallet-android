@@ -9,7 +9,9 @@ sealed interface IncomingRequest {
         val numberOfAccounts: Int
     ) : IncomingRequest
 
-    object SomeOtherRequest : IncomingRequest
+    object SomeOtherRequest : IncomingRequest // TODO replace this later with some other request from dapp
+
+    object ParsingError : IncomingRequest
 
     object Empty : IncomingRequest
 }
