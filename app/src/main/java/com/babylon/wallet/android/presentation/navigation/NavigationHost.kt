@@ -56,7 +56,7 @@ fun NavigationHost(
                 },
                 onAccountCreationClick = {
                     navController.navigate(
-                        Screen.CreateAccountDestination.route
+                        Screen.CreateAccountDestination.route()
                     )
                 }
             )
@@ -114,7 +114,7 @@ fun NavigationHost(
             CreateAccountScreen(
                 viewModel = hiltViewModel(),
                 onBackClick = { navController.navigateUp() },
-                cancelable = startDestination != Screen.CreateAccountDestination.route,
+                cancelable = startDestination != Screen.CreateAccountDestination.route(),
                 onContinueClick = { accountId, accountName, hasProfile ->
                     navController.navigate(
                         Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName, hasProfile)
