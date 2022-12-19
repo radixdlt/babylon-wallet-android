@@ -20,27 +20,27 @@ data class Network(
     companion object {
         val adapanet = Network(
             id = NetworkId.Adapanet.value,
-            name = "adapanet"
+            name = "Adapanet"
         )
         val hammunet = Network(
             id = NetworkId.Hammunet.value,
-            name = "hammunet"
+            name = "Hammunet"
         )
         val nebunet = Network(
             id = NetworkId.Nebunet.value,
-            name = "nebunet"
+            name = "Nebunet"
         )
         val mardunet = Network(
             id = NetworkId.Mardunet.value,
-            name = "mardunet"
+            name = "Mardunet"
         )
         val enkinet = Network(
             id = NetworkId.Enkinet.value,
-            name = "enkinet"
+            name = "Enkinet"
         )
         val gilganet = Network(
             id = NetworkId.Gilganet.value,
-            name = "gilganet"
+            name = "Gilganet"
         )
 
         fun allKnownNetworks(): List<Network> {

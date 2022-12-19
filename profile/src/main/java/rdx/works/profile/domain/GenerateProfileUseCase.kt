@@ -24,7 +24,7 @@ class GenerateProfileUseCase @Inject constructor(
             return withContext(defaultDispatcher) {
                 val mnemonic = getMnemonicUseCase()
 
-                val networkAndGateway = NetworkAndGateway.nebunet
+                val networkAndGateway = NetworkAndGateway.hammunet
 
                 val profile = Profile.init(
                     networkAndGateway = networkAndGateway,
