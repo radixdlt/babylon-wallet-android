@@ -70,7 +70,8 @@ class WalletViewModel @Inject constructor(
                         currencySymbol = accountResources.currencySymbol,
                         value = accountResources.value,
                         fungibleTokens = accountResources.fungibleTokens,
-                        nonFungibleTokens = accountResources.nonFungibleTokens
+                        nonFungibleTokens = accountResources.nonFungibleTokens,
+                        appearanceID = accountResources.appearanceID
                     )
                 )
             }
