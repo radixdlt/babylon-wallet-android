@@ -6,12 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.OneOffEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,11 +26,13 @@ class CreateAccountViewModel @Inject constructor(
 ) : ViewModel() {
 
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
-
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
+    private val networkUrlEncoded = savedStateHandle.get<String>(Screen.ARG_NETWORK_URL)
+    private val networkName = savedStateHandle.get<String>(Screen.ARG_NETWORK_NAME)
+    private val switchNetwork = savedStateHandle.get<Boolean>(Screen.ARG_SWITCH_NETWORK) ?: false
 
-    private val _composeEvent = OneOffEventHandler<ComposeEvent>()
-    val composeEvent by _composeEvent
+    private val _oneOffEvent = OneOffEventHandler<OneOffEvent>()
+    val composeEvent by _oneOffEvent
 
     var state by mutableStateOf(CreateAccountState())
         private set
@@ -44,18 +49,19 @@ class CreateAccountViewModel @Inject constructor(
         viewModelScope.launch {
 
             val hasProfile = profileRepository.readProfileSnapshot() != null
-
             val account = if (hasProfile) {
                 createAccountUseCase(
-                    displayName = accountName.value
+                    displayName = accountName.value,
+                    networkUrl = networkUrlEncoded?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) },
+                    networkName = networkName,
+                    switchNetwork = switchNetwork
                 )
             } else {
                 val profile = generateProfileUseCase(
-                    accountDisplayName = accountName.value
+                    accountDisplayName = accountName.value,
                 )
                 profile.perNetwork.first().accounts.first()
             }
-
             val accountId = account.entityAddress.address
             val accountName = accountName.value
 
@@ -66,8 +72,8 @@ class CreateAccountViewModel @Inject constructor(
                 hasProfile = hasProfile
             )
 
-            _composeEvent.sendEvent(
-                ComposeEvent.Complete(
+            _oneOffEvent.sendEvent(
+                OneOffEvent.Complete(
                     accountId = accountId,
                     accountName = accountName,
                     hasProfile = hasProfile
@@ -83,12 +89,12 @@ class CreateAccountViewModel @Inject constructor(
         val hasProfile: Boolean = false
     )
 
-    sealed interface ComposeEvent {
+    sealed interface OneOffEvent {
         data class Complete(
             val accountId: String,
             val accountName: String,
             val hasProfile: Boolean
-        ) : ComposeEvent
+        ) : OneOffEvent
     }
 
     companion object {

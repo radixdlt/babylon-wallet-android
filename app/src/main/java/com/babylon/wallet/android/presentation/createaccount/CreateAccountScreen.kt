@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -65,7 +66,7 @@ fun CreateAccountScreen(
     LaunchedEffect(Unit) {
         viewModel.composeEvent.collect { event ->
             when (event) {
-                is CreateAccountViewModel.ComposeEvent.Complete -> onContinueClick(
+                is CreateAccountViewModel.OneOffEvent.Complete -> onContinueClick(
                     event.accountId,
                     event.accountName,
                     event.hasProfile
@@ -143,7 +144,7 @@ fun CreateAccountContent(
             }
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().imePadding(),
                 onClick = onAccountCreateClick,
                 enabled = buttonEnabled,
                 text = stringResource(id = R.string.continue_button_title)

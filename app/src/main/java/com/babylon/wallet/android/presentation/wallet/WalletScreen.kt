@@ -40,7 +40,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarErrorHandler
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -68,7 +68,8 @@ fun WalletScreen(
         isLoading = state.isLoading,
         accounts = state.resources,
         wallet = state.wallet,
-        error = state.error
+        error = state.error,
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
@@ -86,7 +87,8 @@ private fun WalletScreenContent(
     isLoading: Boolean,
     accounts: ImmutableList<AccountResources>,
     wallet: WalletData?,
-    error: UiMessage?
+    error: UiMessage?,
+    onMessageShown: () -> Unit
 ) {
     Box(modifier = modifier) {
         Scaffold(
@@ -133,7 +135,7 @@ private fun WalletScreenContent(
                 }
             }
         }
-        SnackbarErrorHandler(message = error)
+        SnackbarUiMessageHandler(message = error, onMessageShown = onMessageShown)
     }
 }
 
@@ -243,7 +245,8 @@ fun WalletContentPreview() {
                     currency = "$",
                     amount = "236246"
                 ),
-                error = null
+                error = null,
+                onMessageShown = {}
             )
         }
     }

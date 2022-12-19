@@ -8,7 +8,10 @@ package rdx.works.profile.derivation.model
 enum class NetworkId(val value: Int) {
     Mainnet(1),
     Adapanet(10),
+    Nebunet(11),
+    Gilganet(32),
     Enkinet(33),
     Hammunet(34),
-    Mardunet(36)
+    Nergalnet(35),
+    Mardunet(36),
 }

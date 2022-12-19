@@ -13,6 +13,9 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_NAME
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_URL
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_SWITCH_NETWORK
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -86,7 +89,21 @@ fun NavigationHost(
             }
         }
         composable(
-            route = Screen.CreateAccountDestination.route,
+            route = Screen.CreateAccountDestination.route(),
+            arguments = listOf(
+                navArgument(ARG_NETWORK_URL) {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument(ARG_NETWORK_NAME) {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument(ARG_SWITCH_NETWORK) {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            ),
             enterTransition = {
                 slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
             },
@@ -119,10 +136,8 @@ fun NavigationHost(
                 navigateToWallet = {
                     navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
                 },
-                navigateToHome = {
-                    navController.navigate(Screen.WalletDestination.route) {
-                        navController.popBackStack(startDestination, inclusive = true)
-                    }
+                finishAccountCreation = {
+                    navController.popBackStack(Screen.CreateAccountDestination.route(), inclusive = true)
                 }
             )
         }

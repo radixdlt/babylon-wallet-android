@@ -3,6 +3,8 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.data.dapp.DAppRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
+import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
+import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
 import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepositoryImpl
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
@@ -36,4 +38,9 @@ interface DataModule {
     fun nonFungibleRepository(
         nonFungibleRepository: NonFungibleRepositoryImpl
     ): NonFungibleRepository
+
+    @Binds
+    fun networkInfoRepository(
+        networkInfoRepository: NetworkInfoRepositoryImpl
+    ): NetworkInfoRepository
 }

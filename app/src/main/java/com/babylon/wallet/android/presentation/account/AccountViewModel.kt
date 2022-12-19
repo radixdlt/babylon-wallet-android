@@ -60,7 +60,9 @@ class AccountViewModel @Inject constructor(
                 // TODO how to handle the case when the gateway doesn't return the account?
                 // TODO this should probably change to flow later
                 val account = requestAccountResourcesUseCase(accountId)
-                account.onError { e -> _accountUiState.update { it.copy(uiMessage = UiMessage(error = e)) } }
+                account.onError { e ->
+                    _accountUiState.update { it.copy(uiMessage = UiMessage(error = e)) }
+                }
                 account.onValue { accountResource ->
                     val xrdToken = if (accountResource.hasXrdToken()) accountResource.fungibleTokens[0] else null
                     val fungibleTokens = if (accountResource.hasXrdToken()) {

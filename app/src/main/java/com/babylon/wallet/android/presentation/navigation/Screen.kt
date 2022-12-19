@@ -8,9 +8,10 @@ interface Destination {
      * Each destination should have a unique route.
      */
     val route: String
+    val args: String
 }
 
-sealed class Screen(override val route: String) : Destination {
+sealed class Screen(override val route: String, override val args: String = "") : Destination {
 
     object OnboardingDestination : Screen("onboarding_route")
     object WalletDestination : Screen("wallet_route")
@@ -19,7 +20,13 @@ sealed class Screen(override val route: String) : Destination {
     object SettingsAddConnectionDestination : Screen("settings_add_connection_route")
     object SettingsEditGatewayApiDestination : Screen("settings_edit_gateway_api_route")
     object AccountDestination : Screen("account_route")
-    object CreateAccountDestination : Screen("create_account_route")
+    object CreateAccountDestination : Screen(
+        "create_account_route",
+        "?$ARG_NETWORK_URL={$ARG_NETWORK_URL}&" +
+            "$ARG_NETWORK_NAME={$ARG_NETWORK_NAME}&" +
+            "$ARG_SWITCH_NETWORK={$ARG_SWITCH_NETWORK}"
+    )
+
     object AccountCompletionDestination : Screen("account_completion_route")
     object RequestAccountsDestination : Screen("request_accounts_route")
     object ChooseAccountsDestination : Screen("choose_accounts_route")
@@ -34,8 +41,23 @@ sealed class Screen(override val route: String) : Destination {
         }
     }
 
+    fun route(): String {
+        return route + args
+    }
+
+    fun routeWithOptionalArgs(vararg args: Pair<String, Any>): String {
+        var route = route()
+        args.forEach {
+            route = route.replace("{${it.first}}", it.second.toString())
+        }
+        return route
+    }
+
     companion object {
         const val ARG_ACCOUNT_ID = "arg_account_id"
+        const val ARG_NETWORK_URL = "arg_network_url"
+        const val ARG_NETWORK_NAME = "arg_network_name"
+        const val ARG_SWITCH_NETWORK = "arg_switch_network"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
         const val ARG_GRADIENT_INDEX = "arg_gradient_index"
         const val ARG_DAPP_NAME = "arg_dapp_name"

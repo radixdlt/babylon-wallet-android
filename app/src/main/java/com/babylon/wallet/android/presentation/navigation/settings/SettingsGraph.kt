@@ -88,6 +88,15 @@ private fun NavGraphBuilder.settingsGatewayEdit(navController: NavController) {
             onBackClick = {
                 navController.popBackStack()
             },
+            onCreateProfile = { url, networkName ->
+                navController.navigate(
+                    Screen.CreateAccountDestination.routeWithOptionalArgs(
+                        Screen.ARG_NETWORK_URL to url,
+                        Screen.ARG_NETWORK_NAME to networkName,
+                        Screen.ARG_SWITCH_NETWORK to true
+                    )
+                )
+            }
         )
     }
 }

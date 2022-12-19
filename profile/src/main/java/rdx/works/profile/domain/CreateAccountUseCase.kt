@@ -4,12 +4,14 @@ import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.extensions.addAccountOnNetwork
+import rdx.works.profile.data.extensions.setNetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Network
+import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.utils.accountsPerNetworkCount
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
@@ -18,9 +20,11 @@ class CreateAccountUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
-
     suspend operator fun invoke(
-        displayName: String
+        displayName: String,
+        networkUrl: String? = null,
+        networkName: String? = null,
+        switchNetwork: Boolean = false
     ): Account {
         return withContext(defaultDispatcher) {
             val profileSnapshot = profileRepository.readProfileSnapshot()
@@ -28,9 +32,13 @@ class CreateAccountUseCase @Inject constructor(
                 "Profile does not exist"
             }
 
+            var networkAndGateway: NetworkAndGateway? = null
+            if (networkUrl != null && networkName != null) {
+                networkAndGateway =
+                    NetworkAndGateway(networkUrl, Network.allKnownNetworks().first { it.name == networkName })
+            }
             val profile = profileSnapshot.toProfile()
-
-            val networkID = profile.appPreferences.networkAndGateway.network.networkId()
+            val networkID = networkAndGateway?.network?.networkId() ?: profileRepository.getCurrentNetworkId()
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
@@ -50,14 +58,15 @@ class CreateAccountUseCase @Inject constructor(
             )
 
             // Add account to the profile
-            val updatedProfile = profile.addAccountOnNetwork(
+            var updatedProfile = profile.addAccountOnNetwork(
                 newAccount,
-                networkID = NetworkId.Hammunet
+                networkID = networkID
             )
-
+            if (switchNetwork && networkAndGateway != null) {
+                updatedProfile = updatedProfile.setNetworkAndGateway(networkAndGateway)
+            }
             // Save updated profile
             profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
-
             // Return new account
             newAccount
         }

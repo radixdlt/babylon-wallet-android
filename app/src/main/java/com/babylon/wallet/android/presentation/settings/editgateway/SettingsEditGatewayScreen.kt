@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.editgateway
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,30 +27,43 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 
 @Composable
 fun SettingsEditGatewayScreen(
     viewModel: SettingsEditGatewayViewModel,
     onBackClick: () -> Unit,
+    onCreateProfile: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val state = viewModel.state
     SettingsEditGatewayContent(
         onBackClick = onBackClick,
         onSwitchToClick = viewModel::onSwitchToClick,
         newUrl = state.newUrl,
         onNewUrlChanged = viewModel::onNewUrlChanged,
+        newUrlValid = state.newUrlValid,
+        currentNetworkName = state.currentNetworkAndGateway?.network?.name.orEmpty(),
+        currentNetworkId = state.currentNetworkAndGateway?.network?.id?.toString().orEmpty(),
+        currentNetworkEndpoint = state.currentNetworkAndGateway?.gatewayAPIEndpointURL.orEmpty(),
         modifier = modifier
             .systemBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
-        newUrlValid = state.newUrlValid,
-        currentNetworkName = state.currentNetworkData.networkName,
-        currentNetworkId = state.currentNetworkData.networkId,
-        currentNetworkEndpoint = state.currentNetworkData.networkEndpoint,
+        message = state.uiMessage,
+        onMessageShown = viewModel::onMessageShown
     )
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is SettingsEditGatewayViewModel.OneOffEvent.CreateProfileOnNetwork -> {
+                    onCreateProfile(it.newUrl, it.networkName)
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -61,56 +76,61 @@ private fun SettingsEditGatewayContent(
     currentNetworkName: String,
     currentNetworkId: String,
     currentNetworkEndpoint: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    message: UiMessage?,
+    onMessageShown: () -> Unit
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.Start
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.edit_gateway_api_url),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
-        )
+    Box(modifier = modifier) {
         Column(
-            Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.gray5)
-                .verticalScroll(rememberScrollState())
-                .padding(RadixTheme.dimensions.paddingDefault),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.Start
         ) {
-            CurrentNetworkDetails(
-                currentNetworkName = currentNetworkName,
-                currentNetworkId = currentNetworkId,
-                currentNetworkEndpoint = currentNetworkEndpoint,
-                modifier = Modifier.fillMaxWidth(),
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.edit_gateway_api_url),
+                onBackClick = onBackClick,
+                contentColor = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Text(
-                text = stringResource(id = R.string.new_url),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
-            )
-            RadixTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                value = newUrl,
-                onValueChanged = onNewUrlChanged,
-                hint = stringResource(R.string.gateway_api_hint)
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding(),
-                text = stringResource(id = R.string.switch_to),
-                onClick = onSwitchToClick,
-                enabled = newUrlValid
-            )
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .background(RadixTheme.colors.gray5)
+                    .verticalScroll(rememberScrollState())
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+
+            ) {
+                CurrentNetworkDetails(
+                    currentNetworkName = currentNetworkName,
+                    currentNetworkId = currentNetworkId,
+                    currentNetworkEndpoint = currentNetworkEndpoint,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Text(
+                    text = stringResource(id = R.string.new_url),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+                RadixTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                    value = newUrl,
+                    onValueChanged = onNewUrlChanged,
+                    hint = stringResource(R.string.gateway_api_hint)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                RadixPrimaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding(),
+                    text = stringResource(id = R.string.switch_to),
+                    onClick = onSwitchToClick,
+                    enabled = newUrlValid
+                )
+            }
         }
+        SnackbarUiMessageHandler(message = message, onMessageShown = onMessageShown, modifier = Modifier.imePadding())
     }
 }
 
@@ -183,7 +203,9 @@ fun SettingsEditGatewayPreview() {
             newUrlValid = false,
             currentNetworkName = "Hammunet",
             currentNetworkId = "34",
-            currentNetworkEndpoint = BuildConfig.GATEWAY_API_URL
+            currentNetworkEndpoint = BuildConfig.GATEWAY_API_URL,
+            message = null,
+            onMessageShown = {}
         )
     }
 }

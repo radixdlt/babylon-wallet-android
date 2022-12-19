@@ -14,8 +14,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.profile.data.extensions.setNetworkAndGateway
 import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.apppreferences.Network
+import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import java.io.IOException
 import javax.inject.Inject
@@ -28,6 +32,11 @@ interface ProfileRepository {
     suspend fun readProfileSnapshot(): ProfileSnapshot?
 
     val p2pClient: Flow<P2PClient?>
+    suspend fun getCurrentNetworkId(): NetworkId
+    suspend fun setNetworkAndGateway(newUrl: String, networkName: String)
+    suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean
+    val profileSnapshot: Flow<ProfileSnapshot?>
+    suspend fun getCurrentNetworkBaseUrl(): String
 }
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -52,6 +61,15 @@ class ProfileRepositoryImpl @Inject constructor(
             }
         }
 
+    override val profileSnapshot: Flow<ProfileSnapshot?> = dataStore.data.map { preferences ->
+        val profileContent = preferences[PROFILE_PREFERENCES_KEY] ?: ""
+        if (profileContent.isEmpty()) {
+            null
+        } else {
+            Json.decodeFromString<ProfileSnapshot>(profileContent)
+        }
+    }
+
     override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {
         withContext(defaultDispatcher) {
             val profileContent = Json.encodeToString(profileSnapshot)
@@ -61,17 +79,43 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    private suspend fun getNetworkAndGateway(): NetworkAndGateway {
+        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.hammunet
+    }
+
+    override suspend fun setNetworkAndGateway(newUrl: String, networkName: String) {
+        readProfileSnapshot()?.toProfile()?.let { profile ->
+            val updatedProfile = profile.setNetworkAndGateway(
+                NetworkAndGateway(
+                    newUrl,
+                    Network.allKnownNetworks().first { it.name == networkName }
+                )
+            )
+            saveProfileSnapshot(updatedProfile.snapshot())
+        }
+    }
+
+    override suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean {
+        val knownNetwork = Network.allKnownNetworks().firstOrNull { it.name == networkName } ?: return false
+        val newNetworkAndGateway = NetworkAndGateway(
+            newUrl, knownNetwork
+        )
+        return readProfileSnapshot()?.toProfile()?.let { profile ->
+            profile.perNetwork.any { it.networkID == newNetworkAndGateway.network.id }
+        } ?: false
+    }
+
+    override suspend fun getCurrentNetworkId(): NetworkId {
+        return getNetworkAndGateway().network.networkId()
+    }
+
+    override suspend fun getCurrentNetworkBaseUrl(): String {
+        return getNetworkAndGateway().gatewayAPIEndpointURL
+    }
+
     override suspend fun readProfileSnapshot(): ProfileSnapshot? {
         return withContext(defaultDispatcher) {
-            val profileContent = dataStore.data
-                .map { preferences ->
-                    preferences[PROFILE_PREFERENCES_KEY] ?: ""
-                }.first()
-            if (profileContent.isEmpty()) {
-                null
-            } else {
-                Json.decodeFromString<ProfileSnapshot>(profileContent)
-            }
+            profileSnapshot.first()
         }
     }
 

@@ -18,8 +18,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
@@ -36,55 +38,55 @@ class WalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            loadResourceData()
+            profileRepository.profileSnapshot.filterNotNull().collect { profileSnapshot ->
+                loadResourceData(profileSnapshot)
+            }
         }
     }
 
-    private suspend fun loadResourceData() {
-
+    private suspend fun loadResourceData(profileSnapshot: ProfileSnapshot) {
         val wallet = mainViewRepository.getWallet()
+        val profile = profileSnapshot.toProfile()
+        val accountsResourcesList = mutableListOf<AccountResources>()
+        val accounts = profile.getAccounts()
+        val results = accounts.map { account ->
+            viewModelScope.async {
+                getAccountsUseCase(account.entityAddress.address)
+            }
+        }.awaitAll()
 
-        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
-            val profile = profileSnapshot.toProfile()
-            val accountsResourcesList = mutableListOf<AccountResources>()
-            val accounts = profile.getAccounts()
-            val results = accounts.map { account ->
-                viewModelScope.async {
-                    getAccountsUseCase(account.entityAddress.address)
-                }
-            }.awaitAll()
-
-            results.forEachIndexed { index, accountResourcesList ->
-                accountResourcesList.onError { error ->
-                    _walletUiState.update { it.copy(error = UiMessage(error), isLoading = false) }
-                }
-                accountResourcesList.onValue { accountResources ->
-                    // TODO this is temporary because we use only one account address therefore data which we fetch
-                    // would be the same. Therefore we fetch display name from the profile instead
-                    val accountName = accounts[index].displayName.orEmpty()
-                    accountsResourcesList.add(
-                        AccountResources(
-                            address = accountResources.address,
-                            displayName = accountName,
-                            currencySymbol = accountResources.currencySymbol,
-                            value = accountResources.value,
-                            fungibleTokens = accountResources.fungibleTokens,
-                            nonFungibleTokens = accountResources.nonFungibleTokens
-                        )
+        results.forEachIndexed { index, accountResourcesList ->
+            accountResourcesList.onError { error ->
+                _walletUiState.update { it.copy(error = UiMessage(error = error), isLoading = false) }
+            }
+            accountResourcesList.onValue { accountResources ->
+                // TODO this is temporary because we use only one account address therefore data which we fetch
+                // would be the same. Therefore we fetch display name from the profile instead
+                val accountName = accounts[index].displayName.orEmpty()
+                accountsResourcesList.add(
+                    AccountResources(
+                        address = accountResources.address,
+                        displayName = accountName,
+                        currencySymbol = accountResources.currencySymbol,
+                        value = accountResources.value,
+                        fungibleTokens = accountResources.fungibleTokens,
+                        nonFungibleTokens = accountResources.nonFungibleTokens
                     )
-                }
+                )
             }
+        }
 
-            _walletUiState.update { state ->
-                state.copy(wallet = wallet, resources = accountsResourcesList.toPersistentList(), isLoading = false)
-            }
+        _walletUiState.update { state ->
+            state.copy(wallet = wallet, resources = accountsResourcesList.toPersistentList(), isLoading = false)
         }
     }
 
     fun refresh() {
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
-            loadResourceData()
+            profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
+                loadResourceData(profileSnapshot)
+            }
             _walletUiState.update { it.copy(isRefreshing = false) }
         }
     }
@@ -92,6 +94,10 @@ class WalletViewModel @Inject constructor(
     fun onCopyAccountAddress(hashValue: String) {
         val clipData = ClipData.newPlainText("accountHash", hashValue)
         clipboardManager.setPrimaryClip(clipData)
+    }
+
+    fun onMessageShown() {
+        _walletUiState.update { it.copy(error = null) }
     }
 }
 

@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationViewModel
+import com.babylon.wallet.android.presentation.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -29,7 +29,7 @@ class CreateAccountConfirmationViewModelTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
-        val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
+        val event = mutableListOf<CreateAccountConfirmationViewModel.OneOffEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
@@ -38,7 +38,7 @@ class CreateAccountConfirmationViewModelTest {
         // when
         viewModel.goHomeClick()
 
-        viewModel.composeEvent
+        viewModel.oneOffEvent
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         advanceUntilIdle()
@@ -52,7 +52,7 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.OneOffEvent.NavigateToHome)
     }
 
     @Test
@@ -60,7 +60,7 @@ class CreateAccountConfirmationViewModelTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
-        val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
+        val event = mutableListOf<CreateAccountConfirmationViewModel.OneOffEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(true)
@@ -69,7 +69,7 @@ class CreateAccountConfirmationViewModelTest {
         // when
         viewModel.goHomeClick()
 
-        viewModel.composeEvent
+        viewModel.oneOffEvent
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         advanceUntilIdle()
@@ -83,6 +83,6 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToWallet)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.OneOffEvent.FinishAccountCreation)
     }
 }

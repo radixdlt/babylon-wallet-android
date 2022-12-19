@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.gateway
 
 object GatewayTestConstants {
-    const val SAMPLE_ACCOUNT = "account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"
     const val ACCOUNT_PACKAGE = "package_tdx_22_1qy4hrp8a9apxldp5cazvxgwdj80cxad4u8cpkaqqnhlsk0emdf"
     const val FAUCET = "component_tdx_22_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7ql6v973"
     const val XRD = "resource_tdx_22_1qzxcrac59cy2v9lpcpmf82qel3cjj25v3k5m09rxurgqfpm3gw"
