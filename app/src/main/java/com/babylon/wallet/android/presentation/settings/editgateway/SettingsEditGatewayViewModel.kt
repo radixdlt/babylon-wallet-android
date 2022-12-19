@@ -80,8 +80,8 @@ class SettingsEditGatewayViewModel @Inject constructor(
         }
     }
 
-    sealed class OneOffEvent {
-        data class CreateProfileOnNetwork(val newUrl: String, val networkName: String) : OneOffEvent()
+    sealed interface OneOffEvent {
+        data class CreateProfileOnNetwork(val newUrl: String, val networkName: String) : OneOffEvent
     }
 }
 

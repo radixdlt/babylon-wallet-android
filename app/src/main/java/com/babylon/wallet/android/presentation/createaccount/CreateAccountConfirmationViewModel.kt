@@ -23,6 +23,8 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     private val _composeEvent = OneOffEventHandler<ComposeEvent>()
     val composeEvent by _composeEvent
+    private val _oneOffEvent = SingleEventHandler<OneOffEvent>()
+    val composeEvent by _oneOffEvent
 
     var accountUiState by mutableStateOf(
         AccountConfirmationUiState(
@@ -35,9 +37,9 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     fun goHomeClick() {
         viewModelScope.launch {
             if (hasProfile) {
-                _composeEvent.sendEvent(ComposeEvent.FinishAccountCreation)
+                _oneOffEvent.sendEvent(OneOffEvent.FinishAccountCreation)
             } else {
-                _composeEvent.sendEvent(ComposeEvent.NavigateToHome)
+                _oneOffEvent.sendEvent(OneOffEvent.NavigateToHome)
             }
         }
     }
@@ -47,8 +49,8 @@ class CreateAccountConfirmationViewModel @Inject constructor(
         val accountId: String = ""
     )
 
-    sealed interface ComposeEvent {
-        object NavigateToHome : ComposeEvent
-        object FinishAccountCreation : ComposeEvent
+    sealed interface OneOffEvent {
+        object NavigateToHome : OneOffEvent
+        object FinishAccountCreation : OneOffEvent
     }
 }

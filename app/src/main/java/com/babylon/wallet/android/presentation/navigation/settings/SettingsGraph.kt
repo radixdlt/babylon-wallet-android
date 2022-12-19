@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.settings.addconnection.SettingsAddConnectionScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
-import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayViewModel
 import com.google.accompanist.navigation.animation.composable
 
 fun NavGraphBuilder.settingsNavGraph(
@@ -84,9 +83,8 @@ private fun NavGraphBuilder.settingsGatewayEdit(navController: NavController) {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        val vm: SettingsEditGatewayViewModel = hiltViewModel()
         SettingsEditGatewayScreen(
-            viewModel = vm,
+            viewModel = hiltViewModel(),
             onBackClick = {
                 navController.popBackStack()
             },

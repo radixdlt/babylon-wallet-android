@@ -57,17 +57,17 @@ object NetworkModule {
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
-    fun provideGatewayApi(profileRepository: ProfileRepository): GatewayApi {
-        val retrofitBuilder = Retrofit.Builder().client(provideOkHttpClient(profileRepository))
+    fun provideGatewayApi(okHttpClient: OkHttpClient, json: Json): GatewayApi {
+        val retrofitBuilder = Retrofit.Builder().client(okHttpClient)
             .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
             .build()
         return retrofitBuilder.create(GatewayApi::class.java)
     }
 
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
-    fun provideGatewayInfoApi(): GatewayInfoApi {
+    fun provideGatewayInfoApi(json: Json): GatewayInfoApi {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }
@@ -75,7 +75,7 @@ object NetworkModule {
         val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
         val retrofitBuilder = Retrofit.Builder().client(httpClient)
             .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(provideJsonDeserializer().asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
             .build()
         return retrofitBuilder.create(GatewayInfoApi::class.java)
     }

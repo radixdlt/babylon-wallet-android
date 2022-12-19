@@ -29,7 +29,7 @@ class CreateAccountConfirmationViewModelTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
-        val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
+        val event = mutableListOf<CreateAccountConfirmationViewModel.OneOffEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
@@ -52,7 +52,7 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.NavigateToHome)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.OneOffEvent.NavigateToHome)
     }
 
     @Test
@@ -60,7 +60,7 @@ class CreateAccountConfirmationViewModelTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
-        val event = mutableListOf<CreateAccountConfirmationViewModel.ComposeEvent>()
+        val event = mutableListOf<CreateAccountConfirmationViewModel.OneOffEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(true)
@@ -83,6 +83,6 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.ComposeEvent.FinishAccountCreation)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.OneOffEvent.FinishAccountCreation)
     }
 }
