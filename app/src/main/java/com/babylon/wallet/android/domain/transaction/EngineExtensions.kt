@@ -7,7 +7,7 @@ import com.radixdlt.model.PublicKey
 fun PublicKey.toEngineModel(): models.crypto.PublicKey {
     return when (this.curveType) {
         EllipticCurveType.Secp256k1 -> models.crypto.PublicKey.EcdsaSecp256k1.fromByteArray(this.key.toByteArray())
-        EllipticCurveType.Ed25519 -> models.crypto.PublicKey.EcdsaSecp256k1.fromByteArray(this.key.toByteArray())
+        EllipticCurveType.Ed25519 -> models.crypto.PublicKey.EddsaEd25519.fromByteArray(this.key.toByteArray())
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }

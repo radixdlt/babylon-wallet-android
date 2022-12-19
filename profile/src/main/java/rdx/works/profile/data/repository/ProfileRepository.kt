@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.bip39.model.MnemonicWords
-import com.radixdlt.crypto.toECKeyPair
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -133,8 +132,12 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
         val profileSnapshot = readProfileSnapshot()
-        val accounts = addresses.mapNotNull { address ->
-            getAccount(address)
+        val accounts = if (addresses.isNotEmpty()) {
+            addresses.mapNotNull { address ->
+                getAccount(address)
+            }
+        } else {
+            listOfNotNull(profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId }?.accounts?.first())
         }
         val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID ?: throw Exception()
         val mnemonic = getMnemonicUseCase(factorSourceId)
@@ -144,8 +147,8 @@ class ProfileRepositoryImpl @Inject constructor(
         val mnemonicWords = MnemonicWords(mnemonic)
         val signers = mutableListOf<AccountSigner>()
         accounts.forEach {
-            val privateKey = mnemonicWords.signerPrivateKey(factorSourceId, derivationPath = it.derivationPath)
-            signers.add(AccountSigner(it, privateKey.toECKeyPair().publicKey, privateKey, listOf(privateKey)))
+            val privateKey = mnemonicWords.signerPrivateKey(derivationPath = it.derivationPath)
+            signers.add(AccountSigner(it, privateKey, listOf(privateKey)))
         }
         return signers.toList()
     }
@@ -159,7 +162,8 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAccounts(): List<Account> {
-        return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId()}?.accounts ?: emptyList()
+        return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId() }?.accounts
+            ?: emptyList()
     }
 
     private suspend fun getAccount(address: String): Account? {

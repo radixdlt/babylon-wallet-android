@@ -6,8 +6,10 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
+import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import kotlinx.coroutines.delay
+import models.CallMethodReceiver
 import models.Instruction
 import models.Value
 import models.request.CompileNotarizedTransactionIntentResponse
@@ -71,7 +73,7 @@ class TransactionClient @Inject constructor(
                     epoch.toULong(),
                     epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
                     generateNonce(),
-                    notaryAndSigners.notarySigner.notaryPublicKey.toEngineModel(),
+                    notaryAndSigners.notarySigner.notaryPrivateKey.toECKeyPair().publicKey.toEngineModel(),
                     false,
                     TransactionConfig.COST_UNIT_LIMIT,
                     tipPercentage = TransactionConfig.TIP_PERCENTAGE
@@ -198,12 +200,16 @@ class TransactionClient @Inject constructor(
         )
         when (val instructions = convertedManifest.instructions) {
             is ManifestInstructions.JSONInstructions -> {
-                instructions.instructions.filterIsInstance<Instruction.CallFunction>().forEach {
-                    val isAccountComponent = it.packageAddress.address.packageAddress.contains("account")
+                instructions.instructions.filterIsInstance<Instruction.CallMethod>().forEach {
+                    val componentAddress = when (val callMethodReceiver = it.componentAddress) {
+                        is CallMethodReceiver.Component -> null
+                        is CallMethodReceiver.ComponentAddress -> callMethodReceiver.componentAddress.address.componentAddress
+                    }
+                    val isAccountComponent = componentAddress?.contains("account") == true
                     val isMethodThatRequiresAuth =
-                        MethodName.values().map { it.stringValue }.contains(it.functionName.value)
-                    if (isAccountComponent && isMethodThatRequiresAuth) {
-                        addressesNeededToSign.add(it.packageAddress.address.packageAddress)
+                        MethodName.methodsThatRequireAuth().map { it.stringValue }.contains(it.methodName.value)
+                    if (isAccountComponent && isMethodThatRequiresAuth && componentAddress != null) {
+                        addressesNeededToSign.add(componentAddress)
                     }
                 }
             }

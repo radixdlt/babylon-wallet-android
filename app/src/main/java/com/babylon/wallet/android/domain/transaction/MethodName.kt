@@ -11,5 +11,23 @@ enum class MethodName(val stringValue: String) {
     LockFeeAndWithdrawByIds("lock_fee_and_withdraw_by_ids"),
     CreateProof("create_proof"),
     CreateProofByAmount("create_proof_by_amount"),
-    CreateProofByIds("create_proof_by_ids")
+    CreateProofByIds("create_proof_by_ids");
+
+    companion object {
+        fun methodsThatRequireAuth(): List<MethodName> {
+            return listOf(
+                LockFee,
+                LockContingentFee,
+                Withdraw,
+                WithdrawByAmount,
+                WithdrawByIds,
+                LockFeeAndWithdraw,
+                LockFeeAndWithdrawByAmount,
+                LockFeeAndWithdrawByIds,
+                CreateProof,
+                CreateProofByAmount,
+                CreateProofByIds
+            )
+        }
+    }
 }
