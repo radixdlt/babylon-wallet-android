@@ -18,8 +18,8 @@ import rdx.works.profile.data.extensions.setNetworkAndGateway
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import java.io.IOException
 import javax.inject.Inject
@@ -32,9 +32,6 @@ interface ProfileRepository {
     suspend fun readProfileSnapshot(): ProfileSnapshot?
 
     val p2pClient: Flow<P2PClient?>
-    suspend fun saveConnectionPassword(connectionPassword: String) // TODO must be removed ⚠️
-
-    val connectionPassword: Flow<String>
     suspend fun getCurrentNetworkId(): NetworkId
     suspend fun setNetworkAndGateway(newUrl: String, networkName: String)
     suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean
@@ -47,15 +44,6 @@ class ProfileRepositoryImpl @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ProfileRepository {
 
-    override val connectionPassword: Flow<String> = dataStore.data.catch { exception ->
-        if (exception is IOException) {
-            emit(emptyPreferences())
-        } else {
-            throw exception
-        }
-    }.map { preferences ->
-        preferences[CONNECTION_PASSWORD_PREFERENCES_KEY] ?: ""
-    }
     override val p2pClient: Flow<P2PClient?> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {

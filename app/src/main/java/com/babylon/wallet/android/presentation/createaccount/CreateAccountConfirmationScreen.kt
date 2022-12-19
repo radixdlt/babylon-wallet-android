@@ -51,7 +51,7 @@ fun CreateAccountConfirmationScreen(
     )
 
     LaunchedEffect(Unit) {
-        viewModel.composeEvent.collect {
+        viewModel.oneOffEvent.collect {
             when (it) {
                 CreateAccountConfirmationViewModel.OneOffEvent.NavigateToHome -> navigateToWallet()
                 CreateAccountConfirmationViewModel.OneOffEvent.FinishAccountCreation -> finishAccountCreation()

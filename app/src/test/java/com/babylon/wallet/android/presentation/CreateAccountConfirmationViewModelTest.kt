@@ -38,7 +38,7 @@ class CreateAccountConfirmationViewModelTest {
         // when
         viewModel.goHomeClick()
 
-        viewModel.composeEvent
+        viewModel.oneOffEvent
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         advanceUntilIdle()
@@ -69,7 +69,7 @@ class CreateAccountConfirmationViewModelTest {
         // when
         viewModel.goHomeClick()
 
-        viewModel.composeEvent
+        viewModel.oneOffEvent
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         advanceUntilIdle()

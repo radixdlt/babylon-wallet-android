@@ -10,7 +10,7 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.utils.SingleEventHandler
+import com.babylon.wallet.android.utils.OneOffEventHandler
 import com.babylon.wallet.android.utils.isValidUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterNotNull
@@ -30,7 +30,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
     var state by mutableStateOf(SettingsUiState())
         private set
 
-    private val _oneOffEvent = SingleEventHandler<OneOffEvent>()
+    private val _oneOffEvent = OneOffEventHandler<OneOffEvent>()
     val oneOffEvent by _oneOffEvent
 
     init {

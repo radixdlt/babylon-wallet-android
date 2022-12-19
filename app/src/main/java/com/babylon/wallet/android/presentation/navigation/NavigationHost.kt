@@ -13,11 +13,10 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
-import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_URL
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_SWITCH_NETWORK
-import com.babylon.wallet.android.presentation.navigation.dapp.dAppConnectionGraph
+import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen

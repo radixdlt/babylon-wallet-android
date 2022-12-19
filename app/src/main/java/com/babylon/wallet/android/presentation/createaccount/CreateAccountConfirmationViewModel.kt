@@ -21,10 +21,8 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     private val accountName = savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME).orEmpty()
     private val accountId = savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID).orEmpty()
 
-    private val _composeEvent = OneOffEventHandler<ComposeEvent>()
-    val composeEvent by _composeEvent
-    private val _oneOffEvent = SingleEventHandler<OneOffEvent>()
-    val composeEvent by _oneOffEvent
+    private val _oneOffEvent = OneOffEventHandler<OneOffEvent>()
+    val oneOffEvent by _oneOffEvent
 
     var accountUiState by mutableStateOf(
         AccountConfirmationUiState(
