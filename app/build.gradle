@@ -39,6 +39,7 @@ android {
             debuggable false
             resValue "string", "app_name", "Radix Wallet Preview"
             matchingFallbacks = ['debug']
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
             minifyEnabled true
