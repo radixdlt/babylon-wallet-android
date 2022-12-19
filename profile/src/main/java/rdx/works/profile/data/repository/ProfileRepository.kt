@@ -80,7 +80,7 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getNetworkAndGateway(): NetworkAndGateway {
-        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.nebunet
+        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.hammunet
     }
 
     override suspend fun setNetworkAndGateway(newUrl: String, networkName: String) {
