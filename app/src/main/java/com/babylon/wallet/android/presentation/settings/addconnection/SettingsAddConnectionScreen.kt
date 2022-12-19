@@ -82,7 +82,7 @@ fun SettingsAddConnectionScreen(
             },
             isLoading = state.isLoading,
             onBackClick = onBackClick,
-            onMenuItemClick = {
+            onQrCodeScannerClick = {
                 cameraPermissionState.launchPermissionRequest()
                 showQrScanner = true
             },
@@ -101,7 +101,7 @@ private fun SettingsAddConnectionContent(
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onMenuItemClick: () -> Unit,
+    onQrCodeScannerClick: () -> Unit,
     connectionPassword: String,
     connectionDisplayName: String,
     onConnectionPasswordChanged: (String) -> Unit,
@@ -111,17 +111,7 @@ private fun SettingsAddConnectionContent(
         RadixCenteredTopAppBar(
             title = stringResource(R.string.new_connection),
             onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            actions = {
-                IconButton(onClick = onMenuItemClick) {
-                    Icon(
-                        painterResource(
-                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-                        ),
-                        contentDescription = "add connection menu item"
-                    )
-                }
-            }
+            contentColor = RadixTheme.colors.gray1
         )
         if (hasAlreadyConnection) {
             ShowConnection()
@@ -134,7 +124,8 @@ private fun SettingsAddConnectionContent(
                     connectionPassword = connectionPassword,
                     connectionDisplayName = connectionDisplayName,
                     onConnectionPasswordChanged = onConnectionPasswordChanged,
-                    onConnectionDisplayNameChanged = onConnectionDisplayNameChanged
+                    onConnectionDisplayNameChanged = onConnectionDisplayNameChanged,
+                    onQrCodeScannerClick = onQrCodeScannerClick
                 )
             }
         }
@@ -156,7 +147,8 @@ private fun EnterConnection(
     connectionPassword: String,
     connectionDisplayName: String,
     onConnectionPasswordChanged: (String) -> Unit,
-    onConnectionDisplayNameChanged: (String) -> Unit
+    onConnectionDisplayNameChanged: (String) -> Unit,
+    onQrCodeScannerClick: () -> Unit,
 ) {
     Column(modifier = modifier) {
         RadixTextField(
@@ -165,7 +157,17 @@ private fun EnterConnection(
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             value = connectionPassword,
             onValueChanged = onConnectionPasswordChanged,
-            hint = stringResource(R.string.enter_the_connection_id)
+            hint = stringResource(R.string.enter_the_connection_id),
+            trailingIcon = {
+                IconButton(onClick = onQrCodeScannerClick) {
+                    Icon(
+                        painterResource(
+                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
+                        ),
+                        contentDescription = "scan qr code icon"
+                    )
+                }
+            }
         )
 
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
@@ -201,7 +203,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
             onConnectionClick = {},
             isLoading = false,
             onBackClick = {},
-            onMenuItemClick = {},
+            onQrCodeScannerClick = {},
             connectionPassword = "",
             connectionDisplayName = "",
             onConnectionPasswordChanged = {},
@@ -220,7 +222,7 @@ fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
             onConnectionClick = {},
             isLoading = false,
             onBackClick = {},
-            onMenuItemClick = {},
+            onQrCodeScannerClick = {},
             connectionPassword = "",
             connectionDisplayName = "",
             onConnectionPasswordChanged = {},

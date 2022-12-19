@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.qr
+package com.babylon.wallet.android.presentation.qr
 
 import android.annotation.SuppressLint
 import androidx.camera.core.ImageAnalysis
