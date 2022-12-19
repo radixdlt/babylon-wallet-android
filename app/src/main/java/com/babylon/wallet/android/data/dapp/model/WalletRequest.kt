@@ -43,6 +43,7 @@ private val walletRequestSerializersModule = SerializersModule {
         subclass(UsePersonaReadRequestItem::class, UsePersonaReadRequestItem.serializer())
 
         subclass(LoginReadRequestItem::class, LoginReadRequestItem.serializer())
+        subclass(SendTransactionWriteRequestItem::class, SendTransactionWriteRequestItem.serializer())
     }
 }
 

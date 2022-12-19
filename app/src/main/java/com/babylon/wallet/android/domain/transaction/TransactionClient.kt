@@ -29,15 +29,19 @@ class TransactionClient @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
 
-    private val engine: RadixEngineToolkit = RadixEngineToolkit
+    private val engine = RadixEngineToolkit
 
     suspend fun signAndSubmitTransaction(manifest: TransactionManifest): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId()
-        when (val transactionHeaderResult = buildTransactionHeader(networkId, manifest)) {
+        val transactionVersion = TransactionVersion.Default
+        val addressesNeededToSign = getAddressesNeededToSignTransaction(transactionVersion, networkId, manifest)
+        val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
+        when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> return transactionHeaderResult
             is Result.Success -> {
-                val manifestWithTransactionFee = addLockFeeInstructionToManifest(manifest)
-                val notaryAndSigners = getNotaryAndSigners(networkId, manifestWithTransactionFee)
+                val accountAddressToLockFee =
+                    addressesNeededToSign.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
+                val manifestWithTransactionFee = addLockFeeInstructionToManifest(manifest, accountAddressToLockFee)
                 val notarizedTransactionBuilder =
                     TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
                 val notarizedTransaction =
@@ -60,12 +64,11 @@ class TransactionClient @Inject constructor(
 
     private suspend fun buildTransactionHeader(
         networkId: Int,
-        manifest: TransactionManifest
+        notaryAndSigners: NotaryAndSigners
     ): Result<TransactionHeader> {
         val epochResult = transactionRepository.getLedgerEpoch()
         if (epochResult is Result.Success) {
             val epoch = epochResult.data
-            val notaryAndSigners = getNotaryAndSigners(networkId, manifest)
             return Result.Success(
                 TransactionHeader(
                     TransactionVersion.Default.intValue.toUByte(),
@@ -73,7 +76,7 @@ class TransactionClient @Inject constructor(
                     epoch.toULong(),
                     epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
                     generateNonce(),
-                    notaryAndSigners.notarySigner.notaryPrivateKey.toECKeyPair().publicKey.toEngineModel(),
+                    notaryAndSigners.notarySigner.notaryPrivateKey.toECKeyPair().toEnginePublicKeyModel(),
                     false,
                     TransactionConfig.COST_UNIT_LIMIT,
                     tipPercentage = TransactionConfig.TIP_PERCENTAGE
@@ -86,10 +89,8 @@ class TransactionClient @Inject constructor(
 
     private suspend fun getNotaryAndSigners(
         networkId: Int,
-        manifest: TransactionManifest,
-        transactionVersion: TransactionVersion = TransactionVersion.Default
+        addressesNeededToSign: List<String>
     ): NotaryAndSigners {
-        val addressesNeededToSign = getAddressesNeededToSignTransaction(transactionVersion, networkId, manifest)
         val signers = profileRepository.getSignersForAddresses(networkId, addressesNeededToSign)
         return NotaryAndSigners(signers.first(), signers)
     }
@@ -113,16 +114,15 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private suspend fun addLockFeeInstructionToManifest(manifest: TransactionManifest): TransactionManifest {
-        val version = TransactionVersion.Default
-        val networkId = profileRepository.getCurrentNetworkId()
+    private suspend fun addLockFeeInstructionToManifest(
+        manifest: TransactionManifest,
+        addressToLockFee: String
+    ): TransactionManifest {
         val manifestConversionResult = convertManifestInstructionsToJSON(manifest)
         if (manifestConversionResult is Result.Success) {
             val instructions = manifestConversionResult.data.instructions
-            val addresses = getAddressesNeededToSignTransaction(version, networkId, manifest)
-            val accountAddress = addresses.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
             val lockFeeInstruction: Instruction = Instruction.CallMethod(
-                Value.ComponentAddress(accountAddress), Value.String(MethodName.LockFee.stringValue), arrayOf(
+                Value.ComponentAddress(addressToLockFee), Value.String(MethodName.LockFee.stringValue), arrayOf(
                     Value.Decimal(
                         BigDecimal.valueOf(10)
                     )

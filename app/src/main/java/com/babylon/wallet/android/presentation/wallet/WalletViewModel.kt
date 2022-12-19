@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
@@ -45,9 +44,9 @@ class WalletViewModel @Inject constructor(
                 loadResourceData(profileSnapshot)
             }
         }
-        viewModelScope.launch {
-            transactionClient.signAndSubmitTransaction(SampleDataProvider().sampleManifest())
-        }
+//        viewModelScope.launch {
+//            transactionClient.signAndSubmitTransaction(SampleDataProvider().sampleManifest())
+//        }
     }
 
     private suspend fun loadResourceData(profileSnapshot: ProfileSnapshot) {

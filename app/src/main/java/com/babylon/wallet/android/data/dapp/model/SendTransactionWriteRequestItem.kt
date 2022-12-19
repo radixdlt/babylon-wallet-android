@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SendTransactionWriteRequestItem(
-    override val requestType: String,
     @SerialName("transactionManifest")
     val transactionManifest: String,
     @SerialName("version")
@@ -14,4 +13,4 @@ data class SendTransactionWriteRequestItem(
     val blobs: List<String>? = null,
     @SerialName("message")
     val message: String? = null,
-) : WalletResponseItem()
+) : WalletRequestItem()

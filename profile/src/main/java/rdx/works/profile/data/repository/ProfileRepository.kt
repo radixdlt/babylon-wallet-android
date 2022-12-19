@@ -132,13 +132,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
         val profileSnapshot = readProfileSnapshot()
-        val accounts = if (addresses.isNotEmpty()) {
-            addresses.mapNotNull { address ->
-                getAccount(address)
-            }
-        } else {
-            listOfNotNull(profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId }?.accounts?.first())
-        }
+        val accounts = getSignerAccountsForAddresses(profileSnapshot, addresses, networkId)
         val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID ?: throw Exception()
         val mnemonic = getMnemonicUseCase(factorSourceId)
         if (mnemonic.isEmpty()) {
@@ -151,6 +145,21 @@ class ProfileRepositoryImpl @Inject constructor(
             signers.add(AccountSigner(it, privateKey, listOf(privateKey)))
         }
         return signers.toList()
+    }
+
+    private suspend fun getSignerAccountsForAddresses(
+        profileSnapshot: ProfileSnapshot?,
+        addresses: List<String>,
+        networkId: Int
+    ): List<Account> {
+        val accounts = if (addresses.isNotEmpty()) {
+            addresses.mapNotNull { address ->
+                getAccount(address)
+            }
+        } else {
+            listOfNotNull(profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId }?.accounts?.first())
+        }
+        return accounts
     }
 
     private suspend fun getNetworkAndGateway(): NetworkAndGateway {
