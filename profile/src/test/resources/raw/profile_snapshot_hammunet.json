@@ -7,7 +7,7 @@
       "gatewayAPIEndpointURL" : "https://hammunet-gateway.radixdlt.com",
       "network" : {
         "id" : 34,
-        "name" : "Hammunet"
+        "name" : "hammunet"
       }
     },
     "p2pClients" : [
