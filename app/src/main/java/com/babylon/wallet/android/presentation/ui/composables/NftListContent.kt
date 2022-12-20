@@ -26,7 +26,7 @@ import com.babylon.wallet.android.presentation.model.toNftUiModel
 
 @Suppress("MutableParams", "UnstableCollections")
 @Composable
-fun NftTokenList(
+fun NftListContent(
     collapsedState: SnapshotStateList<Boolean>, // TODO use an immutable object!
     item: List<NftCollectionUiModel>,
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
@@ -92,7 +92,7 @@ fun NftTokenList(
 fun NftTokenListEmpty() {
     BabylonWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
-        NftTokenList(
+        NftListContent(
             item = emptyList(),
             collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() },
             onNftClick = { _, _ -> }
@@ -105,7 +105,7 @@ fun NftTokenListEmpty() {
 fun NftTokenListPreview() {
     BabylonWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
-        NftTokenList(
+        NftListContent(
             item = mockNftUiList.toNftUiModel(),
             collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() },
             onNftClick = { _, _ -> }
@@ -118,7 +118,7 @@ fun NftTokenListPreview() {
 fun NftTokenListExpandedPreview() {
     BabylonWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
-        NftTokenList(
+        NftListContent(
             item = mockNftUiList.toNftUiModel(),
             collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() },
             onNftClick = { _, _ -> }

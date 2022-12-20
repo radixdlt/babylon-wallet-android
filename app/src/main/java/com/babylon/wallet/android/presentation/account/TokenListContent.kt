@@ -29,7 +29,7 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 @Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ListOfTokensContent(
+fun TokenListContent(
     tokenItems: List<TokenUiModel>,
     modifier: Modifier = Modifier,
     xrdTokenUi: TokenUiModel? = null,
@@ -110,7 +110,7 @@ fun ListOfTokensContent(
 @Composable
 fun ListOfTokenItemsEmptyPreview() {
     BabylonWalletTheme {
-        ListOfTokensContent(
+        TokenListContent(
             tokenItems = emptyList(),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
@@ -123,7 +123,7 @@ fun ListOfTokenItemsEmptyPreview() {
 @Composable
 fun ListOfTokenItemsPreview() {
     BabylonWalletTheme {
-        ListOfTokensContent(
+        TokenListContent(
             tokenItems = SampleDataProvider().mockTokenUiList,
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
