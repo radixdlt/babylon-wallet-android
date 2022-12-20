@@ -6,7 +6,8 @@ data class AccountResources(
     val currencySymbol: String,
     val value: String,
     val fungibleTokens: List<OwnedFungibleToken> = emptyList(),
-    val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList()
+    val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList(),
+    val appearanceID: Int
 ) {
     fun hasXrdToken(): Boolean {
         return fungibleTokens.any {

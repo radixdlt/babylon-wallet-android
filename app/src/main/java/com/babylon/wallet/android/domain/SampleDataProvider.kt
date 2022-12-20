@@ -36,7 +36,8 @@ class SampleDataProvider {
             displayName = "My account",
             currencySymbol = "$",
             value = "10",
-            fungibleTokens = sampleFungibleTokens(address)
+            fungibleTokens = sampleFungibleTokens(address),
+            appearanceID = 1
         )
     }
 

@@ -20,8 +20,11 @@ class GetAccountResourcesUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(address: String): Result<AccountResources> {
         var accountDisplayName = ""
+        var appearanceId = -1
         profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
-            accountDisplayName = profileSnapshot.toProfile().getAccountByAddress(address)?.displayName.orEmpty()
+            val account = profileSnapshot.toProfile().getAccountByAddress(address)
+            accountDisplayName = account?.displayName.orEmpty()
+            appearanceId = account?.appearanceID ?: -1
         }
         return when (val accountResourcesResult = entityRepository.getAccountResources(address)) {
             is Result.Error -> Result.Error(accountResourcesResult.exception)
@@ -63,7 +66,8 @@ class GetAccountResourcesUseCase @Inject constructor(
                             currencySymbol = "$", // TODO replace when endpoint ready
                             value = "100",
                             fungibleTokens = fungibleTokens.toList(),
-                            nonFungibleTokens = nonFungibleTokens.toList()
+                            nonFungibleTokens = nonFungibleTokens.toList(),
+                            appearanceID = appearanceId
                         )
                     }
                 )

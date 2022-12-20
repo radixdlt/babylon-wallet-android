@@ -22,13 +22,15 @@ data class OngoingAccountsReadRequestItem(
     val numberOfAccounts: Int? = null
 ) : WalletRequestItem()
 
-fun OneTimeAccountsReadRequestItem.toDomainModel() = IncomingRequest.AccountsRequest(
+fun OneTimeAccountsReadRequestItem.toDomainModel(requestId: String) = IncomingRequest.AccountsRequest(
+    requestId = requestId,
     isOngoing = false,
     requiresProofOfOwnership = requiresProofOfOwnership,
     numberOfAccounts = numberOfAccounts ?: 1
 )
 
-fun OngoingAccountsReadRequestItem.toDomainModel() = IncomingRequest.AccountsRequest(
+fun OngoingAccountsReadRequestItem.toDomainModel(requestId: String) = IncomingRequest.AccountsRequest(
+    requestId = requestId,
     isOngoing = true,
     requiresProofOfOwnership = requiresProofOfOwnership,
     numberOfAccounts = numberOfAccounts ?: 1

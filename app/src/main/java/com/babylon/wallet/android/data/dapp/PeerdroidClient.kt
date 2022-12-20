@@ -8,9 +8,11 @@ import com.babylon.wallet.android.domain.model.ConnectionState
 import com.babylon.wallet.android.domain.model.IncomingRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
@@ -102,17 +104,26 @@ class PeerdroidClientImpl @Inject constructor(
             ?.map { decodedMessage ->
                 parseIncomingMessage(messageInJsonString = decodedMessage.message)
             }
+            ?.catch { exception ->
+                Timber.e("caught exception: ${exception.localizedMessage}")
+                if (exception is SerializationException) {
+                    emit(IncomingRequest.ParsingError)
+                } else {
+                    throw exception
+                }
+            }
             ?: emptyFlow()
     }
 
     private fun parseIncomingMessage(messageInJsonString: String): IncomingRequest {
         val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
+        val requestId = request.requestId
         val walletRequestItemsList = request.items
 
         // TODO later we should implement this in a more elegant way by parsing any kind of request
         return if (walletRequestItemsList.firstOrNull() is OneTimeAccountsReadRequestItem) {
             val accountsReadRequest = walletRequestItemsList[0]
-            (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel()
+            (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel(requestId)
         } else {
             IncomingRequest.SomeOtherRequest
         }

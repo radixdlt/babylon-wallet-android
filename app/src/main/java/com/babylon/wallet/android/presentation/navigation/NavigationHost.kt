@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
@@ -22,16 +23,15 @@ import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
-    startDestination: String
+    startDestination: String,
+    navController: NavHostController,
 ) {
-    val navController = rememberAnimatedNavController()
 
     AnimatedNavHost(
         navController = navController,
@@ -56,7 +56,7 @@ fun NavigationHost(
                 },
                 onAccountCreationClick = {
                     navController.navigate(
-                        Screen.CreateAccountDestination.route
+                        Screen.CreateAccountDestination.route()
                     )
                 }
             )
@@ -114,7 +114,7 @@ fun NavigationHost(
             CreateAccountScreen(
                 viewModel = hiltViewModel(),
                 onBackClick = { navController.navigateUp() },
-                cancelable = startDestination != Screen.CreateAccountDestination.route,
+                cancelable = startDestination != Screen.CreateAccountDestination.route(),
                 onContinueClick = { accountId, accountName, hasProfile ->
                     navController.navigate(
                         Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName, hasProfile)

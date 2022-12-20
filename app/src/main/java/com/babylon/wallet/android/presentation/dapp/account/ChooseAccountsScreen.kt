@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.dapp.account
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -9,28 +10,39 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 fun ChooseAccountsScreen(
     viewModel: ChooseAccountsViewModel,
     onBackClick: () -> Unit,
-    onContinueClick: (String) -> Unit,
+    exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit
 ) {
-    viewModel.accountsState.let { accountsState ->
-        accountsState.accounts?.let { accounts ->
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                OneOffEvent.NavigateToCompletionScreen -> {
+                    exitRequestFlow()
+                }
+            }
+        }
+    }
+
+    viewModel.state.let { state ->
+        state.accounts?.let { accounts ->
             ChooseAccountContent(
                 onBackClick = onBackClick,
                 onContinueClick = {
-                    onContinueClick(accountsState.dAppDetails?.dAppName.orEmpty())
+                    viewModel.sendAccountsResponse()
                 },
-                imageUrl = accountsState.dAppDetails?.imageUrl.orEmpty(),
-                continueButtonEnabled = accountsState.continueButtonEnabled,
+                imageUrl = state.dAppDetails?.imageUrl.orEmpty(),
+                continueButtonEnabled = state.continueButtonEnabled,
                 dAppAccounts = accounts,
                 accountSelected = viewModel::onAccountSelect
             )
         }
 
-        if (accountsState.showProgress) {
+        if (state.showProgress) {
             FullscreenCircularProgressContent()
         }
 
-        accountsState.error?.let { error ->
+        state.error?.let { error ->
             DAppAlertDialog(
                 title = stringResource(id = R.string.dapp_verification_error_title),
                 body = error,

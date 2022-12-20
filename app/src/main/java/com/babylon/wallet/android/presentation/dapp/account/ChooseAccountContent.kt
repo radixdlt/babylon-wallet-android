@@ -187,6 +187,7 @@ fun ChooseAccountContentPreview() {
                 accountAddress = "fdj209d9320",
                 accountValue = "1000",
                 accountCurrency = "$",
+                appearanceID = 1,
                 selected = true
             ),
             SelectedAccountUiState(
@@ -194,6 +195,7 @@ fun ChooseAccountContentPreview() {
                 accountAddress = "342f23f2",
                 accountValue = "2000",
                 accountCurrency = "$",
+                appearanceID = 1,
                 selected = false
             )
         ),

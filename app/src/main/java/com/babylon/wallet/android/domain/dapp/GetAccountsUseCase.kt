@@ -38,7 +38,8 @@ class GetAccountsUseCase @Inject constructor(
                                 accountName = accountResource.displayName,
                                 accountAddress = accountResource.address,
                                 accountCurrency = accountResource.currencySymbol,
-                                accountValue = accountResource.value
+                                accountValue = accountResource.value,
+                                appearanceID = accountResource.appearanceID
                             )
                         )
                     }
