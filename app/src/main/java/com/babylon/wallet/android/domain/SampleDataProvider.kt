@@ -5,8 +5,13 @@ package com.babylon.wallet.android.domain
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.FungibleToken
+import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
+import com.babylon.wallet.android.domain.model.NonFungibleToken
+import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
+import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
+import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -74,6 +79,10 @@ class SampleDataProvider {
         }
     }
 
+    val mockTokenUiList = sampleFungibleTokens().map { ownedFungibleToken ->
+        ownedFungibleToken.toTokenUiModel()
+    }
+
     fun sampleSimpleFungibleTokens(address: String = randomTokenAddress()): List<SimpleOwnedFungibleToken> {
         val tokenAddress = randomTokenAddress()
         return listOf(
@@ -94,4 +103,49 @@ class SampleDataProvider {
             )
         )
     }
+
+    val mockNftUiList = listOf(
+        OwnedNonFungibleToken(
+            owner = AccountAddress(
+                address = "owner address",
+                label = "NBA"
+            ),
+            amount = BigDecimal(1.007),
+            tokenResourceAddress = "token resource address",
+            token = NonFungibleToken(
+                address = "non fungible token address",
+                nonFungibleIdContainer = NonFungibleTokenIdContainer(
+                    ids = listOf("id1", "id2", "id3"),
+                    nextCursor = "next cursor",
+                    previousCursor = "previous cursor"
+                ),
+                metadataContainer = NonFungibleMetadataContainer(
+                    metadata = emptyMap(),
+                    nextCursor = "meta next cursor",
+                    previousCursor = "meta previous cursor"
+                )
+            )
+        ),
+        OwnedNonFungibleToken(
+            owner = AccountAddress(
+                address = "owner address",
+                label = "Space"
+            ),
+            amount = BigDecimal(1.007),
+            tokenResourceAddress = "token resource address",
+            token = NonFungibleToken(
+                address = "non fungible token address",
+                nonFungibleIdContainer = NonFungibleTokenIdContainer(
+                    ids = listOf("id1", "id2", "id3"),
+                    nextCursor = "next cursor",
+                    previousCursor = "previous cursor"
+                ),
+                metadataContainer = NonFungibleMetadataContainer(
+                    metadata = emptyMap(),
+                    nextCursor = "meta next cursor",
+                    previousCursor = "meta previous cursor"
+                )
+            )
+        )
+    )
 }

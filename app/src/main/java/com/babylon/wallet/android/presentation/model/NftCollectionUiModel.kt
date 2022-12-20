@@ -15,11 +15,11 @@ data class NftCollectionUiModel(
     )
 }
 
-fun OwnedNonFungibleToken.toNftUiModel(): NftCollectionUiModel {
-    return NftCollectionUiModel(
-        name = token?.getTokenName().orEmpty(),
-        iconUrl = token?.getImageUrl().orEmpty(),
-        nft = token?.nonFungibleIdContainer?.ids?.map {
+fun List<OwnedNonFungibleToken>.toNftUiModel() = map { ownedNonFungibleToken ->
+    NftCollectionUiModel(
+        name = ownedNonFungibleToken.token?.getTokenName().orEmpty(),
+        iconUrl = ownedNonFungibleToken.token?.getImageUrl().orEmpty(),
+        nft = ownedNonFungibleToken.token?.nonFungibleIdContainer?.ids?.map {
             NftCollectionUiModel.NftItemUiModel(id = it)
         }.orEmpty()
     )
