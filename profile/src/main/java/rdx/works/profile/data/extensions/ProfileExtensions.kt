@@ -109,5 +109,5 @@ fun deriveAddress(
     compressedPublicKey: ByteArray
 ): EntityAddress {
     // TODO For now pick any of valid account addresses to successfully fetch entityResources from backend
-    return EntityAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u")
+    return EntityAddress("account_tdx_b_1q7gu5zn5r8wpnvxjfmka7ev0npc9rsqdctdlp7rae00std3d2c")
 }
