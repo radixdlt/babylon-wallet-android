@@ -34,7 +34,7 @@ class ChooseAccountsViewModel @Inject constructor(
     private val _oneOffEvent = OneOffEventHandler<OneOffEvent>()
     val oneOffEvent by _oneOffEvent
 
-    var selectedAccounts = listOf<SelectedAccountUiState>()
+    private var selectedAccounts = listOf<SelectedAccountUiState>()
 
     init {
         viewModelScope.launch {
