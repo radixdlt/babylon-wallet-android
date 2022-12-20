@@ -81,7 +81,7 @@ interface GatewayApi {
         @Body recentTransactionsRequest: RecentTransactionsRequest
     ): Response<RecentTransactionsResponse>
 
-    @POST("transaction/submit1")
+    @POST("transaction/submit")
     suspend fun submitTransaction(
         @Body transactionSubmitRequest: TransactionSubmitRequest
     ): Response<TransactionSubmitResponse>

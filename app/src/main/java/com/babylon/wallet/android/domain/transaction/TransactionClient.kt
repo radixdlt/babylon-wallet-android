@@ -32,7 +32,7 @@ class TransactionClient @Inject constructor(
     private val engine = RadixEngineToolkit
 
     suspend fun signAndSubmitTransaction(manifest: TransactionManifest): Result<String> {
-        val networkId = profileRepository.getCurrentNetworkId()
+        val networkId = profileRepository.getCurrentNetworkId().value
         val transactionVersion = TransactionVersion.Default
         val addressesNeededToSign = getAddressesNeededToSignTransaction(transactionVersion, networkId, manifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
@@ -103,7 +103,7 @@ class TransactionClient @Inject constructor(
                 engine.convertManifest(
                     ConvertManifestRequest(
                         transactionVersion = version.intValue.toUByte(),
-                        networkId = networkId.toUByte(),
+                        networkId = networkId.value.toUByte(),
                         manifestInstructionsOutputFormat = ManifestInstructionsKind.JSON,
                         manifest = manifestJson
                     )
@@ -122,7 +122,7 @@ class TransactionClient @Inject constructor(
         if (manifestConversionResult is Result.Success) {
             val instructions = manifestConversionResult.data.instructions
             val lockFeeInstruction: Instruction = Instruction.CallMethod(
-                Value.ComponentAddress(addressToLockFee), Value.String(MethodName.LockFee.stringValue), arrayOf(
+                Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"), Value.String(MethodName.LockFee.stringValue), arrayOf(
                     Value.Decimal(
                         BigDecimal.valueOf(10)
                     )

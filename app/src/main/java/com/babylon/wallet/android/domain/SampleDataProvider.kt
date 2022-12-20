@@ -13,14 +13,13 @@ import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
+import models.Value
+import models.transaction.TransactionManifest
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.factorsources.FactorSources
-import com.babylon.wallet.android.domain.transaction.MethodName
-import models.Value
-import models.transaction.TransactionManifest
 import java.math.BigDecimal
 
 class SampleDataProvider {
@@ -86,11 +85,6 @@ class SampleDataProvider {
 
     fun sampleManifest(): TransactionManifest {
         return ManifestBuilder()
-            .callMethod(
-                Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
-                MethodName.LockFee.stringValue,
-                Value.Decimal("10")
-            )
             .callMethod(
                 Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
                 "free",

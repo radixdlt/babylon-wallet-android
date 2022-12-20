@@ -20,7 +20,7 @@ fun MnemonicWords.compressedPublicKey(
 }
 
 fun MnemonicWords.signerPrivateKey(
-    ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
+    ellipticCurveType: EllipticCurveType = EllipticCurveType.Secp256k1,
     derivationPath: String,
     bip39Passphrase: String = "",
 ): PrivateKey {

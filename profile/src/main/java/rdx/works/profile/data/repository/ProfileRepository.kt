@@ -16,6 +16,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.extensions.setNetworkAndGateway
+import rdx.works.profile.data.extensions.signerPrivateKey
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
@@ -35,15 +36,13 @@ interface ProfileRepository {
     suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot)
 
     suspend fun readProfileSnapshot(): ProfileSnapshot?
-    suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
     val p2pClient: Flow<P2PClient?>
     suspend fun getCurrentNetworkId(): NetworkId
     suspend fun setNetworkAndGateway(newUrl: String, networkName: String)
     suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean
     val profileSnapshot: Flow<ProfileSnapshot?>
     suspend fun getCurrentNetworkBaseUrl(): String
-    suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>)
-    suspend fun getCurrentNetworkId(): Int
+    suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
     suspend fun getAccounts(): List<Account>
 }
 
@@ -87,10 +86,6 @@ class ProfileRepositoryImpl @Inject constructor(
                 preferences[PROFILE_PREFERENCES_KEY] = profileContent
             }
         }
-    }
-
-    private suspend fun getNetworkAndGateway(): NetworkAndGateway {
-        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.nebunet
     }
 
     override suspend fun setNetworkAndGateway(newUrl: String, networkName: String) {
@@ -163,21 +158,17 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getNetworkAndGateway(): NetworkAndGateway {
-        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.hammunet
-    }
-
-    override suspend fun getCurrentNetworkId(): Int {
-        return getNetworkAndGateway().network.id
+        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.nebunet
     }
 
     override suspend fun getAccounts(): List<Account> {
-        return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId() }?.accounts
+        return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId().value }?.accounts
             ?: emptyList()
     }
 
     private suspend fun getAccount(address: String): Account? {
         val networkId = getCurrentNetworkId()
-        val perNetwork = readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == networkId }
+        val perNetwork = readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == networkId.value }
         return perNetwork?.accounts?.firstOrNull { it.entityAddress.address == address }
     }
 

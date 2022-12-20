@@ -17,7 +17,7 @@ fun ECKeyPair.toEnginePublicKeyModel(): models.crypto.PublicKey {
 fun PrivateKey.toEngineModel(): models.crypto.PrivateKey {
     return when (this.curveType) {
         EllipticCurveType.Secp256k1 -> models.crypto.PrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(this.key.toByteArray())
-        EllipticCurveType.Ed25519 -> models.crypto.PrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(this.key.toByteArray())
+        EllipticCurveType.Ed25519 -> throw Exception("Curve EllipticCurveType.Ed25519 not supported")
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }
