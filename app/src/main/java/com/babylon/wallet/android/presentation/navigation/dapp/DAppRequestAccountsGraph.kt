@@ -22,7 +22,7 @@ fun NavGraphBuilder.dAppRequestAccountsGraph(
             "/{${Screen.ARG_REQUEST_ID}}/{${Screen.ARG_IS_ONGOING}}" +
             "/{${Screen.ARG_REQUIRES_OWNERSHIP}}/{${Screen.ARG_NUMBER_OF_ACCOUNTS}}",
         arguments = listOf(
-            navArgument(Screen.ARG_IS_ONGOING) { type = NavType.StringType },
+            navArgument(Screen.ARG_REQUEST_ID) { type = NavType.StringType },
             navArgument(Screen.ARG_IS_ONGOING) { type = NavType.BoolType },
             navArgument(Screen.ARG_REQUIRES_OWNERSHIP) { type = NavType.BoolType },
             navArgument(Screen.ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType }
