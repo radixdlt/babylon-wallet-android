@@ -41,6 +41,7 @@ internal data class RpcMessage(
     enum class RpcMethod(val value: String) {
         OFFER("offer"),
         ANSWER("answer"),
+        ICE_CANDIDATE("iceCandidate"),
         ICE_CANDIDATES("iceCandidates");
 
         companion object {

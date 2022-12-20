@@ -9,12 +9,12 @@ import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -228,6 +228,9 @@ internal class WebSocketClientImpl(
                 RpcMessage.RpcMethod.ANSWER -> {
                     decryptAndParseAnswerPayload(responseJson)
                 }
+                RpcMessage.RpcMethod.ICE_CANDIDATE -> {
+                    decryptAndParseIceCandidatePayload(responseJson)
+                }
                 RpcMessage.RpcMethod.ICE_CANDIDATES -> {
                     decryptAndParseIceCandidatesPayload(responseJson)
                 }
@@ -257,6 +260,34 @@ internal class WebSocketClientImpl(
         return SignalingServerIncomingMessage.BrowserExtensionAnswer(
             requestId = responseJson.requestId,
             sdp = answer.sdp
+        )
+    }
+
+    private fun decryptAndParseIceCandidatePayload(
+        responseJson: SignalingServerResponse
+    ): SignalingServerIncomingMessage.BrowserExtensionIceCandidates {
+        if (responseJson.data == null || responseJson.requestId.isNullOrEmpty()) {
+            // should never reach this point!
+            throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
+        }
+
+        val message = decryptWithAes(
+            input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
+            encryptionKey = encryptionKey
+        )
+        val iceCandidate = Json.decodeFromString<RpcMessage.IceCandidatePayload>(message)
+
+        val remoteIceCandidates = RemoteIceCandidate(
+            sdpMid = iceCandidate.sdpMid,
+            sdpMLineIndex = iceCandidate.sdpMLineIndex,
+            candidate = iceCandidate.candidate
+        )
+
+        // TODO maybe later add a new data class BrowserExtensionIceCandidate to pass only one ice candidate.
+        //  At the moment it works very well this way.
+        return SignalingServerIncomingMessage.BrowserExtensionIceCandidates(
+            requestId = responseJson.requestId,
+            remoteIceCandidates = listOf(remoteIceCandidates)
         )
     }
 
