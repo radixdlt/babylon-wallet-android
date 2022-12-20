@@ -81,6 +81,19 @@ data class TokenUiModel(
     }
 }
 
+fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
+    TokenUiModel(
+        id = ownedFungibleToken.address,
+        name = ownedFungibleToken.token.getTokenName(),
+        symbol = ownedFungibleToken.token.getTokenSymbol(),
+        tokenQuantity = ownedFungibleToken.amount,
+        tokenValue = "",
+        iconUrl = ownedFungibleToken.token.getImageUrl(),
+        description = ownedFungibleToken.token.getTokenDescription(),
+        metadata = ownedFungibleToken.token.getMetadataWithoutDescription()
+    )
+}
+
 fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
     return TokenUiModel(
         id = address,

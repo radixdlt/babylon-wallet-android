@@ -71,7 +71,7 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.NftTokenList
+import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderViewScrollState
@@ -696,7 +696,7 @@ fun AssetsContent(
                 content = {
                     when (AssetTypeTab.values()[page]) {
                         AssetTypeTab.TOKEN_TAB -> {
-                            ListOfTokensContent(
+                            TokenListContent(
                                 tokenItems = fungibleTokens,
                                 xrdTokenUi = xrdToken,
                                 modifier = Modifier.fillMaxSize(),
@@ -706,7 +706,7 @@ fun AssetsContent(
                         AssetTypeTab.NTF_TAB -> {
                             val collapsedState =
                                 remember(nonFungibleTokens) { nonFungibleTokens.map { true }.toMutableStateList() }
-                            NftTokenList(
+                            NftListContent(
                                 collapsedState = collapsedState,
                                 item = nonFungibleTokens,
                                 modifier = Modifier.fillMaxSize(),

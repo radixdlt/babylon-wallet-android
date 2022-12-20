@@ -4,9 +4,10 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.dapp.DAppRepository
 import javax.inject.Inject
 
-@Suppress("MagicNumber", "UnusedPrivateMember") // TODO this is temporarily here.
+// TODO temp class to mock the dapp verification
+
+@Suppress("MagicNumber", "UnusedPrivateMember")
 class DAppRepositoryImpl @Inject constructor(
-    private val peerdroidClient: PeerdroidClient // will be used in the next PR
 //    private val gatewayClient: GatewayClient
 ) : DAppRepository {
 
@@ -29,6 +30,11 @@ class DAppRepositoryImpl @Inject constructor(
         )
     }
 }
+
+data class DAppDetailsResponse(
+    val imageUrl: String,
+    val dAppName: String
+)
 
 data class DAppResult(
     val dAppDetails: DAppDetailsResponse,

@@ -76,9 +76,8 @@ class AccountViewModel @Inject constructor(
                             isLoading = false,
                             accountAddressShortened = accountResource.address.truncatedHash(),
                             xrdToken = xrdToken?.toTokenUiModel(),
-                            fungibleTokens = fungibleTokens.map { token -> token.toTokenUiModel() }.toPersistentList(),
-                            nonFungibleTokens = accountResource.nonFungibleTokens.map { token -> token.toNftUiModel() }
-                                .toPersistentList()
+                            fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
+                            nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList()
                         )
                     }
                 }
