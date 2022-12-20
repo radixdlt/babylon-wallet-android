@@ -1,7 +1,7 @@
 package rdx.works.profile
 
+import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -11,6 +11,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -20,11 +21,14 @@ import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.EntityAddress
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.utils.hashToFactorId
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
@@ -113,10 +117,15 @@ class GenerateProfileUseCaseTest {
     fun `given profile does not exist, when generating one, verify correct data generated from mnemonic`() {
 
         testScope.runTest {
+            val mnemonicPhrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
-                onBlocking { invoke() } doReturn "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                        "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+                onBlocking { invoke() } doReturn mnemonicPhrase
             }
+
+            val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
+            val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, NetworkAndGateway.nebunet.network.networkId())
+
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
 
@@ -124,17 +133,14 @@ class GenerateProfileUseCaseTest {
 
             val profile = generateProfileUseCase("main")
 
-            val factorSourceId = "4d8b07d0220a9b838b7626dc917b96512abc629bd912a66f60c942fc5fa2f287"
-            val factorInstanceId = "873692e7b1cb8d2efa20633eedbeb9dab389cfb9ed1258b12ff4fd74dde05f02"
-
             Assert.assertEquals(
                 profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                    .first().factorSourceID, factorSourceId
+                    .first().factorSourceID, expectedFactorSourceId
             )
 
             Assert.assertEquals(
                 profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
-                    .genesisFactorInstance.factorInstanceID, factorInstanceId
+                    .genesisFactorInstance.factorInstanceID, expectedFactorInstanceId
             )
         }
     }
@@ -143,10 +149,15 @@ class GenerateProfileUseCaseTest {
     fun `given profile does not exist, when generating one, verify correct data generated from other mnemonic`() {
 
         testScope.runTest {
-
+            val mnemonicPhrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
-                onBlocking { invoke() } doReturn "noodle question hungry sail type offer grocery clay nation hello mixture forum"
+                onBlocking { invoke() } doReturn mnemonicPhrase
             }
+            val networkAndGateway = NetworkAndGateway.nebunet
+
+            val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
+            val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, networkAndGateway.network.networkId())
+
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
 
@@ -154,18 +165,34 @@ class GenerateProfileUseCaseTest {
 
             val profile = generateProfileUseCase("main")
 
-            val factorSourceId = "6e1a2745f14f9326a49d2daf8e83087920e6980630f6fc635dd566c21201934d"
-            val factorInstanceId = "3d49eb91ba3d5c56c5a13cb00da3561fa8ba68182b1c0a662f8fffbcf2eddc1e"
-
             Assert.assertEquals(
                 profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                    .first().factorSourceID, factorSourceId
+                    .first().factorSourceID, expectedFactorSourceId
             )
 
             Assert.assertEquals(
                 profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
-                    .genesisFactorInstance.factorInstanceID, factorInstanceId
+                    .genesisFactorInstance.factorInstanceID, expectedFactorInstanceId
             )
         }
     }
+
+    private fun generateFactorSourceId(mnemonicPhrase: String): String {
+        val mnemonicWords = MnemonicWords(mnemonicPhrase)
+        return FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource.deviceFactorSource(
+            mnemonicWords,
+            label = "main"
+        ).factorSourceID
+    }
+
+    private fun generateInstanceId(mnemonicPhrase: String, networkId: NetworkId): String {
+        return MnemonicWords(mnemonicPhrase)
+            .compressedPublicKey(
+                derivationPath = AccountDerivationPath(
+                    perNetwork = listOf(),
+                    networkId = networkId
+                ).path()
+            ).hashToFactorId()
+    }
+
 }
