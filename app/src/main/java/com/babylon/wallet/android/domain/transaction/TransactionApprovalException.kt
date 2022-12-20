@@ -1,3 +1,4 @@
+@file:Suppress("UnusedPrivateMember")
 package com.babylon.wallet.android.domain.transaction
 
 class TransactionApprovalException(

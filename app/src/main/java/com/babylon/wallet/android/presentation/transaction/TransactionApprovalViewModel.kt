@@ -25,10 +25,8 @@ class TransactionApprovalViewModel @Inject constructor(
         viewModelScope.launch {
             val result = transactionClient.signAndSubmitTransaction(manifest)
             result.onValue { txId ->
-
             }
             result.onError {
-
             }
         }
     }

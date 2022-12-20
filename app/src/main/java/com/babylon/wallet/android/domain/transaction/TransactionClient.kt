@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.babylon.wallet.android.domain.transaction
 
 import RadixEngineToolkit
@@ -49,8 +51,7 @@ class TransactionClient @Inject constructor(
                 val compiledNotarizedTransaction = notarizedTransaction.compile()
                 val txID = notarizedTransaction.transactionId()
                 val submitResult = submitNotarizedTransaction(
-                    txID.toHexString(),
-                    CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
+                    txID.toHexString(), CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
                 )
                 return when (submitResult) {
                     is Result.Error -> submitResult
@@ -95,7 +96,9 @@ class TransactionClient @Inject constructor(
         return NotaryAndSigners(signers.first(), signers)
     }
 
-    private suspend fun convertManifestInstructionsToJSON(manifestJson: TransactionManifest): Result<ConvertManifestResponse> {
+    private suspend fun convertManifestInstructionsToJSON(
+        manifestJson: TransactionManifest
+    ): Result<ConvertManifestResponse> {
         val version = TransactionVersion.Default
         val networkId = profileRepository.getCurrentNetworkId()
         return try {
@@ -122,9 +125,11 @@ class TransactionClient @Inject constructor(
         if (manifestConversionResult is Result.Success) {
             val instructions = manifestConversionResult.data.instructions
             val lockFeeInstruction: Instruction = Instruction.CallMethod(
-                Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"), Value.String(MethodName.LockFee.stringValue), arrayOf(
+                Value.ComponentAddress(addressToLockFee),
+                Value.String(MethodName.LockFee.stringValue),
+                arrayOf(
                     Value.Decimal(
-                        BigDecimal.valueOf(10)
+                        BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
                     )
                 )
             )
@@ -148,40 +153,47 @@ class TransactionClient @Inject constructor(
     ): Result<String> {
         val submitResult =
             transactionRepository.submitTransaction(notarizedTransaction.compiledNotarizedIntent.toHexString())
-        when (submitResult) {
+        return when (submitResult) {
             is Result.Error -> {
-                return Result.Error(
+                Result.Error(
                     TransactionApprovalException(
-                        TransactionApprovalFailureCause.SubmitNotarizedTransaction,
-                        cause = submitResult.exception
+                        TransactionApprovalFailureCause.SubmitNotarizedTransaction, cause = submitResult.exception
                     )
                 )
             }
             is Result.Success -> {
                 if (submitResult.data.duplicate) {
-                    return Result.Error(TransactionApprovalException(TransactionApprovalFailureCause.InvalidTXDuplicate))
+                    Result.Error(
+                        TransactionApprovalException(TransactionApprovalFailureCause.InvalidTXDuplicate)
+                    )
                 } else {
-                    var transactionStatus = TransactionStatus.pending
-                    var tryCount = 0
-                    var errorCount = 0
-                    val pollStrategy = PollStrategy()
-                    while (!transactionStatus.isComplete()) {
-                        tryCount++
-                        val statusCheckResult = transactionRepository.getTransactionStatus(txID)
-                        if (statusCheckResult is Result.Success) {
-                            transactionStatus = statusCheckResult.data.status
-                        } else {
-                            errorCount++
-                        }
-                        if (tryCount > pollStrategy.maxTries) {
-                            return Result.Error(TransactionApprovalException(TransactionApprovalFailureCause.FailedToPollTXStatus))
-                        }
-                        delay(pollStrategy.delayBetweenTriesMs)
-                    }
-                    return Result.Success(txID)
+                    pollTransactionStatus(txID)
                 }
             }
         }
+    }
+
+    private suspend fun pollTransactionStatus(txID: String): Result<String> {
+        var transactionStatus = TransactionStatus.pending
+        var tryCount = 0
+        var errorCount = 0
+        val pollStrategy = PollStrategy()
+        while (!transactionStatus.isComplete()) {
+            tryCount++
+            val statusCheckResult = transactionRepository.getTransactionStatus(txID)
+            if (statusCheckResult is Result.Success) {
+                transactionStatus = statusCheckResult.data.status
+            } else {
+                errorCount++
+            }
+            if (tryCount > pollStrategy.maxTries) {
+                return Result.Error(
+                    TransactionApprovalException(TransactionApprovalFailureCause.FailedToPollTXStatus)
+                )
+            }
+            delay(pollStrategy.delayBetweenTriesMs)
+        }
+        return Result.Success(txID)
     }
 
     private fun getAddressesNeededToSignTransaction(
@@ -192,35 +204,34 @@ class TransactionClient @Inject constructor(
         val addressesNeededToSign = mutableListOf<String>()
         val convertedManifest = engine.convertManifest(
             ConvertManifestRequest(
-                transactionVersion.intValue.toUByte(),
-                networkId.toUByte(),
-                ManifestInstructionsKind.JSON,
-                manifest
+                transactionVersion.intValue.toUByte(), networkId.toUByte(), ManifestInstructionsKind.JSON, manifest
             )
         )
         when (val instructions = convertedManifest.instructions) {
             is ManifestInstructions.JSONInstructions -> {
-                instructions.instructions.filterIsInstance<Instruction.CallMethod>().forEach {
-                    val componentAddress = when (val callMethodReceiver = it.componentAddress) {
+                instructions.instructions.filterIsInstance<Instruction.CallMethod>().forEach { callMethod ->
+                    val componentAddress = when (val callMethodReceiver = callMethod.componentAddress) {
                         is CallMethodReceiver.Component -> null
-                        is CallMethodReceiver.ComponentAddress -> callMethodReceiver.componentAddress.address.componentAddress
+                        is CallMethodReceiver.ComponentAddress -> {
+                            callMethodReceiver.componentAddress.address.componentAddress
+                        }
                     }
                     val isAccountComponent = componentAddress?.contains("account") == true
                     val isMethodThatRequiresAuth =
-                        MethodName.methodsThatRequireAuth().map { it.stringValue }.contains(it.methodName.value)
+                        MethodName.methodsThatRequireAuth().map { name -> name.stringValue }
+                            .contains(callMethod.methodName.value)
                     if (isAccountComponent && isMethodThatRequiresAuth && componentAddress != null) {
                         addressesNeededToSign.add(componentAddress)
                     }
                 }
             }
             is ManifestInstructions.StringInstructions -> {
-
             }
-
         }
         return addressesNeededToSign.toList()
     }
 
+    @Suppress("MagicNumber")
     private fun generateNonce(): ULong {
         val random = SecureRandom()
         val nonceBytes = ByteArray(ULong.SIZE_BYTES)
@@ -231,5 +242,4 @@ class TransactionClient @Inject constructor(
         }
         return nonce
     }
-
 }

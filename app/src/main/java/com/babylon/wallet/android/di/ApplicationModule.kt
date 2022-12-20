@@ -50,5 +50,4 @@ object ApplicationModule {
     ): DataStore<Preferences> {
         return context.userDataStore
     }
-
 }

@@ -13,7 +13,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import models.transaction.TransactionManifest
 
 @Composable
 fun TransactionApprovalScreen(
@@ -21,11 +20,9 @@ fun TransactionApprovalScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    val state = viewModel.state
+    viewModel.state
     TransactionApprovalContent(
         onBackClick = onBackClick,
-        manifest = state.manifest,
         modifier = modifier
             .systemBarsPadding()
             .fillMaxSize()
@@ -36,7 +33,6 @@ fun TransactionApprovalScreen(
 @Composable
 private fun TransactionApprovalContent(
     onBackClick: () -> Unit,
-    manifest: TransactionManifest?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -57,7 +53,6 @@ fun TransactionApprovalContentPreview() {
     BabylonWalletTheme {
         TransactionApprovalContent(
             onBackClick = {},
-            manifest = null,
         )
     }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.profile.data.repository
 
 import androidx.datastore.core.DataStore
@@ -52,22 +54,21 @@ class ProfileRepositoryImpl @Inject constructor(
     private val getMnemonicUseCase: GetMnemonicUseCase
 ) : ProfileRepository {
 
-    override val p2pClient: Flow<P2PClient?> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }.map { preferences ->
-            val profileJsonString = preferences[PROFILE_PREFERENCES_KEY] ?: ""
-            if (profileJsonString.isNotEmpty()) {
-                val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileJsonString)
-                profileSnapshot.toProfile().appPreferences.p2pClients.firstOrNull()
-            } else { // profile doesn't exist
-                null
-            }
+    override val p2pClient: Flow<P2PClient?> = dataStore.data.catch { exception ->
+        if (exception is IOException) {
+            emit(emptyPreferences())
+        } else {
+            throw exception
         }
+    }.map { preferences ->
+        val profileJsonString = preferences[PROFILE_PREFERENCES_KEY] ?: ""
+        if (profileJsonString.isNotEmpty()) {
+            val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileJsonString)
+            profileSnapshot.toProfile().appPreferences.p2pClients.firstOrNull()
+        } else { // profile doesn't exist
+            null
+        }
+    }
 
     override val profileSnapshot: Flow<ProfileSnapshot?> = dataStore.data
         .map { preferences ->
@@ -128,11 +129,10 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
         val profileSnapshot = readProfileSnapshot()
         val accounts = getSignerAccountsForAddresses(profileSnapshot, addresses, networkId)
-        val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID ?: throw Exception()
+        val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID
+        assert(factorSourceId != null)
         val mnemonic = getMnemonicUseCase(factorSourceId)
-        if (mnemonic.isEmpty()) {
-            throw Exception()
-        }
+        assert(mnemonic.isNotEmpty())
         val mnemonicWords = MnemonicWords(mnemonic)
         val signers = mutableListOf<AccountSigner>()
         accounts.forEach {
@@ -162,8 +162,8 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAccounts(): List<Account> {
-        return readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == getCurrentNetworkId().value }?.accounts
-            ?: emptyList()
+        return readProfileSnapshot()?.perNetwork
+            ?.firstOrNull { it.networkID == getCurrentNetworkId().value }?.accounts.orEmpty()
     }
 
     private suspend fun getAccount(address: String): Account? {
