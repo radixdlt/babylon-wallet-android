@@ -8,8 +8,6 @@ import org.junit.Test
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
-import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.apppreferences.Network
