@@ -46,10 +46,6 @@ class ProfileTest {
         val networkId = NetworkId.Hammunet
         val firstAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityDerivationPath = AccountDerivationPath(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             mnemonic = mnemonic,
             factorSources = profile.factorSources,
@@ -68,10 +64,6 @@ class ProfileTest {
             fields = listOf(
                 PersonaField.init(PersonaField.PersonaFieldKind.FirstName, "Alice"),
                 PersonaField.init(PersonaField.PersonaFieldKind.LastName, "Anderson")
-            ),
-            entityDerivationPath = IdentityDerivationPath(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
@@ -116,10 +108,6 @@ class ProfileTest {
 
         val secondAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityDerivationPath = AccountDerivationPath(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             mnemonic = mnemonic,
             factorSources = profile.factorSources,
@@ -132,10 +120,6 @@ class ProfileTest {
 
         val thirdAccount = createNewVirtualAccount(
             displayName = "Third",
-            entityDerivationPath = AccountDerivationPath(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             mnemonic = mnemonic,
             factorSources = profile.factorSources,
@@ -153,10 +137,6 @@ class ProfileTest {
                 PersonaField.init(PersonaField.PersonaFieldKind.FirstName, "Jane"),
                 PersonaField.init(PersonaField.PersonaFieldKind.LastName, "Incognitoson")
             ),
-            entityDerivationPath = IdentityDerivationPath(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
-            ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
             factorSources = profile.factorSources,
@@ -172,10 +152,6 @@ class ProfileTest {
             fields = listOf(
                 PersonaField.init(PersonaField.PersonaFieldKind.FirstName, "Maria"),
                 PersonaField.init(PersonaField.PersonaFieldKind.LastName, "Publicson")
-            ),
-            entityDerivationPath = IdentityDerivationPath(
-                perNetwork = profile.perNetwork,
-                networkId = networkId
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
@@ -236,9 +212,8 @@ class ProfileTest {
             hammunetProfile.perNetwork.first().accounts.count())
 
         // 1st
-        //TODO derive addresses from engine toolkit and test properly
-//        Assert.assertEquals(profile.perNetwork.first().accounts.first().address.address,
-//            hammunetProfile.perNetwork.first().accounts.first().address.address)
+        Assert.assertEquals(profile.perNetwork.first().accounts.first().entityAddress.address,
+            hammunetProfile.perNetwork.first().accounts.first().entityAddress.address)
 
         Assert.assertEquals(profile.perNetwork.first().accounts.first().displayName,
             hammunetProfile.perNetwork.first().accounts.first().displayName)
@@ -279,6 +254,9 @@ class ProfileTest {
                 .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
 
         //2nd
+        Assert.assertEquals(profile.perNetwork.first().accounts[1].entityAddress.address,
+            hammunetProfile.perNetwork.first().accounts[1].entityAddress.address)
+
         Assert.assertEquals(profile.perNetwork.first().accounts[1].displayName,
             hammunetProfile.perNetwork.first().accounts[1].displayName)
 
@@ -313,6 +291,9 @@ class ProfileTest {
                 .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
 
         //3rd
+        Assert.assertEquals(profile.perNetwork.first().accounts[2].entityAddress.address,
+            hammunetProfile.perNetwork.first().accounts[2].entityAddress.address)
+
         Assert.assertEquals(profile.perNetwork.first().accounts[2].displayName,
             hammunetProfile.perNetwork.first().accounts[2].displayName)
 
@@ -355,9 +336,8 @@ class ProfileTest {
         Assert.assertEquals(profile.perNetwork.first().personas.first().index,
             hammunetProfile.perNetwork.first().personas.first().index)
 
-        //TODO derive addresses from engine toolkit and test properly
-//        Assert.assertEquals(profile.perNetwork.first().personas.first().address,
-//            hammunetProfile.perNetwork.first().personas.first().address)
+        Assert.assertEquals(profile.perNetwork.first().personas.first().entityAddress.address,
+            hammunetProfile.perNetwork.first().personas.first().entityAddress.address)
 
         Assert.assertEquals(profile.perNetwork.first().personas.first().derivationPath,
             hammunetProfile.perNetwork.first().personas.first().derivationPath)
