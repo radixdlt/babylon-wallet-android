@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import timber.log.Timber
@@ -57,6 +58,9 @@ fun WalletApp(
                 Timber.d("Failed to parse incoming request")
             }
             MessageFromDataChannel.IncomingRequest.SomeOtherRequest -> {}
+        }
+        is IncomingRequest.TransactionWriteRequest -> {
+            navController.transactionApproval()
         }
     }
 }

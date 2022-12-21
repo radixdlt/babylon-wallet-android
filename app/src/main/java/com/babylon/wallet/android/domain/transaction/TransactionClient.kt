@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import kotlinx.coroutines.delay
@@ -33,17 +34,28 @@ class TransactionClient @Inject constructor(
 
     private val engine = RadixEngineToolkit
 
-    suspend fun signAndSubmitTransaction(manifest: TransactionManifest): Result<String> {
+    suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId().value
+        val jsonTransactionManifest = engine.convertManifest(
+            ConvertManifestRequest(
+                manifestData.version.toUByte(),
+                networkId.toUByte(),
+                ManifestInstructionsKind.JSON,
+                TransactionManifest(
+                    ManifestInstructions.StringInstructions(manifestData.instructions),
+                    manifestData.blobs.toTypedArray()
+                )
+            )
+        )
         val transactionVersion = TransactionVersion.Default
-        val addressesNeededToSign = getAddressesNeededToSignTransaction(transactionVersion, networkId, manifest)
+        val addressesNeededToSign = getAddressesNeededToSignTransaction(transactionVersion, networkId, jsonTransactionManifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> return transactionHeaderResult
             is Result.Success -> {
                 val accountAddressToLockFee =
                     addressesNeededToSign.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
-                val manifestWithTransactionFee = addLockFeeInstructionToManifest(manifest, accountAddressToLockFee)
+                val manifestWithTransactionFee = addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
                 val notarizedTransactionBuilder =
                     TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
                 val notarizedTransaction =

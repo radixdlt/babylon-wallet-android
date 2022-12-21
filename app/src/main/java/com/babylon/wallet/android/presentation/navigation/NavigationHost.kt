@@ -20,7 +20,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_S
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalScreen
+import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -118,20 +118,9 @@ fun NavigationHost(
                 }
             )
         }
-        composable(
-            route = Screen.TransactionApprovalDestination.route,
-            enterTransition = {
-                slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
-            },
-            exitTransition = {
-                slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
-            }
-        ) {
-            TransactionApprovalScreen(
-                viewModel = hiltViewModel(),
-                onBackClick = { navController.navigateUp() },
-            )
-        }
+        transactionApprovalScreen(onBackClick = {
+            navController.popBackStack()
+        })
         composable(
             route = Screen.AccountCompletionDestination.route +
                 "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
