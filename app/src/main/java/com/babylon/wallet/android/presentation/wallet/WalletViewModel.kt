@@ -55,18 +55,15 @@ class WalletViewModel @Inject constructor(
             }
         }.awaitAll()
 
-        results.forEachIndexed { index, accountResourcesList ->
+        results.forEach { accountResourcesList ->
             accountResourcesList.onError { error ->
                 _walletUiState.update { it.copy(error = UiMessage(error = error), isLoading = false) }
             }
             accountResourcesList.onValue { accountResources ->
-                // TODO this is temporary because we use only one account address therefore data which we fetch
-                // would be the same. Therefore we fetch display name from the profile instead
-                val accountName = accounts[index].displayName.orEmpty()
                 accountsResourcesList.add(
                     AccountResources(
                         address = accountResources.address,
-                        displayName = accountName,
+                        displayName = accountResources.displayName,
                         currencySymbol = accountResources.currencySymbol,
                         value = accountResources.value,
                         fungibleTokens = accountResources.fungibleTokens,

@@ -40,7 +40,7 @@
       "accounts" : [
         {
           "address" : {
-            "address" : "account_tdx_22_1q6yhfyz7rk6mhmrk4ssp55xt48pejcwravhyxuzdjh2q05ejck"
+            "address" : "account_tdx_22_1q7yhfyz7rk6mhmrk4ssp55xt48pejcwravhyxuzdjh2qaf5vky"
           },
           "appearanceID" : 0,
           "derivationPath" : "m/44H/1022H/34H/525H/0H/1238H",
@@ -70,7 +70,7 @@
         },
         {
           "address" : {
-            "address" : "account_tdx_22_1q6dqkuwwcn0k3c2ekep7tnltpa0myescyy6lu945w4aq2djh2t"
+            "address" : "account_tdx_22_1q7dqkuwwcn0k3c2ekep7tnltpa0myescyy6lu945w4aqcslfye"
           },
           "appearanceID" : 1,
           "derivationPath" : "m/44H/1022H/34H/525H/1H/1238H",
@@ -100,7 +100,7 @@
         },
         {
           "address" : {
-            "address" : "account_tdx_22_1qe4cww59l9hgrx6576esvrad28fteuxfl79xkksmcl0qk8tnxs"
+            "address" : "account_tdx_22_1qa4cww59l9hgrx6576esvrad28fteuxfl79xkksmcl0qy6xdgz"
           },
           "appearanceID" : 2,
           "derivationPath" : "m/44H/1022H/34H/525H/2H/1238H",
@@ -136,7 +136,7 @@
       "personas" : [
         {
           "address" : {
-            "address" : "account_tdx_22_1qe803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvsh69fxt"
+            "address" : "account_tdx_22_1qa803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvs98ghge"
           },
           "derivationPath" : "m/44H/1022H/34H/618H/0H/1238H",
           "displayName" : "Mrs Incognito",

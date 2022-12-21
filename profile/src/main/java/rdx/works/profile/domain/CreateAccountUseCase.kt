@@ -9,7 +9,6 @@ import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
-import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -42,10 +41,6 @@ class CreateAccountUseCase @Inject constructor(
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
-                entityDerivationPath = AccountDerivationPath(
-                    perNetwork = profile.perNetwork,
-                    networkId = networkID
-                ),
                 entityIndex = profile.perNetwork.accountsPerNetworkCount(networkID),
                 mnemonic = MnemonicWords(
                     phrase = generateMnemonicUseCase(
@@ -54,7 +49,8 @@ class CreateAccountUseCase @Inject constructor(
                             .first().factorSourceID
                     )
                 ),
-                factorSources = profile.factorSources
+                factorSources = profile.factorSources,
+                networkId = networkID
             )
 
             // Add account to the profile

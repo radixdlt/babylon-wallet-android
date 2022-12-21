@@ -7,7 +7,6 @@ import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.model.pernetwork.Persona
 import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.createNewPersona
-import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
@@ -37,10 +36,6 @@ class CreatePersonaUseCase @Inject constructor(
             val newPersona = createNewPersona(
                 displayName = displayName,
                 fields = fields,
-                entityDerivationPath = AccountDerivationPath(
-                    perNetwork = profile.perNetwork,
-                    networkId = networkID
-                ),
                 entityIndex = profile.perNetwork.personasPerNetworkCount(networkID),
                 mnemonicWords = MnemonicWords(
                     phrase = generateMnemonicUseCase(
@@ -49,7 +44,8 @@ class CreatePersonaUseCase @Inject constructor(
                             .first().factorSourceID
                     )
                 ),
-                factorSources = profile.factorSources
+                factorSources = profile.factorSources,
+                networkId = networkID
             )
 
             // Add persona to the profile

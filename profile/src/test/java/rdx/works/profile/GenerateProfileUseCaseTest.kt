@@ -189,7 +189,7 @@ class GenerateProfileUseCaseTest {
         return MnemonicWords(mnemonicPhrase)
             .compressedPublicKey(
                 derivationPath = AccountDerivationPath(
-                    perNetwork = listOf(),
+                    entityIndex = 0,
                     networkId = networkId
                 ).path()
             ).hashToFactorId()
