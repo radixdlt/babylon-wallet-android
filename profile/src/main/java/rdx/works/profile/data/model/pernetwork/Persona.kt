@@ -9,7 +9,7 @@ import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
-import rdx.works.profile.data.repository.EntityDerivationPath
+import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
 
 /**
@@ -61,13 +61,15 @@ data class Persona(
 fun createNewPersona(
     displayName: String,
     fields: List<PersonaField>,
-    entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
     mnemonicWords: MnemonicWords,
     factorSources: FactorSources,
     networkId: NetworkId
 ): Persona {
-    val derivationPath = entityDerivationPath.path()
+    val derivationPath = IdentityDerivationPath(
+        entityIndex = entityIndex,
+        networkId = networkId
+    ).path()
 
     val compressedPublicKey = mnemonicWords.compressedPublicKey(
         derivationPath = derivationPath

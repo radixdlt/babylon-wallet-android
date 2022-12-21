@@ -1,8 +1,5 @@
 package rdx.works.profile.data.repository
 
-import rdx.works.profile.data.model.pernetwork.PerNetwork
-import rdx.works.profile.data.utils.accountsPerNetworkCount
-import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.AccountHDDerivationPath
 import rdx.works.profile.derivation.IdentityHDDerivationPath
 import rdx.works.profile.derivation.model.KeyType
@@ -13,12 +10,11 @@ interface EntityDerivationPath {
 }
 
 class AccountDerivationPath(
-    val perNetwork: List<PerNetwork>,
-    val networkId: NetworkId
+    private val entityIndex: Int,
+    private val networkId: NetworkId
 ) : EntityDerivationPath {
 
     override fun path(): String {
-        val entityIndex = perNetwork.accountsPerNetworkCount(networkId)
         return AccountHDDerivationPath(
             networkId = networkId,
             accountIndex = entityIndex,
@@ -28,12 +24,11 @@ class AccountDerivationPath(
 }
 
 class IdentityDerivationPath(
-    val perNetwork: List<PerNetwork>,
-    val networkId: NetworkId
+    private val entityIndex: Int,
+    private val networkId: NetworkId
 ) : EntityDerivationPath {
 
     override fun path(): String {
-        val entityIndex = perNetwork.personasPerNetworkCount(networkId)
         return IdentityHDDerivationPath(
             networkId = networkId,
             identityIndex = entityIndex,

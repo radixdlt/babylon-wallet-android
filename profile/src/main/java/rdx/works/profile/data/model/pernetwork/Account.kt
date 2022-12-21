@@ -10,7 +10,6 @@ import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
 import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.EntityDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
 
 @Serializable
@@ -86,10 +85,6 @@ data class Account(
         ): Account {
             return createNewVirtualAccount(
                 displayName = displayName,
-                entityDerivationPath = AccountDerivationPath(
-                    perNetwork = emptyList(),
-                    networkId = networkId
-                ),
                 entityIndex = 0,
                 mnemonic = mnemonic,
                 factorSources = factorSources,
@@ -101,13 +96,15 @@ data class Account(
 
 fun createNewVirtualAccount(
     displayName: String,
-    entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
     mnemonic: MnemonicWords,
     factorSources: FactorSources,
     networkId: NetworkId
 ): Account {
-    val derivationPath = entityDerivationPath.path()
+    val derivationPath = AccountDerivationPath(
+        entityIndex = entityIndex,
+        networkId = networkId
+    ).path()
 
     val compressedPublicKey = mnemonic.compressedPublicKey(
         derivationPath = derivationPath
