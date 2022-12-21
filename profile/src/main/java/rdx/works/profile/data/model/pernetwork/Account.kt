@@ -1,8 +1,10 @@
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.extensions.removeLeadingZero
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import models.crypto.PublicKey
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.model.factorsources.FactorSources
@@ -90,7 +92,8 @@ data class Account(
                 ),
                 entityIndex = 0,
                 mnemonic = mnemonic,
-                factorSources = factorSources
+                factorSources = factorSources,
+                networkId = networkId
             )
         }
     }
@@ -101,14 +104,21 @@ fun createNewVirtualAccount(
     entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
     mnemonic: MnemonicWords,
-    factorSources: FactorSources
+    factorSources: FactorSources,
+    networkId: NetworkId
 ): Account {
     val derivationPath = entityDerivationPath.path()
 
     val compressedPublicKey = mnemonic.compressedPublicKey(
         derivationPath = derivationPath
     )
-    val address = deriveAddress(compressedPublicKey)
+    val publicKey = PublicKey.EddsaEd25519(
+        compressedPublicKey.removeLeadingZero()
+    )
+    val address = deriveAddress(
+        networkID = networkId,
+        publicKey = publicKey
+    )
 
     val unsecuredSecurityState = unsecuredSecurityState(
         compressedPublicKey = compressedPublicKey,

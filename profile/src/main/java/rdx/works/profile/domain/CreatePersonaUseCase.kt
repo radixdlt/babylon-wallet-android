@@ -49,7 +49,8 @@ class CreatePersonaUseCase @Inject constructor(
                             .first().factorSourceID
                     )
                 ),
-                factorSources = profile.factorSources
+                factorSources = profile.factorSources,
+                networkId = networkID
             )
 
             // Add persona to the profile

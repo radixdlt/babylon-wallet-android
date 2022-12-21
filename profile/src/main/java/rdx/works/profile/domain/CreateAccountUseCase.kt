@@ -54,7 +54,8 @@ class CreateAccountUseCase @Inject constructor(
                             .first().factorSourceID
                     )
                 ),
-                factorSources = profile.factorSources
+                factorSources = profile.factorSources,
+                networkId = networkID
             )
 
             // Add account to the profile

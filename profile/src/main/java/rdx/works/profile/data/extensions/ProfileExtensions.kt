@@ -1,5 +1,7 @@
 package rdx.works.profile.data.extensions
 
+import models.crypto.PublicKey
+import models.request.DeriveVirtualAccountAddressRequest
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
@@ -101,13 +103,12 @@ fun Profile.addP2PClient(
     )
 }
 
-/**
- * TODO Once engine toolkit ready, we will used it derive address, for now we use mocked account address for hammunet
- */
 @SuppressWarnings("UnusedPrivateMember")
 fun deriveAddress(
-    compressedPublicKey: ByteArray
+    networkID: NetworkId,
+    publicKey: PublicKey
 ): EntityAddress {
-    // TODO For now pick any of valid account addresses to successfully fetch entityResources from backend
-    return EntityAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u")
+    val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
+    val response = RadixEngineToolkit.deriveVirtualAccountAddress(request)
+    return EntityAddress(response.virtualAccountAddress.address.componentAddress)
 }

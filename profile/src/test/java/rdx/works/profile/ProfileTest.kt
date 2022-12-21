@@ -52,7 +52,8 @@ class ProfileTest {
             ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             mnemonic = mnemonic,
-            factorSources = profile.factorSources
+            factorSources = profile.factorSources,
+            networkId = networkId
         )
 
         var updatedProfile = profile.addAccountOnNetwork(
@@ -74,7 +75,8 @@ class ProfileTest {
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
-            factorSources = profile.factorSources
+            factorSources = profile.factorSources,
+            networkId = networkId
         )
 
         updatedProfile = updatedProfile.addPersonaOnNetwork(
@@ -120,7 +122,8 @@ class ProfileTest {
             ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             mnemonic = mnemonic,
-            factorSources = profile.factorSources
+            factorSources = profile.factorSources,
+            networkId = networkId
         )
         profile = profile.addAccountOnNetwork(
             account = secondAccount,
@@ -135,7 +138,8 @@ class ProfileTest {
             ),
             entityIndex = profile.perNetwork.accountsPerNetworkCount(networkId),
             mnemonic = mnemonic,
-            factorSources = profile.factorSources
+            factorSources = profile.factorSources,
+            networkId = networkId
         )
         profile = profile.addAccountOnNetwork(
             account = thirdAccount,
@@ -155,7 +159,8 @@ class ProfileTest {
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
-            factorSources = profile.factorSources
+            factorSources = profile.factorSources,
+            networkId = networkId
         )
         profile = profile.addPersonaOnNetwork(
             persona = firstPersona,
@@ -174,7 +179,8 @@ class ProfileTest {
             ),
             entityIndex = profile.perNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
-            factorSources = profile.factorSources
+            factorSources = profile.factorSources,
+            networkId = networkId
         )
         profile = profile.addPersonaOnNetwork(
             persona = secondPersona,

@@ -48,6 +48,7 @@ dependencies {
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
 
     implementation 'com.radixdlt:slip10:60ebe566'
+    implementation 'com.radixdlt:kotlin-engine-toolkit:1.9-snapshot'
 
     testImplementation "junit:junit:4.13.2"
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.7.21'

@@ -1,13 +1,16 @@
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.extensions.removeLeadingZero
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import models.crypto.PublicKey
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.SecurityState.Unsecured.Companion.unsecuredSecurityState
 import rdx.works.profile.data.repository.EntityDerivationPath
+import rdx.works.profile.derivation.model.NetworkId
 
 /**
  * Persona is very similar to Account but it adds fields
@@ -61,14 +64,21 @@ fun createNewPersona(
     entityDerivationPath: EntityDerivationPath,
     entityIndex: Int,
     mnemonicWords: MnemonicWords,
-    factorSources: FactorSources
+    factorSources: FactorSources,
+    networkId: NetworkId
 ): Persona {
     val derivationPath = entityDerivationPath.path()
 
     val compressedPublicKey = mnemonicWords.compressedPublicKey(
         derivationPath = derivationPath
     )
-    val address = deriveAddress(compressedPublicKey)
+    val publicKey = PublicKey.EddsaEd25519(
+        compressedPublicKey.removeLeadingZero()
+    )
+    val address = deriveAddress(
+        networkID = networkId,
+        publicKey = publicKey
+    )
 
     val unsecuredSecurityState = unsecuredSecurityState(
         compressedPublicKey = compressedPublicKey,
