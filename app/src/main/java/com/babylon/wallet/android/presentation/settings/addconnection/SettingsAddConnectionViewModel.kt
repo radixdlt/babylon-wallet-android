@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.addconnection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.domain.model.ConnectionState
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -89,7 +89,9 @@ class SettingsAddConnectionViewModel @Inject constructor(
             peerdroidClient
                 .listenForStateEvents()
                 .collect { connectionState ->
-                    if (connectionState == ConnectionState.CLOSE || connectionState == ConnectionState.CLOSING) {
+                    if (connectionState == ConnectionStateChanged.CLOSE ||
+                        connectionState == ConnectionStateChanged.CLOSING
+                    ) {
                         saveConnectionPassword()
                     }
                 }
