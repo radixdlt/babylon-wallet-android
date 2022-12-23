@@ -59,7 +59,6 @@ sealed class Screen(override val route: String, override val args: String = "") 
         const val ARG_NETWORK_NAME = "arg_network_name"
         const val ARG_SWITCH_NETWORK = "arg_switch_network"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
-        const val ARG_GRADIENT_INDEX = "arg_gradient_index"
         const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"
         const val ARG_REQUEST_ID = "arg_request_id"

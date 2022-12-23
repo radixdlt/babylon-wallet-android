@@ -52,7 +52,7 @@ fun WalletScreen(
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit = { _, _, _ -> },
+    onAccountClick: (accountId: String, accountName: String, ) -> Unit = { _, _ -> },
     onAccountCreationClick: () -> Unit
 ) {
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()
@@ -77,7 +77,7 @@ fun WalletScreen(
 @Composable
 private fun WalletScreenContent(
     onMenuClick: () -> Unit,
-    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
+    onAccountClick: (accountId: String, accountName: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
@@ -144,7 +144,7 @@ private fun WalletScreenContent(
 private fun WalletAccountList(
     wallet: WalletData?,
     onCopyAccountAddressClick: (String) -> Unit,
-    onAccountClick: (accountId: String, accountName: String, gradientIndex: Int) -> Unit,
+    onAccountClick: (accountId: String, accountName: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
@@ -186,9 +186,8 @@ private fun WalletAccountList(
                 }
             }
         }
-        itemsIndexed(accounts) { index, account ->
-            val gradientIndex = index % AccountGradientList.size
-            val gradientColors = AccountGradientList[gradientIndex]
+        itemsIndexed(accounts) { _, account ->
+            val gradientColors = AccountGradientList[account.appearanceID]
             AccountCardView(
                 hashValue = account.address,
                 accountName = account.displayName,
@@ -201,7 +200,7 @@ private fun WalletAccountList(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .clickable {
-                        onAccountClick(account.address, account.address, gradientIndex)
+                        onAccountClick(account.address, account.address)
                     }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -232,7 +231,7 @@ fun WalletContentPreview() {
         with(SampleDataProvider()) {
             WalletScreenContent(
                 onMenuClick = {},
-                onAccountClick = { _, _, _ -> },
+                onAccountClick = { _, _ -> },
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },

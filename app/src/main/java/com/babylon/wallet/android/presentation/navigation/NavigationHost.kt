@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfir
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_URL
@@ -53,9 +52,9 @@ fun NavigationHost(
                 onMenuClick = {
                     navController.navigate(Screen.SettingsAllDestination.route)
                 },
-                onAccountClick = { accountId, accountName, gradientIndex ->
+                onAccountClick = { accountId, accountName ->
                     navController.navigate(
-                        Screen.AccountDestination.routeWithArgs(accountId, accountName, gradientIndex)
+                        Screen.AccountDestination.routeWithArgs(accountId, accountName)
                     )
                 },
                 onAccountCreationClick = {
@@ -66,11 +65,10 @@ fun NavigationHost(
             )
         }
         composable(
-            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_GRADIENT_INDEX}",
+            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
                 navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
-                navArgument(ARG_GRADIENT_INDEX) { type = NavType.IntType }
             ),
             enterTransition = {
                 slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
@@ -85,15 +83,18 @@ fun NavigationHost(
                 ExitTransition.None
             }
         ) { navBackStackEntry ->
+            val shouldRefresh = navBackStackEntry.receiveDataOnce<Boolean>(key = "free")
             AccountScreen(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
                 onAccountPreferenceClick = { address ->
                     navController.accountPreference(address = address)
+                },
+                shouldRefresh = shouldRefresh,
+                onBackClick = {
+                    navController.navigateUp()
                 }
-            ) {
-                navController.navigateUp()
-            }
+            )
         }
         composable(
             route = Screen.CreateAccountDestination.route(),
@@ -132,12 +133,15 @@ fun NavigationHost(
         transactionApprovalScreen(onBackClick = {
             navController.popBackStack()
         })
-        accountPreferenceScreen(onBackClick = {
+        accountPreferenceScreen(onBackClick = { gotFreeXrd ->
+            navController.passDataBack(Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+                "free",
+                gotFreeXrd)
             navController.popBackStack()
         })
         composable(
             route = Screen.AccountCompletionDestination.route +
-                "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
+                    "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
                 navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },

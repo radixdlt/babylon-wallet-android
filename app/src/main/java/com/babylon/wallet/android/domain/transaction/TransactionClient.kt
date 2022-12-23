@@ -60,12 +60,18 @@ class TransactionClient @Inject constructor(
 
     suspend fun getFreeXrd(includeLockFeeInstruction: Boolean, address: String): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId()
-        val knownAddresses = KnownAddresses.addressMap.get(networkId)
+        val knownAddresses = KnownAddresses.addressMap[networkId]
         return if (knownAddresses != null) {
             val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)
             when (val epochResult = transactionRepository.getLedgerEpoch()) {
                 is Result.Error -> epochResult
-                is Result.Success -> signAndSubmitTransaction(manifest, true)
+                is Result.Success -> {
+                    val submitResult = signAndSubmitTransaction(manifest, true)
+                    if (submitResult is Result.Success) {
+                        preferencesManager.updateEpoch(address, epochResult.data)
+                    }
+                    return submitResult
+                }
             }
         } else {
             Result.Error()
