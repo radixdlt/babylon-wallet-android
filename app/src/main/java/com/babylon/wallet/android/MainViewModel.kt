@@ -87,7 +87,7 @@ class MainViewModel @Inject constructor(
                 .collect { message ->
                     if (message is ConnectionStateChanged) {
                         if (message == ConnectionStateChanged.CLOSING || message == ConnectionStateChanged.CLOSE) {
-                            restartPeerdroid()
+                            restartConnectionToDapp()
                         }
                     } else if (message is IncomingRequest && message != IncomingRequest.None) {
                         incomingRequest = message
@@ -96,7 +96,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun restartPeerdroid() {
+    private fun restartConnectionToDapp() {
         viewModelScope.launch {
             incomingRequestsJob?.cancel()
             peerdroidClient.close()
