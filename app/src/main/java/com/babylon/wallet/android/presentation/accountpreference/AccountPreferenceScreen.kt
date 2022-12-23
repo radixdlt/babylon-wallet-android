@@ -7,9 +7,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
@@ -18,6 +24,8 @@ import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 
 @Composable
 fun AccountPreferenceScreen(
@@ -35,7 +43,8 @@ fun AccountPreferenceScreen(
             .background(RadixTheme.colors.defaultBackground),
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
         canUseFaucet = state.canUseFaucet,
-        loading = state.isLoading
+        loading = state.isLoading,
+        isDeviceSecure = state.isDeviceSecure
     )
 }
 
@@ -46,7 +55,9 @@ private fun AccountPreferenceContent(
     canUseFaucet: Boolean,
     loading: Boolean,
     modifier: Modifier = Modifier,
+    isDeviceSecure: Boolean,
 ) {
+    val showNotSecuredDialog = remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
@@ -66,14 +77,54 @@ private fun AccountPreferenceContent(
                     .padding(RadixTheme.dimensions.paddingLarge)
 
             ) {
+                val context = LocalContext.current
                 RadixSecondaryButton(modifier = Modifier.fillMaxWidth(), text = stringResource(R.string.get_free_xrd),
-                    onClick = onGetFreeXrdClick,
+                    onClick = {
+                        if (isDeviceSecure) {
+                            context.findFragmentActivity()?.let { activity ->
+                                activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                                    if (authenticatedSuccessfully) {
+                                        onGetFreeXrdClick()
+                                    }
+                                }
+                            }
+                        } else {
+                            showNotSecuredDialog.value = true
+                        }
+                    },
                     enabled = !loading && canUseFaucet)
             }
             if (loading) {
                 FullscreenCircularProgressContent()
             }
         }
+        AlertDialogView(show = showNotSecuredDialog.value, finish = {
+            showNotSecuredDialog.value = false
+            if (it) {
+                onGetFreeXrdClick()
+            }
+        })
+    }
+}
+
+@Composable
+private fun AlertDialogView(
+    show: Boolean,
+    finish: (accepted: Boolean) -> Unit,
+) {
+    if (show) {
+        AlertDialog(
+            onDismissRequest = { finish(false) },
+            confirmButton = {
+                TextButton(onClick = { finish(true) }) { Text(text = stringResource(id = R.string.confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { finish(false) }) { Text(text = stringResource(id = R.string.cancel)) }
+            },
+            title = { Text(text = stringResource(id = R.string.please_confirm_dialog_title)) },
+            text = { Text(text = stringResource(id = R.string.please_confirm_dialog_body)) }
+
+        )
     }
 }
 
@@ -85,7 +136,8 @@ fun AccountPreferencePreview() {
             onBackClick = {},
             onGetFreeXrdClick = {},
             canUseFaucet = true,
-            loading = false
+            loading = false,
+            isDeviceSecure = true
         )
     }
 }

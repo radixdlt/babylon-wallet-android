@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.transaction.TransactionClient
+import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,7 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountPreferenceViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    savedStateHandle: SavedStateHandle
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val args = AccountPreferenceArgs(savedStateHandle)
@@ -24,7 +26,8 @@ class AccountPreferenceViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            state = state.copy(canUseFaucet = transactionClient.isAllowedToUseFaucet(args.address))
+            state = state.copy(canUseFaucet = transactionClient.isAllowedToUseFaucet(args.address),
+                isDeviceSecure = deviceSecurityHelper.isDeviceSecure())
         }
     }
 
@@ -39,5 +42,6 @@ class AccountPreferenceViewModel @Inject constructor(
 
 data class AccountPreferenceUiState(
     val canUseFaucet: Boolean = false,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isDeviceSecure: Boolean = false,
 )
