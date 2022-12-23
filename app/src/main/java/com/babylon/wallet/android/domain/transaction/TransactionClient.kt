@@ -19,6 +19,8 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import models.CallMethodReceiver
 import models.Instruction
@@ -44,16 +46,22 @@ class TransactionClient @Inject constructor(
 
     private val engine = RadixEngineToolkit
 
-    suspend fun isAllowedToUseFaucet(address: String): Boolean {
-        val lastUsedEpoch = preferencesManager.getLastUsedEpoch(address) ?: return true
-        when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
-            is Result.Error -> return false
-            is Result.Success -> {
-                if (currentEpoch.data < lastUsedEpoch) {
-                    return false
+    suspend fun isAllowedToUseFaucet(address: String): Flow<Boolean> {
+        return preferencesManager.getLastUsedEpochFlow(address).map { lastUsedEpoch ->
+            if (lastUsedEpoch == null) {
+                true
+            } else {
+                when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
+                    is Result.Error -> false
+                    is Result.Success -> {
+                        if (currentEpoch.data < lastUsedEpoch) {
+                            false
+                        } else {
+                            val threshold = 1
+                            currentEpoch.data - lastUsedEpoch >= threshold
+                        }
+                    }
                 }
-                val threshold = 1
-                return currentEpoch.data - lastUsedEpoch >= threshold
             }
         }
     }

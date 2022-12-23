@@ -35,7 +35,7 @@ fun TokenListContent(
     xrdTokenUi: TokenUiModel? = null,
     onFungibleTokenClick: (TokenUiModel) -> Unit,
 ) {
-    if (tokenItems.isEmpty()) {
+    if (tokenItems.isEmpty() && xrdTokenUi == null) {
         AssetEmptyState(
             modifier = Modifier.fillMaxSize(),
             title = stringResource(id = R.string.you_have_no_tokens),

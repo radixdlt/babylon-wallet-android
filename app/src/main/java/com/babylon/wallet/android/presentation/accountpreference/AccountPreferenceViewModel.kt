@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.transaction.TransactionClient
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -29,9 +30,14 @@ class AccountPreferenceViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             state = state.copy(
-                canUseFaucet = transactionClient.isAllowedToUseFaucet(args.address),
                 isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
             )
+            transactionClient.isAllowedToUseFaucet(args.address).collect {
+                state = state.copy(
+                    canUseFaucet = it,
+                    isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+                )
+            }
         }
     }
 
@@ -43,9 +49,13 @@ class AccountPreferenceViewModel @Inject constructor(
                 state = state.copy(isLoading = false, gotFreeXrd = true)
             }
             result.onError {
-                state = state.copy(isLoading = false)
+                state = state.copy(isLoading = false, error = UiMessage(error = it))
             }
         }
+    }
+
+    fun onMessageShown() {
+        state = state.copy(error = null)
     }
 }
 
@@ -53,5 +63,6 @@ internal data class AccountPreferenceUiState(
     val canUseFaucet: Boolean = false,
     val isLoading: Boolean = false,
     val isDeviceSecure: Boolean = false,
-    val gotFreeXrd: Boolean = false
+    val gotFreeXrd: Boolean = false,
+    val error: UiMessage? = null
 )

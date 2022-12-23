@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -30,7 +29,7 @@ class PreferencesManager @Inject constructor(
             preferences[SHOW_ONBOARDING] ?: false
         }
 
-    suspend fun getLastUsedEpoch(address: String): Long? {
+    fun getLastUsedEpochFlow(address: String): Flow<Long?> {
         return dataStore.data
             .map { preferences ->
                 val mapString = preferences[KEY_ACCOUNT_TO_EPOCH_MAP]
@@ -38,7 +37,7 @@ class PreferencesManager @Inject constructor(
                     Json.decodeFromString<Map<String, Long>>(it)
                 }.orEmpty()
                 map[address]
-            }.firstOrNull()
+            }
     }
 
     suspend fun updateEpoch(account: String, epoch: Long) {

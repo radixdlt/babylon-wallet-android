@@ -24,7 +24,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 
@@ -49,7 +51,9 @@ fun AccountPreferenceScreen(
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
         canUseFaucet = state.canUseFaucet,
         loading = state.isLoading,
-        isDeviceSecure = state.isDeviceSecure
+        isDeviceSecure = state.isDeviceSecure,
+        error = state.error,
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
@@ -59,8 +63,10 @@ private fun AccountPreferenceContent(
     onGetFreeXrdClick: () -> Unit,
     canUseFaucet: Boolean,
     loading: Boolean,
-    modifier: Modifier = Modifier,
     isDeviceSecure: Boolean,
+    onMessageShown: () -> Unit,
+    error: UiMessage?,
+    modifier: Modifier = Modifier,
 ) {
     val showNotSecuredDialog = remember { mutableStateOf(false) }
     Column(
@@ -106,6 +112,9 @@ private fun AccountPreferenceContent(
             if (loading) {
                 FullscreenCircularProgressContent()
             }
+            SnackbarUiMessageHandler(message = error) {
+                onMessageShown()
+            }
         }
         AlertDialogView(show = showNotSecuredDialog.value, finish = {
             showNotSecuredDialog.value = false
@@ -146,7 +155,9 @@ fun AccountPreferencePreview() {
             onGetFreeXrdClick = {},
             canUseFaucet = true,
             loading = false,
-            isDeviceSecure = true
+            isDeviceSecure = true,
+            onMessageShown = {},
+            error = null
         )
     }
 }
