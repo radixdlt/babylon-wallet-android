@@ -22,7 +22,7 @@ fun <T> Result<T>.value(): T? {
     return null
 }
 
-fun <T> Result<T>.onError(action: (Throwable?) -> Unit) {
+suspend fun <T> Result<T>.onError(action: suspend (Throwable?) -> Unit) {
     if (this is Result.Error) {
         action(this.exception)
     }

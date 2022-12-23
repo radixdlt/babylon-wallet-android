@@ -1,0 +1,43 @@
+package com.babylon.wallet.android.presentation.accountpreference
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.transaction.TransactionClient
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class AccountPreferenceViewModel @Inject constructor(
+    private val transactionClient: TransactionClient,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    private val args = AccountPreferenceArgs(savedStateHandle)
+
+    var state by mutableStateOf(AccountPreferenceUiState())
+        private set
+
+    init {
+        viewModelScope.launch {
+            state = state.copy(canUseFaucet = transactionClient.isAllowedToUseFaucet(args.address))
+        }
+    }
+
+    fun onGetFreeXrdClick() {
+        viewModelScope.launch {
+            state = state.copy(isLoading = true)
+            transactionClient.getFreeXrd(true, args.address)
+            state = state.copy(isLoading = false)
+        }
+    }
+}
+
+data class AccountPreferenceUiState(
+    val canUseFaucet: Boolean = false,
+    val isLoading: Boolean = false
+)

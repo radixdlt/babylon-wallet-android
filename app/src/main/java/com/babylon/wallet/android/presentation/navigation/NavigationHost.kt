@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.navigation
 
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -8,6 +10,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
+import com.babylon.wallet.android.presentation.accountpreference.accountPreference
+import com.babylon.wallet.android.presentation.accountpreference.accountPreferenceScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
@@ -73,12 +77,19 @@ fun NavigationHost(
             },
             exitTransition = {
                 slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            },
+            popEnterTransition = {
+                EnterTransition.None
+            },
+            popExitTransition = {
+                ExitTransition.None
             }
         ) { navBackStackEntry ->
             AccountScreen(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
-                onMenuItemClick = {
+                onAccountPreferenceClick = { address ->
+                    navController.accountPreference(address = address)
                 }
             ) {
                 navController.navigateUp()
@@ -119,6 +130,9 @@ fun NavigationHost(
             )
         }
         transactionApprovalScreen(onBackClick = {
+            navController.popBackStack()
+        })
+        accountPreferenceScreen(onBackClick = {
             navController.popBackStack()
         })
         composable(

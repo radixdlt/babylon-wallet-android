@@ -19,8 +19,13 @@ data class SendTransactionWriteRequestItem(
     val message: String? = null,
 ) : WalletRequestItem()
 
-fun SendTransactionWriteRequestItem.toDomainModel(requestId: String) = IncomingRequest.TransactionWriteRequest(
-    requestId = requestId,
-    transactionManifestData = TransactionManifestData(transactionManifest, version, blobs?.map { decode(it) }.orEmpty())
-)
+fun SendTransactionWriteRequestItem.toDomainModel(requestId: String, networkId: Int) =
+    IncomingRequest.TransactionWriteRequest(
+        requestId = requestId,
+        networkId = networkId,
+        transactionManifestData = TransactionManifestData(transactionManifest,
+            version,
+            networkId,
+            blobs?.map { decode(it) }.orEmpty())
+    )
 

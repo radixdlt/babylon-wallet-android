@@ -12,6 +12,18 @@ data class WalletResponse(
 )
 
 @Serializable
+data class WalletErrorResponse(
+    @SerialName("requestId")
+    val requestId: String,
+    @SerialName("error")
+    val error: WalletErrorType,
+    @SerialName("message")
+    val message: String? = null
+)
+
+@Serializable
 sealed class WalletResponseItem {
     abstract val requestType: String
 }
+
+

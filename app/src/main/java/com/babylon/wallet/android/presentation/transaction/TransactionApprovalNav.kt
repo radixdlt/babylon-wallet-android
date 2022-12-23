@@ -1,27 +1,31 @@
 package com.babylon.wallet.android.presentation.transaction
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.dialog
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.google.accompanist.navigation.animation.composable
 
 fun NavController.transactionApproval() {
     navigate("transaction_approval_route")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
-    composable(
+    dialog(
         route = Screen.TransactionApprovalDestination.route,
-        enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
-        },
-        exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
-        }
+        dialogProperties = DialogProperties(dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = true
+        )
+//        enterTransition = {
+//            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+//        },
+//        exitTransition = {
+//            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+//        }
     ) {
         TransactionApprovalScreen(
             viewModel = hiltViewModel(),

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.DataStoreManager
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.IncomingRequest
 import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
@@ -27,7 +27,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    preferencesManager: DataStoreManager,
+    preferencesManager: PreferencesManager,
     profileRepository: ProfileRepository,
     private val peerdroidClient: PeerdroidClient
     private val incomingRequestHolder: IncomingRequestHolder

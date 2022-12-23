@@ -132,7 +132,7 @@ class PeerdroidClientImpl @Inject constructor(
         val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
         val requestId = request.requestId
         val walletRequestItemsList = request.items
-        val walletRequestItemDomainModels = walletRequestItemsList.map { it.toDomainModel(requestId) }
+        val walletRequestItemDomainModels = walletRequestItemsList.map { it.toDomainModel(requestId, request.metadata.networkId) }
         return walletRequestItemDomainModels.first()
     }
 

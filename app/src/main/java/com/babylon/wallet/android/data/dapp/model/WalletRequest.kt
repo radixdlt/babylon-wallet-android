@@ -53,11 +53,11 @@ val walletRequestJson = Json {
     classDiscriminator = "requestType"
 }
 
-fun WalletRequestItem.toDomainModel(requestId: String): IncomingRequest {
+fun WalletRequestItem.toDomainModel(requestId: String, networkId: Int): IncomingRequest {
     return when (this) {
         is OneTimeAccountsReadRequestItem -> toDomainModel(requestId)
         is OngoingAccountsReadRequestItem -> toDomainModel(requestId)
-        is SendTransactionWriteRequestItem -> toDomainModel(requestId)
+        is SendTransactionWriteRequestItem -> toDomainModel(requestId, networkId)
         else -> IncomingRequest.SomeOtherRequest
     }
 }

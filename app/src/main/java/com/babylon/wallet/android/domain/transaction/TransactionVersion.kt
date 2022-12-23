@@ -1,5 +1,5 @@
 package com.babylon.wallet.android.domain.transaction
 
-enum class TransactionVersion(val intValue: Int) {
-    Default(1)
+enum class TransactionVersion(val value: Long) {
+    Default(1L)
 }

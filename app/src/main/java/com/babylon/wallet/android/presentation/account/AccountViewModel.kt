@@ -78,6 +78,7 @@ class AccountViewModel @Inject constructor(
                         accountUiState.copy(
                             isRefreshing = false,
                             isLoading = false,
+                            accountAddressFull = accountResource.address,
                             accountAddressShortened = accountResource.address.truncatedHash(),
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
@@ -102,6 +103,10 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun onAccountPreferenceClick() {
+
+    }
+
     fun onNonFungibleTokenClick(
         nftCollectionUiModel: NftCollectionUiModel,
         nftItemUiModel: NftCollectionUiModel.NftItemUiModel
@@ -117,6 +122,7 @@ class AccountViewModel @Inject constructor(
     companion object {
         private const val INDEX_OF_XRD = 0
     }
+
 }
 
 data class AccountUiState(
@@ -124,6 +130,7 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
     val accountAddressShortened: String = "",
+    val accountAddressFull: String = "",
     val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,
     val assetDetails: AssetUiModel? = null,

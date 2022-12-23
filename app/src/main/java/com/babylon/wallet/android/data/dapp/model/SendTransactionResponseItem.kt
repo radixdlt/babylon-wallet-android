@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SendTransactionResponseItem(
-    override val requestType: String,
+    override val requestType: String = "sendTransactionWrite",
     @SerialName("transactionIntentHash")
-    val transactionIntentHash: String,
+    val transactionIntentHash: String
 ) : WalletResponseItem()

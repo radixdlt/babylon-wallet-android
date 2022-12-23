@@ -77,4 +77,8 @@
     <string name="gateway_api_hint">New URL</string>
     <string name="gateway_updated">Gateway updated!</string>
     <string name="gateway_invalid">Gateway invalid!</string>
+    <string name="approve_transaction">Approve Transaction</string>
+    <string name="transaction_approved_success">Transaction Approved Successfully!</string>
+    <string name="account_preference">Account Preference</string>
+    <string name="get_free_xrd">Get Free XRD</string>
 </resources>
