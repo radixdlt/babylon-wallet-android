@@ -21,13 +21,15 @@ class AccountPreferenceViewModel @Inject constructor(
 
     private val args = AccountPreferenceArgs(savedStateHandle)
 
-    var state by mutableStateOf(AccountPreferenceUiState())
+    internal var state by mutableStateOf(AccountPreferenceUiState())
         private set
 
     init {
         viewModelScope.launch {
-            state = state.copy(canUseFaucet = transactionClient.isAllowedToUseFaucet(args.address),
-                isDeviceSecure = deviceSecurityHelper.isDeviceSecure())
+            state = state.copy(
+                canUseFaucet = transactionClient.isAllowedToUseFaucet(args.address),
+                isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+            )
         }
     }
 
@@ -40,7 +42,7 @@ class AccountPreferenceViewModel @Inject constructor(
     }
 }
 
-data class AccountPreferenceUiState(
+internal data class AccountPreferenceUiState(
     val canUseFaucet: Boolean = false,
     val isLoading: Boolean = false,
     val isDeviceSecure: Boolean = false,

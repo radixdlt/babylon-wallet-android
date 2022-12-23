@@ -35,7 +35,7 @@ interface PeerdroidClient {
 }
 
 class PeerdroidClientImpl @Inject constructor(
-    private val peerdroidConnector: PeerdroidConnector
+    private val peerdroidConnector: PeerdroidConnector,
 ) : PeerdroidClient {
 
     private var dataChannel: DataChannelWrapper? = null
@@ -44,7 +44,7 @@ class PeerdroidClientImpl @Inject constructor(
         get() = dataChannel?.state == DataChannelEvent.StateChanged.OPEN
 
     override suspend fun connectToRemotePeerWithEncryptionKey(
-        encryptionKey: ByteArray
+        encryptionKey: ByteArray,
     ): Result<Unit> {
         val result = peerdroidConnector.createDataChannel(
             encryptionKey = encryptionKey
@@ -132,7 +132,8 @@ class PeerdroidClientImpl @Inject constructor(
         val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
         val requestId = request.requestId
         val walletRequestItemsList = request.items
-        val walletRequestItemDomainModels = walletRequestItemsList.map { it.toDomainModel(requestId, request.metadata.networkId) }
+        val walletRequestItemDomainModels =
+            walletRequestItemsList.map { it.toDomainModel(requestId, request.metadata.networkId) }
         return walletRequestItemDomainModels.first()
     }
 

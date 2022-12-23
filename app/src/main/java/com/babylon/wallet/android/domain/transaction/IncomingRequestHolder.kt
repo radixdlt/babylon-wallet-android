@@ -23,5 +23,4 @@ class IncomingRequestHolder @Inject constructor() {
             action(it)
         }.launchIn(scope)
     }
-
 }

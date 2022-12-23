@@ -50,5 +50,4 @@ interface DataModule {
     fun bindDAppMessenger(
         dAppMessenger: DAppMessengerImpl
     ): DAppMessenger
-
 }

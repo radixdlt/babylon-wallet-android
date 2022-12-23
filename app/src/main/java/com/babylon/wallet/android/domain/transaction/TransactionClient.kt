@@ -1,4 +1,4 @@
-@file:Suppress("TooGenericExceptionCaught")
+@file:Suppress("TooGenericExceptionCaught", "ReturnCount", "TooManyFunctions")
 
 package com.babylon.wallet.android.domain.transaction
 
@@ -78,14 +78,20 @@ class TransactionClient @Inject constructor(
         includeLockFeeInstruction: Boolean,
     ): TransactionManifest {
         var manifest = ManifestBuilder().addInstruction(
-            Instruction.CallMethod(componentAddress = CallMethodReceiver.ComponentAddress(
-                Value.ComponentAddress(knownAddresses.faucetAddress)),
-                methodName = Value.String(MethodName.Free.stringValue))
+            Instruction.CallMethod(
+                componentAddress = CallMethodReceiver.ComponentAddress(
+                    Value.ComponentAddress(knownAddresses.faucetAddress)
+                ),
+                methodName = Value.String(MethodName.Free.stringValue)
+            )
         ).addInstruction(
-            Instruction.CallMethod(componentAddress = CallMethodReceiver.ComponentAddress(
-                Value.ComponentAddress(address)),
+            Instruction.CallMethod(
+                componentAddress = CallMethodReceiver.ComponentAddress(
+                    Value.ComponentAddress(address)
+                ),
                 methodName = Value.String(MethodName.DepositBatch.stringValue),
-                arrayOf(Value.Expression("ENTIRE_WORKTOP")))
+                arrayOf(Value.Expression("ENTIRE_WORKTOP"))
+            )
         ).build()
         if (includeLockFeeInstruction) {
             manifest = addLockFeeInstructionToManifest(manifest, knownAddresses.faucetAddress)
@@ -101,10 +107,13 @@ class TransactionClient @Inject constructor(
     suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId().value
         val manifestConversionResult =
-            convertManifestInstructionsToJSON(version = manifestData.version, TransactionManifest(
-                ManifestInstructions.StringInstructions(manifestData.instructions),
-                manifestData.blobs.toTypedArray()
-            ))
+            convertManifestInstructionsToJSON(
+                version = manifestData.version,
+                TransactionManifest(
+                    ManifestInstructions.StringInstructions(manifestData.instructions),
+                    manifestData.blobs.toTypedArray()
+                )
+            )
         val jsonTransactionManifest = when (manifestConversionResult) {
             is Result.Error -> return manifestConversionResult
             is Result.Success -> manifestConversionResult.data
@@ -133,9 +142,13 @@ class TransactionClient @Inject constructor(
                         TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
                     notarizedTransactionBuilder.notarize(notaryAndSigners.notarySigner.notaryPrivateKey.toEngineModel())
                 } catch (e: Exception) {
-                    return Result.Error(TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction,
-                        msg = e.message,
-                        e = e))
+                    return Result.Error(
+                        TransactionApprovalException(
+                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            msg = e.message,
+                            e = e
+                        )
+                    )
                 }
                 val compiledNotarizedTransaction = notarizedTransaction.compile()
                 val txID = notarizedTransaction.transactionId()
@@ -174,9 +187,13 @@ class TransactionClient @Inject constructor(
                     )
                 )
             } catch (e: Exception) {
-                Result.Error(TransactionApprovalException(TransactionApprovalFailure.BuildTransactionHeader,
-                    e.message,
-                    e))
+                Result.Error(
+                    TransactionApprovalException(
+                        TransactionApprovalFailure.BuildTransactionHeader,
+                        e.message,
+                        e
+                    )
+                )
             }
         } else {
             return Result.Error(TransactionApprovalException(TransactionApprovalFailure.GetEpoch))
@@ -287,8 +304,12 @@ class TransactionClient @Inject constructor(
         if (transactionStatus.isFailed()) {
             when (transactionStatus) {
                 TransactionStatus.committedFailure -> {
-                    transactionRepository.getTransactionDetails(TransactionLookupIdentifier(TransactionLookupOrigin.intent,
-                        txID)).onValue {
+                    transactionRepository.getTransactionDetails(
+                        TransactionLookupIdentifier(
+                            TransactionLookupOrigin.intent,
+                            txID
+                        )
+                    ).onValue {
                         Timber.d("Details: $it")
                     }
                     return Result.Error(
@@ -296,8 +317,12 @@ class TransactionClient @Inject constructor(
                     )
                 }
                 TransactionStatus.rejected -> {
-                    transactionRepository.getTransactionDetails(TransactionLookupIdentifier(TransactionLookupOrigin.intent,
-                        txID)).onValue {
+                    transactionRepository.getTransactionDetails(
+                        TransactionLookupIdentifier(
+                            TransactionLookupOrigin.intent,
+                            txID
+                        )
+                    ).onValue {
                         Timber.d("Details: $it")
                     }
                     return Result.Error(

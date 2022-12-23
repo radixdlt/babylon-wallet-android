@@ -60,7 +60,7 @@ fun TransactionApprovalScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                TransactionApprovalViewModel.OneOffEvent.TransactionRejected -> {
+                TransactionApprovalEvent.TransactionRejected -> {
                     onBackClick()
                 }
             }
@@ -90,12 +90,14 @@ private fun TransactionApprovalContent(
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1
             )
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault)
-                .verticalScroll(rememberScrollState()),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
                 AnimatedVisibility(visible = approved) {
                     Icon(painter = painterResource(id = R.drawable.img_dapp_complete), contentDescription = null)
                     Text(
@@ -119,12 +121,14 @@ private fun TransactionApprovalContent(
         if (isLoading || isSigning) {
             FullscreenCircularProgressContent()
         }
-        RadixPrimaryButton(modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.BottomCenter)
-            .padding(RadixTheme.dimensions.paddingDefault),
+        RadixPrimaryButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.approve_transaction),
-            onClick = onApproveTransaction, enabled = !isLoading && !isSigning)
+            onClick = onApproveTransaction, enabled = !isLoading && !isSigning
+        )
         SnackbarUiMessageHandler(message = error) {
             onMessageShown()
         }

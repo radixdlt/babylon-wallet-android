@@ -1,3 +1,4 @@
+@file:Suppress("LongMethod")
 package com.babylon.wallet.android.domain.usecase.wallet
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse

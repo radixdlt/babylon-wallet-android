@@ -97,5 +97,4 @@ class DAppMessengerImpl @Inject constructor(
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
         }
     }
-
 }

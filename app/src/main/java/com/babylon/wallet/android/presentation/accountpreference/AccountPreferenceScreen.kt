@@ -67,9 +67,11 @@ private fun AccountPreferenceContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
             Column(
                 Modifier
                     .fillMaxSize()
@@ -78,7 +80,8 @@ private fun AccountPreferenceContent(
 
             ) {
                 val context = LocalContext.current
-                RadixSecondaryButton(modifier = Modifier.fillMaxWidth(), text = stringResource(R.string.get_free_xrd),
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(), text = stringResource(R.string.get_free_xrd),
                     onClick = {
                         if (isDeviceSecure) {
                             context.findFragmentActivity()?.let { activity ->
@@ -92,7 +95,8 @@ private fun AccountPreferenceContent(
                             showNotSecuredDialog.value = true
                         }
                     },
-                    enabled = !loading && canUseFaucet)
+                    enabled = !loading && canUseFaucet
+                )
             }
             if (loading) {
                 FullscreenCircularProgressContent()

@@ -1,3 +1,4 @@
+@file:Suppress("TopLevelPropertyNaming")
 package com.babylon.wallet.android.presentation.accountpreference
 
 import androidx.annotation.VisibleForTesting
@@ -12,10 +13,10 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val addressArg = "address"
+internal const val AddressArg = "address"
 
 internal class AccountPreferenceArgs(val address: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[addressArg]) as String)
+    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[AddressArg]) as String)
 }
 
 fun NavController.accountPreference(address: String) {
@@ -25,9 +26,9 @@ fun NavController.accountPreference(address: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.accountPreferenceScreen(onBackClick: () -> Unit) {
     composable(
-        route = "account_preference_route/{$addressArg}",
+        route = "account_preference_route/{$AddressArg}",
         arguments = listOf(
-            navArgument(addressArg) { type = NavType.StringType}
+            navArgument(AddressArg) { type = NavType.StringType }
         ),
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Up)

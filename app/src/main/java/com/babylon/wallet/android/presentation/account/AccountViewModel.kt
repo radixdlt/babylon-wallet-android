@@ -103,10 +103,6 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onAccountPreferenceClick() {
-
-    }
-
     fun onNonFungibleTokenClick(
         nftCollectionUiModel: NftCollectionUiModel,
         nftItemUiModel: NftCollectionUiModel.NftItemUiModel
@@ -122,7 +118,6 @@ class AccountViewModel @Inject constructor(
     companion object {
         private const val INDEX_OF_XRD = 0
     }
-
 }
 
 data class AccountUiState(

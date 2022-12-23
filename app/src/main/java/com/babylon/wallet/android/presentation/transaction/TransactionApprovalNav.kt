@@ -16,7 +16,8 @@ fun NavController.transactionApproval() {
 fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
     dialog(
         route = Screen.TransactionApprovalDestination.route,
-        dialogProperties = DialogProperties(dismissOnBackPress = false,
+        dialogProperties = DialogProperties(
+            dismissOnBackPress = false,
             dismissOnClickOutside = false,
             usePlatformDefaultWidth = true
         )

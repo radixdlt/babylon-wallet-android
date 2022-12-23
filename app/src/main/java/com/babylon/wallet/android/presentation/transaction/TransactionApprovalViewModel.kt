@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.domain.common.OneOffEvent
+import com.babylon.wallet.android.domain.common.OneOffEventHandler
+import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.IncomingRequest
@@ -16,7 +19,6 @@ import com.babylon.wallet.android.domain.transaction.TransactionApprovalExceptio
 import com.babylon.wallet.android.domain.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.utils.OneOffEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
@@ -28,15 +30,12 @@ class TransactionApprovalViewModel @Inject constructor(
     private val incomingRequestHolder: IncomingRequestHolder,
     private val profileRepository: ProfileRepository,
     private val dAppMessenger: DAppMessenger,
-) : ViewModel() {
+) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
     private lateinit var requestId: String
 
-    var state by mutableStateOf(TransactionUiState())
+    internal var state by mutableStateOf(TransactionUiState())
         private set
-
-    private var _oneOffEvent = OneOffEventHandler<OneOffEvent>()
-    val oneOffEvent by _oneOffEvent
 
     init {
         viewModelScope.launch {
@@ -55,14 +54,16 @@ class TransactionApprovalViewModel @Inject constructor(
                 val currentNetworkId = profileRepository.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    val dappResult = dAppMessenger.sendTransactionWriteResponseFailure(requestId,
+                    val dappResult = dAppMessenger.sendTransactionWriteResponseFailure(
+                        requestId,
                         failure.toWalletErrorType(),
-                        failure.getMessage())
+                        failure.getMessage()
+                    )
                     dappResult.onValue {
-                        _oneOffEvent.sendEvent(OneOffEvent.TransactionRejected)
+                        sendEvent(TransactionApprovalEvent.TransactionRejected)
                     }
                     dappResult.onError {
-                        _oneOffEvent.sendEvent(OneOffEvent.TransactionRejected)
+                        sendEvent(TransactionApprovalEvent.TransactionRejected)
                     }
                 } else {
                     state = state.copy(isSigning = true)
@@ -75,11 +76,12 @@ class TransactionApprovalViewModel @Inject constructor(
                         state = state.copy(isSigning = false, error = UiMessage(error = it))
                         val exception = it as? TransactionApprovalException
                         if (exception != null) {
-                            dAppMessenger.sendTransactionWriteResponseFailure(requestId,
+                            dAppMessenger.sendTransactionWriteResponseFailure(
+                                requestId,
                                 error = exception.failure.toWalletErrorType(),
-                                message = exception.failure.getMessage())
+                                message = exception.failure.getMessage()
+                            )
                         }
-
                     }
                 }
             }
@@ -87,15 +89,15 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        //TODO display dialog are we sure we want to reject transaction?
+        // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
             val result =
                 dAppMessenger.sendTransactionWriteResponseFailure(requestId, error = WalletErrorType.RejectedByUser)
             result.onValue {
-                _oneOffEvent.sendEvent(OneOffEvent.TransactionRejected)
+                sendEvent(TransactionApprovalEvent.TransactionRejected)
             }
             result.onError {
-                _oneOffEvent.sendEvent(OneOffEvent.TransactionRejected)
+                sendEvent(TransactionApprovalEvent.TransactionRejected)
             }
         }
     }
@@ -103,14 +105,9 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onMessageShown() {
         state = state.copy(error = null)
     }
-
-    sealed interface OneOffEvent {
-        object TransactionRejected : OneOffEvent
-    }
-
 }
 
-data class TransactionUiState(
+internal data class TransactionUiState(
     val manifestData: TransactionManifestData? = null,
     val isLoading: Boolean = true,
     val isSigning: Boolean = false,
@@ -118,4 +115,6 @@ data class TransactionUiState(
     val error: UiMessage? = null,
 )
 
-
+internal sealed interface TransactionApprovalEvent : OneOffEvent {
+    object TransactionRejected : TransactionApprovalEvent
+}

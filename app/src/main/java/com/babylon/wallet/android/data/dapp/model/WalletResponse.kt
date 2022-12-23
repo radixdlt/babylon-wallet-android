@@ -25,5 +25,3 @@ data class WalletErrorResponse(
 sealed class WalletResponseItem {
     abstract val requestType: String
 }
-
-

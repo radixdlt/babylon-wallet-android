@@ -36,7 +36,7 @@ class PreferencesManager @Inject constructor(
                 val mapString = preferences[KEY_ACCOUNT_TO_EPOCH_MAP]
                 val map = mapString?.let {
                     Json.decodeFromString<Map<String, Long>>(it)
-                } ?: emptyMap()
+                }.orEmpty()
                 map[address]
             }.firstOrNull()
     }

@@ -45,7 +45,9 @@ sealed interface TransactionApprovalFailure {
             is GatewayCommittedFailure -> "TXID: $txId"
             is GatewayRejected -> "TXID: $txId"
             is InvalidTXDuplicate -> "TXID: $txId"
-            is WrongNetwork -> "Wallet is using network ID: ${currentNetworkId}, request sent specified network ID: ${requestNetworkId}"
+            is WrongNetwork -> {
+                "Wallet is using network ID: $currentNetworkId, request sent specified network ID: $requestNetworkId"
+            }
             else -> null
         }
     }

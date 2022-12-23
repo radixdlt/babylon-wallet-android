@@ -23,9 +23,10 @@ fun SendTransactionWriteRequestItem.toDomainModel(requestId: String, networkId: 
     IncomingRequest.TransactionWriteRequest(
         requestId = requestId,
         networkId = networkId,
-        transactionManifestData = TransactionManifestData(transactionManifest,
+        transactionManifestData = TransactionManifestData(
+            transactionManifest,
             version,
             networkId,
-            blobs?.map { decode(it) }.orEmpty())
+            blobs?.map { decode(it) }.orEmpty()
+        )
     )
-
