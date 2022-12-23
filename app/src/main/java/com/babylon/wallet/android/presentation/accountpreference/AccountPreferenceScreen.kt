@@ -38,11 +38,15 @@ fun AccountPreferenceScreen(
 ) {
     val state = viewModel.state
     BackHandler(true) {
-        onBackClick(state.gotFreeXrd)
+        if (!state.isLoading) {
+            onBackClick(state.gotFreeXrd)
+        }
     }
     AccountPreferenceContent(
         onBackClick = {
-            onBackClick(state.gotFreeXrd)
+            if (!state.isLoading) {
+                onBackClick(state.gotFreeXrd)
+            }
         },
         modifier = modifier
             .systemBarsPadding()

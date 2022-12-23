@@ -52,7 +52,7 @@ fun WalletScreen(
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAccountClick: (accountId: String, accountName: String, ) -> Unit = { _, _ -> },
+    onAccountClick: (accountId: String, accountName: String,) -> Unit = { _, _ -> },
     onAccountCreationClick: () -> Unit
 ) {
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()

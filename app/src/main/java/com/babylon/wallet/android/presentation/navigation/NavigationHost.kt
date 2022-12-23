@@ -134,14 +134,16 @@ fun NavigationHost(
             navController.popBackStack()
         })
         accountPreferenceScreen(onBackClick = { gotFreeXrd ->
-            navController.passDataBack(Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+            navController.passDataBack(
+                Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
                 "free",
-                gotFreeXrd)
+                gotFreeXrd
+            )
             navController.popBackStack()
         })
         composable(
             route = Screen.AccountCompletionDestination.route +
-                    "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
+                "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
                 navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },

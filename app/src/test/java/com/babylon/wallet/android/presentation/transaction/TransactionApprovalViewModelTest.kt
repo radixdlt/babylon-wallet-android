@@ -1,0 +1,3 @@
+package com.babylon.wallet.android.presentation.transaction
+
+internal class TransactionApprovalViewModelTest

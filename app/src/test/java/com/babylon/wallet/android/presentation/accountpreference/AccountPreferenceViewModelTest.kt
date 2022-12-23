@@ -1,0 +1,3 @@
+package com.babylon.wallet.android.presentation.accountpreference
+
+internal class AccountPreferenceViewModelTest

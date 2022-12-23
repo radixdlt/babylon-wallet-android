@@ -46,7 +46,7 @@ class TransactionClient @Inject constructor(
 
     private val engine = RadixEngineToolkit
 
-    suspend fun isAllowedToUseFaucet(address: String): Flow<Boolean> {
+    fun isAllowedToUseFaucet(address: String): Flow<Boolean> {
         return preferencesManager.getLastUsedEpochFlow(address).map { lastUsedEpoch ->
             if (lastUsedEpoch == null) {
                 true

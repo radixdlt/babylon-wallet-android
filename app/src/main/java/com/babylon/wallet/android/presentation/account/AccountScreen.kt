@@ -222,9 +222,11 @@ private fun AccountScreenContent(
 //                )
 //            )
             val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .pullRefresh(pullRefreshState)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState)
+            ) {
                 Scaffold(
                     modifier = Modifier
                         .systemBarsPadding()
