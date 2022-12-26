@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.dapp.account
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
@@ -12,7 +11,7 @@ import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
-import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.OneOffEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,13 +19,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChooseAccountsViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
     private val getAccountsUseCase: GetAccountsUseCase,
     private val dAppMessenger: DAppMessenger
 ) : ViewModel() {
 
-    private val requestId = savedStateHandle.get<String>(Screen.ARG_REQUEST_ID) ?: "no request id"
-    private val requiredMinNumberOfAccounts = savedStateHandle.get<Int>(Screen.ARG_NUMBER_OF_ACCOUNTS) ?: 0
+    lateinit var accountsRequest: MessageFromDataChannel.IncomingRequest.AccountsRequest
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
@@ -67,7 +64,7 @@ class ChooseAccountsViewModel @Inject constructor(
         state.accounts?.let { accounts ->
             val currentlySelectedAccountsCount = accounts.count { it.selected }
             // If already selected max number of accounts (accountAddresses) and want to select more, skip
-            if (currentlySelectedAccountsCount >= requiredMinNumberOfAccounts && !account.selected) {
+            if (currentlySelectedAccountsCount >= accountsRequest.numberOfAccounts && !account.selected) {
                 return
             }
 
@@ -89,7 +86,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 updatedAccount.selected
             }
 
-            if (selectedAccountsCount >= requiredMinNumberOfAccounts) {
+            if (selectedAccountsCount >= accountsRequest.numberOfAccounts) {
                 selectedAccounts = updatedAccounts // TODO check if only the selected are passed
                 state = state.copy(
                     accounts = updatedAccounts,
@@ -109,7 +106,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 )
             }
             val result = dAppMessenger.sendAccountsResponse(
-                requestId = requestId,
+                requestId = accountsRequest.requestId,
                 accounts = accounts
             )
             result.onValue {

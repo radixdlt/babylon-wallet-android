@@ -44,12 +44,7 @@ fun WalletApp(
         when (incomingRequest) {
             is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
                 navController.navigate(
-                    route = Screen.RequestAccountsDestination.routeWithArgs(
-                        incomingRequest.requestId,
-                        incomingRequest.isOngoing,
-                        incomingRequest.requiresProofOfOwnership,
-                        incomingRequest.numberOfAccounts
-                    )
+                    route = Screen.RequestAccountsDestination.route
                 )
             }
             MessageFromDataChannel.IncomingRequest.None -> {

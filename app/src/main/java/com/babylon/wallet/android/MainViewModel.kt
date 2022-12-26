@@ -49,6 +49,7 @@ class MainViewModel @Inject constructor(
     private var incomingRequestsJob: Job? = null
 
     init {
+        Timber.d("==================== INIT MAIN VIEWMODEL ====================")
         profileRepository.p2pClient
             .map { p2pClient ->
                 if (p2pClient != null) {

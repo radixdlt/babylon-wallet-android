@@ -1,38 +1,42 @@
 package com.babylon.wallet.android.presentation.navigation.dapp
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.MainActivity
+import com.babylon.wallet.android.MainViewModel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsScreen
+import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsViewModel
 import com.babylon.wallet.android.presentation.dapp.completion.DAppCompletionScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.google.accompanist.navigation.animation.composable
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalLifecycleComposeApi::class)
 fun NavGraphBuilder.dAppRequestAccountsGraph(
     navController: NavController
 ) {
     navigation(
         startDestination = Screen.ChooseAccountsDestination.route,
-        route = Screen.RequestAccountsDestination.route +
-            "/{${Screen.ARG_REQUEST_ID}}/{${Screen.ARG_IS_ONGOING}}" +
-            "/{${Screen.ARG_REQUIRES_OWNERSHIP}}/{${Screen.ARG_NUMBER_OF_ACCOUNTS}}",
-        arguments = listOf(
-            navArgument(Screen.ARG_REQUEST_ID) { type = NavType.StringType },
-            navArgument(Screen.ARG_IS_ONGOING) { type = NavType.BoolType },
-            navArgument(Screen.ARG_REQUIRES_OWNERSHIP) { type = NavType.BoolType },
-            navArgument(Screen.ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType }
-        )
+        route = Screen.RequestAccountsDestination.route
     ) {
         composable(
             route = Screen.ChooseAccountsDestination.route
         ) {
+            val mainViewModel = ViewModelProvider(LocalContext.current as MainActivity)[MainViewModel::class.java]
+            val viewModel = hiltViewModel<ChooseAccountsViewModel>()
+            viewModel.accountsRequest =
+                (mainViewModel.incomingRequest as MessageFromDataChannel.IncomingRequest.AccountsRequest)
+
             ChooseAccountsScreen(
-                viewModel = hiltViewModel(),
+                viewModel = viewModel,
                 onBackClick = {
                     navController.navigateUp()
                 },
