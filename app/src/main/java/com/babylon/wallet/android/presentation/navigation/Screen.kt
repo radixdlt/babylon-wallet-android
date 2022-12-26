@@ -23,8 +23,8 @@ sealed class Screen(override val route: String, override val args: String = "") 
     object CreateAccountDestination : Screen(
         "create_account_route",
         "?$ARG_NETWORK_URL={$ARG_NETWORK_URL}&" +
-            "$ARG_NETWORK_NAME={$ARG_NETWORK_NAME}&" +
-            "$ARG_SWITCH_NETWORK={$ARG_SWITCH_NETWORK}"
+                "$ARG_NETWORK_NAME={$ARG_NETWORK_NAME}&" +
+                "$ARG_SWITCH_NETWORK={$ARG_SWITCH_NETWORK}"
     )
 
     object AccountCompletionDestination : Screen("account_completion_route")
@@ -62,9 +62,6 @@ sealed class Screen(override val route: String, override val args: String = "") 
         const val ARG_GRADIENT_INDEX = "arg_gradient_index"
         const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"
-        const val ARG_REQUEST_ID = "arg_request_id"
-        const val ARG_IS_ONGOING = "arg_is_ongoing"
-        const val ARG_REQUIRES_OWNERSHIP = "arg_requires_proof_of_ownership"
-        const val ARG_NUMBER_OF_ACCOUNTS = "arg_number_of_accounts"
+        const val ARG_INCOMING_REQUEST_ID = "arg_incoming_request_id"
     }
 }
