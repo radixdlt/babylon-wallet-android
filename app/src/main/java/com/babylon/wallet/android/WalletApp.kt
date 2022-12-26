@@ -46,15 +46,11 @@ fun WalletApp(
                 navController.navigate(
                     route = Screen.RequestAccountsDestination.routeWithArgs(
                         incomingRequest.requestId,
+                        incomingRequest.isOngoing,
+                        incomingRequest.requiresProofOfOwnership,
+                        incomingRequest.numberOfAccounts
                     )
                 )
-            }
-            is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest -> {
-//                navController.navigate(
-//                    route = Screen.WhateverTransactionScreen.routeWithArgs(
-//                        incomingRequest.requestId, // pass its request id
-//                    )
-//                )
             }
             MessageFromDataChannel.IncomingRequest.None -> {
             }
