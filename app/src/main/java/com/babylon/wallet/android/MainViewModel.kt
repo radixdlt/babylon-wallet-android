@@ -27,7 +27,8 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     preferencesManager: DataStoreManager,
     profileRepository: ProfileRepository,
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel() {
 
     val state = preferencesManager.showOnboarding.map { showOnboarding ->
@@ -90,6 +91,7 @@ class MainViewModel @Inject constructor(
                             restartConnectionToDapp()
                         }
                     } else if (message is IncomingRequest && message != IncomingRequest.None) {
+                        incomingRequestRepository.add(message)
                         incomingRequest = message
                     }
                 }

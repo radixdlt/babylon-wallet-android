@@ -18,14 +18,9 @@ fun NavGraphBuilder.dAppRequestAccountsGraph(
 ) {
     navigation(
         startDestination = Screen.ChooseAccountsDestination.route,
-        route = Screen.RequestAccountsDestination.route +
-            "/{${Screen.ARG_REQUEST_ID}}/{${Screen.ARG_IS_ONGOING}}" +
-            "/{${Screen.ARG_REQUIRES_OWNERSHIP}}/{${Screen.ARG_NUMBER_OF_ACCOUNTS}}",
+        route = Screen.RequestAccountsDestination.route + "/{${Screen.ARG_INCOMING_REQUEST_ID}}",
         arguments = listOf(
-            navArgument(Screen.ARG_REQUEST_ID) { type = NavType.StringType },
-            navArgument(Screen.ARG_IS_ONGOING) { type = NavType.BoolType },
-            navArgument(Screen.ARG_REQUIRES_OWNERSHIP) { type = NavType.BoolType },
-            navArgument(Screen.ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType }
+            navArgument(Screen.ARG_INCOMING_REQUEST_ID) { type = NavType.StringType }
         )
     ) {
         composable(
