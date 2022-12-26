@@ -32,8 +32,9 @@ fun NavGraphBuilder.dAppRequestAccountsGraph(
         ) {
             val mainViewModel = ViewModelProvider(LocalContext.current as MainActivity)[MainViewModel::class.java]
             val viewModel = hiltViewModel<ChooseAccountsViewModel>()
-            viewModel.accountsRequest =
-                (mainViewModel.incomingRequest as MessageFromDataChannel.IncomingRequest.AccountsRequest)
+            viewModel.setAccountsRequest(
+                request = (mainViewModel.incomingRequest as MessageFromDataChannel.IncomingRequest.AccountsRequest)
+            )
 
             ChooseAccountsScreen(
                 viewModel = viewModel,

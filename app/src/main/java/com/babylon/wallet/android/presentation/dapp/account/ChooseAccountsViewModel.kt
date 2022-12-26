@@ -23,7 +23,11 @@ class ChooseAccountsViewModel @Inject constructor(
     private val dAppMessenger: DAppMessenger
 ) : ViewModel() {
 
-    lateinit var accountsRequest: MessageFromDataChannel.IncomingRequest.AccountsRequest
+    private lateinit var accountsRequest: MessageFromDataChannel.IncomingRequest.AccountsRequest
+
+    fun setAccountsRequest(request: MessageFromDataChannel.IncomingRequest.AccountsRequest) {
+        accountsRequest = request
+    }
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
