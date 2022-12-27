@@ -125,7 +125,7 @@ internal class PeerdroidConnectorImpl(
                             PeerConnectionEvent.IceGatheringChange.State.UNKNOWN -> {}
                         }
                     }
-                    is PeerConnectionEvent.IceCandidate -> { // triggered during the IceGatheringChangeEvent.State = GATHERING
+                    is PeerConnectionEvent.IceCandidate -> {
                         localIceCandidatesList.add(event.data)
                     }
                     is PeerConnectionEvent.SignalingState -> {
@@ -151,6 +151,7 @@ internal class PeerdroidConnectorImpl(
             .launchIn(applicationScope)
     }
 
+    @Suppress("LongMethod")
     private fun listenForIncomingMessagesFromSignalingServer() {
         webSocketJob = webSocketClient
             .observeMessages()

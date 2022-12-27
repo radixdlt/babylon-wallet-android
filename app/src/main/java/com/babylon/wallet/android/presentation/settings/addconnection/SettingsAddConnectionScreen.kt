@@ -43,7 +43,6 @@ fun SettingsAddConnectionScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     var showQrScanner by rememberSaveable { mutableStateOf(false) }
 

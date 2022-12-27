@@ -13,7 +13,6 @@ fun ChooseAccountsScreen(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit
 ) {
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {

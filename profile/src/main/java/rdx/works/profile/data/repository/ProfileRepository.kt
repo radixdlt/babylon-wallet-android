@@ -87,8 +87,8 @@ class ProfileRepositoryImpl @Inject constructor(
         readProfileSnapshot()?.toProfile()?.let { profile ->
             val updatedProfile = profile.setNetworkAndGateway(
                 NetworkAndGateway(
-                    newUrl,
-                    Network.allKnownNetworks().first { it.name == networkName }
+                    gatewayAPIEndpointURL = newUrl,
+                    network = Network.allKnownNetworks().first { it.name == networkName }
                 )
             )
             saveProfileSnapshot(updatedProfile.snapshot())
@@ -98,7 +98,8 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean {
         val knownNetwork = Network.allKnownNetworks().firstOrNull { it.name == networkName } ?: return false
         val newNetworkAndGateway = NetworkAndGateway(
-            newUrl, knownNetwork
+            gatewayAPIEndpointURL = newUrl,
+            network = knownNetwork
         )
         return readProfileSnapshot()?.toProfile()?.let { profile ->
             profile.perNetwork.any { it.networkID == newNetworkAndGateway.network.id }

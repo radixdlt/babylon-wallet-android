@@ -26,7 +26,6 @@ fun CameraPreview(
     onQrCodeDetected: (qrCode: String) -> Unit,
     onBackClick: () -> Unit
 ) {
-
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start

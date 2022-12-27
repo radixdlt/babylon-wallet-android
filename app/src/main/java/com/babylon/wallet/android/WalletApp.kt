@@ -17,7 +17,6 @@ fun WalletApp(
     hasProfile: Boolean,
     incomingRequest: IncomingRequest
 ) {
-
     val navController = rememberAnimatedNavController()
 
     if (showOnboarding) {

@@ -195,7 +195,6 @@ fun RadixOnboardingPagerIndicator(
     spacing: Dp = RadixTheme.dimensions.paddingSmall,
     indicatorShape: Shape = CircleShape,
 ) {
-
     val indicatorWidthPx = LocalDensity.current.run { indicatorWidth.roundToPx() }
     val spacingPx = LocalDensity.current.run { spacing.roundToPx() }
 
@@ -237,11 +236,14 @@ fun RadixOnboardingPagerIndicator(
                 }
                 .size(width = indicatorWidth / 2, height = indicatorHeight)
                 .then(
-                    if (pageCount > 0) Modifier.background(
-                        brush = GradientBrand2,
-                        shape = indicatorShape,
-                    )
-                    else Modifier
+                    if (pageCount > 0) {
+                        Modifier.background(
+                            brush = GradientBrand2,
+                            shape = indicatorShape,
+                        )
+                    } else {
+                        Modifier
+                    }
                 )
         )
     }

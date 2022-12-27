@@ -1,4 +1,5 @@
 @file:Suppress("ReturnCount", "ComplexCondition")
+
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.annotation.FloatRange
@@ -82,10 +83,11 @@ class ScrollableHeaderViewScrollState(
     internal val nestedScrollConnectionHolder = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
             // If we're dragging in the negative direction (scrolling down to see content below).
-            return if (available.y < 0 && source == NestedScrollSource.Drag)
+            return if (available.y < 0 && source == NestedScrollSource.Drag) {
                 Offset(0f, drag(available.y))
-            else
+            } else {
                 Offset.Zero
+            }
         }
 
         override fun onPostScroll(
@@ -93,10 +95,11 @@ class ScrollableHeaderViewScrollState(
             available: Offset,
             source: NestedScrollSource
         ): Offset {
-            return if (available.y > 0 && source == NestedScrollSource.Drag)
+            return if (available.y > 0 && source == NestedScrollSource.Drag) {
                 Offset(0f, drag(available.y))
-            else
+            } else {
                 Offset.Zero
+            }
         }
 
         override suspend fun onPreFling(available: Velocity): Velocity {

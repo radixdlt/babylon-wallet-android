@@ -577,7 +577,8 @@ private fun AccountContent(
             modifier = Modifier
                 .weight(1f)
                 .background(
-                    color = RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectTopDefault
+                    color = RadixTheme.colors.gray5,
+                    shape = RadixTheme.shapes.roundedRectTopDefault
                 )
                 .clip(RadixTheme.shapes.roundedRectTopDefault),
             onNftClick = onNftClick,
@@ -608,7 +609,9 @@ private fun AccountSummaryContent(
             WalletBalanceView(
                 currencySignValue = "$",
                 amount = value,
-                hidden = false, balanceClicked = {}, contentColor = RadixTheme.colors.white
+                hidden = false,
+                balanceClicked = {},
+                contentColor = RadixTheme.colors.white
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             RadixSecondaryButton(

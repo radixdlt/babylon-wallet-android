@@ -52,13 +52,17 @@ fun EntityDetailsResponse.toNonFungibleToken(
 
 fun EntityMetadataCollection.toNonFungibleMetadataContainer(): NonFungibleMetadataContainer {
     return NonFungibleMetadataContainer(
-        metadata = items.associate { it.key to it.value }, nextCursor = nextCursor, previousCursor = previousCursor
+        metadata = items.associate { it.key to it.value },
+        nextCursor = nextCursor,
+        previousCursor = previousCursor
     )
 }
 
 fun EntityDetailsResponseNonFungibleResourceDetailsIdsItem.toNonFungibleId(): NonFungibleTokenId {
     return NonFungibleTokenId(
-        idHex = idHex, immutableDataHex = immutableDataHex, mutableDataHex = mutableDataHex
+        idHex = idHex,
+        immutableDataHex = immutableDataHex,
+        mutableDataHex = mutableDataHex
     )
 }
 

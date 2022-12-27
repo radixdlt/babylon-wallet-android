@@ -17,7 +17,8 @@ fun NavGraphBuilder.settingsNavGraph(
     navController: NavController
 ) {
     navigation(
-        startDestination = Screen.SettingsAllDestination.route, route = Screen.SettingsDestination.route
+        startDestination = Screen.SettingsAllDestination.route,
+        route = Screen.SettingsDestination.route
     ) {
         settingsAll(navController)
         settingsAddConnection(navController)

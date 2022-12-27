@@ -1,12 +1,8 @@
-@file:Suppress("TooGenericExceptionCaught")
-
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.gateway.RadixGatewayException
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.babylon.wallet.android.data.gateway.generated.model.ErrorResponse
-import com.babylon.wallet.android.data.gateway.hasMessageOrDetails
-import com.babylon.wallet.android.data.gateway.model.GatewayErrorResponse
 import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.decodeFromString
 import retrofit2.Response
@@ -40,17 +36,14 @@ private fun tryParseServerError(
     val errorResponse = Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(
         errorBodyString
     )
-    var gatewayErrorResponse: GatewayErrorResponse? = null
-    if (!errorResponse.hasMessageOrDetails()) {
-        gatewayErrorResponse = Serializer.kotlinxSerializationJson.decodeFromString<GatewayErrorResponse>(
-            errorBodyString
-        )
-    }
+//    var gatewayErrorResponse: GatewayErrorResponse? = null
+//    if (!errorResponse.hasMessageOrDetails()) {
+//        gatewayErrorResponse = Serializer.kotlinxSerializationJson.decodeFromString<GatewayErrorResponse>(
+//            errorBodyString
+//        )
+//    }
     val exception = RadixGatewayException(
-        definedError?.message ?: (
-            errorResponse.message ?: gatewayErrorResponse?.errors?.values?.firstOrNull()
-                ?.firstOrNull()
-            )
+        definedError?.message ?: errorResponse.message
     )
     return Result.Error(exception = exception)
 }

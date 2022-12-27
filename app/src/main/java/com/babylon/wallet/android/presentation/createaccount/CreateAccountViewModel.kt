@@ -47,7 +47,6 @@ class CreateAccountViewModel @Inject constructor(
             loading = true
         )
         viewModelScope.launch {
-
             val hasProfile = profileRepository.readProfileSnapshot() != null
             val account = if (hasProfile) {
                 createAccountUseCase(

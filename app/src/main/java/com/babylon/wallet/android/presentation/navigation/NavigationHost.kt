@@ -32,7 +32,6 @@ fun NavigationHost(
     startDestination: String,
     navController: NavHostController,
 ) {
-
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination

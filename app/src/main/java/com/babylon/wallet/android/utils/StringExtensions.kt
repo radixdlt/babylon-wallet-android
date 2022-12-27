@@ -1,4 +1,5 @@
 @file:Suppress("MagicNumber")
+
 package com.babylon.wallet.android.utils
 
 import android.util.Patterns

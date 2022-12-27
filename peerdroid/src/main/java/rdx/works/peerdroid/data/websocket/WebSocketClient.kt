@@ -49,6 +49,7 @@ internal interface WebSocketClient {
     suspend fun closeSession()
 }
 
+@Suppress("TooManyFunctions")
 // WebSocket client to communicate with the signaling server.
 // The signaling server is responsible for exchanging network information which is needed for the WebRTC
 // between the mobile wallet and the browser extension.
@@ -102,8 +103,8 @@ internal class WebSocketClientImpl(
                 decodeAndParseResponseFromJson(responseJsonString)
             }
             ?.takeWhile { signalingServerIncomingMessage ->
-                signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected
-                        && signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
+                signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected &&
+                    signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
             }
             ?.collect()
     }
@@ -151,8 +152,7 @@ internal class WebSocketClientImpl(
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.d("failed to send message")
-            exception.printStackTrace()
+            Timber.d("failed to send message: ${exception.localizedMessage}")
         }
     }
 
@@ -167,8 +167,7 @@ internal class WebSocketClientImpl(
                 }
                 ?: flowOf(SignalingServerIncomingMessage.UnknownError)
         } catch (exception: Exception) {
-            Timber.e("incoming message exception")
-            exception.printStackTrace()
+            Timber.e("incoming message exception: ${exception.localizedMessage}")
             flowOf(SignalingServerIncomingMessage.UnknownError)
         }
     }
@@ -182,22 +181,25 @@ internal class WebSocketClientImpl(
         // based on the info of the response return the corresponding SignalingServerIncomingMessage data model
         // if info is remoteData then encapsulate the encrypted payload in the SignalingServerIncomingMessage data model
         return when (SignalingServerResponse.Info.from(responseJson.info)) {
-
             SignalingServerResponse.Info.CONFIRMATION -> SignalingServerIncomingMessage.Confirmation(
-                requestId = responseJson.requestId ?: ""
+                requestId = responseJson.requestId.orEmpty()
             )
 
             SignalingServerResponse.Info.DATA_FROM_BROWSER_EXTENSION -> parseRemoteDataFromResponse(responseJson)
 
-            SignalingServerResponse.Info.REMOTE_CLIENT_DISCONNECTED -> SignalingServerIncomingMessage.RemoteClientDisconnected
+            SignalingServerResponse.Info.REMOTE_CLIENT_DISCONNECTED ->
+                SignalingServerIncomingMessage.RemoteClientDisconnected
 
-            SignalingServerResponse.Info.REMOTE_CLIENT_IS_ALREADY_CONNECTED -> SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
+            SignalingServerResponse.Info.REMOTE_CLIENT_IS_ALREADY_CONNECTED ->
+                SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
 
-            SignalingServerResponse.Info.REMOTE_CLIENT_JUST_CONNECTED -> SignalingServerIncomingMessage.RemoteClientJustConnected
+            SignalingServerResponse.Info.REMOTE_CLIENT_JUST_CONNECTED ->
+                SignalingServerIncomingMessage.RemoteClientJustConnected
 
-            SignalingServerResponse.Info.MISSING_REMOTE_CLIENT_ERROR -> SignalingServerIncomingMessage.MissingRemoteClientError(
-                requestId = responseJson.requestId ?: ""
-            )
+            SignalingServerResponse.Info.MISSING_REMOTE_CLIENT_ERROR ->
+                SignalingServerIncomingMessage.MissingRemoteClientError(
+                    requestId = responseJson.requestId.orEmpty()
+                )
 
             SignalingServerResponse.Info.INVALID_MESSAGE_ERROR -> SignalingServerIncomingMessage.InvalidMessageError(
                 errorMessage = responseJson.error ?: "unknown error"
@@ -207,6 +209,7 @@ internal class WebSocketClientImpl(
         }
     }
 
+    @Suppress("ReturnCount")
     private fun parseRemoteDataFromResponse(
         responseJson: SignalingServerResponse
     ): SignalingServerIncomingMessage {
@@ -243,6 +246,7 @@ internal class WebSocketClientImpl(
         }
     }
 
+    @Suppress("UseRequire")
     private fun decryptAndParseAnswerPayload(
         responseJson: SignalingServerResponse
     ): SignalingServerIncomingMessage.BrowserExtensionAnswer {
@@ -263,6 +267,7 @@ internal class WebSocketClientImpl(
         )
     }
 
+    @Suppress("UseRequire")
     private fun decryptAndParseIceCandidatePayload(
         responseJson: SignalingServerResponse
     ): SignalingServerIncomingMessage.BrowserExtensionIceCandidates {
@@ -291,6 +296,7 @@ internal class WebSocketClientImpl(
         )
     }
 
+    @Suppress("UseRequire")
     private fun decryptAndParseIceCandidatesPayload(
         responseJson: SignalingServerResponse
     ): SignalingServerIncomingMessage.BrowserExtensionIceCandidates {

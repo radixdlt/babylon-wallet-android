@@ -20,6 +20,7 @@ import rdx.works.peerdroid.messagechunking.verifyAssembledMessage
 import timber.log.Timber
 import java.nio.ByteBuffer
 
+@Suppress("InjectDispatcher")
 @JvmInline
 value class DataChannelWrapper(
     private val webRtcDataChannel: DataChannel

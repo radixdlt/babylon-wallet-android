@@ -18,6 +18,7 @@ import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
+@Suppress("LongMethod")
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
@@ -38,7 +39,6 @@ class GetAccountResourcesUseCase @Inject constructor(
         when (val accountResourcesResult = entityRepository.getAccountResources(address)) {
             is Result.Error -> Result.Error(accountResourcesResult.exception)
             is Result.Success -> {
-
                 val fungibleTokens = mutableListOf<OwnedFungibleToken>()
                 val nonFungibleTokens = mutableListOf<OwnedNonFungibleToken>()
 

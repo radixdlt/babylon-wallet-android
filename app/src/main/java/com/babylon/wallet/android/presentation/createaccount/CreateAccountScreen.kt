@@ -45,7 +45,6 @@ fun CreateAccountScreen(
         hasProfile: Boolean
     ) -> Unit = { _: String, _: String, _: Boolean -> },
 ) {
-
     if (viewModel.state.loading) {
         FullscreenCircularProgressContent()
     } else {
@@ -157,7 +156,6 @@ fun CreateAccountContent(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountContentPreview() {
-
     BabylonWalletTheme {
         CreateAccountContent(
             onAccountNameChange = {},
