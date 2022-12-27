@@ -25,9 +25,7 @@ class GetAccountResourcesUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke(
-        address: String
-    ): Result<AccountResources> = coroutineScope {
+    suspend operator fun invoke(address: String): Result<AccountResources> = coroutineScope {
         var accountDisplayName = ""
         var appearanceId = -1
         profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
@@ -36,14 +34,14 @@ class GetAccountResourcesUseCase @Inject constructor(
             appearanceId = account?.appearanceID ?: -1
         }
 
-        when (val accountResourcesResult = entityRepository.getAccountResources(address)) {
-            is Result.Error -> Result.Error(accountResourcesResult.exception)
+        when (val accountResources = entityRepository.getAccountResources(address)) {
+            is Result.Error -> Result.Error(accountResources.exception)
             is Result.Success -> {
                 val fungibleTokens = mutableListOf<OwnedFungibleToken>()
                 val nonFungibleTokens = mutableListOf<OwnedNonFungibleToken>()
 
-                accountResourcesResult.data.let { accountResources ->
-                    val fungibleTokensDeferred = accountResources.simpleFungibleTokens.map { fungibleToken ->
+                accountResources.data.let { resources ->
+                    val fungibleTokensDeferred = resources.simpleFungibleTokens.map { fungibleToken ->
                         async {
                             entityRepository.entityDetails(fungibleToken.address)
                         }
@@ -52,7 +50,7 @@ class GetAccountResourcesUseCase @Inject constructor(
                     val nonFungibleTokensDeferred = mutableListOf<Deferred<Result<EntityDetailsResponse>>>()
                     val nonFungibleIdsDeferred = mutableListOf<Deferred<Result<NonFungibleTokenIdContainer>>>()
 
-                    accountResources.simpleNonFungibleTokens
+                    resources.simpleNonFungibleTokens
                         .map { nonFungibleToken ->
                             nonFungibleTokensDeferred.add(
                                 async {
@@ -74,7 +72,7 @@ class GetAccountResourcesUseCase @Inject constructor(
                     )
 
                     accountResourcesJobs.fungibleResults.forEachIndexed { index, result ->
-                        val fungibleToken = accountResourcesResult.data.simpleFungibleTokens[index]
+                        val fungibleToken = accountResources.data.simpleFungibleTokens[index]
                         result.onValue { response ->
                             fungibleTokens.add(
                                 OwnedFungibleToken(
@@ -88,7 +86,7 @@ class GetAccountResourcesUseCase @Inject constructor(
                     }
 
                     accountResourcesJobs.nonFungibleResults.forEachIndexed { index, result ->
-                        val nonFungibleToken = accountResourcesResult.data.simpleNonFungibleTokens[index]
+                        val nonFungibleToken = accountResources.data.simpleNonFungibleTokens[index]
                         val nonFungibleId = accountResourcesJobs.nonFungibleIdResults[index]
 
                         result.onValue { response ->
