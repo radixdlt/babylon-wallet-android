@@ -57,8 +57,6 @@ class AccountViewModel @Inject constructor(
     private fun loadAccountData() {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                // TODO how to handle the case when the gateway doesn't return the account?
-                // TODO this should probably change to flow later
                 val result = getAccountResourcesUseCase(accountId)
                 result.onError { e ->
                     _accountUiState.update { accountUiState ->
