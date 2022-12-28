@@ -126,7 +126,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
 
     //Kotlin toolkit
-    implementation 'com.radixdlt:kotlin-engine-toolkit:1.8-snapshot'
+    implementation 'com.radixdlt:kotlin-engine-toolkit:1.9.0-snapshot'
     implementation 'com.radixdlt:slip10:60ebe566'
 
     //Retrofit & OkHttp
@@ -151,8 +151,6 @@ dependencies {
     // Peerdroid
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')
-//    implementation project(path: ':kotlin-engine-toolkit')
-//    implementation project(path: ':kotlin-engine-toolkit', configuration: 'resources1')
     implementation project(path: ':designsystem')
 
     testImplementation 'junit:junit:4.13.2'

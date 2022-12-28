@@ -2,9 +2,6 @@
 
 package com.babylon.wallet.android.domain.transaction
 
-import RadixEngineToolkit
-import builders.ManifestBuilder
-import builders.TransactionBuilder
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupOrigin
@@ -18,20 +15,23 @@ import com.babylon.wallet.android.domain.model.KnownAddresses
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.builders.ManifestBuilder
+import com.radixdlt.toolkit.builders.TransactionBuilder
+import com.radixdlt.toolkit.models.CallMethodReceiver
+import com.radixdlt.toolkit.models.Instruction
+import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionIntentResponse
+import com.radixdlt.toolkit.models.request.ConvertManifestRequest
+import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.transaction.ManifestInstructions
+import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
+import com.radixdlt.toolkit.models.transaction.TransactionHeader
+import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
-import models.CallMethodReceiver
-import models.Instruction
-import models.Value
-import models.request.CompileNotarizedTransactionIntentResponse
-import models.request.ConvertManifestRequest
-import models.request.ConvertManifestResponse
-import models.transaction.ManifestInstructions
-import models.transaction.ManifestInstructionsKind
-import models.transaction.TransactionHeader
-import models.transaction.TransactionManifest
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
 import java.math.BigDecimal
@@ -164,8 +164,8 @@ class TransactionClient @Inject constructor(
                         )
                     )
                 }
-                val compiledNotarizedTransaction = notarizedTransaction.compile()
-                val txID = notarizedTransaction.transactionId()
+                val compiledNotarizedTransaction = notarizedTransaction.compile().getOrThrow()
+                val txID = notarizedTransaction.transactionId().getOrThrow()
                 val submitResult = submitNotarizedTransaction(
                     txID.toHexString(), CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
                 )
@@ -236,7 +236,7 @@ class TransactionClient @Inject constructor(
                         manifestInstructionsOutputFormat = ManifestInstructionsKind.JSON,
                         manifest = manifest
                     )
-                )
+                ).getOrThrow()
             )
         } catch (e: SerializationException) {
             Result.Error(TransactionApprovalException(TransactionApprovalFailure.ConvertManifest, e.message, e))
@@ -349,6 +349,7 @@ class TransactionClient @Inject constructor(
         return Result.Success(txID)
     }
 
+    @Throws(Exception::class)
     private fun getAddressesNeededToSignTransaction(
         transactionVersion: Long,
         networkId: Int,
@@ -359,7 +360,7 @@ class TransactionClient @Inject constructor(
             ConvertManifestRequest(
                 transactionVersion.toUByte(), networkId.toUByte(), ManifestInstructionsKind.JSON, manifest
             )
-        )
+        ).getOrThrow()
         when (val instructions = convertedManifest.instructions) {
             is ManifestInstructions.JSONInstructions -> {
                 instructions.instructions.filterIsInstance<Instruction.CallMethod>().forEach { callMethod ->
