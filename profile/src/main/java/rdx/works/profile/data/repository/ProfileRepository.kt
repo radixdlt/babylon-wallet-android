@@ -61,14 +61,15 @@ class ProfileRepositoryImpl @Inject constructor(
             }
         }
 
-    override val profileSnapshot: Flow<ProfileSnapshot?> = dataStore.data.map { preferences ->
-        val profileContent = preferences[PROFILE_PREFERENCES_KEY] ?: ""
-        if (profileContent.isEmpty()) {
-            null
-        } else {
-            Json.decodeFromString<ProfileSnapshot>(profileContent)
+    override val profileSnapshot: Flow<ProfileSnapshot?> = dataStore.data
+        .map { preferences ->
+            val profileContent = preferences[PROFILE_PREFERENCES_KEY] ?: ""
+            if (profileContent.isEmpty()) {
+                null
+            } else {
+                Json.decodeFromString<ProfileSnapshot>(profileContent)
+            }
         }
-    }
 
     override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {
         withContext(defaultDispatcher) {
