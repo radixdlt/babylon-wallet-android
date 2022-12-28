@@ -32,8 +32,8 @@ fun ChooseAccountsScreen(
                 },
                 imageUrl = state.dAppDetails?.imageUrl.orEmpty(),
                 continueButtonEnabled = state.continueButtonEnabled,
-                dAppAccounts = accounts,
-                accountSelected = viewModel::onAccountSelect
+                accounts = accounts,
+                onAccountSelect = viewModel::onAccountSelect
             )
         }
 

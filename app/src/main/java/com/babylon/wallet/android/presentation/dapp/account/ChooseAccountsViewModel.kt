@@ -90,7 +90,9 @@ class ChooseAccountsViewModel @Inject constructor(
             }
 
             if (selectedAccountsCount >= requiredMinNumberOfAccounts) {
-                selectedAccounts = updatedAccounts // TODO check if only the selected are passed
+                selectedAccounts = updatedAccounts.filter { selectedAccountUiState ->
+                    selectedAccountUiState.selected
+                }
                 state = state.copy(
                     accounts = updatedAccounts,
                     continueButtonEnabled = true
