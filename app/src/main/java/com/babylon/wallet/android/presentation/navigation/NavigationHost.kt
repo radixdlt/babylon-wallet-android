@@ -78,10 +78,6 @@ fun NavigationHost(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
                 onMenuItemClick = {
-                    /* TODO For now i init flow here for testing */
-                    navController.navigate(
-                        Screen.RequestAccountsDestination.route
-                    )
                 }
             ) {
                 navController.navigateUp()
