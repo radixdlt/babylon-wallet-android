@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.AddP2PClientUseCase
+import rdx.works.profile.domain.DeleteP2PClientUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -24,8 +25,9 @@ private const val FIVE_SECONDS_STOP_TIMEOUT = 5_000L
 @HiltViewModel
 class SettingsAddConnectionViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
+    profileRepository: ProfileRepository,
     private val addP2PClientUseCase: AddP2PClientUseCase,
-    profileRepository: ProfileRepository
+    private val deleteP2PClientUseCase: DeleteP2PClientUseCase
 ) : ViewModel() {
 
     private val loadingState = MutableStateFlow(false)
@@ -34,9 +36,14 @@ class SettingsAddConnectionViewModel @Inject constructor(
         loadingState,
         profileRepository.p2pClient
     ) { isLoading, p2pClient ->
+        if (p2pClient != null) { // if we already have an active connection
+            // we need a reference of the connectionPassword
+            // so we can pass it in the onDeleteConnectionClick
+            currentConnectionPassword = p2pClient.connectionPassword
+        }
         SettingsAddConnectionUiState(
             isLoading = isLoading,
-            hasAlreadyConnection = p2pClient != null
+            connectionName = p2pClient?.displayName
         )
     }.stateIn(
         scope = viewModelScope,
@@ -80,6 +87,13 @@ class SettingsAddConnectionViewModel @Inject constructor(
         }
     }
 
+    fun onDeleteConnectionClick() {
+        viewModelScope.launch {
+            deleteP2PClientUseCase(currentConnectionPassword)
+            peerdroidClient.close()
+        }
+    }
+
     // This function is triggered when the data channel is open
     // and finishes its job when the channel is closed.
     // Because that means we successfully established a connection with connector extension
@@ -100,7 +114,7 @@ class SettingsAddConnectionViewModel @Inject constructor(
         viewModelScope.launch {
             listenIncomingMessagesJob?.cancel()
             peerdroidClient.close()
-            addP2PClientUseCase.invoke(
+            addP2PClientUseCase(
                 displayName = currentConnectionDisplayName,
                 connectionPassword = currentConnectionPassword
             )
@@ -111,5 +125,5 @@ class SettingsAddConnectionViewModel @Inject constructor(
 
 data class SettingsAddConnectionUiState(
     val isLoading: Boolean = false,
-    val hasAlreadyConnection: Boolean = false
+    val connectionName: String? = null
 )

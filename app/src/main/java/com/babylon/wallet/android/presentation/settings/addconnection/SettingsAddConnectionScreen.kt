@@ -72,7 +72,7 @@ fun SettingsAddConnectionScreen(
                 .systemBarsPadding()
                 .fillMaxSize()
                 .background(RadixTheme.colors.defaultBackground),
-            hasAlreadyConnection = state.hasAlreadyConnection,
+            connectionName = state.connectionName,
             onConnectionClick = {
                 viewModel.onConnectionClick(
                     connectionPassword = connectionPasswordText,
@@ -88,14 +88,15 @@ fun SettingsAddConnectionScreen(
             connectionPassword = connectionPasswordText,
             connectionDisplayName = connectionDisplayName,
             onConnectionPasswordChanged = { connectionPasswordText = it },
-            onConnectionDisplayNameChanged = { connectionDisplayName = it }
+            onConnectionDisplayNameChanged = { connectionDisplayName = it },
+            onDeleteConnectionClick = viewModel::onDeleteConnectionClick
         )
     }
 }
 
 @Composable
 private fun SettingsAddConnectionContent(
-    hasAlreadyConnection: Boolean,
+    connectionName: String?,
     onConnectionClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
@@ -104,7 +105,8 @@ private fun SettingsAddConnectionContent(
     connectionPassword: String,
     connectionDisplayName: String,
     onConnectionPasswordChanged: (String) -> Unit,
-    onConnectionDisplayNameChanged: (String) -> Unit
+    onConnectionDisplayNameChanged: (String) -> Unit,
+    onDeleteConnectionClick: () -> Unit
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
@@ -112,8 +114,11 @@ private fun SettingsAddConnectionContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
-        if (hasAlreadyConnection) {
-            ShowConnection()
+        if (connectionName?.isNotEmpty() == true) {
+            ShowConnectionContent(
+                connectionName = connectionName,
+                onDeleteConnectionClick = onDeleteConnectionClick
+            )
         } else {
             if (isLoading) {
                 FullscreenCircularProgressContent()
@@ -132,11 +137,25 @@ private fun SettingsAddConnectionContent(
 }
 
 @Composable
-private fun ShowConnection() {
-    Text(
-        text = "You have an active connection.",
-        style = MaterialTheme.typography.bodyLarge
-    )
+private fun ShowConnectionContent(
+    connectionName: String,
+    modifier: Modifier = Modifier,
+    onDeleteConnectionClick: () -> Unit
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "You have an active connection with name: $connectionName",
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
+        RadixPrimaryButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+            text = stringResource(id = R.string.delete_connection),
+            onClick = onDeleteConnectionClick
+        )
+    }
 }
 
 @Composable
@@ -198,7 +217,7 @@ private fun EnterConnection(
 fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
     BabylonWalletTheme {
         SettingsAddConnectionContent(
-            hasAlreadyConnection = false,
+            connectionName = "",
             onConnectionClick = {},
             isLoading = false,
             onBackClick = {},
@@ -207,6 +226,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
             connectionDisplayName = "",
             onConnectionPasswordChanged = {},
             onConnectionDisplayNameChanged = {},
+            onDeleteConnectionClick = {}
         )
     }
 }
@@ -217,7 +237,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
 fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
     BabylonWalletTheme {
         SettingsAddConnectionContent(
-            hasAlreadyConnection = true,
+            connectionName = "my cool connection",
             onConnectionClick = {},
             isLoading = false,
             onBackClick = {},
@@ -226,6 +246,7 @@ fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
             connectionDisplayName = "",
             onConnectionPasswordChanged = {},
             onConnectionDisplayNameChanged = {},
+            onDeleteConnectionClick = {}
         )
     }
 }
