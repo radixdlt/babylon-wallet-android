@@ -2,7 +2,8 @@ package com.babylon.wallet.android
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
-import com.babylon.wallet.android.domain.model.IncomingRequest
+import androidx.compose.runtime.LaunchedEffect
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -15,7 +16,7 @@ import timber.log.Timber
 fun WalletApp(
     showOnboarding: Boolean,
     hasProfile: Boolean,
-    incomingRequest: IncomingRequest
+    incomingRequest: MessageFromDataChannel.IncomingRequest
 ) {
 
     val navController = rememberAnimatedNavController()
@@ -39,24 +40,24 @@ fun WalletApp(
         }
     }
 
-    when (incomingRequest) {
-        is IncomingRequest.AccountsRequest -> {
-            navController.navigate(
-                route = Screen.RequestAccountsDestination.routeWithArgs(
-                    incomingRequest.requestId,
-                    incomingRequest.isOngoing,
-                    incomingRequest.requiresProofOfOwnership,
-                    incomingRequest.numberOfAccounts
+    LaunchedEffect(incomingRequest) {
+        when (incomingRequest) {
+            is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
+                navController.navigate(
+                    route = Screen.RequestAccountsDestination.routeWithArgs(
+                        incomingRequest.requestId,
+                        incomingRequest.isOngoing,
+                        incomingRequest.requiresProofOfOwnership,
+                        incomingRequest.numberOfAccounts
+                    )
                 )
-            )
-        }
-        IncomingRequest.Empty -> { /* nothing */
-        }
-        IncomingRequest.SomeOtherRequest -> {
-            // this should be replaced for new requests
-        }
-        IncomingRequest.ParsingError -> {
-            Timber.d("Failed to parse incoming request")
+            }
+            MessageFromDataChannel.IncomingRequest.None -> {
+            }
+            MessageFromDataChannel.IncomingRequest.ParsingError -> {
+                Timber.d("Failed to parse incoming request")
+            }
+            MessageFromDataChannel.IncomingRequest.SomeOtherRequest -> {}
         }
     }
 }

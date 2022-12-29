@@ -121,6 +121,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
 sealed interface OneOffEvent {
     object NavigateToCompletionScreen : OneOffEvent
+    object FailedToSendResponse : OneOffEvent
 }
 
 data class ChooseAccountUiState(

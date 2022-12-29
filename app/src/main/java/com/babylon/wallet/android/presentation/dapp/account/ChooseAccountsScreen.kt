@@ -20,6 +20,9 @@ fun ChooseAccountsScreen(
                 OneOffEvent.NavigateToCompletionScreen -> {
                     exitRequestFlow()
                 }
+                OneOffEvent.FailedToSendResponse -> {
+                    exitRequestFlow() // TODO probably later we need to show an error message
+                }
             }
         }
     }

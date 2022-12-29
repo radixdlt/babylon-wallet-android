@@ -4,8 +4,7 @@ import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsReadRequestItem
 import com.babylon.wallet.android.data.dapp.model.WalletRequest
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
-import com.babylon.wallet.android.domain.model.ConnectionState
-import com.babylon.wallet.android.domain.model.IncomingRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
@@ -27,9 +26,9 @@ interface PeerdroidClient {
 
     suspend fun sendMessage(message: String): Result<Unit>
 
-    fun listenForStateEvents(): Flow<ConnectionState>
+    fun listenForStateEvents(): Flow<MessageFromDataChannel.ConnectionStateChanged>
 
-    fun listenForIncomingRequests(): Flow<IncomingRequest>
+    fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
 
     suspend fun close()
 
@@ -69,45 +68,38 @@ class PeerdroidClientImpl @Inject constructor(
             ?: Result.Error("data channel is null")
     }
 
-    override fun listenForStateEvents(): Flow<ConnectionState> {
+    override fun listenForStateEvents(): Flow<MessageFromDataChannel.ConnectionStateChanged> {
         return dataChannel
             ?.dataChannelEvents
             ?.cancellable()
             ?.filterIsInstance<DataChannelEvent.StateChanged>()
             ?.map { stateChanged ->
-                when (stateChanged) {
-                    DataChannelEvent.StateChanged.CONNECTING -> {
-                        ConnectionState.CONNECTING
-                    }
-                    DataChannelEvent.StateChanged.OPEN -> {
-                        ConnectionState.OPEN
-                    }
-                    DataChannelEvent.StateChanged.CLOSING -> {
-                        ConnectionState.CLOSING
-                    }
-                    DataChannelEvent.StateChanged.CLOSE -> {
-                        ConnectionState.CLOSE
-                    }
-                    DataChannelEvent.StateChanged.UNKNOWN -> {
-                        ConnectionState.ERROR
-                    }
-                }
+                parseDataChannelState(stateChanged)
             }
             ?: emptyFlow()
     }
 
-    override fun listenForIncomingRequests(): Flow<IncomingRequest> {
+    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel> {
         return dataChannel
             ?.dataChannelEvents
             ?.cancellable()
-            ?.filterIsInstance<DataChannelEvent.IncomingMessage.DecodedMessage>()
-            ?.map { decodedMessage ->
-                parseIncomingMessage(messageInJsonString = decodedMessage.message)
+            ?.map { dataChannelEvent ->
+                when (dataChannelEvent) {
+                    is DataChannelEvent.StateChanged -> {
+                        parseDataChannelState(dataChannelEvent)
+                    }
+                    is DataChannelEvent.IncomingMessage.DecodedMessage -> {
+                        parseIncomingMessage(messageInJsonString = dataChannelEvent.message)
+                    }
+                    else -> { // TODO later we might need to handle other cases here
+                        MessageFromDataChannel.IncomingRequest.None
+                    }
+                }
             }
             ?.catch { exception ->
                 Timber.e("caught exception: ${exception.localizedMessage}")
                 if (exception is SerializationException) {
-                    emit(IncomingRequest.ParsingError)
+                    emit(MessageFromDataChannel.IncomingRequest.ParsingError)
                 } else {
                     throw exception
                 }
@@ -115,7 +107,29 @@ class PeerdroidClientImpl @Inject constructor(
             ?: emptyFlow()
     }
 
-    private fun parseIncomingMessage(messageInJsonString: String): IncomingRequest {
+    private fun parseDataChannelState(
+        dataChannelEvent: DataChannelEvent.StateChanged
+    ): MessageFromDataChannel.ConnectionStateChanged {
+        return when (dataChannelEvent) {
+            DataChannelEvent.StateChanged.CONNECTING -> {
+                MessageFromDataChannel.ConnectionStateChanged.CONNECTING
+            }
+            DataChannelEvent.StateChanged.OPEN -> {
+                MessageFromDataChannel.ConnectionStateChanged.OPEN
+            }
+            DataChannelEvent.StateChanged.CLOSING -> {
+                MessageFromDataChannel.ConnectionStateChanged.CLOSING
+            }
+            DataChannelEvent.StateChanged.CLOSE -> {
+                MessageFromDataChannel.ConnectionStateChanged.CLOSE
+            }
+            DataChannelEvent.StateChanged.UNKNOWN -> {
+                MessageFromDataChannel.ConnectionStateChanged.ERROR
+            }
+        }
+    }
+
+    private fun parseIncomingMessage(messageInJsonString: String): MessageFromDataChannel.IncomingRequest {
         val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
         val requestId = request.requestId
         val walletRequestItemsList = request.items
@@ -125,7 +139,7 @@ class PeerdroidClientImpl @Inject constructor(
             val accountsReadRequest = walletRequestItemsList[0]
             (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel(requestId)
         } else {
-            IncomingRequest.SomeOtherRequest
+            MessageFromDataChannel.IncomingRequest.SomeOtherRequest
         }
     }
 
