@@ -19,8 +19,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,8 +35,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 
 @Composable
 fun TransactionApprovalScreen(
@@ -44,7 +50,7 @@ fun TransactionApprovalScreen(
     val state = viewModel.state
     BackHandler(true) {}
     TransactionApprovalContent(
-        onBackClick = onBackClick,
+        onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
         isSigning = state.isSigning,
         manifestContent = state.manifestData?.instructions,
@@ -56,12 +62,13 @@ fun TransactionApprovalScreen(
             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall),
         approved = state.approved,
         error = state.error,
-        onMessageShown = viewModel::onMessageShown
+        onMessageShown = viewModel::onMessageShown,
+        isDeviceSecure = state.isDeviceSecure
     )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                TransactionApprovalEvent.TransactionRejected -> {
+                TransactionApprovalEvent.NavigateBack -> {
                     onBackClick()
                 }
             }
@@ -80,7 +87,9 @@ private fun TransactionApprovalContent(
     error: UiMessage?,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
+    isDeviceSecure: Boolean,
 ) {
+    val showNotSecuredDialog = remember { mutableStateOf(false) }
     Box(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -122,18 +131,37 @@ private fun TransactionApprovalContent(
         if (isLoading || isSigning) {
             FullscreenCircularProgressContent()
         }
+        val context = LocalContext.current
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.approve_transaction),
-            onClick = onApproveTransaction, enabled = !isLoading && !isSigning
+            onClick = {
+                if (isDeviceSecure) {
+                    context.findFragmentActivity()?.let { activity ->
+                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onApproveTransaction()
+                            }
+                        }
+                    }
+                } else {
+                    showNotSecuredDialog.value = true
+                }
+            }, enabled = !isLoading && !isSigning
         )
         SnackbarUiMessageHandler(message = error) {
             onMessageShown()
         }
     }
+    NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
+        showNotSecuredDialog.value = false
+        if (it) {
+            onApproveTransaction()
+        }
+    })
 }
 
 @Preview(showBackground = true)
@@ -148,7 +176,8 @@ fun TransactionApprovalContentPreview() {
             onApproveTransaction = {},
             approved = false,
             error = null,
-            onMessageShown = {}
+            onMessageShown = {},
+            isDeviceSecure = false
         )
     }
 }

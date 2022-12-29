@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
@@ -19,7 +20,10 @@ import com.babylon.wallet.android.domain.transaction.TransactionApprovalExceptio
 import com.babylon.wallet.android.domain.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
@@ -29,13 +33,17 @@ class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     private val incomingRequestHolder: IncomingRequestHolder,
     private val profileRepository: ProfileRepository,
+    deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
+    @ApplicationScope private val appScope: CoroutineScope,
 ) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
     private lateinit var requestId: String
 
-    internal var state by mutableStateOf(TransactionUiState())
+    internal var state by mutableStateOf(TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure()))
         private set
+
+    private var approvalJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -49,7 +57,7 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun approveTransaction() {
-        viewModelScope.launch {
+        approvalJob = appScope.launch {
             state.manifestData?.let { manifestData ->
                 val currentNetworkId = profileRepository.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
@@ -60,10 +68,12 @@ class TransactionApprovalViewModel @Inject constructor(
                         failure.getMessage()
                     )
                     dappResult.onValue {
-                        sendEvent(TransactionApprovalEvent.TransactionRejected)
+                        sendEvent(TransactionApprovalEvent.NavigateBack)
+                        approvalJob = null
                     }
                     dappResult.onError {
-                        sendEvent(TransactionApprovalEvent.TransactionRejected)
+                        sendEvent(TransactionApprovalEvent.NavigateBack)
+                        approvalJob = null
                     }
                 } else {
                     state = state.copy(isSigning = true)
@@ -71,6 +81,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     result.onValue { txId ->
                         state = state.copy(isSigning = false, approved = true)
                         dAppMessenger.sendTransactionWriteResponseSuccess(requestId, txId)
+                        approvalJob = null
                     }
                     result.onError {
                         state = state.copy(isSigning = false, error = UiMessage(error = it))
@@ -81,6 +92,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 error = exception.failure.toWalletErrorType(),
                                 message = exception.failure.getMessage()
                             )
+                            approvalJob = null
                         }
                     }
                 }
@@ -91,13 +103,17 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onBackClick() {
         // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
-            val result =
-                dAppMessenger.sendTransactionWriteResponseFailure(requestId, error = WalletErrorType.RejectedByUser)
-            result.onValue {
-                sendEvent(TransactionApprovalEvent.TransactionRejected)
-            }
-            result.onError {
-                sendEvent(TransactionApprovalEvent.TransactionRejected)
+            if (approvalJob != null) {
+                sendEvent(TransactionApprovalEvent.NavigateBack)
+            } else {
+                val result =
+                    dAppMessenger.sendTransactionWriteResponseFailure(requestId, error = WalletErrorType.RejectedByUser)
+                result.onValue {
+                    sendEvent(TransactionApprovalEvent.NavigateBack)
+                }
+                result.onError {
+                    sendEvent(TransactionApprovalEvent.NavigateBack)
+                }
             }
         }
     }
@@ -112,9 +128,10 @@ internal data class TransactionUiState(
     val isLoading: Boolean = true,
     val isSigning: Boolean = false,
     val approved: Boolean = false,
+    val isDeviceSecure: Boolean = false,
     val error: UiMessage? = null,
 )
 
 internal sealed interface TransactionApprovalEvent : OneOffEvent {
-    object TransactionRejected : TransactionApprovalEvent
+    object NavigateBack : TransactionApprovalEvent
 }

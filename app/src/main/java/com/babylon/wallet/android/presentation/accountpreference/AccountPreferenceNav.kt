@@ -15,6 +15,8 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val AddressArg = "address"
 
+const val ARG_GOT_FREE_XRD = "free_xrd"
+
 internal class AccountPreferenceArgs(val address: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[AddressArg]) as String)
 }

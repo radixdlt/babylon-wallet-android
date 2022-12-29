@@ -53,7 +53,7 @@ interface ProfileRepository {
 class ProfileRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
-    private val getMnemonicUseCase: GetMnemonicUseCase
+    private val getMnemonicUseCase: GetMnemonicUseCase,
 ) : ProfileRepository {
 
     override val p2pClient: Flow<P2PClient?> = dataStore.data.catch { exception ->
@@ -153,14 +153,14 @@ class ProfileRepositoryImpl @Inject constructor(
         assert(mnemonic.isNotEmpty())
         val mnemonicWords = MnemonicWords(mnemonic)
         val account = profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId.value }?.accounts?.first()
-        assert(account != null)
-        return mnemonicWords.signerPrivateKey(derivationPath = account!!.derivationPath)
+            ?: error("No account for network!")
+        return mnemonicWords.signerPrivateKey(derivationPath = account.derivationPath)
     }
 
     private suspend fun getSignerAccountsForAddresses(
         profileSnapshot: ProfileSnapshot?,
         addresses: List<String>,
-        networkId: Int
+        networkId: Int,
     ): List<Account> {
         val accounts = if (addresses.isNotEmpty()) {
             addresses.mapNotNull { address ->

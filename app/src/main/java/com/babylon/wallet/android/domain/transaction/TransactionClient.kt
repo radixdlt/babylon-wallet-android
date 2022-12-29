@@ -30,9 +30,12 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import rdx.works.profile.data.repository.ProfileRepository
@@ -45,7 +48,8 @@ class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val appScope: CoroutineScope
 ) {
 
     private val engine = RadixEngineToolkit
@@ -92,6 +96,30 @@ class TransactionClient @Inject constructor(
         }
     }
 
+    fun getFreeXrd1(includeLockFeeInstruction: Boolean, address: String): Flow<Result<String>> {
+        return channelFlow {
+            appScope.launch {
+                val networkId = profileRepository.getCurrentNetworkId()
+                val knownAddresses = KnownAddresses.addressMap[networkId]
+                if (knownAddresses != null) {
+                    val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)
+                    when (val epochResult = transactionRepository.getLedgerEpoch()) {
+                        is Result.Error -> send(epochResult)
+                        is Result.Success -> {
+                            val submitResult = signAndSubmitTransaction(manifest, true)
+                            if (submitResult is Result.Success) {
+                                preferencesManager.updateEpoch(address, epochResult.data)
+                            }
+                            send(submitResult)
+                        }
+                    }
+                } else {
+                    send(Result.Error())
+                }
+            }
+        }
+    }
+
     private fun buildFaucetManifest(
         knownAddresses: KnownAddresses,
         address: String,
@@ -121,7 +149,7 @@ class TransactionClient @Inject constructor(
 
     private suspend fun signAndSubmitTransaction(manifest: TransactionManifest, hasLockFee: Boolean): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId().value
-        return signAndSubmitTransaction(manifest, TransactionVersion.Default.value, networkId, hasLockFee)
+        return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
 
     suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
@@ -138,25 +166,24 @@ class TransactionClient @Inject constructor(
             is Result.Error -> return manifestConversionResult
             is Result.Success -> manifestConversionResult.data
         }
-        return signAndSubmitTransaction(jsonTransactionManifest, manifestData.version, networkId, false)
+        return signAndSubmitTransaction(jsonTransactionManifest, networkId, false)
     }
 
     private suspend fun signAndSubmitTransaction(
-        manifest: TransactionManifest,
-        version: Long,
+        jsonTransactionManifest: TransactionManifest,
         networkId: Int,
         hasLockFeeInstruction: Boolean,
     ): Result<String> {
         val addressesNeededToSign =
-            getAddressesNeededToSignTransaction(version, networkId, manifest)
+            getAddressesNeededToSignTransaction(jsonTransactionManifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> return transactionHeaderResult
             is Result.Success -> {
                 val accountAddressToLockFee =
                     addressesNeededToSign.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
-                val manifestWithTransactionFee = if (hasLockFeeInstruction) manifest else
-                    addLockFeeInstructionToManifest(manifest, accountAddressToLockFee)
+                val manifestWithTransactionFee = if (hasLockFeeInstruction) jsonTransactionManifest else
+                    addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
                 val notarizedTransaction = try {
                     val notarizedTransactionBuilder =
                         TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
@@ -170,8 +197,24 @@ class TransactionClient @Inject constructor(
                         )
                     )
                 }
-                val compiledNotarizedTransaction = notarizedTransaction.compile().getOrThrow()
-                val txID = notarizedTransaction.transactionId().getOrThrow()
+                val compiledNotarizedTransaction = notarizedTransaction.compile().getOrElse { e ->
+                    return Result.Error(
+                        TransactionApprovalException(
+                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            msg = e.message,
+                            e = e
+                        )
+                    )
+                }
+                val txID = notarizedTransaction.transactionId().getOrElse { e ->
+                    return Result.Error(
+                        TransactionApprovalException(
+                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            msg = e.message,
+                            e = e
+                        )
+                    )
+                }
                 val submitResult = submitNotarizedTransaction(
                     txID.toHexString(), CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
                 )
@@ -324,6 +367,7 @@ class TransactionClient @Inject constructor(
         if (transactionStatus.isFailed()) {
             when (transactionStatus) {
                 TransactionStatus.committedFailure -> {
+                    // TODO remove
                     transactionRepository.getTransactionDetails(
                         TransactionLookupIdentifier(
                             TransactionLookupOrigin.intent,
@@ -355,19 +399,11 @@ class TransactionClient @Inject constructor(
         return Result.Success(txID)
     }
 
-    @Throws(Exception::class)
     private fun getAddressesNeededToSignTransaction(
-        transactionVersion: Long,
-        networkId: Int,
-        manifest: TransactionManifest,
+        jsonTransactionManifest: TransactionManifest,
     ): List<String> {
         val addressesNeededToSign = mutableListOf<String>()
-        val convertedManifest = engine.convertManifest(
-            ConvertManifestRequest(
-                transactionVersion.toUByte(), networkId.toUByte(), ManifestInstructionsKind.JSON, manifest
-            )
-        ).getOrThrow()
-        when (val instructions = convertedManifest.instructions) {
+        when (val instructions = jsonTransactionManifest.instructions) {
             is ManifestInstructions.JSONInstructions -> {
                 instructions.instructions.filterIsInstance<Instruction.CallMethod>().forEach { callMethod ->
                     val componentAddress = when (val callMethodReceiver = callMethod.componentAddress) {

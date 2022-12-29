@@ -127,7 +127,7 @@ fun deriveAddress(
     publicKey: PublicKey
 ): EntityAddress {
     val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
-    //TODO handle error
+    // TODO handle error
     val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
     return EntityAddress(response.virtualAccountAddress.address.componentAddress)
 }

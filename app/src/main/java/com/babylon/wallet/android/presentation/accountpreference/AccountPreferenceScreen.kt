@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.accountpreference
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,9 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +22,7 @@ import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -36,6 +35,9 @@ fun AccountPreferenceScreen(
     modifier: Modifier = Modifier,
 ) {
     val state = viewModel.state
+    BackHandler(enabled = true) {
+        onBackClick(state.gotFreeXrd)
+    }
     AccountPreferenceContent(
         onBackClick = {
             onBackClick(state.gotFreeXrd)
@@ -112,33 +114,12 @@ private fun AccountPreferenceContent(
                 onMessageShown()
             }
         }
-        AlertDialogView(show = showNotSecuredDialog.value, finish = {
+        NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
             showNotSecuredDialog.value = false
             if (it) {
                 onGetFreeXrdClick()
             }
         })
-    }
-}
-
-@Composable
-private fun AlertDialogView(
-    show: Boolean,
-    finish: (accepted: Boolean) -> Unit,
-) {
-    if (show) {
-        AlertDialog(
-            onDismissRequest = { finish(false) },
-            confirmButton = {
-                TextButton(onClick = { finish(true) }) { Text(text = stringResource(id = R.string.confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { finish(false) }) { Text(text = stringResource(id = R.string.cancel)) }
-            },
-            title = { Text(text = stringResource(id = R.string.please_confirm_dialog_title)) },
-            text = { Text(text = stringResource(id = R.string.please_confirm_dialog_body)) }
-
-        )
     }
 }
 

@@ -7,26 +7,29 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.model.ECKeyPair
 import com.radixdlt.model.PrivateKey
+import com.radixdlt.toolkit.models.crypto.PrivateKey as EnginePrivateKey
+import com.radixdlt.toolkit.models.crypto.PublicKey as EnginePublicKey
 
-fun ECKeyPair.toEnginePublicKeyModel(): com.radixdlt.toolkit.models.crypto.PublicKey {
+fun ECKeyPair.toEnginePublicKeyModel(): EnginePublicKey {
     return when (this.publicKey.curveType) {
         EllipticCurveType.Secp256k1 -> {
-            com.radixdlt.toolkit.models.crypto.PublicKey.EcdsaSecp256k1.fromByteArray(getCompressedPublicKey().removeLeadingZero())
+            EnginePublicKey.EcdsaSecp256k1.fromByteArray(getCompressedPublicKey().removeLeadingZero())
         }
         EllipticCurveType.Ed25519 -> {
-            com.radixdlt.toolkit.models.crypto.PublicKey.EddsaEd25519.fromByteArray(getCompressedPublicKey().removeLeadingZero())
+            EnginePublicKey.EddsaEd25519.fromByteArray(getCompressedPublicKey().removeLeadingZero())
         }
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }
 
-fun PrivateKey.toEngineModel(): com.radixdlt.toolkit.models.crypto.PrivateKey {
+fun PrivateKey.toEngineModel(): EnginePrivateKey {
     return when (this.curveType) {
         EllipticCurveType.Secp256k1 -> {
-            com.radixdlt.toolkit.models.crypto.PrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(this.key.toByteArray())
+            EnginePrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(this.key.toByteArray())
         }
-        EllipticCurveType.Ed25519 -> com.radixdlt.toolkit.models.crypto.PrivateKey.EddsaEd25519.newFromPrivateKeyBytes(
-            this.key.toByteArray())
+        EllipticCurveType.Ed25519 -> EnginePrivateKey.EddsaEd25519.newFromPrivateKeyBytes(
+            this.key.toByteArray().removeLeadingZero()
+        )
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }

@@ -202,6 +202,7 @@ private val LightColorPalette = RadixColors(
     darkMode3 = DarkMode3,
 )
 
+@Suppress("UnusedPrivateMember")
 private val DarkColorPalette = RadixColors(
     defaultBackground = Black,
     backgroundAlternate = White,
@@ -334,7 +335,8 @@ fun BabylonWalletTheme(
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) {
-        DarkColorPalette
+        LightColorPalette
+//        DarkColorPalette
     } else {
         LightColorPalette
     }

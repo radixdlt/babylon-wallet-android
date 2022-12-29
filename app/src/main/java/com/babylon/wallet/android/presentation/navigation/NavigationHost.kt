@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
+import com.babylon.wallet.android.presentation.accountpreference.ARG_GOT_FREE_XRD
 import com.babylon.wallet.android.presentation.accountpreference.accountPreference
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferenceScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
@@ -83,7 +84,7 @@ fun NavigationHost(
                 ExitTransition.None
             }
         ) { navBackStackEntry ->
-            val shouldRefresh = navBackStackEntry.receiveDataOnce<Boolean>(key = "free")
+            val shouldRefresh = navBackStackEntry.receiveDataOnce<Boolean>(key = ARG_GOT_FREE_XRD)
             AccountScreen(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
@@ -136,7 +137,7 @@ fun NavigationHost(
         accountPreferenceScreen(onBackClick = { gotFreeXrd ->
             navController.passDataBack(
                 Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
-                "free",
+                ARG_GOT_FREE_XRD,
                 gotFreeXrd
             )
             navController.popBackStack()
