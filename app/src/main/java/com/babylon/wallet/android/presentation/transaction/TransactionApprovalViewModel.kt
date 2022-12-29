@@ -103,7 +103,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onBackClick() {
         // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
-            if (approvalJob != null) {
+            if (approvalJob != null || state.approved) {
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
                 val result =

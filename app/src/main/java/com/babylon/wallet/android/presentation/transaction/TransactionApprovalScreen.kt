@@ -109,12 +109,16 @@ private fun TransactionApprovalContent(
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
             ) {
                 AnimatedVisibility(visible = approved) {
-                    Icon(painter = painterResource(id = R.drawable.img_dapp_complete), contentDescription = null)
-                    Text(
-                        text = stringResource(R.string.transaction_approved_success),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2,
-                    )
+                    Column(modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
+                        Icon(painter = painterResource(id = R.drawable.img_dapp_complete), contentDescription = null)
+                        Text(
+                            text = stringResource(R.string.transaction_approved_success),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray2,
+                        )
+                    }
                 }
                 AnimatedVisibility(visible = !approved) {
                     manifestContent?.let { manifestContent ->
@@ -132,26 +136,28 @@ private fun TransactionApprovalContent(
             FullscreenCircularProgressContent()
         }
         val context = LocalContext.current
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.approve_transaction),
-            onClick = {
-                if (isDeviceSecure) {
-                    context.findFragmentActivity()?.let { activity ->
-                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onApproveTransaction()
+        AnimatedVisibility(visible = !approved, modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(RadixTheme.dimensions.paddingDefault)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                text = stringResource(id = R.string.approve_transaction),
+                onClick = {
+                    if (isDeviceSecure) {
+                        context.findFragmentActivity()?.let { activity ->
+                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onApproveTransaction()
+                                }
                             }
                         }
+                    } else {
+                        showNotSecuredDialog.value = true
                     }
-                } else {
-                    showNotSecuredDialog.value = true
-                }
-            }, enabled = !isLoading && !isSigning
-        )
+                }, enabled = !isLoading && !isSigning
+            )
+        }
         SnackbarUiMessageHandler(message = error) {
             onMessageShown()
         }

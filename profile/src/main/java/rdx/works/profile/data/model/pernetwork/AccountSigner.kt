@@ -4,6 +4,6 @@ import com.radixdlt.model.PrivateKey
 
 data class AccountSigner(
     val account: Account,
-    val notaryPrivateKey: PrivateKey,
+    val privateKey: PrivateKey,
     val signers: List<PrivateKey>,
 )

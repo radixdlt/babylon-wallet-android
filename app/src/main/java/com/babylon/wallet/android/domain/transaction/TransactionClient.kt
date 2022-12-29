@@ -30,12 +30,9 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import rdx.works.profile.data.repository.ProfileRepository
@@ -49,7 +46,6 @@ class TransactionClient @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val appScope: CoroutineScope
 ) {
 
     private val engine = RadixEngineToolkit
@@ -92,30 +88,6 @@ class TransactionClient @Inject constructor(
                 }
             } else {
                 Result.Error()
-            }
-        }
-    }
-
-    fun getFreeXrd1(includeLockFeeInstruction: Boolean, address: String): Flow<Result<String>> {
-        return channelFlow {
-            appScope.launch {
-                val networkId = profileRepository.getCurrentNetworkId()
-                val knownAddresses = KnownAddresses.addressMap[networkId]
-                if (knownAddresses != null) {
-                    val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)
-                    when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                        is Result.Error -> send(epochResult)
-                        is Result.Success -> {
-                            val submitResult = signAndSubmitTransaction(manifest, true)
-                            if (submitResult is Result.Success) {
-                                preferencesManager.updateEpoch(address, epochResult.data)
-                            }
-                            send(submitResult)
-                        }
-                    }
-                } else {
-                    send(Result.Error())
-                }
             }
         }
     }
@@ -187,7 +159,8 @@ class TransactionClient @Inject constructor(
                 val notarizedTransaction = try {
                     val notarizedTransactionBuilder =
                         TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
-                    notarizedTransactionBuilder.notarize(notaryAndSigners.notarySigner.notaryPrivateKey.toEngineModel())
+                            .sign(notaryAndSigners.signers.map { it.privateKey.toEngineModel() })
+                    notarizedTransactionBuilder.notarize(notaryAndSigners.notarySigner.privateKey.toEngineModel())
                 } catch (e: Exception) {
                     return Result.Error(
                         TransactionApprovalException(
@@ -243,7 +216,7 @@ class TransactionClient @Inject constructor(
                         epoch.toULong(),
                         epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
                         generateNonce(),
-                        notaryAndSigners.notarySigner.notaryPrivateKey.toECKeyPair().toEnginePublicKeyModel(),
+                        notaryAndSigners.notarySigner.privateKey.toECKeyPair().toEnginePublicKeyModel(),
                         false,
                         TransactionConfig.COST_UNIT_LIMIT,
                         tipPercentage = TransactionConfig.TIP_PERCENTAGE
