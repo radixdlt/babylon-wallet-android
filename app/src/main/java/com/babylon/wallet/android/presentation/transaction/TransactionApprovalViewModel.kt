@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
@@ -13,7 +14,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.IncomingRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.domain.transaction.TransactionApprovalException
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
@@ -36,9 +38,10 @@ class TransactionApprovalViewModel @Inject constructor(
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
-    private lateinit var requestId: String
+    private val args = TransactionApprovalArgs(savedStateHandle)
 
     internal var state by mutableStateOf(TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure()))
         private set
@@ -47,9 +50,8 @@ class TransactionApprovalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            incomingRequestHolder.receive(viewModelScope) {
-                if (it is IncomingRequest.TransactionWriteRequest) {
-                    requestId = it.requestId
+            incomingRequestHolder.receive(viewModelScope, args.requestId) {
+                if (it is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest) {
                     state = state.copy(manifestData = it.transactionManifestData, isLoading = false)
                 }
             }
@@ -63,7 +65,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     val dappResult = dAppMessenger.sendTransactionWriteResponseFailure(
-                        requestId,
+                        args.requestId,
                         failure.toWalletErrorType(),
                         failure.getMessage()
                     )
@@ -80,7 +82,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     val result = transactionClient.signAndSubmitTransaction(manifestData)
                     result.onValue { txId ->
                         state = state.copy(isSigning = false, approved = true)
-                        dAppMessenger.sendTransactionWriteResponseSuccess(requestId, txId)
+                        dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
                         approvalJob = null
                     }
                     result.onError {
@@ -88,7 +90,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         val exception = it as? TransactionApprovalException
                         if (exception != null) {
                             dAppMessenger.sendTransactionWriteResponseFailure(
-                                requestId,
+                                args.requestId,
                                 error = exception.failure.toWalletErrorType(),
                                 message = exception.failure.getMessage()
                             )
@@ -107,7 +109,10 @@ class TransactionApprovalViewModel @Inject constructor(
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
                 val result =
-                    dAppMessenger.sendTransactionWriteResponseFailure(requestId, error = WalletErrorType.RejectedByUser)
+                    dAppMessenger.sendTransactionWriteResponseFailure(
+                        args.requestId,
+                        error = WalletErrorType.RejectedByUser
+                    )
                 result.onValue {
                     sendEvent(TransactionApprovalEvent.NavigateBack)
                 }

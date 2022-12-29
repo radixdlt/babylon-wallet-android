@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.IncomingRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.hex.decode
 import kotlinx.serialization.SerialName
@@ -20,7 +20,7 @@ data class SendTransactionWriteRequestItem(
 ) : WalletRequestItem()
 
 fun SendTransactionWriteRequestItem.toDomainModel(requestId: String, networkId: Int) =
-    IncomingRequest.TransactionWriteRequest(
+    MessageFromDataChannel.IncomingRequest.TransactionWriteRequest(
         requestId = requestId,
         networkId = networkId,
         transactionManifestData = TransactionManifestData(

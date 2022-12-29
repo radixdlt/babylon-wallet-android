@@ -7,10 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.domain.model.IncomingRequest
-import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -29,7 +28,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
     profileRepository: ProfileRepository,
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
     private val incomingRequestHolder: IncomingRequestHolder
 ) : ViewModel() {
 

@@ -109,9 +109,11 @@ private fun TransactionApprovalContent(
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
             ) {
                 AnimatedVisibility(visible = approved) {
-                    Column(modifier = Modifier.fillMaxWidth(),
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
+                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                    ) {
                         Icon(painter = painterResource(id = R.drawable.img_dapp_complete), contentDescription = null)
                         Text(
                             text = stringResource(R.string.transaction_approved_success),
@@ -136,9 +138,12 @@ private fun TransactionApprovalContent(
             FullscreenCircularProgressContent()
         }
         val context = LocalContext.current
-        AnimatedVisibility(visible = !approved, modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .padding(RadixTheme.dimensions.paddingDefault)) {
+        AnimatedVisibility(
+            visible = !approved,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
             RadixPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth(),

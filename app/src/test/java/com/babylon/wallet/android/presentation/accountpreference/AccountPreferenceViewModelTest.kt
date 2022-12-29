@@ -1,3 +1,78 @@
 package com.babylon.wallet.android.presentation.accountpreference
 
-internal class AccountPreferenceViewModelTest
+import androidx.lifecycle.SavedStateHandle
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.transaction.TransactionClient
+import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPreferenceViewModel>() {
+
+    private val transactionClient = mockk<TransactionClient>()
+    private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
+    private val savedStateHandle = mockk<SavedStateHandle>()
+    private val sampleTxId = "txId1"
+    private val sampleAddress = sampleDataProvider.randomTokenAddress()
+
+    override fun initVM(): AccountPreferenceViewModel {
+        return AccountPreferenceViewModel(transactionClient, deviceSecurityHelper, TestScope(), savedStateHandle)
+    }
+
+    @Before
+    fun setUp() {
+        every { deviceSecurityHelper.isDeviceSecure() } returns true
+        every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
+        coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Success(sampleTxId)
+        every { savedStateHandle.get<String>(AddressArg) } returns sampleAddress
+    }
+
+    @Test
+    fun `initial state is correct when free xrd enabled`() = runTest {
+        val vm = initVM()
+        advanceUntilIdle()
+        assert(vm.state.isDeviceSecure)
+        assert(vm.state.canUseFaucet)
+    }
+
+    @Test
+    fun `initial state is correct when free xrd not enabled`() = runTest {
+        every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(false) }
+        val vm = initVM()
+        advanceUntilIdle()
+        assert(vm.state.isDeviceSecure)
+        assert(!vm.state.canUseFaucet)
+    }
+
+    @Test
+    fun `get free xrd success sets proper state`() = runTest {
+        val vm = initVM()
+        vm.onGetFreeXrdClick()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { transactionClient.getFreeXrd(true, sampleAddress) }
+        assert(vm.state.gotFreeXrd)
+    }
+
+    @Test
+    fun `get free xrd failure sets proper state`() = runTest {
+        coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Error(Exception())
+        val vm = initVM()
+        vm.onGetFreeXrdClick()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { transactionClient.getFreeXrd(true, sampleAddress) }
+        assert(!vm.state.gotFreeXrd)
+        assert(vm.state.error != null)
+    }
+
+}
