@@ -10,9 +10,11 @@ class IncomingRequestRepository @Inject constructor() {
     private val listOfIncomingRequests = mutableMapOf<String, IncomingRequest>()
 
     fun add(incomingRequest: IncomingRequest) {
-        val id = incomingRequest.id
-        if (id != null) {
-            listOfIncomingRequests.putIfAbsent(id, incomingRequest)
+        synchronized(this) {
+            val id = incomingRequest.id
+            if (id != null) {
+                listOfIncomingRequests.putIfAbsent(id, incomingRequest)
+            }
         }
     }
 
