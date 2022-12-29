@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.model.PrivateKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -46,6 +47,7 @@ interface ProfileRepository {
     suspend fun getCurrentNetworkBaseUrl(): String
     suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
     suspend fun getAccounts(): List<Account>
+    suspend fun getPrivateKey(): PrivateKey
 }
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -140,6 +142,19 @@ class ProfileRepositoryImpl @Inject constructor(
             signers.add(AccountSigner(it, privateKey, listOf(privateKey)))
         }
         return signers.toList()
+    }
+
+    override suspend fun getPrivateKey(): PrivateKey {
+        val profileSnapshot = readProfileSnapshot()
+        val networkId = getCurrentNetworkId()
+        val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID
+        assert(factorSourceId != null)
+        val mnemonic = getMnemonicUseCase(factorSourceId)
+        assert(mnemonic.isNotEmpty())
+        val mnemonicWords = MnemonicWords(mnemonic)
+        val account = profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId.value }?.accounts?.first()
+        assert(account != null)
+        return mnemonicWords.signerPrivateKey(derivationPath = account!!.derivationPath)
     }
 
     private suspend fun getSignerAccountsForAddresses(

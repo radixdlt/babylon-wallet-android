@@ -14,7 +14,7 @@ fun ECKeyPair.toEnginePublicKeyModel(): com.radixdlt.toolkit.models.crypto.Publi
             com.radixdlt.toolkit.models.crypto.PublicKey.EcdsaSecp256k1.fromByteArray(getCompressedPublicKey().removeLeadingZero())
         }
         EllipticCurveType.Ed25519 -> {
-            com.radixdlt.toolkit.models.crypto.PublicKey.EddsaEd25519.fromByteArray(getCompressedPublicKey())
+            com.radixdlt.toolkit.models.crypto.PublicKey.EddsaEd25519.fromByteArray(getCompressedPublicKey().removeLeadingZero())
         }
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }

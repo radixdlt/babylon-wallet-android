@@ -6,19 +6,23 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountPreferenceViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     private val deviceSecurityHelper: DeviceSecurityHelper,
+    @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -42,13 +46,15 @@ class AccountPreferenceViewModel @Inject constructor(
     }
 
     fun onGetFreeXrdClick() {
-        viewModelScope.launch {
+        appScope.launch {
             state = state.copy(isLoading = true)
             val result = transactionClient.getFreeXrd(true, args.address)
             result.onValue {
+                Timber.d("Got free xrd")
                 state = state.copy(isLoading = false, gotFreeXrd = true)
             }
             result.onError {
+                Timber.d("Got free xrd error")
                 state = state.copy(isLoading = false, error = UiMessage(error = it))
             }
         }
@@ -64,5 +70,5 @@ internal data class AccountPreferenceUiState(
     val isLoading: Boolean = false,
     val isDeviceSecure: Boolean = false,
     val gotFreeXrd: Boolean = false,
-    val error: UiMessage? = null
+    val error: UiMessage? = null,
 )

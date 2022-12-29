@@ -1,7 +1,8 @@
 package rdx.works.profile.data.extensions
 
-import models.crypto.PublicKey
-import models.request.DeriveVirtualAccountAddressRequest
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.crypto.PublicKey
+import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
@@ -126,6 +127,7 @@ fun deriveAddress(
     publicKey: PublicKey
 ): EntityAddress {
     val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
-    val response = RadixEngineToolkit.deriveVirtualAccountAddress(request)
+    //TODO handle error
+    val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
     return EntityAddress(response.virtualAccountAddress.address.componentAddress)
 }

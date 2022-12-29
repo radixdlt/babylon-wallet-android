@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.KnownAddresses
@@ -28,9 +29,11 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
@@ -42,6 +45,7 @@ class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
     private val engine = RadixEngineToolkit
@@ -67,22 +71,24 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun getFreeXrd(includeLockFeeInstruction: Boolean, address: String): Result<String> {
-        val networkId = profileRepository.getCurrentNetworkId()
-        val knownAddresses = KnownAddresses.addressMap[networkId]
-        return if (knownAddresses != null) {
-            val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)
-            when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                is Result.Error -> epochResult
-                is Result.Success -> {
-                    val submitResult = signAndSubmitTransaction(manifest, true)
-                    if (submitResult is Result.Success) {
-                        preferencesManager.updateEpoch(address, epochResult.data)
+        return withContext(ioDispatcher) {
+            val networkId = profileRepository.getCurrentNetworkId()
+            val knownAddresses = KnownAddresses.addressMap[networkId]
+            if (knownAddresses != null) {
+                val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)
+                when (val epochResult = transactionRepository.getLedgerEpoch()) {
+                    is Result.Error -> epochResult
+                    is Result.Success -> {
+                        val submitResult = signAndSubmitTransaction(manifest, true)
+                        if (submitResult is Result.Success) {
+                            preferencesManager.updateEpoch(address, epochResult.data)
+                        }
+                        submitResult
                     }
-                    return submitResult
                 }
+            } else {
+                Result.Error()
             }
-        } else {
-            Result.Error()
         }
     }
 

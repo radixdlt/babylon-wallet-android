@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.accountpreference
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,16 +36,9 @@ fun AccountPreferenceScreen(
     modifier: Modifier = Modifier,
 ) {
     val state = viewModel.state
-    BackHandler(true) {
-        if (!state.isLoading) {
-            onBackClick(state.gotFreeXrd)
-        }
-    }
     AccountPreferenceContent(
         onBackClick = {
-            if (!state.isLoading) {
-                onBackClick(state.gotFreeXrd)
-            }
+            onBackClick(state.gotFreeXrd)
         },
         modifier = modifier
             .systemBarsPadding()
