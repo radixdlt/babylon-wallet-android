@@ -3,15 +3,12 @@
 package com.babylon.wallet.android.domain.transaction
 
 import com.babylon.wallet.android.data.PreferencesManager
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupOrigin
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.KnownAddresses
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.crypto.toECKeyPair
@@ -36,7 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import rdx.works.profile.data.repository.ProfileRepository
-import timber.log.Timber
 import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
@@ -340,28 +336,11 @@ class TransactionClient @Inject constructor(
         if (transactionStatus.isFailed()) {
             when (transactionStatus) {
                 TransactionStatus.committedFailure -> {
-                    // TODO remove
-                    transactionRepository.getTransactionDetails(
-                        TransactionLookupIdentifier(
-                            TransactionLookupOrigin.intent,
-                            txID
-                        )
-                    ).onValue {
-                        Timber.d("Details: $it")
-                    }
                     return Result.Error(
                         TransactionApprovalException(TransactionApprovalFailure.GatewayCommittedFailure(txID))
                     )
                 }
                 TransactionStatus.rejected -> {
-                    transactionRepository.getTransactionDetails(
-                        TransactionLookupIdentifier(
-                            TransactionLookupOrigin.intent,
-                            txID
-                        )
-                    ).onValue {
-                        Timber.d("Details: $it")
-                    }
                     return Result.Error(
                         TransactionApprovalException(TransactionApprovalFailure.GatewayRejected(txID))
                     )
