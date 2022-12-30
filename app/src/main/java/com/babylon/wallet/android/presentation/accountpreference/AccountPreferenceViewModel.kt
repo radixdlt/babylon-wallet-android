@@ -11,11 +11,12 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +25,7 @@ class AccountPreferenceViewModel @Inject constructor(
     private val deviceSecurityHelper: DeviceSecurityHelper,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
+    private val appEventBus: AppEventBus
 ) : ViewModel() {
 
     private val args = AccountPreferenceArgs(savedStateHandle)
@@ -50,11 +52,10 @@ class AccountPreferenceViewModel @Inject constructor(
             state = state.copy(isLoading = true)
             val result = transactionClient.getFreeXrd(true, args.address)
             result.onValue {
-                Timber.d("Got free xrd")
                 state = state.copy(isLoading = false, gotFreeXrd = true)
+                appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }
             result.onError {
-                Timber.d("Got free xrd error")
                 state = state.copy(isLoading = false, error = UiMessage(error = it))
             }
         }

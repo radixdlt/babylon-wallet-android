@@ -17,6 +17,8 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -24,6 +26,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -33,6 +36,7 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val clipboardManager: ClipboardManager,
+    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -42,7 +46,12 @@ class AccountViewModel @Inject constructor(
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
-        loadAccountData()
+        loadInitialData()
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.GotFreeXrd>().collect {
+                refresh()
+            }
+        }
     }
 
     fun refresh() {
