@@ -1,4 +1,5 @@
 @file:Suppress("MagicNumber", "LongParameterList", "CompositionLocalAllowlist")
+
 package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme

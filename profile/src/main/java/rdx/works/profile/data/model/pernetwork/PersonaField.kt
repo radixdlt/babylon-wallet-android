@@ -20,12 +20,16 @@ data class PersonaField(
     enum class PersonaFieldKind {
         @SerialName("firstName")
         FirstName,
+
         @SerialName("lastName")
         LastName,
+
         @SerialName("email")
         Email,
+
         @SerialName("personalIdentificationNumber")
         PersonalIdentificationNumber,
+
         @SerialName("zipCode")
         ZipCode
     }

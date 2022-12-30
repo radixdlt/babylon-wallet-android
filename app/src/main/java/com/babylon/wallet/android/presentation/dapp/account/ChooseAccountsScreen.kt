@@ -13,7 +13,6 @@ fun ChooseAccountsScreen(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit
 ) {
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -36,8 +35,8 @@ fun ChooseAccountsScreen(
                 },
                 imageUrl = state.dAppDetails?.imageUrl.orEmpty(),
                 continueButtonEnabled = state.continueButtonEnabled,
-                dAppAccounts = accounts,
-                accountSelected = viewModel::onAccountSelect
+                accounts = accounts,
+                onAccountSelect = viewModel::onAccountSelect
             )
         }
 

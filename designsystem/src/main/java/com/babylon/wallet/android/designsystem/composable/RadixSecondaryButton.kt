@@ -33,7 +33,7 @@ fun RadixSecondaryButton(
     contentColor: Color = RadixTheme.colors.gray1,
     shape: Shape = RadixTheme.shapes.roundedRectSmall,
     enabled: Boolean = true,
-    icon: @Composable() (() -> Unit)? = null
+    icon: @Composable (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()

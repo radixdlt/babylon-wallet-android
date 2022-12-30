@@ -44,7 +44,8 @@ val GradientBrand1 = Brush.linearGradient(
     listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F)),
     start = Offset(0f, Float.POSITIVE_INFINITY),
     end = Offset(
-        Float.POSITIVE_INFINITY, 0f
+        x = Float.POSITIVE_INFINITY,
+        y = 0f
     )
 )
 

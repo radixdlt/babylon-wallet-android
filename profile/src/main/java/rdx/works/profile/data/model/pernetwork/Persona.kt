@@ -57,6 +57,7 @@ data class Persona(
     @SerialName("securityState")
     val securityState: SecurityState.Unsecured
 )
+
 @Suppress("LongParameterList") // TODO refine this later on
 fun createNewPersona(
     displayName: String,

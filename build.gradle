@@ -9,9 +9,9 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.44.2'
-        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.22.0-RC3"
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.22.0"
         classpath "org.jacoco:org.jacoco.core:0.8.8"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:1.7.20"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:1.7.22"
     }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
@@ -22,12 +22,10 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.20'
 }
 allprojects {
-    if (!it.name.contains("peerdroid")) {
-        apply from: "$rootDir/config/detekt.gradle"
-        tasks.withType(Detekt).configureEach {
-            exclude("**/test/**")
-            exclude("**/generated/**")
-            exclude("**/androidTest/**")
-        }
+    apply from: "$rootDir/config/detekt.gradle"
+    tasks.withType(Detekt).configureEach {
+        exclude("**/test/**")
+        exclude("**/generated/**")
+        exclude("**/androidTest/**")
     }
 }

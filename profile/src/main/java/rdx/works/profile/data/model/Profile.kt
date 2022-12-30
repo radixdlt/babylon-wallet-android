@@ -69,7 +69,6 @@ data class Profile(
             mnemonic: MnemonicWords,
             firstAccountDisplayName: String
         ): Profile {
-
             val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource =
                 FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource
                     .deviceFactorSource(

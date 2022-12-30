@@ -42,7 +42,6 @@ fun WalletBalanceView(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-
         Text(
             modifier = Modifier.align(Alignment.CenterVertically),
             text = currencySignValue,
@@ -82,10 +81,11 @@ fun WalletBalanceView(
             }
         ) {
             Icon(
-                painter = if (balanceHidden)
+                painter = if (balanceHidden) {
                     painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_show)
-                else
-                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_hide),
+                } else {
+                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_hide)
+                },
                 "",
                 tint = RadixTheme.colors.gray3
             )

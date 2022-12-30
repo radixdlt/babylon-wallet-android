@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.gateway.generated.converter
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.encoding.Decoder
@@ -9,6 +10,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import java.math.BigInteger
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = BigInteger::class)
 object BigIntegerAdapter : KSerializer<BigInteger> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BigInteger", PrimitiveKind.STRING)

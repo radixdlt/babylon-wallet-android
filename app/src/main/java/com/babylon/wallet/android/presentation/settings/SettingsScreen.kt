@@ -33,7 +33,6 @@ fun SettingsScreen(
     onSettingClick: (SettingSectionItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val state = viewModel.state
     SettingsContent(
         onBackClick = onBackClick,
@@ -88,8 +87,11 @@ private fun SettingsContent(
                     section.items.forEach { settingItem ->
                         item {
                             val textColor =
-                                if (settingItem is SettingSectionItem.DeleteAll) RadixTheme.colors.red1
-                                else RadixTheme.colors.gray1
+                                if (settingItem is SettingSectionItem.DeleteAll) {
+                                    RadixTheme.colors.red1
+                                } else {
+                                    RadixTheme.colors.gray1
+                                }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

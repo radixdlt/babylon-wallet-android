@@ -18,7 +18,6 @@ fun WalletApp(
     hasProfile: Boolean,
     incomingRequest: MessageFromDataChannel.IncomingRequest
 ) {
-
     val navController = rememberAnimatedNavController()
 
     if (showOnboarding) {

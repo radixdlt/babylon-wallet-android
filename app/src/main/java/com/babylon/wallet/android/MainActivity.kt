@@ -12,10 +12,10 @@ import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import dagger.hilt.android.AndroidEntryPoint
 
+// Extending from FragmentActivity because of Biometric
 @ExperimentalLifecycleComposeApi
 @OptIn(ExperimentalPagerApi::class)
 @AndroidEntryPoint
-// Extending from FragmentActivity because of Biometric
 class MainActivity : FragmentActivity() {
 
     private val viewModel: MainViewModel by viewModels()

@@ -19,7 +19,6 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
     initializePeerConnection: (PeerConnection?) -> Unit,
     createRtcDataChannel: () -> Unit
 ) = callbackFlow {
-
     val observer = object : PeerConnectionObserver() {
         override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
             super.onSignalingChange(p0)
@@ -70,7 +69,9 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
 
         override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
             super.onIceConnectionChange(p0)
-            if (p0 == PeerConnection.IceConnectionState.FAILED || p0 == PeerConnection.IceConnectionState.DISCONNECTED) {
+            if (p0 == PeerConnection.IceConnectionState.FAILED ||
+                p0 == PeerConnection.IceConnectionState.DISCONNECTED
+            ) {
                 trySend(PeerConnectionEvent.Disconnected)
             }
         }

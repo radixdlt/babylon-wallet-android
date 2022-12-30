@@ -16,7 +16,6 @@ import timber.log.Timber
 // Once the WebRTC flow is complete & data channel is open
 // then this will be used to observe the incoming messages & the state changes.
 internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
-
     val callback = object : DataChannel.Observer {
 
         override fun onBufferedAmountChange(p0: Long) {
@@ -70,10 +69,10 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
                     try {
                         parseChunkAndSendEventIfListIsComplete(packageMessageDto.toChunk())
                     } catch (exception: Exception) {
-                        Timber.e("an exception occurred while parsing chunk packages: ${exception.localizedMessage}")
+                        Timber.e("exception occurred while parsing chunk packages: ${exception.localizedMessage}")
                         trySend(
                             DataChannelEvent.UnknownError(
-                                message = "exception occurred while parsing chunk packages: ${exception.localizedMessage}"
+                                message = "exception occurred while parsing chunk packages"
                             )
                         )
                     }
@@ -146,7 +145,7 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
 }
 
 private fun DataChannel.currentState(): DataChannelEvent.StateChanged {
-    return when(this.state()) {
+    return when (this.state()) {
         DataChannel.State.CONNECTING -> DataChannelEvent.StateChanged.CONNECTING
         DataChannel.State.OPEN -> DataChannelEvent.StateChanged.OPEN
         DataChannel.State.CLOSING -> DataChannelEvent.StateChanged.OPEN

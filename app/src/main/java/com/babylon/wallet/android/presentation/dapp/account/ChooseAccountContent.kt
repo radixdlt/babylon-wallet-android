@@ -48,8 +48,8 @@ fun ChooseAccountContent(
     onContinueClick: () -> Unit,
     imageUrl: String,
     continueButtonEnabled: Boolean,
-    dAppAccounts: List<SelectedAccountUiState>,
-    accountSelected: (SelectedAccountUiState) -> Unit,
+    accounts: List<SelectedAccountUiState>,
+    onAccountSelect: (SelectedAccountUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -64,8 +64,7 @@ fun ChooseAccountContent(
             )
         }
         Column(
-            modifier = Modifier
-                .padding(horizontal = 50.dp, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = 50.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -99,7 +98,7 @@ fun ChooseAccountContent(
             Spacer(modifier = Modifier.height(40.dp))
 
             Column {
-                dAppAccounts.forEach { dAppAccount ->
+                accounts.forEach { dAppAccount ->
                     AccountCard(
                         accountName = dAppAccount.accountName,
                         hashValue = dAppAccount.accountAddress,
@@ -107,7 +106,7 @@ fun ChooseAccountContent(
                         accountValue = dAppAccount.accountValue,
                         checked = dAppAccount.selected,
                         onCheckedChange = {
-                            accountSelected(dAppAccount)
+                            onAccountSelect(dAppAccount)
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -181,7 +180,7 @@ fun ChooseAccountContentPreview() {
         onContinueClick = {},
         imageUrl = "",
         continueButtonEnabled = true,
-        dAppAccounts = listOf(
+        accounts = listOf(
             SelectedAccountUiState(
                 accountName = "Account name 1",
                 accountAddress = "fdj209d9320",
@@ -199,6 +198,6 @@ fun ChooseAccountContentPreview() {
                 selected = false
             )
         ),
-        accountSelected = {},
+        onAccountSelect = {},
     )
 }

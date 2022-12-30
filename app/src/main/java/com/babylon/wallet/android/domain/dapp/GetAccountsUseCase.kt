@@ -16,7 +16,7 @@ import javax.inject.Singleton
 class GetAccountsUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val dAppRepository: DAppRepository,
-    private val requestAccountResourcesUseCase: GetAccountResourcesUseCase
+    private val getAccountResourcesUseCase: GetAccountResourcesUseCase
 ) {
     suspend operator fun invoke(
         scope: CoroutineScope
@@ -24,15 +24,15 @@ class GetAccountsUseCase @Inject constructor(
         return when (val result = dAppRepository.verifyDApp()) {
             is Result.Success -> {
                 val accounts = profileRepository.readProfileSnapshot()?.toProfile()?.getAccounts().orEmpty()
-                val results = accounts.map { account ->
+                val accountsResources = accounts.map { account ->
                     scope.async {
-                        requestAccountResourcesUseCase(account.entityAddress.address)
+                        getAccountResourcesUseCase(account.entityAddress.address)
                     }
                 }.awaitAll()
 
                 val uiStateAccounts = mutableListOf<SelectedAccountUiState>()
-                results.forEach { accountResourcesResult ->
-                    accountResourcesResult.onValue { accountResource ->
+                accountsResources.forEach { accountResources ->
+                    accountResources.onValue { accountResource ->
                         uiStateAccounts.add(
                             SelectedAccountUiState(
                                 accountName = accountResource.displayName,

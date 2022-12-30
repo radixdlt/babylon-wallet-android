@@ -32,7 +32,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val requestAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val clipboardManager: ClipboardManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -44,34 +44,38 @@ class AccountViewModel @Inject constructor(
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
-        loadInitialData()
+        loadAccountData()
     }
 
     fun refresh() {
         _accountUiState.update { state ->
             state.copy(isRefreshing = true)
         }
-        loadInitialData()
+        loadAccountData()
     }
 
-    private fun loadInitialData() {
+    private fun loadAccountData() {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                // TODO how to handle the case when the gateway doesn't return the account?
-                // TODO this should probably change to flow later
-                val account = requestAccountResourcesUseCase(accountId)
-                account.onError { e ->
-                    _accountUiState.update { it.copy(uiMessage = UiMessage(error = e)) }
+                val result = getAccountResourcesUseCase(accountId)
+                result.onError { e ->
+                    _accountUiState.update { accountUiState ->
+                        accountUiState.copy(uiMessage = UiMessage(error = e))
+                    }
                 }
-                account.onValue { accountResource ->
-                    val xrdToken = if (accountResource.hasXrdToken()) accountResource.fungibleTokens[0] else null
+                result.onValue { accountResource ->
+                    val xrdToken = if (accountResource.hasXrdToken()) {
+                        accountResource.fungibleTokens[INDEX_OF_XRD]
+                    } else {
+                        null
+                    }
                     val fungibleTokens = if (accountResource.hasXrdToken()) {
                         accountResource.fungibleTokens.subList(1, accountResource.fungibleTokens.size)
                     } else {
                         accountResource.fungibleTokens
                     }
-                    _accountUiState.update { state ->
-                        state.copy(
+                    _accountUiState.update { accountUiState ->
+                        accountUiState.copy(
                             isRefreshing = false,
                             isLoading = false,
                             accountAddressShortened = accountResource.address.truncatedHash(),
@@ -93,14 +97,25 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onFungibleTokenClick(token: TokenUiModel) {
-        _accountUiState.update { it.copy(assetDetails = token) }
+        _accountUiState.update { accountUiState ->
+            accountUiState.copy(assetDetails = token)
+        }
     }
 
     fun onNonFungibleTokenClick(
         nftCollectionUiModel: NftCollectionUiModel,
         nftItemUiModel: NftCollectionUiModel.NftItemUiModel
     ) {
-        _accountUiState.update { it.copy(assetDetails = nftCollectionUiModel, selectedNft = nftItemUiModel) }
+        _accountUiState.update { accountUiState ->
+            accountUiState.copy(
+                assetDetails = nftCollectionUiModel,
+                selectedNft = nftItemUiModel
+            )
+        }
+    }
+
+    companion object {
+        private const val INDEX_OF_XRD = 0
     }
 }
 

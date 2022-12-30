@@ -18,7 +18,6 @@ class DAppRepositoryImpl @Inject constructor(
      * Later we will use definitionAddress, which is old DAppEntity
      */
     override suspend fun verifyDApp(): Result<DAppResult> {
-
         return Result.Success(
             DAppResult(
                 dAppDetails = DAppDetailsResponse(

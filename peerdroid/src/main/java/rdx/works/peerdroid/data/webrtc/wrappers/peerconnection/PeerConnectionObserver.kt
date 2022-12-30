@@ -5,6 +5,7 @@ import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 
+@Suppress("EmptyFunctionBlock")
 /**
  * Wrapper class of the PeerConnection.Observer that helps to
  * avoid the implementation of all the members in the actual callback.
