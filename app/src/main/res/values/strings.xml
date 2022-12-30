@@ -59,6 +59,7 @@
     <string name="p2p_connections">P2P CONNECTIONS</string>
     <string name="debug">DEBUG</string>
     <string name="add_connection">Add Connection</string>
+    <string name="delete_connection">Delete Connection</string>
     <string name="delete_all"><![CDATA[Delete all & Factor Sources]]></string>
     <string name="edit_gateway">Edit Gateway API Endpoint</string>
     <string name="inspect_profile">Inspect Profile</string>

@@ -74,7 +74,7 @@ fun Profile.addAccountOnNetwork(
 }
 
 fun Profile.setNetworkAndGateway(
-    networkAndGateway: NetworkAndGateway,
+    networkAndGateway: NetworkAndGateway
 ): Profile {
     val appPreferences = appPreferences.copy(networkAndGateway = networkAndGateway)
     return copy(appPreferences = appPreferences)
@@ -84,17 +84,34 @@ fun Profile.addP2PClient(
     p2pClient: P2PClient
 ): Profile {
     val updatedP2PClients = appPreferences.p2pClients.toMutableList()
-
     updatedP2PClients.add(
         p2pClient
     )
 
-    val newAppPreferences =
-        AppPreferences(
-            display = appPreferences.display,
-            networkAndGateway = appPreferences.networkAndGateway,
-            p2pClients = updatedP2PClients.toList()
-        )
+    val newAppPreferences = AppPreferences(
+        display = appPreferences.display,
+        networkAndGateway = appPreferences.networkAndGateway,
+        p2pClients = updatedP2PClients.toList()
+    )
+
+    return this.copy(
+        appPreferences = newAppPreferences,
+        factorSources = factorSources,
+        perNetwork = perNetwork,
+    )
+}
+
+fun Profile.deleteP2PClient(connectionPassword: String): Profile {
+    val updatedP2PClients = appPreferences.p2pClients.toMutableList()
+    updatedP2PClients.removeIf { p2pClient ->
+        p2pClient.connectionPassword == connectionPassword
+    }
+
+    val newAppPreferences = AppPreferences(
+        display = appPreferences.display,
+        networkAndGateway = appPreferences.networkAndGateway,
+        p2pClients = updatedP2PClients.toList()
+    )
 
     return this.copy(
         appPreferences = newAppPreferences,
