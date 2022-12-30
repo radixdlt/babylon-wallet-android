@@ -15,9 +15,9 @@ class IncomingRequestHolder @Inject constructor() {
 
     suspend fun emit(request: MessageFromDataChannel.IncomingRequest) {
         if (request.id != null) {
-            val updatedMap = _incomingRequests.replayCache.firstOrNull()?.toMutableMap()?.apply {
+            val updatedMap = _incomingRequests.replayCache.firstOrNull().orEmpty().toMutableMap().apply {
                 this[request.id] = request
-            }.orEmpty()
+            }
             _incomingRequests.emit(updatedMap)
         }
     }
@@ -35,7 +35,7 @@ class IncomingRequestHolder @Inject constructor() {
     suspend fun receive(
         scope: CoroutineScope,
         requestId: String,
-        action: suspend (MessageFromDataChannel.IncomingRequest) -> Unit
+        action: suspend (MessageFromDataChannel.IncomingRequest) -> Unit,
     ) {
         _incomingRequests.filter { it.contains(requestId) }.onEach {
             Timber.d("Received request $requestId")

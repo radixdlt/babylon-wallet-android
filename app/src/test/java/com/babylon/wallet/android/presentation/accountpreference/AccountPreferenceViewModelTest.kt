@@ -35,7 +35,8 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     }
 
     @Before
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
         coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Success(sampleTxId)
@@ -45,7 +46,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
 
     @Test
     fun `initial state is correct when free xrd enabled`() = runTest {
-        val vm = initVM()
+        val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.isDeviceSecure)
         assert(vm.state.canUseFaucet)
@@ -54,7 +55,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     @Test
     fun `initial state is correct when free xrd not enabled`() = runTest {
         every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(false) }
-        val vm = initVM()
+        val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.isDeviceSecure)
         assert(!vm.state.canUseFaucet)
@@ -62,7 +63,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
 
     @Test
     fun `get free xrd success sets proper state`() = runTest {
-        val vm = initVM()
+        val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
         coVerify(exactly = 1) { transactionClient.getFreeXrd(true, sampleAddress) }
@@ -72,7 +73,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     @Test
     fun `get free xrd failure sets proper state`() = runTest {
         coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Error(Exception())
-        val vm = initVM()
+        val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
         coVerify(exactly = 1) { transactionClient.getFreeXrd(true, sampleAddress) }
