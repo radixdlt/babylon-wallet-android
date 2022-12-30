@@ -160,7 +160,8 @@ private fun TransactionApprovalContent(
                     } else {
                         showNotSecuredDialog.value = true
                     }
-                }, enabled = !isLoading && !isSigning
+                },
+                enabled = !isLoading && !isSigning
             )
         }
         SnackbarUiMessageHandler(message = error) {

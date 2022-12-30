@@ -90,7 +90,8 @@ private fun AccountPreferenceContent(
             ) {
                 val context = LocalContext.current
                 RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(), text = stringResource(R.string.get_free_xrd),
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.get_free_xrd),
                     onClick = {
                         if (isDeviceSecure) {
                             context.findFragmentActivity()?.let { activity ->

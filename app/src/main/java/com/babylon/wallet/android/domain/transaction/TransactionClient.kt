@@ -150,8 +150,11 @@ class TransactionClient @Inject constructor(
             is Result.Success -> {
                 val accountAddressToLockFee =
                     addressesNeededToSign.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
-                val manifestWithTransactionFee = if (hasLockFeeInstruction) jsonTransactionManifest else
+                val manifestWithTransactionFee = if (hasLockFeeInstruction) {
+                    jsonTransactionManifest
+                } else {
                     addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
+                }
                 val notarizedTransaction = try {
                     val notarizedTransactionBuilder =
                         TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
@@ -185,7 +188,8 @@ class TransactionClient @Inject constructor(
                     )
                 }
                 val submitResult = submitNotarizedTransaction(
-                    txID.toHexString(), CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
+                    txID.toHexString(),
+                    CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
                 )
                 return when (submitResult) {
                     is Result.Error -> submitResult

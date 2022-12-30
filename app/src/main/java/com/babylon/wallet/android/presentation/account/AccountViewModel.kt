@@ -46,7 +46,7 @@ class AccountViewModel @Inject constructor(
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
-        loadInitialData()
+        loadAccountData()
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.GotFreeXrd>().collect {
                 refresh()

@@ -1,4 +1,5 @@
 @file:Suppress("TopLevelPropertyNaming")
+
 package com.babylon.wallet.android.presentation.accountpreference
 
 import androidx.annotation.VisibleForTesting
