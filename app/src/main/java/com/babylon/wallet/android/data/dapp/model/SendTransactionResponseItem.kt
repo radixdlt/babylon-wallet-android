@@ -5,7 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SendTransactionResponseItem(
-    override val requestType: String = "sendTransactionWrite",
+    override val requestType: String,
     @SerialName("transactionIntentHash")
     val transactionIntentHash: String
-) : WalletResponseItem()
+) : WalletResponseItem() {
+    companion object {
+        const val REQUEST_TYPE = "sendTransactionWrite"
+    }
+}

@@ -4,10 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -23,11 +26,12 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     private val transactionClient = mockk<TransactionClient>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
     private val sampleAddress = sampleDataProvider.randomTokenAddress()
 
     override fun initVM(): AccountPreferenceViewModel {
-        return AccountPreferenceViewModel(transactionClient, deviceSecurityHelper, TestScope(), savedStateHandle)
+        return AccountPreferenceViewModel(transactionClient, deviceSecurityHelper, TestScope(), savedStateHandle, eventBus)
     }
 
     @Before
@@ -36,6 +40,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
         coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Success(sampleTxId)
         every { savedStateHandle.get<String>(AddressArg) } returns sampleAddress
+        coEvery { eventBus.sendEvent(any()) } just Runs
     }
 
     @Test
