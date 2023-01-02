@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
@@ -100,7 +100,7 @@ fun AccountCardView(
 @Preview(showBackground = true)
 @Composable
 fun AccountCardPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         AccountCardView(
             hashValue = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
             accountName = "My main account",

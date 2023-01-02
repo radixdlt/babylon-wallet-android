@@ -19,8 +19,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.math.BigDecimal
@@ -98,7 +98,7 @@ fun TokenItemCard(
 @Preview("large font", fontScale = 2f)
 @Composable
 fun TokenItemCardPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         TokenItemCard(
             token = TokenUiModel(
                 id = "id",
@@ -117,7 +117,7 @@ fun TokenItemCardPreview() {
 @Preview("large font with long name and long values", fontScale = 2f)
 @Composable
 fun TokenItemCardWithLongNameAndLongValuesPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         TokenItemCard(
             token = TokenUiModel(
                 id = "id",

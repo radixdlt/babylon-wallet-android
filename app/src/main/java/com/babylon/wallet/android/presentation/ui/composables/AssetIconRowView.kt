@@ -14,8 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.TokenMetadataConstants
@@ -78,7 +78,7 @@ fun AssetIconRowView(
 @Preview(showBackground = true)
 @Composable
 fun AssetIconRowPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         with(SampleDataProvider()) {
             AssetIconRowView(
                 assets = sampleFungibleTokens()
@@ -90,7 +90,7 @@ fun AssetIconRowPreview() {
 @Preview(showBackground = true)
 @Composable
 fun AssetIconRowOverflowPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         with(SampleDataProvider()) {
             AssetIconRowView(
                 assets = sampleFungibleTokens() +

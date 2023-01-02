@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +54,7 @@ fun RDXAppBar(
 @Preview(showBackground = true)
 @Composable
 fun RDXAppBarPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RDXAppBar(
             toolbarTitle = "Account",
             onMenuClick = {}

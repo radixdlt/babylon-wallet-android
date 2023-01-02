@@ -37,9 +37,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
@@ -248,7 +248,7 @@ fun RadixOnboardingPagerIndicator(
 @Preview
 @Composable
 fun OnboardingScreenPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         OnboardingScreenContent(
             currentPage = 0,
             restoreWalletFromBackup = {},

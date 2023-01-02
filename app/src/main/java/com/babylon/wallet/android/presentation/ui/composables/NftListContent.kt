@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.account.AssetEmptyState
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
@@ -90,7 +90,7 @@ fun NftListContent(
 @Preview(showBackground = true)
 @Composable
 fun NftTokenListEmpty() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
         NftListContent(
             item = emptyList(),
@@ -103,7 +103,7 @@ fun NftTokenListEmpty() {
 @Preview(showBackground = true)
 @Composable
 fun NftTokenListPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
         NftListContent(
             item = mockNftUiList.toNftUiModel(),
@@ -116,7 +116,7 @@ fun NftTokenListPreview() {
 @Preview(showBackground = true)
 @Composable
 fun NftTokenListExpandedPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
         NftListContent(
             item = mockNftUiList.toNftUiModel(),

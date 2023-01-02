@@ -27,8 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.qr.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -215,7 +215,7 @@ private fun EnterConnection(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         SettingsAddConnectionContent(
             connectionName = "",
             onConnectionClick = {},
@@ -235,7 +235,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         SettingsAddConnectionContent(
             connectionName = "my cool connection",
             onConnectionClick = {},

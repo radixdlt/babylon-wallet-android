@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun RadixTextButton(
@@ -37,7 +37,7 @@ fun RadixTextButton(
 @Preview
 @Composable
 fun RadixTextButtonPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixTextButton(text = "Text button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
     }
 }
@@ -45,7 +45,7 @@ fun RadixTextButtonPreview() {
 @Preview
 @Composable
 fun RadixTextButtonDisabledPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixTextButton(
             text = "Text button",
             onClick = {},

@@ -21,8 +21,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 
@@ -109,7 +109,7 @@ fun TokenListContent(
 @Preview(showBackground = true)
 @Composable
 fun ListOfTokenItemsEmptyPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         TokenListContent(
             tokenItems = emptyList(),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
@@ -122,7 +122,7 @@ fun ListOfTokenItemsEmptyPreview() {
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun ListOfTokenItemsPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         TokenListContent(
             tokenItems = SampleDataProvider().mockTokenUiList,
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),

@@ -34,8 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -227,7 +227,7 @@ private fun WalletAccountList(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun WalletContentPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         with(SampleDataProvider()) {
             WalletScreenContent(
                 onMenuClick = {},

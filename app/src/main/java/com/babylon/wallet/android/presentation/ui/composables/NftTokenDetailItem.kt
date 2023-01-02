@@ -27,8 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
@@ -101,7 +101,7 @@ fun NftTokenDetailItem(
 @Preview(showBackground = true)
 @Composable
 fun CollapsableChildItemPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         NftTokenDetailItem(
             nftId = "123",
             imageUrl = "url",

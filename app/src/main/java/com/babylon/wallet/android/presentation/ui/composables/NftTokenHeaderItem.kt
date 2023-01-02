@@ -24,8 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -121,7 +121,7 @@ fun NftTokenHeaderItem(
 @Preview(showBackground = true)
 @Composable
 fun CollapsableParentItemPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         NftTokenHeaderItem(
             nftImageUrl = "url",
             nftName = "Rypto Punks",
@@ -136,7 +136,7 @@ fun CollapsableParentItemPreview() {
 @Preview(showBackground = true)
 @Composable
 fun ExpandedParentItemPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         NftTokenHeaderItem(
             nftImageUrl = "url",
             nftName = "Rypto Punks",
@@ -151,7 +151,7 @@ fun ExpandedParentItemPreview() {
 @Preview(fontScale = 2f, showBackground = true)
 @Composable
 fun CollapsableParentItemWithLargeFontPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         NftTokenHeaderItem(
             nftImageUrl = "url",
             nftName = "Rypto Punks",

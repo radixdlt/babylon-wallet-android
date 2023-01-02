@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.dapp.account
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,10 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -36,10 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.RadixBackground
-import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
-import com.babylon.wallet.android.designsystem.theme.RadixGrey2
-import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Suppress("UnstableCollections")
 @Composable
@@ -54,7 +53,9 @@ fun ChooseAccountContent(
 ) {
     Column(
         modifier = modifier
+            .systemBarsPadding()
             .fillMaxSize()
+            .background(RadixTheme.colors.defaultBackground)
             .verticalScroll(rememberScrollState())
     ) {
         IconButton(onClick = onBackClick) {
@@ -64,10 +65,10 @@ fun ChooseAccountContent(
             )
         }
         Column(
-            modifier = Modifier.padding(horizontal = 50.dp, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = 50.dp, vertical = RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Image(
                 painter = rememberAsyncImagePainter(
                     model = imageUrl,
@@ -78,25 +79,23 @@ fun ChooseAccountContent(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(110.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RadixTheme.shapes.roundedRectSmall)
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = R.string.choose_dapp_accounts_title),
                 textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
+                style = RadixTheme.typography.body2Header,
+                color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
-                color = RadixGrey2,
                 text = stringResource(id = R.string.choose_dapp_accounts_body),
                 textAlign = TextAlign.Center,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.height(40.dp))
-
             Column {
                 accounts.forEach { dAppAccount ->
                     AccountCard(
@@ -109,7 +108,7 @@ fun ChooseAccountContent(
                             onAccountSelect(dAppAccount)
                         }
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
 
@@ -128,24 +127,14 @@ fun ChooseAccountContent(
             }
 
             Spacer(Modifier.weight(1f))
-
-            Button(
+            RadixPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 0.dp, vertical = 30.dp),
                 onClick = { onContinueClick() },
                 enabled = continueButtonEnabled,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = RadixButtonBackground,
-                    disabledBackgroundColor = RadixBackground
-                )
-            ) {
-                Text(
-                    color = White,
-                    text = stringResource(id = R.string.continue_button_title),
-                    modifier = Modifier.padding(26.dp, 8.dp, 26.dp, 8.dp)
-                )
-            }
+                text = stringResource(id = R.string.continue_button_title)
+            )
         }
     }
 }
@@ -155,7 +144,7 @@ fun DAppAlertDialog(
     title: String,
     body: String,
     dismissErrorDialog: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AlertDialog(
         modifier = modifier,
@@ -166,7 +155,7 @@ fun DAppAlertDialog(
             TextButton(
                 onClick = dismissErrorDialog
             ) {
-                Text("Ok", color = Color.Black)
+                Text(stringResource(id = R.string.ok), color = Color.Black)
             }
         }
     )
@@ -175,29 +164,31 @@ fun DAppAlertDialog(
 @Preview(showBackground = true)
 @Composable
 fun ChooseAccountContentPreview() {
-    ChooseAccountContent(
-        onBackClick = {},
-        onContinueClick = {},
-        imageUrl = "",
-        continueButtonEnabled = true,
-        accounts = listOf(
-            SelectedAccountUiState(
-                accountName = "Account name 1",
-                accountAddress = "fdj209d9320",
-                accountValue = "1000",
-                accountCurrency = "$",
-                appearanceID = 1,
-                selected = true
+    RadixWalletTheme {
+        ChooseAccountContent(
+            onBackClick = {},
+            onContinueClick = {},
+            imageUrl = "",
+            continueButtonEnabled = true,
+            accounts = listOf(
+                SelectedAccountUiState(
+                    accountName = "Account name 1",
+                    accountAddress = "fdj209d9320",
+                    accountValue = "1000",
+                    accountCurrency = "$",
+                    appearanceID = 1,
+                    selected = true
+                ),
+                SelectedAccountUiState(
+                    accountName = "Account name 2",
+                    accountAddress = "342f23f2",
+                    accountValue = "2000",
+                    accountCurrency = "$",
+                    appearanceID = 1,
+                    selected = false
+                )
             ),
-            SelectedAccountUiState(
-                accountName = "Account name 2",
-                accountAddress = "342f23f2",
-                accountValue = "2000",
-                accountCurrency = "$",
-                appearanceID = 1,
-                selected = false
-            )
-        ),
-        onAccountSelect = {},
-    )
+            onAccountSelect = {},
+        )
+    }
 }

@@ -30,8 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -179,7 +179,7 @@ private fun TransactionApprovalContent(
 @Preview(showBackground = true)
 @Composable
 fun TransactionApprovalContentPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         TransactionApprovalContent(
             onBackClick = {},
             isLoading = false,

@@ -18,8 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -127,7 +127,7 @@ private fun AccountPreferenceContent(
 @Preview(showBackground = true)
 @Composable
 fun AccountPreferencePreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         AccountPreferenceContent(
             onBackClick = {},
             onGetFreeXrdClick = {},

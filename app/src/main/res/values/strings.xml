@@ -81,4 +81,5 @@
     <string name="transaction_approved_success">Transaction Approved Successfully!</string>
     <string name="account_preference">Account Preference</string>
     <string name="get_free_xrd">Get Free XRD</string>
+    <string name="ok">Ok</string>
 </resources>

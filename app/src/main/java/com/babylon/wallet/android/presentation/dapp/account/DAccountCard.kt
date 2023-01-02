@@ -7,19 +7,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.babylon.wallet.android.designsystem.theme.RadixGrey2
-import com.babylon.wallet.android.designsystem.theme.RadixLightCardBackground
+import com.babylon.wallet.android.designsystem.darken
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TruncatedAddressText
 
 @Composable
@@ -30,17 +28,17 @@ fun AccountCard(
     accountValue: String,
     checked: Boolean,
     modifier: Modifier = Modifier,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     Card(
         modifier = modifier.clickable { onCheckedChange(!checked) },
-        shape = RoundedCornerShape(8.dp),
-        backgroundColor = RadixLightCardBackground,
+        shape = RadixTheme.shapes.roundedRectSmall,
+        backgroundColor = RadixTheme.colors.defaultBackground.darken(0.2f),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(RadixTheme.dimensions.paddingDefault)
         ) {
             Column(
                 modifier = Modifier.weight(1f)
@@ -49,28 +47,24 @@ fun AccountCard(
                     Text(
                         modifier = Modifier.weight(1f, false),
                         text = accountName,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W600,
                         textAlign = TextAlign.Start,
-                        maxLines = 2
+                        maxLines = 2,
+                        style = RadixTheme.typography.body2Header,
+                        color = Color.Black
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
                     Text(
                         text = "$accountCurrency$accountValue",
-                        color = RadixGrey2,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W400,
-                        textAlign = TextAlign.Start,
-                        maxLines = 1
+                        maxLines = 1,
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2
                     )
                 }
                 TruncatedAddressText(
                     text = hashValue,
-                    fontSize = 14.sp,
-                    color = RadixGrey2,
-                    fontWeight = FontWeight.W400,
-                    textAlign = TextAlign.Start,
-                    maxLines = 1
+                    maxLines = 1,
+                    style = RadixTheme.typography.body2Link,
+                    color = RadixTheme.colors.gray2
                 )
             }
             Spacer(modifier = Modifier.weight(0.1f))
@@ -85,26 +79,30 @@ fun AccountCard(
 @Preview(showBackground = true)
 @Composable
 fun DAppAccountCardPreview() {
-    AccountCard(
-        accountName = "Account name",
-        hashValue = "jf932j9f32o",
-        accountCurrency = "$",
-        accountValue = "50000",
-        checked = true,
-        onCheckedChange = {}
-    )
+    RadixWalletTheme {
+        AccountCard(
+            accountName = "Account name",
+            hashValue = "jf932j9f32o",
+            accountCurrency = "$",
+            accountValue = "50000",
+            checked = true,
+            onCheckedChange = {}
+        )
+    }
 }
 
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f)
 @Composable
 fun DAppAccountCardLargeFontPreview() {
-    AccountCard(
-        accountName = "Account name",
-        hashValue = "jf932j9f32o",
-        accountCurrency = "$",
-        accountValue = "50000",
-        checked = true,
-        onCheckedChange = {}
-    )
+    RadixWalletTheme {
+        AccountCard(
+            accountName = "Account name",
+            hashValue = "jf932j9f32o",
+            accountCurrency = "$",
+            accountValue = "50000",
+            checked = true,
+            onCheckedChange = {}
+        )
+    }
 }

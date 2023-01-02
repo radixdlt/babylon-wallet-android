@@ -18,8 +18,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +90,7 @@ fun RadixTextField(
 @Preview
 @Composable
 fun RadixTextFieldPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = {},
@@ -105,7 +105,7 @@ fun RadixTextFieldPreview() {
 @Preview
 @Composable
 fun RadixTextFieldFilled() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = {},
@@ -121,7 +121,7 @@ fun RadixTextFieldFilled() {
 @Preview
 @Composable
 fun RadixTextErrorField() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = {},

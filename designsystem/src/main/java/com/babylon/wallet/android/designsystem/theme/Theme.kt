@@ -330,7 +330,7 @@ object RadixTheme {
 }
 
 @Composable
-fun BabylonWalletTheme(
+fun RadixWalletTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {

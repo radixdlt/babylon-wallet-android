@@ -62,8 +62,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.AssetUiModel
@@ -741,7 +741,7 @@ fun AssetsContent(
 @Preview
 @Composable
 fun AccountContentPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 accountName = randomTokenAddress(),
@@ -773,7 +773,7 @@ fun AccountContentPreview() {
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun AccountContentDarkPreview() {
-    BabylonWalletTheme(darkTheme = true) {
+    RadixWalletTheme(darkTheme = true) {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 accountName = randomTokenAddress(),
