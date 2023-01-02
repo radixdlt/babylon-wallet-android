@@ -16,7 +16,7 @@ data class SendTransactionWriteRequestItem(
     @SerialName("blobs")
     val blobs: List<String>? = null,
     @SerialName("message")
-    val message: String? = null,
+    val message: String? = null
 ) : WalletRequestItem()
 
 fun SendTransactionWriteRequestItem.toDomainModel(requestId: String, networkId: Int) =

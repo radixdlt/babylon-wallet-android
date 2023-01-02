@@ -31,5 +31,5 @@ enum class WalletErrorType {
     SubmittedTransactionHasFailedTransactionStatus,
 
     @SerialName("submittedTransactionHasRejectedTransactionStatus")
-    SubmittedTransactionHasRejectedTransactionStatus;
+    SubmittedTransactionHasRejectedTransactionStatus
 }

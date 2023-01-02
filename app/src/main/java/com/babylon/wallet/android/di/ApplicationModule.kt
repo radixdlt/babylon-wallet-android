@@ -26,12 +26,6 @@ object ApplicationModule {
         name = "rdx_datastore"
     )
 
-//    @Provides
-//    @Singleton
-//    fun provideRadixEngineToolkit(): RadixEngineToolkit {
-//        return RadixEngineToolkit
-//    }
-
     @Provides
     @Singleton
     fun provideMainViewRepository(

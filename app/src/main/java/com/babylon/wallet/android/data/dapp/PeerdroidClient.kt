@@ -35,7 +35,7 @@ interface PeerdroidClient {
 }
 
 class PeerdroidClientImpl @Inject constructor(
-    private val peerdroidConnector: PeerdroidConnector,
+    private val peerdroidConnector: PeerdroidConnector
 ) : PeerdroidClient {
 
     private var dataChannel: DataChannelWrapper? = null

@@ -23,25 +23,25 @@ interface DAppMessenger {
 
     suspend fun sendAccountsResponse(
         requestId: String,
-        accounts: List<Account>,
+        accounts: List<Account>
     ): Result<Unit>
 
     suspend fun sendTransactionWriteResponseFailure(
         requestId: String,
         error: WalletErrorType,
-        message: String? = null,
+        message: String? = null
     ): Result<Unit>
 
     suspend fun sendTransactionWriteResponseSuccess(requestId: String, txId: String): Result<Unit>
 }
 
 class DAppMessengerImpl @Inject constructor(
-    private val peerdroidClient: PeerdroidClient,
+    private val peerdroidClient: PeerdroidClient
 ) : DAppMessenger {
 
     override suspend fun sendAccountsResponse(
         requestId: String,
-        accounts: List<Account>,
+        accounts: List<Account>
     ): Result<Unit> {
         val responseItem = OneTimeAccountsWithoutProofOfOwnershipResponseItem(
             requestType = OneTimeAccountsRequestType.ONE_TIME_ACCOUNTS_READ.requestType,
@@ -67,7 +67,7 @@ class DAppMessengerImpl @Inject constructor(
 
     override suspend fun sendTransactionWriteResponseSuccess(
         requestId: String,
-        txId: String,
+        txId: String
     ): Result<Unit> {
         val message = Json.encodeToString(
             WalletResponse(
@@ -89,7 +89,7 @@ class DAppMessengerImpl @Inject constructor(
     override suspend fun sendTransactionWriteResponseFailure(
         requestId: String,
         error: WalletErrorType,
-        message: String?,
+        message: String?
     ): Result<Unit> {
         val messageJson =
             Json.encodeToString(
