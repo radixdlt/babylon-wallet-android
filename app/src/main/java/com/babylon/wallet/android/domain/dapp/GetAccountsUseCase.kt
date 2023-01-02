@@ -8,6 +8,9 @@ import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiSta
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,42 +21,44 @@ class GetAccountsUseCase @Inject constructor(
     private val dAppRepository: DAppRepository,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         scope: CoroutineScope
-    ): Result<DAppAccountsResult> {
-        return when (val result = dAppRepository.verifyDApp()) {
-            is Result.Success -> {
-                val accounts = profileRepository.readProfileSnapshot()?.toProfile()?.getAccounts().orEmpty()
-                val accountsResources = accounts.map { account ->
-                    scope.async {
-                        getAccountResourcesUseCase(account.entityAddress.address)
-                    }
-                }.awaitAll()
+    ): Flow<Result<DAppAccountsResult>> {
+        return profileRepository.profileSnapshot.filterNotNull().map {
+            when (val result = dAppRepository.verifyDApp()) {
+                is Result.Success -> {
+                    val accounts = profileRepository.readProfileSnapshot()?.toProfile()?.getAccounts().orEmpty()
+                    val accountsResources = accounts.map { account ->
+                        scope.async {
+                            getAccountResourcesUseCase(account.entityAddress.address)
+                        }
+                    }.awaitAll()
 
-                val uiStateAccounts = mutableListOf<SelectedAccountUiState>()
-                accountsResources.forEach { accountResources ->
-                    accountResources.onValue { accountResource ->
-                        uiStateAccounts.add(
-                            SelectedAccountUiState(
-                                accountName = accountResource.displayName,
-                                accountAddress = accountResource.address,
-                                accountCurrency = accountResource.currencySymbol,
-                                accountValue = accountResource.value,
-                                appearanceID = accountResource.appearanceID
+                    val uiStateAccounts = mutableListOf<SelectedAccountUiState>()
+                    accountsResources.forEach { accountResources ->
+                        accountResources.onValue { accountResource ->
+                            uiStateAccounts.add(
+                                SelectedAccountUiState(
+                                    accountName = accountResource.displayName,
+                                    accountAddress = accountResource.address,
+                                    accountCurrency = accountResource.currencySymbol,
+                                    accountValue = accountResource.value,
+                                    appearanceID = accountResource.appearanceID
+                                )
                             )
-                        )
+                        }
                     }
-                }
 
-                Result.Success(
-                    DAppAccountsResult(
-                        accounts = uiStateAccounts,
-                        dAppResult = result.data
+                    Result.Success(
+                        DAppAccountsResult(
+                            accounts = uiStateAccounts,
+                            dAppResult = result.data
+                        )
                     )
-                )
-            }
-            is Result.Error -> {
-                Result.Error(result.exception)
+                }
+                is Result.Error -> {
+                    Result.Error(result.exception)
+                }
             }
         }
     }

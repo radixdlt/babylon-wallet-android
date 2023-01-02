@@ -41,10 +41,8 @@ import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import java.util.Locale
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -64,10 +62,8 @@ fun WalletScreen(
         onRefresh = viewModel::refresh,
         onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
         modifier = modifier.systemBarsPadding(),
-        balanceClicked = {},
         isLoading = state.isLoading,
         accounts = state.resources,
-        wallet = state.wallet,
         error = state.error,
         onMessageShown = viewModel::onMessageShown
     )
@@ -83,10 +79,8 @@ private fun WalletScreenContent(
     onRefresh: () -> Unit,
     onCopyAccountAddressClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    balanceClicked: () -> Unit,
     isLoading: Boolean,
     accounts: ImmutableList<AccountResources>,
-    wallet: WalletData?,
     error: UiMessage?,
     onMessageShown: () -> Unit
 ) {
@@ -117,13 +111,11 @@ private fun WalletScreenContent(
                 val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
                 Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
                     WalletAccountList(
-                        wallet = wallet,
                         onCopyAccountAddressClick = onCopyAccountAddressClick,
                         onAccountClick = onAccountClick,
                         onAccountCreationClick = onAccountCreationClick,
                         accounts = accounts,
-                        modifier = Modifier,
-                        balanceClicked = balanceClicked
+                        modifier = Modifier
                     )
                     PullRefreshIndicator(
                         refreshing = isRefreshing,
@@ -142,13 +134,11 @@ private fun WalletScreenContent(
 @Suppress("UnstableCollections")
 @Composable
 private fun WalletAccountList(
-    wallet: WalletData?,
     onCopyAccountAddressClick: (String) -> Unit,
     onAccountClick: (accountId: String, accountName: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
-    modifier: Modifier = Modifier,
-    balanceClicked: () -> Unit
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
         item {
@@ -170,20 +160,20 @@ private fun WalletAccountList(
                     .padding(vertical = RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(id = R.string.total_value).uppercase(
-                        Locale.getDefault()
-                    ),
-                    style = RadixTheme.typography.body2Header,
-                )
-                wallet?.let { wallet ->
-                    WalletBalanceView(
-                        currencySignValue = wallet.currency,
-                        amount = wallet.amount,
-                        hidden = false,
-                        balanceClicked = balanceClicked
-                    )
-                }
+//                Text(
+//                    text = stringResource(id = R.string.total_value).uppercase(
+//                        Locale.getDefault()
+//                    ),
+//                    style = RadixTheme.typography.body2Header,
+//                )
+//                wallet?.let { wallet ->
+//                    WalletBalanceView(
+//                        currencySignValue = wallet.currency,
+//                        amount = wallet.amount,
+//                        hidden = false,
+//                        balanceClicked = balanceClicked
+//                    )
+//                }
             }
         }
         itemsIndexed(accounts) { _, account ->
@@ -191,8 +181,6 @@ private fun WalletAccountList(
             AccountCardView(
                 hashValue = account.address,
                 accountName = account.displayName,
-                accountValue = account.value,
-                accountCurrency = account.currencySymbol,
                 onCopyClick = { onCopyAccountAddressClick(account.address) },
                 assets = account.fungibleTokens,
                 modifier = Modifier
@@ -237,16 +225,10 @@ fun WalletContentPreview() {
                 onRefresh = { },
                 onCopyAccountAddressClick = {},
                 modifier = Modifier.fillMaxSize(),
-                balanceClicked = {},
                 isLoading = false,
                 accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),
-                wallet = WalletData(
-                    currency = "$",
-                    amount = "236246"
-                ),
-                error = null,
-                onMessageShown = {}
-            )
+                error = null
+            ) {}
         }
     }
 }

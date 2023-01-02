@@ -14,7 +14,7 @@ import com.google.accompanist.navigation.animation.composable
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dAppRequestAccountsGraph(
-    navController: NavController
+    navController: NavController,
 ) {
     navigation(
         startDestination = Screen.ChooseAccountsDestination.route,
@@ -41,6 +41,11 @@ fun NavGraphBuilder.dAppRequestAccountsGraph(
                 },
                 dismissErrorDialog = {
                     navController.navigateUp()
+                },
+                onAccountCreationClick = {
+                    navController.navigate(
+                        Screen.CreateAccountDestination.route()
+                    )
                 }
             )
         }

@@ -22,7 +22,7 @@ import javax.inject.Inject
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getAccountsUseCase: GetAccountsUseCase,
-    private val dAppMessenger: DAppMessenger
+    private val dAppMessenger: DAppMessenger,
 ) : ViewModel() {
 
     private val requestId = savedStateHandle.get<String>(Screen.ARG_REQUEST_ID) ?: "no request id"
@@ -38,25 +38,38 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            when (val accountsResult = getAccountsUseCase(this)) {
-                is Result.Success -> {
-                    state = state.copy(
-                        accounts = accountsResult.data.accounts,
-                        dAppDetails = accountsResult.data.dAppResult.dAppDetails,
-                        accountAddresses = accountsResult.data.dAppResult.accountAddresses,
-                        error = null,
-                        showProgress = false
-                    )
+            getAccountsUseCase(this).collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        state = state.copy(
+                            accounts = mergeSelectedState(result.data.accounts),
+                            dAppDetails = result.data.dAppResult.dAppDetails,
+                            accountAddresses = result.data.dAppResult.accountAddresses,
+                            error = null,
+                            showProgress = false
+                        )
+                    }
+                    is Result.Error -> {
+                        state = state.copy(
+                            accounts = null,
+                            dAppDetails = null,
+                            accountAddresses = null,
+                            error = result.exception?.message,
+                            showProgress = false
+                        )
+                    }
                 }
-                is Result.Error -> {
-                    state = state.copy(
-                        accounts = null,
-                        dAppDetails = null,
-                        accountAddresses = null,
-                        error = accountsResult.exception?.message,
-                        showProgress = false
-                    )
-                }
+            }
+        }
+    }
+
+    private fun mergeSelectedState(accounts: List<SelectedAccountUiState>): List<SelectedAccountUiState> {
+        val selectedAddresses = state.accounts?.filter { it.selected }?.map { it.accountAddress }.orEmpty()
+        return accounts.map {
+            if (selectedAddresses.contains(it.accountAddress)) {
+                it.copy(selected = true)
+            } else {
+                it
             }
         }
     }
@@ -67,7 +80,9 @@ class ChooseAccountsViewModel @Inject constructor(
         state.accounts?.let { accounts ->
             val currentlySelectedAccountsCount = accounts.count { it.selected }
             // If already selected max number of accounts (accountAddresses) and want to select more, skip
-            if (currentlySelectedAccountsCount >= requiredMinNumberOfAccounts && !account.selected) {
+            if (requiredMinNumberOfAccounts != 0 &&
+                currentlySelectedAccountsCount >= requiredMinNumberOfAccounts && !account.selected
+            ) {
                 return
             }
 
@@ -89,14 +104,11 @@ class ChooseAccountsViewModel @Inject constructor(
                 updatedAccount.selected
             }
 
-            if (selectedAccountsCount >= requiredMinNumberOfAccounts) {
+            if (selectedAccountsCount >= requiredMinNumberOfAccounts || requiredMinNumberOfAccounts == 0) {
                 selectedAccounts = updatedAccounts.filter { selectedAccountUiState ->
                     selectedAccountUiState.selected
                 }
-                state = state.copy(
-                    accounts = updatedAccounts,
-                    continueButtonEnabled = true
-                )
+                state = state.copy(accounts = updatedAccounts, continueButtonEnabled = true)
             }
         }
     }
@@ -110,10 +122,7 @@ class ChooseAccountsViewModel @Inject constructor(
                     appearanceId = account.appearanceID
                 )
             }
-            val result = dAppMessenger.sendAccountsResponse(
-                requestId = requestId,
-                accounts = accounts
-            )
+            val result = dAppMessenger.sendAccountsResponse(requestId = requestId, accounts = accounts)
             result.onValue {
                 _oneOffEvent.sendEvent(OneOffEvent.NavigateToCompletionScreen)
             }
@@ -132,7 +141,7 @@ data class ChooseAccountUiState(
     val accountAddresses: Int? = null,
     val continueButtonEnabled: Boolean = false,
     val error: String? = null,
-    val showProgress: Boolean = true
+    val showProgress: Boolean = true,
 )
 
 data class SelectedAccountUiState(
@@ -141,5 +150,5 @@ data class SelectedAccountUiState(
     val accountCurrency: String,
     val accountValue: String,
     val appearanceID: Int,
-    val selected: Boolean = false
+    val selected: Boolean = false,
 )
