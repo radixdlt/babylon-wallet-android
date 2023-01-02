@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +23,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -97,7 +97,7 @@ private fun SettingsContent(
                                     .fillMaxWidth()
                                     .height(50.dp)
                                     .background(RadixTheme.colors.defaultBackground)
-                                    .clickable { onSettingClick(settingItem) }
+                                    .throttleClickable { onSettingClick(settingItem) }
                                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                                 verticalAlignment = CenterVertically
                             ) {

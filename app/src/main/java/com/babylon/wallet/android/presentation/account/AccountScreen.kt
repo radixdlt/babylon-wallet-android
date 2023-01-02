@@ -86,7 +86,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.Locale
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -127,7 +126,6 @@ fun AccountScreen(
     )
     LaunchedEffect(key1 = shouldRefresh) {
         if (shouldRefresh == true) {
-            Timber.d("Refreshing damn")
             viewModel.refresh()
         }
     }
