@@ -83,7 +83,7 @@ class SettingsEditGatewayViewModelTest {
         coEvery { profileRepository.hasAccountOnNetwork(sampleUrl, any()) } returns false
         vm.onSwitchToClick()
         advanceUntilIdle()
-        assert(vm.oneOffEvent.first() is SettingsEditGatewayViewModel.OneOffEvent.CreateProfileOnNetwork)
+        assert(vm.oneOffEvent.first() is SettingsEditGatewayEvent.CreateProfileOnNetwork)
     }
 
     @Test

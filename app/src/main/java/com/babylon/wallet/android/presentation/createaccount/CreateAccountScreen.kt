@@ -63,9 +63,9 @@ fun CreateAccountScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.composeEvent.collect { event ->
+        viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is CreateAccountViewModel.OneOffEvent.Complete -> onContinueClick(
+                is CreateAccountEvent.Complete -> onContinueClick(
                     event.accountId,
                     event.accountName,
                     event.hasProfile

@@ -58,7 +58,7 @@ fun SettingsEditGatewayScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is SettingsEditGatewayViewModel.OneOffEvent.CreateProfileOnNetwork -> {
+                is SettingsEditGatewayEvent.CreateProfileOnNetwork -> {
                     onCreateProfile(it.newUrl, it.networkName)
                 }
             }

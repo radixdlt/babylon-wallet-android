@@ -9,11 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.Account
+import com.babylon.wallet.android.domain.common.OneOffEvent
+import com.babylon.wallet.android.domain.common.OneOffEventHandler
+import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.utils.OneOffEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,16 +25,13 @@ class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getAccountsUseCase: GetAccountsUseCase,
     private val dAppMessenger: DAppMessenger,
-) : ViewModel() {
+) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val requestId = savedStateHandle.get<String>(Screen.ARG_REQUEST_ID) ?: "no request id"
     private val requiredMinNumberOfAccounts = savedStateHandle.get<Int>(Screen.ARG_NUMBER_OF_ACCOUNTS) ?: 0
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
-
-    private val _oneOffEvent = OneOffEventHandler<OneOffEvent>()
-    val oneOffEvent by _oneOffEvent
 
     private var selectedAccounts = listOf<SelectedAccountUiState>()
 
@@ -124,15 +123,15 @@ class ChooseAccountsViewModel @Inject constructor(
             }
             val result = dAppMessenger.sendAccountsResponse(requestId = requestId, accounts = accounts)
             result.onValue {
-                _oneOffEvent.sendEvent(OneOffEvent.NavigateToCompletionScreen)
+                sendEvent(ChooseAccountsEvent.NavigateToCompletionScreen)
             }
         }
     }
 }
 
-sealed interface OneOffEvent {
-    object NavigateToCompletionScreen : OneOffEvent
-    object FailedToSendResponse : OneOffEvent
+sealed interface ChooseAccountsEvent : OneOffEvent {
+    object NavigateToCompletionScreen : ChooseAccountsEvent
+    object FailedToSendResponse : ChooseAccountsEvent
 }
 
 data class ChooseAccountUiState(

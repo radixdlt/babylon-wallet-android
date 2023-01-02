@@ -52,10 +52,10 @@ fun ChooseAccountsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                OneOffEvent.NavigateToCompletionScreen -> {
+                ChooseAccountsEvent.NavigateToCompletionScreen -> {
                     exitRequestFlow()
                 }
-                OneOffEvent.FailedToSendResponse -> {
+                ChooseAccountsEvent.FailedToSendResponse -> {
                     exitRequestFlow() // TODO probably later we need to show an error message
                 }
             }
