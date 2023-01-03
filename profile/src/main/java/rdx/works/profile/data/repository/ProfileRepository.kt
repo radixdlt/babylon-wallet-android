@@ -12,7 +12,7 @@ import com.radixdlt.model.PrivateKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -124,7 +124,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun readProfileSnapshot(): ProfileSnapshot? {
         return withContext(defaultDispatcher) {
-            profileSnapshot.first()
+            profileSnapshot.firstOrNull()
         }
     }
 

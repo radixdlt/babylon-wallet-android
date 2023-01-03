@@ -17,7 +17,7 @@ import timber.log.Timber
 fun WalletApp(
     showOnboarding: Boolean,
     hasProfile: Boolean,
-    incomingRequest: MessageFromDataChannel.IncomingRequest
+    incomingRequest: MessageFromDataChannel.IncomingRequest,
 ) {
     val navController = rememberAnimatedNavController()
 

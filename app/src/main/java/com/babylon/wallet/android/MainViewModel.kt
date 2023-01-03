@@ -114,6 +114,6 @@ class MainViewModel @Inject constructor(
 
 data class MainUiState(
     val loading: Boolean = true,
-    val hasProfile: Boolean = true,
+    val hasProfile: Boolean = false,
     val showOnboarding: Boolean = false
 )
