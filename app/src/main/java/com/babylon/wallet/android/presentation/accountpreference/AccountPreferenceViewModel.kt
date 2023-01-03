@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.transaction.TransactionClient
+import com.babylon.wallet.android.domain.transaction.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccountPreferenceViewModel @Inject constructor(
-    private val transactionClient: TransactionClient,
+    private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
@@ -38,7 +38,7 @@ class AccountPreferenceViewModel @Inject constructor(
             state = state.copy(
                 isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
             )
-            transactionClient.isAllowedToUseFaucet(args.address).collect {
+            getFreeXrdUseCase.isAllowedToUseFaucet(args.address).collect {
                 state = state.copy(
                     canUseFaucet = it,
                     isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
@@ -50,7 +50,7 @@ class AccountPreferenceViewModel @Inject constructor(
     fun onGetFreeXrdClick() {
         appScope.launch {
             state = state.copy(isLoading = true)
-            val result = transactionClient.getFreeXrd(true, args.address)
+            val result = getFreeXrdUseCase(true, args.address)
             result.onValue {
                 state = state.copy(isLoading = false, gotFreeXrd = true)
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)

@@ -46,7 +46,6 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     override fun setUp() = runTest {
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
-        coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns sampleRequestId
         coEvery { profileRepository.getCurrentNetworkId() } returns NetworkId.Nebunet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)

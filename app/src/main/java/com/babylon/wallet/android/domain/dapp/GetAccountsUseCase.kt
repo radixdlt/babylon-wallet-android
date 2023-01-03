@@ -13,9 +13,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class GetAccountsUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val dAppRepository: DAppRepository,

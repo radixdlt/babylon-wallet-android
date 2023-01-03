@@ -1,20 +1,16 @@
-@file:Suppress("TooGenericExceptionCaught", "ReturnCount", "TooManyFunctions")
+@file:Suppress("TooGenericExceptionCaught", "ReturnCount", "LongMethod")
 
 package com.babylon.wallet.android.domain.transaction
 
-import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.KnownAddresses
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.CallMethodReceiver
 import com.radixdlt.toolkit.models.Instruction
@@ -26,11 +22,7 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import rdx.works.profile.data.repository.ProfileRepository
 import java.math.BigDecimal
@@ -40,82 +32,11 @@ import javax.inject.Inject
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val profileRepository: ProfileRepository,
-    private val preferencesManager: PreferencesManager,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
     private val engine = RadixEngineToolkit
 
-    fun isAllowedToUseFaucet(address: String): Flow<Boolean> {
-        return preferencesManager.getLastUsedEpochFlow(address).map { lastUsedEpoch ->
-            if (lastUsedEpoch == null) {
-                true
-            } else {
-                when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
-                    is Result.Error -> false
-                    is Result.Success -> {
-                        if (currentEpoch.data < lastUsedEpoch) {
-                            false
-                        } else {
-                            val threshold = 1
-                            currentEpoch.data - lastUsedEpoch >= threshold
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    suspend fun getFreeXrd(includeLockFeeInstruction: Boolean, address: String): Result<String> {
-        return withContext(ioDispatcher) {
-            val networkId = profileRepository.getCurrentNetworkId()
-            val knownAddresses = KnownAddresses.addressMap[networkId]
-            if (knownAddresses != null) {
-                val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)
-                when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                    is Result.Error -> epochResult
-                    is Result.Success -> {
-                        val submitResult = signAndSubmitTransaction(manifest, true)
-                        if (submitResult is Result.Success) {
-                            preferencesManager.updateEpoch(address, epochResult.data)
-                        }
-                        submitResult
-                    }
-                }
-            } else {
-                Result.Error()
-            }
-        }
-    }
-
-    private fun buildFaucetManifest(
-        knownAddresses: KnownAddresses,
-        address: String,
-        includeLockFeeInstruction: Boolean,
-    ): TransactionManifest {
-        var manifest = ManifestBuilder().addInstruction(
-            Instruction.CallMethod(
-                componentAddress = CallMethodReceiver.ComponentAddress(
-                    Value.ComponentAddress(knownAddresses.faucetAddress)
-                ),
-                methodName = Value.String(MethodName.Free.stringValue)
-            )
-        ).addInstruction(
-            Instruction.CallMethod(
-                componentAddress = CallMethodReceiver.ComponentAddress(
-                    Value.ComponentAddress(address)
-                ),
-                methodName = Value.String(MethodName.DepositBatch.stringValue),
-                arrayOf(Value.Expression("ENTIRE_WORKTOP"))
-            )
-        ).build()
-        if (includeLockFeeInstruction) {
-            manifest = addLockFeeInstructionToManifest(manifest, knownAddresses.faucetAddress)
-        }
-        return manifest
-    }
-
-    private suspend fun signAndSubmitTransaction(manifest: TransactionManifest, hasLockFee: Boolean): Result<String> {
+    suspend fun signAndSubmitTransaction(manifest: TransactionManifest, hasLockFee: Boolean): Result<String> {
         val networkId = profileRepository.getCurrentNetworkId().value
         return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
@@ -156,9 +77,14 @@ class TransactionClient @Inject constructor(
                     addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
                 }
                 val notarizedTransaction = try {
-                    val notarizedTransactionBuilder =
-                        TransactionBuilder().manifest(manifestWithTransactionFee).header(transactionHeaderResult.data)
-                            .sign(notaryAndSigners.signers.map { it.privateKey.toEngineModel() })
+                    val notarizedTransactionBuilder = TransactionBuilder()
+                        .manifest(manifestWithTransactionFee)
+                        .header(transactionHeaderResult.data)
+                        .sign(
+                            notaryAndSigners.signers.map {
+                                it.privateKey.toEngineModel()
+                            }
+                        )
                     notarizedTransactionBuilder.notarize(notaryAndSigners.notarySigner.privateKey.toEngineModel())
                 } catch (e: Exception) {
                     return Result.Error(
@@ -265,7 +191,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private fun addLockFeeInstructionToManifest(
+    fun addLockFeeInstructionToManifest(
         manifest: TransactionManifest,
         addressToLockFee: String,
     ): TransactionManifest {

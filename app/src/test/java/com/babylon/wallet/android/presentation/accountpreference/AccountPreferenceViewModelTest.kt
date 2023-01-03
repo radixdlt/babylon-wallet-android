@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.accountpreference
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.transaction.TransactionClient
+import com.babylon.wallet.android.domain.transaction.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -23,7 +23,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPreferenceViewModel>() {
 
-    private val transactionClient = mockk<TransactionClient>()
+    private val getFreeXrdUseCase = mockk<GetFreeXrdUseCase>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val eventBus = mockk<AppEventBus>()
@@ -31,15 +31,15 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     private val sampleAddress = sampleDataProvider.randomTokenAddress()
 
     override fun initVM(): AccountPreferenceViewModel {
-        return AccountPreferenceViewModel(transactionClient, deviceSecurityHelper, TestScope(), savedStateHandle, eventBus)
+        return AccountPreferenceViewModel(getFreeXrdUseCase, deviceSecurityHelper, TestScope(), savedStateHandle, eventBus)
     }
 
     @Before
     override fun setUp() {
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
-        every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
-        coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Success(sampleTxId)
+        every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
+        coEvery { getFreeXrdUseCase(true, any()) } returns Result.Success(sampleTxId)
         every { savedStateHandle.get<String>(AddressArg) } returns sampleAddress
         coEvery { eventBus.sendEvent(any()) } just Runs
     }
@@ -54,7 +54,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
 
     @Test
     fun `initial state is correct when free xrd not enabled`() = runTest {
-        every { transactionClient.isAllowedToUseFaucet(any()) } returns flow { emit(false) }
+        every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(false) }
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.isDeviceSecure)
@@ -66,17 +66,17 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
-        coVerify(exactly = 1) { transactionClient.getFreeXrd(true, sampleAddress) }
+        coVerify(exactly = 1) { getFreeXrdUseCase(true, sampleAddress) }
         assert(vm.state.gotFreeXrd)
     }
 
     @Test
     fun `get free xrd failure sets proper state`() = runTest {
-        coEvery { transactionClient.getFreeXrd(true, any()) } returns Result.Error(Exception())
+        coEvery { getFreeXrdUseCase(true, any()) } returns Result.Error(Exception())
         val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
-        coVerify(exactly = 1) { transactionClient.getFreeXrd(true, sampleAddress) }
+        coVerify(exactly = 1) { getFreeXrdUseCase(true, sampleAddress) }
         assert(!vm.state.gotFreeXrd)
         assert(vm.state.error != null)
     }
