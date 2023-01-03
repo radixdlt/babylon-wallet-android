@@ -43,7 +43,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     data class AccountConfirmationUiState(
         val accountName: String = "",
-        val accountId: String = "",
+        val accountId: String = ""
     )
 }
 

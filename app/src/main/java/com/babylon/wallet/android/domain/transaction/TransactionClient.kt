@@ -287,7 +287,7 @@ class TransactionClient @Inject constructor(
             }
             is ManifestInstructions.StringInstructions -> {}
         }
-        return TransactionManifest(updatedInstructions, manifest.blobs)
+        return manifest.copy(updatedInstructions, manifest.blobs)
     }
 
     private suspend fun submitNotarizedTransaction(
@@ -317,11 +317,13 @@ class TransactionClient @Inject constructor(
         }
     }
 
+    @Suppress("MagicNumber")
     private suspend fun pollTransactionStatus(txID: String): Result<String> {
         var transactionStatus = TransactionStatus.pending
         var tryCount = 0
         var errorCount = 0
-        val pollStrategy = PollStrategy()
+        val maxTries = 20
+        val delayBetweenTriesMs = 2000L
         while (!transactionStatus.isComplete()) {
             tryCount++
             val statusCheckResult = transactionRepository.getTransactionStatus(txID)
@@ -330,12 +332,12 @@ class TransactionClient @Inject constructor(
             } else {
                 errorCount++
             }
-            if (tryCount > pollStrategy.maxTries) {
+            if (tryCount > maxTries) {
                 return Result.Error(
                     TransactionApprovalException(TransactionApprovalFailure.FailedToPollTXStatus(txID))
                 )
             }
-            delay(pollStrategy.delayBetweenTriesMs)
+            delay(delayBetweenTriesMs)
         }
         if (transactionStatus.isFailed()) {
             when (transactionStatus) {

@@ -64,19 +64,13 @@ class TransactionApprovalViewModel @Inject constructor(
                 val currentNetworkId = profileRepository.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    val dappResult = dAppMessenger.sendTransactionWriteResponseFailure(
+                    dAppMessenger.sendTransactionWriteResponseFailure(
                         args.requestId,
                         failure.toWalletErrorType(),
                         failure.getMessage()
                     )
-                    dappResult.onValue {
-                        sendEvent(TransactionApprovalEvent.NavigateBack)
-                        approvalJob = null
-                    }
-                    dappResult.onError {
-                        sendEvent(TransactionApprovalEvent.NavigateBack)
-                        approvalJob = null
-                    }
+                    sendEvent(TransactionApprovalEvent.NavigateBack)
+                    approvalJob = null
                 } else {
                     state = state.copy(isSigning = true)
                     val result = transactionClient.signAndSubmitTransaction(manifestData)
@@ -108,17 +102,11 @@ class TransactionApprovalViewModel @Inject constructor(
             if (approvalJob != null || state.approved) {
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
-                val result =
-                    dAppMessenger.sendTransactionWriteResponseFailure(
-                        args.requestId,
-                        error = WalletErrorType.RejectedByUser
-                    )
-                result.onValue {
-                    sendEvent(TransactionApprovalEvent.NavigateBack)
-                }
-                result.onError {
-                    sendEvent(TransactionApprovalEvent.NavigateBack)
-                }
+                dAppMessenger.sendTransactionWriteResponseFailure(
+                    args.requestId,
+                    error = WalletErrorType.RejectedByUser
+                )
+                sendEvent(TransactionApprovalEvent.NavigateBack)
             }
         }
     }

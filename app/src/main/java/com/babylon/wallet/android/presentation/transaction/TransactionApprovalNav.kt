@@ -34,12 +34,6 @@ fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
             dismissOnClickOutside = false,
             usePlatformDefaultWidth = true
         )
-//        enterTransition = {
-//            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
-//        },
-//        exitTransition = {
-//            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
-//        }
     ) {
         TransactionApprovalScreen(
             viewModel = hiltViewModel(),

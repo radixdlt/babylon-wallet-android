@@ -140,7 +140,7 @@ data class ChooseAccountUiState(
     val accountAddresses: Int? = null,
     val continueButtonEnabled: Boolean = false,
     val error: String? = null,
-    val showProgress: Boolean = true,
+    val showProgress: Boolean = true
 )
 
 data class SelectedAccountUiState(
@@ -149,5 +149,5 @@ data class SelectedAccountUiState(
     val accountCurrency: String,
     val accountValue: String,
     val appearanceID: Int,
-    val selected: Boolean = false,
+    val selected: Boolean = false
 )

@@ -26,10 +26,5 @@ fun MnemonicWords.signerPrivateKey(
 ): PrivateKey {
     val seed = toSeed(passphrase = bip39Passphrase)
     val derivedKey = seed.toKey(derivationPath, ellipticCurveType)
-//    val xpriv = derivedKey.xprv()
-//    val xPriv = XPriv(xpriv)
-//    val loadedDerivedKey = xPriv.toExtendedKey(EllipticCurveType.Ed25519)
-//    val privHex = loadedDerivedKey.keyPair.privateKey.toHexString()
-//    val public = loadedDerivedKey.keyPair.getCompressedPublicKey().toHexString()
     return derivedKey.keyPair.privateKey
 }

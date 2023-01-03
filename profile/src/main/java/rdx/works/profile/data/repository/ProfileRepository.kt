@@ -139,7 +139,7 @@ class ProfileRepositoryImpl @Inject constructor(
         val signers = mutableListOf<AccountSigner>()
         accounts.forEach {
             val privateKey = mnemonicWords.signerPrivateKey(derivationPath = it.derivationPath)
-            signers.add(AccountSigner(it, privateKey, listOf(privateKey)))
+            signers.add(AccountSigner(it, privateKey))
         }
         return signers.toList()
     }
