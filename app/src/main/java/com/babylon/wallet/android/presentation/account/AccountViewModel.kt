@@ -17,7 +17,8 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -25,6 +26,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -34,17 +36,22 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val clipboardManager: ClipboardManager,
+    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
-    private val gradientIndex = savedStateHandle[ARG_GRADIENT_INDEX] ?: 0
 
-    private val _accountUiState = MutableStateFlow(AccountUiState(gradientIndex = gradientIndex))
+    private val _accountUiState = MutableStateFlow(AccountUiState())
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
         loadAccountData()
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.GotFreeXrd>().collect {
+                refresh()
+            }
+        }
     }
 
     fun refresh() {
@@ -78,10 +85,12 @@ class AccountViewModel @Inject constructor(
                         accountUiState.copy(
                             isRefreshing = false,
                             isLoading = false,
+                            accountAddressFull = accountResource.address,
                             accountAddressShortened = accountResource.address.truncatedHash(),
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
-                            nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList()
+                            nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList(),
+                            gradientIndex = accountResource.appearanceID
                         )
                     }
                 }
@@ -124,6 +133,7 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
     val accountAddressShortened: String = "",
+    val accountAddressFull: String = "",
     val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,
     val assetDetails: AssetUiModel? = null,

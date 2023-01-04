@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.babylon.wallet.android.domain.usecase.wallet
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
@@ -22,18 +24,49 @@ import javax.inject.Inject
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
 ) {
 
-    suspend operator fun invoke(address: String): Result<AccountResources> = coroutineScope {
-        var accountDisplayName = ""
-        var appearanceId = -1
-        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
-            val account = profileSnapshot.toProfile().getAccountByAddress(address)
-            accountDisplayName = account?.displayName.orEmpty()
-            appearanceId = account?.appearanceID ?: -1
+    suspend operator fun invoke(): Result<List<AccountResources>> = coroutineScope {
+        val accountResourceList = mutableListOf<AccountResources>()
+        profileRepository.readProfileSnapshot()?.toProfile()?.let { profile ->
+            val results = profile.getAccounts().map { account ->
+                async {
+                    getSingleAccountResources(
+                        account.entityAddress.address,
+                        account.displayName.orEmpty(),
+                        account.appearanceID
+                    )
+                }
+            }.awaitAll()
+            results.forEach { result ->
+                result.onValue {
+                    accountResourceList.add(it)
+                }
+            }
         }
+        if (accountResourceList.isNotEmpty()) {
+            Result.Success(accountResourceList.toList())
+        } else {
+            Result.Error()
+        }
+    }
 
+    suspend operator fun invoke(address: String): Result<AccountResources> = coroutineScope {
+        profileRepository.readProfileSnapshot()?.toProfile()?.getAccountByAddress(address)?.let { account ->
+            getSingleAccountResources(
+                account.entityAddress.address,
+                account.displayName.orEmpty(),
+                account.appearanceID
+            )
+        } ?: Result.Error()
+    }
+
+    private suspend fun getSingleAccountResources(
+        address: String,
+        accountDisplayName: String,
+        appearanceId: Int,
+    ) = coroutineScope {
         when (val accountResources = entityRepository.getAccountResources(address)) {
             is Result.Error -> Result.Error(accountResources.exception)
             is Result.Success -> {
@@ -123,5 +156,5 @@ class GetAccountResourcesUseCase @Inject constructor(
 data class AccountResourcesJobs(
     val fungibleTokens: List<Result<EntityDetailsResponse>>,
     val nonFungibleTokens: List<Result<EntityDetailsResponse>>,
-    val nonFungibleTokensIds: List<Result<NonFungibleTokenIdContainer>>
+    val nonFungibleTokensIds: List<Result<NonFungibleTokenIdContainer>>,
 )

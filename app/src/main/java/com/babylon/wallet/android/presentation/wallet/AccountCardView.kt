@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -18,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
@@ -32,8 +31,6 @@ import java.math.BigDecimal
 fun AccountCardView(
     hashValue: String,
     accountName: String,
-    accountValue: String,
-    accountCurrency: String,
     onCopyClick: () -> Unit,
     assets: List<OwnedFungibleToken>, // at the moment we pass only the tokens
     modifier: Modifier = Modifier
@@ -57,12 +54,6 @@ fun AccountCardView(
                     style = RadixTheme.typography.body1Header,
                     maxLines = 1,
                     modifier = Modifier.weight(1f, false),
-                    color = RadixTheme.colors.white
-                )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-                Text(
-                    text = "$accountCurrency$accountValue",
-                    style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.white
                 )
             }
@@ -100,12 +91,10 @@ fun AccountCardView(
 @Preview(showBackground = true)
 @Composable
 fun AccountCardPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         AccountCardView(
             hashValue = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
             accountName = "My main account",
-            accountValue = "19195",
-            accountCurrency = "$",
             onCopyClick = {},
             assets = listOf(
                 OwnedFungibleToken(

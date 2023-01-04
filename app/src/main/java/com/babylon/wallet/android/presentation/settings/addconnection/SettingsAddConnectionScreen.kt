@@ -2,22 +2,25 @@ package com.babylon.wallet.android.presentation.settings.addconnection
 
 import android.Manifest
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -27,8 +30,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.qr.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -41,7 +44,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 fun SettingsAddConnectionScreen(
     viewModel: SettingsAddConnectionViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     var showQrScanner by rememberSaveable { mutableStateOf(false) }
@@ -106,7 +109,7 @@ private fun SettingsAddConnectionContent(
     connectionDisplayName: String,
     onConnectionPasswordChanged: (String) -> Unit,
     onConnectionDisplayNameChanged: (String) -> Unit,
-    onDeleteConnectionClick: () -> Unit
+    onDeleteConnectionClick: () -> Unit,
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
@@ -140,21 +143,37 @@ private fun SettingsAddConnectionContent(
 private fun ShowConnectionContent(
     connectionName: String,
     modifier: Modifier = Modifier,
-    onDeleteConnectionClick: () -> Unit
+    onDeleteConnectionClick: () -> Unit,
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "You have an active connection with name: $connectionName",
-            style = MaterialTheme.typography.bodyLarge
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = stringResource(id = R.string.p2p_connection_subtitle),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray2
         )
-        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.delete_connection),
-            onClick = onDeleteConnectionClick
-        )
+        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingSmall))
+        Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = connectionName,
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
+            )
+            IconButton(onClick = onDeleteConnectionClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete_24),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray1
+                )
+            }
+        }
+        Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
     }
 }
 
@@ -215,7 +234,7 @@ private fun EnterConnection(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         SettingsAddConnectionContent(
             connectionName = "",
             onConnectionClick = {},
@@ -235,7 +254,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         SettingsAddConnectionContent(
             connectionName = "my cool connection",
             onConnectionClick = {},

@@ -26,7 +26,7 @@ fun OneTimeAccountsReadRequestItem.toDomainModel(requestId: String) = IncomingRe
     requestId = requestId,
     isOngoing = false,
     requiresProofOfOwnership = requiresProofOfOwnership,
-    numberOfAccounts = numberOfAccounts ?: 1
+    numberOfAccounts = numberOfAccounts ?: 0
 )
 
 fun OngoingAccountsReadRequestItem.toDomainModel(requestId: String) = IncomingRequest.AccountsRequest(

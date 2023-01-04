@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsReadRequestItem
 import com.babylon.wallet.android.data.dapp.model.WalletRequest
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
@@ -45,7 +44,7 @@ class PeerdroidClientImpl @Inject constructor(
         get() = dataChannel?.state == DataChannelEvent.StateChanged.OPEN
 
     override suspend fun connectToRemotePeerWithEncryptionKey(
-        encryptionKey: ByteArray
+        encryptionKey: ByteArray,
     ): Result<Unit> {
         val result = peerdroidConnector.createDataChannel(
             encryptionKey = encryptionKey
@@ -133,14 +132,9 @@ class PeerdroidClientImpl @Inject constructor(
         val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
         val requestId = request.requestId
         val walletRequestItemsList = request.items
-
-        // TODO later we should implement this in a more elegant way by parsing any kind of request
-        return if (walletRequestItemsList.firstOrNull() is OneTimeAccountsReadRequestItem) {
-            val accountsReadRequest = walletRequestItemsList[0]
-            (accountsReadRequest as OneTimeAccountsReadRequestItem).toDomainModel(requestId)
-        } else {
-            MessageFromDataChannel.IncomingRequest.SomeOtherRequest
-        }
+        val walletRequestItemDomainModels =
+            walletRequestItemsList.map { it.toDomainModel(requestId, request.metadata.networkId) }
+        return walletRequestItemDomainModels.first()
     }
 
     override suspend fun close() {

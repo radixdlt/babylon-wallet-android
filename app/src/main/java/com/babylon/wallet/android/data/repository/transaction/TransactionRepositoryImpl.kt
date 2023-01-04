@@ -17,6 +17,17 @@ import javax.inject.Inject
 // TODO translate from network models to domain models
 class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : TransactionRepository {
 
+    override suspend fun getLedgerEpoch(): Result<Long> {
+        return performHttpRequest(
+            call = {
+                gatewayApi.transactionConstruction()
+            },
+            map = {
+                it.ledgerState.epoch
+            }
+        )
+    }
+
     override suspend fun getRecentTransactions(
         address: String,
         page: String?,

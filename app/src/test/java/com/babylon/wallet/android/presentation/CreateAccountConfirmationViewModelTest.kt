@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
+import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationEvent
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +30,7 @@ class CreateAccountConfirmationViewModelTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
-        val event = mutableListOf<CreateAccountConfirmationViewModel.OneOffEvent>()
+        val event = mutableListOf<CreateAccountConfirmationEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
@@ -52,7 +53,7 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.OneOffEvent.NavigateToHome)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationEvent.NavigateToHome)
     }
 
     @Test
@@ -60,7 +61,7 @@ class CreateAccountConfirmationViewModelTest {
         // given
         val accountId = "12kje20k"
         val accountName = "My main account"
-        val event = mutableListOf<CreateAccountConfirmationViewModel.OneOffEvent>()
+        val event = mutableListOf<CreateAccountConfirmationEvent>()
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(true)
@@ -83,6 +84,6 @@ class CreateAccountConfirmationViewModelTest {
             viewModel.accountUiState
         )
 
-        Assert.assertEquals(event.first(), CreateAccountConfirmationViewModel.OneOffEvent.FinishAccountCreation)
+        Assert.assertEquals(event.first(), CreateAccountConfirmationEvent.FinishAccountCreation)
     }
 }

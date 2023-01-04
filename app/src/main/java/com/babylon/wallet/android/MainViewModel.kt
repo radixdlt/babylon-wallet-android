@@ -1,14 +1,15 @@
 package com.babylon.wallet.android
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.DataStoreManager
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.domain.common.OneOffEvent
+import com.babylon.wallet.android.domain.common.OneOffEventHandler
+import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -25,10 +26,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    preferencesManager: DataStoreManager,
+    preferencesManager: PreferencesManager,
     profileRepository: ProfileRepository,
-    private val peerdroidClient: PeerdroidClient
-) : ViewModel() {
+    private val peerdroidClient: PeerdroidClient,
+    private val incomingRequestHolder: IncomingRequestHolder
+) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = preferencesManager.showOnboarding.map { showOnboarding ->
         MainUiState(
@@ -41,9 +43,6 @@ class MainViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         MainUiState()
     )
-
-    var incomingRequest by mutableStateOf<IncomingRequest>(IncomingRequest.None)
-        private set
 
     private var currentConnectionPassword: String = ""
     private var incomingRequestsJob: Job? = null
@@ -90,7 +89,8 @@ class MainViewModel @Inject constructor(
                             restartConnectionToDapp()
                         }
                     } else if (message is IncomingRequest && message != IncomingRequest.None) {
-                        incomingRequest = message
+                        incomingRequestHolder.emit(message)
+                        sendEvent(MainEvent.IncomingRequestEvent(message))
                     }
                 }
         }
@@ -109,8 +109,12 @@ class MainViewModel @Inject constructor(
     }
 }
 
+sealed class MainEvent : OneOffEvent {
+    data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
+}
+
 data class MainUiState(
     val loading: Boolean = true,
-    val hasProfile: Boolean = true,
+    val hasProfile: Boolean = false,
     val showOnboarding: Boolean = false
 )

@@ -28,8 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -63,9 +63,9 @@ fun CreateAccountScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.composeEvent.collect { event ->
+        viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is CreateAccountViewModel.OneOffEvent.Complete -> onContinueClick(
+                is CreateAccountEvent.Complete -> onContinueClick(
                     event.accountId,
                     event.accountName,
                     event.hasProfile
@@ -156,7 +156,7 @@ fun CreateAccountContent(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountContentPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         CreateAccountContent(
             onAccountNameChange = {},
             onAccountCreateClick = {},

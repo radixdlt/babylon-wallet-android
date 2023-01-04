@@ -20,8 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.utils.formatDecimalSeparator
 
 private const val NUMBER_OF_CIRCLES = 6
@@ -98,7 +98,7 @@ fun WalletBalanceView(
 @Preview(showBackground = true)
 @Composable
 fun WalletBalancePreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
             amount = "1232",
@@ -112,7 +112,7 @@ fun WalletBalancePreview() {
 @Preview(showBackground = true)
 @Composable
 fun WalletBalanceWithLongValuePreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
             amount = "1879232.32",
@@ -126,7 +126,7 @@ fun WalletBalanceWithLongValuePreview() {
 @Preview(showBackground = true)
 @Composable
 fun WalletBalanceHiddenPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         WalletBalanceView(
             currencySignValue = "$",
             amount = "1879.32",

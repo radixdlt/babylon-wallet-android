@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -43,10 +44,20 @@ private val walletRequestSerializersModule = SerializersModule {
         subclass(UsePersonaReadRequestItem::class, UsePersonaReadRequestItem.serializer())
 
         subclass(LoginReadRequestItem::class, LoginReadRequestItem.serializer())
+        subclass(SendTransactionWriteRequestItem::class, SendTransactionWriteRequestItem.serializer())
     }
 }
 
 val walletRequestJson = Json {
     serializersModule = walletRequestSerializersModule
     classDiscriminator = "requestType"
+}
+
+fun WalletRequestItem.toDomainModel(requestId: String, networkId: Int): MessageFromDataChannel.IncomingRequest {
+    return when (this) {
+        is OneTimeAccountsReadRequestItem -> toDomainModel(requestId)
+        is OngoingAccountsReadRequestItem -> toDomainModel(requestId)
+        is SendTransactionWriteRequestItem -> toDomainModel(requestId, networkId)
+        else -> MessageFromDataChannel.IncomingRequest.Unknown
+    }
 }

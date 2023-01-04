@@ -25,8 +25,8 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
@@ -58,7 +58,7 @@ fun SettingsEditGatewayScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is SettingsEditGatewayViewModel.OneOffEvent.CreateProfileOnNetwork -> {
+                is SettingsEditGatewayEvent.CreateProfileOnNetwork -> {
                     onCreateProfile(it.newUrl, it.networkName)
                 }
             }
@@ -194,7 +194,7 @@ private fun CurrentNetworkDetails(
 @Preview(showBackground = true)
 @Composable
 fun SettingsEditGatewayPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         SettingsEditGatewayContent(
             onBackClick = {},
             onSwitchToClick = {},

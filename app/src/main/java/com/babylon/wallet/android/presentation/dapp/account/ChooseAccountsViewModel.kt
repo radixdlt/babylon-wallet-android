@@ -9,11 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.Account
+import com.babylon.wallet.android.domain.common.OneOffEvent
+import com.babylon.wallet.android.domain.common.OneOffEventHandler
+import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.utils.OneOffEventHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,8 +24,8 @@ import javax.inject.Inject
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getAccountsUseCase: GetAccountsUseCase,
-    private val dAppMessenger: DAppMessenger
-) : ViewModel() {
+    private val dAppMessenger: DAppMessenger,
+) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val requestId = savedStateHandle.get<String>(Screen.ARG_REQUEST_ID) ?: "no request id"
     private val requiredMinNumberOfAccounts = savedStateHandle.get<Int>(Screen.ARG_NUMBER_OF_ACCOUNTS) ?: 0
@@ -31,32 +33,42 @@ class ChooseAccountsViewModel @Inject constructor(
     var state by mutableStateOf(ChooseAccountUiState())
         private set
 
-    private val _oneOffEvent = OneOffEventHandler<OneOffEvent>()
-    val oneOffEvent by _oneOffEvent
-
     private var selectedAccounts = listOf<SelectedAccountUiState>()
 
     init {
         viewModelScope.launch {
-            when (val accountsResult = getAccountsUseCase(this)) {
-                is Result.Success -> {
-                    state = state.copy(
-                        accounts = accountsResult.data.accounts,
-                        dAppDetails = accountsResult.data.dAppResult.dAppDetails,
-                        accountAddresses = accountsResult.data.dAppResult.accountAddresses,
-                        error = null,
-                        showProgress = false
-                    )
+            getAccountsUseCase(this).collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        state = state.copy(
+                            accounts = mergeSelectedState(result.data.accounts),
+                            dAppDetails = result.data.dAppResult.dAppDetails,
+                            accountAddresses = result.data.dAppResult.accountAddresses,
+                            error = null,
+                            showProgress = false
+                        )
+                    }
+                    is Result.Error -> {
+                        state = state.copy(
+                            accounts = null,
+                            dAppDetails = null,
+                            accountAddresses = null,
+                            error = result.exception?.message,
+                            showProgress = false
+                        )
+                    }
                 }
-                is Result.Error -> {
-                    state = state.copy(
-                        accounts = null,
-                        dAppDetails = null,
-                        accountAddresses = null,
-                        error = accountsResult.exception?.message,
-                        showProgress = false
-                    )
-                }
+            }
+        }
+    }
+
+    private fun mergeSelectedState(accounts: List<SelectedAccountUiState>): List<SelectedAccountUiState> {
+        val selectedAddresses = state.accounts?.filter { it.selected }?.map { it.accountAddress }.orEmpty()
+        return accounts.map {
+            if (selectedAddresses.contains(it.accountAddress)) {
+                it.copy(selected = true)
+            } else {
+                it
             }
         }
     }
@@ -67,7 +79,9 @@ class ChooseAccountsViewModel @Inject constructor(
         state.accounts?.let { accounts ->
             val currentlySelectedAccountsCount = accounts.count { it.selected }
             // If already selected max number of accounts (accountAddresses) and want to select more, skip
-            if (currentlySelectedAccountsCount >= requiredMinNumberOfAccounts && !account.selected) {
+            if (requiredMinNumberOfAccounts != 0 &&
+                currentlySelectedAccountsCount >= requiredMinNumberOfAccounts && !account.selected
+            ) {
                 return
             }
 
@@ -89,14 +103,11 @@ class ChooseAccountsViewModel @Inject constructor(
                 updatedAccount.selected
             }
 
-            if (selectedAccountsCount >= requiredMinNumberOfAccounts) {
+            if (selectedAccountsCount >= requiredMinNumberOfAccounts || requiredMinNumberOfAccounts == 0) {
                 selectedAccounts = updatedAccounts.filter { selectedAccountUiState ->
                     selectedAccountUiState.selected
                 }
-                state = state.copy(
-                    accounts = updatedAccounts,
-                    continueButtonEnabled = true
-                )
+                state = state.copy(accounts = updatedAccounts, continueButtonEnabled = true)
             }
         }
     }
@@ -110,20 +121,17 @@ class ChooseAccountsViewModel @Inject constructor(
                     appearanceId = account.appearanceID
                 )
             }
-            val result = dAppMessenger.sendAccountsResponse(
-                requestId = requestId,
-                accounts = accounts
-            )
+            val result = dAppMessenger.sendAccountsResponse(requestId = requestId, accounts = accounts)
             result.onValue {
-                _oneOffEvent.sendEvent(OneOffEvent.NavigateToCompletionScreen)
+                sendEvent(ChooseAccountsEvent.NavigateToCompletionScreen)
             }
         }
     }
 }
 
-sealed interface OneOffEvent {
-    object NavigateToCompletionScreen : OneOffEvent
-    object FailedToSendResponse : OneOffEvent
+sealed interface ChooseAccountsEvent : OneOffEvent {
+    object NavigateToCompletionScreen : ChooseAccountsEvent
+    object FailedToSendResponse : ChooseAccountsEvent
 }
 
 data class ChooseAccountUiState(

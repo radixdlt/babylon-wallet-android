@@ -2,9 +2,9 @@ package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.toolkit.models.crypto.PublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import models.crypto.PublicKey
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAddress
 import rdx.works.profile.data.model.factorsources.FactorSources

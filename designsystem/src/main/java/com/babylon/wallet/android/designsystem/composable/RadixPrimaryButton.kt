@@ -20,8 +20,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun RadixPrimaryButton(
@@ -60,7 +60,7 @@ fun RadixPrimaryButton(
 @Preview
 @Composable
 fun RadixPrimaryButtonPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixPrimaryButton(modifier = Modifier.size(200.dp, 50.dp), text = "Primary button", onClick = {})
     }
 }
@@ -68,7 +68,7 @@ fun RadixPrimaryButtonPreview() {
 @Preview
 @Composable
 fun RadixPrimaryButtonWithIconPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixPrimaryButton(modifier = Modifier.size(200.dp, 50.dp), text = "Primary button", onClick = {}, icon = {
             Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
         })
@@ -78,7 +78,7 @@ fun RadixPrimaryButtonWithIconPreview() {
 @Preview
 @Composable
 fun RadixPrimaryButtonDisabledPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixPrimaryButton(
             modifier = Modifier.size(200.dp, 50.dp),
             text = "Primary button",

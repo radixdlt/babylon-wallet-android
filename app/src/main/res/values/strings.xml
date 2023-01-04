@@ -40,8 +40,8 @@
     <string name="choose_dapp_login_title">Choose an dApp Login</string>
     <string name="choose_dapp_login_body">This will be the Login that Radaswap recognizes you by in the future</string>
     <string name="create_dapp_login_button_title">+ Create a new dApp Login</string>
-    <string name="choose_dapp_accounts_title">Choose Accounts</string>
-    <string name="choose_dapp_accounts_body">Choose the account(s) you wish Radaswap to know about</string>
+    <string name="choose_dapp_accounts_title">Choose At Least One Account</string>
+    <string name="choose_dapp_accounts_body">Choose the account(s) you want dashboard to know about.</string>
     <string name="create_dapp_accounts_button_title">+ Create a new Account</string>
     <string name="dapp_successful_title">dApp Connection Successful</string>
     <string name="dapp_successful_body">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
@@ -56,11 +56,9 @@
     <string name="empty" />
     <string name="nft_id">NFT ID</string>
     <string name="settings">Settings</string>
-    <string name="p2p_connections">P2P CONNECTIONS</string>
-    <string name="debug">DEBUG</string>
     <string name="add_connection">Add Connection</string>
     <string name="delete_connection">Delete Connection</string>
-    <string name="delete_all"><![CDATA[Delete all & Factor Sources]]></string>
+    <string name="delete_all">Delete Wallet Data</string>
     <string name="edit_gateway">Edit Gateway API Endpoint</string>
     <string name="inspect_profile">Inspect Profile</string>
     <string name="manage_connections">Manage Connections</string>
@@ -77,4 +75,11 @@
     <string name="gateway_api_hint">New URL</string>
     <string name="gateway_updated">Gateway updated!</string>
     <string name="gateway_invalid">Gateway invalid!</string>
+    <string name="approve_transaction">Approve Transaction</string>
+    <string name="transaction_approved_success">Transaction Approved Successfully!</string>
+    <string name="account_preference">Account Preference</string>
+    <string name="get_free_xrd">Get Betanet XRD Test Tokens</string>
+    <string name="ok">Ok</string>
+    <string name="p2p_connection_subtitle">Your Radix Wallet is linked to the following desktop browser using the Connector browser extension.</string>
+    <string name="development_use_only">Development use only. Not usable on Radix mainnet.</string>
 </resources>

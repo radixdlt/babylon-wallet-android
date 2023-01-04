@@ -21,8 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun RadixSecondaryButton(
@@ -62,7 +62,7 @@ fun RadixSecondaryButton(
 @Preview
 @Composable
 fun RadixSecondaryButtonPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixSecondaryButton(text = "Secondary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
     }
 }
@@ -70,7 +70,7 @@ fun RadixSecondaryButtonPreview() {
 @Preview
 @Composable
 fun RadixSecondaryButtonWithIconPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixSecondaryButton(text = "Secondary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp)) {
             Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
         }
@@ -80,7 +80,7 @@ fun RadixSecondaryButtonWithIconPreview() {
 @Preview
 @Composable
 fun RadixSecondaryButtonDisabledPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         RadixSecondaryButton(
             text = "Secondary button",
             onClick = {},

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation
 
-import com.babylon.wallet.android.data.DataStoreManager
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.onboarding.OnboardingViewModel
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import kotlinx.coroutines.CoroutineScope
@@ -23,14 +23,14 @@ class OnboardingViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val dataStoreManager = Mockito.mock(DataStoreManager::class.java)
+    private val preferencesManager = Mockito.mock(PreferencesManager::class.java)
 
     private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
 
     @Test
     fun `when alert accepted, go next`() = runTest {
         // given
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+        val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
         viewModel.onAlertClicked(true)
@@ -38,14 +38,14 @@ class OnboardingViewModelTest {
         advanceUntilIdle()
 
         // then
-        verify(dataStoreManager).setShowOnboarding(false)
+        verify(preferencesManager).setShowOnboarding(false)
     }
 
     @Test
     fun `when alert not accepted, do not show external warning`() = runTest {
         // given
         val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+        val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
         viewModel.onAlertClicked(false)
@@ -61,7 +61,7 @@ class OnboardingViewModelTest {
     @Test
     fun `when user authenticated successfully, go next`() = runTest {
         // given
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+        val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
         viewModel.onUserAuthenticated(true)
@@ -69,14 +69,14 @@ class OnboardingViewModelTest {
         advanceUntilIdle()
 
         // then
-        verify(dataStoreManager).setShowOnboarding(false)
+        verify(preferencesManager).setShowOnboarding(false)
     }
 
     @Test
     fun `when user not authenticated successfully, do not go next and dismiss`() = runTest {
         // given
         val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+        val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
         viewModel.onUserAuthenticated(false)
@@ -95,7 +95,7 @@ class OnboardingViewModelTest {
         // given
         whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(true)
         val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+        val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
         viewModel.onProceedClick()
@@ -114,7 +114,7 @@ class OnboardingViewModelTest {
         // given
         whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(false)
         val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
-        val viewModel = OnboardingViewModel(dataStoreManager, deviceSecurityHelper)
+        val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
         viewModel.onProceedClick()

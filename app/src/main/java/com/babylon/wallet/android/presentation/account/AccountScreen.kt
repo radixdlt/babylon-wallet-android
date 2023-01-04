@@ -61,8 +61,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.AssetUiModel
@@ -92,7 +92,7 @@ import java.util.Locale
 fun AccountScreen(
     viewModel: AccountViewModel,
     accountName: String,
-    onMenuItemClick: () -> Unit,
+    onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit
 ) {
@@ -100,7 +100,9 @@ fun AccountScreen(
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
     AccountScreenContent(
         accountName = accountName,
-        onMenuItemClick = onMenuItemClick,
+        onAccountPreferenceClick = {
+            onAccountPreferenceClick(state.accountAddressFull)
+        },
         onBackClick = onBackClick,
         isLoading = state.isLoading,
         isRefreshing = state.isRefreshing,
@@ -126,7 +128,7 @@ fun AccountScreen(
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
 private fun AccountScreenContent(
     accountName: String,
-    onMenuItemClick: () -> Unit,
+    onAccountPreferenceClick: () -> Unit,
     onBackClick: () -> Unit,
     isLoading: Boolean,
     isRefreshing: Boolean,
@@ -197,7 +199,7 @@ private fun AccountScreenContent(
 //                    headerScrollState = headerScrollState,
 //                    accountName = accountName,
 //                    onBackClick = onBackClick,
-//                    onMenuItemClick = onMenuItemClick,
+//                    onAccountPreferenceClick = onAccountPreferenceClick,
 //                    accountAddress = accountAddress,
 //                    walletFiatBalance = walletFiatBalance,
 //                    onCopyAccountAddress = onCopyAccountAddress,
@@ -211,7 +213,11 @@ private fun AccountScreenContent(
 //                )
 //            )
             val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
-            Box(modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState)
+            ) {
                 Scaffold(
                     modifier = Modifier
                         .systemBarsPadding()
@@ -221,7 +227,7 @@ private fun AccountScreenContent(
                             title = accountName,
                             onBackClick = onBackClick,
                             actions = {
-                                IconButton(onClick = { onMenuItemClick() }) {
+                                IconButton(onClick = { onAccountPreferenceClick() }) {
                                     Icon(
                                         painterResource(
                                             id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
@@ -314,7 +320,7 @@ fun AccountContentWithScrollableHeader(
     headerScrollState: ScrollableHeaderViewScrollState,
     accountName: String,
     onBackClick: () -> Unit,
-    onMenuItemClick: () -> Unit,
+    onAccountPreferenceClick: () -> Unit,
     accountAddress: String,
     walletFiatBalance: String?,
     onCopyAccountAddress: (String) -> Unit,
@@ -344,7 +350,7 @@ fun AccountContentWithScrollableHeader(
                         title = accountName,
                         onBackClick = onBackClick,
                         actions = {
-                            IconButton(onClick = { onMenuItemClick() }) {
+                            IconButton(onClick = { onAccountPreferenceClick() }) {
                                 Icon(
                                     painterResource(
                                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
@@ -726,11 +732,11 @@ fun AssetsContent(
 @Preview
 @Composable
 fun AccountContentPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 accountName = randomTokenAddress(),
-                onMenuItemClick = {},
+                onAccountPreferenceClick = {},
                 onBackClick = {},
                 isLoading = false,
                 isRefreshing = false,
@@ -758,11 +764,11 @@ fun AccountContentPreview() {
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun AccountContentDarkPreview() {
-    BabylonWalletTheme(darkTheme = true) {
+    RadixWalletTheme(darkTheme = true) {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 accountName = randomTokenAddress(),
-                onMenuItemClick = {},
+                onAccountPreferenceClick = {},
                 onBackClick = {},
                 isLoading = false,
                 isRefreshing = false,

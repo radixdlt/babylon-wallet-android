@@ -18,9 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,9 +37,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -86,7 +84,7 @@ private fun OnboardingScreenContent(
     authenticateWithBiometric: Boolean,
     onUserAuthenticated: (Boolean) -> Unit,
     onAlertClicked: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 
 ) {
     val pagerState = rememberPagerState(initialPage = currentPage)
@@ -151,10 +149,7 @@ private fun OnboardingScreenContent(
                     }
                 }
             }
-
-            AlertDialogView(show = showWarning) { accepted ->
-                onAlertClicked(accepted)
-            }
+            NotSecureAlertDialog(show = showWarning, finish = { accepted -> onAlertClicked(accepted) })
         }
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -172,9 +167,9 @@ private fun OnboardingScreenContent(
                     onClick = onProceedClick
                 )
                 RadixTextButton(
-                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.restore_wallet_from_backup),
                     onClick = restoreWalletFromBackup,
-                    text = stringResource(id = R.string.restore_wallet_from_backup)
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             }
@@ -249,32 +244,11 @@ fun RadixOnboardingPagerIndicator(
     }
 }
 
-@Composable
-private fun AlertDialogView(
-    show: Boolean,
-    finish: (accepted: Boolean) -> Unit
-) {
-    if (show) {
-        AlertDialog(
-            onDismissRequest = { finish(false) },
-            confirmButton = {
-                TextButton(onClick = { finish(true) }) { Text(text = stringResource(id = R.string.confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { finish(false) }) { Text(text = stringResource(id = R.string.cancel)) }
-            },
-            title = { Text(text = stringResource(id = R.string.please_confirm_dialog_title)) },
-            text = { Text(text = stringResource(id = R.string.please_confirm_dialog_body)) }
-
-        )
-    }
-}
-
 @OptIn(ExperimentalPagerApi::class)
 @Preview
 @Composable
 fun OnboardingScreenPreview() {
-    BabylonWalletTheme {
+    RadixWalletTheme {
         OnboardingScreenContent(
             currentPage = 0,
             restoreWalletFromBackup = {},

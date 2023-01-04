@@ -26,8 +26,6 @@ suspend fun <T, A> performHttpRequest(
     }
 }
 
-// Jakub: API schema uses ErrorResponse, but somehow on some errors I'm getting different error message format, this is
-// why there is 2nd error parsing going on.
 private fun tryParseServerError(
     error: (() -> Exception)?,
     errorBodyString: String
@@ -36,12 +34,6 @@ private fun tryParseServerError(
     val errorResponse = Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(
         errorBodyString
     )
-//    var gatewayErrorResponse: GatewayErrorResponse? = null
-//    if (!errorResponse.hasMessageOrDetails()) {
-//        gatewayErrorResponse = Serializer.kotlinxSerializationJson.decodeFromString<GatewayErrorResponse>(
-//            errorBodyString
-//        )
-//    }
     val exception = RadixGatewayException(
         definedError?.message ?: errorResponse.message
     )

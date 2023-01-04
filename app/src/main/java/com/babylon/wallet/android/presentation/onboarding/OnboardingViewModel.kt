@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.DataStoreManager
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val preferencesManager: DataStoreManager,
+    private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel() {
 

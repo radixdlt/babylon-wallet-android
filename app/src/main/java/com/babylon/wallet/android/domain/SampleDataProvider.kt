@@ -12,6 +12,9 @@ import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
+import com.radixdlt.toolkit.builders.ManifestBuilder
+import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -78,6 +81,20 @@ class SampleDataProvider {
                 )
             }
         }
+    }
+
+    fun sampleManifest(): TransactionManifest {
+        return ManifestBuilder()
+            .callMethod(
+                Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
+                "free",
+            )
+            .callMethod(
+                Value.ComponentAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"),
+                "deposit_batch",
+                Value.Expression("ENTIRE_WORKTOP")
+            )
+            .build()
     }
 
     val mockTokenUiList = sampleFungibleTokens().map { ownedFungibleToken ->

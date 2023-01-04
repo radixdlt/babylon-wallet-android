@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.navigation
 
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -8,11 +10,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
+import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
+import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_GRADIENT_INDEX
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_NAME
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_URL
@@ -20,6 +23,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_S
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -48,9 +52,9 @@ fun NavigationHost(
                 onMenuClick = {
                     navController.navigate(Screen.SettingsAllDestination.route)
                 },
-                onAccountClick = { accountId, accountName, gradientIndex ->
+                onAccountClick = { accountId, accountName ->
                     navController.navigate(
-                        Screen.AccountDestination.routeWithArgs(accountId, accountName, gradientIndex)
+                        Screen.AccountDestination.routeWithArgs(accountId, accountName)
                     )
                 },
                 onAccountCreationClick = {
@@ -61,27 +65,34 @@ fun NavigationHost(
             )
         }
         composable(
-            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_GRADIENT_INDEX}",
+            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
                 navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
-                navArgument(ARG_GRADIENT_INDEX) { type = NavType.IntType }
             ),
             enterTransition = {
                 slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
             },
             exitTransition = {
                 slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            },
+            popEnterTransition = {
+                EnterTransition.None
+            },
+            popExitTransition = {
+                ExitTransition.None
             }
         ) { navBackStackEntry ->
             AccountScreen(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
-                onMenuItemClick = {
+                onAccountPreferenceClick = { address ->
+                    navController.accountPreferences(address = address)
+                },
+                onBackClick = {
+                    navController.navigateUp()
                 }
-            ) {
-                navController.navigateUp()
-            }
+            )
         }
         composable(
             route = Screen.CreateAccountDestination.route(),
@@ -117,6 +128,12 @@ fun NavigationHost(
                 }
             )
         }
+        transactionApprovalScreen(onBackClick = {
+            navController.popBackStack()
+        })
+        accountPreferencesScreen(onBackClick = {
+            navController.popBackStack()
+        })
         composable(
             route = Screen.AccountCompletionDestination.route +
                 "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",

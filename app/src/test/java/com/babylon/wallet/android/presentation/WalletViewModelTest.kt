@@ -6,7 +6,6 @@ import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
-import com.babylon.wallet.android.presentation.wallet.WalletData
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -17,13 +16,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.repository.ProfileRepository
@@ -39,11 +36,6 @@ class WalletViewModelTest {
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
     private val profileRepository = mock(ProfileRepository::class.java)
-
-    private val walletData = WalletData(
-        "$",
-        "1000"
-    )
 
     private val profile = SampleDataProvider().sampleProfileSnapshot()
 
@@ -71,26 +63,6 @@ class WalletViewModelTest {
     }
 
     @Test
-    fun `when view model init, verify wallet Ui state content is loaded at the end`() = runTest {
-        // given
-        val event = mutableListOf<WalletUiState>()
-        whenever(mainViewRepository.getWallet()).thenReturn(walletData)
-        whenever(profileRepository.profileSnapshot).thenReturn(flow { emit(profile)})
-        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
-        // when
-        vm.walletUiState
-            .onEach { event.add(it) }
-            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
-        advanceUntilIdle()
-
-        // then
-        val lastEvent = event.last()
-        assertEquals(lastEvent.wallet?.currency, walletData.currency)
-        assertEquals(lastEvent.wallet?.amount, walletData.amount)
-    }
-
-    @Test
     fun `when view model init, verify initial value of account UI state is Loading`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
@@ -110,12 +82,11 @@ class WalletViewModelTest {
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-        whenever(mainViewRepository.getWallet()).thenReturn(walletData)
         whenever(profileRepository.profileSnapshot).thenReturn(flow { emit(profile) })
 
         // when
         val viewModel = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase, profileRepository)
-        whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
+        whenever(requestAccountsUseCase()).thenReturn(Result.Success(listOf(sampleData)))
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

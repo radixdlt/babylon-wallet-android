@@ -8,7 +8,7 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.designsystem.theme.BabylonWalletTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,13 +24,13 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setContent {
-            BabylonWalletTheme {
+            RadixWalletTheme {
                 val state by viewModel.state.collectAsStateWithLifecycle()
 
                 WalletApp(
                     showOnboarding = state.showOnboarding,
                     hasProfile = state.hasProfile,
-                    incomingRequest = viewModel.incomingRequest
+                    oneOffEvent = viewModel.oneOffEvent
                 )
             }
         }
