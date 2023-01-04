@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 
 @ExperimentalPagerApi
@@ -17,7 +18,7 @@ import timber.log.Timber
 fun WalletApp(
     showOnboarding: Boolean,
     hasProfile: Boolean,
-    incomingRequest: MessageFromDataChannel.IncomingRequest,
+    oneOffEvent: Flow<MainEvent>,
 ) {
     val navController = rememberAnimatedNavController()
 
@@ -40,27 +41,33 @@ fun WalletApp(
         }
     }
 
-    LaunchedEffect(incomingRequest) {
-        when (incomingRequest) {
-            is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
-                navController.navigate(
-                    route = Screen.RequestAccountsDestination.routeWithArgs(
-                        incomingRequest.requestId,
-                        incomingRequest.isOngoing,
-                        incomingRequest.requiresProofOfOwnership,
-                        incomingRequest.numberOfAccounts
-                    )
-                )
+    LaunchedEffect(Unit) {
+        oneOffEvent.collect { event ->
+            when (event) {
+                is MainEvent.IncomingRequestEvent -> {
+                    when (val incomingRequest = event.request) {
+                        is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
+                            navController.navigate(
+                                route = Screen.RequestAccountsDestination.routeWithArgs(
+                                    incomingRequest.requestId,
+                                    incomingRequest.isOngoing,
+                                    incomingRequest.requiresProofOfOwnership,
+                                    incomingRequest.numberOfAccounts
+                                )
+                            )
+                        }
+                        MessageFromDataChannel.IncomingRequest.None -> {
+                        }
+                        MessageFromDataChannel.IncomingRequest.ParsingError -> {
+                            Timber.d("Failed to parse incoming request")
+                        }
+                        is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest -> {
+                            navController.transactionApproval(incomingRequest.requestId)
+                        }
+                        MessageFromDataChannel.IncomingRequest.Unknown -> {}
+                    }
+                }
             }
-            MessageFromDataChannel.IncomingRequest.None -> {
-            }
-            MessageFromDataChannel.IncomingRequest.ParsingError -> {
-                Timber.d("Failed to parse incoming request")
-            }
-            is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest -> {
-                navController.transactionApproval(incomingRequest.requestId)
-            }
-            MessageFromDataChannel.IncomingRequest.Unknown -> {}
         }
     }
 }

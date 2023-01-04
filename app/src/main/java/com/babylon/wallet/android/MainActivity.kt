@@ -30,7 +30,7 @@ class MainActivity : FragmentActivity() {
                 WalletApp(
                     showOnboarding = state.showOnboarding,
                     hasProfile = state.hasProfile,
-                    incomingRequest = viewModel.incomingRequest
+                    oneOffEvent = viewModel.oneOffEvent
                 )
             }
         }
