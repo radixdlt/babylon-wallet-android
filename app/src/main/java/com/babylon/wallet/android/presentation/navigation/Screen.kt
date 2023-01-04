@@ -26,7 +26,7 @@ sealed class Screen(override val route: String, override val args: String = "") 
             "$ARG_NETWORK_NAME={$ARG_NETWORK_NAME}&" +
             "$ARG_SWITCH_NETWORK={$ARG_SWITCH_NETWORK}"
     )
-    object TransactionApprovalDestination : Screen("transaction_approval_route")
+
     object AccountCompletionDestination : Screen("account_completion_route")
     object RequestAccountsDestination : Screen("request_accounts_route")
     object ChooseAccountsDestination : Screen("choose_accounts_route")
@@ -61,9 +61,6 @@ sealed class Screen(override val route: String, override val args: String = "") 
         const val ARG_ACCOUNT_NAME = "arg_account_name"
         const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"
-        const val ARG_REQUEST_ID = "arg_request_id"
-        const val ARG_IS_ONGOING = "arg_is_ongoing"
-        const val ARG_REQUIRES_OWNERSHIP = "arg_requires_proof_of_ownership"
-        const val ARG_NUMBER_OF_ACCOUNTS = "arg_number_of_accounts"
+        const val ARG_INCOMING_REQUEST_ID = "arg_incoming_request_id"
     }
 }
