@@ -31,7 +31,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackClick: () -> Unit,
     onSettingClick: (SettingSectionItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state = viewModel.state
     SettingsContent(
@@ -50,7 +50,7 @@ private fun SettingsContent(
     onBackClick: () -> Unit,
     appSettings: ImmutableList<SettingSection>,
     onSettingClick: (SettingSectionItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
@@ -69,20 +69,8 @@ private fun SettingsContent(
         ) {
             LazyColumn {
                 appSettings.forEach { section ->
-                    val description = section.type.descriptionRes()
                     item {
-                        if (description != null) {
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                            Text(
-                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                text = stringResource(id = description),
-                                style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray2
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                        } else {
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                        }
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
                     section.items.forEach { settingItem ->
                         item {

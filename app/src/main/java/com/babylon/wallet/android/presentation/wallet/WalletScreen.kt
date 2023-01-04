@@ -50,8 +50,8 @@ fun WalletScreen(
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAccountClick: (accountId: String, accountName: String,) -> Unit = { _, _ -> },
-    onAccountCreationClick: () -> Unit
+    onAccountClick: (accountId: String, accountName: String) -> Unit = { _, _ -> },
+    onAccountCreationClick: () -> Unit,
 ) {
     val state by viewModel.walletUiState.collectAsStateWithLifecycle()
     WalletScreenContent(
@@ -82,7 +82,7 @@ private fun WalletScreenContent(
     isLoading: Boolean,
     accounts: ImmutableList<AccountResources>,
     error: UiMessage?,
-    onMessageShown: () -> Unit
+    onMessageShown: () -> Unit,
 ) {
     Box(modifier = modifier) {
         Scaffold(
@@ -98,7 +98,9 @@ private fun WalletScreenContent(
         ) { innerPadding ->
             if (isLoading) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -138,7 +140,7 @@ private fun WalletAccountList(
     onAccountClick: (accountId: String, accountName: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier) {
         item {

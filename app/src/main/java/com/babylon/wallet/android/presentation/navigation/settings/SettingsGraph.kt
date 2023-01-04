@@ -46,7 +46,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
                     SettingSectionItem.InspectProfile -> {}
-                    SettingSectionItem.ManageConnections -> {}
                 }
             }
         )

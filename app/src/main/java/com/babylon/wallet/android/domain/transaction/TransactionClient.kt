@@ -1,4 +1,4 @@
-@file:Suppress("TooGenericExceptionCaught", "ReturnCount", "LongMethod")
+@file:Suppress("TooGenericExceptionCaught", "ReturnCount", "LongMethod", "TooManyFunctions")
 
 package com.babylon.wallet.android.domain.transaction
 
@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
@@ -32,6 +33,7 @@ import javax.inject.Inject
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val profileRepository: ProfileRepository,
+    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
 ) {
 
     private val engine = RadixEngineToolkit
@@ -69,11 +71,12 @@ class TransactionClient @Inject constructor(
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> return transactionHeaderResult
             is Result.Success -> {
-                val accountAddressToLockFee =
-                    addressesNeededToSign.firstOrNull() ?: profileRepository.getAccounts().first().entityAddress.address
                 val manifestWithTransactionFee = if (hasLockFeeInstruction) {
                     jsonTransactionManifest
                 } else {
+                    val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
+                        TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+                    )
                     addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
                 }
                 val notarizedTransaction = try {
@@ -123,6 +126,16 @@ class TransactionClient @Inject constructor(
                         submitResult
                     }
                 }
+            }
+        }
+    }
+
+    private suspend fun getAccountAddressToLockFee(): String? {
+        return when (val accounts = getAccountResourcesUseCase()) {
+            is Result.Error -> null
+            is Result.Success -> {
+                val accountWithXrd = accounts.data.firstOrNull { it.hasXrdWithBalance() }
+                accountWithXrd?.address
             }
         }
     }

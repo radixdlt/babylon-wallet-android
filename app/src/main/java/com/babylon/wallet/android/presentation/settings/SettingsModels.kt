@@ -8,7 +8,6 @@ data class SettingSection(val type: SettingSectionType, val items: List<SettingS
 
 sealed class SettingSectionItem {
     object InspectProfile : SettingSectionItem()
-    object ManageConnections : SettingSectionItem()
     object AddConnection : SettingSectionItem()
     object EditGateway : SettingSectionItem()
     object DeleteAll : SettingSectionItem()
@@ -20,29 +19,18 @@ sealed class SettingSectionItem {
             DeleteAll -> R.string.delete_all
             EditGateway -> R.string.edit_gateway
             InspectProfile -> R.string.inspect_profile
-            ManageConnections -> R.string.manage_connections
         }
     }
 }
 
 enum class SettingSectionType {
-    Debug, P2P, Gateway, Account;
-
-    @StringRes
-    fun descriptionRes(): Int? {
-        return when (this) {
-            Debug -> R.string.debug
-            P2P -> R.string.p2p_connections
-            else -> null
-        }
-    }
+    P2P, Gateway, Account
 }
 
 val defaultAppSettings = persistentListOf(
-    SettingSection(SettingSectionType.Debug, persistentListOf(SettingSectionItem.InspectProfile)),
     SettingSection(
         SettingSectionType.P2P,
-        persistentListOf(SettingSectionItem.ManageConnections, SettingSectionItem.AddConnection)
+        persistentListOf(SettingSectionItem.AddConnection)
     ),
     SettingSection(SettingSectionType.Gateway, persistentListOf(SettingSectionItem.EditGateway)),
     SettingSection(SettingSectionType.Account, persistentListOf(SettingSectionItem.DeleteAll))
