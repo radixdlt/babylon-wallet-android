@@ -17,7 +17,7 @@ sealed interface MessageFromDataChannel {
             val transactionManifestData: TransactionManifestData,
         ) : IncomingRequest(requestId)
 
-        object SomeOtherRequest : IncomingRequest() // TODO replace this later with some other request from dapp
+        object Unknown : IncomingRequest()
 
         object ParsingError : IncomingRequest()
 

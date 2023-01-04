@@ -1,6 +1,6 @@
 @file:Suppress("UnusedPrivateMember")
 
-package com.babylon.wallet.android.domain.transaction
+package com.babylon.wallet.android.data.transaction
 
 data class TransactionApprovalException(
     val failure: TransactionApprovalFailure,

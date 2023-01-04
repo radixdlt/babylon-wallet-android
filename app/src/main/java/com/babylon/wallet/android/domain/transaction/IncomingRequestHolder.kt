@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class IncomingRequestHolder @Inject constructor() {
 
     private val _incomingRequests = MutableSharedFlow<Map<String, MessageFromDataChannel.IncomingRequest>>(replay = 1)

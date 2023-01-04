@@ -2,6 +2,8 @@ package com.babylon.wallet.android.domain.transaction
 
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.data.transaction.MethodName
+import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.KnownAddresses

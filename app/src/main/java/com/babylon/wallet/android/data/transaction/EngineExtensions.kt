@@ -1,6 +1,6 @@
 @file:Suppress("TooGenericExceptionThrown")
 
-package com.babylon.wallet.android.domain.transaction
+package com.babylon.wallet.android.data.transaction
 
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey

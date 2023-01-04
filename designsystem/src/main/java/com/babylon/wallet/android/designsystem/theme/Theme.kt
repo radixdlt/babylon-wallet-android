@@ -335,8 +335,8 @@ fun RadixWalletTheme(
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) {
+        // TODO update to dark color palette when we have it ready
         LightColorPalette
-//        DarkColorPalette
     } else {
         LightColorPalette
     }
@@ -362,7 +362,7 @@ fun RadixWalletTheme(
 
 fun debugColors(
     darkTheme: Boolean,
-    debugColor: Color = Color.Magenta
+    debugColor: Color = Color.Magenta,
 ) = Colors(
     primary = debugColor,
     primaryVariant = debugColor,

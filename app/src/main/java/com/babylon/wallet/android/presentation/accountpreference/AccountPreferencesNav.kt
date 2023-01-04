@@ -16,18 +16,16 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val AddressArg = "address"
 
-const val ARG_GOT_FREE_XRD = "free_xrd"
-
-internal class AccountPreferenceArgs(val address: String) {
+internal class AccountPreferencesArgs(val address: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle.get(AddressArg)) as String)
 }
 
-fun NavController.accountPreference(address: String) {
+fun NavController.accountPreferences(address: String) {
     navigate("account_preference_route/$address")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.accountPreferenceScreen(onBackClick: (Boolean) -> Unit) {
+fun NavGraphBuilder.accountPreferencesScreen(onBackClick: () -> Unit) {
     composable(
         route = "account_preference_route/{$AddressArg}",
         arguments = listOf(

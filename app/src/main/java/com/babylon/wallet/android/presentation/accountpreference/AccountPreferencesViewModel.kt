@@ -28,7 +28,7 @@ class AccountPreferenceViewModel @Inject constructor(
     private val appEventBus: AppEventBus
 ) : ViewModel() {
 
-    private val args = AccountPreferenceArgs(savedStateHandle)
+    private val args = AccountPreferencesArgs(savedStateHandle)
 
     internal var state by mutableStateOf(AccountPreferenceUiState())
         private set

@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.transaction.TransactionApprovalException
+import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
+import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
@@ -17,9 +20,6 @@ import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
-import com.babylon.wallet.android.domain.transaction.TransactionApprovalException
-import com.babylon.wallet.android.domain.transaction.TransactionApprovalFailure
-import com.babylon.wallet.android.domain.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel

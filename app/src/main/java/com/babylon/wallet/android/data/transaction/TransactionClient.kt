@@ -1,6 +1,6 @@
 @file:Suppress("TooGenericExceptionCaught", "ReturnCount", "LongMethod", "TooManyFunctions")
 
-package com.babylon.wallet.android.domain.transaction
+package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete

@@ -58,6 +58,6 @@ fun WalletRequestItem.toDomainModel(requestId: String, networkId: Int): MessageF
         is OneTimeAccountsReadRequestItem -> toDomainModel(requestId)
         is OngoingAccountsReadRequestItem -> toDomainModel(requestId)
         is SendTransactionWriteRequestItem -> toDomainModel(requestId, networkId)
-        else -> MessageFromDataChannel.IncomingRequest.SomeOtherRequest
+        else -> MessageFromDataChannel.IncomingRequest.Unknown
     }
 }

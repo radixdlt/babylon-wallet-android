@@ -36,7 +36,6 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -95,8 +94,7 @@ fun AccountScreen(
     accountName: String,
     onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit,
-    shouldRefresh: Boolean?
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.accountUiState.collectAsStateWithLifecycle()
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
@@ -124,11 +122,6 @@ fun AccountScreen(
         walletFiatBalance = state.walletFiatBalance,
         modifier = modifier
     )
-    LaunchedEffect(key1 = shouldRefresh) {
-        if (shouldRefresh == true) {
-            viewModel.refresh()
-        }
-    }
 }
 
 @Composable

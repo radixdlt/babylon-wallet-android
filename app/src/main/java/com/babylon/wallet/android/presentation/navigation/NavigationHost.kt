@@ -10,9 +10,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
-import com.babylon.wallet.android.presentation.accountpreference.ARG_GOT_FREE_XRD
-import com.babylon.wallet.android.presentation.accountpreference.accountPreference
-import com.babylon.wallet.android.presentation.accountpreference.accountPreferenceScreen
+import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
+import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
@@ -84,14 +83,12 @@ fun NavigationHost(
                 ExitTransition.None
             }
         ) { navBackStackEntry ->
-            val shouldRefresh = navBackStackEntry.receiveDataOnce<Boolean>(key = ARG_GOT_FREE_XRD)
             AccountScreen(
                 viewModel = hiltViewModel(),
                 accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
                 onAccountPreferenceClick = { address ->
-                    navController.accountPreference(address = address)
+                    navController.accountPreferences(address = address)
                 },
-                shouldRefresh = shouldRefresh,
                 onBackClick = {
                     navController.navigateUp()
                 }
@@ -134,12 +131,7 @@ fun NavigationHost(
         transactionApprovalScreen(onBackClick = {
             navController.popBackStack()
         })
-        accountPreferenceScreen(onBackClick = { gotFreeXrd ->
-//            navController.passDataBack(
-//                Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
-//                ARG_GOT_FREE_XRD,
-//                gotFreeXrd
-//            )
+        accountPreferencesScreen(onBackClick = {
             navController.popBackStack()
         })
         composable(

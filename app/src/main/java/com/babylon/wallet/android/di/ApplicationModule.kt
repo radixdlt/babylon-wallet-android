@@ -8,8 +8,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.MainViewRepositoryImpl
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.MainViewRepository
-import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
-import com.babylon.wallet.android.utils.AppEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,17 +43,5 @@ object ApplicationModule {
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
         return context.userDataStore
-    }
-
-    @Provides
-    @Singleton
-    fun provideIncomingRequestHolder(): IncomingRequestHolder {
-        return IncomingRequestHolder()
-    }
-
-    @Provides
-    @Singleton
-    fun provideAppEventBus(): AppEventBus {
-        return AppEventBus()
     }
 }

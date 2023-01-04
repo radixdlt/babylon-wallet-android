@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.transaction
+package com.babylon.wallet.android.data.transaction
 
 enum class MethodName(val stringValue: String) {
     LockFee("lock_fee"),

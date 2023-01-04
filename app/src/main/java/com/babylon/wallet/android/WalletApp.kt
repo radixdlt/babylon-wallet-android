@@ -57,10 +57,10 @@ fun WalletApp(
             MessageFromDataChannel.IncomingRequest.ParsingError -> {
                 Timber.d("Failed to parse incoming request")
             }
-            MessageFromDataChannel.IncomingRequest.SomeOtherRequest -> {}
             is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest -> {
                 navController.transactionApproval(incomingRequest.requestId)
             }
+            MessageFromDataChannel.IncomingRequest.Unknown -> {}
         }
     }
 }

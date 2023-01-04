@@ -7,9 +7,9 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
-import com.babylon.wallet.android.domain.transaction.TransactionApprovalException
-import com.babylon.wallet.android.domain.transaction.TransactionApprovalFailure
-import com.babylon.wallet.android.domain.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.TransactionApprovalException
+import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
+import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import io.mockk.coEvery
