@@ -3,13 +3,13 @@ package com.babylon.wallet.android
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
-import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -29,7 +29,7 @@ class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
     profileRepository: ProfileRepository,
     private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestHolder: IncomingRequestHolder
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = preferencesManager.showOnboarding.map { showOnboarding ->
@@ -89,7 +89,7 @@ class MainViewModel @Inject constructor(
                             restartConnectionToDapp()
                         }
                     } else if (message is IncomingRequest && message != IncomingRequest.None) {
-                        incomingRequestHolder.emit(message)
+                        incomingRequestRepository.add(message)
                         sendEvent(MainEvent.IncomingRequestEvent(message))
                     }
                 }
