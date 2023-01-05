@@ -49,10 +49,7 @@ fun WalletApp(
                         is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
                             navController.navigate(
                                 route = Screen.RequestAccountsDestination.routeWithArgs(
-                                    incomingRequest.requestId,
-                                    incomingRequest.isOngoing,
-                                    incomingRequest.requiresProofOfOwnership,
-                                    incomingRequest.numberOfAccounts
+                                    incomingRequest.requestId
                                 )
                             )
                         }

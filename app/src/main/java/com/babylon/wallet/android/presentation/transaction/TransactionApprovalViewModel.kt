@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
@@ -17,9 +18,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    private val incomingRequestHolder: IncomingRequestHolder,
+    private val incomingRequestRepository: IncomingRequestRepository,
     private val profileRepository: ProfileRepository,
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
@@ -50,11 +49,11 @@ class TransactionApprovalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            incomingRequestHolder.receive(viewModelScope, args.requestId) {
-                if (it is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest) {
-                    state = state.copy(manifestData = it.transactionManifestData, isLoading = false)
-                }
-            }
+            val transactionWriteRequest = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
+            state = state.copy(
+                manifestData = transactionWriteRequest.transactionManifestData,
+                isLoading = false
+            )
         }
     }
 

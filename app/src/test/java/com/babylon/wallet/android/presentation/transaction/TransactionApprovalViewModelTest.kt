@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.transaction.IncomingRequestHolder
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
@@ -32,15 +32,17 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     private val transactionClient = mockk<TransactionClient>()
     private val profileRepository = mockk<ProfileRepository>()
-    private val incomingRequestHolder = IncomingRequestHolder()
+    private val incomingRequestRepository = IncomingRequestRepository()
     private val dAppMessenger = mockk<DAppMessenger>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
-    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionWriteRequest(sampleRequestId,
+    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionWriteRequest(
+        sampleRequestId,
         11,
-        TransactionManifestData("", 1, 11))
+        TransactionManifestData("", 1, 11)
+    )
 
     @Before
     override fun setUp() = runTest {
@@ -58,12 +60,12 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
                 any(),
                 any())
         } returns Result.Success(Unit)
-        incomingRequestHolder.emit(sampleRequest)
+        incomingRequestRepository.add(sampleRequest)
     }
 
     override fun initVM(): TransactionApprovalViewModel {
         return TransactionApprovalViewModel(transactionClient,
-            incomingRequestHolder,
+            incomingRequestRepository,
             profileRepository,
             deviceSecurityHelper,
             dAppMessenger,
