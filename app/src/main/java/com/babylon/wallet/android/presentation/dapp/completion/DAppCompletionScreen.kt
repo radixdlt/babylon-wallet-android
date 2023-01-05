@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
@@ -51,7 +50,7 @@ fun DAppCompletionContent(
 ) {
     Column(
         modifier = modifier
-            .systemBarsPadding()
+//            .systemBarsPadding()
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 50.dp, vertical = RadixTheme.dimensions.paddingSmall),

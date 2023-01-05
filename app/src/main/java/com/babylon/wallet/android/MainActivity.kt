@@ -37,11 +37,13 @@ class MainActivity : FragmentActivity() {
         setContent {
             RadixWalletTheme {
                 val state by viewModel.state.collectAsStateWithLifecycle()
-                WalletApp(
-                    showOnboarding = state.showOnboarding,
-                    hasProfile = state.hasProfile,
-                    oneOffEvent = viewModel.oneOffEvent
-                )
+                DevelopmentBannerWrapper {
+                    WalletApp(
+                        showOnboarding = state.showOnboarding,
+                        hasProfile = state.hasProfile,
+                        oneOffEvent = viewModel.oneOffEvent
+                    )
+                }
             }
         }
     }

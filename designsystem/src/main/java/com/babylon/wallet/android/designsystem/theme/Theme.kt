@@ -342,7 +342,9 @@ fun RadixWalletTheme(
     }
     ProvideRadixThemeConfig(isDarkMode = darkTheme) {
         ProvideRadixColors(colors) {
-            SetStatusBarColor(color = colors.defaultBackground, useDarkIcons = !darkTheme)
+            // TODO status bar color when we remove dev banner
+//            SetStatusBarColor(color = colors.defaultBackground, useDarkIcons = !darkTheme)
+            SetStatusBarColor(color = colors.orange1, useDarkIcons = !darkTheme)
             ProvideRadixTypography {
                 ProvideRadixDimensions {
                     ProvideRadixShapes {

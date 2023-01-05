@@ -12,6 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,7 +74,7 @@ fun CreateAccountConfirmationContent(
 ) {
     Column(
         modifier = modifier.background(RadixTheme.colors.defaultBackground)
-            .systemBarsPadding()
+//            .systemBarsPadding()
             .fillMaxSize()
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,

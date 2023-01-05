@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -220,7 +219,7 @@ private fun AccountScreenContent(
             ) {
                 Scaffold(
                     modifier = Modifier
-                        .systemBarsPadding()
+//                        .systemBarsPadding()
                         .fillMaxSize(),
                     topBar = {
                         RadixCenteredTopAppBar(
@@ -241,12 +240,10 @@ private fun AccountScreenContent(
                     },
                     backgroundColor = Color.Transparent
                 ) { innerPadding ->
-//                    val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding)
-//                        .pullRefresh(pullRefreshState)
                     ) {
                         AccountContent(
                             onCopyAccountAddressClick = onCopyAccountAddress,
@@ -271,13 +268,6 @@ private fun AccountScreenContent(
                             modifier = Modifier.fillMaxSize(),
                             isLoading = isLoading
                         )
-//                        PullRefreshIndicator(
-//                            refreshing = isRefreshing,
-//                            state = pullRefreshState,
-//                            contentColor = RadixTheme.colors.gray1,
-//                            backgroundColor = RadixTheme.colors.defaultBackground,
-//                            modifier = Modifier.align(Alignment.TopCenter)
-//                        )
                         if (isLoading) {
                             FullscreenCircularProgressContent()
                         }
