@@ -1,5 +1,3 @@
-@file:Suppress("UnusedPrivateMember")
-
 package com.babylon.wallet.android.data.transaction
 
 data class TransactionApprovalException(

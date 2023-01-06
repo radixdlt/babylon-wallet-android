@@ -7,6 +7,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsScreen
 import com.babylon.wallet.android.presentation.dapp.completion.DAppCompletionScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
@@ -38,9 +40,7 @@ fun NavGraphBuilder.dAppRequestAccountsGraph(
                     navController.navigateUp()
                 },
                 onAccountCreationClick = {
-                    navController.navigate(
-                        Screen.CreateAccountDestination.route()
-                    )
+                    navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
                 }
             )
         }
