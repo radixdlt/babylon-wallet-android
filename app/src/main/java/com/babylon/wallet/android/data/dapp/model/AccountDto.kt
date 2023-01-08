@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.model.AccountResources
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -30,3 +31,11 @@ data class PersonaDataField(
     @SerialName("value")
     val value: String
 )
+
+fun List<AccountResources>.toDataModel() = map { accountResources ->
+    Account(
+        address = accountResources.address,
+        label = accountResources.displayName,
+        appearanceId = accountResources.appearanceID
+    )
+}
