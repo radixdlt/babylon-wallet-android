@@ -41,9 +41,8 @@ fun CreateAccountScreen(
     cancelable: Boolean,
     onContinueClick: (
         accountId: String,
-        accountName: String,
-        hasProfile: Boolean
-    ) -> Unit = { _: String, _: String, _: Boolean -> },
+        requestSource: CreateAccountRequestSource?
+    ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
 ) {
     if (viewModel.state.loading) {
         FullscreenCircularProgressContent()
@@ -67,8 +66,7 @@ fun CreateAccountScreen(
             when (event) {
                 is CreateAccountEvent.Complete -> onContinueClick(
                     event.accountId,
-                    event.accountName,
-                    event.hasProfile
+                    event.requestSource
                 )
             }
         }

@@ -30,7 +30,7 @@
     <string name="account_name">Account Name</string>
     <string name="continue_button_title">Continue</string>
     <string name="congratulations">Congratulations</string>
-    <string name="you_created_account">You\'ve created your account.</string>
+    <string name="your_account_has_been_created">Your account has been created.</string>
     <string name="account_created_info">Your account lives on the Radix Network and you can access it anytime in Radix Wallet.</string>
     <string name="go_to_home">Go to Home</string>
     <string name="dapp_connection_request">dApp Connection Request</string>
@@ -82,4 +82,7 @@
     <string name="ok">Ok</string>
     <string name="p2p_connection_subtitle">Your Radix Wallet is linked to the following desktop browser using the Connector browser extension.</string>
     <string name="development_use_only">Development use only. Not usable on Radix mainnet.</string>
+    <string name="go_to_wallet">Go to Wallet</string>
+    <string name="go_to_choose_accounts">Go to Choose Accounts</string>
+    <string name="go_to_settings">Go to Settings</string>
 </resources>

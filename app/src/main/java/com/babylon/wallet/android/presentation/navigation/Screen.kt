@@ -20,14 +20,6 @@ sealed class Screen(override val route: String, override val args: String = "") 
     object SettingsAddConnectionDestination : Screen("settings_add_connection_route")
     object SettingsEditGatewayApiDestination : Screen("settings_edit_gateway_api_route")
     object AccountDestination : Screen("account_route")
-    object CreateAccountDestination : Screen(
-        "create_account_route",
-        "?$ARG_NETWORK_URL={$ARG_NETWORK_URL}&" +
-            "$ARG_NETWORK_NAME={$ARG_NETWORK_NAME}&" +
-            "$ARG_SWITCH_NETWORK={$ARG_SWITCH_NETWORK}"
-    )
-
-    object AccountCompletionDestination : Screen("account_completion_route")
     object RequestAccountsDestination : Screen("request_accounts_route")
     object ChooseAccountsDestination : Screen("choose_accounts_route")
     object ChooseAccountsCompleteDestination : Screen("choose_accounts_completion_route")
@@ -41,23 +33,8 @@ sealed class Screen(override val route: String, override val args: String = "") 
         }
     }
 
-    fun route(): String {
-        return route + args
-    }
-
-    fun routeWithOptionalArgs(vararg args: Pair<String, Any>): String {
-        var route = route()
-        args.forEach {
-            route = route.replace("{${it.first}}", it.second.toString())
-        }
-        return route
-    }
-
     companion object {
         const val ARG_ACCOUNT_ID = "arg_account_id"
-        const val ARG_NETWORK_URL = "arg_network_url"
-        const val ARG_NETWORK_NAME = "arg_network_name"
-        const val ARG_SWITCH_NETWORK = "arg_switch_network"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
         const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"

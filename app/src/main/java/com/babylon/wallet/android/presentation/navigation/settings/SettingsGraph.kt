@@ -6,6 +6,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
+import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
@@ -14,7 +16,7 @@ import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEdit
 import com.google.accompanist.navigation.animation.composable
 
 fun NavGraphBuilder.settingsNavGraph(
-    navController: NavController
+    navController: NavController,
 ) {
     navigation(
         startDestination = Screen.SettingsAllDestination.route,
@@ -89,13 +91,7 @@ private fun NavGraphBuilder.settingsGatewayEdit(navController: NavController) {
                 navController.popBackStack()
             },
             onCreateProfile = { url, networkName ->
-                navController.navigate(
-                    Screen.CreateAccountDestination.routeWithOptionalArgs(
-                        Screen.ARG_NETWORK_URL to url,
-                        Screen.ARG_NETWORK_NAME to networkName,
-                        Screen.ARG_SWITCH_NETWORK to true
-                    )
-                )
+                navController.createAccountScreen(CreateAccountRequestSource.Settings, url, networkName, true)
             }
         )
     }

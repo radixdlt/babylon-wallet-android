@@ -1,53 +1,51 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.RadixBackground
-import com.babylon.wallet.android.designsystem.theme.RadixButtonBackground
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.White
-import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun CreateAccountConfirmationScreen(
     viewModel: CreateAccountConfirmationViewModel,
     modifier: Modifier = Modifier,
     navigateToWallet: () -> Unit,
-    finishAccountCreation: () -> Unit
+    finishAccountCreation: () -> Unit,
 ) {
     val accountState = viewModel.accountUiState
 
     CreateAccountConfirmationContent(
         modifier = modifier,
         accountName = accountState.accountName,
-        accountId = accountState.accountId,
-        goHomeClick = viewModel::goHomeClick
+        accountId = accountState.accountAddressTruncated,
+        accountConfirmed = viewModel::accountConfirmed,
+        appearanceId = accountState.appearanceId,
+        requestSource = viewModel.args.requestSource
     )
 
     LaunchedEffect(Unit) {
@@ -65,100 +63,133 @@ fun CreateAccountConfirmationContent(
     modifier: Modifier,
     accountName: String,
     accountId: String,
-    goHomeClick: () -> Unit
+    accountConfirmed: () -> Unit,
+    appearanceId: Int,
+    requestSource: CreateAccountRequestSource,
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier.background(RadixTheme.colors.defaultBackground)
             .systemBarsPadding()
             .fillMaxSize()
-            .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault)
-            .verticalScroll(rememberScrollState()),
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingLarge,
+                vertical = RadixTheme.dimensions.paddingDefault
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        Image(
-            painter = painterResource(R.drawable.img_account_creation),
-            contentDescription = "account_creation_image"
-        )
-        Spacer(modifier = Modifier.height(45.dp))
+        Spacer(modifier = Modifier.weight(0.2f))
+        CreatedAccountCardStack(Modifier.fillMaxWidth(0.8f), appearanceId, accountName, accountId)
+        Spacer(modifier = Modifier.weight(0.2f))
         Text(
             text = stringResource(id = R.string.congratulations),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
-            text = stringResource(id = R.string.you_created_account),
-            textAlign = TextAlign.Center,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Normal
+            text = stringResource(id = R.string.your_account_has_been_created),
+            style = RadixTheme.typography.body2Link,
+            color = RadixTheme.colors.gray1
         )
-        Spacer(modifier = Modifier.height(60.dp))
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RadixTheme.shapes.roundedRectSmall,
-            // TODO this is different gray so will have to be unified, marking as TODO
-            backgroundColor = Color(0xFFD9D9D9),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 40.dp, vertical = 30.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = accountName,
-                    textAlign = TextAlign.Center,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AccountAddressView(
-                    address = accountId,
-                    onCopyAccountAddressClick = {}
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(22.dp))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.padding(0.dp, 0.dp, 0.dp, RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.account_created_info),
             textAlign = TextAlign.Center,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Normal
+            style = RadixTheme.typography.body2Link,
+            color = RadixTheme.colors.gray1
         )
-        Spacer(Modifier.weight(1f))
-        Button(
+        Spacer(Modifier.weight(0.6f))
+        RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = goHomeClick,
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = RadixButtonBackground,
-                disabledBackgroundColor = RadixBackground
-            )
-        ) {
-            Text(
-                color = White,
-                text = stringResource(id = R.string.go_to_home),
-                modifier = Modifier.padding(
-                    horizontal = RadixTheme.dimensions.paddingXLarge,
-                    vertical = RadixTheme.dimensions.paddingSmall
-                )
-            )
-        }
+            text = stringResource(
+                id = when (requestSource) {
+                    CreateAccountRequestSource.Wallet -> R.string.go_to_wallet
+                    CreateAccountRequestSource.ChooseAccount -> R.string.go_to_choose_accounts
+                    CreateAccountRequestSource.FirstTime -> R.string.go_to_home
+                    CreateAccountRequestSource.Settings -> R.string.go_to_settings
+                }
+            ),
+            onClick = accountConfirmed
+        )
     }
-
-    // Disable back button
     BackHandler(enabled = true) { }
 }
 
+@Composable
+private fun CreatedAccountCardStack(
+    modifier: Modifier,
+    appearanceId: Int,
+    accountName: String,
+    accountAddress: String,
+) {
+    val numberOfOtherCards = 4
+    val singleCardHeight = 80.dp
+    val offset = 6.dp
+    Box(modifier = modifier.height(singleCardHeight + offset * numberOfOtherCards)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(singleCardHeight)
+                .zIndex(5f)
+                .background(
+                    Brush.horizontalGradient(AccountGradientList[appearanceId]),
+                    RadixTheme.shapes.roundedRectSmall
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    text = accountName,
+                    textAlign = TextAlign.Center,
+                    style = RadixTheme.typography.body2Regular,
+                    color = Color.White
+                )
+                Text(
+                    text = accountAddress,
+                    textAlign = TextAlign.Center,
+                    style = RadixTheme.typography.body2Link,
+                    color = Color.White
+                )
+            }
+        }
+        repeat(4) {
+            val index = it + 1
+            val nextColors =
+                AccountGradientList[(appearanceId + index) % AccountGradientList.size]
+                    .map { color -> color.copy(alpha = 0.3f) }
+            Box(
+                modifier = Modifier
+                    .offset(y = offset * index)
+                    .fillMaxWidth(1f - 0.05f * (index))
+                    .height(singleCardHeight)
+                    .zIndex(5f - index)
+                    .background(
+                        Brush.horizontalGradient(nextColors),
+                        RadixTheme.shapes.roundedRectSmall
+                    )
+                    .align(Alignment.Center)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountConfirmationContentPreview() {
-    CreateAccountConfirmationContent(
-        modifier = Modifier,
-        accountName = "My Account",
-        accountId = "mock_account_id",
-        goHomeClick = {}
-    )
+    RadixWalletTheme {
+        CreateAccountConfirmationContent(
+            modifier = Modifier,
+            accountName = "My Account",
+            accountId = "mock_account_id",
+            accountConfirmed = {},
+            appearanceId = 0,
+            requestSource = CreateAccountRequestSource.FirstTime
+        )
+    }
 }

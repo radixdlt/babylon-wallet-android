@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
@@ -24,14 +23,12 @@ class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val profileRepository: ProfileRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
-    private val createAccountUseCase: CreateAccountUseCase
+    private val createAccountUseCase: CreateAccountUseCase,
 ) : ViewModel(), OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
+    private val args = CreateAccountNavArgs(savedStateHandle)
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
-    private val networkUrlEncoded = savedStateHandle.get<String>(Screen.ARG_NETWORK_URL)
-    private val networkName = savedStateHandle.get<String>(Screen.ARG_NETWORK_NAME)
-    private val switchNetwork = savedStateHandle.get<Boolean>(Screen.ARG_SWITCH_NETWORK) ?: false
 
     var state by mutableStateOf(CreateAccountState())
         private set
@@ -50,9 +47,11 @@ class CreateAccountViewModel @Inject constructor(
             val account = if (hasProfile) {
                 createAccountUseCase(
                     displayName = accountName.value,
-                    networkUrl = networkUrlEncoded?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) },
-                    networkName = networkName,
-                    switchNetwork = switchNetwork
+                    networkUrl = args.networkUrlEncoded?.let {
+                        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                    },
+                    networkName = args.networkName,
+                    switchNetwork = args.switchNetwork ?: false
                 )
             } else {
                 val profile = generateProfileUseCase(
@@ -73,8 +72,7 @@ class CreateAccountViewModel @Inject constructor(
             sendEvent(
                 CreateAccountEvent.Complete(
                     accountId = accountId,
-                    accountName = accountName,
-                    hasProfile = hasProfile
+                    args.requestSource
                 )
             )
         }
@@ -84,7 +82,7 @@ class CreateAccountViewModel @Inject constructor(
         val loading: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
-        val hasProfile: Boolean = false
+        val hasProfile: Boolean = false,
     )
 
     companion object {
@@ -97,7 +95,6 @@ class CreateAccountViewModel @Inject constructor(
 internal sealed interface CreateAccountEvent : OneOffEvent {
     data class Complete(
         val accountId: String,
-        val accountName: String,
-        val hasProfile: Boolean
+        val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
 }

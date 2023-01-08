@@ -12,14 +12,12 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
-import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationScreen
-import com.babylon.wallet.android.presentation.createaccount.CreateAccountScreen
+import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
+import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
+import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_HAS_PROFILE
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_NAME
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_NETWORK_URL
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_SWITCH_NETWORK
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -58,9 +56,7 @@ fun NavigationHost(
                     )
                 },
                 onAccountCreationClick = {
-                    navController.navigate(
-                        Screen.CreateAccountDestination.route()
-                    )
+                    navController.createAccountScreen(CreateAccountRequestSource.Wallet)
                 }
             )
         }
@@ -94,65 +90,28 @@ fun NavigationHost(
                 }
             )
         }
-        composable(
-            route = Screen.CreateAccountDestination.route(),
-            arguments = listOf(
-                navArgument(ARG_NETWORK_URL) {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument(ARG_NETWORK_NAME) {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument(ARG_SWITCH_NETWORK) {
-                    type = NavType.BoolType
-                    defaultValue = false
-                }
-            ),
-            enterTransition = {
-                slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+        createAccountScreen(startDestination, onBackClick = {
+            navController.navigateUp()
+        }, onContinueClick = { accountId, requestSource ->
+                navController.createAccountConfirmationScreen(
+                    accountId,
+                    requestSource ?: CreateAccountRequestSource.FirstTime
+                )
+            })
+        createAccountConfirmationScreen(
+            onNavigateToWallet = {
+                navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
             },
-            exitTransition = {
-                slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            onFinishAccountCreation = {
+                navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
             }
-        ) {
-            CreateAccountScreen(
-                viewModel = hiltViewModel(),
-                onBackClick = { navController.navigateUp() },
-                cancelable = startDestination != Screen.CreateAccountDestination.route(),
-                onContinueClick = { accountId, accountName, hasProfile ->
-                    navController.navigate(
-                        Screen.AccountCompletionDestination.routeWithArgs(accountId, accountName, hasProfile)
-                    )
-                }
-            )
-        }
+        )
         transactionApprovalScreen(onBackClick = {
             navController.popBackStack()
         })
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()
         })
-        composable(
-            route = Screen.AccountCompletionDestination.route +
-                "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}/{$ARG_HAS_PROFILE}",
-            arguments = listOf(
-                navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
-                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
-                navArgument(ARG_HAS_PROFILE) { type = NavType.BoolType }
-            )
-        ) {
-            CreateAccountConfirmationScreen(
-                viewModel = hiltViewModel(),
-                navigateToWallet = {
-                    navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
-                },
-                finishAccountCreation = {
-                    navController.popBackStack(Screen.CreateAccountDestination.route(), inclusive = true)
-                }
-            )
-        }
         dAppRequestAccountsGraph(navController)
         settingsNavGraph(navController)
     }
