@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod")
-
 package com.babylon.wallet.android.domain.usecase.wallet
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
@@ -20,7 +18,6 @@ import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
-@Suppress("LongMethod")
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
@@ -62,6 +59,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         } ?: Result.Error()
     }
 
+    @Suppress("LongMethod")
     private suspend fun getSingleAccountResources(
         address: String,
         accountDisplayName: String,
