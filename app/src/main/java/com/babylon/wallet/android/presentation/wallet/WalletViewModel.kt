@@ -26,7 +26,7 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val mainViewRepository: MainViewRepository,
     private val clipboardManager: ClipboardManager,
-    private val getAccountsUseCase: GetAccountResourcesUseCase,
+    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
@@ -44,7 +44,7 @@ class WalletViewModel @Inject constructor(
     private suspend fun loadResourceData() {
         val wallet = mainViewRepository.getWallet()
         viewModelScope.launch {
-            val result = getAccountsUseCase()
+            val result = getAccountResourcesUseCase()
             result.onError { error ->
                 _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
             }
