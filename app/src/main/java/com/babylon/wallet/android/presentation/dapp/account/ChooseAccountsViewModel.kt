@@ -44,12 +44,12 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         observeAccountsJob = viewModelScope.launch {
-            getAccountsUseCase().collect { accountsForSelection ->
-                currentAvailableAccounts = accountsForSelection
+            getAccountsUseCase().collect { accountResourcesList ->
+                currentAvailableAccounts = accountResourcesList
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
-                val accountItems = accountsForSelection.map { accountResources ->
+                val accountItems = accountResourcesList.map { accountResources ->
                     val currentAccountItemState = state.availableAccountItems.find { accountItemUiModel ->
                         accountItemUiModel.address == accountResources.address
                     }
