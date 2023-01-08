@@ -61,20 +61,19 @@ fun ChooseAccountsScreen(
             }
         }
     }
+
     val state = viewModel.state
-    if (state.accounts != null) {
-        ChooseAccountContent(
-            onBackClick = onBackClick,
-            onContinueClick = {
-                viewModel.sendAccountsResponse()
-            },
-            imageUrl = state.dAppDetails?.imageUrl.orEmpty(),
-            continueButtonEnabled = state.continueButtonEnabled,
-            accounts = state.accounts,
-            onAccountSelect = viewModel::onAccountSelect,
-            onCreateNewAccount = onAccountCreationClick,
-        )
-    }
+    ChooseAccountContent(
+        onBackClick = onBackClick,
+        onContinueClick = {
+            viewModel.sendAccountsResponse()
+        },
+        imageUrl = state.dAppDetails?.imageUrl.orEmpty(),
+        isContinueButtonEnabled = state.isContinueButtonEnabled,
+        accountItems = state.availableAccountItems,
+        onAccountSelect = viewModel::onAccountSelect,
+        onCreateNewAccount = onAccountCreationClick,
+    )
 
     if (state.showProgress) {
         FullscreenCircularProgressContent()
@@ -95,9 +94,9 @@ fun ChooseAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
     imageUrl: String,
-    continueButtonEnabled: Boolean,
-    accounts: List<SelectedAccountUiState>,
-    onAccountSelect: (SelectedAccountUiState) -> Unit,
+    isContinueButtonEnabled: Boolean,
+    accountItems: List<AccountItemUiModel>,
+    onAccountSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
 ) {
@@ -145,9 +144,9 @@ fun ChooseAccountContent(
             )
             Spacer(modifier = Modifier.height(40.dp))
             Column {
-                accounts.forEach { dAppAccount ->
-                    val gradientColor = AccountGradientList[dAppAccount.appearanceID]
-                    AccountCard(
+                accountItems.forEachIndexed { index, accountItem ->
+                    val gradientColor = AccountGradientList[accountItem.appearanceID]
+                    AccountSelectionCard(
                         modifier = Modifier
                             .background(
                                 Brush.horizontalGradient(gradientColor),
@@ -155,14 +154,11 @@ fun ChooseAccountContent(
                             )
                             .clip(RadixTheme.shapes.roundedRectSmall)
                             .clickable {
-                                onAccountSelect(dAppAccount)
+                                onAccountSelect(index)
                             },
-                        accountName = dAppAccount.accountName,
-                        hashValue = dAppAccount.accountAddress,
-                        checked = dAppAccount.selected,
-                        onCheckedChange = {
-                            onAccountSelect(dAppAccount)
-                        }
+                        accountName = accountItem.displayName,
+                        hashValue = accountItem.address,
+                        checked = accountItem.isSelected
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -177,7 +173,7 @@ fun ChooseAccountContent(
                     .fillMaxWidth()
                     .padding(horizontal = 0.dp, vertical = 30.dp),
                 onClick = onContinueClick,
-                enabled = continueButtonEnabled,
+                enabled = isContinueButtonEnabled,
                 text = stringResource(id = R.string.continue_button_title)
             )
         }
@@ -214,23 +210,19 @@ fun ChooseAccountContentPreview() {
             onBackClick = {},
             onContinueClick = {},
             imageUrl = "",
-            continueButtonEnabled = true,
-            accounts = listOf(
-                SelectedAccountUiState(
-                    accountName = "Account name 1",
-                    accountAddress = "fdj209d9320",
-                    accountValue = "1000",
-                    accountCurrency = "$",
+            isContinueButtonEnabled = true,
+            accountItems = listOf(
+                AccountItemUiModel(
+                    displayName = "Account name 1",
+                    address = "fdj209d9320",
                     appearanceID = 1,
-                    selected = true
+                    isSelected = true
                 ),
-                SelectedAccountUiState(
-                    accountName = "Account name 2",
-                    accountAddress = "342f23f2",
-                    accountValue = "2000",
-                    accountCurrency = "$",
+                AccountItemUiModel(
+                    displayName = "Account name 2",
+                    address = "342f23f2",
                     appearanceID = 1,
-                    selected = false
+                    isSelected = false
                 )
             ),
             onAccountSelect = {},

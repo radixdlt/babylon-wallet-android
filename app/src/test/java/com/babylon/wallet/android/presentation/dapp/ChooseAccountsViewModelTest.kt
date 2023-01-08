@@ -3,12 +3,10 @@ package com.babylon.wallet.android.presentation.dapp
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppResult
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.dapp.DAppAccountsResult
 import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountUiState
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsViewModel
-import com.babylon.wallet.android.presentation.dapp.account.SelectedAccountUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
