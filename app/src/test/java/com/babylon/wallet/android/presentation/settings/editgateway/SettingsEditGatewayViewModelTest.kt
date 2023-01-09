@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.common.InfoMessageType
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.isValidUrl
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -93,7 +94,8 @@ class SettingsEditGatewayViewModelTest {
         vm.onNewUrlChanged(sampleUrl)
         vm.onSwitchToClick()
         advanceUntilIdle()
-        assert(vm.state.uiMessage?.messageType == InfoMessageType.GatewayInvalid)
+        val uiMessage = vm.state.uiMessage
+        assert(uiMessage is UiMessage.InfoMessage && uiMessage.type == InfoMessageType.GatewayInvalid)
     }
 
 
