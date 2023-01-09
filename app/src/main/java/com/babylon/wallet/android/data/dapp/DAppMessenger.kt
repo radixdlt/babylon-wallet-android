@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletResponse
 import com.babylon.wallet.android.data.dapp.model.toDataModel
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.AccountSlim
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -24,7 +24,7 @@ interface DAppMessenger {
 
     suspend fun sendAccountsResponse(
         requestId: String,
-        accounts: List<AccountResources>
+        accounts: List<AccountSlim>
     ): Result<Unit>
 
     suspend fun sendTransactionWriteResponseFailure(
@@ -45,7 +45,7 @@ class DAppMessengerImpl @Inject constructor(
 
     override suspend fun sendAccountsResponse(
         requestId: String,
-        accounts: List<AccountResources>
+        accounts: List<AccountSlim>
     ): Result<Unit> {
         val responseItem = OneTimeAccountsWithoutProofOfOwnershipResponseItem(
             requestType = OneTimeAccountsRequestType.ONE_TIME_ACCOUNTS_READ.requestType,
