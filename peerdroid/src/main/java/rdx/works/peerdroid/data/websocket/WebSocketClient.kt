@@ -21,13 +21,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import okio.ByteString.Companion.decodeHex
+import rdx.works.datastore.decryptData
+import rdx.works.datastore.encryptData
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
 import rdx.works.peerdroid.data.websocket.model.SignalingServerResponse
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.peerdroid.helpers.decryptWithAes
-import rdx.works.peerdroid.helpers.encryptWithAes
 import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 
@@ -111,7 +111,7 @@ internal class WebSocketClientImpl(
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
         val offerJson = Json.encodeToString(offerPayload)
-        val encryptedOffer = encryptWithAes(
+        val encryptedOffer = encryptData(
             input = offerJson.toByteArray(),
             encryptionKey = encryptionKey
         )
@@ -129,7 +129,7 @@ internal class WebSocketClientImpl(
     }
 
     override suspend fun sendIceCandidatesMessage(iceCandidatePayload: List<JsonElement>) {
-        val encryptedIceCandidates = encryptWithAes(
+        val encryptedIceCandidates = encryptData(
             input = iceCandidatePayload.toString().toByteArray(),
             encryptionKey = encryptionKey
         )
@@ -255,7 +255,7 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in answer payload")
         }
 
-        val message = decryptWithAes(
+        val message = decryptData(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
@@ -276,7 +276,7 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
         }
 
-        val message = decryptWithAes(
+        val message = decryptData(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
@@ -305,7 +305,7 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in remote ice candidates payload")
         }
 
-        val message = decryptWithAes(
+        val message = decryptData(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )

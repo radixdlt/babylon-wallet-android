@@ -69,12 +69,18 @@ class CreateAccountViewModel @Inject constructor(
                 hasProfile = hasProfile
             )
 
-            sendEvent(
-                CreateAccountEvent.Complete(
-                    accountId = accountId,
-                    args.requestSource
+            if (hasProfile) {
+                sendEvent(
+                    CreateAccountEvent.Complete(
+                        accountId = accountId,
+                        args.requestSource
+                    )
                 )
-            )
+            } else {
+                sendEvent(
+                    CreateAccountEvent.NavigateToWallet
+                )
+            }
         }
     }
 
@@ -97,4 +103,5 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
         val accountId: String,
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
+    object NavigateToWallet : CreateAccountEvent
 }

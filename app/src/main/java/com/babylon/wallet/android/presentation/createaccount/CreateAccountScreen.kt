@@ -43,6 +43,7 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
+    onNavigateToWallet: () -> Unit
 ) {
     if (viewModel.state.loading) {
         FullscreenCircularProgressContent()
@@ -68,6 +69,7 @@ fun CreateAccountScreen(
                     event.accountId,
                     event.requestSource
                 )
+                is CreateAccountEvent.NavigateToWallet -> onNavigateToWallet()
             }
         }
     }

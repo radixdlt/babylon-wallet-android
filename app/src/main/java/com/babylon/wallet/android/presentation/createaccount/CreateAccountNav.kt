@@ -66,6 +66,7 @@ fun NavGraphBuilder.createAccountScreen(
     startDestination: String,
     onBackClick: () -> Unit,
     onContinueClick: (accountId: String, requestSource: CreateAccountRequestSource?) -> Unit,
+    onNavigateToWallet: () -> Unit
 ) {
     composable(
         route = ROUTE_CREATE_ACCOUNT,
@@ -97,7 +98,8 @@ fun NavGraphBuilder.createAccountScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             cancelable = startDestination != ROUTE_CREATE_ACCOUNT,
-            onContinueClick = onContinueClick
+            onContinueClick = onContinueClick,
+            onNavigateToWallet = onNavigateToWallet
         )
     }
 }

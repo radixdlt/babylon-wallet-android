@@ -45,7 +45,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
 
     // Datastore
-    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+    implementation project(path: ':datastore')
 
     implementation 'com.radixdlt:slip10:60ebe566'
     implementation 'com.radixdlt:kotlin-engine-toolkit:1.9.0-snapshot'
