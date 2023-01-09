@@ -22,13 +22,13 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
-fun DevelopmentBannerWrapper(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun DevelopmentPreviewWrapper(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val insets = WindowInsets.statusBars.asPaddingValues()
     Column(modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.orange1)
+                .background(RadixTheme.colors.orange2)
                 .padding(PaddingValues(RadixTheme.dimensions.paddingSmall))
         ) {
             Spacer(modifier = Modifier.height(insets.calculateTopPadding()))
@@ -54,6 +54,6 @@ fun DevelopmentBannerWrapper(modifier: Modifier = Modifier, content: @Composable
 @Composable
 fun DevelopmentBannerPreview() {
     RadixWalletTheme {
-        DevelopmentBannerWrapper(modifier = Modifier, content = {})
+        DevelopmentPreviewWrapper(modifier = Modifier, content = {})
     }
 }
