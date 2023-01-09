@@ -80,6 +80,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -147,7 +150,10 @@ private fun AccountScreenContent(
     walletFiatBalance: String?,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier = modifier.background(Brush.horizontalGradient(AccountGradientList[gradientIndex]))) {
+    BoxWithConstraints(
+        modifier = modifier
+            .background(Brush.horizontalGradient(AccountGradientList[gradientIndex]))
+    ) {
         val bottomSheetState =
             rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
         val scope = rememberCoroutineScope()
@@ -187,10 +193,8 @@ private fun AccountScreenContent(
                 }
             },
         ) {
-            val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
             Box(
-                modifier = Modifier.pullRefresh(pullRefreshState)
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 Scaffold(
                     modifier = Modifier
@@ -215,34 +219,47 @@ private fun AccountScreenContent(
                     },
                     backgroundColor = Color.Transparent
                 ) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        AccountContent(
-                            onCopyAccountAddressClick = onCopyAccountAddress,
-                            accountAddress = accountAddress,
-                            xrdToken = xrdToken,
-                            fungibleTokens = fungibleTokens,
-                            nonFungibleTokens = nonFungibleTokens,
-                            onTransferClick = onTransferClick,
-                            onFungibleTokenClick = {
-                                onFungibleTokenClick(it)
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            onNftClick = { nftCollection, nftItem ->
-                                onNftClick(nftCollection, nftItem)
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            walletFiatBalance = walletFiatBalance,
-                            modifier = Modifier.fillMaxSize(),
-                            isLoading = isLoading
-                        )
+                    // TODO I can't make new swipe to refresh work with development preview banner,
+                    //  using accompanist for now
+                    val state = rememberSwipeRefreshState(isRefreshing = isRefreshing)
+                    SwipeRefresh(
+                        modifier = Modifier.fillMaxSize(),
+                        state = state,
+                        onRefresh = onRefresh,
+                        indicatorPadding = innerPadding,
+                        indicator = { s, dp ->
+                            SwipeRefreshIndicator(
+                                state = s,
+                                refreshTriggerDistance = dp,
+                                contentColor = RadixTheme.colors.gray1,
+                                backgroundColor = RadixTheme.colors.defaultBackground,
+                            )
+                        },
+                        refreshTriggerDistance = 100.dp,
+                        content = {
+                            AccountContent(
+                                onCopyAccountAddressClick = onCopyAccountAddress,
+                                accountAddress = accountAddress,
+                                xrdToken = xrdToken,
+                                fungibleTokens = fungibleTokens,
+                                nonFungibleTokens = nonFungibleTokens,
+                                onTransferClick = onTransferClick,
+                                onFungibleTokenClick = {
+                                    onFungibleTokenClick(it)
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                onNftClick = { nftCollection, nftItem ->
+                                    onNftClick(nftCollection, nftItem)
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                walletFiatBalance = walletFiatBalance,
+                                modifier = Modifier.fillMaxSize(),
+                                isLoading = isLoading
+                            )
 //                        PullRefreshIndicator(
 //                            refreshing = isRefreshing,
 //                            state = pullRefreshState,
@@ -250,18 +267,12 @@ private fun AccountScreenContent(
 //                            backgroundColor = RadixTheme.colors.defaultBackground,
 //                            modifier = Modifier.align(Alignment.TopCenter)
 //                        )
-                        if (isLoading) {
-                            FullscreenCircularProgressContent()
+                            if (isLoading) {
+                                FullscreenCircularProgressContent()
+                            }
                         }
-                    }
+                    )
                 }
-                PullRefreshIndicator(
-                    refreshing = isRefreshing,
-                    state = pullRefreshState,
-                    contentColor = RadixTheme.colors.gray1,
-                    backgroundColor = RadixTheme.colors.defaultBackground,
-                    modifier = Modifier.align(Alignment.TopCenter)
-                )
             }
         }
         AnimatedVisibility(modifier = Modifier.align(Alignment.BottomCenter), visible = !isLoading, enter = fadeIn()) {
