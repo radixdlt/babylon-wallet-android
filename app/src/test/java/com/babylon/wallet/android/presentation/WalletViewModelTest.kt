@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
@@ -43,7 +42,7 @@ class WalletViewModelTest {
 
     @Before
     fun setUp() {
-        vm = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase, profileRepository)
+        vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileRepository)
     }
 
     @Test
@@ -85,7 +84,7 @@ class WalletViewModelTest {
         whenever(profileRepository.profileSnapshot).thenReturn(flow { emit(profile) })
 
         // when
-        val viewModel = WalletViewModel(mainViewRepository, clipboardManager, requestAccountsUseCase, profileRepository)
+        val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileRepository)
         whenever(requestAccountsUseCase()).thenReturn(Result.Success(listOf(sampleData)))
         viewModel.walletUiState
             .onEach { event.add(it) }
