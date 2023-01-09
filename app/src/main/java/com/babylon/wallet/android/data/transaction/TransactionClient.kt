@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit

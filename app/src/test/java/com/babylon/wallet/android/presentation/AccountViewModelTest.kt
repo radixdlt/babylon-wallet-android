@@ -4,7 +4,7 @@ import android.content.ClipboardManager
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.account.AccountUiState
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen

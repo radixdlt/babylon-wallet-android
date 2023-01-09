@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.transaction
+package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository

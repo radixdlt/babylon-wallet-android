@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.accountpreference
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.transaction.GetFreeXrdUseCase
+import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
