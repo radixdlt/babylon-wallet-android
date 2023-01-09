@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -37,7 +39,7 @@ fun CreateAccountConfirmationScreen(
     finishAccountCreation: () -> Unit,
 ) {
     val accountState = viewModel.accountUiState
-
+    SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     CreateAccountConfirmationContent(
         modifier = modifier,
         accountName = accountState.accountName,

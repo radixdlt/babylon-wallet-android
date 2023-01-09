@@ -187,35 +187,10 @@ private fun AccountScreenContent(
                 }
             },
         ) {
-//            val density = LocalDensity.current
-//            val headerScrollState = rememberScrollableHeaderViewScrollState()
-//            AnimatedVisibility(
-//                visible = !isLoading,
-//                enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }),
-//                content = AccountContentWithScrollableHeader(
-//                    swipeRefreshState = swipeRefreshState,
-//                    onRefresh = onRefresh,
-//                    headerScrollState = headerScrollState,
-//                    accountName = accountName,
-//                    onBackClick = onBackClick,
-//                    onAccountPreferenceClick = onAccountPreferenceClick,
-//                    accountAddress = accountAddress,
-//                    walletFiatBalance = walletFiatBalance,
-//                    onCopyAccountAddress = onCopyAccountAddress,
-//                    onTransferClick = onTransferClick,
-//                    xrdToken = xrdToken,
-//                    fungibleTokens = fungibleTokens,
-//                    nonFungibleTokens = nonFungibleTokens,
-//                    onFungibleTokenClick = onFungibleTokenClick,
-//                    onNftClick = onNftClick,
-//                    density = density
-//                )
-//            )
             val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
             Box(
-                modifier = Modifier
+                modifier = Modifier.pullRefresh(pullRefreshState)
                     .fillMaxSize()
-                    .pullRefresh(pullRefreshState)
             ) {
                 Scaffold(
                     modifier = Modifier
@@ -268,6 +243,13 @@ private fun AccountScreenContent(
                             modifier = Modifier.fillMaxSize(),
                             isLoading = isLoading
                         )
+//                        PullRefreshIndicator(
+//                            refreshing = isRefreshing,
+//                            state = pullRefreshState,
+//                            contentColor = RadixTheme.colors.gray1,
+//                            backgroundColor = RadixTheme.colors.defaultBackground,
+//                            modifier = Modifier.align(Alignment.TopCenter)
+//                        )
                         if (isLoading) {
                             FullscreenCircularProgressContent()
                         }
