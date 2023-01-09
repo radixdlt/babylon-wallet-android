@@ -37,15 +37,9 @@ class ChooseAccountsViewModel @Inject constructor(
     var state by mutableStateOf(ChooseAccountUiState())
         private set
 
-    // keep all the available accounts in the profile
-    private var currentAvailableAccounts = listOf<AccountSlim>()
-
-    private var observeAccountsJob: Job? = null
-
     init {
-        observeAccountsJob = viewModelScope.launch {
+        viewModelScope.launch {
             getAccountsUseCase().collect { accounts ->
-                currentAvailableAccounts = accounts
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
@@ -92,15 +86,15 @@ class ChooseAccountsViewModel @Inject constructor(
 
     fun sendAccountsResponse() {
         // get the accounts that are selected
-        val selectedAccounts = currentAvailableAccounts
-            .filter { accountResources ->
-                accountResources.address in state.availableAccountItems
-                    .filter { accountItem ->
-                        accountItem.isSelected
-                    }
-                    .map { selectedAccount ->
-                        selectedAccount.address
-                    }
+        val selectedAccounts = state.availableAccountItems
+            .filter { accountItem ->
+                accountItem.isSelected
+            }.map {
+                AccountSlim(
+                    address = it.address,
+                    appearanceID = it.appearanceID,
+                    displayName = it.displayName
+                )
             }
         viewModelScope.launch {
             val result = dAppMessenger.sendAccountsResponse(
@@ -111,12 +105,6 @@ class ChooseAccountsViewModel @Inject constructor(
                 sendEvent(ChooseAccountsEvent.NavigateToCompletionScreen)
             }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        observeAccountsJob?.cancel()
-        currentAvailableAccounts = emptyList()
     }
 }
 
