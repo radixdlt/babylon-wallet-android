@@ -66,7 +66,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     dAppMessenger.sendTransactionWriteResponseFailure(
                         args.requestId,
                         failure.toWalletErrorType(),
-                        failure.getMessage()
+                        failure.getDappMessage()
                     )
                     sendEvent(TransactionApprovalEvent.NavigateBack)
                     approvalJob = null
@@ -79,13 +79,13 @@ class TransactionApprovalViewModel @Inject constructor(
                         approvalJob = null
                     }
                     result.onError {
-                        state = state.copy(isSigning = false, error = UiMessage(error = it))
+                        state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
                         val exception = it as? TransactionApprovalException
                         if (exception != null) {
                             dAppMessenger.sendTransactionWriteResponseFailure(
                                 args.requestId,
                                 error = exception.failure.toWalletErrorType(),
-                                message = exception.failure.getMessage()
+                                message = exception.failure.getDappMessage()
                             )
                             approvalJob = null
                         }

@@ -56,7 +56,7 @@ class AccountPreferenceViewModel @Inject constructor(
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }
             result.onError {
-                state = state.copy(isLoading = false, error = UiMessage(error = it))
+                state = state.copy(isLoading = false, error = UiMessage.ErrorMessage(error = it))
             }
         }
     }

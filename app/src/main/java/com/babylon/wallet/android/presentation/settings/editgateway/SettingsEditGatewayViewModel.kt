@@ -68,14 +68,14 @@ class SettingsEditGatewayViewModel @Inject constructor(
                 state = state.copy(newNetworkName = networkName)
                 if (profileRepository.hasAccountOnNetwork(state.newUrl, networkName)) {
                     profileRepository.setNetworkAndGateway(state.newUrl, networkName)
-                    state = state.copy(uiMessage = UiMessage(messageType = InfoMessageType.GatewayUpdated))
+                    state = state.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.GatewayUpdated))
                 } else {
                     val urlEncoded = URLEncoder.encode(state.newUrl, StandardCharsets.UTF_8.toString())
                     sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, networkName))
                 }
             }
             newGatewayInfo.onError {
-                state = state.copy(uiMessage = UiMessage(messageType = InfoMessageType.GatewayInvalid))
+                state = state.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.GatewayInvalid))
             }
         }
     }

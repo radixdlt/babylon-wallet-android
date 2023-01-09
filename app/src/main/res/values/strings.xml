@@ -85,4 +85,15 @@
     <string name="go_to_wallet">Go to Wallet</string>
     <string name="go_to_choose_accounts">Go to Choose Accounts</string>
     <string name="go_to_settings">Go to Settings</string>
+    <string name="tx_fail_header">Failed to build transaction header</string>
+    <string name="tx_fail_manifest">Failed to convert transaction manifest</string>
+    <string name="tx_fail_poll_status">Failed to poll transaction status</string>
+    <string name="tx_fail_commit">Failed to commit transaction</string>
+    <string name="tx_fail_rejected">Transaction rejected</string>
+    <string name="tx_fail_epoch">Failed to get epoch</string>
+    <string name="tx_fail_duplicate">Failed to convert transaction manifest</string>
+    <string name="tx_fail_prepare">Failed to prepare transaction</string>
+    <string name="tx_fail_rejected_by_user">Failed to convert transaction manifest</string>
+    <string name="tx_fail_submit">Failed to submit transaction</string>
+    <string name="tx_fail_network">Wrong network</string>
 </resources>
