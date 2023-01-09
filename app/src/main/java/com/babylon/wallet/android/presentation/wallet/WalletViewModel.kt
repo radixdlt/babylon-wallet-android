@@ -46,7 +46,7 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             val result = getAccountsUseCase()
             result.onError { error ->
-                _walletUiState.update { it.copy(error = UiMessage(error = error), isLoading = false) }
+                _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
             }
             result.onValue { resourceList ->
                 _walletUiState.update { state ->

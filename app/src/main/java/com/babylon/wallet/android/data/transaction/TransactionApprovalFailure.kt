@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.data.transaction
 
+import androidx.annotation.StringRes
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 
 sealed interface TransactionApprovalFailure {
@@ -39,7 +41,24 @@ sealed interface TransactionApprovalFailure {
         }
     }
 
-    fun getMessage(): String? {
+    @StringRes
+    fun toDescriptionRes(): Int {
+        return when (this) {
+            BuildTransactionHeader -> R.string.tx_fail_header
+            ConvertManifest -> R.string.tx_fail_manifest
+            is FailedToPollTXStatus -> R.string.tx_fail_poll_status
+            is GatewayCommittedFailure -> R.string.tx_fail_commit
+            is GatewayRejected -> R.string.tx_fail_rejected
+            GetEpoch -> R.string.tx_fail_epoch
+            is InvalidTXDuplicate -> R.string.tx_fail_duplicate
+            PrepareNotarizedTransaction -> R.string.tx_fail_prepare
+            RejectedByUser -> R.string.tx_fail_rejected_by_user
+            SubmitNotarizedTransaction -> R.string.tx_fail_submit
+            is WrongNetwork -> R.string.tx_fail_network
+        }
+    }
+
+    fun getDappMessage(): String? {
         return when (this) {
             is FailedToPollTXStatus -> "TXID: $txId"
             is GatewayCommittedFailure -> "TXID: $txId"

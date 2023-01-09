@@ -67,7 +67,7 @@ class AccountViewModel @Inject constructor(
                 val result = getAccountResourcesUseCase(accountId)
                 result.onError { e ->
                     _accountUiState.update { accountUiState ->
-                        accountUiState.copy(uiMessage = UiMessage(error = e))
+                        accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e))
                     }
                 }
                 result.onValue { accountResource ->
