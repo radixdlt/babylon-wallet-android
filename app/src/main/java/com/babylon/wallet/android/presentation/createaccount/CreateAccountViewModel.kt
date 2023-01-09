@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
