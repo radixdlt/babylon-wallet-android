@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,7 +71,7 @@ fun SettingsAddConnectionScreen(
     } else {
         SettingsAddConnectionContent(
             modifier = modifier
-                .systemBarsPadding()
+//                .systemBarsPadding()
                 .fillMaxSize()
                 .background(RadixTheme.colors.defaultBackground),
             connectionName = state.connectionName,

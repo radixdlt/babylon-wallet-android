@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
@@ -90,7 +89,7 @@ private fun OnboardingScreenContent(
     val pagerState = rememberPagerState(initialPage = currentPage)
     BoxWithConstraints(
         modifier = modifier
-            .systemBarsPadding()
+//            .systemBarsPadding()
             .fillMaxSize()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -49,7 +48,7 @@ fun SettingsEditGatewayScreen(
         currentNetworkId = state.currentNetworkAndGateway?.network?.id?.toString().orEmpty(),
         currentNetworkEndpoint = state.currentNetworkAndGateway?.gatewayAPIEndpointURL.orEmpty(),
         modifier = modifier
-            .systemBarsPadding()
+//            .systemBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         message = state.uiMessage,

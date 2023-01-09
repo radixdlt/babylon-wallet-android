@@ -51,6 +51,7 @@ class RadixColors(
     gray4: Color,
     gray5: Color,
     orange1: Color,
+    orange2: Color,
     red1: Color,
     white: Color,
     darkMode1: Color,
@@ -91,6 +92,8 @@ class RadixColors(
         private set
     var orange1 by mutableStateOf(orange1)
         private set
+    var orange2 by mutableStateOf(orange2)
+        private set
     var red1 by mutableStateOf(red1)
         private set
     var white by mutableStateOf(white)
@@ -120,6 +123,7 @@ class RadixColors(
         gray4: Color = this.gray4,
         gray5: Color = this.gray5,
         orange1: Color = this.orange1,
+        orange2: Color = this.orange2,
         red1: Color = this.red1,
         white: Color = this.white,
         darkMode1: Color = this.darkMode1,
@@ -144,6 +148,7 @@ class RadixColors(
             gray4,
             gray5,
             orange1,
+            orange2,
             red1,
             white,
             darkMode1,
@@ -169,6 +174,7 @@ class RadixColors(
         gray4 = other.gray4
         gray5 = other.gray5
         orange1 = other.orange1
+        orange2 = other.orange2
         red1 = other.red1
         white = other.white
         darkMode1 = other.darkMode1
@@ -195,6 +201,7 @@ private val LightColorPalette = RadixColors(
     gray4 = Gray4,
     gray5 = Gray5,
     orange1 = Orange1,
+    orange2 = Orange2,
     red1 = Red1,
     white = White,
     darkMode1 = DarkMode1,
@@ -221,6 +228,7 @@ private val DarkColorPalette = RadixColors(
     gray4 = Gray4,
     gray5 = Gray5,
     orange1 = Orange1,
+    orange2 = Orange2,
     red1 = Red1,
     white = White,
     darkMode1 = DarkMode1,
@@ -342,7 +350,9 @@ fun RadixWalletTheme(
     }
     ProvideRadixThemeConfig(isDarkMode = darkTheme) {
         ProvideRadixColors(colors) {
-            SetStatusBarColor(color = colors.defaultBackground, useDarkIcons = !darkTheme)
+            // TODO status bar color when we remove dev banner
+//            SetStatusBarColor(color = colors.defaultBackground, useDarkIcons = !darkTheme)
+            SetStatusBarColor(color = colors.orange2, useDarkIcons = !darkTheme)
             ProvideRadixTypography {
                 ProvideRadixDimensions {
                     ProvideRadixShapes {
