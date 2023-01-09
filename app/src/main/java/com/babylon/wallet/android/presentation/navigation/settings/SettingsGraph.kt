@@ -40,14 +40,15 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             },
             onSettingClick = { item ->
                 when (item) {
-                    SettingSectionItem.AddConnection -> {
+                    SettingSectionItem.Connection -> {
                         navController.navigate(Screen.SettingsAddConnectionDestination.route)
                     }
                     SettingSectionItem.DeleteAll -> {}
-                    SettingSectionItem.EditGateway -> {
+                    SettingSectionItem.Gateway -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
                     SettingSectionItem.InspectProfile -> {}
+                    SettingSectionItem.LinkedConnector -> {}
                 }
             }
         )
