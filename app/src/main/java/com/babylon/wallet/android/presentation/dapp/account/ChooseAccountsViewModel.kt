@@ -17,7 +17,6 @@ import com.babylon.wallet.android.domain.model.AccountSlim
 import com.babylon.wallet.android.domain.usecases.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
