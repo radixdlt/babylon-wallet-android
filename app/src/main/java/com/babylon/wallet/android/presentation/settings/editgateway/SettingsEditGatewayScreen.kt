@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +51,7 @@ fun SettingsEditGatewayScreen(
         currentNetworkEndpoint = state.currentNetworkAndGateway?.gatewayAPIEndpointURL.orEmpty(),
         modifier = modifier
 //            .systemBarsPadding()
+            .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         message = state.uiMessage,
@@ -85,19 +88,24 @@ private fun SettingsEditGatewayContent(
             horizontalAlignment = Alignment.Start
         ) {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.edit_gateway_api_url),
+                title = stringResource(R.string.network_gateway),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1
             )
+            Divider(color = RadixTheme.colors.gray5)
             Column(
                 Modifier
                     .fillMaxSize()
-                    .background(RadixTheme.colors.gray5)
                     .verticalScroll(rememberScrollState())
                     .padding(RadixTheme.dimensions.paddingDefault),
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-
             ) {
+                Text(
+                    text = stringResource(R.string.your_radix_wallet_is_linked),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
+                )
+                Divider(color = RadixTheme.colors.gray5)
                 CurrentNetworkDetails(
                     currentNetworkName = currentNetworkName,
                     currentNetworkId = currentNetworkId,
