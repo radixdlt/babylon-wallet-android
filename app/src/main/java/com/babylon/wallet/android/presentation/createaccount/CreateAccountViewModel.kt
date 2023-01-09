@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
@@ -24,13 +25,14 @@ class CreateAccountViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
+    private val deviceSecurityHelper: DeviceSecurityHelper
 ) : ViewModel(), OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
 
-    var state by mutableStateOf(CreateAccountState())
+    var state by mutableStateOf(CreateAccountState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure()))
         private set
 
     fun onAccountNameChange(accountName: String) {
@@ -83,6 +85,7 @@ class CreateAccountViewModel @Inject constructor(
         val accountId: String = "",
         val accountName: String = "",
         val hasProfile: Boolean = false,
+        val isDeviceSecure: Boolean = false
     )
 
     companion object {

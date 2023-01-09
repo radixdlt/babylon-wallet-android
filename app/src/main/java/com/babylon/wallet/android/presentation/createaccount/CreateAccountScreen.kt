@@ -17,8 +17,11 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +34,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
+import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -47,6 +53,7 @@ fun CreateAccountScreen(
     if (viewModel.state.loading) {
         FullscreenCircularProgressContent()
     } else {
+        val state = viewModel.state
         val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
         val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
 
@@ -57,7 +64,8 @@ fun CreateAccountScreen(
             buttonEnabled = buttonEnabled,
             cancelable = cancelable,
             onBackClick = onBackClick,
-            modifier = modifier
+            modifier = modifier,
+            isDeviceSecure = state.isDeviceSecure
         )
     }
 
@@ -81,6 +89,7 @@ fun CreateAccountContent(
     buttonEnabled: Boolean,
     onBackClick: () -> Unit,
     cancelable: Boolean,
+    isDeviceSecure: Boolean,
     modifier: Modifier
 ) {
     Column(
@@ -89,6 +98,7 @@ fun CreateAccountContent(
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
+        val showNotSecuredDialog = remember { mutableStateOf(false) }
         if (cancelable) {
             IconButton(onClick = onBackClick) {
                 Icon(
@@ -140,13 +150,32 @@ fun CreateAccountContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             Spacer(Modifier.weight(1f))
+            val context = LocalContext.current
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth().imePadding(),
-                onClick = onAccountCreateClick,
+                onClick = {
+                    if (isDeviceSecure) {
+                        context.findFragmentActivity()?.let { activity ->
+                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onAccountCreateClick()
+                                }
+                            }
+                        }
+                    } else {
+                        showNotSecuredDialog.value = true
+                    }
+                },
                 enabled = buttonEnabled,
                 text = stringResource(id = R.string.continue_button_title)
             )
         }
+        NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
+            showNotSecuredDialog.value = false
+            if (it) {
+                onAccountCreateClick()
+            }
+        })
     }
 }
 
@@ -162,6 +191,7 @@ fun CreateAccountContentPreview() {
             buttonEnabled = false,
             onBackClick = {},
             cancelable = true,
+            isDeviceSecure = true,
             modifier = Modifier
         )
     }
