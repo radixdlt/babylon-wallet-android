@@ -13,8 +13,8 @@ import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
-import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.AccountSlim
+import com.babylon.wallet.android.domain.usecases.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -38,18 +38,18 @@ class ChooseAccountsViewModel @Inject constructor(
         private set
 
     // keep all the available accounts in the profile
-    private var currentAvailableAccounts = listOf<AccountResources>()
+    private var currentAvailableAccounts = listOf<AccountSlim>()
 
     private var observeAccountsJob: Job? = null
 
     init {
         observeAccountsJob = viewModelScope.launch {
-            getAccountsUseCase().collect { accountResourcesList ->
-                currentAvailableAccounts = accountResourcesList
+            getAccountsUseCase().collect { accounts ->
+                currentAvailableAccounts = accounts
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
-                val accountItems = accountResourcesList.map { accountResources ->
+                val accountItems = accounts.map { accountResources ->
                     val currentAccountItemState = state.availableAccountItems.find { accountItemUiModel ->
                         accountItemUiModel.address == accountResources.address
                     }

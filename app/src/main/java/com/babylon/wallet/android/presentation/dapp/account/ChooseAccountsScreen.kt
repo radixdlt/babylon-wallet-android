@@ -156,7 +156,8 @@ fun ChooseAccountContent(
                             .clickable {
                                 onAccountSelect(index)
                             },
-                        accountName = accountItem.displayName,
+                        // TODO probably we need to change the whole message when no display name
+                        accountName = accountItem.displayName.orEmpty(),
                         hashValue = accountItem.address,
                         checked = accountItem.isSelected
                     )
