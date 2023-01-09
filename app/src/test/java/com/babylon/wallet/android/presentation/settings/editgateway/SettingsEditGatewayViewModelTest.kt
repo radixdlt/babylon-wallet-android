@@ -97,6 +97,4 @@ class SettingsEditGatewayViewModelTest {
         val uiMessage = vm.state.uiMessage
         assert(uiMessage is UiMessage.InfoMessage && uiMessage.type == InfoMessageType.GatewayInvalid)
     }
-
-
 }

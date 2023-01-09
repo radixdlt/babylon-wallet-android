@@ -9,13 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.dapp.GetAccountsUseCase
+import com.babylon.wallet.android.domain.model.AccountSlim
+import com.babylon.wallet.android.domain.usecases.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -29,6 +28,7 @@ class ChooseAccountsViewModel @Inject constructor(
     incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
+    // the incoming request from dapp
     private val accountsRequest = incomingRequestRepository.getAccountsRequest(
         savedStateHandle.get<String>(Screen.ARG_INCOMING_REQUEST_ID).orEmpty()
     )
@@ -36,95 +36,70 @@ class ChooseAccountsViewModel @Inject constructor(
     var state by mutableStateOf(ChooseAccountUiState())
         private set
 
-    private var selectedAccounts = listOf<SelectedAccountUiState>()
-
     init {
         viewModelScope.launch {
-            getAccountsUseCase(this).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        state = state.copy(
-                            accounts = mergeSelectedState(result.data.accounts),
-                            dAppDetails = result.data.dAppResult.dAppDetails,
-                            accountAddresses = result.data.dAppResult.accountAddresses,
-                            error = null,
-                            showProgress = false
-                        )
+            getAccountsUseCase().collect { accounts ->
+                // user can create a new account at the Choose Accounts screen,
+                // therefore this part ensures that the selection state (if any account was selected)
+                // remains once the user returns from the account creation flow
+                val accountItems = accounts.map { accountResources ->
+                    val currentAccountItemState = state.availableAccountItems.find { accountItemUiModel ->
+                        accountItemUiModel.address == accountResources.address
                     }
-                    is Result.Error -> {
-                        state = state.copy(
-                            accounts = null,
-                            dAppDetails = null,
-                            accountAddresses = null,
-                            error = result.exception?.message,
-                            showProgress = false
-                        )
-                    }
+                    accountResources.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }
+
+                state = state.copy(
+                    availableAccountItems = accountItems,
+                    dAppDetails = DAppDetailsResponse( // TODO when we have the actual dapp validation
+                        imageUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png",
+                        dAppName = "RadixSwap"
+                    ),
+                    error = null,
+                    showProgress = false
+                )
             }
         }
     }
 
-    private fun mergeSelectedState(accounts: List<SelectedAccountUiState>): List<SelectedAccountUiState> {
-        val selectedAddresses = state.accounts?.filter { it.selected }?.map { it.accountAddress }.orEmpty()
-        return accounts.map {
-            if (selectedAddresses.contains(it.accountAddress)) {
-                it.copy(selected = true)
-            } else {
-                it
-            }
-        }
-    }
-
-    fun onAccountSelect(account: SelectedAccountUiState) {
-        if (state.accounts == null) return
-
-        state.accounts?.let { accounts ->
-            val currentlySelectedAccountsCount = accounts.count { it.selected }
-            // If already selected max number of accounts (accountAddresses) and want to select more, skip
-            if (accountsRequest.numberOfAccounts != 0 &&
-                currentlySelectedAccountsCount >= accountsRequest.numberOfAccounts && !account.selected
-            ) {
-                return
-            }
-
-            val updatedAccounts = accounts.map { accountUiState ->
-                if (accountUiState == account) {
-                    accountUiState.copy(
-                        accountName = account.accountName,
-                        accountAddress = account.accountAddress,
-                        accountCurrency = account.accountCurrency,
-                        accountValue = account.accountValue,
-                        selected = !accountUiState.selected
-                    )
+    fun onAccountSelect(index: Int) {
+        // update the isSelected property of the AccountItemUiModel based on index
+        state = state.copy(
+            availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                if (index == i) {
+                    accountItem.copy(isSelected = !accountItem.isSelected)
                 } else {
-                    accountUiState
+                    accountItem
                 }
             }
+        )
 
-            val selectedAccountsCount: Int = updatedAccounts.count { updatedAccount ->
-                updatedAccount.selected
-            }
+        val isMinRequiredCountOfAccountsSelected = state
+            .availableAccountItems
+            .count { accountItem ->
+                accountItem.isSelected
+            } >= accountsRequest.numberOfAccounts
 
-            if (selectedAccountsCount >= accountsRequest.numberOfAccounts || accountsRequest.numberOfAccounts == 0) {
-                selectedAccounts = updatedAccounts.filter { selectedAccountUiState ->
-                    selectedAccountUiState.selected
-                }
-                state = state.copy(accounts = updatedAccounts, continueButtonEnabled = true)
-            }
-        }
+        state = state.copy(isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected)
     }
 
     fun sendAccountsResponse() {
-        viewModelScope.launch {
-            val accounts = selectedAccounts.map { account ->
-                Account(
-                    address = account.accountAddress,
-                    label = account.accountName,
-                    appearanceId = account.appearanceID
+        // get the accounts that are selected
+        val selectedAccounts = state.availableAccountItems
+            .filter { accountItem ->
+                accountItem.isSelected
+            }.map {
+                AccountSlim(
+                    address = it.address,
+                    appearanceID = it.appearanceID,
+                    displayName = it.displayName
                 )
             }
-            val result = dAppMessenger.sendAccountsResponse(requestId = accountsRequest.requestId, accounts = accounts)
+        viewModelScope.launch {
+            val result = dAppMessenger.sendAccountsResponse(
+                requestId = accountsRequest.requestId,
+                accounts = selectedAccounts
+            )
             result.onValue {
                 sendEvent(ChooseAccountsEvent.NavigateToCompletionScreen)
             }
@@ -138,19 +113,9 @@ sealed interface ChooseAccountsEvent : OneOffEvent {
 }
 
 data class ChooseAccountUiState(
-    val accounts: List<SelectedAccountUiState>? = null,
+    val availableAccountItems: List<AccountItemUiModel> = emptyList(),
     val dAppDetails: DAppDetailsResponse? = null,
-    val accountAddresses: Int? = null,
-    val continueButtonEnabled: Boolean = false,
+    val isContinueButtonEnabled: Boolean = false,
     val error: String? = null,
     val showProgress: Boolean = true
-)
-
-data class SelectedAccountUiState(
-    val accountName: String,
-    val accountAddress: String,
-    val accountCurrency: String,
-    val accountValue: String,
-    val appearanceID: Int,
-    val selected: Boolean = false
 )

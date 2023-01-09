@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel

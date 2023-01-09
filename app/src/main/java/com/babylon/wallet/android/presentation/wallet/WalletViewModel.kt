@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val mainViewRepository: MainViewRepository,
     private val clipboardManager: ClipboardManager,
-    private val getAccountsUseCase: GetAccountResourcesUseCase,
+    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
@@ -44,7 +44,7 @@ class WalletViewModel @Inject constructor(
     private suspend fun loadResourceData() {
         val wallet = mainViewRepository.getWallet()
         viewModelScope.launch {
-            val result = getAccountsUseCase()
+            val result = getAccountResourcesUseCase()
             result.onError { error ->
                 _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
             }

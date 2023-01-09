@@ -18,12 +18,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TruncatedAddressText
 
 @Composable
-fun AccountCard(
+fun AccountSelectionCard(
     accountName: String,
     hashValue: String,
     checked: Boolean,
-    modifier: Modifier = Modifier,
-    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -58,7 +57,7 @@ fun AccountCard(
                 uncheckedColor = RadixTheme.colors.gray3,
                 checkmarkColor = Color.White
             ),
-            onCheckedChange = onCheckedChange
+            onCheckedChange = null
         )
     }
 }
@@ -67,11 +66,10 @@ fun AccountCard(
 @Composable
 fun DAppAccountCardPreview() {
     RadixWalletTheme {
-        AccountCard(
+        AccountSelectionCard(
             accountName = "Account name",
             hashValue = "jf932j9f32o",
-            checked = true,
-            onCheckedChange = {}
+            checked = true
         )
     }
 }
@@ -81,11 +79,10 @@ fun DAppAccountCardPreview() {
 @Composable
 fun DAppAccountCardLargeFontPreview() {
     RadixWalletTheme {
-        AccountCard(
+        AccountSelectionCard(
             accountName = "Account name",
             hashValue = "jf932j9f32o",
-            checked = true,
-            onCheckedChange = {}
+            checked = true
         )
     }
 }

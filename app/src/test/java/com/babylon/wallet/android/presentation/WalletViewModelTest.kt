@@ -5,7 +5,7 @@ import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.usecase.wallet.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import kotlinx.coroutines.CoroutineScope

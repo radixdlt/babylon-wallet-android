@@ -14,7 +14,7 @@ data class OneTimeAccountsWithProofOfOwnershipResponseItem(
 data class OneTimeAccountsWithoutProofOfOwnershipResponseItem(
     override val requestType: String,
     @SerialName("accounts")
-    val accounts: List<Account>
+    val accounts: List<AccountDto>
 ) : WalletResponseItem()
 
 enum class OneTimeAccountsRequestType(val requestType: String) {

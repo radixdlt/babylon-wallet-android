@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.model.AccountSlim
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Account(
+data class AccountDto(
     @SerialName("address")
     val address: String,
     @SerialName("label")
@@ -16,7 +17,7 @@ data class Account(
 @Serializable
 data class AccountWithProofOfOwnership(
     @SerialName("account")
-    val account: Account,
+    val accountDto: AccountDto,
     @SerialName("challenge")
     val challenge: String,
     @SerialName("signature")
@@ -30,3 +31,11 @@ data class PersonaDataField(
     @SerialName("value")
     val value: String
 )
+
+fun List<AccountSlim>.toDataModel() = map { accountResources ->
+    AccountDto(
+        address = accountResources.address,
+        label = accountResources.displayName.orEmpty(),
+        appearanceId = accountResources.appearanceID
+    )
+}
