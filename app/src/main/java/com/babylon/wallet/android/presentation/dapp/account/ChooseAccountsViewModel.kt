@@ -81,17 +81,13 @@ class ChooseAccountsViewModel @Inject constructor(
             }
         )
 
-        val isRequiredCountOfAccountsSelected = state
+        val isMinRequiredCountOfAccountsSelected = state
             .availableAccountItems
             .count { accountItem ->
                 accountItem.isSelected
             } >= accountsRequest.numberOfAccounts
 
-        state = if (isRequiredCountOfAccountsSelected) {
-            state.copy(isContinueButtonEnabled = true)
-        } else {
-            state.copy(isContinueButtonEnabled = false)
-        }
+        state = state.copy(isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected)
     }
 
     fun sendAccountsResponse() {
