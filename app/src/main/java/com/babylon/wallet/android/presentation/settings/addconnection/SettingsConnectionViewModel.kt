@@ -8,10 +8,8 @@ import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileRepository
@@ -20,60 +18,55 @@ import rdx.works.profile.domain.DeleteP2PClientUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-private const val FIVE_SECONDS_STOP_TIMEOUT = 5_000L
-
 @HiltViewModel
-class SettingsAddConnectionViewModel @Inject constructor(
+class SettingsConnectionViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     profileRepository: ProfileRepository,
     private val addP2PClientUseCase: AddP2PClientUseCase,
-    private val deleteP2PClientUseCase: DeleteP2PClientUseCase
+    private val deleteP2PClientUseCase: DeleteP2PClientUseCase,
 ) : ViewModel() {
 
-    private val loadingState = MutableStateFlow(false)
 
-    val uiState: StateFlow<SettingsAddConnectionUiState> = combine(
-        loadingState,
-        profileRepository.p2pClient
-    ) { isLoading, p2pClient ->
-        if (p2pClient != null) { // if we already have an active connection
-            // we need a reference of the connectionPassword
-            // so we can pass it in the onDeleteConnectionClick
-            currentConnectionPassword = p2pClient.connectionPassword
+    private val _state: MutableStateFlow<SettingsConnectionUiState> = MutableStateFlow(SettingsConnectionUiState())
+    val state = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            profileRepository.p2pClient.collect { p2pClient ->
+                if (p2pClient != null) { // if we already have an active connection
+                    // we need a reference of the connectionPassword
+                    // so we can pass it in the onDeleteConnectionClick
+                    currentConnectionPassword = p2pClient.connectionPassword
+                }
+                _state.update {
+                    it.copy(isLoading = false, connectionName = p2pClient?.displayName)
+                }
+            }
         }
-        SettingsAddConnectionUiState(
-            isLoading = isLoading,
-            connectionName = p2pClient?.displayName
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(FIVE_SECONDS_STOP_TIMEOUT),
-        initialValue = SettingsAddConnectionUiState()
-    )
+    }
 
     private var currentConnectionPassword: String = ""
     private var currentConnectionDisplayName: String = ""
     private var listenIncomingMessagesJob: Job? = null
 
     fun onConnectionClick(
-        connectionPassword: String,
-        connectionDisplayName: String
+        connectionDisplayName: String,
     ) {
         if (listenIncomingMessagesJob?.isActive == true) {
             listenIncomingMessagesJob?.cancel()
         }
+        if (currentConnectionPassword.isEmpty()) return
 
         viewModelScope.launch {
-            loadingState.value = true
+            _state.update { it.copy(isLoading = true) }
 
             val encryptionKey = parseEncryptionKeyFromConnectionPassword(
-                connectionPassword = connectionPassword
+                connectionPassword = currentConnectionPassword
             )
 
             if (encryptionKey != null) {
                 when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
                     is Result.Success -> { // we have a data channel which is already open!
-                        currentConnectionPassword = connectionPassword
                         currentConnectionDisplayName = connectionDisplayName
                         waitUntilConnectionIsTerminated()
                     }
@@ -82,7 +75,7 @@ class SettingsAddConnectionViewModel @Inject constructor(
                     }
                 }
             } else {
-                loadingState.value = false
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -92,6 +85,19 @@ class SettingsAddConnectionViewModel @Inject constructor(
             deleteP2PClientUseCase(currentConnectionPassword)
             peerdroidClient.close()
         }
+    }
+
+    fun onConnectionPasswordDecoded(connectionPassword: String) {
+        _state.update { it.copy(mode = SettingsConnectionMode.AddConnection) }
+        currentConnectionPassword = connectionPassword
+    }
+
+    fun cancelQrScan() {
+        _state.update { it.copy(mode = SettingsConnectionMode.ShowDetails) }
+    }
+
+    fun addConnection() {
+        _state.update { it.copy(mode = SettingsConnectionMode.ScanQr) }
     }
 
     // This function is triggered when the data channel is open
@@ -120,12 +126,14 @@ class SettingsAddConnectionViewModel @Inject constructor(
                 displayName = currentConnectionDisplayName,
                 connectionPassword = currentConnectionPassword
             )
-            loadingState.value = false
+            _state.update { it.copy(isLoading = false) }
         }
     }
 }
 
-data class SettingsAddConnectionUiState(
+data class SettingsConnectionUiState(
     val isLoading: Boolean = false,
-    val connectionName: String? = null
+    val connectionName: String? = null,
+    val isScanningQr: Boolean = false,
+    val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails
 )

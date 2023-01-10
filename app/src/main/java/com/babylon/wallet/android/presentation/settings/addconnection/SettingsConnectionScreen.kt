@@ -1,14 +1,18 @@
+@file:OptIn(ExperimentalPermissionsApi::class)
+
 package com.babylon.wallet.android.presentation.settings.addconnection
 
 import android.Manifest
-import androidx.compose.foundation.background
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Divider
@@ -29,6 +33,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -39,63 +44,51 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.permissions.rememberPermissionState
 
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
-fun SettingsAddConnectionScreen(
-    viewModel: SettingsAddConnectionViewModel,
+fun SettingsConnectionScreen(
+    viewModel: SettingsConnectionViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    var showQrScanner by rememberSaveable { mutableStateOf(false) }
-
-    var connectionPasswordText by rememberSaveable { mutableStateOf("") }
     var connectionDisplayName by rememberSaveable { mutableStateOf("") }
+    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-
-    if (showQrScanner) {
-        PermissionRequired(
-            permissionState = cameraPermissionState,
-            permissionNotGrantedContent = {},
-            permissionNotAvailableContent = {}
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    PermissionRequired(
+        permissionState = cameraPermissionState,
+        permissionNotGrantedContent = {},
+        permissionNotAvailableContent = {}
+    ) {
+        CameraPreview(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            CameraPreview(
-                modifier = Modifier,
-                onQrCodeDetected = {
-                    connectionPasswordText = it
-                    showQrScanner = false
-                },
-                onBackClick = { showQrScanner = false }
-            )
         }
-    } else {
-        SettingsAddConnectionContent(
-            modifier = modifier
-//                .systemBarsPadding()
-                .navigationBarsPadding()
-                .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground),
-            connectionName = state.connectionName,
-            onConnectionClick = {
-                viewModel.onConnectionClick(
-                    connectionPassword = connectionPasswordText,
-                    connectionDisplayName = connectionDisplayName
-                )
-            },
-            isLoading = state.isLoading,
-            onBackClick = onBackClick,
-            onQrCodeScannerClick = {
-                cameraPermissionState.launchPermissionRequest()
-                showQrScanner = true
-            },
-            connectionPassword = connectionPasswordText,
-            connectionDisplayName = connectionDisplayName,
-            onConnectionPasswordChanged = { connectionPasswordText = it },
-            onConnectionDisplayNameChanged = { connectionDisplayName = it },
-            onDeleteConnectionClick = viewModel::onDeleteConnectionClick
-        )
+        BackHandler(enabled = true) { }
     }
+
+//    SettingsAddConnectionContent(
+//        modifier = modifier
+////                .systemBarsPadding()
+//            .navigationBarsPadding()
+//            .fillMaxSize()
+//            .background(RadixTheme.colors.defaultBackground),
+//        connectionName = state.connectionName,
+//        onConnectionClick = {
+//            viewModel.onConnectionClick(
+//                connectionDisplayName = connectionDisplayName
+//            )
+//        },
+//        isLoading = state.isLoading,
+//        onBackClick = onBackClick,
+//        connectionDisplayName = connectionDisplayName,
+//        onConnectionDisplayNameChanged = { connectionDisplayName = it },
+//        onDeleteConnectionClick = viewModel::onDeleteConnectionClick,
+//        onConnectionPasswordDecoded = viewModel::onConnectionPasswordDecoded,
+//        settingsMode = state.mode,
+//        onAddConnection = viewModel::addConnection,
+//        cancelQrScan = viewModel::cancelQrScan
+//    )
 }
 
 @Composable
@@ -105,36 +98,87 @@ private fun SettingsAddConnectionContent(
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onQrCodeScannerClick: () -> Unit,
-    connectionPassword: String,
     connectionDisplayName: String,
-    onConnectionPasswordChanged: (String) -> Unit,
     onConnectionDisplayNameChanged: (String) -> Unit,
+    onConnectionPasswordDecoded: (String) -> Unit,
     onDeleteConnectionClick: () -> Unit,
+    settingsMode: SettingsConnectionMode,
+    onAddConnection: () -> Unit,
+    cancelQrScan: () -> Unit,
 ) {
+    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.new_connection),
-            onBackClick = onBackClick,
+            title = if (settingsMode == SettingsConnectionMode.AddConnection) stringResource(R.string.link_to_connector) else stringResource(
+                R.string.linked_connector),
+            onBackClick = {
+                if (settingsMode == SettingsConnectionMode.ScanQr) {
+                    cancelQrScan()
+                } else {
+                    onBackClick()
+                }
+            },
             contentColor = RadixTheme.colors.gray1
         )
-        if (connectionName?.isNotEmpty() == true) {
-            ShowConnectionContent(
-                connectionName = connectionName,
-                onDeleteConnectionClick = onDeleteConnectionClick
-            )
-        } else {
-            if (isLoading) {
-                FullscreenCircularProgressContent()
-            } else {
+        Divider(color = RadixTheme.colors.gray5)
+        when (settingsMode) {
+            SettingsConnectionMode.AddConnection -> {
                 EnterConnection(
                     onConnectionClick = onConnectionClick,
-                    connectionPassword = connectionPassword,
                     connectionDisplayName = connectionDisplayName,
-                    onConnectionPasswordChanged = onConnectionPasswordChanged,
                     onConnectionDisplayNameChanged = onConnectionDisplayNameChanged,
-                    onQrCodeScannerClick = onQrCodeScannerClick
                 )
+            }
+            SettingsConnectionMode.ShowDetails -> {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                            text = stringResource(R.string.your_radix_wallet_is_linked),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray2
+                        )
+                        Divider(color = RadixTheme.colors.gray5)
+                        AnimatedVisibility(visible = connectionName == null) {
+                            RadixSecondaryButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                                text = stringResource(id = R.string.link_to_connector),
+                                onClick = {
+                                    onAddConnection()
+                                },
+                                icon = {
+                                    Icon(painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner),
+                                        contentDescription = null)
+                                }
+                            )
+                        }
+                        AnimatedVisibility(visible = connectionName?.isNotEmpty() == true) {
+                            ShowConnectionContent(
+                                connectionName = connectionName!!,
+                                onDeleteConnectionClick = onDeleteConnectionClick
+                            )
+                        }
+                    }
+                    if (isLoading) {
+                        FullscreenCircularProgressContent()
+                    }
+                }
+            }
+            SettingsConnectionMode.ScanQr -> {
+                PermissionRequired(
+                    permissionState = cameraPermissionState,
+                    permissionNotGrantedContent = {},
+                    permissionNotAvailableContent = {}
+                ) {
+                    CameraPreview(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        onConnectionPasswordDecoded(it)
+                    }
+                    BackHandler(enabled = true) { }
+                }
             }
         }
     }
@@ -147,16 +191,11 @@ private fun ShowConnectionContent(
     onDeleteConnectionClick: () -> Unit,
 ) {
     Column(modifier = modifier) {
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.p2p_connection_subtitle),
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
-        )
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingSmall))
-        Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -182,34 +221,10 @@ private fun ShowConnectionContent(
 private fun EnterConnection(
     modifier: Modifier = Modifier,
     onConnectionClick: () -> Unit,
-    connectionPassword: String,
     connectionDisplayName: String,
-    onConnectionPasswordChanged: (String) -> Unit,
     onConnectionDisplayNameChanged: (String) -> Unit,
-    onQrCodeScannerClick: () -> Unit,
 ) {
     Column(modifier = modifier) {
-        RadixTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            value = connectionPassword,
-            onValueChanged = onConnectionPasswordChanged,
-            hint = stringResource(R.string.enter_the_connection_id),
-            trailingIcon = {
-                IconButton(onClick = onQrCodeScannerClick) {
-                    Icon(
-                        painterResource(
-                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-                        ),
-                        contentDescription = "scan qr code icon"
-                    )
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -224,6 +239,7 @@ private fun EnterConnection(
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
+                .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.add_connection),
             onClick = onConnectionClick
@@ -241,12 +257,13 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
             onConnectionClick = {},
             isLoading = false,
             onBackClick = {},
-            onQrCodeScannerClick = {},
-            connectionPassword = "",
             connectionDisplayName = "",
-            onConnectionPasswordChanged = {},
             onConnectionDisplayNameChanged = {},
-            onDeleteConnectionClick = {}
+            onConnectionPasswordDecoded = {},
+            onDeleteConnectionClick = {},
+            settingsMode = SettingsConnectionMode.ShowDetails,
+            onAddConnection = {},
+            cancelQrScan = {}
         )
     }
 }
@@ -261,12 +278,13 @@ fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
             onConnectionClick = {},
             isLoading = false,
             onBackClick = {},
-            onQrCodeScannerClick = {},
-            connectionPassword = "",
             connectionDisplayName = "",
-            onConnectionPasswordChanged = {},
             onConnectionDisplayNameChanged = {},
-            onDeleteConnectionClick = {}
+            onConnectionPasswordDecoded = {},
+            onDeleteConnectionClick = {},
+            cancelQrScan = {},
+            settingsMode = SettingsConnectionMode.ShowDetails,
+            onAddConnection = {},
         )
     }
 }

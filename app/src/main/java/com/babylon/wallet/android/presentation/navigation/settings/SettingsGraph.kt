@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
-import com.babylon.wallet.android.presentation.settings.addconnection.SettingsAddConnectionScreen
+import com.babylon.wallet.android.presentation.settings.addconnection.SettingsConnectionScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.google.accompanist.navigation.animation.composable
 
@@ -66,7 +66,7 @@ private fun NavGraphBuilder.settingsAddConnection(navController: NavController) 
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        SettingsAddConnectionScreen(
+        SettingsConnectionScreen(
             viewModel = hiltViewModel(),
             onBackClick = {
                 navController.popBackStack()
