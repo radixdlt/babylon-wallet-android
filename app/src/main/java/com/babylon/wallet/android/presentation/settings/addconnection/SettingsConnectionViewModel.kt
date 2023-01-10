@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.addconnection
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
@@ -24,10 +25,25 @@ class SettingsConnectionViewModel @Inject constructor(
     profileRepository: ProfileRepository,
     private val addP2PClientUseCase: AddP2PClientUseCase,
     private val deleteP2PClientUseCase: DeleteP2PClientUseCase,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    private var currentConnectionPassword: String = ""
+    private var currentConnectionDisplayName: String = ""
+    private var listenIncomingMessagesJob: Job? = null
 
-    private val _state: MutableStateFlow<SettingsConnectionUiState> = MutableStateFlow(SettingsConnectionUiState())
+    private val args = SettingsConnectionScreenArgs(savedStateHandle)
+    private val _state: MutableStateFlow<SettingsConnectionUiState> =
+        MutableStateFlow(
+            SettingsConnectionUiState(
+                mode = if (args.scanQr) {
+                    SettingsConnectionMode.ScanQr
+                } else {
+                    SettingsConnectionMode.ShowDetails
+                },
+                triggerCameraPermissionPrompt = args.scanQr
+            )
+        )
     val state = _state.asStateFlow()
 
     init {
@@ -44,10 +60,6 @@ class SettingsConnectionViewModel @Inject constructor(
             }
         }
     }
-
-    private var currentConnectionPassword: String = ""
-    private var currentConnectionDisplayName: String = ""
-    private var listenIncomingMessagesJob: Job? = null
 
     fun onConnectionClick(
         connectionDisplayName: String,
@@ -83,6 +95,7 @@ class SettingsConnectionViewModel @Inject constructor(
     fun onDeleteConnectionClick() {
         viewModelScope.launch {
             deleteP2PClientUseCase(currentConnectionPassword)
+            _state.update { it.copy(connectionName = null) }
             peerdroidClient.close()
         }
     }
@@ -126,7 +139,7 @@ class SettingsConnectionViewModel @Inject constructor(
                 displayName = currentConnectionDisplayName,
                 connectionPassword = currentConnectionPassword
             )
-            _state.update { it.copy(isLoading = false) }
+            _state.update { it.copy(isLoading = false, mode = SettingsConnectionMode.ShowDetails) }
         }
     }
 }
@@ -135,5 +148,6 @@ data class SettingsConnectionUiState(
     val isLoading: Boolean = false,
     val connectionName: String? = null,
     val isScanningQr: Boolean = false,
-    val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails
+    val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails,
+    val triggerCameraPermissionPrompt: Boolean = false,
 )

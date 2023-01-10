@@ -39,7 +39,11 @@ fun NavGraphBuilder.createAccountConfirmationScreen(
     composable(
         route = "account_completion_route/{$ARG_REQUEST_SOURCE}/{$ARG_ACCOUNT_ID}",
         arguments = listOf(
-            navArgument(ARG_REQUEST_SOURCE) { type = NavType.EnumType(CreateAccountRequestSource::class.java) },
+            navArgument(ARG_REQUEST_SOURCE) {
+                type = NavType.EnumType(
+                    CreateAccountRequestSource::class.java
+                )
+            },
             navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
         )
     ) {

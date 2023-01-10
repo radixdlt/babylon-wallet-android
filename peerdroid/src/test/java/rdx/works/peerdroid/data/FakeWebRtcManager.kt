@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.flowOn
 import org.webrtc.DataChannel
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
-import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
+import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.helpers.Result
 import javax.inject.Inject

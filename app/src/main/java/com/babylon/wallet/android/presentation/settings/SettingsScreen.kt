@@ -79,35 +79,42 @@ private fun SettingsContent(
                     when (settingsItem) {
                         SettingSectionItem.Connection -> {
                             item {
-                                ConnectionSettingItem(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(RadixTheme.dimensions.paddingDefault)
-                                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
-                                    .padding(RadixTheme.dimensions.paddingDefault),
-                                    onSettingClick = onSettingClick, settingsItem = settingsItem)
+                                ConnectionSettingItem(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(RadixTheme.dimensions.paddingDefault)
+                                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
+                                        .padding(RadixTheme.dimensions.paddingDefault),
+                                    onSettingClick = onSettingClick,
+                                    settingsItem = settingsItem
+                                )
                             }
                         }
                         SettingSectionItem.DeleteAll -> {
                             settingsItem.descriptionRes()?.let {
                                 item {
-                                    RadixSecondaryButton(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                                    RadixSecondaryButton(
+                                        modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
                                         text = stringResource(id = it),
                                         onClick = {
                                             onSettingClick(settingsItem)
                                         },
-                                        contentColor = RadixTheme.colors.red1)
+                                        contentColor = RadixTheme.colors.red1
+                                    )
                                 }
                             }
                         }
                         else -> {
                             item {
-                                DefaultSettingsItem(settingsItem = settingsItem,
+                                DefaultSettingsItem(
+                                    settingsItem = settingsItem,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(50.dp)
                                         .background(RadixTheme.colors.defaultBackground)
                                         .throttleClickable { onSettingClick(settingsItem) }
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault))
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                )
                             }
                             item {
                                 Divider(color = RadixTheme.colors.gray5)
@@ -117,9 +124,11 @@ private fun SettingsContent(
                 }
                 item {
                     Text(
-                        text = stringResource(R.string.version_and_build,
+                        text = stringResource(
+                            R.string.version_and_build,
                             BuildConfig.VERSION_NAME,
-                            BuildConfig.VERSION_CODE),
+                            BuildConfig.VERSION_CODE
+                        ),
                         style = RadixTheme.typography.body2Link,
                         color = RadixTheme.colors.gray2,
                         textAlign = TextAlign.Center
@@ -151,9 +160,11 @@ private fun DefaultSettingsItem(
             )
         }
         Spacer(modifier = Modifier.weight(1f))
-        Icon(painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = RadixTheme.colors.gray1)
+            tint = RadixTheme.colors.gray1
+        )
     }
 }
 
@@ -163,11 +174,15 @@ private fun ConnectionSettingItem(
     settingsItem: SettingSectionItem,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier,
+    Column(
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)) {
-        Image(painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_connector),
-            contentDescription = null)
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        Image(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_connector),
+            contentDescription = null
+        )
         Text(
             text = stringResource(R.string.link_your_wallet),
             style = RadixTheme.typography.body1Header,
@@ -183,9 +198,13 @@ private fun ConnectionSettingItem(
         RadixSecondaryButton(text = stringResource(R.string.link_to_connector), onClick = {
             onSettingClick(settingsItem)
         }, contentColor = RadixTheme.colors.gray1, icon = {
-            Icon(painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner),
-                contentDescription = null)
-        })
+                Icon(
+                    painter = painterResource(
+                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
+                    ),
+                    contentDescription = null
+                )
+            })
     }
 }
 

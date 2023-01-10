@@ -21,7 +21,8 @@ fun CameraPreview(
     modifier: Modifier,
     onQrCodeDetected: (qrCode: String) -> Unit,
 ) {
-    BarcodePreviewView(modifier = modifier,
+    BarcodePreviewView(
+        modifier = modifier,
         onQrCodeDetected = onQrCodeDetected
     )
     BackHandler(enabled = true) { }

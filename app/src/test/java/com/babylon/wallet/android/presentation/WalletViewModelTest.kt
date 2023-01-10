@@ -31,7 +31,6 @@ class WalletViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     private lateinit var vm: WalletViewModel
-    private val mainViewRepository = mock(MainViewRepository::class.java)
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
     private val profileRepository = mock(ProfileRepository::class.java)

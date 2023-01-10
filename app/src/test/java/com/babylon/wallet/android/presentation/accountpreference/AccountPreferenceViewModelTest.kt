@@ -31,7 +31,13 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     private val sampleAddress = sampleDataProvider.randomTokenAddress()
 
     override fun initVM(): AccountPreferenceViewModel {
-        return AccountPreferenceViewModel(getFreeXrdUseCase, deviceSecurityHelper, TestScope(), savedStateHandle, eventBus)
+        return AccountPreferenceViewModel(
+            getFreeXrdUseCase,
+            deviceSecurityHelper,
+            TestScope(),
+            savedStateHandle,
+            eventBus
+        )
     }
 
     @Before
@@ -80,5 +86,4 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         assert(!vm.state.gotFreeXrd)
         assert(vm.state.error != null)
     }
-
 }
