@@ -1,12 +1,11 @@
-package rdx.works.peerdroid
+package com.babylon.wallet.core
 
-import okio.ByteString.Companion.decodeHex
-import okio.ByteString.Companion.toByteString
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.datastore.decryptData
-import rdx.works.datastore.encryptData
+import rdx.works.core.decryptData
+import rdx.works.core.encryptData
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets.UTF_8
 
 class EncryptionHelperTest {
 
@@ -18,18 +17,19 @@ class EncryptionHelperTest {
         val expectedEncryptionKeyHex = "abababababababababababababababababababababababababababababababab"
 
         val encryptionKeyData = getEncryptionKeyData()
-        val encryptionKeyHex = encryptionKeyData.toByteString().hex()
+
+        val encryptionKeyHex = encryptionKeyData.toByteArray().toHexString()
 
         Assert.assertEquals(expectedEncryptionKeyHex, encryptionKeyHex)
 
         val encryptionKeyByteArray = encryptionKeyData.array()
 
         val actualDecryptedMessage = decryptData(
-            input = encryptedMessageInHex.decodeHex().toByteArray(),
+            input = encryptedMessageInHex.decodeHex(),
             encryptionKey = encryptionKeyByteArray
         )
 
-        Assert.assertEquals(expectedDecryptedMessage, actualDecryptedMessage)
+        Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage, UTF_8))
     }
 
     @Test
@@ -57,4 +57,20 @@ class EncryptionHelperTest {
         }
         return byteBuffer
     }
+
+    private fun ByteBuffer.toByteArray(): ByteArray {
+        val copy = ByteArray(remaining())
+        get(copy)
+        return copy
+    }
+
+    private fun String.decodeHex(): ByteArray {
+        check(length % 2 == 0) { "Must have an even length" }
+
+        return chunked(2)
+            .map { it.toInt(16).toByte() }
+            .toByteArray()
+    }
+
+    private fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 }
