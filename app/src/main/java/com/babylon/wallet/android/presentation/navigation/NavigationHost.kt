@@ -100,11 +100,6 @@ fun NavigationHost(
                     accountId,
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
-            },
-            onNavigateToWallet = {
-                navController.navigate(Screen.WalletDestination.route) {
-                    popUpTo(0)
-                }
             }
         )
         createAccountConfirmationScreen(
