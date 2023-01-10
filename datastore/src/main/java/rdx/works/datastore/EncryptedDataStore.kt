@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 
 class EncryptedDataStore(
     private val context: Context
@@ -34,7 +35,8 @@ class EncryptedDataStore(
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null
             }
-            decryptData(Base64.decode(encryptedValue, Base64.DEFAULT))
+            val decryptedBytes = decryptData(Base64.decode(encryptedValue, Base64.DEFAULT))
+            String(decryptedBytes, StandardCharsets.UTF_8)
         }
     }
 
@@ -42,6 +44,33 @@ class EncryptedDataStore(
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
             val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull.toByteArray()), Base64.DEFAULT)
+            context.dataStore.edit { mutablePreferences ->
+                mutablePreferences[preferencesKey] = encryptedValue
+            }
+        }
+    }
+
+    fun getBytes(key: String): Flow<ByteArray?> {
+        val preferencesKey = stringPreferencesKey(key)
+        return context.dataStore.data.catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }.map { preferences ->
+            val encryptedValue = preferences[preferencesKey]
+            if (encryptedValue.isNullOrEmpty()) {
+                return@map null
+            }
+            decryptData(Base64.decode(encryptedValue, Base64.DEFAULT))
+        }
+    }
+
+    suspend fun putBytes(key: String, newValue: ByteArray?) {
+        val preferencesKey = stringPreferencesKey(key)
+        newValue?.let { newValueNotNull ->
+            val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull), Base64.DEFAULT)
             context.dataStore.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }

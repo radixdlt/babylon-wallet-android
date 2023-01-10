@@ -18,7 +18,7 @@ class GetMnemonicUseCase @Inject constructor(
 ) {
 
     /**
-     * We might have multiple mnemonics per factors so we need to read unique mnemonic specified by key (factorSourceId)
+     * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     private suspend fun readMnemonic(key: String): String =
         encryptedDataStore.getString("mnemonic$key").first().orEmpty()

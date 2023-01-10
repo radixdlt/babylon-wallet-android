@@ -30,6 +30,7 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerResponse
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
+import java.nio.charset.StandardCharsets
 
 internal interface WebSocketClient {
 
@@ -259,7 +260,7 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val answer = Json.decodeFromString<RpcMessage.AnswerPayload>(message)
+        val answer = Json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
         return SignalingServerIncomingMessage.BrowserExtensionAnswer(
             requestId = responseJson.requestId,
@@ -280,7 +281,9 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val iceCandidate = Json.decodeFromString<RpcMessage.IceCandidatePayload>(message)
+        val iceCandidate = Json.decodeFromString<RpcMessage.IceCandidatePayload>(
+            String(message, StandardCharsets.UTF_8)
+        )
 
         val remoteIceCandidates = RemoteIceCandidate(
             sdpMid = iceCandidate.sdpMid,
@@ -309,7 +312,9 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val iceCandidates = Json.decodeFromString<List<RpcMessage.IceCandidatePayload>>(message)
+        val iceCandidates = Json.decodeFromString<List<RpcMessage.IceCandidatePayload>>(
+            String(message, StandardCharsets.UTF_8)
+        )
 
         val remoteIceCandidates = iceCandidates.map { iceCandidatePayload ->
             RemoteIceCandidate(

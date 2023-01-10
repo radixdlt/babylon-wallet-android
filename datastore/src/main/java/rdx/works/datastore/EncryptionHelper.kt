@@ -7,7 +7,6 @@ import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.spec.AlgorithmParameterSpec
@@ -60,7 +59,7 @@ fun encryptData(
 fun decryptData(
     input: ByteArray,
     encryptionKey: ByteArray? = null
-): String {
+): ByteArray {
     val secretKey: SecretKey = if (encryptionKey != null) {
         SecretKeySpec(encryptionKey, AES_ALGORITHM)
     } else {
@@ -72,9 +71,7 @@ fun decryptData(
         GCMParameterSpec(AUTH_TAG_LENGTH, input, 0, GCM_IV_LENGTH)
     cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmIv)
 
-    val plainText = cipher.doFinal(input, GCM_IV_LENGTH, input.size - GCM_IV_LENGTH)
-
-    return String(plainText, StandardCharsets.UTF_8)
+    return cipher.doFinal(input, GCM_IV_LENGTH, input.size - GCM_IV_LENGTH)
 }
 
 private fun getOrCreateSecretKey(): SecretKey {
