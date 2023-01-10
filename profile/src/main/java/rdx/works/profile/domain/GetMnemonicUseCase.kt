@@ -1,34 +1,27 @@
 package rdx.works.profile.domain
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.bip39.generateMnemonic
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
+import rdx.works.profile.datastore.EncryptedDataStore
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 // TODO provide encryption as this is sensitive
 class GetMnemonicUseCase @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
+    private val encryptedDataStore: EncryptedDataStore,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     /**
-     * We might have multiple mnemonics per factors so we need to read unique mnemonic specified by key (factorSourceId)
+     * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
-    private suspend fun readMnemonic(key: String): String = dataStore.data
-        .map { preferences ->
-            val mnemonicKey = stringPreferencesKey("mnemonic$key")
-            preferences[mnemonicKey] ?: ""
-        }.first()
+    private suspend fun readMnemonic(key: String): String =
+        encryptedDataStore.getString("mnemonic$key").first().orEmpty()
 
     /**
      * We save mnemonic under specific key which will be factorSourceId
@@ -36,12 +29,7 @@ class GetMnemonicUseCase @Inject constructor(
     private suspend fun saveMnemonic(
         key: String,
         mnemonic: String
-    ) {
-        dataStore.edit { preferences ->
-            val mnemonicKey = stringPreferencesKey("mnemonic$key")
-            preferences[mnemonicKey] = mnemonic
-        }
-    }
+    ) = encryptedDataStore.putString("mnemonic$key", mnemonic)
 
     /**
      * Key is empty by default when no profile has been generated before

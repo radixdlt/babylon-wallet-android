@@ -90,14 +90,18 @@ fun NavigationHost(
                 }
             )
         }
-        createAccountScreen(startDestination, onBackClick = {
-            navController.navigateUp()
-        }, onContinueClick = { accountId, requestSource ->
+        createAccountScreen(
+            startDestination,
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onContinueClick = { accountId, requestSource ->
                 navController.createAccountConfirmationScreen(
                     accountId,
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
-            })
+            }
+        )
         createAccountConfirmationScreen(
             onNavigateToWallet = {
                 navController.popBackStack(Screen.WalletDestination.route, inclusive = false)

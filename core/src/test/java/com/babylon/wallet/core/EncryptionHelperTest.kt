@@ -1,14 +1,13 @@
-package rdx.works.peerdroid
+package com.babylon.wallet.core
 
-import okio.ByteString.Companion.decodeHex
-import okio.ByteString.Companion.toByteString
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.peerdroid.helpers.decryptWithAes
-import rdx.works.peerdroid.helpers.encryptWithAes
+import rdx.works.core.decryptData
+import rdx.works.core.encryptData
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets.UTF_8
 
-class CryptoHelperTest {
+class EncryptionHelperTest {
 
     private val encryptedMessageInHex = "6ea80ead36e3fc4f1ad75134776c26534e73086e93f6b3cd7fdbbe390ed428b5c2f0150fd3f16c928e968497060b39ec61660704"
     private val expectedDecryptedMessage = "Hello Android from Swift"
@@ -18,18 +17,19 @@ class CryptoHelperTest {
         val expectedEncryptionKeyHex = "abababababababababababababababababababababababababababababababab"
 
         val encryptionKeyData = getEncryptionKeyData()
-        val encryptionKeyHex = encryptionKeyData.toByteString().hex()
+
+        val encryptionKeyHex = encryptionKeyData.toByteArray().toHexString()
 
         Assert.assertEquals(expectedEncryptionKeyHex, encryptionKeyHex)
 
         val encryptionKeyByteArray = encryptionKeyData.array()
 
-        val actualDecryptedMessage = decryptWithAes(
-            input = encryptedMessageInHex.decodeHex().toByteArray(),
+        val actualDecryptedMessage = decryptData(
+            input = encryptedMessageInHex.decodeHex(),
             encryptionKey = encryptionKeyByteArray
         )
 
-        Assert.assertEquals(expectedDecryptedMessage, actualDecryptedMessage)
+        Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage, UTF_8))
     }
 
     @Test
@@ -37,12 +37,12 @@ class CryptoHelperTest {
         val encryptionKeyData = getEncryptionKeyData()
         val encryptionKeyByteArray = encryptionKeyData.array()
 
-        val encryptedMessage1 = encryptWithAes(
+        val encryptedMessage1 = encryptData(
             input = expectedDecryptedMessage.toByteArray(),
             encryptionKey = encryptionKeyByteArray
         )
 
-        val encryptedMessage2 = encryptWithAes(
+        val encryptedMessage2 = encryptData(
             input = expectedDecryptedMessage.toByteArray(),
             encryptionKey = encryptionKeyByteArray
         )
@@ -57,4 +57,20 @@ class CryptoHelperTest {
         }
         return byteBuffer
     }
+
+    private fun ByteBuffer.toByteArray(): ByteArray {
+        val copy = ByteArray(remaining())
+        get(copy)
+        return copy
+    }
+
+    private fun String.decodeHex(): ByteArray {
+        check(length % 2 == 0) { "Must have an even length" }
+
+        return chunked(2)
+            .map { it.toInt(16).toByte() }
+            .toByteArray()
+    }
+
+    private fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 }

@@ -2,16 +2,10 @@
 
 package rdx.works.profile.data.repository
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.model.PrivateKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -27,10 +21,10 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.notaryFactorSource
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
+import rdx.works.profile.datastore.EncryptedDataStore
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.domain.GetMnemonicUseCase
-import java.io.IOException
 import javax.inject.Inject
 
 // TODO will have to add encryption
@@ -51,43 +45,28 @@ interface ProfileRepository {
 }
 
 class ProfileRepositoryImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
+    private val encryptedDataStore: EncryptedDataStore,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val getMnemonicUseCase: GetMnemonicUseCase,
 ) : ProfileRepository {
 
-    override val p2pClient: Flow<P2PClient?> = dataStore.data.catch { exception ->
-        if (exception is IOException) {
-            emit(emptyPreferences())
-        } else {
-            throw exception
-        }
-    }.map { preferences ->
-        val profileJsonString = preferences[PROFILE_PREFERENCES_KEY] ?: ""
-        if (profileJsonString.isNotEmpty()) {
-            val profileSnapshot = Json.decodeFromString<ProfileSnapshot>(profileJsonString)
-            profileSnapshot.toProfile().appPreferences.p2pClients.firstOrNull()
-        } else { // profile doesn't exist
-            null
-        }
-    }
-
-    override val profileSnapshot: Flow<ProfileSnapshot?> = dataStore.data
-        .map { preferences ->
-            val profileContent = preferences[PROFILE_PREFERENCES_KEY] ?: ""
-            if (profileContent.isEmpty()) {
+    override val profileSnapshot: Flow<ProfileSnapshot?> =
+        encryptedDataStore.getString(PROFILE_PREFERENCES_KEY).map { profileContent ->
+            profileContent?.let { profile ->
+                Json.decodeFromString<ProfileSnapshot>(profile)
+            } ?: run {
                 null
-            } else {
-                Json.decodeFromString<ProfileSnapshot>(profileContent)
             }
         }
+
+    override val p2pClient: Flow<P2PClient?> = profileSnapshot.map { snapshot ->
+        snapshot?.toProfile()?.appPreferences?.p2pClients?.firstOrNull()
+    }
 
     override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {
         withContext(defaultDispatcher) {
             val profileContent = Json.encodeToString(profileSnapshot)
-            dataStore.edit { preferences ->
-                preferences[PROFILE_PREFERENCES_KEY] = profileContent
-            }
+            encryptedDataStore.putBytes(PROFILE_PREFERENCES_KEY, profileContent.toByteArray())
         }
     }
 
@@ -188,6 +167,6 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private val PROFILE_PREFERENCES_KEY = stringPreferencesKey("profile_preferences_key")
+        private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
     }
 }

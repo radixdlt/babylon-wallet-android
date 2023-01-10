@@ -71,12 +71,14 @@ class CreateAccountViewModel @Inject constructor(
                 hasProfile = hasProfile
             )
 
-            sendEvent(
-                CreateAccountEvent.Complete(
-                    accountId = accountId,
-                    args.requestSource
+            if (hasProfile) {
+                sendEvent(
+                    CreateAccountEvent.Complete(
+                        accountId = accountId,
+                        args.requestSource
+                    )
                 )
-            )
+            }
         }
     }
 
