@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import rdx.works.datastore.EncryptedDataStore
+import rdx.works.profile.datastore.EncryptedDataStore
 import javax.inject.Singleton
 
 @Module

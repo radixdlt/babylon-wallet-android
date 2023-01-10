@@ -12,7 +12,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.datastore.EncryptedDataStore
 import rdx.works.profile.data.extensions.setNetworkAndGateway
 import rdx.works.profile.data.extensions.signerPrivateKey
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -22,6 +21,7 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.notaryFactorSource
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
+import rdx.works.profile.datastore.EncryptedDataStore
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.domain.GetMnemonicUseCase

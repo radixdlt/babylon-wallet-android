@@ -1,4 +1,4 @@
-package rdx.works.datastore
+package rdx.works.core
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties.BLOCK_MODE_GCM

@@ -6,8 +6,8 @@ import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.datastore.EncryptedDataStore
 import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
+import rdx.works.profile.datastore.EncryptedDataStore
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 

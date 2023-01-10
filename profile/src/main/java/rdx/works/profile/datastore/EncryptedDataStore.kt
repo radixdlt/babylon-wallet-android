@@ -1,4 +1,4 @@
-package rdx.works.datastore
+package rdx.works.profile.datastore
 
 import android.content.Context
 import android.util.Base64
@@ -11,6 +11,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import rdx.works.core.decryptData
+import rdx.works.core.encryptData
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 

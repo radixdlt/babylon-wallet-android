@@ -43,9 +43,10 @@ dependencies {
     kapt 'com.google.dagger:hilt-android-compiler:2.44.2'
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
+    implementation project(path: ':core')
 
     // Datastore
-    implementation project(path: ':datastore')
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
 
     implementation 'com.radixdlt:slip10:60ebe566'
     implementation 'com.radixdlt:kotlin-engine-toolkit:1.9.0-snapshot'

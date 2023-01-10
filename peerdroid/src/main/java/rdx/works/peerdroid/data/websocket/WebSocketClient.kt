@@ -21,8 +21,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import okio.ByteString.Companion.decodeHex
-import rdx.works.datastore.decryptData
-import rdx.works.datastore.encryptData
+import rdx.works.core.decryptData
+import rdx.works.core.encryptData
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
