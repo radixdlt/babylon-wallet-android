@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -32,10 +33,13 @@ class MainViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
-    val state = preferencesManager.showOnboarding.map { showOnboarding ->
+    val state = combine(
+        preferencesManager.showOnboarding,
+        profileRepository.profileSnapshot
+    ) { showOnboarding, profileSnapshot ->
         MainUiState(
             loading = false,
-            hasProfile = profileRepository.readProfileSnapshot() != null,
+            hasProfile = profileSnapshot != null,
             showOnboarding = showOnboarding
         )
     }.stateIn(

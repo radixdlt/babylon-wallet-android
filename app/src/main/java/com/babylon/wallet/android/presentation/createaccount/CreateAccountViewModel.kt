@@ -76,10 +76,6 @@ class CreateAccountViewModel @Inject constructor(
                         args.requestSource
                     )
                 )
-            } else {
-                sendEvent(
-                    CreateAccountEvent.NavigateToWallet
-                )
             }
         }
     }
@@ -103,5 +99,4 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
         val accountId: String,
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
-    object NavigateToWallet : CreateAccountEvent
 }
