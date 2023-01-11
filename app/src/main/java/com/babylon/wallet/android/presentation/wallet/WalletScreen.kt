@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -86,7 +87,7 @@ private fun WalletScreenContent(
     error: UiMessage?,
     onMessageShown: () -> Unit,
 ) {
-    Box(modifier = modifier) {
+    Box(modifier = modifier.navigationBarsPadding()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -144,7 +145,7 @@ private fun WalletAccountList(
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
             Text(
                 text = stringResource(id = R.string.home_welcome_text),
@@ -198,19 +199,13 @@ private fun WalletAccountList(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
         item {
-            Column(
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.create_new_account),
+                onClick = onAccountCreationClick,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingDefault),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                RadixSecondaryButton(
-                    text = stringResource(id = R.string.create_new_account),
-                    onClick = onAccountCreationClick,
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                )
-            }
+                    .fillMaxWidth(0.8f)
+                    .padding(bottom = RadixTheme.dimensions.paddingLarge)
+            )
         }
     }
 }
