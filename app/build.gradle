@@ -129,7 +129,7 @@ dependencies {
 
     //Kotlin toolkit
     implementation 'com.radixdlt:kotlin-engine-toolkit:1.9.1-snapshot'
-    implementation 'com.radixdlt:slip10:60ebe566'
+    implementation 'com.radixdlt:slip10-android:1.1-snapshot'
 
     //Retrofit & OkHttp
     implementation platform('com.squareup.okhttp3:okhttp-bom:4.10.0')
