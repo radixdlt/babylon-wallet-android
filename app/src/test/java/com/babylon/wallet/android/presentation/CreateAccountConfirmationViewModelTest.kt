@@ -44,35 +44,38 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         whenever(savedStateHandle.get<String>(ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
-        coEvery { profileRepository.getAccounts() } returns listOf(Account(
-            entityAddress = EntityAddress(accountId),
-            appearanceID = 123,
-            derivationPath = "m/1'/1'/1'/1'/1'/1'",
-            displayName = accountName,
-            index = 0,
-            securityState = SecurityState.Unsecured(
-                discriminator = "dsics",
-                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                    genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath("few", "disc"),
-                        factorInstanceID = "IDIDDIIDD",
-                        factorSourceReference = FactorSourceReference(
-                            factorSourceID = "f32f3",
-                            factorSourceKind = "kind"
-                        ),
-                        initializationDate = "Date1",
-                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+        coEvery { profileRepository.getAccounts() } returns listOf(
+            Account(
+                entityAddress = EntityAddress(accountId),
+                appearanceID = 123,
+                derivationPath = "m/1'/1'/1'/1'/1'/1'",
+                displayName = accountName,
+                index = 0,
+                securityState = SecurityState.Unsecured(
+                    discriminator = "dsics",
+                    unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                        genesisFactorInstance = FactorInstance(
+                            derivationPath = DerivationPath("few", "disc"),
+                            factorInstanceID = "IDIDDIIDD",
+                            factorSourceReference = FactorSourceReference(
+                                factorSourceID = "f32f3",
+                                factorSourceKind = "kind"
+                            ),
+                            initializationDate = "Date1",
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                        )
                     )
                 )
             )
-        ))
+        )
     }
 
     @Test
     fun `given profile did not exist, when view model init, verify correct account state and go next`() = runTest {
         // given
         whenever(savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE)).thenReturn(
-            CreateAccountRequestSource.FirstTime)
+            CreateAccountRequestSource.FirstTime
+        )
         val viewModel = vm.value
         val event = mutableListOf<CreateAccountConfirmationEvent>()
 
@@ -100,7 +103,8 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
     @Test
     fun `given profile did exist, when view model init, verify correct account state and dismiss`() = runTest {
         whenever(savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE)).thenReturn(
-            CreateAccountRequestSource.Wallet)
+            CreateAccountRequestSource.Wallet
+        )
         val event = mutableListOf<CreateAccountConfirmationEvent>()
         val viewModel = vm.value
         viewModel.accountConfirmed()

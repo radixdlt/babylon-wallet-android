@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
-import com.babylon.wallet.android.presentation.settings.addconnection.SettingsAddConnectionScreen
+import com.babylon.wallet.android.presentation.settings.addconnection.settingsConnectionScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.google.accompanist.navigation.animation.composable
 
@@ -23,7 +23,9 @@ fun NavGraphBuilder.settingsNavGraph(
         route = Screen.SettingsDestination.route
     ) {
         settingsAll(navController)
-        settingsAddConnection(navController)
+        settingsConnectionScreen(onBackClick = {
+            navController.popBackStack()
+        })
         settingsGatewayEdit(navController)
     }
 }
@@ -40,36 +42,19 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             },
             onSettingClick = { item ->
                 when (item) {
-                    SettingSectionItem.AddConnection -> {
-                        navController.navigate(Screen.SettingsAddConnectionDestination.route)
+                    SettingSectionItem.Connection -> {
+                        navController.settingsConnectionScreen(scanQr = true)
                     }
                     SettingSectionItem.DeleteAll -> {}
-                    SettingSectionItem.EditGateway -> {
+                    SettingSectionItem.Gateway -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
                     SettingSectionItem.InspectProfile -> {}
+                    SettingSectionItem.LinkedConnector -> {
+                        navController.settingsConnectionScreen()
+                    }
                 }
             }
-        )
-    }
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-private fun NavGraphBuilder.settingsAddConnection(navController: NavController) {
-    composable(
-        route = Screen.SettingsAddConnectionDestination.route,
-        enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
-        },
-        exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-        }
-    ) {
-        SettingsAddConnectionScreen(
-            viewModel = hiltViewModel(),
-            onBackClick = {
-                navController.popBackStack()
-            },
         )
     }
 }

@@ -12,8 +12,8 @@ import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.Companion.toWebRtcSessionDescription
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonArrayPayload
-import rdx.works.peerdroid.helpers.toHexString
 import rdx.works.peerdroid.domain.BasePackage
+import rdx.works.peerdroid.helpers.toHexString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -89,6 +89,7 @@ class DataModelMappersTest {
     }
 
     private val hashInHex = "6ea80ead36e3fc4f1ad75134776c26534e73086e93f6b3cd7fdbbe390ed428b5c2f0150fd3f16c928e968497060b39ec61660704"
+
     @Test
     fun `assert mapping a PackageMessageDto object to MetadataPackage is correct`() {
         val expected = BasePackage.MetadataPackage(

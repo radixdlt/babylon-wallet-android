@@ -9,7 +9,6 @@ import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
@@ -18,14 +17,17 @@ import rdx.works.profile.data.model.pernetwork.createNewPersona
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.data.utils.personasPerNetworkCount
+import rdx.works.profile.derivation.model.NetworkId
 import java.io.File
 
 class ProfileTest {
 
     @Test
     fun `test profile generation`() {
-        val mnemonic = MnemonicWords("bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate")
+        val mnemonic = MnemonicWords(
+            "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+        )
 
         val networkAndGateway = NetworkAndGateway.hammunet
         val profile = Profile.init(
@@ -93,8 +95,10 @@ class ProfileTest {
 
         val hammunetProfile = Json.decodeFromString<Profile>(hammunetProfileTestVector)
 
-        val mnemonic = MnemonicWords("bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate")
+        val mnemonic = MnemonicWords(
+            "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+        )
 
         val networkAndGateway = NetworkAndGateway.hammunet
         val networkId = networkAndGateway.network.networkId()
@@ -127,7 +131,6 @@ class ProfileTest {
             account = thirdAccount,
             networkID = networkId
         )
-
 
         val firstPersona = createNewPersona(
             displayName = "Mrs Incognito",
@@ -174,25 +177,35 @@ class ProfileTest {
         Assert.assertEquals(profile.appPreferences.networkAndGateway, hammunetProfile.appPreferences.networkAndGateway)
 
         // Display
-        Assert.assertEquals(profile.appPreferences.display.fiatCurrencyPriceTarget,
-            hammunetProfile.appPreferences.display.fiatCurrencyPriceTarget)
+        Assert.assertEquals(
+            profile.appPreferences.display.fiatCurrencyPriceTarget,
+            hammunetProfile.appPreferences.display.fiatCurrencyPriceTarget
+        )
 
         // P2P clients
-        Assert.assertEquals(profile.appPreferences.p2pClients.count(), hammunetProfile.appPreferences.p2pClients.count())
-        Assert.assertEquals(profile.appPreferences.p2pClients.first().connectionPassword,
-            hammunetProfile.appPreferences.p2pClients.first().connectionPassword)
-        Assert.assertEquals(profile.appPreferences.p2pClients.first().displayName,
-            hammunetProfile.appPreferences.p2pClients.first().displayName)
+        Assert.assertEquals(
+            profile.appPreferences.p2pClients.count(),
+            hammunetProfile.appPreferences.p2pClients.count()
+        )
+        Assert.assertEquals(
+            profile.appPreferences.p2pClients.first().connectionPassword,
+            hammunetProfile.appPreferences.p2pClients.first().connectionPassword
+        )
+        Assert.assertEquals(
+            profile.appPreferences.p2pClients.first().displayName,
+            hammunetProfile.appPreferences.p2pClients.first().displayName
+        )
 
         // Factor Sources
         Assert.assertEquals(
             profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.count(),
-            hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.count())
+            hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.count()
+        )
 
         Assert.assertEquals(
             profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID,
-            hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID)
-
+            hammunetProfile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID
+        )
 
         // Per Network count
         Assert.assertEquals(profile.perNetwork.count(), hammunetProfile.perNetwork.count())
@@ -201,186 +214,273 @@ class ProfileTest {
         Assert.assertEquals(profile.perNetwork.first().networkID, hammunetProfile.perNetwork.first().networkID)
 
         // Connected Dapps
-        Assert.assertEquals(profile.perNetwork.first().connectedDapps.count(),
-            hammunetProfile.perNetwork.first().connectedDapps.count())
+        Assert.assertEquals(
+            profile.perNetwork.first().connectedDapps.count(),
+            hammunetProfile.perNetwork.first().connectedDapps.count()
+        )
 
-
-        /////// Accounts
-        Assert.assertEquals(profile.perNetwork.first().accounts.count(),
-            hammunetProfile.perNetwork.first().accounts.count())
-
-        // 1st
-        Assert.assertEquals(profile.perNetwork.first().accounts.first().entityAddress.address,
-            hammunetProfile.perNetwork.first().accounts.first().entityAddress.address)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first().displayName,
-            hammunetProfile.perNetwork.first().accounts.first().displayName)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first().derivationPath,
-            hammunetProfile.perNetwork.first().accounts.first().derivationPath)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first().index,
-            hammunetProfile.perNetwork.first().accounts.first().index)
-
-        // Security State
-        Assert.assertEquals(profile.perNetwork.first().accounts.first().securityState.discriminator,
-            hammunetProfile.perNetwork.first().accounts.first().securityState.discriminator)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
-            hammunetProfile.perNetwork.first().accounts.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
-            hammunetProfile.perNetwork.first().accounts.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
-            hammunetProfile.perNetwork.first().accounts.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
-            hammunetProfile.perNetwork.first().accounts.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
-            hammunetProfile.perNetwork.first().accounts.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
-
-        //2nd
-        Assert.assertEquals(profile.perNetwork.first().accounts[1].entityAddress.address,
-            hammunetProfile.perNetwork.first().accounts[1].entityAddress.address)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1].displayName,
-            hammunetProfile.perNetwork.first().accounts[1].displayName)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1].derivationPath,
-            hammunetProfile.perNetwork.first().accounts[1].derivationPath)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1].index,
-            hammunetProfile.perNetwork.first().accounts[1].index)
-
-        // Security State
-        Assert.assertEquals(profile.perNetwork.first().accounts[1].securityState.discriminator,
-            hammunetProfile.perNetwork.first().accounts[1].securityState.discriminator)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
-            hammunetProfile.perNetwork.first().accounts[1]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
-            hammunetProfile.perNetwork.first().accounts[1]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
-            hammunetProfile.perNetwork.first().accounts[1]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[1]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
-            hammunetProfile.perNetwork.first().accounts[1]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
-
-        //3rd
-        Assert.assertEquals(profile.perNetwork.first().accounts[2].entityAddress.address,
-            hammunetProfile.perNetwork.first().accounts[2].entityAddress.address)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2].displayName,
-            hammunetProfile.perNetwork.first().accounts[2].displayName)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2].derivationPath,
-            hammunetProfile.perNetwork.first().accounts[2].derivationPath)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2].index,
-            hammunetProfile.perNetwork.first().accounts[2].index)
-
-        // Security State
-        Assert.assertEquals(profile.perNetwork.first().accounts[2].securityState.discriminator,
-            hammunetProfile.perNetwork.first().accounts[2].securityState.discriminator)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
-            hammunetProfile.perNetwork.first().accounts[2]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
-            hammunetProfile.perNetwork.first().accounts[2]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
-            hammunetProfile.perNetwork.first().accounts[2]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID)
-
-        Assert.assertEquals(profile.perNetwork.first().accounts[2]
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
-            hammunetProfile.perNetwork.first().accounts[2]
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
-
-
-        /////// Personas
-        Assert.assertEquals(profile.perNetwork.first().personas.count(),
-            hammunetProfile.perNetwork.first().personas.count())
+        // ///// Accounts
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.count(),
+            hammunetProfile.perNetwork.first().accounts.count()
+        )
 
         // 1st
-        Assert.assertEquals(profile.perNetwork.first().personas.first().index,
-            hammunetProfile.perNetwork.first().personas.first().index)
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first().entityAddress.address,
+            hammunetProfile.perNetwork.first().accounts.first().entityAddress.address
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first().entityAddress.address,
-            hammunetProfile.perNetwork.first().personas.first().entityAddress.address)
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first().displayName,
+            hammunetProfile.perNetwork.first().accounts.first().displayName
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first().derivationPath,
-            hammunetProfile.perNetwork.first().personas.first().derivationPath)
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first().derivationPath,
+            hammunetProfile.perNetwork.first().accounts.first().derivationPath
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first().displayName,
-            hammunetProfile.perNetwork.first().personas.first().displayName)
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first().index,
+            hammunetProfile.perNetwork.first().accounts.first().index
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first().fields[0].kind,
-            hammunetProfile.perNetwork.first().personas.first().fields[0].kind)
-        Assert.assertEquals(profile.perNetwork.first().personas.first().fields[0].value,
-            hammunetProfile.perNetwork.first().personas.first().fields[0].value)
+        // Security State
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first().securityState.discriminator,
+            hammunetProfile.perNetwork.first().accounts.first().securityState.discriminator
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first().fields[1].kind,
-            hammunetProfile.perNetwork.first().personas.first().fields[1].kind)
-        Assert.assertEquals(profile.perNetwork.first().personas.first().fields[1].value,
-            hammunetProfile.perNetwork.first().personas.first().fields[1].value)
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
+            hammunetProfile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first().securityState.discriminator,
-            hammunetProfile.perNetwork.first().personas.first().securityState.discriminator)
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
+            hammunetProfile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
+            hammunetProfile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
+            hammunetProfile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
+            hammunetProfile.perNetwork.first().accounts.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID
+        )
+
+        // 2nd
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1].entityAddress.address,
+            hammunetProfile.perNetwork.first().accounts[1].entityAddress.address
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1].displayName,
+            hammunetProfile.perNetwork.first().accounts[1].displayName
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1].derivationPath,
+            hammunetProfile.perNetwork.first().accounts[1].derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1].index,
+            hammunetProfile.perNetwork.first().accounts[1].index
+        )
+
+        // Security State
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1].securityState.discriminator,
+            hammunetProfile.perNetwork.first().accounts[1].securityState.discriminator
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
+            hammunetProfile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
+            hammunetProfile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
+            hammunetProfile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
+            hammunetProfile.perNetwork.first().accounts[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind
+        )
+
+        // 3rd
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2].entityAddress.address,
+            hammunetProfile.perNetwork.first().accounts[2].entityAddress.address
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2].displayName,
+            hammunetProfile.perNetwork.first().accounts[2].displayName
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2].derivationPath,
+            hammunetProfile.perNetwork.first().accounts[2].derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2].index,
+            hammunetProfile.perNetwork.first().accounts[2].index
+        )
+
+        // Security State
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2].securityState.discriminator,
+            hammunetProfile.perNetwork.first().accounts[2].securityState.discriminator
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
+            hammunetProfile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
+            hammunetProfile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
+            hammunetProfile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
+            hammunetProfile.perNetwork.first().accounts[2]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind
+        )
+
+        // ///// Personas
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.count(),
+            hammunetProfile.perNetwork.first().personas.count()
+        )
+
+        // 1st
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().index,
+            hammunetProfile.perNetwork.first().personas.first().index
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().entityAddress.address,
+            hammunetProfile.perNetwork.first().personas.first().entityAddress.address
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().derivationPath,
+            hammunetProfile.perNetwork.first().personas.first().derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().displayName,
+            hammunetProfile.perNetwork.first().personas.first().displayName
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().fields[0].kind,
+            hammunetProfile.perNetwork.first().personas.first().fields[0].kind
+        )
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().fields[0].value,
+            hammunetProfile.perNetwork.first().personas.first().fields[0].value
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().fields[1].kind,
+            hammunetProfile.perNetwork.first().personas.first().fields[1].kind
+        )
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().fields[1].value,
+            hammunetProfile.perNetwork.first().personas.first().fields[1].value
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first().securityState.discriminator,
+            hammunetProfile.perNetwork.first().personas.first().securityState.discriminator
+        )
+
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
             hammunetProfile.perNetwork.first().personas.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID)
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
             hammunetProfile.perNetwork.first().personas.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
             hammunetProfile.perNetwork.first().personas.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey)
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
             hammunetProfile.perNetwork.first().personas.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind)
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind
+        )
 
-        Assert.assertEquals(profile.perNetwork.first().personas.first()
-            .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
+        Assert.assertEquals(
+            profile.perNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
             hammunetProfile.perNetwork.first().personas.first()
-                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID)
-
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID
+        )
 
         // Profile version
         Assert.assertEquals(profile.version, hammunetProfile.version)

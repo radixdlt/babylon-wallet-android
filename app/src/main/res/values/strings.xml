@@ -59,10 +59,9 @@
     <string name="add_connection">Add Connection</string>
     <string name="delete_connection">Delete Connection</string>
     <string name="delete_all">Delete Wallet Data</string>
-    <string name="edit_gateway">Edit Gateway API Endpoint</string>
+    <string name="network_gateway">Network Gateway</string>
     <string name="inspect_profile">Inspect Profile</string>
     <string name="manage_connections">Manage Connections</string>
-    <string name="new_connection">New Connection</string>
     <string name="enter_the_connection_id">Enter the connection id</string>
     <string name="enter_the_display_name">Enter the display name</string>
     <string name="edit_gateway_api_url">Edit Gateway API URL</string>
@@ -96,4 +95,10 @@
     <string name="tx_fail_rejected_by_user">Failed to convert transaction manifest</string>
     <string name="tx_fail_submit">Failed to submit transaction</string>
     <string name="tx_fail_network">Wrong network</string>
+    <string name="link_your_wallet">Link your Wallet to a Desktop Browser</string>
+    <string name="scan_the_qr_code">Scan the QR code in the Radix Wallet Connector extension</string>
+    <string name="link_to_connector">Link to Connector</string>
+    <string name="linked_connector">Linked Connector</string>
+    <string name="version_and_build">Version: %s build %d</string>
+    <string name="your_radix_wallet_is_linked">Your Radix Wallet is linked to the following desktop browser using the Connector browser extension.</string>
 </resources>

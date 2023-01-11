@@ -6,16 +6,12 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -24,31 +20,18 @@ import java.util.concurrent.Executors
 fun CameraPreview(
     modifier: Modifier,
     onQrCodeDetected: (qrCode: String) -> Unit,
-    onBackClick: () -> Unit
 ) {
-    Column(
+    BarcodePreviewView(
         modifier = modifier,
-        horizontalAlignment = Alignment.Start
-    ) {
-        RadixCenteredTopAppBar(
-            title = "",
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
-        )
-
-        BarcodePreviewView(
-            onQrCodeDetected = onQrCodeDetected
-        )
-    }
-
-    // Disable back button
+        onQrCodeDetected = onQrCodeDetected
+    )
     BackHandler(enabled = true) { }
 }
 
 @Composable
 fun BarcodePreviewView(
     onQrCodeDetected: (qrCode: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
 

@@ -55,7 +55,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as BasePackage.MetadataPackage
 
-        Assert.assertEquals(metadataPackage.chunkCount, byteArraySize/chunkSize)
+        Assert.assertEquals(metadataPackage.chunkCount, byteArraySize / chunkSize)
     }
 
     @Test

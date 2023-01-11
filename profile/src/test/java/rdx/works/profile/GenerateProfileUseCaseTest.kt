@@ -40,12 +40,11 @@ class GenerateProfileUseCaseTest {
 
     @Test
     fun `given profile already exists, when generate profile called, return existing profile`() {
-
         testScope.runTest {
             // given
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking { invoke() } doReturn "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                        "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             }
 
             val profile = Profile(
@@ -115,16 +114,18 @@ class GenerateProfileUseCaseTest {
 
     @Test
     fun `given profile does not exist, when generating one, verify correct data generated from mnemonic`() {
-
         testScope.runTest {
             val mnemonicPhrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking { invoke() } doReturn mnemonicPhrase
             }
 
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
-            val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, NetworkAndGateway.nebunet.network.networkId())
+            val expectedFactorInstanceId = generateInstanceId(
+                mnemonicPhrase,
+                NetworkAndGateway.nebunet.network.networkId()
+            )
 
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
@@ -135,19 +136,20 @@ class GenerateProfileUseCaseTest {
 
             Assert.assertEquals(
                 profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                    .first().factorSourceID, expectedFactorSourceId
+                    .first().factorSourceID,
+                expectedFactorSourceId
             )
 
             Assert.assertEquals(
                 profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
-                    .genesisFactorInstance.factorInstanceID, expectedFactorInstanceId
+                    .genesisFactorInstance.factorInstanceID,
+                expectedFactorInstanceId
             )
         }
     }
 
     @Test
     fun `given profile does not exist, when generating one, verify correct data generated from other mnemonic`() {
-
         testScope.runTest {
             val mnemonicPhrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
@@ -167,12 +169,14 @@ class GenerateProfileUseCaseTest {
 
             Assert.assertEquals(
                 profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                    .first().factorSourceID, expectedFactorSourceId
+                    .first().factorSourceID,
+                expectedFactorSourceId
             )
 
             Assert.assertEquals(
                 profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
-                    .genesisFactorInstance.factorInstanceID, expectedFactorInstanceId
+                    .genesisFactorInstance.factorInstanceID,
+                expectedFactorInstanceId
             )
         }
     }
@@ -194,5 +198,4 @@ class GenerateProfileUseCaseTest {
                 ).path()
             ).hashToFactorId()
     }
-
 }

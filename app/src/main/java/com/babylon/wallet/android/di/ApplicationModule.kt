@@ -5,15 +5,11 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.babylon.wallet.android.data.repository.MainViewRepositoryImpl
-import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.MainViewRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Singleton
 
 @Module
@@ -23,12 +19,6 @@ object ApplicationModule {
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
         name = "rdx_datastore"
     )
-
-    @Provides
-    @Singleton
-    fun provideMainViewRepository(
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
-    ): MainViewRepository = MainViewRepositoryImpl(ioDispatcher)
 
     @Provides
     @Singleton

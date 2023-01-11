@@ -22,7 +22,7 @@ class PeerdroidConnectorTest {
     private lateinit var subject: PeerdroidConnector
 
     @Test
-    fun `if something fails in WebRTC manager then return an error`(){
+    fun `if something fails in WebRTC manager then return an error`() {
         fakeWebRtcManager = FakeWebRtcManager(testDispatcher, withError = true)
         fakeWebSocketClient = FakeWebSocketClient(testDispatcher)
 

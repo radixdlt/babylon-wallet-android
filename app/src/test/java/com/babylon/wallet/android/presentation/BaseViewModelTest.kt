@@ -21,5 +21,4 @@ abstract class BaseViewModelTest<T : ViewModel> {
     open fun setUp() {
         vm = lazy { initVM() }
     }
-
 }

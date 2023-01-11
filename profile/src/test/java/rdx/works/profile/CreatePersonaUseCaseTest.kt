@@ -20,8 +20,8 @@ import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.EntityAddress
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.SecurityState

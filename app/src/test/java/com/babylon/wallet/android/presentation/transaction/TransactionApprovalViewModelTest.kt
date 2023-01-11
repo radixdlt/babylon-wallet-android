@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.DAppMessenger
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import io.mockk.coEvery
@@ -52,25 +52,31 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         coEvery { profileRepository.getCurrentNetworkId() } returns NetworkId.Nebunet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery {
-            dAppMessenger.sendTransactionWriteResponseSuccess(sampleRequestId,
-                sampleTxId)
+            dAppMessenger.sendTransactionWriteResponseSuccess(
+                sampleRequestId,
+                sampleTxId
+            )
         } returns Result.Success(Unit)
         coEvery {
-            dAppMessenger.sendTransactionWriteResponseFailure(sampleRequestId,
+            dAppMessenger.sendTransactionWriteResponseFailure(
+                sampleRequestId,
                 any(),
-                any())
+                any()
+            )
         } returns Result.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
     }
 
     override fun initVM(): TransactionApprovalViewModel {
-        return TransactionApprovalViewModel(transactionClient,
+        return TransactionApprovalViewModel(
+            transactionClient,
             incomingRequestRepository,
             profileRepository,
             deviceSecurityHelper,
             dAppMessenger,
             TestScope(),
-            savedStateHandle)
+            savedStateHandle
+        )
     }
 
     @Test
@@ -101,9 +107,11 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseFailure(sampleRequestId,
+            dAppMessenger.sendTransactionWriteResponseFailure(
+                sampleRequestId,
                 capture(errorSlot),
-                any())
+                any()
+            )
         }
         assert(errorSlot.captured == WalletErrorType.WrongNetwork)
         assert(vm.oneOffEvent.first() is TransactionApprovalEvent.NavigateBack)
@@ -111,20 +119,24 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Error(TransactionApprovalException(
-            TransactionApprovalFailure.SubmitNotarizedTransaction))
+        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Error(
+            TransactionApprovalException(
+                TransactionApprovalFailure.SubmitNotarizedTransaction
+            )
+        )
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction()
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseFailure(sampleRequestId,
+            dAppMessenger.sendTransactionWriteResponseFailure(
+                sampleRequestId,
                 capture(errorSlot),
-                any())
+                any()
+            )
         }
         assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)
         assert(vm.state.error != null)
     }
-
 }

@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.MainViewRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
@@ -24,7 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val mainViewRepository: MainViewRepository,
     private val clipboardManager: ClipboardManager,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileRepository: ProfileRepository
@@ -42,7 +40,6 @@ class WalletViewModel @Inject constructor(
     }
 
     private suspend fun loadResourceData() {
-        val wallet = mainViewRepository.getWallet()
         viewModelScope.launch {
             val result = getAccountResourcesUseCase()
             result.onError { error ->
@@ -50,7 +47,7 @@ class WalletViewModel @Inject constructor(
             }
             result.onValue { resourceList ->
                 _walletUiState.update { state ->
-                    state.copy(wallet = wallet, resources = resourceList.toPersistentList(), isLoading = false)
+                    state.copy(resources = resourceList.toPersistentList(), isLoading = false)
                 }
             }
         }
@@ -79,12 +76,6 @@ class WalletViewModel @Inject constructor(
 data class WalletUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
-    val wallet: WalletData? = null,
     val resources: ImmutableList<AccountResources> = persistentListOf(),
     val error: UiMessage? = null
-)
-
-data class WalletData(
-    val currency: String,
-    val amount: String
 )
