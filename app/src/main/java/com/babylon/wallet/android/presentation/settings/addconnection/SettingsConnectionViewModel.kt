@@ -151,3 +151,7 @@ data class SettingsConnectionUiState(
     val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,
 )
+
+enum class SettingsConnectionMode {
+    AddConnection, ShowDetails, ScanQr
+}
