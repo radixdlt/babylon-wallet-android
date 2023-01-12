@@ -41,6 +41,13 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
+      - name: Decode keystore credentials
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: keystore_file
+        with:
+          fileName: "debugPreview.jks"
+          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+
       - name: Build and distribute
         run: |
           if [ "$GROUPS" == "no" ]; then
@@ -58,3 +65,7 @@ jobs:
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}

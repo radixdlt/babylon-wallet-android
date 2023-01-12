@@ -10,8 +10,27 @@ plugins {
 
 apply from: "$rootDir/config/jacoco.gradle"
 
+def debugPropertiesFile = rootProject.file("keystore-development.properties")
+def debugKeystoreProperties = new Properties()
+debugKeystoreProperties.load(new FileInputStream(debugPropertiesFile))
+
 android {
     compileSdk rootProject.ext.compileSdk
+
+    signingConfigs {
+        debug {
+            keyAlias debugKeystoreProperties['keyAlias']
+            keyPassword debugKeystoreProperties['keyPassword']
+            storeFile file(debugKeystoreProperties['storeFile'])
+            storePassword debugKeystoreProperties['storePassword']
+        }
+        debugPreview {
+            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
+            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
+            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
+            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
+        }
+    }
 
     defaultConfig {
         applicationId "com.babylon.wallet.android"
