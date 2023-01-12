@@ -15,11 +15,9 @@ class GenerateProfileUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend operator fun invoke(
-        accountDisplayName: String
-    ): Profile {
-        profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
-            return profileSnapshot.toProfile()
+    suspend operator fun invoke(accountDisplayName: String): Profile {
+        profileRepository.readProfile()?.let { profile ->
+            return profile
         } ?: run {
             return withContext(defaultDispatcher) {
                 val mnemonic = getMnemonicUseCase()
@@ -32,7 +30,7 @@ class GenerateProfileUseCase @Inject constructor(
                     firstAccountDisplayName = accountDisplayName
                 )
 
-                profileRepository.saveProfileSnapshot(profile.snapshot())
+                profileRepository.saveProfile(profile)
 
                 profile
             }

@@ -13,12 +13,10 @@ class AddP2PClientUseCase @Inject constructor(
         displayName: String,
         connectionPassword: String
     ) {
-        val profileSnapshot = profileRepository.readProfileSnapshot()
-        checkNotNull(profileSnapshot) {
+        val profile = profileRepository.readProfile()
+        checkNotNull(profile) {
             "Profile does not exist"
         }
-
-        val profile = profileSnapshot.toProfile()
 
         val p2pClient = P2PClient.init(
             connectionPassword = connectionPassword,
@@ -31,6 +29,6 @@ class AddP2PClientUseCase @Inject constructor(
         )
 
         // Save updated profile
-        profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
+        profileRepository.saveProfile(updatedProfile)
     }
 }

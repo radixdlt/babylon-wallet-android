@@ -15,11 +15,10 @@ class GetAccountsUseCase @Inject constructor(
 ) {
 
     operator fun invoke(): Flow<List<AccountSlim>> {
-        return profileRepository.profileSnapshot
+        return profileRepository.profile
             .filterNotNull()
-            .map { profileSnapshot ->
-                profileSnapshot
-                    .toProfile()
+            .map { profile ->
+                profile
                     .getAccounts()
                     .map { account ->
                         AccountSlim(

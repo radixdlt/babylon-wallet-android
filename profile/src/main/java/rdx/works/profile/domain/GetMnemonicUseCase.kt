@@ -7,13 +7,12 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
-import rdx.works.profile.datastore.EncryptedDataStore
+import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
-// TODO provide encryption as this is sensitive
 class GetMnemonicUseCase @Inject constructor(
-    private val encryptedDataStore: EncryptedDataStore,
+    private val encryptedPreferencesManager: EncryptedPreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -21,7 +20,7 @@ class GetMnemonicUseCase @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     private suspend fun readMnemonic(key: String): String =
-        encryptedDataStore.getString("mnemonic$key").first().orEmpty()
+        encryptedPreferencesManager.getString("mnemonic$key").first().orEmpty()
 
     /**
      * We save mnemonic under specific key which will be factorSourceId
@@ -29,7 +28,7 @@ class GetMnemonicUseCase @Inject constructor(
     private suspend fun saveMnemonic(
         key: String,
         mnemonic: String
-    ) = encryptedDataStore.putString("mnemonic$key", mnemonic)
+    ) = encryptedPreferencesManager.putString("mnemonic$key", mnemonic)
 
     /**
      * Key is empty by default when no profile has been generated before

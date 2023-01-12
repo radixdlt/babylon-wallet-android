@@ -14,30 +14,28 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.extensions.setNetworkAndGateway
 import rdx.works.profile.data.extensions.signerPrivateKey
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.notaryFactorSource
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.datastore.EncryptedDataStore
+import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.domain.GetMnemonicUseCase
 import javax.inject.Inject
 
-// TODO will have to add encryption
 interface ProfileRepository {
 
-    suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot)
-
-    suspend fun readProfileSnapshot(): ProfileSnapshot?
+    suspend fun saveProfile(profile: Profile)
+    suspend fun readProfile(): Profile?
     val p2pClient: Flow<P2PClient?>
     suspend fun getCurrentNetworkId(): NetworkId
     suspend fun setNetworkAndGateway(newUrl: String, networkName: String)
     suspend fun hasAccountOnNetwork(newUrl: String, networkName: String): Boolean
-    val profileSnapshot: Flow<ProfileSnapshot?>
+    val profile: Flow<Profile?>
     suspend fun getCurrentNetworkBaseUrl(): String
     suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
     suspend fun getAccounts(): List<Account>
@@ -45,40 +43,40 @@ interface ProfileRepository {
 }
 
 class ProfileRepositoryImpl @Inject constructor(
-    private val encryptedDataStore: EncryptedDataStore,
+    private val encryptedPreferencesManager: EncryptedPreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val getMnemonicUseCase: GetMnemonicUseCase,
 ) : ProfileRepository {
 
-    override val profileSnapshot: Flow<ProfileSnapshot?> =
-        encryptedDataStore.getString(PROFILE_PREFERENCES_KEY).map { profileContent ->
+    override val profile: Flow<Profile?> =
+        encryptedPreferencesManager.getString(PROFILE_PREFERENCES_KEY).map { profileContent ->
             profileContent?.let { profile ->
-                Json.decodeFromString<ProfileSnapshot>(profile)
+                Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
             } ?: run {
                 null
             }
         }
 
-    override val p2pClient: Flow<P2PClient?> = profileSnapshot.map { snapshot ->
-        snapshot?.toProfile()?.appPreferences?.p2pClients?.firstOrNull()
+    override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
+        profile?.appPreferences?.p2pClients?.firstOrNull()
     }
 
-    override suspend fun saveProfileSnapshot(profileSnapshot: ProfileSnapshot) {
+    override suspend fun saveProfile(profile: Profile) {
         withContext(defaultDispatcher) {
-            val profileContent = Json.encodeToString(profileSnapshot)
-            encryptedDataStore.putBytes(PROFILE_PREFERENCES_KEY, profileContent.toByteArray())
+            val profileContent = Json.encodeToString(profile.snapshot())
+            encryptedPreferencesManager.putBytes(PROFILE_PREFERENCES_KEY, profileContent.toByteArray())
         }
     }
 
     override suspend fun setNetworkAndGateway(newUrl: String, networkName: String) {
-        readProfileSnapshot()?.toProfile()?.let { profile ->
+        readProfile()?.let { profile ->
             val updatedProfile = profile.setNetworkAndGateway(
                 NetworkAndGateway(
                     gatewayAPIEndpointURL = newUrl,
                     network = Network.allKnownNetworks().first { it.name == networkName }
                 )
             )
-            saveProfileSnapshot(updatedProfile.snapshot())
+            saveProfile(updatedProfile)
         }
     }
 
@@ -88,7 +86,7 @@ class ProfileRepositoryImpl @Inject constructor(
             gatewayAPIEndpointURL = newUrl,
             network = knownNetwork
         )
-        return readProfileSnapshot()?.toProfile()?.let { profile ->
+        return readProfile()?.let { profile ->
             profile.perNetwork.any { it.networkID == newNetworkAndGateway.network.id }
         } ?: false
     }
@@ -101,16 +99,14 @@ class ProfileRepositoryImpl @Inject constructor(
         return getNetworkAndGateway().gatewayAPIEndpointURL
     }
 
-    override suspend fun readProfileSnapshot(): ProfileSnapshot? {
-        return withContext(defaultDispatcher) {
-            profileSnapshot.firstOrNull()
-        }
+    override suspend fun readProfile(): Profile? {
+        return profile.firstOrNull()
     }
 
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
-        val profileSnapshot = readProfileSnapshot()
-        val accounts = getSignerAccountsForAddresses(profileSnapshot, addresses, networkId)
-        val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID
+        val profile = readProfile()
+        val accounts = getSignerAccountsForAddresses(profile, addresses, networkId)
+        val factorSourceId = profile?.notaryFactorSource()?.factorSourceID
         assert(factorSourceId != null)
         val mnemonic = getMnemonicUseCase(factorSourceId)
         assert(mnemonic.isNotEmpty())
@@ -124,20 +120,20 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPrivateKey(): PrivateKey {
-        val profileSnapshot = readProfileSnapshot()
+        val profile = readProfile()
         val networkId = getCurrentNetworkId()
-        val factorSourceId = profileSnapshot?.notaryFactorSource()?.factorSourceID
+        val factorSourceId = profile?.notaryFactorSource()?.factorSourceID
         assert(factorSourceId != null)
         val mnemonic = getMnemonicUseCase(factorSourceId)
         assert(mnemonic.isNotEmpty())
         val mnemonicWords = MnemonicWords(mnemonic)
-        val account = profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId.value }?.accounts?.first()
+        val account = profile?.perNetwork?.firstOrNull { it.networkID == networkId.value }?.accounts?.first()
             ?: error("No account for network!")
         return mnemonicWords.signerPrivateKey(derivationPath = account.derivationPath)
     }
 
     private suspend fun getSignerAccountsForAddresses(
-        profileSnapshot: ProfileSnapshot?,
+        profile: Profile?,
         addresses: List<String>,
         networkId: Int,
     ): List<Account> {
@@ -146,23 +142,23 @@ class ProfileRepositoryImpl @Inject constructor(
                 getAccount(address)
             }
         } else {
-            listOfNotNull(profileSnapshot?.perNetwork?.firstOrNull { it.networkID == networkId }?.accounts?.first())
+            listOfNotNull(profile?.perNetwork?.firstOrNull { it.networkID == networkId }?.accounts?.first())
         }
         return accounts
     }
 
     private suspend fun getNetworkAndGateway(): NetworkAndGateway {
-        return readProfileSnapshot()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.nebunet
+        return readProfile()?.appPreferences?.networkAndGateway ?: NetworkAndGateway.nebunet
     }
 
     override suspend fun getAccounts(): List<Account> {
-        return readProfileSnapshot()?.perNetwork
+        return readProfile()?.perNetwork
             ?.firstOrNull { it.networkID == getCurrentNetworkId().value }?.accounts.orEmpty()
     }
 
     private suspend fun getAccount(address: String): Account? {
         val networkId = getCurrentNetworkId()
-        val perNetwork = readProfileSnapshot()?.perNetwork?.firstOrNull { it.networkID == networkId.value }
+        val perNetwork = readProfile()?.perNetwork?.firstOrNull { it.networkID == networkId.value }
         return perNetwork?.accounts?.firstOrNull { it.entityAddress.address == address }
     }
 

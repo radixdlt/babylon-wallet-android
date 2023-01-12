@@ -102,7 +102,7 @@ class GenerateProfileUseCaseTest {
                 version = "9.9.9"
             )
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.readProfileSnapshot()).thenReturn(profile.snapshot())
+            whenever(profileRepository.readProfile()).thenReturn(profile)
 
             // when
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
@@ -130,7 +130,7 @@ class GenerateProfileUseCaseTest {
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
 
-            whenever(profileRepository.readProfileSnapshot()).thenReturn(null)
+            whenever(profileRepository.readProfile()).thenReturn(null)
 
             val profile = generateProfileUseCase("main")
 
@@ -163,7 +163,7 @@ class GenerateProfileUseCaseTest {
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
 
-            whenever(profileRepository.readProfileSnapshot()).thenReturn(null)
+            whenever(profileRepository.readProfile()).thenReturn(null)
 
             val profile = generateProfileUseCase("main")
 

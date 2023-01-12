@@ -35,7 +35,7 @@ class WalletViewModelTest {
     private val clipboardManager = mock(ClipboardManager::class.java)
     private val profileRepository = mock(ProfileRepository::class.java)
 
-    private val profile = SampleDataProvider().sampleProfileSnapshot()
+    private val profile = SampleDataProvider().sampleProfile()
 
     private val sampleData = SampleDataProvider().sampleAccountResource()
 
@@ -80,7 +80,7 @@ class WalletViewModelTest {
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-        whenever(profileRepository.profileSnapshot).thenReturn(flow { emit(profile) })
+        whenever(profileRepository.profile).thenReturn(flow { emit(profile) })
 
         // when
         val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileRepository)

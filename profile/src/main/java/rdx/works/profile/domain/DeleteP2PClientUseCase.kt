@@ -8,19 +8,16 @@ class DeleteP2PClientUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
 ) {
 
-    suspend operator fun invoke(
-        connectionPassword: String
-    ) {
-        val profileSnapshot = profileRepository.readProfileSnapshot()
-        checkNotNull(profileSnapshot) {
+    suspend operator fun invoke(connectionPassword: String) {
+        val profile = profileRepository.readProfile()
+        checkNotNull(profile) {
             "Profile does not exist"
         }
 
-        val profile = profileSnapshot.toProfile()
         val updatedProfile = profile.deleteP2PClient(
             connectionPassword = connectionPassword
         )
         // Save updated profile
-        profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
+        profileRepository.saveProfile(updatedProfile)
     }
 }

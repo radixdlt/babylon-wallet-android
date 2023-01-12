@@ -35,12 +35,12 @@ class SettingsEditGatewayViewModelTest {
     private val profileRepository = mockk<ProfileRepository>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
-    private val profile = SampleDataProvider().sampleProfileSnapshot()
+    private val profile = SampleDataProvider().sampleProfile()
 
     @Before
     fun setUp() = runTest {
         vm = SettingsEditGatewayViewModel(profileRepository, networkInfoRepository)
-        every { profileRepository.profileSnapshot } returns flow { emit(profile) }
+        every { profileRepository.profile } returns flow { emit(profile) }
         coEvery { profileRepository.setNetworkAndGateway(any(), any()) } just Runs
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("mardunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
