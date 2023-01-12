@@ -23,6 +23,7 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +61,7 @@ fun WalletScreen(
     SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     WalletScreenContent(
         onMenuClick = onMenuClick,
-        onAccountClick = onAccountClick,
+        onAccountClick = viewModel::onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         isRefreshing = state.isRefreshing,
         onRefresh = viewModel::refresh,
@@ -71,6 +72,13 @@ fun WalletScreen(
         error = state.error,
         onMessageShown = viewModel::onMessageShown
     )
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is WalletEvent.AccountClick -> onAccountClick(it.address, it.nameEncoded)
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -190,11 +198,12 @@ private fun WalletAccountList(
                 onCopyClick = { onCopyAccountAddressClick(account.address) },
                 assets = account.fungibleTokens,
                 modifier = Modifier
-                    .fillMaxWidth().height(160.dp)
+                    .fillMaxWidth()
+                    .height(160.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
-                        onAccountClick(account.address, account.address)
+                        onAccountClick(account.address, account.displayName)
                     }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

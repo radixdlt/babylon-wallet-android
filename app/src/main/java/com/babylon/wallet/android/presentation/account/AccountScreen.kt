@@ -85,7 +85,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
-    accountName: String,
     onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
@@ -93,7 +92,7 @@ fun AccountScreen(
     val state by viewModel.accountUiState.collectAsStateWithLifecycle()
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
     AccountScreenContent(
-        accountName = accountName,
+        accountName = state.accountName,
         onAccountPreferenceClick = {
             onAccountPreferenceClick(state.accountAddressFull)
         },

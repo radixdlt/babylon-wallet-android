@@ -78,10 +78,9 @@ fun NavigationHost(
             popExitTransition = {
                 ExitTransition.None
             }
-        ) { navBackStackEntry ->
+        ) {
             AccountScreen(
                 viewModel = hiltViewModel(),
-                accountName = navBackStackEntry.arguments?.getString(ARG_ACCOUNT_NAME).orEmpty(),
                 onAccountPreferenceClick = { address ->
                     navController.accountPreferences(address = address)
                 },

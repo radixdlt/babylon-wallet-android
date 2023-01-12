@@ -84,5 +84,4 @@ class ProfileRepositoryFake : ProfileRepository {
     override suspend fun getPrivateKey(): PrivateKey {
         TODO("Not yet implemented")
     }
-
 }

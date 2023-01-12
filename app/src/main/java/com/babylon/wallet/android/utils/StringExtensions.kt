@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.utils
 
+import android.net.Uri
 import android.util.Patterns
 import java.text.DecimalFormat
 
@@ -27,4 +28,12 @@ fun String.formatDecimalSeparator(): String {
 
 fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
+}
+
+fun String.encodeUtf8(): String {
+    return Uri.encode(this).orEmpty()
+}
+
+fun String.decodeUtf8(): String {
+    return Uri.decode(this).orEmpty()
 }

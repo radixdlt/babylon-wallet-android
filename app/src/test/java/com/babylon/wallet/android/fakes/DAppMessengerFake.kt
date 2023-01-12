@@ -28,5 +28,4 @@ class DAppMessengerFake : DAppMessenger {
     ): Result<Unit> {
         return Result.Success(Unit)
     }
-
 }
