@@ -128,16 +128,17 @@ jobs:
 
       - name: Export vars
         run: |
-          export GPR_USER="${{ secrets.GPR_USER }}" >> GITHUB_ENV
-          export GPR_TOKEN="${{ secrets.GPR_TOKEN }}" >> GITHUB_ENV
-          export RADIX_DEBUG_PREVIEW_KEYSTORE_FILE="${{ steps.keystore_file.outputs.filePath }}" >> GITHUB_ENV
-          export RADIX_ANDROID_KEYSTORE_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}" >> GITHUB_ENV
-          export RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}" >> GITHUB_ENV
-          export RADIX_ANDROID_KEYSTORE_ALIAS="${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}" >> GITHUB_ENV
-          export SONAR_TOKEN="${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}" >> GTHUB_ENV
+          echo "GPR_USER=${{ secrets.GPR_USER }}" >> $GITHUB_ENV
+          echo "GPR_TOKEN=${{ secrets.GPR_TOKEN }}" >> $GITHUB_ENV
+          echo "RADIX_DEBUG_PREVIEW_KEYSTORE_FILE=${{ steps.keystore_file.outputs.filePath }}" >> $GITHUB_ENV
+          echo "RADIX_ANDROID_KEYSTORE_PASSWORD=${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD=${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+          echo "RADIX_ANDROID_KEYSTORE_ALIAS=${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}" >> $GITHUB_ENV
+          echo "SONAR_TOKEN=${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}" >> $GITHUB_ENV
 
       - name: "Run detekt"
         run: |
+          env
           ./gradlew detektMain
         # env:
         #   GPR_USER: ${{ secrets.GPR_USER }}
