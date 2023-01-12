@@ -33,7 +33,7 @@ class WalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileRepository.profileSnapshot.filterNotNull().collect { profileSnapshot ->
+            profileRepository.profile.filterNotNull().collect {
                 loadResourceData()
             }
         }
@@ -56,7 +56,7 @@ class WalletViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
-            profileRepository.readProfileSnapshot()?.let { profileSnapshot ->
+            profileRepository.readProfile()?.let {
                 loadResourceData()
             }
             _walletUiState.update { it.copy(isRefreshing = false) }

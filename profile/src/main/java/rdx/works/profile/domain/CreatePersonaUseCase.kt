@@ -24,12 +24,10 @@ class CreatePersonaUseCase @Inject constructor(
         fields: List<PersonaField>
     ): Persona {
         return withContext(defaultDispatcher) {
-            val profileSnapshot = profileRepository.readProfileSnapshot()
-            checkNotNull(profileSnapshot) {
+            val profile = profileRepository.readProfile()
+            checkNotNull(profile) {
                 "Profile does not exist"
             }
-
-            val profile = profileSnapshot.toProfile()
 
             val networkID = profile.appPreferences.networkAndGateway.network.networkId()
             // Construct new persona
@@ -55,7 +53,7 @@ class CreatePersonaUseCase @Inject constructor(
             )
 
             // Save updated profile
-            profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
+            profileRepository.saveProfile(updatedProfile)
 
             // Return new persona
             newPersona
