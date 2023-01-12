@@ -13,10 +13,12 @@ import com.radixdlt.toolkit.models.crypto.PublicKey as EnginePublicKey
 fun ECKeyPair.toEnginePublicKeyModel(): EnginePublicKey {
     return when (this.publicKey.curveType) {
         EllipticCurveType.Secp256k1 -> {
+            // Required size 33 bytes
             EnginePublicKey.EcdsaSecp256k1.fromByteArray(getCompressedPublicKey())
         }
         EllipticCurveType.Ed25519 -> {
-            EnginePublicKey.EddsaEd25519.fromByteArray(getCompressedPublicKey())
+            // Required size 32 bytes
+            EnginePublicKey.EddsaEd25519.fromByteArray(getCompressedPublicKey().removeLeadingZero())
         }
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
@@ -24,12 +26,8 @@ fun ECKeyPair.toEnginePublicKeyModel(): EnginePublicKey {
 
 fun PrivateKey.toEngineModel(): EnginePrivateKey {
     return when (this.curveType) {
-        EllipticCurveType.Secp256k1 -> {
-            EnginePrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(this.key.toByteArray())
-        }
-        EllipticCurveType.Ed25519 -> EnginePrivateKey.EddsaEd25519.newFromPrivateKeyBytes(
-            this.key.toByteArray().removeLeadingZero()
-        )
+        EllipticCurveType.Secp256k1 -> EnginePrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(this.keyByteArray())
+        EllipticCurveType.Ed25519 -> EnginePrivateKey.EddsaEd25519.newFromPrivateKeyBytes(this.keyByteArray())
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }
