@@ -126,16 +126,26 @@ jobs:
           fileName: "debugPreview.jks"
           encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
 
+      - name: Export vars
+        run: |
+          export GPR_USER="${{ secrets.GPR_USER }}" >> GITHUB_ENV
+          export GPR_TOKEN="${{ secrets.GPR_TOKEN }}" >> GITHUB_ENV
+          export RADIX_DEBUG_PREVIEW_KEYSTORE_FILE="${{ steps.keystore_file.outputs.filePath }}" >> GITHUB_ENV
+          export RADIX_ANDROID_KEYSTORE_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}" >> GITHUB_ENV
+          export RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}" >> GITHUB_ENV
+          export RADIX_ANDROID_KEYSTORE_ALIAS="${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}" >> GITHUB_ENV
+          export SONAR_TOKEN="${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}" >> GTHUB_ENV
+
       - name: "Run detekt"
         run: |
           ./gradlew detektMain
-        env:
-          GPR_USER: ${{ secrets.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+        # env:
+        #   GPR_USER: ${{ secrets.GPR_USER }}
+        #   GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        #   RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+        #   RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+        #   RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+        #   RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
 
       - name: "Run jacoco"
         run: |
@@ -144,9 +154,9 @@ jobs:
       - name: "Run Sonarcloud"
         run: |
           ./gradlew sonarqube
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   SONAR_TOKEN: ${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}
 
   build:
 
@@ -169,25 +179,25 @@ jobs:
           fileName: "debugPreview.jks"
           encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
 
-      - name: Export vars
-        run: |
-          export GPR_USER="${{ secrets.GPR_USER }}" >> GITHUB_ENV
-          export GPR_TOKEN="${{ secrets.GPR_TOKEN }}" >> GITHUB_ENV
-          export RADIX_DEBUG_PREVIEW_KEYSTORE_FILE="${{ steps.keystore_file.outputs.filePath }}" >> GITHUB_ENV
-          export RADIX_ANDROID_KEYSTORE_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}" >> GITHUB_ENV
-          export RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}" >> GITHUB_ENV
-          export RADIX_ANDROID_KEYSTORE_ALIAS="${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}" >> GITHUB_ENV
+      # - name: Export vars
+      #   run: |
+      #     export GPR_USER="${{ secrets.GPR_USER }}" >> GITHUB_ENV
+      #     export GPR_TOKEN="${{ secrets.GPR_TOKEN }}" >> GITHUB_ENV
+      #     export RADIX_DEBUG_PREVIEW_KEYSTORE_FILE="${{ steps.keystore_file.outputs.filePath }}" >> GITHUB_ENV
+      #     export RADIX_ANDROID_KEYSTORE_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}" >> GITHUB_ENV
+      #     export RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}" >> GITHUB_ENV
+      #     export RADIX_ANDROID_KEYSTORE_ALIAS="${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}" >> GITHUB_ENV
 
       - name: "Build"
         run: |
           ./gradlew assembleDebugPreview
-        # env:
-        #   GPR_USER: ${{ secrets.GPR_USER }}
-        #   GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-        #   RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-        #   RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-        #   RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-        #   RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
 
       - name: Upload APK from PR
         if: ${{ github.event_name == 'pull_request' }}
