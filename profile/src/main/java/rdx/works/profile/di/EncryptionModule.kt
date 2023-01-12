@@ -9,9 +9,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import rdx.works.profile.datastore.EncryptedPreferencesManager.Companion.DATA_STORE_NAME
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -22,8 +19,7 @@ object EncryptionModule {
 
     @Suppress("InjectDispatcher")
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-        name = DATA_STORE_NAME,
-        scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        name = DATA_STORE_NAME
     )
 
     @Provides
