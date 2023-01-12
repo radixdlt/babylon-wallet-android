@@ -1,6 +1,6 @@
 <resources>
     <string name="home_toolbar_title">Radix Wallet</string>
-    <string name="home_welcome_text">Welcome, here are all your\naccounts on the Radix Network</string>
+    <string name="home_welcome_text">Welcome, here are all your accounts on the Radix Network</string>
     <string name="create_new_account">Create New Account</string>
     <string name="visit_the_radix_hub">Visit the Radix Hub ></string>
     <string name="radix_network_text">Ready to get started using the Radix Network and your Wallet?</string>
@@ -101,4 +101,6 @@
     <string name="linked_connector">Linked Connector</string>
     <string name="version_and_build">Version: %s build %d</string>
     <string name="your_radix_wallet_is_linked">Your Radix Wallet is linked to the following desktop browser using the Connector browser extension.</string>
+    <string name="space">" "</string>
+    <string name="resource_address">Resource Address</string>
 </resources>

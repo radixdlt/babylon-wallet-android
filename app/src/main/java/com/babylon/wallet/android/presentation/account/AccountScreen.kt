@@ -1,16 +1,13 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.graphics.drawable.ColorDrawable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +31,6 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -45,18 +41,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -64,19 +56,19 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
+import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
@@ -88,7 +80,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -97,7 +88,7 @@ fun AccountScreen(
     accountName: String,
     onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val state by viewModel.accountUiState.collectAsStateWithLifecycle()
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
@@ -183,11 +174,11 @@ private fun AccountScreenContent(
                             }
                         }
                         is TokenUiModel -> {
-                            FungibleTokenBottomSheetDetails(assetDetails, onCloseClick = {
+                            FungibleTokenBottomSheetDetails(token = assetDetails, onCloseClick = {
                                 scope.launch {
                                     bottomSheetState.hide()
                                 }
-                            }, Modifier.fillMaxSize())
+                            }, onCopyAccountAddress, modifier = Modifier.fillMaxSize())
                         }
                         null -> {}
                     }
@@ -277,24 +268,32 @@ private fun AccountScreenContent(
                 }
             }
         }
-        AnimatedVisibility(modifier = Modifier.align(Alignment.BottomCenter), visible = !isLoading, enter = fadeIn()) {
-            RadixSecondaryButton(
-                text = stringResource(id = R.string.history),
-                onClick = onHistoryClick,
+        AnimatedVisibility(modifier = Modifier.align(Alignment.BottomCenter), visible = false, enter = fadeIn()) {
+            HistoryButton(
                 modifier = Modifier
                     .padding(bottom = RadixTheme.dimensions.paddingXXLarge)
                     .size(174.dp, 50.dp),
-                containerColor = RadixTheme.colors.gray2,
-                contentColor = RadixTheme.colors.white,
-                shape = RadixTheme.shapes.circle
-            ) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-                    tint = RadixTheme.colors.white,
-                    contentDescription = null
-                )
-            }
+                onHistoryClick
+            )
         }
+    }
+}
+
+@Composable
+private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> Unit) {
+    RadixSecondaryButton(
+        text = stringResource(id = R.string.history),
+        onClick = onHistoryClick,
+        modifier = modifier,
+        containerColor = RadixTheme.colors.gray2,
+        contentColor = RadixTheme.colors.white,
+        shape = RadixTheme.shapes.circle
+    ) {
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
+            tint = RadixTheme.colors.white,
+            contentDescription = null
+        )
     }
 }
 
@@ -318,7 +317,7 @@ fun AccountContentWithScrollableHeader(
     density: Density,
     isLoading: Boolean,
     isRefreshing: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
     Box(
@@ -385,154 +384,6 @@ fun AccountContentWithScrollableHeader(
     }
 }
 
-@Composable
-private fun NonFungibleTokenBottomSheetDetails(
-    asset: NftCollectionUiModel,
-    selectedNft: NftCollectionUiModel.NftItemUiModel,
-    onCloseClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.empty),
-            onBackClick = onCloseClick,
-            contentColor = RadixTheme.colors.gray1,
-            backIconType = BackIconType.Close
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AsyncImage(
-                model = asset.iconUrl,
-                placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectMedium)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            AssetMetadataRow(
-                modifier = Modifier.fillMaxWidth(),
-                key = stringResource(id = R.string.nft_id),
-                value = selectedNft.id
-            )
-            selectedNft.nftsMetadata.forEach {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                AssetMetadataRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    key = it.first,
-                    value = it.second
-                )
-            }
-            Spacer(modifier = Modifier.height(100.dp))
-        }
-    }
-}
-
-@Composable
-private fun FungibleTokenBottomSheetDetails(
-    token: TokenUiModel,
-    onCloseClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        RadixCenteredTopAppBar(
-            title = token.name.orEmpty(),
-            onBackClick = onCloseClick,
-            modifier = Modifier.fillMaxWidth(),
-            contentColor = RadixTheme.colors.gray1,
-            backIconType = BackIconType.Close
-        )
-        Spacer(modifier = Modifier.height(22.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AsyncImage(
-                model = token.iconUrl,
-                placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(104.dp)
-                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.circle)
-                    .clip(RadixTheme.shapes.circle)
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            Text(
-                text = token.tokenQuantityToDisplay,
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            Text(
-                text = "\$44.21",
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            token.description?.let { desc ->
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Text(
-                    text = desc,
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            }
-            if (token.metadata.isNotEmpty()) {
-                token.metadata.forEach { mapEntry ->
-                    AssetMetadataRow(Modifier.fillMaxWidth(), mapEntry.key, mapEntry.value)
-                }
-            }
-            Spacer(modifier = Modifier.height(100.dp))
-        }
-    }
-}
-
-@Composable
-private fun AssetMetadataRow(modifier: Modifier, key: String, value: String) {
-    Row(
-        modifier,
-        horizontalArrangement = spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        Text(
-            modifier = Modifier.weight(0.4f),
-            text = key.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            },
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
-        )
-        Text(
-            modifier = Modifier.weight(0.6f),
-            text = value,
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End
-        )
-    }
-}
-
 @ExperimentalPagerApi
 @Composable
 private fun AccountContent(
@@ -546,7 +397,7 @@ private fun AccountContent(
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
     walletFiatBalance: String?,
     modifier: Modifier = Modifier,
-    isLoading: Boolean
+    isLoading: Boolean,
 ) {
     Column(
         modifier = modifier,
@@ -584,7 +435,7 @@ private fun AccountSummaryContent(
     accountAddress: String,
     walletFiatBalance: String?,
     onCopyAccountAddressClick: (String) -> Unit,
-    onTransferClick: () -> Unit
+    onTransferClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -631,7 +482,7 @@ fun AssetsContent(
     onFungibleTokenClick: (TokenUiModel) -> Unit,
     modifier: Modifier = Modifier,
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
-    isLoading: Boolean
+    isLoading: Boolean,
 ) {
     Column(modifier = modifier) {
         val pagerState = rememberPagerState()
@@ -746,7 +597,6 @@ fun AccountContentPreview() {
 }
 
 @Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun AccountContentDarkPreview() {
     RadixWalletTheme(darkTheme = true) {
@@ -772,6 +622,21 @@ fun AccountContentDarkPreview() {
                 selectedNft = null,
                 walletFiatBalance = "1000",
                 modifier = Modifier
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FungibleTokenDetailsDarkPreview() {
+    RadixWalletTheme(darkTheme = true) {
+        with(SampleDataProvider()) {
+            FungibleTokenBottomSheetDetails(
+                modifier = Modifier.fillMaxSize(),
+                token = sampleFungibleTokens().first().toTokenUiModel(),
+                onCloseClick = {},
+                onCopyAccountAddress = {}
             )
         }
     }

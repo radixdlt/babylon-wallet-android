@@ -8,4 +8,5 @@ object TokenMetadataConstants {
     const val KEY_NFT_IMAGE = "nft_image"
 
     const val SYMBOL_XRD = "XRD"
+    val SPECIAL_METADATA = listOf(KEY_DESCRIPTION, KEY_NAME, KEY_SYMBOL, KEY_URL)
 }

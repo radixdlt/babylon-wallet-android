@@ -33,7 +33,7 @@ fun AccountCardView(
     accountName: String,
     onCopyClick: () -> Unit,
     assets: List<OwnedFungibleToken>, // at the moment we pass only the tokens
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         Column(
@@ -57,7 +57,7 @@ fun AccountCardView(
                     color = RadixTheme.colors.white
                 )
             }
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -80,7 +80,7 @@ fun AccountCardView(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             AssetIconRowView(assets = assets)
         }
     }

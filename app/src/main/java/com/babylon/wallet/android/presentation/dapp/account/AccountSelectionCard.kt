@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -27,7 +28,8 @@ fun AccountSelectionCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault)
+            .padding(RadixTheme.dimensions.paddingDefault),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier.weight(1f)

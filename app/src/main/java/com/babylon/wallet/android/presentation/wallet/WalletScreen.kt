@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -151,8 +152,8 @@ private fun WalletAccountList(
                 text = stringResource(id = R.string.home_welcome_text),
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingMedium,
-                    start = RadixTheme.dimensions.paddingDefault,
-                    end = RadixTheme.dimensions.paddingDefault
+                    start = RadixTheme.dimensions.paddingXLarge,
+                    end = RadixTheme.dimensions.paddingXLarge
                 ),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
@@ -189,7 +190,7 @@ private fun WalletAccountList(
                 onCopyClick = { onCopyAccountAddressClick(account.address) },
                 assets = account.fungibleTokens,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth().height(160.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
