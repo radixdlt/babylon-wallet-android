@@ -7,6 +7,7 @@ import com.radixdlt.model.PrivateKey
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -23,7 +24,7 @@ import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.GetMnemonicUseCase
 import javax.inject.Inject
 
@@ -31,6 +32,7 @@ interface ProfileRepository {
 
     suspend fun saveProfile(profile: Profile)
     suspend fun readProfile(): Profile?
+    suspend fun readMnemonic(key: String): String?
     val p2pClient: Flow<P2PClient?>
     suspend fun getCurrentNetworkId(): NetworkId
     suspend fun setNetworkAndGateway(newUrl: String, networkName: String)
@@ -44,27 +46,32 @@ interface ProfileRepository {
 
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getMnemonicUseCase: GetMnemonicUseCase,
 ) : ProfileRepository {
 
-    override val profile: Flow<Profile?> =
-        encryptedPreferencesManager.getString(PROFILE_PREFERENCES_KEY).map { profileContent ->
+    override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
+        .map { profileContent ->
             profileContent?.let { profile ->
                 Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
             } ?: run {
                 null
             }
         }
+        .flowOn(ioDispatcher)
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
         profile?.appPreferences?.p2pClients?.firstOrNull()
     }
 
+    override suspend fun readMnemonic(key: String): String? {
+        return encryptedPreferencesManager.readMnemonic(key)
+    }
+
     override suspend fun saveProfile(profile: Profile) {
-        withContext(defaultDispatcher) {
+        withContext(ioDispatcher) {
             val profileContent = Json.encodeToString(profile.snapshot())
-            encryptedPreferencesManager.putBytes(PROFILE_PREFERENCES_KEY, profileContent.toByteArray())
+            encryptedPreferencesManager.putBytes(profileContent.toByteArray())
         }
     }
 
@@ -160,9 +167,5 @@ class ProfileRepositoryImpl @Inject constructor(
         val networkId = getCurrentNetworkId()
         val perNetwork = readProfile()?.perNetwork?.firstOrNull { it.networkID == networkId.value }
         return perNetwork?.accounts?.firstOrNull { it.entityAddress.address == address }
-    }
-
-    companion object {
-        private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
     }
 }
