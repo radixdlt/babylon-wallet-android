@@ -104,7 +104,7 @@ class CreateAccountUseCaseTest {
             }
 
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.readProfileSnapshot()).thenReturn(profile.snapshot())
+            whenever(profileRepository.readProfile()).thenReturn(profile)
             whenever(profileRepository.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
 
             val createAccountUseCase = CreateAccountUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
@@ -118,7 +118,7 @@ class CreateAccountUseCaseTest {
                 networkID = NetworkId.Hammunet
             )
 
-            verify(profileRepository).saveProfileSnapshot(updatedProfile.snapshot())
+            verify(profileRepository).saveProfile(updatedProfile)
         }
     }
 }
