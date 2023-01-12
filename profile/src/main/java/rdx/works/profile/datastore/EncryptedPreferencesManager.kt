@@ -1,32 +1,30 @@
 package rdx.works.profile.datastore
 
-import android.content.Context
 import android.util.Base64
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import rdx.works.core.decryptData
 import rdx.works.core.encryptData
+import rdx.works.profile.di.ProfileDataStore
 import java.io.IOException
 import java.nio.charset.StandardCharsets
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class EncryptedDataStore(
-    private val context: Context
+@Singleton
+class EncryptedPreferencesManager @Inject constructor(
+    @ProfileDataStore private val preferences: DataStore<Preferences>
 ) {
-
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-        name = DATA_STORE_NAME
-    )
 
     fun getString(key: String): Flow<String?> {
         val preferencesKey = stringPreferencesKey(key)
-        return context.dataStore.data.catch { exception ->
+        return preferences.data.catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
             } else {
@@ -46,7 +44,7 @@ class EncryptedDataStore(
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
             val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull.toByteArray()), Base64.DEFAULT)
-            context.dataStore.edit { mutablePreferences ->
+            preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
         }
@@ -54,7 +52,7 @@ class EncryptedDataStore(
 
     fun getBytes(key: String): Flow<ByteArray?> {
         val preferencesKey = stringPreferencesKey(key)
-        return context.dataStore.data.catch { exception ->
+        return preferences.data.catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
             } else {
@@ -73,13 +71,13 @@ class EncryptedDataStore(
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
             val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull), Base64.DEFAULT)
-            context.dataStore.edit { mutablePreferences ->
+            preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
         }
     }
 
     companion object {
-        private const val DATA_STORE_NAME = "rdx_encrypted_datastore"
+        const val DATA_STORE_NAME = "rdx_encrypted_datastore"
     }
 }
