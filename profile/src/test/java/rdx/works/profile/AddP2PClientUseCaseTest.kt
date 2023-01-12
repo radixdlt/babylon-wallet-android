@@ -40,7 +40,7 @@ class AddP2PClientUseCaseTest {
             perNetwork = emptyList(),
             version = "0.0.1"
         )
-        whenever(profileRepository.readProfileSnapshot()).thenReturn(initialProfile.snapshot())
+        whenever(profileRepository.readProfile()).thenReturn(initialProfile)
 
         addP2PClientUseCase(
             displayName = "Mac browser",
@@ -57,7 +57,7 @@ class AddP2PClientUseCaseTest {
             perNetwork = initialProfile.perNetwork,
             version = initialProfile.version
         )
-        verify(profileRepository).saveProfileSnapshot(updatedProfile.snapshot())
+        verify(profileRepository).saveProfile(updatedProfile)
     }
 
     @Test(expected = IllegalStateException::class)
@@ -65,7 +65,7 @@ class AddP2PClientUseCaseTest {
         val profileRepository = mock(ProfileRepository::class.java)
         val addP2PClientUseCase = AddP2PClientUseCase(profileRepository)
 
-        whenever(profileRepository.readProfileSnapshot()).thenReturn(null)
+        whenever(profileRepository.readProfile()).thenReturn(null)
 
         addP2PClientUseCase(
             displayName = "Mac browser",
