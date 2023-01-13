@@ -199,6 +199,9 @@ jobs:
       - name: "Build"
         run: |
           env | sort
+          export RADIX_ANDROID_KEYSTORE_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}"
+          export RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD="${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}"
+          export RADIX_ANDROID_KEYSTORE_ALIAS="${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}"
           ./gradlew assembleDebugPreview
         # env:
         #   GPR_USER: ${{ secrets.GPR_USER }}
