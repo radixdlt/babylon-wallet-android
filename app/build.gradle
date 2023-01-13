@@ -45,7 +45,7 @@ android {
         versionCode 1
         versionName "0.0.1"
         buildConfigField "boolean", "DEBUG_MODE", "true"
-        buildConfigField "String", "GATEWAY_API_URL", '"https://nebunet-gateway.radixdlt.com"'
+        buildConfigField "String", "GATEWAY_API_URL", '"https://betanet.radixdlt.com"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

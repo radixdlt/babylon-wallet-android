@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -16,6 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val preferencesManager: PreferencesManager,
+    private val peerdroidClient: PeerdroidClient
 ) : ViewModel() {
 
     var state by mutableStateOf(SettingsUiState())
@@ -35,6 +39,14 @@ class SettingsViewModel @Inject constructor(
                 }
                 state = state.copy(settings = updatedSettings.toPersistentList())
             }
+        }
+    }
+
+    fun onDeleteWalletClick() {
+        viewModelScope.launch {
+            profileRepository.clear()
+            preferencesManager.clear()
+            peerdroidClient.close()
         }
     }
 }

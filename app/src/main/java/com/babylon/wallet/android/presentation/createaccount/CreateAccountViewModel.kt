@@ -36,7 +36,7 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountNameChange(accountName: String) {
         savedStateHandle[ACCOUNT_NAME] = accountName.take(ACCOUNT_NAME_MAX_LENGTH)
-        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.isNotEmpty()
+        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty()
     }
 
     fun onAccountCreateClick() {
@@ -45,21 +45,21 @@ class CreateAccountViewModel @Inject constructor(
         )
         viewModelScope.launch {
             val hasProfile = profileRepository.readProfile() != null
+            val accountName = accountName.value.trim()
             val account = if (hasProfile) {
                 createAccountUseCase(
-                    displayName = accountName.value,
+                    displayName = accountName,
                     networkUrl = args.networkUrlEncoded?.decodeUtf8(),
                     networkName = args.networkName,
                     switchNetwork = args.switchNetwork ?: false
                 )
             } else {
                 val profile = generateProfileUseCase(
-                    accountDisplayName = accountName.value,
+                    accountDisplayName = accountName,
                 )
                 profile.perNetwork.first().accounts.first()
             }
             val accountId = account.entityAddress.address
-            val accountName = accountName.value
 
             state = state.copy(
                 loading = true,

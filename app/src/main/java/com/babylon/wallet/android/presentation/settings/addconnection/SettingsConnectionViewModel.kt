@@ -91,7 +91,13 @@ class SettingsConnectionViewModel @Inject constructor(
     }
 
     fun onConnectionDisplayNameChanged(name: String) {
-        _state.update { it.copy(editedConnectionDisplayName = name) }
+        val displayNameChanged = name.trim()
+        _state.update {
+            it.copy(
+                editedConnectionDisplayName = displayNameChanged,
+                buttonEnabled = displayNameChanged.isNotEmpty()
+            )
+        }
     }
 
     fun onDeleteConnectionClick() {
@@ -145,7 +151,8 @@ class SettingsConnectionViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     mode = SettingsConnectionMode.ShowDetails,
-                    editedConnectionDisplayName = ""
+                    editedConnectionDisplayName = "",
+                    buttonEnabled = false
                 )
             }
         }
@@ -156,6 +163,7 @@ data class SettingsConnectionUiState(
     val isLoading: Boolean = false,
     val connectionName: String? = null,
     val editedConnectionDisplayName: String = "",
+    val buttonEnabled: Boolean = false,
     val isScanningQr: Boolean = false,
     val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,

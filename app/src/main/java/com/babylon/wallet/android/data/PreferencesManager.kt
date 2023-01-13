@@ -51,6 +51,8 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun clear() = dataStore.edit { it.clear() }
+
     companion object {
         private val SHOW_ONBOARDING = booleanPreferencesKey("show_onboarding")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")

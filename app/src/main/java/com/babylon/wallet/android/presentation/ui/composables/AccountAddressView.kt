@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.utils.truncatedHash
 
 @Composable
 fun AccountAddressView(
@@ -24,7 +25,7 @@ fun AccountAddressView(
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
         Text(
-            text = address,
+            text = address.truncatedHash(),
             style = RadixTheme.typography.body2HighImportance,
             color = contentColor,
             textAlign = TextAlign.Center,

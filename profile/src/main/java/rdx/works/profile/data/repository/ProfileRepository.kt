@@ -41,6 +41,7 @@ interface ProfileRepository {
     suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner>
     suspend fun getAccounts(): List<Account>
     suspend fun getPrivateKey(): PrivateKey
+    suspend fun clear()
 }
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -135,6 +136,10 @@ class ProfileRepositoryImpl @Inject constructor(
         val account = profile?.perNetwork?.firstOrNull { it.networkID == networkId.value }?.accounts?.first()
             ?: error("No account for network!")
         return mnemonicWords.signerPrivateKey(derivationPath = account.derivationPath)
+    }
+
+    override suspend fun clear() {
+        encryptedPreferencesManager.clear()
     }
 
     private suspend fun getSignerAccountsForAddresses(

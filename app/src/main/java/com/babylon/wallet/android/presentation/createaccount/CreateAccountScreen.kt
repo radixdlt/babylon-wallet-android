@@ -94,7 +94,6 @@ fun CreateAccountContent(
 ) {
     Column(
         modifier = modifier
-//            .systemBarsPadding()
             .navigationBarsPadding()
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
@@ -141,7 +140,8 @@ fun CreateAccountContent(
                     modifier = Modifier.fillMaxWidth(),
                     onValueChanged = onAccountNameChange,
                     value = accountName,
-                    hint = stringResource(id = R.string.account_name)
+                    hint = stringResource(id = R.string.account_name),
+                    singleLine = true
                 )
                 Text(
                     text = stringResource(id = R.string.this_can_be_changed_any_time),
