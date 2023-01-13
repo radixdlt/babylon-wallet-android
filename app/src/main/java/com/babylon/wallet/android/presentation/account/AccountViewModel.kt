@@ -48,7 +48,7 @@ class AccountViewModel @Inject constructor(
     private val _accountUiState = MutableStateFlow(
         AccountUiState(
             accountAddressFull = accountId,
-            accountName = accountName.decodeUtf8().orEmpty(),
+            accountName = accountName.decodeUtf8(),
             accountAddressShortened = accountId.truncatedHash()
         )
     )
