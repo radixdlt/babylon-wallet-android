@@ -142,9 +142,11 @@ class SettingsConnectionViewModel @Inject constructor(
                 connectionPassword = currentConnectionPassword
             )
             _state.update {
-                it.copy(isLoading = false,
+                it.copy(
+                    isLoading = false,
                     mode = SettingsConnectionMode.ShowDetails,
-                    editedConnectionDisplayName = "")
+                    editedConnectionDisplayName = ""
+                )
             }
         }
     }
