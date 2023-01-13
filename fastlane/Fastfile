@@ -19,8 +19,8 @@ lane :beta do
     bump_build_number
     gradle(
         task: "assemble",
-        flavor: "Preview",
-        build_type: "Debug"
+        flavor: "Debug",
+        build_type: "Preview"
         )
     firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
