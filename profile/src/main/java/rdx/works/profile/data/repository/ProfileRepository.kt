@@ -71,7 +71,7 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {
             val profileContent = Json.encodeToString(profile.snapshot())
-            encryptedPreferencesManager.putBytes(profileContent.toByteArray())
+            encryptedPreferencesManager.putProfileBytes(profileContent.toByteArray())
         }
     }
 

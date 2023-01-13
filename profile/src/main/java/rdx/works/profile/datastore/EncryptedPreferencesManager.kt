@@ -86,7 +86,7 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
-    suspend fun putBytes(newValue: ByteArray?) {
+    suspend fun putProfileBytes(newValue: ByteArray?) {
         val preferencesKey = stringPreferencesKey(PROFILE_PREFERENCES_KEY)
         newValue?.let { newValueNotNull ->
             val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull), Base64.DEFAULT)
