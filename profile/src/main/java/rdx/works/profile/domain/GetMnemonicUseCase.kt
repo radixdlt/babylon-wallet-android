@@ -4,7 +4,6 @@ import com.radixdlt.bip39.generateMnemonic
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
 import rdx.works.profile.datastore.EncryptedPreferencesManager
@@ -20,7 +19,7 @@ class GetMnemonicUseCase @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     private suspend fun readMnemonic(key: String): String =
-        encryptedPreferencesManager.getString("mnemonic$key").first().orEmpty()
+        encryptedPreferencesManager.readMnemonic(key).orEmpty()
 
     /**
      * We save mnemonic under specific key which will be factorSourceId

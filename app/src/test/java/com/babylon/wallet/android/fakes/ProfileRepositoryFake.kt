@@ -48,6 +48,10 @@ class ProfileRepositoryFake : ProfileRepository {
         return profileFake
     }
 
+    override suspend fun readMnemonic(key: String): String? {
+        TODO("Not yet implemented")
+    }
+
     override val p2pClient: Flow<P2PClient?>
         get() = TODO("Not yet implemented")
 
