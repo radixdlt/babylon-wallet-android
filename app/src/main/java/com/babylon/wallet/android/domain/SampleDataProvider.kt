@@ -15,7 +15,7 @@ import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Value
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
@@ -44,8 +44,8 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleProfileSnapshot(): ProfileSnapshot {
-        return ProfileSnapshot(
+    fun sampleProfile(): Profile {
+        return Profile(
             appPreferences = AppPreferences(
                 display = Display.default,
                 networkAndGateway = NetworkAndGateway.hammunet,

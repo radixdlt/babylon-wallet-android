@@ -26,7 +26,7 @@ class GetAccountResourcesUseCase @Inject constructor(
 
     suspend operator fun invoke(): Result<List<AccountResources>> = coroutineScope {
         val accountResourceList = mutableListOf<AccountResources>()
-        profileRepository.readProfileSnapshot()?.toProfile()?.let { profile ->
+        profileRepository.readProfile()?.let { profile ->
             val results = profile.getAccounts().map { account ->
                 async {
                     getSingleAccountResources(
@@ -50,7 +50,7 @@ class GetAccountResourcesUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(address: String): Result<AccountResources> = coroutineScope {
-        profileRepository.readProfileSnapshot()?.toProfile()?.getAccountByAddress(address)?.let { account ->
+        profileRepository.readProfile()?.getAccountByAddress(address)?.let { account ->
             getSingleAccountResources(
                 account.entityAddress.address,
                 account.displayName.orEmpty(),

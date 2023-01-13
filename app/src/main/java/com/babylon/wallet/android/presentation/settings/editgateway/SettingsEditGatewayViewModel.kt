@@ -39,7 +39,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private fun observeProfile() {
         viewModelScope.launch {
-            profileRepository.profileSnapshot.filterNotNull().collect { profileSnapshot ->
+            profileRepository.profile.filterNotNull().collect { profileSnapshot ->
                 profileSnapshot.appPreferences.networkAndGateway.let { networkAndGateway ->
                     state = state.copy(
                         currentNetworkAndGateway = networkAndGateway,

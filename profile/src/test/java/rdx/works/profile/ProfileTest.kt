@@ -9,6 +9,7 @@ import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
@@ -93,7 +94,7 @@ class ProfileTest {
     fun `test again profile json vector`() {
         val hammunetProfileTestVector = File("src/test/resources/raw/profile_snapshot_hammunet.json").readText()
 
-        val hammunetProfile = Json.decodeFromString<Profile>(hammunetProfileTestVector)
+        val hammunetProfile = Json.decodeFromString<ProfileSnapshot>(hammunetProfileTestVector).toProfile()
 
         val mnemonic = MnemonicWords(
             "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +

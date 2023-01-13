@@ -35,7 +35,7 @@ class MainViewModel @Inject constructor(
 
     val state = combine(
         preferencesManager.showOnboarding,
-        profileRepository.profileSnapshot
+        profileRepository.profile
     ) { showOnboarding, profileSnapshot ->
         MainUiState(
             loading = false,

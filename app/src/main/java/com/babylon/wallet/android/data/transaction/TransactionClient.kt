@@ -24,7 +24,6 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
-import kotlinx.serialization.SerializationException
 import rdx.works.profile.data.repository.ProfileRepository
 import java.math.BigDecimal
 import java.security.SecureRandom
@@ -199,7 +198,7 @@ class TransactionClient @Inject constructor(
                     )
                 ).getOrThrow()
             )
-        } catch (e: SerializationException) {
+        } catch (e: Exception) {
             Result.Error(TransactionApprovalException(TransactionApprovalFailure.ConvertManifest, e.message, e))
         }
     }

@@ -26,8 +26,8 @@ class CreateAccountUseCase @Inject constructor(
         switchNetwork: Boolean = false
     ): Account {
         return withContext(defaultDispatcher) {
-            val profileSnapshot = profileRepository.readProfileSnapshot()
-            checkNotNull(profileSnapshot) {
+            val profile = profileRepository.readProfile()
+            checkNotNull(profile) {
                 "Profile does not exist"
             }
 
@@ -36,7 +36,6 @@ class CreateAccountUseCase @Inject constructor(
                 networkAndGateway =
                     NetworkAndGateway(networkUrl, Network.allKnownNetworks().first { it.name == networkName })
             }
-            val profile = profileSnapshot.toProfile()
             val networkID = networkAndGateway?.network?.networkId() ?: profileRepository.getCurrentNetworkId()
             // Construct new account
             val newAccount = createNewVirtualAccount(
@@ -62,7 +61,7 @@ class CreateAccountUseCase @Inject constructor(
                 updatedProfile = updatedProfile.setNetworkAndGateway(networkAndGateway)
             }
             // Save updated profile
-            profileRepository.saveProfileSnapshot(updatedProfile.snapshot())
+            profileRepository.saveProfile(updatedProfile)
             // Return new account
             newAccount
         }
