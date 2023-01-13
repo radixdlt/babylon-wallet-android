@@ -17,7 +17,17 @@ desc "Deploy main branch"
 lane :beta do
 
     bump_build_number
-    gradle(task: "assembleDebugPreview")
+    gradle(
+        task: "assemble",
+        flavor: "Debug",
+        build_type: "Preview",
+        properties: {
+            "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
+            "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
+            "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
+            "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
+          }
+        )
     firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
         release_notes: ENV["RELEASE_NOTES"],
