@@ -188,6 +188,7 @@ jobs:
 
       - name: "Build"
         run: |
+          env
           ./gradlew assembleDebugPreview
         env:
           GPR_USER: ${{ secrets.GPR_USER }}
