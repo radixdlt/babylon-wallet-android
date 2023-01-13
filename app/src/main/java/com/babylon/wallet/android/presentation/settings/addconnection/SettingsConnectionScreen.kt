@@ -77,6 +77,7 @@ fun SettingsConnectionScreen(
         isLoading = state.isLoading,
         onBackClick = onBackClick,
         connectionDisplayName = connectionDisplayName,
+        buttonEnabled = connectionDisplayName.isNotEmpty(),
         onConnectionDisplayNameChanged = { connectionDisplayName = it },
         onDeleteConnectionClick = viewModel::onDeleteConnectionClick,
         onConnectionPasswordDecoded = viewModel::onConnectionPasswordDecoded,
@@ -95,6 +96,7 @@ private fun SettingsAddConnectionContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     connectionDisplayName: String,
+    buttonEnabled: Boolean,
     onConnectionDisplayNameChanged: (String) -> Unit,
     onConnectionPasswordDecoded: (String) -> Unit,
     onDeleteConnectionClick: () -> Unit,
@@ -132,6 +134,7 @@ private fun SettingsAddConnectionContent(
                     ConnectionNameInput(
                         onConnectionClick = onConnectionClick,
                         connectionDisplayName = connectionDisplayName,
+                        buttonEnabled = buttonEnabled,
                         onConnectionDisplayNameChanged = onConnectionDisplayNameChanged,
                     )
                 }
@@ -247,6 +250,7 @@ private fun ConnectionNameInput(
     modifier: Modifier = Modifier,
     onConnectionClick: () -> Unit,
     connectionDisplayName: String,
+    buttonEnabled: Boolean,
     onConnectionDisplayNameChanged: (String) -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -267,7 +271,8 @@ private fun ConnectionNameInput(
                 .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.add_connection),
-            onClick = onConnectionClick
+            onClick = onConnectionClick,
+            enabled = buttonEnabled
         )
     }
 }
@@ -283,6 +288,7 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
             isLoading = false,
             onBackClick = {},
             connectionDisplayName = "",
+            buttonEnabled = false,
             onConnectionDisplayNameChanged = {},
             onConnectionPasswordDecoded = {},
             onDeleteConnectionClick = {},
@@ -305,6 +311,7 @@ fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
             isLoading = false,
             onBackClick = {},
             connectionDisplayName = "",
+            buttonEnabled = true,
             onConnectionDisplayNameChanged = {},
             onConnectionPasswordDecoded = {},
             onDeleteConnectionClick = {},

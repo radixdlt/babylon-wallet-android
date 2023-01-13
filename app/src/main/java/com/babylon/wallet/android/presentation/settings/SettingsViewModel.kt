@@ -3,6 +3,9 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,11 +14,14 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.di.ProfileDataStore
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
+    @ProfileDataStore private val profileDataStore: DataStore<Preferences>,
+    @ProfileDataStore private val dataStore: DataStore<Preferences>,
 ) : ViewModel() {
 
     var state by mutableStateOf(SettingsUiState())
@@ -35,6 +41,13 @@ class SettingsViewModel @Inject constructor(
                 }
                 state = state.copy(settings = updatedSettings.toPersistentList())
             }
+        }
+    }
+
+    fun onDeleteWalletClick() {
+        viewModelScope.launch {
+            profileDataStore.edit { it.clear() }
+            dataStore.edit { it.clear() }
         }
     }
 }

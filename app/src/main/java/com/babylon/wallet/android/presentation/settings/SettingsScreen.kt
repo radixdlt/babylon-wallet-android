@@ -44,10 +44,10 @@ fun SettingsScreen(
     val state = viewModel.state
     SettingsContent(
         onBackClick = onBackClick,
+        onDeleteWalletClick = viewModel::onDeleteWalletClick,
         appSettings = state.settings,
         onSettingClick = onSettingClick,
         modifier = modifier
-//            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
@@ -57,6 +57,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     onBackClick: () -> Unit,
+    onDeleteWalletClick: () -> Unit,
     appSettings: ImmutableList<SettingSectionItem>,
     onSettingClick: (SettingSectionItem) -> Unit,
     modifier: Modifier = Modifier,
@@ -96,9 +97,7 @@ private fun SettingsContent(
                                     RadixSecondaryButton(
                                         modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
                                         text = stringResource(id = it),
-                                        onClick = {
-                                            onSettingClick(settingsItem)
-                                        },
+                                        onClick = onDeleteWalletClick,
                                         contentColor = RadixTheme.colors.red1
                                     )
                                 }
@@ -214,6 +213,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         SettingsContent(
             onBackClick = {},
+            onDeleteWalletClick = {},
             appSettings = persistentListOf(
                 SettingSectionItem.Connection,
                 SettingSectionItem.LinkedConnector,

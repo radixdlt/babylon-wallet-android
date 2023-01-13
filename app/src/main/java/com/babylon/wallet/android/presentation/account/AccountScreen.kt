@@ -100,7 +100,7 @@ fun AccountScreen(
         isLoading = state.isLoading,
         isRefreshing = state.isRefreshing,
         onRefresh = viewModel::refresh,
-        accountAddress = state.accountAddressShortened,
+        accountAddress = state.accountAddressFull,
         xrdToken = state.xrdToken,
         fungibleTokens = state.fungibleTokens,
         nonFungibleTokens = state.nonFungibleTokens,
