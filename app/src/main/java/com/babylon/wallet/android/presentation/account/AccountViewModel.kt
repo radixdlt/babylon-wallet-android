@@ -17,8 +17,10 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.decodeUtf8
 import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -41,8 +43,15 @@ class AccountViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
+    private val accountName: String = savedStateHandle.get<String>(ARG_ACCOUNT_NAME).orEmpty()
 
-    private val _accountUiState = MutableStateFlow(AccountUiState())
+    private val _accountUiState = MutableStateFlow(
+        AccountUiState(
+            accountAddressFull = accountId,
+            accountName = accountName.decodeUtf8(),
+            accountAddressShortened = accountId.truncatedHash()
+        )
+    )
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
@@ -85,8 +94,6 @@ class AccountViewModel @Inject constructor(
                         accountUiState.copy(
                             isRefreshing = false,
                             isLoading = false,
-                            accountAddressFull = accountResource.address,
-                            accountAddressShortened = accountResource.address.truncatedHash(),
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
                             nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList(),
@@ -132,6 +139,7 @@ data class AccountUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
+    val accountName: String = "",
     val accountAddressShortened: String = "",
     val accountAddressFull: String = "",
     val walletFiatBalance: String? = null,

@@ -7,7 +7,7 @@ data class FungibleToken(
     val totalSupply: BigDecimal,
     val totalMinted: BigDecimal,
     val totalBurnt: BigDecimal,
-    val metadata: Map<String, String> = emptyMap()
+    val metadata: Map<String, String> = emptyMap(),
 ) {
     fun getImageUrl(): String? {
         return metadata[TokenMetadataConstants.KEY_URL]
@@ -25,7 +25,9 @@ data class FungibleToken(
         return metadata[TokenMetadataConstants.KEY_DESCRIPTION]
     }
 
-    fun getMetadataWithoutDescription(): Map<String, String> {
-        return metadata.filterKeys { it != TokenMetadataConstants.KEY_DESCRIPTION }
+    fun getDisplayableMetadata(): Map<String, String> {
+        return metadata.filterKeys {
+            !TokenMetadataConstants.SPECIAL_METADATA.contains(it)
+        }
     }
 }

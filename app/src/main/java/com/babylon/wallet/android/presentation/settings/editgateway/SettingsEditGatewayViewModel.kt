@@ -14,14 +14,13 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.repository.ProfileRepository
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 @HiltViewModel
@@ -70,7 +69,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
                     profileRepository.setNetworkAndGateway(state.newUrl, networkName)
                     state = state.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.GatewayUpdated))
                 } else {
-                    val urlEncoded = URLEncoder.encode(state.newUrl, StandardCharsets.UTF_8.toString())
+                    val urlEncoded = state.newUrl.encodeUtf8()
                     sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, networkName))
                 }
             }

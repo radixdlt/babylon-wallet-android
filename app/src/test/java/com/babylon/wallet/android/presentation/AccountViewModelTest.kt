@@ -10,7 +10,10 @@ import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.decodeUtf8
 import com.babylon.wallet.android.utils.truncatedHash
+import io.mockk.every
+import io.mockk.mockkStatic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -43,13 +46,16 @@ class AccountViewModelTest {
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
 
-    private val sampleData = SampleDataProvider().sampleAccountResource()
+    private val sampleData = SampleDataProvider().sampleAccountResource(address = accountId)
 
     @Before
     fun setUp() = runTest {
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
+        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(requestAccountsUseCase(any())).thenReturn(Result.Success(sampleData))
         whenever(appEventBus.events).thenReturn(MutableSharedFlow<AppEvent>().asSharedFlow())
+        mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
+        every { any<String>().decodeUtf8() } returns accountName
     }
 
     @Test
@@ -89,5 +95,6 @@ class AccountViewModelTest {
 
     companion object {
         private val accountId = "1212"
+        private val accountName = "my account"
     }
 }

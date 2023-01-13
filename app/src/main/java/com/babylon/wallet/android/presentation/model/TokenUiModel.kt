@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
+import com.babylon.wallet.android.domain.model.TokenMetadataConstants
+import com.babylon.wallet.android.utils.truncatedHash
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -15,6 +17,7 @@ data class TokenUiModel(
     val tokenQuantity: BigDecimal, // the amount of the token held
     val tokenValue: String?, // the current value in currency the user has selected for the wallet
     val iconUrl: String?,
+    val address: String,
     val metadata: Map<String, String> = emptyMap()
 ) : AssetUiModel() {
     /**
@@ -76,6 +79,14 @@ data class TokenUiModel(
             decimalFormat.format(tokenQuantity)
         }
 
+    fun shortenedAddress(): String {
+        return address.truncatedHash()
+    }
+
+    fun isXrd(): Boolean {
+        return symbol == TokenMetadataConstants.SYMBOL_XRD
+    }
+
     companion object {
         private const val MAX_TOKEN_DIGITS_LENGTH = 8
     }
@@ -90,7 +101,8 @@ fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
         tokenValue = "",
         iconUrl = ownedFungibleToken.token.getImageUrl(),
         description = ownedFungibleToken.token.getTokenDescription(),
-        metadata = ownedFungibleToken.token.getMetadataWithoutDescription()
+        metadata = ownedFungibleToken.token.getDisplayableMetadata(),
+        address = ownedFungibleToken.address
     )
 }
 
@@ -103,6 +115,7 @@ fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
         tokenValue = "",
         iconUrl = token.getImageUrl(),
         description = token.getTokenDescription(),
-        metadata = token.getMetadataWithoutDescription()
+        metadata = token.getDisplayableMetadata(),
+        address = token.address
     )
 }

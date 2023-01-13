@@ -10,13 +10,12 @@ import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,9 +48,7 @@ class CreateAccountViewModel @Inject constructor(
             val account = if (hasProfile) {
                 createAccountUseCase(
                     displayName = accountName.value,
-                    networkUrl = args.networkUrlEncoded?.let {
-                        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-                    },
+                    networkUrl = args.networkUrlEncoded?.decodeUtf8(),
                     networkName = args.networkName,
                     switchNetwork = args.switchNetwork ?: false
                 )
