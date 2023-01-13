@@ -25,9 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,8 +56,6 @@ fun SettingsConnectionScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var connectionDisplayName by rememberSaveable { mutableStateOf("") }
-
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsAddConnectionContent(
         modifier = modifier
@@ -69,15 +64,11 @@ fun SettingsConnectionScreen(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         connectionName = state.connectionName,
-        onConnectionClick = {
-            viewModel.onConnectionClick(
-                connectionDisplayName = connectionDisplayName
-            )
-        },
+        onConnectionClick = viewModel::onConnectionClick,
         isLoading = state.isLoading,
         onBackClick = onBackClick,
-        connectionDisplayName = connectionDisplayName,
-        onConnectionDisplayNameChanged = { connectionDisplayName = it },
+        connectionDisplayName = state.editedConnectionDisplayName,
+        onConnectionDisplayNameChanged = viewModel::onConnectionDisplayNameChanged,
         onDeleteConnectionClick = viewModel::onDeleteConnectionClick,
         onConnectionPasswordDecoded = viewModel::onConnectionPasswordDecoded,
         settingsMode = state.mode,
