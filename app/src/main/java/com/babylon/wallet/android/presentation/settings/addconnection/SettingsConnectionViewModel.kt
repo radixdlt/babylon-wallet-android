@@ -151,7 +151,8 @@ class SettingsConnectionViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     mode = SettingsConnectionMode.ShowDetails,
-                    editedConnectionDisplayName = ""
+                    editedConnectionDisplayName = "",
+                    buttonEnabled = false
                 )
             }
         }
