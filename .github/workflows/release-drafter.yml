@@ -1,0 +1,13 @@
+name: Release Drafter
+on:
+ push:
+   # branches to consider in the event; optional, defaults to all
+   branches:
+     - main
+jobs:
+ update_release_draft:
+   runs-on: ubuntu-latest
+   steps:
+     - uses: release-drafter/release-drafter@6df64e4ba4842c203c604c1f45246c5863410adb
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
