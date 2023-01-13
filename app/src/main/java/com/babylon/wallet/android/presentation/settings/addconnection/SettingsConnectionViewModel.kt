@@ -61,9 +61,7 @@ class SettingsConnectionViewModel @Inject constructor(
         }
     }
 
-    fun onConnectionClick(
-        connectionDisplayName: String,
-    ) {
+    fun onConnectionClick() {
         if (listenIncomingMessagesJob?.isActive == true) {
             listenIncomingMessagesJob?.cancel()
         }
@@ -79,7 +77,7 @@ class SettingsConnectionViewModel @Inject constructor(
             if (encryptionKey != null) {
                 when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
                     is Result.Success -> { // we have a data channel which is already open!
-                        currentConnectionDisplayName = connectionDisplayName
+                        currentConnectionDisplayName = state.value.editedConnectionDisplayName
                         waitUntilConnectionIsTerminated()
                     }
                     is Result.Error -> {
@@ -90,6 +88,10 @@ class SettingsConnectionViewModel @Inject constructor(
                 _state.update { it.copy(isLoading = false) }
             }
         }
+    }
+
+    fun onConnectionDisplayNameChanged(name: String) {
+        _state.update { it.copy(editedConnectionDisplayName = name) }
     }
 
     fun onDeleteConnectionClick() {
@@ -139,7 +141,11 @@ class SettingsConnectionViewModel @Inject constructor(
                 displayName = currentConnectionDisplayName,
                 connectionPassword = currentConnectionPassword
             )
-            _state.update { it.copy(isLoading = false, mode = SettingsConnectionMode.ShowDetails) }
+            _state.update {
+                it.copy(isLoading = false,
+                    mode = SettingsConnectionMode.ShowDetails,
+                    editedConnectionDisplayName = "")
+            }
         }
     }
 }
@@ -147,6 +153,7 @@ class SettingsConnectionViewModel @Inject constructor(
 data class SettingsConnectionUiState(
     val isLoading: Boolean = false,
     val connectionName: String? = null,
+    val editedConnectionDisplayName: String = "",
     val isScanningQr: Boolean = false,
     val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,
