@@ -46,8 +46,8 @@ interface ProfileRepository {
 
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getMnemonicUseCase: GetMnemonicUseCase,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ProfileRepository {
 
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
@@ -58,7 +58,6 @@ class ProfileRepositoryImpl @Inject constructor(
                 null
             }
         }
-        .flowOn(ioDispatcher)
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
         profile?.appPreferences?.p2pClients?.firstOrNull()
