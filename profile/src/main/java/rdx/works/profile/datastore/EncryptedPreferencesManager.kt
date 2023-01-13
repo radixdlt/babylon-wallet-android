@@ -101,6 +101,8 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun clear() = preferences.edit { it.clear() }
+
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"

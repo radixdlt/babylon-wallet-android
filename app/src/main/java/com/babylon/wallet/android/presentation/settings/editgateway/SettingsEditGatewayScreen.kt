@@ -124,7 +124,8 @@ private fun SettingsEditGatewayContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                     value = newUrl,
                     onValueChanged = onNewUrlChanged,
-                    hint = stringResource(R.string.gateway_api_hint)
+                    hint = stringResource(R.string.gateway_api_hint),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 RadixPrimaryButton(
