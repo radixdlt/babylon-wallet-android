@@ -113,7 +113,7 @@ jobs:
   #     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
   #       with:
   #         fetch-depth: 0
-          
+
   #     - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
   #       with:
   #         name: lint-results
@@ -186,17 +186,27 @@ jobs:
           pwd
           ls -l **/*
 
+      - name: Export vars
+        run: |
+          echo "GPR_USER=${{ secrets.GPR_USER }}" >> $GITHUB_ENV
+          echo "GPR_TOKEN=${{ secrets.GPR_TOKEN }}" >> $GITHUB_ENV
+          echo "RADIX_DEBUG_PREVIEW_KEYSTORE_FILE=${{ steps.keystore_file.outputs.filePath }}" >> $GITHUB_ENV
+          echo "RADIX_ANDROID_KEYSTORE_PASSWORD=${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD=${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+          echo "RADIX_ANDROID_KEYSTORE_ALIAS=${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}" >> $GITHUB_ENV
+          echo "SONAR_TOKEN=${{ secrets.BABYLON_WALLET_ANDROID_SONAR_TOKEN }}" >> $GITHUB_ENV
+
       - name: "Build"
         run: |
-          env
+          env | sort
           ./gradlew assembleDebugPreview
-        env:
-          GPR_USER: ${{ secrets.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+        # env:
+        #   GPR_USER: ${{ secrets.GPR_USER }}
+        #   GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        #   RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+        #   RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+        #   RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+        #   RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
 
       - name: Upload APK from PR
         if: ${{ github.event_name == 'pull_request' }}
