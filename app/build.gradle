@@ -24,6 +24,12 @@ android {
             storeFile file(debugKeystoreProperties['storeFile'])
             storePassword debugKeystoreProperties['storePassword']
         }
+        debugAlpha {
+            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
+            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
+            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
+            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
+        }
         debugPreview {
             keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
             keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
@@ -50,6 +56,15 @@ android {
     buildTypes {
         debug {
             testCoverageEnabled true
+        }
+        debugAlpha {
+            initWith debug
+            applicationIdSuffix ".alpha"
+            minifyEnabled true
+            debuggable false
+            resValue "string", "app_name", "Radix Wallet Alpha"
+            matchingFallbacks = ['debug']
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debugPreview {
             initWith debug
