@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.truncatedHash
 import java.math.BigDecimal
 
@@ -59,29 +61,30 @@ fun AccountCardView(
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Row(
+                modifier = Modifier.throttleClickable {
+                    onCopyClick()
+                },
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
             ) {
                 Text(
                     modifier = Modifier.weight(1f, false),
                     text = hashValue.truncatedHash(),
-                    color = RadixTheme.colors.white,
+                    color = RadixTheme.colors.white.copy(alpha = 0.8f),
                     style = RadixTheme.typography.body2HighImportance,
                     maxLines = 1
                 )
-                IconButton(
-                    onClick = {
-                        onCopyClick()
-                    },
-                ) {
-                    Icon(
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
-                        null,
-                        tint = RadixTheme.colors.white
-                    )
-                }
+                Icon(
+                    modifier = Modifier.size(14.dp),
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.white.copy(alpha = 0.8f),
+                )
             }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            AssetIconRowView(assets = assets)
+            AnimatedVisibility(visible = false) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                AssetIconRowView(assets = assets)
+            }
         }
     }
 }

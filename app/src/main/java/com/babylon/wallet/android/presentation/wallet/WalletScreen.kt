@@ -101,6 +101,7 @@ private fun WalletScreenContent(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 RDXAppBar(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     toolbarTitle = stringResource(id = R.string.home_toolbar_title),
                     onMenuClick = onMenuClick
                 )
@@ -209,6 +210,7 @@ private fun WalletAccountList(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
         item {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RadixSecondaryButton(
                 text = stringResource(id = R.string.create_new_account),
                 onClick = onAccountCreationClick,
