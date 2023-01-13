@@ -17,7 +17,11 @@ desc "Deploy main branch"
 lane :beta do
 
     bump_build_number
-    gradle(task: "assembleDebugPreview")
+    gradle(
+        task: "assemble",
+        flavor: "Preview",
+        build_type: "Debug"
+        )
     firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
         release_notes: ENV["RELEASE_NOTES"],
