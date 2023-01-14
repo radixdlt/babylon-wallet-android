@@ -23,7 +23,7 @@ on:
       groups:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
-        default: 'internal'
+        default: 'alpha-devs'
         type: choice
         options:
           - "alpha-devs"
@@ -79,7 +79,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-          GROUPS: ${{ github.event.inputs.groups:-alpha-devs }}
+          GROUPS: ${{ github.event.inputs.groups:-"alpha-devs" }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
