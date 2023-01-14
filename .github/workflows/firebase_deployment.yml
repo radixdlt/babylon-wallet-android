@@ -1,8 +1,21 @@
 name: "Upload to Firebase"
 
 on:
+  push:
+    branches:
+      - "main"
+  release:
+    types:
+      - "published"
   workflow_dispatch:
     inputs:
+      flavor:
+        description: "Which flavor do you want to build and distribute?"
+        required: true
+        type: choice
+        options:
+          - "alpha"
+        default: "alpha"
       release_notes:
         description: "(Optional) Release notes for version you want to distribute"
         required: false
@@ -13,6 +26,7 @@ on:
         default: 'internal'
         type: choice
         options:
+          - "alpha-devs"
           - "internal"
           - "no"
 
@@ -21,6 +35,7 @@ jobs:
   deploy:
 
     name: "Build and distribute"
+
     runs-on: ubuntu-latest
 
     steps:
@@ -48,19 +63,23 @@ jobs:
           fileName: "debugPreview.jks"
           encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
 
-      - name: Build and distribute
+      - name: Distribute Alpha flavor
+        if: >
+          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
+          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
         run: |
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
+          echo $GROUPS
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane beta
+          bundle exec fastlane alpha
         env:
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-          GROUPS: ${{ github.event.inputs.groups }}
+          GROUPS: ${{ github.event.inputs.groups:-alpha-devs }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
@@ -69,3 +88,26 @@ jobs:
           RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
           RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
           RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+
+      # - name: Distribute Preview flavor
+      #   if: ( github.event_name == 'release' && github.event.release.prerelease )
+      #   run: |
+      #     if [ "$GROUPS" == "no" ]; then
+      #       GROUPS=''
+      #     fi
+      #     git config user.name $GIT_USER
+      #     git config user.email $GIT_USER
+      #     bundle exec fastlane beta
+      #   env:
+      #     FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
+      #     GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+      #     RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+      #     GROUPS: ${{ github.event.inputs.groups }}
+      #     SLACK_URL: ${{ secrets.SLACK_URL }}
+      #     GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+      #     GPR_USER: ${{ secrets.GPR_USER }}
+      #     GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+      #     RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+      #     RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+      #     RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+      #     RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
