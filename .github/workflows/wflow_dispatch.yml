@@ -23,7 +23,7 @@ on:
       groups:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
-        default: 'alpha-devs'
+        default: ''
         type: choice
         options:
           - "alpha-devs"
@@ -68,18 +68,20 @@ jobs:
           ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
           ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
         run: |
+          export GROUPS=${GROUPS:-"alpha-devs"}
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
           fi
           echo $GROUPS
-          git config user.name $GIT_USER
-          git config user.email $GIT_USER
-          bundle exec fastlane alpha
+          #git config user.name $GIT_USER
+          #git config user.email $GIT_USER
+          #bundle exec fastlane alpha
+          echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-          GROUPS: ${{ github.event.inputs.groups:-"alpha-devs" }}
+          GROUPS: ${{ github.event.inputs.groups }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
@@ -98,6 +100,7 @@ jobs:
       #     git config user.name $GIT_USER
       #     git config user.email $GIT_USER
       #     bundle exec fastlane beta
+      #     echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
       #   env:
       #     FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
       #     GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
