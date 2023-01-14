@@ -17,13 +17,13 @@ on:
           - "alpha"
         default: "alpha"
       release_notes:
-        description: "(Optional) Release notes for version you want to distribute"
+        description: "(Optional) Release notes for version you want to distribute (not needed for Alpha flavor)"
         required: false
         default: ''
       groups:
         description: "(Optional) Name of the group you want to notify about new version"
         required: false
-        default: ''
+        default: 'alpha-devs'
         type: choice
         options:
           - "alpha-devs"
@@ -42,6 +42,9 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           token: ${{ secrets.RADIX_BOT_PAT }}
+
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
 
       - name: Download Ruby (action)
         uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
@@ -71,11 +74,13 @@ jobs:
           export GROUPS=${GROUPS:-"alpha-devs"}
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
+          else
+            export GROUPS=${GROUPS:-"alpha-devs"}
           fi
           echo $GROUPS
-          #git config user.name $GIT_USER
-          #git config user.email $GIT_USER
-          #bundle exec fastlane alpha
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane alpha
           echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
@@ -91,26 +96,24 @@ jobs:
           RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
           RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
 
-      # - name: Distribute Preview flavor
-      #   if: ( github.event_name == 'release' && github.event.release.prerelease )
-      #   run: |
-      #     if [ "$GROUPS" == "no" ]; then
-      #       GROUPS=''
-      #     fi
-      #     git config user.name $GIT_USER
-      #     git config user.email $GIT_USER
-      #     bundle exec fastlane beta
-      #     echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
-      #   env:
-      #     FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
-      #     GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
-      #     RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-      #     GROUPS: ${{ github.event.inputs.groups }}
-      #     SLACK_URL: ${{ secrets.SLACK_URL }}
-      #     GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-      #     GPR_USER: ${{ secrets.GPR_USER }}
-      #     GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-      #     RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-      #     RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-      #     RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-      #     RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+      - name: Distribute Preview flavor
+        if: ( github.event_name == 'release' && github.event.release.prerelease )
+        run: |
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane preview
+          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+          GROUPS: "internal" # ${{ github.event.inputs.groups }}
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
