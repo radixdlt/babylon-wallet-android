@@ -24,14 +24,14 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.derivation.model.NetworkId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionApprovalViewModel>() {
 
     private val transactionClient = mockk<TransactionClient>()
-    private val profileRepository = mockk<ProfileRepository>()
+    private val networkRepository = mockk<NetworkRepository>()
     private val incomingRequestRepository = IncomingRequestRepository()
     private val dAppMessenger = mockk<DAppMessenger>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
@@ -49,7 +49,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns sampleRequestId
-        coEvery { profileRepository.getCurrentNetworkId() } returns NetworkId.Nebunet
+        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Nebunet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -71,7 +71,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         return TransactionApprovalViewModel(
             transactionClient,
             incomingRequestRepository,
-            profileRepository,
+            networkRepository,
             deviceSecurityHelper,
             dAppMessenger,
             TestScope(),
@@ -100,7 +100,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { profileRepository.getCurrentNetworkId() } returns NetworkId.Hammunet
+        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Hammunet
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction()
