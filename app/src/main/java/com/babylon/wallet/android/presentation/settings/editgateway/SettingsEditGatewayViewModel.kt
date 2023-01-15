@@ -20,12 +20,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val networkRepository: NetworkRepository,
     private val networkInfoRepository: NetworkInfoRepository,
 ) : ViewModel(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
@@ -65,8 +67,8 @@ class SettingsEditGatewayViewModel @Inject constructor(
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(state.newUrl)
             newGatewayInfo.onValue { networkName ->
                 state = state.copy(newNetworkName = networkName)
-                if (profileRepository.hasAccountOnNetwork(state.newUrl, networkName)) {
-                    profileRepository.setNetworkAndGateway(state.newUrl, networkName)
+                if (networkRepository.hasAccountOnNetwork(state.newUrl, networkName)) {
+                    networkRepository.setNetworkAndGateway(state.newUrl, networkName)
                     state = state.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.GatewayUpdated))
                 } else {
                     val urlEncoded = state.newUrl.encodeUtf8()

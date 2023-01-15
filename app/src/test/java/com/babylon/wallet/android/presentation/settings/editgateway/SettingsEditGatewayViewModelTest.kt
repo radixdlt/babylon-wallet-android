@@ -23,6 +23,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.data.repository.ProfileRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,15 +34,16 @@ class SettingsEditGatewayViewModelTest {
     private lateinit var vm: SettingsEditGatewayViewModel
 
     private val profileRepository = mockk<ProfileRepository>()
+    private val networkRepository = mockk<NetworkRepository>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
     private val profile = SampleDataProvider().sampleProfile()
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(profileRepository, networkInfoRepository)
+        vm = SettingsEditGatewayViewModel(profileRepository, networkRepository, networkInfoRepository)
         every { profileRepository.profile } returns flow { emit(profile) }
-        coEvery { profileRepository.setNetworkAndGateway(any(), any()) } just Runs
+        coEvery { networkRepository.setNetworkAndGateway(any(), any()) } just Runs
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("mardunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
@@ -71,17 +73,17 @@ class SettingsEditGatewayViewModelTest {
     fun `on network switch changes network`() = runTest {
         val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { profileRepository.hasAccountOnNetwork(sampleUrl, any()) } returns true
+        coEvery { networkRepository.hasAccountOnNetwork(sampleUrl, any()) } returns true
         vm.onSwitchToClick()
         advanceUntilIdle()
-        coVerify(exactly = 1) { profileRepository.setNetworkAndGateway(any(), any()) }
+        coVerify(exactly = 1) { networkRepository.setNetworkAndGateway(any(), any()) }
     }
 
     @Test
     fun `on network switch calls for create account`() = runTest {
         val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { profileRepository.hasAccountOnNetwork(sampleUrl, any()) } returns false
+        coEvery { networkRepository.hasAccountOnNetwork(sampleUrl, any()) } returns false
         vm.onSwitchToClick()
         advanceUntilIdle()
         assert(vm.oneOffEvent.first() is SettingsEditGatewayEvent.CreateProfileOnNetwork)
