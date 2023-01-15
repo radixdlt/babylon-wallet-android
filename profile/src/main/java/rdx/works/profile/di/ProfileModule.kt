@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.NetworkRepositoryImpl
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.ProfileRepositoryImpl
 import javax.inject.Singleton
@@ -17,4 +19,10 @@ interface ProfileModule {
     fun bindProfileRepository(
         profileRepositoryImpl: ProfileRepositoryImpl
     ): ProfileRepository
+
+    @Binds
+    @Singleton
+    fun bindNetworkRepository(
+        networkRepositoryImpl: NetworkRepositoryImpl
+    ): NetworkRepository
 }
