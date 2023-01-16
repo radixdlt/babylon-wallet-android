@@ -15,31 +15,30 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
-    private val profileRepository: ProfileRepository,
+    private val accountRepository: AccountRepository
 ) {
 
     suspend operator fun invoke(): Result<List<AccountResources>> = coroutineScope {
         val accountResourceList = mutableListOf<AccountResources>()
-        profileRepository.readProfile()?.let { profile ->
-            val results = profile.getAccounts().map { account ->
-                async {
-                    getSingleAccountResources(
-                        account.entityAddress.address,
-                        account.displayName.orEmpty(),
-                        account.appearanceID
-                    )
-                }
-            }.awaitAll()
-            results.forEach { result ->
-                result.onValue {
-                    accountResourceList.add(it)
-                }
+        val results = accountRepository.getAccounts().map { account ->
+            async {
+                getSingleAccountResources(
+                    account.entityAddress.address,
+                    account.displayName.orEmpty(),
+                    account.appearanceID
+                )
+            }
+        }.awaitAll()
+
+        results.forEach { result ->
+            result.onValue {
+                accountResourceList.add(it)
             }
         }
         if (accountResourceList.isNotEmpty()) {
@@ -49,14 +48,16 @@ class GetAccountResourcesUseCase @Inject constructor(
         }
     }
 
-    suspend operator fun invoke(address: String): Result<AccountResources> = coroutineScope {
-        profileRepository.readProfile()?.getAccountByAddress(address)?.let { account ->
-            getSingleAccountResources(
-                account.entityAddress.address,
-                account.displayName.orEmpty(),
-                account.appearanceID
-            )
-        } ?: Result.Error()
+    suspend operator fun invoke(address: String): Result<AccountResources> {
+        val account = accountRepository.getAccountByAddress(address)
+        requireNotNull(account) {
+            "account is null"
+        }
+        return getSingleAccountResources(
+            account.entityAddress.address,
+            account.displayName.orEmpty(),
+            account.appearanceID
+        )
     }
 
     @Suppress("LongMethod")

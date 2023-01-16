@@ -21,21 +21,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
-    profileRepository: ProfileRepository,
+    profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
         preferencesManager.showOnboarding,
-        profileRepository.profile
+        profileDataSource.profile
     ) { showOnboarding, profileSnapshot ->
         MainUiState(
             loading = false,
@@ -52,7 +52,7 @@ class MainViewModel @Inject constructor(
     private var incomingRequestsJob: Job? = null
 
     init {
-        profileRepository.p2pClient
+        profileDataSource.p2pClient
             .map { p2pClient ->
                 if (p2pClient != null) {
                     Timber.d("found connection password")

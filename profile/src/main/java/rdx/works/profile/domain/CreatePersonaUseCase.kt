@@ -7,7 +7,7 @@ import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.model.pernetwork.Persona
 import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.createNewPersona
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -24,7 +24,7 @@ class CreatePersonaUseCase @Inject constructor(
         fields: List<PersonaField>
     ): Persona {
         return withContext(defaultDispatcher) {
-            val profile = profileRepository.readProfile()
+            val profile = profileDataSource.readProfile()
             checkNotNull(profile) {
                 "Profile does not exist"
             }
@@ -53,7 +53,7 @@ class CreatePersonaUseCase @Inject constructor(
             )
 
             // Save updated profile
-            profileRepository.saveProfile(updatedProfile)
+            profileDataSource.saveProfile(updatedProfile)
 
             // Return new persona
             newPersona

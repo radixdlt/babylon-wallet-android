@@ -8,8 +8,6 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfir
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.truncatedHash
-import io.mockk.coEvery
-import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -20,21 +18,17 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.model.pernetwork.Account
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.EntityAddress
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.model.pernetwork.*
+import rdx.works.profile.data.repository.AccountRepository
 
 @ExperimentalCoroutinesApi
 class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountConfirmationViewModel>() {
 
-    private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
-    private val profileRepository = mockk<ProfileRepository>()
+    private val savedStateHandle = mock(SavedStateHandle::class.java)
+    private val accountRepository = mock(AccountRepository::class.java)
     private val accountId = "fj3489fj348f"
     private val accountName = "My main account"
 
@@ -44,7 +38,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         whenever(savedStateHandle.get<String>(ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
-        coEvery { profileRepository.getAccounts() } returns listOf(
+        whenever(accountRepository.getAccountByAddress(any())).thenReturn(
             Account(
                 entityAddress = EntityAddress(accountId),
                 appearanceID = 123,
@@ -128,6 +122,6 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
     }
 
     override fun initVM(): CreateAccountConfirmationViewModel {
-        return CreateAccountConfirmationViewModel(profileRepository, savedStateHandle)
+        return CreateAccountConfirmationViewModel(accountRepository, savedStateHandle)
     }
 }

@@ -2,9 +2,8 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.usecases.GetAccountsUseCase
 import com.babylon.wallet.android.fakes.DAppMessengerFake
-import com.babylon.wallet.android.fakes.ProfileRepositoryFake
+import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequest
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsEvent
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsViewModel
@@ -26,11 +25,7 @@ class ChooseAccountsViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val profileRepository = ProfileRepositoryFake()
-
-    private val getAccountsUseCase = GetAccountsUseCase(
-        profileRepository = profileRepository
-    )
+    private val accountRepository = AccountRepositoryFake()
 
     private val dAppMessenger = DAppMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepository()
@@ -43,7 +38,7 @@ class ChooseAccountsViewModelTest {
 
         viewModel = ChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(mapOf(ARG_INCOMING_REQUEST_ID to accountsRequest.requestId)),
-            getAccountsUseCase = getAccountsUseCase,
+            accountRepository = accountRepository,
             dAppMessenger = dAppMessenger,
             incomingRequestRepository = incomingRequestRepository
         )

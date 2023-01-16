@@ -24,26 +24,28 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.data.repository.NetworkRepository
 import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
 
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val profileRepository: ProfileRepository,
+    private val networkRepository: NetworkRepository,
+    private val accountRepository: AccountRepository,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
 ) {
 
     private val engine = RadixEngineToolkit
 
     suspend fun signAndSubmitTransaction(manifest: TransactionManifest, hasLockFee: Boolean): Result<String> {
-        val networkId = profileRepository.getCurrentNetworkId().value
+        val networkId = networkRepository.getCurrentNetworkId().value
         return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
 
     suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
-        val networkId = profileRepository.getCurrentNetworkId().value
+        val networkId = networkRepository.getCurrentNetworkId().value
         val manifestConversionResult =
             convertManifestInstructionsToJSON(
                 version = manifestData.version,
@@ -178,7 +180,7 @@ class TransactionClient @Inject constructor(
         networkId: Int,
         addressesNeededToSign: List<String>,
     ): NotaryAndSigners {
-        val signers = profileRepository.getSignersForAddresses(networkId, addressesNeededToSign)
+        val signers = accountRepository.getSignersForAddresses(networkId, addressesNeededToSign)
         return NotaryAndSigners(signers.first(), signers)
     }
 
@@ -186,7 +188,7 @@ class TransactionClient @Inject constructor(
         version: Long,
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
-        val networkId = profileRepository.getCurrentNetworkId()
+        val networkId = networkRepository.getCurrentNetworkId()
         return try {
             Result.Success(
                 engine.convertManifest(

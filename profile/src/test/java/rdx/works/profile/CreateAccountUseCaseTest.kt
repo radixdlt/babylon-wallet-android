@@ -24,7 +24,8 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
@@ -103,11 +104,17 @@ class CreateAccountUseCaseTest {
                 } doReturn "noodle question hungry sail type offer grocery clay nation hello mixture forum"
             }
 
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.readProfile()).thenReturn(profile)
-            whenever(profileRepository.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
+            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            val networkRepository = Mockito.mock(NetworkRepository::class.java)
+            whenever(profileDataSource.readProfile()).thenReturn(profile)
+            whenever(networkRepository.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
 
-            val createAccountUseCase = CreateAccountUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
+            val createAccountUseCase = CreateAccountUseCase(
+                generateMnemonicUseCase = getMnemonicUseCase,
+                profileDataSource = profileDataSource,
+                networkRepository = networkRepository,
+                testDispatcher
+            )
 
             val account = createAccountUseCase(
                 displayName = accountName
@@ -118,7 +125,7 @@ class CreateAccountUseCaseTest {
                 networkID = NetworkId.Hammunet
             )
 
-            verify(profileRepository).saveProfile(updatedProfile)
+            verify(profileDataSource).saveProfile(updatedProfile)
         }
     }
 }

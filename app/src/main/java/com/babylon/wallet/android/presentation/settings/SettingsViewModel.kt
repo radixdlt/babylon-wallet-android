@@ -12,12 +12,12 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
     private val preferencesManager: PreferencesManager,
     private val peerdroidClient: PeerdroidClient
 ) : ViewModel() {
@@ -27,7 +27,7 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileRepository.p2pClient.collect { p2pClient ->
+            profileDataSource.p2pClient.collect { p2pClient ->
                 val updatedSettings = if (p2pClient == null) {
                     state.settings.toMutableList().apply {
                         if (!contains(SettingSectionItem.Connection)) {
@@ -44,7 +44,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onDeleteWalletClick() {
         viewModelScope.launch {
-            profileRepository.clear()
+            profileDataSource.clear()
             preferencesManager.clear()
             peerdroidClient.close()
         }

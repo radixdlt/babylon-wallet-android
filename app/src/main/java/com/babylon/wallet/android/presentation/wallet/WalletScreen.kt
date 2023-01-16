@@ -194,7 +194,7 @@ private fun WalletAccountList(
         itemsIndexed(accounts) { _, account ->
             val gradientColors = AccountGradientList[account.appearanceID]
             AccountCardView(
-                hashValue = account.address,
+                address = account.address,
                 accountName = account.displayName,
                 onCopyClick = { onCopyAccountAddressClick(account.address) },
                 assets = account.fungibleTokens,

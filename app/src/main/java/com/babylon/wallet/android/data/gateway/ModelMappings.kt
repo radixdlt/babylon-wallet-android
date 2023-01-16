@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.gateway
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseNonFungibleResourceDetailsIdsItem
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsResponse
@@ -10,7 +9,6 @@ import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleTokenId
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedNonFungibleToken
@@ -55,14 +53,6 @@ fun EntityMetadataCollection.toNonFungibleMetadataContainer(): NonFungibleMetada
         metadata = items.associate { it.key to it.value },
         nextCursor = nextCursor,
         previousCursor = previousCursor
-    )
-}
-
-fun EntityDetailsResponseNonFungibleResourceDetailsIdsItem.toNonFungibleId(): NonFungibleTokenId {
-    return NonFungibleTokenId(
-        idHex = idHex,
-        immutableDataHex = immutableDataHex,
-        mutableDataHex = mutableDataHex
     )
 }
 

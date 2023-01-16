@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @Singleton
 class EncryptedPreferencesManager @Inject constructor(
     @ProfileDataStore private val preferences: DataStore<Preferences>,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
     val encryptedProfile = preferences.data

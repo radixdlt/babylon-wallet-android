@@ -5,18 +5,18 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(
     private val getMnemonicUseCase: GetMnemonicUseCase,
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(accountDisplayName: String): Profile {
-        profileRepository.readProfile()?.let { profile ->
+        profileDataSource.readProfile()?.let { profile ->
             return profile
         } ?: run {
             return withContext(defaultDispatcher) {
@@ -30,7 +30,7 @@ class GenerateProfileUseCase @Inject constructor(
                     firstAccountDisplayName = accountDisplayName
                 )
 
-                profileRepository.saveProfile(profile)
+                profileDataSource.saveProfile(profile)
 
                 profile
             }

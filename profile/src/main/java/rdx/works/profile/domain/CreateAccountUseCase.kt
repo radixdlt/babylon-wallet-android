@@ -9,14 +9,16 @@ import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
+    private val networkRepository: NetworkRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
@@ -26,17 +28,22 @@ class CreateAccountUseCase @Inject constructor(
         switchNetwork: Boolean = false
     ): Account {
         return withContext(defaultDispatcher) {
-            val profile = profileRepository.readProfile()
+            val profile = profileDataSource.readProfile()
             checkNotNull(profile) {
                 "Profile does not exist"
             }
 
             var networkAndGateway: NetworkAndGateway? = null
             if (networkUrl != null && networkName != null) {
-                networkAndGateway =
-                    NetworkAndGateway(networkUrl, Network.allKnownNetworks().first { it.name == networkName })
+                networkAndGateway = NetworkAndGateway(
+                    gatewayAPIEndpointURL = networkUrl,
+                    network = Network.allKnownNetworks().first { network ->
+                        network.name == networkName
+                    }
+                )
             }
-            val networkID = networkAndGateway?.network?.networkId() ?: profileRepository.getCurrentNetworkId()
+            val networkID = networkAndGateway?.network?.networkId() ?: networkRepository.getCurrentNetworkId()
+
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
@@ -61,7 +68,7 @@ class CreateAccountUseCase @Inject constructor(
                 updatedProfile = updatedProfile.setNetworkAndGateway(networkAndGateway)
             }
             // Save updated profile
-            profileRepository.saveProfile(updatedProfile)
+            profileDataSource.saveProfile(updatedProfile)
             // Return new account
             newAccount
         }

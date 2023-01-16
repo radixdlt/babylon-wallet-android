@@ -26,7 +26,7 @@ import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GenerateProfileUseCase
@@ -101,11 +101,11 @@ class GenerateProfileUseCaseTest {
                 ),
                 version = "9.9.9"
             )
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.readProfile()).thenReturn(profile)
+            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            whenever(profileDataSource.readProfile()).thenReturn(profile)
 
             // when
-            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
+            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
 
             // then
             Assert.assertEquals(generateProfileUseCase("main"), profile)
@@ -127,10 +127,10 @@ class GenerateProfileUseCaseTest {
                 NetworkAndGateway.nebunet.network.networkId()
             )
 
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
+            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
 
-            whenever(profileRepository.readProfile()).thenReturn(null)
+            whenever(profileDataSource.readProfile()).thenReturn(null)
 
             val profile = generateProfileUseCase("main")
 
@@ -160,10 +160,10 @@ class GenerateProfileUseCaseTest {
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
             val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, networkAndGateway.network.networkId())
 
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
+            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
 
-            whenever(profileRepository.readProfile()).thenReturn(null)
+            whenever(profileDataSource.readProfile()).thenReturn(null)
 
             val profile = generateProfileUseCase("main")
 

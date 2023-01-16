@@ -13,7 +13,7 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import javax.inject.Inject
@@ -21,10 +21,10 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
+    deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel(), OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)
@@ -49,7 +49,7 @@ class CreateAccountViewModel @Inject constructor(
             loading = true
         )
         viewModelScope.launch {
-            val hasProfile = profileRepository.readProfile() != null
+            val hasProfile = profileDataSource.readProfile() != null
             val accountName = accountName.value.trim()
             val account = if (hasProfile) {
                 createAccountUseCase(
