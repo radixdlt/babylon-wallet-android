@@ -72,6 +72,7 @@ fun NavGraphBuilder.createAccountScreen(
         arguments = listOf(
             navArgument(ARG_REQUEST_SOURCE) {
                 type = NavType.EnumType(CreateAccountRequestSource::class.java)
+                defaultValue = CreateAccountRequestSource.FirstTime
             },
             navArgument(ARG_NETWORK_URL) {
                 type = NavType.StringType
