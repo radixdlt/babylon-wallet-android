@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.usecases.GetAccountsUseCase
 import com.babylon.wallet.android.fakes.DAppMessengerFake
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequest
@@ -28,10 +27,6 @@ class ChooseAccountsViewModelTest {
 
     private val accountRepository = AccountRepositoryFake()
 
-    private val getAccountsUseCase = GetAccountsUseCase(
-        accountRepository = accountRepository
-    )
-
     private val dAppMessenger = DAppMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepository()
 
@@ -43,7 +38,7 @@ class ChooseAccountsViewModelTest {
 
         viewModel = ChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(mapOf(ARG_INCOMING_REQUEST_ID to accountsRequest.requestId)),
-            getAccountsUseCase = getAccountsUseCase,
+            accountRepository = accountRepository,
             dAppMessenger = dAppMessenger,
             incomingRequestRepository = incomingRequestRepository
         )

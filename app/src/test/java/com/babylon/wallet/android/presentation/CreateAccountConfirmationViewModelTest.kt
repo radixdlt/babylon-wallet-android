@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.domain.model.AccountSlim
-import com.babylon.wallet.android.domain.usecases.GetAccountByAddressUseCase
 import com.babylon.wallet.android.presentation.createaccount.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.createaccount.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationEvent
@@ -23,13 +21,14 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.model.pernetwork.EntityAddress
+import rdx.works.profile.data.model.pernetwork.*
+import rdx.works.profile.data.repository.AccountRepository
 
 @ExperimentalCoroutinesApi
 class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountConfirmationViewModel>() {
 
     private val savedStateHandle = mock(SavedStateHandle::class.java)
-    private val getAccountByAddressUseCase = mock(GetAccountByAddressUseCase::class.java)
+    private val accountRepository = mock(AccountRepository::class.java)
     private val accountId = "fj3489fj348f"
     private val accountName = "My main account"
 
@@ -39,11 +38,28 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         whenever(savedStateHandle.get<String>(ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
-        whenever(getAccountByAddressUseCase(any())).thenReturn(
-            AccountSlim(
-                address = EntityAddress(accountId).address,
+        whenever(accountRepository.getAccountByAddress(any())).thenReturn(
+            Account(
+                entityAddress = EntityAddress(accountId),
                 appearanceID = 123,
-                displayName = accountName
+                derivationPath = "m/1'/1'/1'/1'/1'/1'",
+                displayName = accountName,
+                index = 0,
+                securityState = SecurityState.Unsecured(
+                    discriminator = "dsics",
+                    unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                        genesisFactorInstance = FactorInstance(
+                            derivationPath = DerivationPath("few", "disc"),
+                            factorInstanceID = "IDIDDIIDD",
+                            factorSourceReference = FactorSourceReference(
+                                factorSourceID = "f32f3",
+                                factorSourceKind = "kind"
+                            ),
+                            initializationDate = "Date1",
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                        )
+                    )
+                )
             )
         )
     }
@@ -106,6 +122,6 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
     }
 
     override fun initVM(): CreateAccountConfirmationViewModel {
-        return CreateAccountConfirmationViewModel(getAccountByAddressUseCase, savedStateHandle)
+        return CreateAccountConfirmationViewModel(accountRepository, savedStateHandle)
     }
 }

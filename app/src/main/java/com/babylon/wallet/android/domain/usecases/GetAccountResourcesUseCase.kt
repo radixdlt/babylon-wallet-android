@@ -21,8 +21,7 @@ import javax.inject.Inject
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
-    private val accountRepository: AccountRepository,
-    private val getAccountByAddressUseCase: GetAccountByAddressUseCase
+    private val accountRepository: AccountRepository
 ) {
 
     suspend operator fun invoke(): Result<List<AccountResources>> = coroutineScope {
@@ -50,9 +49,12 @@ class GetAccountResourcesUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(address: String): Result<AccountResources> {
-        val account = getAccountByAddressUseCase(address)
+        val account = accountRepository.getAccountByAddress(address)
+        requireNotNull(account) {
+            "account is null"
+        }
         return getSingleAccountResources(
-            account.address,
+            account.entityAddress.address,
             account.displayName.orEmpty(),
             account.appearanceID
         )

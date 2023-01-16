@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.account
 
-import com.babylon.wallet.android.domain.model.AccountSlim
+import rdx.works.profile.data.model.pernetwork.Account
 
 data class AccountItemUiModel(
     val address: String,
@@ -9,8 +9,8 @@ data class AccountItemUiModel(
     val isSelected: Boolean = false
 )
 
-fun AccountSlim.toUiModel(isSelected: Boolean) = AccountItemUiModel(
-    address = address,
+fun Account.toUiModel(isSelected: Boolean) = AccountItemUiModel(
+    address = entityAddress.address,
     displayName = displayName,
     appearanceID = appearanceID,
     isSelected = isSelected

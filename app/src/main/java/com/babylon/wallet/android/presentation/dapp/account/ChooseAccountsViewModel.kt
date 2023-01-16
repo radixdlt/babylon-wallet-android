@@ -13,17 +13,16 @@ import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.AccountSlim
-import com.babylon.wallet.android.domain.usecases.GetAccountsUseCase
 import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getAccountsUseCase: GetAccountsUseCase,
+    private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
     incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
@@ -38,15 +37,15 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getAccountsUseCase().collect { accounts ->
+            accountRepository.accounts.collect { accounts ->
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
-                val accountItems = accounts.map { accountResources ->
+                val accountItems = accounts.map { account ->
                     val currentAccountItemState = state.availableAccountItems.find { accountItemUiModel ->
-                        accountItemUiModel.address == accountResources.address
+                        accountItemUiModel.address == account.entityAddress.address
                     }
-                    accountResources.toUiModel(currentAccountItemState?.isSelected ?: false)
+                    account.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }
 
                 state = state.copy(
@@ -88,12 +87,6 @@ class ChooseAccountsViewModel @Inject constructor(
         val selectedAccounts = state.availableAccountItems
             .filter { accountItem ->
                 accountItem.isSelected
-            }.map {
-                AccountSlim(
-                    address = it.address,
-                    appearanceID = it.appearanceID,
-                    displayName = it.displayName
-                )
             }
         viewModelScope.launch {
             val result = dAppMessenger.sendAccountsResponse(

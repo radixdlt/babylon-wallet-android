@@ -9,15 +9,15 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.domain.usecases.GetAccountByAddressUseCase
 import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateAccountConfirmationViewModel @Inject constructor(
-    private val getAccountByAddressUseCase: GetAccountByAddressUseCase,
+    private val accountRepository: AccountRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel(), OneOffEventHandler<CreateAccountConfirmationEvent> by OneOffEventHandlerImpl() {
 
@@ -25,10 +25,13 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val account = getAccountByAddressUseCase(args.accountId)
+            val account = accountRepository.getAccountByAddress(args.accountId)
+            requireNotNull(account) {
+                "account is null"
+            }
             accountUiState = accountUiState.copy(
                 accountName = account.displayName.orEmpty(),
-                accountAddressTruncated = account.address.truncatedHash(),
+                accountAddressTruncated = account.entityAddress.address.truncatedHash(),
                 appearanceId = account.appearanceID
             )
         }
