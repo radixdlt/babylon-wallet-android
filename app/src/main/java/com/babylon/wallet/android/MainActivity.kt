@@ -12,7 +12,6 @@ import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
@@ -20,7 +19,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import dagger.hilt.android.AndroidEntryPoint
 
 // Extending from FragmentActivity because of Biometric
-@ExperimentalLifecycleComposeApi
 @OptIn(ExperimentalPagerApi::class)
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {

@@ -32,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -52,7 +51,6 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @ExperimentalAnimationApi
 @ExperimentalPagerApi
 @Composable
