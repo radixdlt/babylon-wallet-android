@@ -136,7 +136,7 @@ class GetAccountResourcesUseCase @Inject constructor(
 
                 Result.Success(
                     data = AccountResources(
-                        address = address,
+                        address = AccountResources.Address(string = address),
                         displayName = accountDisplayName,
                         currencySymbol = "$", // TODO replace when endpoint ready
                         value = "100",

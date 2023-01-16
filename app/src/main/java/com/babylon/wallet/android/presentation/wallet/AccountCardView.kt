@@ -31,7 +31,7 @@ import java.math.BigDecimal
 @Suppress("UnstableCollections")
 @Composable
 fun AccountCardView(
-    hashValue: String,
+    address: String,
     accountName: String,
     onCopyClick: () -> Unit,
     assets: List<OwnedFungibleToken>, // at the moment we pass only the tokens
@@ -69,7 +69,7 @@ fun AccountCardView(
             ) {
                 Text(
                     modifier = Modifier.weight(1f, false),
-                    text = hashValue.truncatedHash(),
+                    text = address.truncatedHash(),
                     color = RadixTheme.colors.white.copy(alpha = 0.8f),
                     style = RadixTheme.typography.body2HighImportance,
                     maxLines = 1
@@ -96,7 +96,7 @@ fun AccountCardView(
 fun AccountCardPreview() {
     RadixWalletTheme {
         AccountCardView(
-            hashValue = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
+            address = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
             accountName = "My main account",
             onCopyClick = {},
             assets = listOf(

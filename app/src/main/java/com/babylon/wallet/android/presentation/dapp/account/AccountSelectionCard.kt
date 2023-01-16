@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.ui.composables.TruncatedAddressTe
 @Composable
 fun AccountSelectionCard(
     accountName: String,
-    hashValue: String,
+    address: String,
     checked: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -45,7 +45,7 @@ fun AccountSelectionCard(
                 )
             }
             TruncatedAddressText(
-                text = hashValue,
+                text = address,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Link,
                 color = RadixTheme.colors.white.copy(alpha = 0.8f)
@@ -70,7 +70,7 @@ fun DAppAccountCardPreview() {
     RadixWalletTheme {
         AccountSelectionCard(
             accountName = "Account name",
-            hashValue = "jf932j9f32o",
+            address = "jf932j9f32o",
             checked = true
         )
     }
@@ -83,7 +83,7 @@ fun DAppAccountCardLargeFontPreview() {
     RadixWalletTheme {
         AccountSelectionCard(
             accountName = "Account name",
-            hashValue = "jf932j9f32o",
+            address = "jf932j9f32o",
             checked = true
         )
     }

@@ -136,7 +136,7 @@ class TransactionClient @Inject constructor(
             is Result.Error -> null
             is Result.Success -> {
                 val accountWithXrd = accounts.data.firstOrNull { it.hasXrdWithBalance() }
-                accountWithXrd?.address
+                accountWithXrd?.address?.string
             }
         }
     }

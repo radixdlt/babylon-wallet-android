@@ -141,7 +141,7 @@ fun ChooseAccountContent(
                                 onAccountSelect(index)
                             },
                         accountName = accountItem.displayName.orEmpty(),
-                        hashValue = accountItem.address,
+                        address = accountItem.address,
                         checked = accountItem.isSelected
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

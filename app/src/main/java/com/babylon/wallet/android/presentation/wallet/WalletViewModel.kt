@@ -67,8 +67,8 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    fun onCopyAccountAddress(hashValue: String) {
-        val clipData = ClipData.newPlainText("accountHash", hashValue)
+    fun onCopyAccountAddress(address: String) {
+        val clipData = ClipData.newPlainText("accountAddress", address)
         clipboardManager.setPrimaryClip(clipData)
     }
 
