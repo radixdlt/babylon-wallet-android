@@ -54,7 +54,7 @@ fun RadixTextField(
             onValueChange = onValueChanged,
             shape = RadixTheme.shapes.roundedRectSmall,
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = RadixTheme.colors.gray4,
+                containerColor = RadixTheme.colors.gray5,
                 placeholderColor = RadixTheme.colors.gray2,
                 textColor = RadixTheme.colors.gray1,
                 focusedBorderColor = RadixTheme.colors.gray1,
@@ -62,11 +62,12 @@ fun RadixTextField(
                 errorBorderColor = RadixTheme.colors.red1
             ),
             placeholder = {
-                hint?.let { Text(text = it) }
+                hint?.let { Text(text = it, style = RadixTheme.typography.body1Regular) }
             },
             trailingIcon = trailingIcon,
             isError = error != null,
-            singleLine = singleLine
+            singleLine = singleLine,
+            textStyle = RadixTheme.typography.body1Regular
         )
         if (error != null) {
             Row(

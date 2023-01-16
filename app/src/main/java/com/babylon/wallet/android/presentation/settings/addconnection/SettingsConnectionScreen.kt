@@ -178,7 +178,7 @@ private fun ActiveConnectionDetails(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.link_to_connector),
+                    text = stringResource(id = R.string.link_new_connector),
                     onClick = {
                         onAddConnection()
                         cameraPermissionState.launchPermissionRequest()
@@ -250,18 +250,17 @@ private fun ConnectionNameInput(
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             value = connectionDisplayName,
             onValueChanged = onConnectionDisplayNameChanged,
-            hint = stringResource(R.string.enter_the_display_name),
-            singleLine = true
+            hint = stringResource(R.string.name_of_connector),
+            singleLine = true,
+            optionalHint = stringResource(id = R.string.hint_name_this_connector)
         )
-
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.add_connection),
+            text = stringResource(id = R.string.save_link),
             onClick = onConnectionClick,
             enabled = buttonEnabled
         )

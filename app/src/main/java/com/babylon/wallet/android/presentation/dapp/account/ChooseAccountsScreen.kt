@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -26,13 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -68,7 +64,6 @@ fun ChooseAccountsScreen(
         onContinueClick = {
             viewModel.sendAccountsResponse()
         },
-        imageUrl = state.dAppDetails?.imageUrl.orEmpty(),
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
         onAccountSelect = viewModel::onAccountSelect,
@@ -93,7 +88,6 @@ fun ChooseAccountsScreen(
 fun ChooseAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
-    imageUrl: String,
     isContinueButtonEnabled: Boolean,
     accountItems: List<AccountItemUiModel>,
     onAccountSelect: (Int) -> Unit,
@@ -119,21 +113,10 @@ fun ChooseAccountContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            AsyncImage(
-                model = imageUrl,
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder),
-                contentDescription = "choose_dapp_login_image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(110.dp)
-                    .clip(RadixTheme.shapes.roundedRectSmall)
-            )
-            Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = R.string.choose_dapp_accounts_title),
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.header,
+                style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -141,7 +124,7 @@ fun ChooseAccountContent(
                 text = stringResource(id = R.string.choose_dapp_accounts_body),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(40.dp))
             Column {
@@ -157,7 +140,6 @@ fun ChooseAccountContent(
                             .clickable {
                                 onAccountSelect(index)
                             },
-                        // TODO probably we need to change the whole message when no display name
                         accountName = accountItem.displayName.orEmpty(),
                         hashValue = accountItem.address,
                         checked = accountItem.isSelected
@@ -211,7 +193,6 @@ fun ChooseAccountContentPreview() {
         ChooseAccountContent(
             onBackClick = {},
             onContinueClick = {},
-            imageUrl = "",
             isContinueButtonEnabled = true,
             accountItems = listOf(
                 AccountItemUiModel(
@@ -228,7 +209,6 @@ fun ChooseAccountContentPreview() {
                 )
             ),
             onAccountSelect = {},
-            onCreateNewAccount = {},
-        )
+        ) {}
     }
 }

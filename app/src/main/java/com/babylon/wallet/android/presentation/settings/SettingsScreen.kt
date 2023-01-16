@@ -67,7 +67,7 @@ private fun SettingsContent(
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.settings),
+            title = stringResource(R.string.wallet_settings),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
@@ -190,20 +190,26 @@ private fun ConnectionSettingItem(
         )
         Text(
             text = stringResource(R.string.scan_the_qr_code),
-            style = RadixTheme.typography.body2Link,
+            style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray2,
             textAlign = TextAlign.Center
         )
-        RadixSecondaryButton(text = stringResource(R.string.link_to_connector), onClick = {
-            onSettingClick(settingsItem)
-        }, contentColor = RadixTheme.colors.gray1, icon = {
+        RadixSecondaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.link_to_connector),
+            onClick = {
+                onSettingClick(settingsItem)
+            },
+            contentColor = RadixTheme.colors.gray1,
+            icon = {
                 Icon(
                     painter = painterResource(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
                     ),
                     contentDescription = null
                 )
-            })
+            }
+        )
     }
 }
 

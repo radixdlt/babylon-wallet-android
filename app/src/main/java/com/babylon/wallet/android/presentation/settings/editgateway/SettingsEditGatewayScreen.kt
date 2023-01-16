@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -102,7 +101,7 @@ private fun SettingsEditGatewayContent(
             ) {
                 Text(
                     text = stringResource(R.string.your_radix_wallet_is_linked),
-                    style = RadixTheme.typography.body2Regular,
+                    style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2
                 )
                 Divider(color = RadixTheme.colors.gray5)
@@ -112,27 +111,25 @@ private fun SettingsEditGatewayContent(
                     currentNetworkEndpoint = currentNetworkEndpoint,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Text(
-                    text = stringResource(id = R.string.new_url),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
+                Spacer(modifier = Modifier.weight(0.5f))
                 RadixTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                    modifier = Modifier.fillMaxWidth(),
                     value = newUrl,
                     onValueChanged = onNewUrlChanged,
                     hint = stringResource(R.string.gateway_api_hint),
                     singleLine = true
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(id = R.string.new_url),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(0.5f))
                 RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .imePadding(),
-                    text = stringResource(id = R.string.switch_to),
+                    text = stringResource(id = R.string.update_gateway),
                     onClick = onSwitchToClick,
                     enabled = newUrlValid
                 )
@@ -154,7 +151,7 @@ private fun CurrentNetworkDetails(
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         Text(
-            text = stringResource(id = R.string.current),
+            text = stringResource(id = R.string.current_network_gateway),
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
@@ -162,38 +159,38 @@ private fun CurrentNetworkDetails(
             Column {
                 Text(
                     text = stringResource(id = R.string.network_name),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1
                 )
                 Text(
                     text = currentNetworkName,
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
                 )
             }
             Column {
                 Text(
                     text = stringResource(id = R.string.network_id),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1
                 )
                 Text(
                     text = currentNetworkId,
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
                 )
             }
         }
         Column {
             Text(
-                text = stringResource(id = R.string.gateway_api_endpoint),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                text = stringResource(id = R.string.gateway_url),
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1
             )
             Text(
                 text = currentNetworkEndpoint,
-                style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
             )
         }
     }

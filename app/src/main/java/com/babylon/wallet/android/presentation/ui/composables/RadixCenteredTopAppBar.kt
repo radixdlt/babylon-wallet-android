@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,9 +25,10 @@ fun RadixCenteredTopAppBar(
     title: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    contentColor: Color = RadixTheme.colors.white,
+    contentColor: Color = RadixTheme.colors.gray1,
     actions: @Composable RowScope.() -> Unit = {},
-    backIconType: BackIconType = BackIconType.Back
+    backIconType: BackIconType = BackIconType.Back,
+    containerColor: Color = RadixTheme.colors.defaultBackground
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier,
@@ -53,8 +56,16 @@ fun RadixCenteredTopAppBar(
             )
         },
         actions = actions,
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = containerColor)
     )
+}
+
+@Preview
+@Composable
+fun RadixCenteredTopAppBarPreview() {
+    RadixWalletTheme {
+        RadixCenteredTopAppBar(title = "App bar", onBackClick = {})
+    }
 }
 
 enum class BackIconType {

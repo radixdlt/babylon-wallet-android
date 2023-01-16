@@ -56,7 +56,7 @@ fun NavigationHost(
                     )
                 },
                 onAccountCreationClick = {
-                    navController.createAccountScreen(CreateAccountRequestSource.Wallet)
+                    navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
                 }
             )
         }
