@@ -1,4 +1,4 @@
-name: "Upload to Firebase"
+name: "Firebase releases"
 
 on:
   push:
@@ -74,10 +74,7 @@ jobs:
           export GROUPS=${GROUPS:-"alpha-devs"}
           if [ "$GROUPS" == "no" ]; then
             GROUPS=''
-          else
-            export GROUPS=${GROUPS:-"alpha-devs"}
           fi
-          echo $GROUPS
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane alpha
@@ -107,7 +104,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-          GROUPS: "internal" # ${{ github.event.inputs.groups }}
+          GROUPS: "internal"
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
