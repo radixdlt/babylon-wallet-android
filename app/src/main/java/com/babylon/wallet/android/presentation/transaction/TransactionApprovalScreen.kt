@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,7 +58,8 @@ fun TransactionApprovalScreen(
         modifier = modifier
             .fillMaxWidth(0.9f)
             .fillMaxHeight(0.8f)
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall),
+            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+            .clip(RadixTheme.shapes.roundedRectSmall),
         approved = state.approved,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
@@ -122,11 +124,21 @@ private fun TransactionApprovalContent(
                 }
                 AnimatedVisibility(visible = !approved) {
                     manifestContent?.let { manifestContent ->
-                        Text(
-                            text = manifestContent,
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray2,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    RadixTheme.colors.gray4,
+                                    RadixTheme.shapes.roundedRectDefault
+                                )
+                                .padding(RadixTheme.dimensions.paddingXSmall)
+                        ) {
+                            Text(
+                                text = manifestContent,
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.gray2,
+                            )
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(100.dp))

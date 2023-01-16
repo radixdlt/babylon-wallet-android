@@ -24,14 +24,19 @@ class CreateAccountViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper
+    private val deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel(), OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
 
-    var state by mutableStateOf(CreateAccountState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure()))
+    var state by mutableStateOf(
+        CreateAccountState(
+            isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
+            firstTime = args.requestSource == CreateAccountRequestSource.FirstTime
+        )
+    )
         private set
 
     fun onAccountNameChange(accountName: String) {
@@ -84,7 +89,8 @@ class CreateAccountViewModel @Inject constructor(
         val accountId: String = "",
         val accountName: String = "",
         val hasProfile: Boolean = false,
-        val isDeviceSecure: Boolean = false
+        val isDeviceSecure: Boolean = false,
+        val firstTime: Boolean = false,
     )
 
     companion object {

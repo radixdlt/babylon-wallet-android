@@ -196,6 +196,8 @@ private fun AccountScreenContent(
                         RadixCenteredTopAppBar(
                             title = accountName,
                             onBackClick = onBackClick,
+                            containerColor = Color.Transparent,
+                            contentColor = RadixTheme.colors.white,
                             actions = {
                                 IconButton(onClick = { onAccountPreferenceClick() }) {
                                     Icon(

@@ -48,7 +48,7 @@ fun AccountSelectionCard(
                 text = hashValue,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Link,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
         }
         Spacer(modifier = Modifier.weight(0.1f))

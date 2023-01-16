@@ -25,7 +25,7 @@ fun AssetMetadataRow(modifier: Modifier, key: String, value: String) {
         Text(
             modifier = Modifier.weight(1f),
             text = value,
-            style = RadixTheme.typography.body1HighImportance,
+            style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.End
         )

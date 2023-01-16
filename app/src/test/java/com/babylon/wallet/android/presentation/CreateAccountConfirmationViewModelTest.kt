@@ -103,7 +103,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
     @Test
     fun `given profile did exist, when view model init, verify correct account state and dismiss`() = runTest {
         whenever(savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE)).thenReturn(
-            CreateAccountRequestSource.Wallet
+            CreateAccountRequestSource.AccountsList
         )
         val event = mutableListOf<CreateAccountConfirmationEvent>()
         val viewModel = vm.value

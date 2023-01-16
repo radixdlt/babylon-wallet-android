@@ -91,15 +91,15 @@ fun CreateAccountConfirmationContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             text = stringResource(id = R.string.your_account_has_been_created),
-            style = RadixTheme.typography.body2Link,
+            style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
-            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             text = stringResource(id = R.string.account_created_info),
             textAlign = TextAlign.Center,
-            style = RadixTheme.typography.body2Link,
+            style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
         Spacer(Modifier.weight(0.6f))
@@ -107,7 +107,7 @@ fun CreateAccountConfirmationContent(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(
                 id = when (requestSource) {
-                    CreateAccountRequestSource.Wallet -> R.string.go_to_wallet
+                    CreateAccountRequestSource.AccountsList -> R.string.go_to_account_list
                     CreateAccountRequestSource.ChooseAccount -> R.string.go_to_choose_accounts
                     CreateAccountRequestSource.FirstTime -> R.string.go_to_home
                     CreateAccountRequestSource.Settings -> R.string.go_to_settings
@@ -156,8 +156,8 @@ private fun CreatedAccountCardStack(
                 Text(
                     text = accountAddress,
                     textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body2Link,
-                    color = Color.White
+                    style = RadixTheme.typography.body2Regular,
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
         }

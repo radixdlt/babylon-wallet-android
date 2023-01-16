@@ -28,7 +28,7 @@ fun NavController.createAccountConfirmationScreen(accountId: String, requestSour
 }
 
 enum class CreateAccountRequestSource {
-    Wallet, ChooseAccount, FirstTime, Settings
+    AccountsList, ChooseAccount, FirstTime, Settings
 }
 
 @OptIn(ExperimentalAnimationApi::class)

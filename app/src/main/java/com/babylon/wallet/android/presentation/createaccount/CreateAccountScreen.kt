@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.createaccount
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -65,7 +64,8 @@ fun CreateAccountScreen(
             cancelable = cancelable,
             onBackClick = onBackClick,
             modifier = modifier,
-            isDeviceSecure = state.isDeviceSecure
+            isDeviceSecure = state.isDeviceSecure,
+            firstTime = state.firstTime
         )
     }
 
@@ -90,7 +90,8 @@ fun CreateAccountContent(
     onBackClick: () -> Unit,
     cancelable: Boolean,
     isDeviceSecure: Boolean,
-    modifier: Modifier
+    modifier: Modifier,
+    firstTime: Boolean
 ) {
     Column(
         modifier = modifier
@@ -118,21 +119,20 @@ fun CreateAccountContent(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(R.drawable.img_account_creation),
-                contentDescription = "account_creation_image"
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
-                text = stringResource(id = R.string.create_new_account),
-                style = RadixTheme.typography.header,
+                text = if (firstTime) {
+                    stringResource(id = R.string.create_first_account)
+                } else {
+                    stringResource(id = R.string.create_new_account)
+                },
+                style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = R.string.account_creation_text),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(30.dp))
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -140,12 +140,12 @@ fun CreateAccountContent(
                     modifier = Modifier.fillMaxWidth(),
                     onValueChanged = onAccountNameChange,
                     value = accountName,
-                    hint = stringResource(id = R.string.account_name),
+                    hint = stringResource(id = R.string.hint_account_name),
                     singleLine = true
                 )
                 Text(
                     text = stringResource(id = R.string.this_can_be_changed_any_time),
-                    style = RadixTheme.typography.body1Regular,
+                    style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -155,7 +155,7 @@ fun CreateAccountContent(
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth().imePadding(),
                 onClick = {
-                    if (isDeviceSecure) {
+                    if (isDeviceSecure && !firstTime) {
                         context.findFragmentActivity()?.let { activity ->
                             activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
                                 if (authenticatedSuccessfully) {
@@ -168,7 +168,7 @@ fun CreateAccountContent(
                     }
                 },
                 enabled = buttonEnabled,
-                text = stringResource(id = R.string.continue_button_title)
+                text = stringResource(id = R.string.create_account)
             )
         }
         NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
@@ -193,7 +193,8 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             cancelable = true,
             isDeviceSecure = true,
-            modifier = Modifier
+            modifier = Modifier,
+            firstTime = false
         )
     }
 }

@@ -22,11 +22,15 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -81,7 +85,7 @@ fun FungibleTokenBottomSheetDetails(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = desc,
-                    style = RadixTheme.typography.body2Link,
+                    style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -145,6 +149,18 @@ private fun TokenBalance(token: TokenUiModel, modifier: Modifier = Modifier) {
             text = stringResource(id = R.string.space) + token.symbol.orEmpty(),
             style = RadixTheme.typography.header,
             color = RadixTheme.colors.gray1
+        )
+    }
+}
+
+@Preview
+@Composable
+fun FungibleTokenBottomSheetDetailsPreview() {
+    RadixWalletTheme {
+        FungibleTokenBottomSheetDetails(
+            token = SampleDataProvider().sampleFungibleTokens().first().toTokenUiModel(),
+            onCloseClick = {},
+            onCopyAccountAddress = {}
         )
     }
 }

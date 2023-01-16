@@ -3,10 +3,13 @@ package com.babylon.wallet.android.presentation.accountpreference
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,9 +70,9 @@ private fun AccountPreferenceContent(
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.account_preference),
+            title = stringResource(R.string.account_preferences),
             onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
+            containerColor = RadixTheme.colors.gray5
         )
         Box(
             modifier = Modifier
@@ -102,6 +105,14 @@ private fun AccountPreferenceContent(
                     },
                     enabled = !loading && canUseFaucet
                 )
+                if (loading) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    Text(
+                        text = stringResource(R.string.this_may_take_several),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1,
+                    )
+                }
             }
             if (loading) {
                 FullscreenCircularProgressContent()
