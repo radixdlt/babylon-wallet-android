@@ -188,11 +188,3 @@ jobs:
           name: ${{ github.event.number }}
           path: app/build/outputs/apk/debugPreview/
           retention-days: 1
-
-      - name: Upload APK from main branch
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
-        with:
-          name: ${{ github.ref_name }}
-          path: app/build/outputs/apk/debugPreview/
-          retention-days: 1

@@ -13,13 +13,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
-### main
+### alpha
 
 ```sh
-[bundle exec] fastlane main
+[bundle exec] fastlane alpha
 ```
 
-Deploy main branch
+Deploy merges to main and any other manual trigger
+
+### preview
+
+```sh
+[bundle exec] fastlane preview
+```
+
+Deploy pre-releases
 
 ### bump_build_number
 
@@ -28,14 +36,6 @@ Deploy main branch
 ```
 
 
-
-### release
-
-```sh
-[bundle exec] fastlane release
-```
-
-Deploy release
 
 ----
 
