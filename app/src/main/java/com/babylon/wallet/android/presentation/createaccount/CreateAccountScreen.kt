@@ -98,6 +98,8 @@ fun CreateAccountContent(
             .fillMaxSize()
     ) {
         val showNotSecuredDialog = remember { mutableStateOf(false) }
+        val context = LocalContext.current
+
         if (cancelable) {
             IconButton(onClick = onBackClick) {
                 Icon(
@@ -149,7 +151,6 @@ fun CreateAccountContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             Spacer(Modifier.weight(1f))
-            val context = LocalContext.current
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth().imePadding(),
                 onClick = {
@@ -169,6 +170,7 @@ fun CreateAccountContent(
                 text = stringResource(id = R.string.create_account)
             )
         }
+
         NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
             showNotSecuredDialog.value = false
             if (it) {
