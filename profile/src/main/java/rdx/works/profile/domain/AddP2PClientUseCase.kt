@@ -2,18 +2,18 @@ package rdx.works.profile.domain
 
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
 class AddP2PClientUseCase @Inject constructor(
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
 ) {
 
     suspend operator fun invoke(
         displayName: String,
         connectionPassword: String
     ) {
-        val profile = profileRepository.readProfile()
+        val profile = profileDataSource.readProfile()
         checkNotNull(profile) {
             "Profile does not exist"
         }
@@ -29,6 +29,6 @@ class AddP2PClientUseCase @Inject constructor(
         )
 
         // Save updated profile
-        profileRepository.saveProfile(updatedProfile)
+        profileDataSource.saveProfile(updatedProfile)
     }
 }

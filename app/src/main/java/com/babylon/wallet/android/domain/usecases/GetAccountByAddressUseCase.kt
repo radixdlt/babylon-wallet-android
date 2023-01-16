@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.domain.model.AccountSlim
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
 class GetAccountByAddressUseCase @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: AccountRepository
 ) {
 
     suspend operator fun invoke(address: String): AccountSlim {

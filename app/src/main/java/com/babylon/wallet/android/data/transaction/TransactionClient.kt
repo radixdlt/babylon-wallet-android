@@ -24,6 +24,7 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
+import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.NetworkRepository
 import java.math.BigDecimal
 import java.security.SecureRandom
@@ -32,6 +33,7 @@ import javax.inject.Inject
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val networkRepository: NetworkRepository,
+    private val accountRepository: AccountRepository,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
 ) {
 
@@ -178,7 +180,7 @@ class TransactionClient @Inject constructor(
         networkId: Int,
         addressesNeededToSign: List<String>,
     ): NotaryAndSigners {
-        val signers = networkRepository.getSignersForAddresses(networkId, addressesNeededToSign)
+        val signers = accountRepository.getSignersForAddresses(networkId, addressesNeededToSign)
         return NotaryAndSigners(signers.first(), signers)
     }
 

@@ -10,16 +10,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.pernetwork.Account
-import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
-interface ProfileRepository {
+interface ProfileDataSource {
 
     val profile: Flow<Profile?>
 
@@ -29,19 +25,13 @@ interface ProfileRepository {
 
     suspend fun saveProfile(profile: Profile)
 
-    suspend fun getAccounts(): List<Account>
-
-    suspend fun getAccount(address: String): Account?
-
-    suspend fun readMnemonic(key: String): String?
-
     suspend fun clear()
 }
 
-class ProfileRepositoryImpl @Inject constructor(
+class ProfileDataSourceImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) : ProfileRepository {
+) : ProfileDataSource {
 
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
         .map { profileContent ->
@@ -65,40 +55,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAccounts(): List<Account> {
-        val perNetwork = getPerNetwork()
-        return perNetwork?.accounts.orEmpty()
-    }
-
-    override suspend fun getAccount(address: String): Account? {
-        val perNetwork = getPerNetwork()
-        return perNetwork
-            ?.accounts
-            ?.firstOrNull { account ->
-                account.entityAddress.address == address
-            }
-    }
-
-    override suspend fun readMnemonic(key: String): String? {
-        return encryptedPreferencesManager.readMnemonic(key)
-    }
-
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
-    }
-
-    private suspend fun getPerNetwork(): PerNetwork? {
-        return readProfile()
-            ?.perNetwork
-            ?.firstOrNull { perNetwork ->
-                perNetwork.networkID == getCurrentNetwork().networkId().value
-            }
-    }
-
-    private suspend fun getCurrentNetwork(): Network {
-        return readProfile()
-            ?.appPreferences
-            ?.networkAndGateway?.network
-            ?: NetworkAndGateway.nebunet.network
     }
 }

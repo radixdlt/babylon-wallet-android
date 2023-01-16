@@ -1,18 +1,17 @@
 package rdx.works.profile.data.repository
 
-import com.radixdlt.bip39.model.MnemonicWords
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.extensions.setNetworkAndGateway
-import rdx.works.profile.data.extensions.signerPrivateKey
-import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.model.pernetwork.Account
-import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.GetMnemonicUseCase
 import javax.inject.Inject
 
 interface NetworkRepository {
+
+    val networkAndGateway: Flow<NetworkAndGateway>
 
     suspend fun getCurrentNetworkId(): NetworkId
 
@@ -27,17 +26,17 @@ interface NetworkRepository {
         newUrl: String,
         networkName: String
     )
-
-    suspend fun getSignersForAddresses(
-        networkId: Int,
-        addresses: List<String>
-    ): List<AccountSigner>
 }
 
 class NetworkRepositoryImpl @Inject constructor(
-    private val profileRepository: ProfileRepository,
-    private val getMnemonicUseCase: GetMnemonicUseCase
+    private val profileDataSource: ProfileDataSource
 ) : NetworkRepository {
+
+    override val networkAndGateway = profileDataSource.profile
+        .filterNotNull()
+        .map { profile ->
+            profile.appPreferences.networkAndGateway
+        }
 
     override suspend fun getCurrentNetworkId(): NetworkId {
         return getNetworkAndGateway().network.networkId()
@@ -62,7 +61,7 @@ class NetworkRepositoryImpl @Inject constructor(
             network = knownNetwork
         )
 
-        return profileRepository.readProfile()?.let { profile ->
+        return profileDataSource.readProfile()?.let { profile ->
             profile.perNetwork.any { perNetwork ->
                 perNetwork.networkID == newNetworkAndGateway.network.id
             }
@@ -73,7 +72,7 @@ class NetworkRepositoryImpl @Inject constructor(
         newUrl: String,
         networkName: String
     ) {
-        profileRepository.readProfile()?.let { profile ->
+        profileDataSource.readProfile()?.let { profile ->
             val updatedProfile = profile.setNetworkAndGateway(
                 NetworkAndGateway(
                     gatewayAPIEndpointURL = newUrl,
@@ -83,60 +82,14 @@ class NetworkRepositoryImpl @Inject constructor(
                         }
                 )
             )
-            profileRepository.saveProfile(updatedProfile)
+            profileDataSource.saveProfile(updatedProfile)
         }
-    }
-
-    override suspend fun getSignersForAddresses(
-        networkId: Int,
-        addresses: List<String>
-    ): List<AccountSigner> {
-        val profile = profileRepository.readProfile()
-        val accounts = getSignerAccountsForAddresses(profile, addresses, networkId)
-        val factorSourceId = profile?.notaryFactorSource()?.factorSourceID
-        assert(factorSourceId != null)
-        val mnemonic = getMnemonicUseCase(factorSourceId)
-        assert(mnemonic.isNotEmpty())
-        val mnemonicWords = MnemonicWords(mnemonic)
-        val signers = mutableListOf<AccountSigner>()
-        accounts.forEach { account ->
-            val privateKey = mnemonicWords.signerPrivateKey(derivationPath = account.derivationPath)
-            signers.add(
-                AccountSigner(
-                    account = account,
-                    privateKey = privateKey
-                )
-            )
-        }
-        return signers.toList()
     }
 
     private suspend fun getNetworkAndGateway(): NetworkAndGateway {
-        return profileRepository.readProfile()
+        return profileDataSource.readProfile()
             ?.appPreferences
             ?.networkAndGateway
             ?: NetworkAndGateway.nebunet
-    }
-
-    private suspend fun getSignerAccountsForAddresses(
-        profile: Profile?,
-        addresses: List<String>,
-        networkId: Int,
-    ): List<Account> {
-        val accounts = if (addresses.isNotEmpty()) {
-            addresses.mapNotNull { address ->
-                profileRepository.getAccount(address)
-            }
-        } else {
-            listOfNotNull(
-                profile?.perNetwork
-                    ?.firstOrNull { perNetwork ->
-                        perNetwork.networkID == networkId
-                    }
-                    ?.accounts
-                    ?.first()
-            )
-        }
-        return accounts
     }
 }

@@ -4,10 +4,12 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.data.repository.AccountRepositoryImpl
 import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.data.repository.NetworkRepositoryImpl
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.ProfileRepositoryImpl
+import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileDataSourceImpl
 import javax.inject.Singleton
 
 @Module
@@ -16,9 +18,15 @@ interface ProfileModule {
 
     @Binds
     @Singleton
-    fun bindProfileRepository(
-        profileRepositoryImpl: ProfileRepositoryImpl
-    ): ProfileRepository
+    fun bindProfileDataSource(
+        profileDataSourceImpl: ProfileDataSourceImpl
+    ): ProfileDataSource
+
+    @Binds
+    @Singleton
+    fun bindAccountRepository(
+        accountRepositoryImpl: AccountRepositoryImpl
+    ): AccountRepository
 
     @Binds
     @Singleton

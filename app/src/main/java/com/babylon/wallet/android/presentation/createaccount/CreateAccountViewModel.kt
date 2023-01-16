@@ -24,7 +24,7 @@ class CreateAccountViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
+    deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel(), OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)

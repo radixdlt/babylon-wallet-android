@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.AddP2PClientUseCase
 import rdx.works.profile.domain.DeleteP2PClientUseCase
 import timber.log.Timber
@@ -22,7 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsConnectionViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
-    profileRepository: ProfileRepository,
+    profileDataSource: ProfileDataSource,
     private val addP2PClientUseCase: AddP2PClientUseCase,
     private val deleteP2PClientUseCase: DeleteP2PClientUseCase,
     savedStateHandle: SavedStateHandle,
@@ -48,7 +48,7 @@ class SettingsConnectionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileRepository.p2pClient.collect { p2pClient ->
+            profileDataSource.p2pClient.collect { p2pClient ->
                 if (p2pClient != null) { // if we already have an active connection
                     // we need a reference of the connectionPassword
                     // so we can pass it in the onDeleteConnectionClick

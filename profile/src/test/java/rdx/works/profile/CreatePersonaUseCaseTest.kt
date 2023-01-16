@@ -25,7 +25,7 @@ import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreatePersonaUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
@@ -117,10 +117,10 @@ class CreatePersonaUseCaseTest {
                 } doReturn "noodle question hungry sail type offer grocery clay nation hello mixture forum"
             }
 
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.readProfile()).thenReturn(profile)
+            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            whenever(profileDataSource.readProfile()).thenReturn(profile)
 
-            val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileRepository, testDispatcher)
+            val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
 
             val newPersona = createPersonaUseCase(
                 displayName = personaName,
@@ -132,7 +132,7 @@ class CreatePersonaUseCaseTest {
                 networkID = NetworkId.Hammunet
             )
 
-            verify(profileRepository).saveProfile(updatedProfile)
+            verify(profileDataSource).saveProfile(updatedProfile)
         }
     }
 }

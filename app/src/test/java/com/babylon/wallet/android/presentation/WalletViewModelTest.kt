@@ -22,7 +22,7 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest {
@@ -33,7 +33,7 @@ class WalletViewModelTest {
     private lateinit var vm: WalletViewModel
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
-    private val profileRepository = mock(ProfileRepository::class.java)
+    private val profileDataSource = mock(ProfileDataSource::class.java)
 
     private val profile = SampleDataProvider().sampleProfile()
 
@@ -41,7 +41,7 @@ class WalletViewModelTest {
 
     @Before
     fun setUp() {
-        vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileRepository)
+        vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource)
     }
 
     @Test
@@ -80,10 +80,10 @@ class WalletViewModelTest {
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-        whenever(profileRepository.profile).thenReturn(flow { emit(profile) })
+        whenever(profileDataSource.profile).thenReturn(flow { emit(profile) })
 
         // when
-        val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileRepository)
+        val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource)
         whenever(requestAccountsUseCase()).thenReturn(Result.Success(listOf(sampleData)))
         viewModel.walletUiState
             .onEach { event.add(it) }

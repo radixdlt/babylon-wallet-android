@@ -11,7 +11,7 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.AddP2PClientUseCase
 import kotlin.test.Ignore
 
@@ -20,8 +20,8 @@ class AddP2PClientUseCaseTest {
     @Ignore("P2PClient data class or this unit test needs refactor")
     @Test
     fun `given profile exists, when adding p2p client, verify it is added properly`() = runBlocking {
-        val profileRepository = mock(ProfileRepository::class.java)
-        val addP2PClientUseCase = AddP2PClientUseCase(profileRepository)
+        val profileDataSource = mock(ProfileDataSource::class.java)
+        val addP2PClientUseCase = AddP2PClientUseCase(profileDataSource)
         val expectedP2pClient = P2PClient.init(
             connectionPassword = "pass1234",
             displayName = "Mac browser"
@@ -40,7 +40,7 @@ class AddP2PClientUseCaseTest {
             perNetwork = emptyList(),
             version = "0.0.1"
         )
-        whenever(profileRepository.readProfile()).thenReturn(initialProfile)
+        whenever(profileDataSource.readProfile()).thenReturn(initialProfile)
 
         addP2PClientUseCase(
             displayName = "Mac browser",
@@ -57,15 +57,15 @@ class AddP2PClientUseCaseTest {
             perNetwork = initialProfile.perNetwork,
             version = initialProfile.version
         )
-        verify(profileRepository).saveProfile(updatedProfile)
+        verify(profileDataSource).saveProfile(updatedProfile)
     }
 
     @Test(expected = IllegalStateException::class)
     fun `when profile does not exist, verify exception thrown when adding p2pclient`(): Unit = runBlocking {
-        val profileRepository = mock(ProfileRepository::class.java)
-        val addP2PClientUseCase = AddP2PClientUseCase(profileRepository)
+        val profileDataSource = mock(ProfileDataSource::class.java)
+        val addP2PClientUseCase = AddP2PClientUseCase(profileDataSource)
 
-        whenever(profileRepository.readProfile()).thenReturn(null)
+        whenever(profileDataSource.readProfile()).thenReturn(null)
 
         addP2PClientUseCase(
             displayName = "Mac browser",

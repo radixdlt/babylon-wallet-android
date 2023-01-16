@@ -22,22 +22,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val clipboardManager: ClipboardManager,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
-    private val profileRepository: ProfileRepository,
+    private val profileDataSource: ProfileDataSource,
 ) : ViewModel(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState())
     val walletUiState = _walletUiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            profileRepository.profile.filterNotNull().collect {
+        viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
+            profileDataSource.profile.filterNotNull().collect {
                 loadResourceData()
             }
         }
@@ -60,7 +60,7 @@ class WalletViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
-            profileRepository.readProfile()?.let {
+            profileDataSource.readProfile()?.let {
                 loadResourceData()
             }
             _walletUiState.update { it.copy(isRefreshing = false) }

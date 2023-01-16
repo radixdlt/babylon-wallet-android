@@ -24,7 +24,6 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.repository.NetworkRepository
-import rdx.works.profile.data.repository.ProfileRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -33,7 +32,6 @@ class SettingsEditGatewayViewModelTest {
 
     private lateinit var vm: SettingsEditGatewayViewModel
 
-    private val profileRepository = mockk<ProfileRepository>()
     private val networkRepository = mockk<NetworkRepository>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
@@ -41,8 +39,8 @@ class SettingsEditGatewayViewModelTest {
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(profileRepository, networkRepository, networkInfoRepository)
-        every { profileRepository.profile } returns flow { emit(profile) }
+        vm = SettingsEditGatewayViewModel(networkRepository, networkInfoRepository)
+        every { networkRepository.networkAndGateway } returns flow { emit(profile.appPreferences.networkAndGateway) }
         coEvery { networkRepository.setNetworkAndGateway(any(), any()) } just Runs
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("mardunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
