@@ -19,7 +19,7 @@ interface AccountRepository {
 
     suspend fun getAccounts(): List<Account>
 
-    suspend fun getAccount(address: String): Account?
+    suspend fun getAccountByAddress(address: String): Account?
 
     suspend fun getSignersForAddresses(
         networkId: Int,
@@ -48,7 +48,7 @@ class AccountRepositoryImpl @Inject constructor(
         return perNetwork?.accounts.orEmpty()
     }
 
-    override suspend fun getAccount(address: String): Account? {
+    override suspend fun getAccountByAddress(address: String): Account? {
         val perNetwork = getPerNetwork()
         return perNetwork
             ?.accounts
@@ -88,7 +88,7 @@ class AccountRepositoryImpl @Inject constructor(
     ): List<Account> {
         val accounts = if (addresses.isNotEmpty()) {
             addresses.mapNotNull { address ->
-                getAccount(address)
+                getAccountByAddress(address)
             }
         } else {
             listOfNotNull(

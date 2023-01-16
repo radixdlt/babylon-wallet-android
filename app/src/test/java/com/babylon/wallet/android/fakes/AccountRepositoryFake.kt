@@ -20,7 +20,7 @@ class AccountRepositoryFake : AccountRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAccount(address: String): Account? {
+    override suspend fun getAccountByAddress(address: String): Account? {
         TODO("Not yet implemented")
     }
 

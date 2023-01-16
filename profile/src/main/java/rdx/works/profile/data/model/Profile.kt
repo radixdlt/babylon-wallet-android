@@ -40,22 +40,6 @@ data class Profile(
         )
     }
 
-    /**
-     * Returns list of accounts in current network
-     */
-    fun getAccounts(): List<Account> {
-        val networkId = appPreferences.networkAndGateway.network.id
-        return perNetwork.find { network ->
-            network.networkID == networkId
-        }?.accounts.orEmpty()
-    }
-
-    fun getAccountByAddress(address: String): Account? {
-        return getAccounts().find { account ->
-            account.entityAddress.address == address
-        }
-    }
-
     fun notaryFactorSource():
         FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
         return factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first()

@@ -5,11 +5,11 @@ import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
 class GetAccountByAddressUseCase @Inject constructor(
-    private val profileRepository: AccountRepository
+    private val accountRepository: AccountRepository
 ) {
 
     suspend operator fun invoke(address: String): AccountSlim {
-        val account = profileRepository.getAccount(address)
+        val account = accountRepository.getAccountByAddress(address)
         requireNotNull(account) {
             "account is null"
         }
