@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.model
 import java.math.BigDecimal
 
 data class AccountResources(
-    val address: Address,
+    val address: String,
     val displayName: String,
     val currencySymbol: String,
     val value: String,
@@ -23,7 +23,4 @@ data class AccountResources(
                 it.amount >= BigDecimal.ONE
         }
     }
-
-    @JvmInline
-    value class Address(val string: String)
 }

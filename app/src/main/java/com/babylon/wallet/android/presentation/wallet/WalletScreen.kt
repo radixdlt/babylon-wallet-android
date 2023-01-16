@@ -194,9 +194,9 @@ private fun WalletAccountList(
         itemsIndexed(accounts) { _, account ->
             val gradientColors = AccountGradientList[account.appearanceID]
             AccountCardView(
-                address = account.address.string,
+                address = account.address,
                 accountName = account.displayName,
-                onCopyClick = { onCopyAccountAddressClick(account.address.string) },
+                onCopyClick = { onCopyAccountAddressClick(account.address) },
                 assets = account.fungibleTokens,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -204,7 +204,7 @@ private fun WalletAccountList(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
-                        onAccountClick(account.address.string, account.displayName)
+                        onAccountClick(account.address, account.displayName)
                     }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

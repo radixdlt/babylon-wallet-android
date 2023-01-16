@@ -35,7 +35,7 @@ class SampleDataProvider {
 
     fun sampleAccountResource(address: String = randomTokenAddress()): AccountResources {
         return AccountResources(
-            address = AccountResources.Address(string = address),
+            address = address,
             displayName = "My account",
             currencySymbol = "$",
             value = "10",
