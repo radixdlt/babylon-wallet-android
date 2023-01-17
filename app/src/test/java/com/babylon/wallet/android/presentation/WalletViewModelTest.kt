@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +35,7 @@ class WalletViewModelTest {
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val clipboardManager = mock(ClipboardManager::class.java)
     private val profileDataSource = mock(ProfileDataSource::class.java)
+    private val accountRepository = AccountRepositoryFake()
 
     private val profile = SampleDataProvider().sampleProfile()
 
@@ -41,7 +43,7 @@ class WalletViewModelTest {
 
     @Before
     fun setUp() {
-        vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource)
+        vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource, accountRepository)
     }
 
     @Test
@@ -83,7 +85,7 @@ class WalletViewModelTest {
         whenever(profileDataSource.profile).thenReturn(flow { emit(profile) })
 
         // when
-        val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource)
+        val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource, accountRepository)
         whenever(requestAccountsUseCase()).thenReturn(Result.Success(listOf(sampleData)))
         viewModel.walletUiState
             .onEach { event.add(it) }
