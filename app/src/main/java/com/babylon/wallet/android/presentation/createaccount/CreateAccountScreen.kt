@@ -154,16 +154,20 @@ fun CreateAccountContent(
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth().imePadding(),
                 onClick = {
-                    if (isDeviceSecure && !firstTime) {
-                        context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onAccountCreateClick()
+                    if (firstTime) {
+                        onAccountCreateClick()
+                    } else {
+                        if (isDeviceSecure) {
+                            context.findFragmentActivity()?.let { activity ->
+                                activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                                    if (authenticatedSuccessfully) {
+                                        onAccountCreateClick()
+                                    }
                                 }
                             }
+                        } else {
+                            showNotSecuredDialog.value = true
                         }
-                    } else {
-                        showNotSecuredDialog.value = true
                     }
                 },
                 enabled = buttonEnabled,
