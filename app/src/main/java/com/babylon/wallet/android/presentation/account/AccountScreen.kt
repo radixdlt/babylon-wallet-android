@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -24,8 +25,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
-import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -483,15 +484,14 @@ fun AssetsContent(
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
     isLoading: Boolean,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val pagerState = rememberPagerState()
         val scope = rememberCoroutineScope()
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        ScrollableTabRow(
-            modifier = Modifier.height(50.dp),
+        TabRow(
+            modifier = Modifier.height(50.dp).width(200.dp),
             selectedTabIndex = pagerState.currentPage,
             divider = {}, /* Disable the built-in divider */
-            edgePadding = RadixTheme.dimensions.paddingLarge,
             indicator = { tabPositions ->
                 if (tabPositions.isNotEmpty()) {
                     Box(

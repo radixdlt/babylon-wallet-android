@@ -49,7 +49,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns sampleRequestId
-        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Nebunet
+        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Betanet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(

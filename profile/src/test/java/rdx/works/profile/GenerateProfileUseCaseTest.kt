@@ -124,7 +124,7 @@ class GenerateProfileUseCaseTest {
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
             val expectedFactorInstanceId = generateInstanceId(
                 mnemonicPhrase,
-                NetworkAndGateway.nebunet.network.networkId()
+                NetworkAndGateway.betanet.network.networkId()
             )
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
@@ -155,7 +155,7 @@ class GenerateProfileUseCaseTest {
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking { invoke() } doReturn mnemonicPhrase
             }
-            val networkAndGateway = NetworkAndGateway.nebunet
+            val networkAndGateway = NetworkAndGateway.betanet
 
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
             val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, networkAndGateway.network.networkId())
