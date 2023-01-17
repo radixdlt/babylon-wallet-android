@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -37,7 +36,6 @@ import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDial
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun CreateAccountScreen(
     viewModel: CreateAccountViewModel,
@@ -100,6 +98,8 @@ fun CreateAccountContent(
             .fillMaxSize()
     ) {
         val showNotSecuredDialog = remember { mutableStateOf(false) }
+        val context = LocalContext.current
+
         if (cancelable) {
             IconButton(onClick = onBackClick) {
                 Icon(
@@ -151,7 +151,6 @@ fun CreateAccountContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             Spacer(Modifier.weight(1f))
-            val context = LocalContext.current
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth().imePadding(),
                 onClick = {
@@ -171,6 +170,7 @@ fun CreateAccountContent(
                 text = stringResource(id = R.string.create_account)
             )
         }
+
         NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
             showNotSecuredDialog.value = false
             if (it) {
