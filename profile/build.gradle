@@ -49,7 +49,7 @@ dependencies {
     // Datastore
     implementation libs.datastorePreferences
 
-    implementation libs.slip
+    implementation libs.slip10
     implementation libs.ket
 
     testImplementation libs.junit

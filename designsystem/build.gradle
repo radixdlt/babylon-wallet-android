@@ -39,11 +39,11 @@ android {
 dependencies {
 
     implementation libs.composeFoundation
-    implementation libs.material3
+    implementation libs.composeMaterial3
 
     implementation libs.accompanistSystemUiController
     implementation libs.composeUi
     implementation libs.composeRuntime
     implementation libs.composeUiToolingPreview
-    implementation libs.material
+    implementation libs.composeMaterial
 }

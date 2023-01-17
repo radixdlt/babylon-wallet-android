@@ -130,7 +130,7 @@ dependencies {
     implementation libs.compoeActivity
     implementation libs.composeNavigation
     implementation libs.material
-    implementation libs.material3
+    implementation libs.composeMaterial3
     implementation libs.material3WindowSizeClass
     implementation libs.splash
 
@@ -163,7 +163,7 @@ dependencies {
 
     //Kotlin toolkit
     implementation libs.ket
-    implementation libs.slip
+    implementation libs.slip10
 
     //Retrofit & OkHttp
     implementation platform(libs.okhttpBom)
