@@ -19,6 +19,11 @@ In short for architecture:
 - Use cases (they live in domain layer) can provide real benefits in some scenarios, please see 4 bullets [here](https://developer.android.com/topic/architecture/domain-layer). Another example of a use case is the `ShowOnboardingUseCase`.
 - MVVM for the presentation layer
 
+## Dependencies
+- we use shared libraries version catalog located in `libraries.versions.toml`
+- to update all dependencies in catalog please run `gradle versionCatalogUpdateLibraries`
+- to have control over what is updated please run `gradle versionCatalogUpdateLibraries --interactive` which will generate version diff file. You can inspect what will be updated, and you can remove libraries that you want to exclude from the update. To apply the diff, run `gradle versionCatalogApplyUpdatesLibraries`
+
 🏗️ The tech stack:
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) for UI
 - [Material 3](https://m3.material.io/) it is actually enabled but not correctly/heavily used. (Dark mode support will be provided and implemented as we develop features.)
