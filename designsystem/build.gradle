@@ -38,12 +38,12 @@ android {
 
 dependencies {
 
-    implementation "androidx.compose.foundation:foundation:1.3.1"
-    implementation 'androidx.compose.material3:material3:1.0.1'
+    implementation libs.composeFoundation
+    implementation libs.material3
 
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
-    implementation 'androidx.compose.ui:ui:1.3.3'
-    implementation 'androidx.compose.runtime:runtime:1.3.3'
-    implementation 'androidx.compose.ui:ui-tooling-preview:1.3.3'
-    implementation 'androidx.compose.material:material:1.3.1'
+    implementation libs.accompanistSystemUiController
+    implementation libs.composeUi
+    implementation libs.composeRuntime
+    implementation libs.composeUiToolingPreview
+    implementation libs.material
 }
