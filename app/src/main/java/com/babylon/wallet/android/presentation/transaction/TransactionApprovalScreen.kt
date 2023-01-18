@@ -51,13 +51,16 @@ fun TransactionApprovalScreen(
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
         isSigning = state.isSigning,
-        manifestContent = state.manifestData?.instructions,
+        manifestContent = state.manifestString,
         onApproveTransaction = viewModel::approveTransaction,
-        modifier = modifier.fillMaxSize().background(RadixTheme.colors.defaultBackground),
+        modifier = modifier
+            .fillMaxSize()
+            .background(RadixTheme.colors.defaultBackground),
         approved = state.approved,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
-        isDeviceSecure = state.isDeviceSecure
+        isDeviceSecure = state.isDeviceSecure,
+        canApprove = state.canApprove
     )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
@@ -75,13 +78,14 @@ private fun TransactionApprovalContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
     isSigning: Boolean,
-    manifestContent: String?,
+    manifestContent: String,
     onApproveTransaction: () -> Unit,
     approved: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
     isDeviceSecure: Boolean,
+    canApprove: Boolean,
 ) {
     val showNotSecuredDialog = remember { mutableStateOf(false) }
     Box(modifier = modifier) {
@@ -117,7 +121,7 @@ private fun TransactionApprovalContent(
                     }
                 }
                 AnimatedVisibility(visible = !approved) {
-                    manifestContent?.let { manifestContent ->
+                    if (manifestContent.isNotEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -165,7 +169,7 @@ private fun TransactionApprovalContent(
                         showNotSecuredDialog.value = true
                     }
                 },
-                enabled = !isLoading && !isSigning
+                enabled = !isLoading && !isSigning && canApprove
             )
         }
         SnackbarUiMessageHandler(message = error) {
@@ -193,7 +197,8 @@ fun TransactionApprovalContentPreview() {
             approved = false,
             error = null,
             onMessageShown = {},
-            isDeviceSecure = false
+            isDeviceSecure = false,
+            canApprove = true
         )
     }
 }

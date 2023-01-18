@@ -44,6 +44,7 @@ class WalletViewModelTest {
     @Before
     fun setUp() {
         vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource, accountRepository)
+        whenever(profileDataSource.profile).thenReturn(flow { emit(profile) })
     }
 
     @Test
@@ -82,7 +83,6 @@ class WalletViewModelTest {
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-        whenever(profileDataSource.profile).thenReturn(flow { emit(profile) })
 
         // when
         val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource, accountRepository)
