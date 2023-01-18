@@ -11,7 +11,7 @@ android {
     compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
-        minSdk 27
+        minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
     }
 
@@ -40,21 +40,21 @@ android {
 
 dependencies {
     // Hilt
-    implementation 'com.google.dagger:hilt-android:2.44.2'
-    kapt 'com.google.dagger:hilt-android-compiler:2.44.2'
+    implementation libs.hilt
+    kapt libs.hiltCompiler
 
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
+    implementation libs.kotlinxSerialization
     implementation project(path: ':core')
 
     // Datastore
-    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+    implementation libs.datastorePreferences
 
-    implementation 'com.radixdlt:slip10-android:1.1-snapshot'
-    implementation 'com.radixdlt:kotlin-engine-toolkit:1.9.0-snapshot'
+    implementation libs.slip10
+    implementation libs.ket
 
-    testImplementation "junit:junit:4.13.2"
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.7.21'
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
-    testImplementation 'org.mockito:mockito-inline:5.0.0'
+    testImplementation libs.junit
+    testImplementation libs.kotlinTestJunit
+    testImplementation libs.coroutinesTest
+    testImplementation libs.mockitoKotlin
+    testImplementation libs.mockitoInline
 }

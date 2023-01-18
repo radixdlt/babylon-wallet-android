@@ -2,7 +2,7 @@ import io.gitlab.arturbosch.detekt.Detekt
 
 buildscript {
     ext {
-        minSdk = 21
+        minSdk = 27
         compileSdk = 33
         targetSdk = 33
         kotlinCompilerExtensionVersion = "1.3.2"
@@ -12,15 +12,25 @@ buildscript {
         classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.22.0"
         classpath "org.jacoco:org.jacoco.core:0.8.8"
         classpath "org.jetbrains.kotlin:kotlin-serialization:1.7.22"
+        classpath "nl.littlerobots.vcu:plugin:0.7.0"
     }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     id 'com.android.application' version '7.3.1' apply false
     id 'com.android.library' version '7.3.1' apply false
     id 'org.jetbrains.kotlin.android' version '1.7.20' apply false
-//    id 'org.jetbrains.kotlin.jvm' version '1.7.10' apply false // TODO check if it is needed
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.22'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.20'
     id 'org.jetbrains.kotlin.jvm' version '1.7.20' apply false
+    id "com.github.ben-manes.versions" version "0.41.0"
+    id "nl.littlerobots.version-catalog-update" version "0.7.0"
+}
+versionCatalogUpdate {
+    sortByKey = false
+    versionCatalogs {
+        libraries {
+            catalogFile = file("./gradle/libraries.versions.toml")
+        }
+    }
 }
 allprojects {
     apply from: "$rootDir/config/detekt.gradle"

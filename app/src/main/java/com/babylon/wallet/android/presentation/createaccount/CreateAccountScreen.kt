@@ -44,8 +44,8 @@ fun CreateAccountScreen(
     cancelable: Boolean,
     onContinueClick: (
         accountId: String,
-        requestSource: CreateAccountRequestSource?
-    ) -> Unit = { _: String, _: CreateAccountRequestSource? -> }
+        requestSource: CreateAccountRequestSource?,
+    ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
 ) {
     if (viewModel.state.loading) {
         FullscreenCircularProgressContent()
@@ -89,7 +89,7 @@ fun CreateAccountContent(
     cancelable: Boolean,
     isDeviceSecure: Boolean,
     modifier: Modifier,
-    firstTime: Boolean
+    firstTime: Boolean,
 ) {
     Column(
         modifier = modifier
@@ -152,9 +152,11 @@ fun CreateAccountContent(
             }
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
-                modifier = Modifier.fillMaxWidth().imePadding(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding(),
                 onClick = {
-                    if (isDeviceSecure && !firstTime) {
+                    if (isDeviceSecure) {
                         context.findFragmentActivity()?.let { activity ->
                             activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
                                 if (authenticatedSuccessfully) {
