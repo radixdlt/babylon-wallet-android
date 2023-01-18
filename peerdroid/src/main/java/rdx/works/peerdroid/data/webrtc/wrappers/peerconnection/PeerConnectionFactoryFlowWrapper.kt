@@ -86,7 +86,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
         }
     }
 
-    val peerConnection = createPeerConnection(rtcConfiguration, observer)
+    var peerConnection = createPeerConnection(rtcConfiguration, observer)
     initializePeerConnection(peerConnection)
     // right after the initialization of the peer connection, create a RTC data channel
     createRtcDataChannel()
@@ -101,6 +101,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
      */
     awaitClose {
         Timber.d("peer connection: awaitClose")
-        // peerConnection?.dispose() // TODO is dispose or close needed?
+        peerConnection?.close()
+        peerConnection = null
     }
 }
