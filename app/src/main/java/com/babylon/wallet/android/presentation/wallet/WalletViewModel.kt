@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.toDomainModel
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.encodeUtf8
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
@@ -30,6 +32,7 @@ class WalletViewModel @Inject constructor(
     private val clipboardManager: ClipboardManager,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileDataSource: ProfileDataSource,
+    private val accountRepository: AccountRepository,
 ) : ViewModel(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState())
@@ -45,6 +48,9 @@ class WalletViewModel @Inject constructor(
 
     private suspend fun loadResourceData() {
         viewModelScope.launch {
+            _walletUiState.update { state ->
+                state.copy(resources = accountRepository.getAccounts().map { it.toDomainModel() }.toPersistentList())
+            }
             val result = getAccountResourcesUseCase()
             result.onError { error ->
                 _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }

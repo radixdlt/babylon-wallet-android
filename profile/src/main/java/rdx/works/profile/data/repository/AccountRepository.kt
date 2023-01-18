@@ -115,6 +115,6 @@ class AccountRepositoryImpl @Inject constructor(
         return profileDataSource.readProfile()
             ?.appPreferences
             ?.networkAndGateway?.network
-            ?: NetworkAndGateway.nebunet.network
+            ?: NetworkAndGateway.betanet.network
     }
 }

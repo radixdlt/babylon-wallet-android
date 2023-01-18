@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,17 +52,16 @@ fun TransactionApprovalScreen(
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
         isSigning = state.isSigning,
-        manifestContent = state.manifestData?.instructions,
+        manifestContent = state.manifestString,
         onApproveTransaction = viewModel::approveTransaction,
-        modifier = modifier
-            .fillMaxWidth(0.9f)
-            .fillMaxHeight(0.8f)
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
-            .clip(RadixTheme.shapes.roundedRectSmall),
+        modifier = modifier.navigationBarsPadding()
+            .fillMaxSize()
+            .background(RadixTheme.colors.defaultBackground),
         approved = state.approved,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
-        isDeviceSecure = state.isDeviceSecure
+        isDeviceSecure = state.isDeviceSecure,
+        canApprove = state.canApprove
     )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
@@ -81,13 +79,14 @@ private fun TransactionApprovalContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
     isSigning: Boolean,
-    manifestContent: String?,
+    manifestContent: String,
     onApproveTransaction: () -> Unit,
     approved: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
     isDeviceSecure: Boolean,
+    canApprove: Boolean,
 ) {
     val showNotSecuredDialog = remember { mutableStateOf(false) }
     Box(modifier = modifier) {
@@ -123,7 +122,7 @@ private fun TransactionApprovalContent(
                     }
                 }
                 AnimatedVisibility(visible = !approved) {
-                    manifestContent?.let { manifestContent ->
+                    if (manifestContent.isNotEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -131,7 +130,7 @@ private fun TransactionApprovalContent(
                                     RadixTheme.colors.gray4,
                                     RadixTheme.shapes.roundedRectDefault
                                 )
-                                .padding(RadixTheme.dimensions.paddingXSmall)
+                                .padding(RadixTheme.dimensions.paddingMedium)
                         ) {
                             Text(
                                 text = manifestContent,
@@ -171,7 +170,7 @@ private fun TransactionApprovalContent(
                         showNotSecuredDialog.value = true
                     }
                 },
-                enabled = !isLoading && !isSigning
+                enabled = !isLoading && !isSigning && canApprove
             )
         }
         SnackbarUiMessageHandler(message = error) {
@@ -199,7 +198,8 @@ fun TransactionApprovalContentPreview() {
             approved = false,
             error = null,
             onMessageShown = {},
-            isDeviceSecure = false
+            isDeviceSecure = false,
+            canApprove = true
         )
     }
 }

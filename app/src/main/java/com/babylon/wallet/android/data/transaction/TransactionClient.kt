@@ -61,6 +61,40 @@ class TransactionClient @Inject constructor(
         return signAndSubmitTransaction(jsonTransactionManifest, networkId, false)
     }
 
+    suspend fun addLockFeeToTransactionManifestData(
+        manifestData: TransactionManifestData
+    ): Result<TransactionManifest> {
+        val manifestConversionResult =
+            convertManifestInstructionsToJSON(
+                version = manifestData.version,
+                TransactionManifest(
+                    ManifestInstructions.StringInstructions(manifestData.instructions),
+                    manifestData.blobs.toTypedArray()
+                )
+            )
+        val jsonTransactionManifest = when (manifestConversionResult) {
+            is Result.Error -> return manifestConversionResult
+            is Result.Success -> manifestConversionResult.data
+        }
+        val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
+            TransactionApprovalException(TransactionApprovalFailure.NoFunds)
+        )
+        return Result.Success(addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee))
+    }
+
+    suspend fun manifestInStringFormat(manifest: TransactionManifest): Result<TransactionManifest> {
+        val manifestConversionResult =
+            convertManifestInstructionsToString(
+                version = TransactionVersion.Default.value,
+                manifest = manifest
+            )
+        val stringManifest = when (manifestConversionResult) {
+            is Result.Error -> return manifestConversionResult
+            is Result.Success -> manifestConversionResult.data
+        }
+        return Result.Success(stringManifest)
+    }
+
     private suspend fun signAndSubmitTransaction(
         jsonTransactionManifest: TransactionManifest,
         networkId: Int,
@@ -196,6 +230,27 @@ class TransactionClient @Inject constructor(
                         transactionVersion = version.toUByte(),
                         networkId = networkId.value.toUByte(),
                         manifestInstructionsOutputFormat = ManifestInstructionsKind.JSON,
+                        manifest = manifest
+                    )
+                ).getOrThrow()
+            )
+        } catch (e: Exception) {
+            Result.Error(TransactionApprovalException(TransactionApprovalFailure.ConvertManifest, e.message, e))
+        }
+    }
+
+    private suspend fun convertManifestInstructionsToString(
+        version: Long,
+        manifest: TransactionManifest,
+    ): Result<ConvertManifestResponse> {
+        val networkId = networkRepository.getCurrentNetworkId()
+        return try {
+            Result.Success(
+                engine.convertManifest(
+                    ConvertManifestRequest(
+                        transactionVersion = version.toUByte(),
+                        networkId = networkId.value.toUByte(),
+                        manifestInstructionsOutputFormat = ManifestInstructionsKind.String,
                         manifest = manifest
                     )
                 ).getOrThrow()

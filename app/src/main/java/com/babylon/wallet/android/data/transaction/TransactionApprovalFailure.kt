@@ -12,6 +12,7 @@ sealed interface TransactionApprovalFailure {
     object ConvertManifest : TransactionApprovalFailure
 
     object BuildTransactionHeader : TransactionApprovalFailure
+    object NoFunds : TransactionApprovalFailure
 
     object PrepareNotarizedTransaction : TransactionApprovalFailure
 
@@ -38,6 +39,7 @@ sealed interface TransactionApprovalFailure {
             RejectedByUser -> WalletErrorType.RejectedByUser
             SubmitNotarizedTransaction -> WalletErrorType.FailedToSubmitTransaction
             is WrongNetwork -> WalletErrorType.WrongNetwork
+            NoFunds -> WalletErrorType.FailedToPrepareTransaction
         }
     }
 
@@ -55,6 +57,7 @@ sealed interface TransactionApprovalFailure {
             RejectedByUser -> R.string.tx_fail_rejected_by_user
             SubmitNotarizedTransaction -> R.string.tx_fail_submit
             is WrongNetwork -> R.string.tx_fail_network
+            NoFunds -> R.string.no_funds_to_approve_transaction
         }
     }
 

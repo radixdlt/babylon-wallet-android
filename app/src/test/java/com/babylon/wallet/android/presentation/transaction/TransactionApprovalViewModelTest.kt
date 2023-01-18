@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -43,14 +44,17 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         11,
         TransactionManifestData("", 1, 11)
     )
+    private val sampleManifest = sampleDataProvider.sampleManifest()
 
     @Before
     override fun setUp() = runTest {
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns sampleRequestId
-        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Nebunet
+        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Betanet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
+        coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
+        coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 sampleRequestId,
@@ -84,6 +88,8 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.manifestData == sampleRequest.transactionManifestData)
+        assert(vm.state.manifestString == sampleManifest.toPrettyString())
+        coVerify(exactly = 1) { transactionClient.addLockFeeToTransactionManifestData(any()) }
     }
 
     @Test

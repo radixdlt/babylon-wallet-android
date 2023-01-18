@@ -3,6 +3,7 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.mockdata.account1
 import com.babylon.wallet.android.mockdata.account2
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
@@ -17,7 +18,7 @@ class AccountRepositoryFake : AccountRepository {
     override val accounts: Flow<List<Account>> = accountsData
 
     override suspend fun getAccounts(): List<Account> {
-        TODO("Not yet implemented")
+        return accountsData.first()
     }
 
     override suspend fun getAccountByAddress(address: String): Account? {

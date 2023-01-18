@@ -7,6 +7,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -21,9 +22,13 @@ fun AccountAddressView(
     address: String,
     onCopyAccountAddressClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    contentColor: Color = RadixTheme.colors.defaultText
+    contentColor: Color = RadixTheme.colors.defaultText,
 ) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             text = address.truncatedHash(),
             style = RadixTheme.typography.body2HighImportance,

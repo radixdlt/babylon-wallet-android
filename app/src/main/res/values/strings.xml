@@ -109,4 +109,5 @@
     <string name="create_account">Create Account</string>
     <string name="this_may_take_several">This may take several seconds, please wait for completion.</string>
     <string name="hint_name_this_connector">Name this Connector, e.g. \"Chrome on Macbook Pro\"</string>
+    <string name="no_funds_to_approve_transaction">No funds to approve transaction</string>
 </resources>

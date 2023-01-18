@@ -1,15 +1,17 @@
 package com.babylon.wallet.android.domain.model
 
+import rdx.works.profile.data.model.pernetwork.Account
 import java.math.BigDecimal
 
 data class AccountResources(
     val address: String,
-    val displayName: String,
-    val currencySymbol: String,
-    val value: String,
+    val displayName: String = "",
+    val currencySymbol: String = "",
+    val value: String = "",
     val fungibleTokens: List<OwnedFungibleToken> = emptyList(),
     val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList(),
     val appearanceID: Int,
+    val isStub: Boolean = false
 ) {
     fun hasXrdToken(): Boolean {
         return fungibleTokens.any {
@@ -23,4 +25,13 @@ data class AccountResources(
                 it.amount >= BigDecimal.ONE
         }
     }
+}
+
+fun Account.toDomainModel(): AccountResources {
+    return AccountResources(
+        address = this.entityAddress.address,
+        displayName = displayName.orEmpty(),
+        isStub = true,
+        appearanceID = this.appearanceID
+    )
 }

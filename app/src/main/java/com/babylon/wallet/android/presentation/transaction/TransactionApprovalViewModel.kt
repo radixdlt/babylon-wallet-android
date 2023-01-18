@@ -12,10 +12,12 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -51,9 +53,43 @@ class TransactionApprovalViewModel @Inject constructor(
         viewModelScope.launch {
             val transactionWriteRequest = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
             state = state.copy(
-                manifestData = transactionWriteRequest.transactionManifestData,
-                isLoading = false
+                manifestData = transactionWriteRequest.transactionManifestData
             )
+            val manifestResult = transactionClient.addLockFeeToTransactionManifestData(
+                transactionWriteRequest.transactionManifestData
+            )
+            manifestResult.onValue { manifestWithLockFee ->
+                when (
+                    val manifestInStringFormatConversionResult = transactionClient.manifestInStringFormat(
+                        manifestWithLockFee
+                    )
+                ) {
+                    is Result.Error -> {
+                        state = state.copy(
+                            isLoading = false,
+                            error = UiMessage.ErrorMessage(manifestInStringFormatConversionResult.exception)
+                        )
+                    }
+                    is Result.Success -> {
+                        state = state.copy(
+                            manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
+                            manifestData = transactionWriteRequest.transactionManifestData,
+                            canApprove = true,
+                            isLoading = false
+                        )
+                    }
+                }
+            }
+            manifestResult.onError { error ->
+                state = state.copy(
+                    isLoading = false,
+                    error = UiMessage.ErrorMessage(error)
+                )
+                dAppMessenger.sendTransactionWriteResponseFailure(
+                    args.requestId,
+                    error = WalletErrorType.FailedToPrepareTransaction
+                )
+            }
         }
     }
 
@@ -72,22 +108,24 @@ class TransactionApprovalViewModel @Inject constructor(
                     approvalJob = null
                 } else {
                     state = state.copy(isSigning = true)
-                    val result = transactionClient.signAndSubmitTransaction(manifestData)
-                    result.onValue { txId ->
-                        state = state.copy(isSigning = false, approved = true)
-                        dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
-                        approvalJob = null
-                    }
-                    result.onError {
-                        state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
-                        val exception = it as? TransactionApprovalException
-                        if (exception != null) {
-                            dAppMessenger.sendTransactionWriteResponseFailure(
-                                args.requestId,
-                                error = exception.failure.toWalletErrorType(),
-                                message = exception.failure.getDappMessage()
-                            )
+                    state.manifestData?.let { manifest ->
+                        val result = transactionClient.signAndSubmitTransaction(manifest)
+                        result.onValue { txId ->
+                            state = state.copy(isSigning = false, approved = true)
+                            dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
                             approvalJob = null
+                        }
+                        result.onError {
+                            state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
+                            val exception = it as? TransactionApprovalException
+                            if (exception != null) {
+                                dAppMessenger.sendTransactionWriteResponseFailure(
+                                    args.requestId,
+                                    error = exception.failure.toWalletErrorType(),
+                                    message = exception.failure.getDappMessage()
+                                )
+                                approvalJob = null
+                            }
                         }
                     }
                 }
@@ -117,11 +155,13 @@ class TransactionApprovalViewModel @Inject constructor(
 
 internal data class TransactionUiState(
     val manifestData: TransactionManifestData? = null,
+    val manifestString: String = "",
     val isLoading: Boolean = true,
     val isSigning: Boolean = false,
     val approved: Boolean = false,
     val isDeviceSecure: Boolean = false,
     val error: UiMessage? = null,
+    val canApprove: Boolean = false,
 )
 
 internal sealed interface TransactionApprovalEvent : OneOffEvent {
