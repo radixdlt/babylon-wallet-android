@@ -10,9 +10,11 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.combine
@@ -30,7 +32,8 @@ class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val appEventBus: AppEventBus,
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -50,6 +53,7 @@ class MainViewModel @Inject constructor(
 
     private var currentConnectionPassword: String = ""
     private var incomingRequestsJob: Job? = null
+    private var requestHandlingDelayMs = 500L
 
     init {
         profileDataSource.p2pClient
@@ -61,6 +65,16 @@ class MainViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+        observeIncomingRequests()
+    }
+
+    private fun observeIncomingRequests() {
+        viewModelScope.launch {
+            incomingRequestRepository.currentRequestToHandle.collect { request ->
+                delay(requestHandlingDelayMs)
+                sendEvent(MainEvent.IncomingRequestEvent(request))
+            }
+        }
     }
 
     private fun connectToDapp(connectionPassword: String) {
@@ -94,7 +108,6 @@ class MainViewModel @Inject constructor(
                         }
                     } else if (message is IncomingRequest && message != IncomingRequest.None) {
                         incomingRequestRepository.add(message)
-                        sendEvent(MainEvent.IncomingRequestEvent(message))
                     }
                 }
         }
@@ -120,5 +133,5 @@ sealed class MainEvent : OneOffEvent {
 data class MainUiState(
     val loading: Boolean = true,
     val hasProfile: Boolean = false,
-    val showOnboarding: Boolean = false
+    val showOnboarding: Boolean = false,
 )

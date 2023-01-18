@@ -24,7 +24,7 @@ class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
-    incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     // the incoming request from dapp
@@ -93,6 +93,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 requestId = accountsRequest.requestId,
                 accounts = selectedAccounts
             )
+            incomingRequestRepository.requestHandled(accountsRequest.requestId)
             result.onValue {
                 sendEvent(ChooseAccountsEvent.NavigateToCompletionScreen)
             }

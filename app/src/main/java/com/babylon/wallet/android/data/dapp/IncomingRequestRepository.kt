@@ -1,6 +1,10 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -9,11 +13,28 @@ class IncomingRequestRepository @Inject constructor() {
 
     private val listOfIncomingRequests = mutableMapOf<String, IncomingRequest>()
 
-    fun add(incomingRequest: IncomingRequest) {
-        synchronized(this) {
+    private val _currentRequestToHandle = MutableSharedFlow<IncomingRequest>()
+    val currentRequestToHandle = _currentRequestToHandle.asSharedFlow()
+
+    private val mutex = Mutex()
+
+    suspend fun add(incomingRequest: IncomingRequest) {
+        mutex.withLock {
             val id = incomingRequest.id
             if (id != null) {
+                if (listOfIncomingRequests.isEmpty()) {
+                    _currentRequestToHandle.emit(incomingRequest)
+                }
                 listOfIncomingRequests.putIfAbsent(id, incomingRequest)
+            }
+        }
+    }
+
+    suspend fun requestHandled(requestId: String) {
+        mutex.withLock {
+            listOfIncomingRequests.remove(requestId)
+            listOfIncomingRequests.values.firstOrNull()?.let { nextRequest ->
+                _currentRequestToHandle.emit(nextRequest)
             }
         }
     }
@@ -23,7 +44,7 @@ class IncomingRequestRepository @Inject constructor() {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests.remove(requestId) as IncomingRequest.AccountsRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.AccountsRequest)
     }
 
     fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionWriteRequest {
@@ -31,7 +52,7 @@ class IncomingRequestRepository @Inject constructor() {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests.remove(requestId) as IncomingRequest.TransactionWriteRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionWriteRequest)
     }
 
     fun getAmountOfRequests() = listOfIncomingRequests.size
