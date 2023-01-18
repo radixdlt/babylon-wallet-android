@@ -59,13 +59,20 @@ class TransactionApprovalViewModel @Inject constructor(
                 transactionWriteRequest.transactionManifestData
             )
             manifestResult.onValue { manifestWithLockFee ->
-                when (val manifestInStringFormat = transactionClient.manifestInStringFormat(manifestWithLockFee)) {
+                when (
+                    val manifestInStringFormatConversionResult = transactionClient.manifestInStringFormat(
+                        manifestWithLockFee
+                    )
+                ) {
                     is Result.Error -> {
-                        // should never happen if we have manifest with lock fee already
+                        state = state.copy(
+                            isLoading = false,
+                            error = UiMessage.ErrorMessage(manifestInStringFormatConversionResult.exception)
+                        )
                     }
                     is Result.Success -> {
                         state = state.copy(
-                            manifestString = manifestInStringFormat.data.toPrettyString(),
+                            manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
                             manifestData = transactionWriteRequest.transactionManifestData,
                             canApprove = true,
                             isLoading = false

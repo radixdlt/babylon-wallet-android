@@ -72,6 +72,7 @@ accompanistNavigationAnimation = { module = "com.google.accompanist:accompanist-
 accompanistSwipeRefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
 accompanistPermissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 accompanistSystemUiController = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
+accompanistPlaceholder = { module= "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
 ktorCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktorOkhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktorCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
