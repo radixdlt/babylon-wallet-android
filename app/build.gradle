@@ -127,7 +127,7 @@ dependencies {
     // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
     implementation libs.composeFoundation
     implementation libs.composeConstraintLayout
-    implementation libs.compoeActivity
+    implementation libs.composeActivity
     implementation libs.composeNavigation
     implementation libs.material
     implementation libs.composeMaterial3

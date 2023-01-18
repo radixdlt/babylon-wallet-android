@@ -26,9 +26,6 @@ plugins {
 }
 versionCatalogUpdate {
     sortByKey = false
-    keep {
-        keepUnusedVersions = true
-    }
     versionCatalogs {
         libraries {
             catalogFile = file("./gradle/libraries.versions.toml")
