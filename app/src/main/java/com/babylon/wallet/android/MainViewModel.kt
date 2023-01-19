@@ -10,7 +10,6 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
-import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -33,7 +32,6 @@ class MainViewModel @Inject constructor(
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val appEventBus: AppEventBus,
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -53,7 +51,9 @@ class MainViewModel @Inject constructor(
 
     private var currentConnectionPassword: String = ""
     private var incomingRequestsJob: Job? = null
-    private var requestHandlingDelayMs = 500L
+
+    @Suppress("MagicNumber")
+    private val requestHandlingDelayMs = 500L
 
     init {
         profileDataSource.p2pClient
