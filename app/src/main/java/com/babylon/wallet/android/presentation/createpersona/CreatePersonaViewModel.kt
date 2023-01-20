@@ -73,8 +73,8 @@ class CreatePersonaViewModel @Inject constructor(
 
     companion object {
         private const val PERSONA_NAME_MAX_LENGTH = 20
-        private const val PERSONA_NAME = "persona_name"
-        private const val CREATE_PERSONA_BUTTON_ENABLED = "create_persona_button_enabled"
+        const val PERSONA_NAME = "persona_name"
+        const val CREATE_PERSONA_BUTTON_ENABLED = "create_persona_button_enabled"
     }
 }
 
