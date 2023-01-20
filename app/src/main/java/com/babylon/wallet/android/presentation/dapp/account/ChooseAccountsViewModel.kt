@@ -93,7 +93,6 @@ class ChooseAccountsViewModel @Inject constructor(
                 requestId = accountsRequest.requestId,
                 accounts = selectedAccounts
             )
-            incomingRequestRepository.requestHandled(accountsRequest.requestId)
             result.onValue {
                 sendEvent(ChooseAccountsEvent.NavigateToCompletionScreen)
             }

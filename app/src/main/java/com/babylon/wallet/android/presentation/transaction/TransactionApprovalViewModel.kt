@@ -89,7 +89,6 @@ class TransactionApprovalViewModel @Inject constructor(
                     args.requestId,
                     error = WalletErrorType.FailedToPrepareTransaction
                 )
-                incomingRequestRepository.requestHandled(args.requestId)
             }
         }
     }
@@ -106,7 +105,6 @@ class TransactionApprovalViewModel @Inject constructor(
                         failure.getDappMessage()
                     )
                     sendEvent(TransactionApprovalEvent.NavigateBack)
-                    incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
                 } else {
                     state = state.copy(isSigning = true)
@@ -117,7 +115,6 @@ class TransactionApprovalViewModel @Inject constructor(
                             dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
                             approvalJob = null
                             sendEvent(TransactionApprovalEvent.NavigateBack)
-                            incomingRequestRepository.requestHandled(args.requestId)
                         }
                         result.onError {
                             state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
@@ -130,7 +127,6 @@ class TransactionApprovalViewModel @Inject constructor(
                                 )
                                 approvalJob = null
                                 sendEvent(TransactionApprovalEvent.NavigateBack)
-                                incomingRequestRepository.requestHandled(args.requestId)
                             }
                         }
                     }
@@ -150,7 +146,6 @@ class TransactionApprovalViewModel @Inject constructor(
                     error = WalletErrorType.RejectedByUser
                 )
                 sendEvent(TransactionApprovalEvent.NavigateBack)
-                incomingRequestRepository.requestHandled(args.requestId)
             }
         }
     }
