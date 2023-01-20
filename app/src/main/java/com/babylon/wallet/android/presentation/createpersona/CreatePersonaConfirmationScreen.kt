@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.createaccount
+package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -16,54 +16,48 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.createaccount.CreatedAccountCardStack
 
 @Composable
-fun CreateAccountConfirmationScreen(
-    viewModel: CreateAccountConfirmationViewModel,
+fun CreatePersonaConfirmationScreen(
+    viewModel: CreatePersonaConfirmationViewModel,
     modifier: Modifier = Modifier,
-    navigateToWallet: () -> Unit,
-    finishAccountCreation: () -> Unit,
+    finishPersonaCreation: () -> Unit
 ) {
-    val accountState = viewModel.accountUiState
+    val personaState = viewModel.personaUiState
+
     SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
-    CreateAccountConfirmationContent(
+    CreatePersonaConfirmationContent(
         modifier = modifier,
-        accountName = accountState.accountName,
-        accountId = accountState.accountAddressTruncated,
-        accountConfirmed = viewModel::accountConfirmed,
-        appearanceId = accountState.appearanceId,
-        requestSource = viewModel.args.requestSource
+        personaName = personaState.personaName,
+        personaId = personaState.personaAddressTruncated,
+        personaConfirmed = viewModel::personaConfirmed
     )
 
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
-                CreateAccountConfirmationEvent.NavigateToHome -> navigateToWallet()
-                CreateAccountConfirmationEvent.FinishAccountCreation -> finishAccountCreation()
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is CreatePersonaConfirmationEvent.FinishPersonaCreation -> finishPersonaCreation()
             }
         }
     }
 }
 
 @Composable
-fun CreateAccountConfirmationContent(
+fun CreatePersonaConfirmationContent(
     modifier: Modifier,
-    accountName: String,
-    accountId: String,
-    accountConfirmed: () -> Unit,
-    appearanceId: Int,
-    requestSource: CreateAccountRequestSource,
+    personaName: String,
+    personaId: String,
+    personaConfirmed: () -> Unit
 ) {
     Column(
         modifier = modifier.background(RadixTheme.colors.defaultBackground)
-//            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
             .padding(
@@ -73,7 +67,11 @@ fun CreateAccountConfirmationContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(0.2f))
-        CreatedAccountCardStack(Modifier.fillMaxWidth(0.8f), appearanceId, accountName, accountId)
+        CreatedAccountCardStack(
+            Modifier.fillMaxWidth(0.8f),
+            accountName = personaName,
+            accountAddress = personaId
+        )
         Spacer(modifier = Modifier.weight(0.2f))
         Text(
             text = stringResource(id = R.string.congratulations),
@@ -82,30 +80,15 @@ fun CreateAccountConfirmationContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
-            text = stringResource(id = R.string.your_account_has_been_created),
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-            text = stringResource(id = R.string.account_created_info),
-            textAlign = TextAlign.Center,
+            text = stringResource(id = R.string.your_persona_has_been_created),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(
-                id = when (requestSource) {
-                    CreateAccountRequestSource.AccountsList -> R.string.go_to_account_list
-                    CreateAccountRequestSource.ChooseAccount -> R.string.go_to_choose_accounts
-                    CreateAccountRequestSource.FirstTime -> R.string.go_to_home
-                    CreateAccountRequestSource.Settings -> R.string.go_to_settings
-                }
-            ),
-            onClick = accountConfirmed
+            text = stringResource(R.string.go_to_settings),
+            onClick = personaConfirmed
         )
     }
     BackHandler(enabled = true) { }
@@ -115,13 +98,11 @@ fun CreateAccountConfirmationContent(
 @Composable
 fun CreateAccountConfirmationContentPreview() {
     RadixWalletTheme {
-        CreateAccountConfirmationContent(
+        CreatePersonaConfirmationContent(
             modifier = Modifier,
-            accountName = "My Account",
-            accountId = "mock_account_id",
-            accountConfirmed = {},
-            appearanceId = 0,
-            requestSource = CreateAccountRequestSource.FirstTime
+            personaConfirmed = {},
+            personaName = "My persona",
+            personaId = "d32d32"
         )
     }
 }

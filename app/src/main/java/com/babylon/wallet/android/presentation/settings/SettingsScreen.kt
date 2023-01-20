@@ -92,7 +92,7 @@ private fun SettingsContent(
                             }
                         }
                         SettingSectionItem.DeleteAll -> {
-                            settingsItem.descriptionRes()?.let {
+                            settingsItem.descriptionRes().let {
                                 item {
                                     RadixSecondaryButton(
                                         modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
@@ -151,13 +151,11 @@ private fun DefaultSettingsItem(
         settingsItem.getIcon()?.let {
             Icon(painter = painterResource(id = it), contentDescription = null)
         }
-        settingsItem.descriptionRes()?.let { desc ->
-            Text(
-                text = stringResource(id = desc),
-                style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
-            )
-        }
+        Text(
+            text = stringResource(id = settingsItem.descriptionRes()),
+            style = RadixTheme.typography.body2Header,
+            color = RadixTheme.colors.gray1
+        )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),

@@ -121,7 +121,6 @@ fun Profile.deleteP2PClient(connectionPassword: String): Profile {
     )
 }
 
-@SuppressWarnings("UnusedPrivateMember")
 fun deriveAddress(
     networkID: NetworkId,
     publicKey: PublicKey
