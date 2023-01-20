@@ -4,8 +4,12 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -47,4 +51,37 @@ class IncomingRequestRepositoryTest {
 
             assertTrue(incomingRequestRepository.getAmountOfRequests() == amountOfIncomingRequests)
         }
+
+    @Test
+    fun `after being handled, next request is set as current`() = runTest {
+        var currentRequest: MessageFromDataChannel.IncomingRequest? = null
+        incomingRequestRepository.currentRequestToHandle
+            .onEach { currentRequest = it }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        for (i in 1..5) { // and in each of them, add an incoming request
+            incomingRequestRepository.add(
+                incomingRequest = MessageFromDataChannel.IncomingRequest.AccountsRequest(
+                    requestId = i.toString(),
+                    isOngoing = false,
+                    requiresProofOfOwnership = false,
+                    numberOfAccounts = i
+                )
+            )
+        }
+        advanceUntilIdle()
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)
+        assert(currentRequest?.id == "1")
+        incomingRequestRepository.requestHandled("1")
+        incomingRequestRepository.requestHandled("2")
+        advanceUntilIdle()
+        assert(currentRequest?.id == "3")
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 3)
+        incomingRequestRepository.requestHandled("3")
+        incomingRequestRepository.requestHandled("4")
+        advanceUntilIdle()
+        assert(currentRequest?.id == "5")
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
+        incomingRequestRepository.requestHandled("5")
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 0)
+    }
 }

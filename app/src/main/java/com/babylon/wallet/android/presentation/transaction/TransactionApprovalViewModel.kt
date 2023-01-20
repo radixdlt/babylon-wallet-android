@@ -114,6 +114,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             state = state.copy(isSigning = false, approved = true)
                             dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
                             approvalJob = null
+                            sendEvent(TransactionApprovalEvent.NavigateBack)
                         }
                         result.onError {
                             state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
@@ -125,6 +126,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     message = exception.failure.getDappMessage()
                                 )
                                 approvalJob = null
+                                sendEvent(TransactionApprovalEvent.NavigateBack)
                             }
                         }
                     }

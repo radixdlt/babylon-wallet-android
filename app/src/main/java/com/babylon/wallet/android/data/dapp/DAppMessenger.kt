@@ -40,7 +40,8 @@ interface DAppMessenger {
 }
 
 class DAppMessengerImpl @Inject constructor(
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : DAppMessenger {
 
     override suspend fun sendAccountsResponse(
@@ -59,7 +60,7 @@ class DAppMessengerImpl @Inject constructor(
 
         return when (peerdroidClient.sendMessage(json)) {
             is rdx.works.peerdroid.helpers.Result.Success -> {
-                Timber.d("successfully sent response with accounts")
+                incomingRequestRepository.requestHandled(requestId)
                 Result.Success(Unit)
             }
             is rdx.works.peerdroid.helpers.Result.Error -> {
@@ -86,7 +87,10 @@ class DAppMessengerImpl @Inject constructor(
         )
         return when (peerdroidClient.sendMessage(message)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
-            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
+            is rdx.works.peerdroid.helpers.Result.Success -> {
+                incomingRequestRepository.requestHandled(requestId)
+                Result.Success(Unit)
+            }
         }
     }
 
@@ -104,7 +108,10 @@ class DAppMessengerImpl @Inject constructor(
         )
         return when (peerdroidClient.sendMessage(messageJson)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
-            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
+            is rdx.works.peerdroid.helpers.Result.Success -> {
+                incomingRequestRepository.requestHandled(requestId)
+                Result.Success(Unit)
+            }
         }
     }
 }
