@@ -9,9 +9,18 @@ sealed interface MessageFromDataChannel {
             val isOngoing: Boolean,
             val requiresProofOfOwnership: Boolean,
             val numberOfAccounts: Int,
+            val quantifier: AccountNumberQuantifier,
+            val authRequest: AuthRequest? = null
         ) : IncomingRequest(requestId)
 
-        data class TransactionWriteRequest(
+        data class PersonaRequest(
+            val requestId: String,
+            val fields: List<String>,
+            val isOngoing: Boolean,
+            val authRequest: AuthRequest? = null
+        ) : IncomingRequest(requestId)
+
+        data class TransactionItem(
             val requestId: String,
             val networkId: Int,
             val transactionManifestData: TransactionManifestData,
@@ -24,7 +33,16 @@ sealed interface MessageFromDataChannel {
         object None : IncomingRequest()
     }
 
+    sealed interface AuthRequest {
+        data class LoginRequest(val challenge: String) : AuthRequest
+        data class UsePersonaRequest(val id: String) : AuthRequest
+    }
+
     enum class ConnectionStateChanged : MessageFromDataChannel {
         OPEN, CLOSE, CLOSING, ERROR, CONNECTING
+    }
+
+    enum class AccountNumberQuantifier {
+        Exactly, AtLEast
     }
 }

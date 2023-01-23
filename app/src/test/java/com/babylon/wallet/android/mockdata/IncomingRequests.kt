@@ -7,4 +7,5 @@ val accountsRequest = MessageFromDataChannel.IncomingRequest.AccountsRequest(
     isOngoing = false,
     requiresProofOfOwnership = false,
     numberOfAccounts = 2,
+    quantifier = MessageFromDataChannel.AccountNumberQuantifier.Exactly
 )

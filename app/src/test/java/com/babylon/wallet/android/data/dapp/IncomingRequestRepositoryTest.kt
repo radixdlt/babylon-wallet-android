@@ -37,7 +37,8 @@ class IncomingRequestRepositoryTest {
                                     requestId = i.toString(),
                                     isOngoing = false,
                                     requiresProofOfOwnership = false,
-                                    numberOfAccounts = i
+                                    numberOfAccounts = i,
+                                    quantifier = MessageFromDataChannel.AccountNumberQuantifier.Exactly
                                 )
                             )
                         }
@@ -64,7 +65,8 @@ class IncomingRequestRepositoryTest {
                     requestId = i.toString(),
                     isOngoing = false,
                     requiresProofOfOwnership = false,
-                    numberOfAccounts = i
+                    numberOfAccounts = i,
+                    quantifier = MessageFromDataChannel.AccountNumberQuantifier.Exactly
                 )
             )
         }
