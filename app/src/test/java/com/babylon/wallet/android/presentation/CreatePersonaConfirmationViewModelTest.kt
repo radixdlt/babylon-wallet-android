@@ -44,6 +44,7 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                 displayName = personaName,
                 index = 0,
+                networkID = 10,
                 fields = emptyList(),
                 securityState = SecurityState.Unsecured(
                     discriminator = "dsics",

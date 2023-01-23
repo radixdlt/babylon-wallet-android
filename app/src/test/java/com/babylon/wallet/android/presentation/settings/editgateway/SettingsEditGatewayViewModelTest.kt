@@ -23,7 +23,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -32,16 +32,16 @@ class SettingsEditGatewayViewModelTest {
 
     private lateinit var vm: SettingsEditGatewayViewModel
 
-    private val networkRepository = mockk<NetworkRepository>()
+    private val profileDataSource = mockk<ProfileDataSource>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
     private val profile = SampleDataProvider().sampleProfile()
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(networkRepository, networkInfoRepository)
-        every { networkRepository.networkAndGateway } returns flow { emit(profile.appPreferences.networkAndGateway) }
-        coEvery { networkRepository.setNetworkAndGateway(any(), any()) } just Runs
+        vm = SettingsEditGatewayViewModel(profileDataSource, networkInfoRepository)
+        every { profileDataSource.networkAndGateway } returns flow { emit(profile.appPreferences.networkAndGateway) }
+        coEvery { profileDataSource.setNetworkAndGateway(any(), any()) } just Runs
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("mardunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
@@ -71,17 +71,17 @@ class SettingsEditGatewayViewModelTest {
     fun `on network switch changes network`() = runTest {
         val sampleUrl = NetworkAndGateway.betanet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { networkRepository.hasAccountOnNetwork(sampleUrl, any()) } returns true
+        coEvery { profileDataSource.hasAccountOnNetwork(sampleUrl, any()) } returns true
         vm.onSwitchToClick()
         advanceUntilIdle()
-        coVerify(exactly = 1) { networkRepository.setNetworkAndGateway(any(), any()) }
+        coVerify(exactly = 1) { profileDataSource.setNetworkAndGateway(any(), any()) }
     }
 
     @Test
     fun `on network switch calls for create account`() = runTest {
         val sampleUrl = NetworkAndGateway.betanet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { networkRepository.hasAccountOnNetwork(sampleUrl, any()) } returns false
+        coEvery { profileDataSource.hasAccountOnNetwork(sampleUrl, any()) } returns false
         vm.onSwitchToClick()
         advanceUntilIdle()
         assert(vm.oneOffEvent.first() is SettingsEditGatewayEvent.CreateProfileOnNetwork)

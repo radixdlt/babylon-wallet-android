@@ -46,6 +46,7 @@
           "derivationPath" : "m/44H/1022H/34H/525H/0H/1238H",
           "displayName" : "First",
           "index" : 0,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
@@ -76,6 +77,7 @@
           "derivationPath" : "m/44H/1022H/34H/525H/1H/1238H",
           "displayName" : "Second",
           "index" : 1,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
@@ -106,6 +108,7 @@
           "derivationPath" : "m/44H/1022H/34H/525H/2H/1238H",
           "displayName" : "Third",
           "index" : 2,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
@@ -153,6 +156,7 @@
             }
           ],
           "index" : 0,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
@@ -194,6 +198,7 @@
             }
           ],
           "index" : 1,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {

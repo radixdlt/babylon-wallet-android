@@ -9,7 +9,6 @@ import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.createNewVirtualAccount
-import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -18,7 +17,6 @@ import javax.inject.Inject
 class CreateAccountUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
     private val profileDataSource: ProfileDataSource,
-    private val networkRepository: NetworkRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
@@ -42,7 +40,7 @@ class CreateAccountUseCase @Inject constructor(
                     }
                 )
             }
-            val networkID = networkAndGateway?.network?.networkId() ?: networkRepository.getCurrentNetworkId()
+            val networkID = networkAndGateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
 
             // Construct new account
             val newAccount = createNewVirtualAccount(

@@ -84,6 +84,7 @@ class CreatePersonaUseCaseTest {
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
                                 index = 0,
+                                networkID = 999,
                                 securityState = SecurityState.Unsecured(
                                     discriminator = "dsics",
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(

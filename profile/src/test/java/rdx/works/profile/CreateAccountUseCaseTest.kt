@@ -24,7 +24,6 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.PerNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreateAccountUseCase
@@ -71,6 +70,7 @@ class CreateAccountUseCaseTest {
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
                                 index = 0,
+                                networkID = 999,
                                 securityState = SecurityState.Unsecured(
                                     discriminator = "dsics",
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
@@ -105,14 +105,12 @@ class CreateAccountUseCaseTest {
             }
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            val networkRepository = Mockito.mock(NetworkRepository::class.java)
             whenever(profileDataSource.readProfile()).thenReturn(profile)
-            whenever(networkRepository.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
+            whenever(profileDataSource.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
 
             val createAccountUseCase = CreateAccountUseCase(
                 generateMnemonicUseCase = getMnemonicUseCase,
                 profileDataSource = profileDataSource,
-                networkRepository = networkRepository,
                 testDispatcher
             )
 

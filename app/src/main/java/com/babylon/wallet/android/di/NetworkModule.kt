@@ -19,7 +19,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.peerdroid.data.PeerdroidConnector
-import rdx.works.profile.data.repository.NetworkRepositoryImpl
+import rdx.works.profile.data.repository.ProfileDataSource
 import retrofit2.Retrofit
 import timber.log.Timber
 import java.net.URL
@@ -31,13 +31,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(networkRepository: NetworkRepositoryImpl): OkHttpClient {
+    fun provideOkHttpClient(profileDataSource: ProfileDataSource): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }
         val baseUrlInterceptor = Interceptor { chain ->
             runBlocking {
-                val baseUrl = networkRepository.getCurrentNetworkBaseUrl()
+                val baseUrl = profileDataSource.getCurrentNetworkBaseUrl()
                 val url = URL(baseUrl)
                 val updatedUrl = chain.request().url.newBuilder().host(url.host).scheme(url.protocol).build()
                 val request = chain.request().newBuilder().url(updatedUrl).build()

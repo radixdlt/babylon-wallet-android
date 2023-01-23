@@ -27,7 +27,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -35,7 +35,7 @@ import javax.inject.Inject
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val networkRepository: NetworkRepository,
+    private val profileDataSource: ProfileDataSource,
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
@@ -96,7 +96,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun approveTransaction() {
         approvalJob = appScope.launch {
             state.manifestData?.let { manifestData ->
-                val currentNetworkId = networkRepository.getCurrentNetworkId().value
+                val currentNetworkId = profileDataSource.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendTransactionWriteResponseFailure(
