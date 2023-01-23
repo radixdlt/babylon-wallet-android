@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -23,7 +22,7 @@ data class OngoingAccountsRequestItem(
 
 fun OneTimeAccountsRequestItem.toDomainModel(
     requestId: String,
-    authRequest: MessageFromDataChannel.AuthRequest? = null,
+    authRequest: IncomingRequest.AuthRequest? = null,
 ) = IncomingRequest.AccountsRequest(
     requestId = requestId,
     isOngoing = false,
@@ -35,7 +34,7 @@ fun OneTimeAccountsRequestItem.toDomainModel(
 
 fun OngoingAccountsRequestItem.toDomainModel(
     requestId: String,
-    authRequest: MessageFromDataChannel.AuthRequest? = null,
+    authRequest: IncomingRequest.AuthRequest? = null,
 ) = IncomingRequest.AccountsRequest(
     requestId = requestId,
     isOngoing = true,

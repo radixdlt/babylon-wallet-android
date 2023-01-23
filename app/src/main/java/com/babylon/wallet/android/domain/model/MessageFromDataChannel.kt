@@ -31,18 +31,18 @@ sealed interface MessageFromDataChannel {
         object ParsingError : IncomingRequest()
 
         object None : IncomingRequest()
-    }
+        sealed interface AuthRequest {
+            data class LoginRequest(val challenge: String) : AuthRequest
+            data class UsePersonaRequest(val id: String) : AuthRequest
+        }
 
-    sealed interface AuthRequest {
-        data class LoginRequest(val challenge: String) : AuthRequest
-        data class UsePersonaRequest(val id: String) : AuthRequest
+        enum class AccountNumberQuantifier {
+            Exactly, AtLeast
+        }
     }
 
     enum class ConnectionStateChanged : MessageFromDataChannel {
         OPEN, CLOSE, CLOSING, ERROR, CONNECTING
     }
 
-    enum class AccountNumberQuantifier {
-        Exactly, AtLEast
-    }
 }
