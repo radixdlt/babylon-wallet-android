@@ -2,9 +2,11 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.AccountDto
 import com.babylon.wallet.android.data.dapp.model.AccountWithProofOfOwnership
+import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
@@ -68,6 +70,38 @@ class WalletInteractionModelsTest {
         val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletUnauthorizedRequestItems)
         val item = result.items as WalletUnauthorizedRequestItems
+        assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
+    }
+
+    @Test
+    fun `WalletInteraction authorized request decoding with oneTimeAccounts item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                  "auth":{
+                    "identityAddress":"randomAddress1"
+                  }
+                  "oneTimeAccounts":{
+                     "requiresProofOfOwnership":false,
+                     "numberOfAccounts":{
+                        "quantity":1,
+                        "quantifier":"exactly"
+                     }
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.auth is AuthUsePersonaRequestItem)
         assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
     }
 
