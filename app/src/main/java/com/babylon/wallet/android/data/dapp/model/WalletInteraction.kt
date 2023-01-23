@@ -7,7 +7,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
@@ -34,7 +33,6 @@ data class WalletInteraction(
 
 @Suppress("UnnecessaryAbstractClass")
 @Serializable
-@JsonClassDiscriminator("discriminator")
 sealed class WalletInteractionItems
 
 @Serializable
@@ -89,6 +87,10 @@ private val walletRequestSerializersModule = SerializersModule {
             OngoingAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
         )
     }
+    polymorphic(AuthRequestItem::class) {
+        subclass(AuthUsePersonaRequestItem::class, AuthUsePersonaRequestItem.serializer())
+        subclass(AuthLoginRequestItem::class, AuthLoginRequestItem.serializer())
+    }
     polymorphic(AuthRequestResponseItem::class) {
         subclass(
             AuthLoginWithChallengeRequestResponseItem::class,
@@ -112,6 +114,7 @@ private val walletRequestSerializersModule = SerializersModule {
 
 val walletRequestJson = Json {
     serializersModule = walletRequestSerializersModule
+    classDiscriminator = "discriminator"
 }
 
 fun WalletInteractionItems.toDomainModel(requestId: String, networkId: Int): MessageFromDataChannel.IncomingRequest {
