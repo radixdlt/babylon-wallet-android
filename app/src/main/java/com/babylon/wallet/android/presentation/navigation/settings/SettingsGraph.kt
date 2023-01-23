@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
@@ -48,6 +49,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingSectionItem.DeleteAll -> {}
                     SettingSectionItem.Gateway -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
+                    }
+                    SettingSectionItem.Personas -> {
+                        navController.personaScreen()
                     }
                     SettingSectionItem.InspectProfile -> {}
                     SettingSectionItem.LinkedConnector -> {

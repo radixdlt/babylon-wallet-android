@@ -8,6 +8,8 @@ import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.AccountRepositoryImpl
 import rdx.works.profile.data.repository.NetworkRepository
 import rdx.works.profile.data.repository.NetworkRepositoryImpl
+import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.data.repository.PersonaRepositoryImpl
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.repository.ProfileDataSourceImpl
 import javax.inject.Singleton
@@ -33,4 +35,9 @@ interface ProfileModule {
     fun bindNetworkRepository(
         networkRepositoryImpl: NetworkRepositoryImpl
     ): NetworkRepository
+
+    @Binds
+    fun bindPersonaRepository(
+        personaRepositoryImpl: PersonaRepositoryImpl
+    ): PersonaRepository
 }

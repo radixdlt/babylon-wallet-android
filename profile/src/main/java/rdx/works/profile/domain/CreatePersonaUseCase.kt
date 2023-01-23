@@ -9,7 +9,6 @@ import rdx.works.profile.data.model.pernetwork.PersonaField
 import rdx.works.profile.data.model.pernetwork.createNewPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.personasPerNetworkCount
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
@@ -49,7 +48,7 @@ class CreatePersonaUseCase @Inject constructor(
             // Add persona to the profile
             val updatedProfile = profile.addPersonaOnNetwork(
                 newPersona,
-                networkID = NetworkId.Hammunet
+                networkID = networkID
             )
 
             // Save updated profile

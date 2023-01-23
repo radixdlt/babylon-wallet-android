@@ -13,14 +13,17 @@ sealed class SettingSectionItem {
     object Gateway : SettingSectionItem()
     object DeleteAll : SettingSectionItem()
 
+    object Personas : SettingSectionItem()
+
     @StringRes
-    fun descriptionRes(): Int? {
+    fun descriptionRes(): Int {
         return when (this) {
             Connection -> R.string.add_connection
             DeleteAll -> R.string.delete_all
             Gateway -> R.string.network_gateway
             InspectProfile -> R.string.inspect_profile
             LinkedConnector -> R.string.linked_connector
+            Personas -> R.string.settings_personas
         }
     }
 
@@ -29,6 +32,7 @@ sealed class SettingSectionItem {
         return when (this) {
             Gateway -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateway
             LinkedConnector -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
+            Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
             else -> null
         }
     }
