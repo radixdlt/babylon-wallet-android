@@ -110,9 +110,11 @@
     <string name="this_may_take_several">This may take several seconds, please wait for completion.</string>
     <string name="hint_name_this_connector">Name this Connector, e.g. \"Chrome on Macbook Pro\"</string>
     <string name="no_funds_to_approve_transaction">No funds to approve transaction</string>
-    <string name="create_new_persona">Create New Persona</string>
+    <string name="settings_personas">Personas</string>
     <string name="persona_creation_text">What would you like to call your persona?</string>
     <string name="hint_persona_name">e.g. My Main Persona</string>
     <string name="create_persona">Create Persona</string>
     <string name="your_persona_has_been_created">Your persona has been created.</string>
+    <string name="create_new_persona">Create New Persona</string>
+    <string name="all_personas_info">Here are all the personas connected to your account</string>
 </resources>

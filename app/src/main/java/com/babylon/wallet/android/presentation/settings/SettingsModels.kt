@@ -13,8 +13,7 @@ sealed class SettingSectionItem {
     object Gateway : SettingSectionItem()
     object DeleteAll : SettingSectionItem()
 
-    // TODO will be remove once linked up properly with Dapp screen
-    object CreateNewPersona : SettingSectionItem()
+    object Personas : SettingSectionItem()
 
     @StringRes
     fun descriptionRes(): Int {
@@ -24,7 +23,7 @@ sealed class SettingSectionItem {
             Gateway -> R.string.network_gateway
             InspectProfile -> R.string.inspect_profile
             LinkedConnector -> R.string.linked_connector
-            CreateNewPersona -> R.string.create_new_persona
+            Personas -> R.string.settings_personas
         }
     }
 

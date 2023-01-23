@@ -25,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -49,14 +48,12 @@ fun CreatePersonaScreen(
         FullscreenCircularProgressContent()
     } else {
         val state = viewModel.state
-        val personaName = viewModel.personaName.collectAsStateWithLifecycle().value
-        val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
 
         CreatePersonaContent(
             onPersonaNameChange = viewModel::onPersonaNameChange,
             onPersonaCreateClick = viewModel::onPersonaCreateClick,
-            personaName = personaName,
-            buttonEnabled = buttonEnabled,
+            personaName = state.personaName,
+            buttonEnabled = state.buttonEnabled,
             onBackClick = onBackClick,
             modifier = modifier,
             isDeviceSecure = state.isDeviceSecure

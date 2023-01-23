@@ -23,6 +23,7 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.CardStack
 
 @Composable
 fun CreateAccountConfirmationScreen(
@@ -73,7 +74,7 @@ fun CreateAccountConfirmationContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(0.2f))
-        CreatedAccountCardStack(Modifier.fillMaxWidth(0.8f), appearanceId, accountName, accountId)
+        CardStack(Modifier.fillMaxWidth(0.8f), appearanceId, accountName, accountId)
         Spacer(modifier = Modifier.weight(0.2f))
         Text(
             text = stringResource(id = R.string.congratulations),

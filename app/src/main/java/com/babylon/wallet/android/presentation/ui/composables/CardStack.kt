@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.createaccount
+package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
-fun CreatedAccountCardStack(
+fun CardStack(
     modifier: Modifier,
     appearanceId: Int = 0,
     accountName: String,
@@ -85,8 +85,8 @@ fun CreatedAccountCardStack(
 
 @Preview(showBackground = true)
 @Composable
-fun CreatedAccountCardStackPreview() {
-    CreatedAccountCardStack(
+fun CardStackPreview() {
+    CardStack(
         modifier = Modifier,
         accountName = "My account",
         accountAddress = "d32d32"

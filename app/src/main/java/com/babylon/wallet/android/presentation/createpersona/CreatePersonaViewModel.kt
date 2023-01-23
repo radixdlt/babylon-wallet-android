@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.createpersona
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
@@ -17,24 +16,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
     private val createPersonaUseCase: CreatePersonaUseCase,
     deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel(), OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl() {
 
-    val personaName = savedStateHandle.getStateFlow(PERSONA_NAME, "")
-    val buttonEnabled = savedStateHandle.getStateFlow(CREATE_PERSONA_BUTTON_ENABLED, false)
-
     var state by mutableStateOf(
-        CreatePersonaState(
+        CreatePersonaUiState(
             isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
         )
     )
         private set
 
     fun onPersonaNameChange(personaName: String) {
-        savedStateHandle[PERSONA_NAME] = personaName.take(PERSONA_NAME_MAX_LENGTH)
-        savedStateHandle[CREATE_PERSONA_BUTTON_ENABLED] = personaName.trim().isNotEmpty()
+        state = state.copy(
+            personaName = personaName.take(PERSONA_NAME_MAX_LENGTH),
+            buttonEnabled = personaName.trim().isNotEmpty()
+        )
     }
 
     fun onPersonaCreateClick() {
@@ -42,18 +39,15 @@ class CreatePersonaViewModel @Inject constructor(
             loading = true
         )
         viewModelScope.launch {
-            val personaName = personaName.value.trim()
             val persona = createPersonaUseCase(
-                displayName = personaName,
+                displayName = state.personaName,
                 fields = emptyList()
             )
 
             val personaId = persona.entityAddress.address
 
             state = state.copy(
-                loading = true,
-                personaId = personaId,
-                personaName = personaName
+                loading = true
             )
 
             sendEvent(
@@ -64,17 +58,15 @@ class CreatePersonaViewModel @Inject constructor(
         }
     }
 
-    data class CreatePersonaState(
+    data class CreatePersonaUiState(
         val loading: Boolean = false,
-        val personaId: String = "",
         val personaName: String = "",
+        val buttonEnabled: Boolean = false,
         val isDeviceSecure: Boolean = false
     )
 
     companion object {
         private const val PERSONA_NAME_MAX_LENGTH = 20
-        const val PERSONA_NAME = "persona_name"
-        const val CREATE_PERSONA_BUTTON_ENABLED = "create_persona_button_enabled"
     }
 }
 

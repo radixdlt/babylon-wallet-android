@@ -37,7 +37,6 @@ interface ProfileModule {
     ): NetworkRepository
 
     @Binds
-    @Singleton
     fun bindPersonaRepository(
         personaRepositoryImpl: PersonaRepositoryImpl
     ): PersonaRepository

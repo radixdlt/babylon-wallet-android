@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation
 
-import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaViewModel
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -8,7 +7,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -30,7 +28,6 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
 
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val createPersonaUseCase = mockk<CreatePersonaUseCase>()
-    private val savedStateHandle = mockk<SavedStateHandle>()
 
     private val personaId = "fj3489fj348f"
     private val personaName = "My first persona"
@@ -42,14 +39,6 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         coEvery {
             deviceSecurityHelper.isDeviceSecure()
         } returns true
-
-        coEvery {
-            savedStateHandle.getStateFlow(CreatePersonaViewModel.PERSONA_NAME, "")
-        } returns MutableStateFlow(personaName)
-
-        coEvery {
-            savedStateHandle.getStateFlow(CreatePersonaViewModel.CREATE_PERSONA_BUTTON_ENABLED, false)
-        } returns MutableStateFlow(false)
 
         coEvery { createPersonaUseCase.invoke(any(), any()) } returns Persona(
             entityAddress = EntityAddress(personaId),
@@ -78,14 +67,13 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(savedStateHandle, createPersonaUseCase, deviceSecurityHelper)
+        val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
         advanceUntilIdle()
 
         // then
         Assert.assertEquals(
-            CreatePersonaViewModel.CreatePersonaState(
+            CreatePersonaViewModel.CreatePersonaUiState(
                 loading = false,
-                personaId = "",
                 personaName = "",
                 isDeviceSecure = true
             ),
@@ -98,7 +86,9 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         runTest {
 
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(savedStateHandle, createPersonaUseCase, deviceSecurityHelper)
+            val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+
+            viewModel.onPersonaNameChange(personaName)
 
             // when
             viewModel.onPersonaCreateClick()
@@ -107,10 +97,10 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
 
             // then
             Assert.assertEquals(
-                CreatePersonaViewModel.CreatePersonaState(
+                CreatePersonaViewModel.CreatePersonaUiState(
                     loading = true,
-                    personaId = personaId,
                     personaName = personaName,
+                    buttonEnabled = true,
                     isDeviceSecure = true
                 ),
                 viewModel.state
@@ -126,6 +116,6 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(savedStateHandle, createPersonaUseCase, deviceSecurityHelper)
+        return CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
     }
 }

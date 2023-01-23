@@ -55,7 +55,7 @@ data class SettingsUiState(
     val settings: ImmutableList<SettingSectionItem> = persistentListOf(
         SettingSectionItem.LinkedConnector,
         SettingSectionItem.Gateway,
-        SettingSectionItem.CreateNewPersona,
+        SettingSectionItem.Personas,
         SettingSectionItem.DeleteAll
     )
 )
