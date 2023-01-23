@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @SerialName("login")
 data class AuthLoginRequestItem(
     @SerialName("challenge")
-    val challenge: String?
+    val challenge: String? = null
 ) : AuthRequestItem()
 
 @Serializable
