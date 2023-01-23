@@ -2,12 +2,14 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.AccountDto
 import com.babylon.wallet.android.data.dapp.model.AccountWithProofOfOwnership
+import com.babylon.wallet.android.data.dapp.model.AuthLoginRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionItems
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import kotlinx.serialization.decodeFromString
@@ -74,7 +76,31 @@ class WalletInteractionModelsTest {
     }
 
     @Test
-    fun `WalletInteraction authorized request decoding with oneTimeAccounts item`() {
+    fun `WalletInteraction unauthorized request decoding with oneTimePersonaData item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"unauthorizedRequest",
+                  "oneTimePersonaData":{
+                     "fields":["name", "address"]
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletUnauthorizedRequestItems)
+        val item = result.items as WalletUnauthorizedRequestItems
+        assert(item.oneTimePersonaData?.fields?.size == 2)
+    }
+
+    @Test
+    fun `WalletInteraction authorized usePersona request decoding with oneTimeAccounts item`() {
         val request = """
             {
                "items":{
@@ -106,153 +132,242 @@ class WalletInteractionModelsTest {
         assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
     }
 
-//    @Test
-//    fun `given a oneTimeAccountsRead wallet request when decoding then result is a OneTimeAccountsReadRequestItem object`() {
-//        val request = """
-//            {
-//              "items": [
-//                {
-//                  "requestType": "oneTimeAccountsRead",
-//                  "requiresProofOfOwnership": false
-//                }
-//              ],
-//              "requestId": "4abe2cb1-93e2-467d-a854-5e2cec897c50",
-//              "metadata": {
-//                "networkId": 34,
-//                "origin": "https://dashboard-hammunet.rdx-works-main.extratools.works",
-//                "dAppId": "dashboard"
-//              }
-//            }
-//        """
-//
-//        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
-//        val item = result.items
-//
-//    }
-//
-//    @Test
-//    fun `given a ongoingAccountsRead wallet request with one number of accounts when decoding then result is a OngoingAccountsReadRequestItem object`() {
-//        val request = """
-//            {
-//              "items": [
-//                {
-//                  "requestType": "ongoingAccountsRead",
-//                  "requiresProofOfOwnership": true,
-//                  "numberOfAccounts": 1
-//                }
-//              ],
-//              "requestId": "4abe2cb1-93e2-467d-a854-5e2cec897c50",
-//              "metadata": {
-//                "networkId": 34,
-//                "origin": "https://dashboard-hammunet.rdx-works-main.extratools.works",
-//                "dAppId": "dashboard"
-//              }
-//            }
-//        """
-//
-//        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
-//        val item = result.items
-//
-//
-//        val numberOfAccounts = (item as OngoingAccountsRequestItem).numberOfAccounts
-//        assert(numberOfAccounts.quantity == 1)
-//    }
-//
-//    @Test
-//    fun `given a oneTimePersonaDataRead wallet request when decoding then result is a OneTimePersonaDataReadRequestItem object`() {
-//        val request = """
-//            {
-//              "items": [
-//                {
-//                  "requestType": "oneTimePersonaDataRead",
-//                  "fields": ["firstName", "lastName"]
-//                }
-//              ],
-//              "requestId": "4abe2cb1-93e2-467d-a854-5e2cec897c50",
-//              "metadata": {
-//                "networkId": 34,
-//                "origin": "https://dashboard-hammunet.rdx-works-main.extratools.works",
-//                "dAppId": "dashboard"
-//              }
-//            }
-//        """
-//
-//        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
-//        val item = result.items
-//
-//        val fields = (item as OneTimePersonaDataRequestItem).fields
-//        assert(fields.size == 2)
-//    }
-//
-//    @Test
-//    fun `given a ongoingPersonaDataRead wallet request when decoding then result is a OngoingPersonaDataReadRequestItem object`() {
-//        val request = """
-//            {
-//              "items": [
-//                {
-//                  "requestType": "ongoingPersonaDataRead",
-//                  "fields": []
-//                }
-//              ],
-//              "requestId": "4abe2cb1-93e2-467d-a854-5e2cec897c50",
-//              "metadata": {
-//                "networkId": 34,
-//                "origin": "https://dashboard-hammunet.rdx-works-main.extratools.works",
-//                "dAppId": "dashboard"
-//              }
-//            }
-//        """
-//
-//        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
-//        val item = result.items
-//
-//    }
-//
-//    @Test
-//    fun `given a usePersonaRead wallet request when decoding then result is a UsePersonaReadRequestItem object`() {
-//        val request = """
-//            {
-//              "items": [
-//                {
-//                  "requestType": "usePersonaRead",
-//                  "id": "aCoolId"
-//                }
-//              ],
-//              "requestId": "4abe2cb1-93e2-467d-a854-5e2cec897c50",
-//              "metadata": {
-//                "networkId": 34,
-//                "origin": "https://dashboard-hammunet.rdx-works-main.extratools.works",
-//                "dAppId": "dashboard"
-//              }
-//            }
-//        """
-//
-//        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
-//        val item = result.items
-//
-//    }
-//
-//    @Test
-//    fun `given a loginRead wallet request when decoding then result is a LoginReadRequestItem object`() {
-//        val request = """
-//            {
-//              "items": [
-//                {
-//                  "requestType": "loginRead",
-//                  "challenge": "aChallengeForFun"
-//                }
-//              ],
-//              "requestId": "4abe2cb1-93e2-467d-a854-5e2cec897c50",
-//              "metadata": {
-//                "networkId": 34,
-//                "origin": "https://dashboard-hammunet.rdx-works-main.extratools.works",
-//                "dAppId": "dashboard"
-//              }
-//            }
-//        """
-//
-//        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
-//        val item = result.items
-//
-//    }
+    @Test
+    fun `WalletInteraction authorized usePersona request decoding with ongoingAccounts item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                  "auth":{
+                    "discriminator":"usePersona",
+                    "identityAddress":"randomAddress1"
+                  }
+                  "ongoingAccounts":{
+                     "requiresProofOfOwnership":false,
+                     "numberOfAccounts":{
+                        "quantity":1,
+                        "quantifier":"exactly"
+                     }
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.auth is AuthUsePersonaRequestItem)
+        assert(item.ongoingAccounts?.requiresProofOfOwnership == false)
+    }
+
+    @Test
+    fun `WalletInteraction authorized usePersona request decoding with oneTimePersonaData item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                   "auth":{
+                    "discriminator":"usePersona",
+                    "identityAddress":"randomAddress1"
+                  }
+                  "oneTimePersonaData":{
+                     "fields":["name", "address"]
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.oneTimePersonaData?.fields?.size == 2)
+    }
+
+    @Test
+    fun `WalletInteraction authorized usePersona request decoding with ongoingPersonaData item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                   "auth":{
+                    "discriminator":"usePersona",
+                    "identityAddress":"randomAddress1"
+                  }
+                  "ongoingPersonaData":{
+                     "fields":["name", "address"]
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.ongoingPersonaData?.fields?.size == 2)
+    }
+
+    @Test
+    fun `WalletInteraction authorized login request decoding with oneTimeAccounts item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                  "auth":{
+                    "discriminator":"login"                   
+                  }
+                  "oneTimeAccounts":{
+                     "requiresProofOfOwnership":false,
+                     "numberOfAccounts":{
+                        "quantity":1,
+                        "quantifier":"exactly"
+                     }
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.auth is AuthLoginRequestItem)
+        assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
+    }
+
+    @Test
+    fun `WalletInteraction authorized login request decoding with ongoingAccounts item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                  "auth":{
+                    "discriminator":"login",
+                    "challenge":"randomChallenge"
+                  }
+                  "ongoingAccounts":{
+                     "requiresProofOfOwnership":false,
+                     "numberOfAccounts":{
+                        "quantity":1,
+                        "quantifier":"exactly"
+                     }
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.auth is AuthLoginRequestItem)
+        assert(item.ongoingAccounts?.requiresProofOfOwnership == false)
+    }
+
+    @Test
+    fun `WalletInteraction authorized login request decoding with oneTimePersonaData item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                   "auth":{
+                    "discriminator":"login"                   
+                  }
+                  "oneTimePersonaData":{
+                     "fields":["name", "address"]
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.auth is AuthLoginRequestItem)
+        assert(item.oneTimePersonaData?.fields?.size == 2)
+    }
+
+    @Test
+    fun `WalletInteraction authorized login request decoding with ongoingPersonaData item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                   "auth":{
+                    "discriminator":"login",
+                    "challenge":"randomChallenge"
+                  }
+                  "ongoingPersonaData":{
+                     "fields":["name", "address"]
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assert(item.auth is AuthLoginRequestItem)
+        assert(item.ongoingPersonaData?.fields?.size == 2)
+    }
+
+    @Test
+    fun `WalletInteraction request decoding with transaction item`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"transaction",
+                  "send":{
+                      "transactionManifest":"manifest"   
+                      "version":1,
+                      "blobs":["blob1", "blob2"],
+                      "message":"manifest"
+                  }                                  
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppId":"dashboard"
+               }
+            }
+        """
+        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletTransactionItems)
+        val item = result.items as WalletTransactionItems
+        assert(item.send.transactionManifest == "manifest")
+    }
+
 }
