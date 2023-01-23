@@ -18,14 +18,14 @@ data class OngoingPersonaDataRequestItem(
 
 fun OneTimePersonaDataRequestItem.toDomainModel(
     requestId: String,
-    auth: MessageFromDataChannel.AuthRequest? = null
+    auth: MessageFromDataChannel.IncomingRequest.AuthRequest? = null
 ): MessageFromDataChannel.IncomingRequest.PersonaRequest {
     return MessageFromDataChannel.IncomingRequest.PersonaRequest(requestId, fields, false, auth)
 }
 
 fun OngoingPersonaDataRequestItem.toDomainModel(
     requestId: String,
-    auth: MessageFromDataChannel.AuthRequest? = null
+    auth: MessageFromDataChannel.IncomingRequest.AuthRequest? = null
 ): MessageFromDataChannel.IncomingRequest.PersonaRequest {
     return MessageFromDataChannel.IncomingRequest.PersonaRequest(requestId, fields, true, auth)
 }

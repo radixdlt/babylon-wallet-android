@@ -19,9 +19,9 @@ enum class AccountNumberQuantifier {
     AtLeast,
 }
 
-fun AccountNumberQuantifier.toDomainModel(): MessageFromDataChannel.AccountNumberQuantifier {
+fun AccountNumberQuantifier.toDomainModel(): MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier {
     return when (this) {
-        AccountNumberQuantifier.Exactly -> MessageFromDataChannel.AccountNumberQuantifier.Exactly
-        AccountNumberQuantifier.AtLeast -> MessageFromDataChannel.AccountNumberQuantifier.AtLEast
+        AccountNumberQuantifier.Exactly -> MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+        AccountNumberQuantifier.AtLeast -> MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast
     }
 }

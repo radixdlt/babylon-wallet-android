@@ -21,10 +21,10 @@ data class AuthUsePersonaRequestItem(
 @Serializable
 sealed class AuthRequestItem
 
-fun AuthLoginRequestItem.toDomainModel(): MessageFromDataChannel.AuthRequest.LoginRequest {
-    return MessageFromDataChannel.AuthRequest.LoginRequest(challenge.orEmpty())
+fun AuthLoginRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest {
+    return MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(challenge.orEmpty())
 }
 
-fun AuthUsePersonaRequestItem.toDomainModel(): MessageFromDataChannel.AuthRequest.UsePersonaRequest {
-    return MessageFromDataChannel.AuthRequest.UsePersonaRequest(identityAddress)
+fun AuthUsePersonaRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.AuthRequest.UsePersonaRequest {
+    return MessageFromDataChannel.IncomingRequest.AuthRequest.UsePersonaRequest(identityAddress)
 }
