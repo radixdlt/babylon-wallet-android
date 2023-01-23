@@ -64,7 +64,7 @@ class ProfileDataSourceImpl @Inject constructor(
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
         profile?.appPreferences?.p2pClients?.firstOrNull()
-    }
+    }.distinctUntilChanged()
 
     override val networkAndGateway = profile
         .filterNotNull()
