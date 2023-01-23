@@ -32,6 +32,7 @@ sealed class SettingSectionItem {
         return when (this) {
             Gateway -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateway
             LinkedConnector -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
+            Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
             else -> null
         }
     }
