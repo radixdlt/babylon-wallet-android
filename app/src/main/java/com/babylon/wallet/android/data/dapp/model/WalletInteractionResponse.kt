@@ -1,14 +1,10 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package com.babylon.wallet.android.data.dapp.model
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
-@SerialName("unauthorized")
+@SerialName("unauthorizedRequest")
 data class WalletUnauthorizedRequestResponseItems(
     @SerialName("oneTimePersonaData")
     val oneTimePersonaData: OneTimePersonaDataRequestResponseItem? = null,
@@ -17,7 +13,7 @@ data class WalletUnauthorizedRequestResponseItems(
 ) : WalletRequestResponseItems()
 
 @Serializable
-@SerialName("authorized")
+@SerialName("authorizedRequest")
 data class WalletAuthorizedRequestResponseItems(
     @SerialName("auth")
     val auth: AuthRequestResponseItem?,
@@ -32,34 +28,33 @@ data class WalletAuthorizedRequestResponseItems(
 ) : WalletRequestResponseItems()
 
 @Serializable
-@JsonClassDiscriminator("type")
 sealed class WalletRequestResponseItems : WalletInteractionResponseItems()
 
 @Serializable
+@SerialName("transaction")
 data class WalletTransactionResponseItems(
-    @SerialName("type")
-    val type: String,
     @SerialName("sendTransaction")
     val sendTransaction: SendTransactionResponseItem
 ) : WalletInteractionResponseItems()
 
 @Serializable
-@JsonClassDiscriminator("type")
 @Suppress("UnnecessaryAbstractClass")
 abstract class WalletInteractionResponseItems
 
 @Serializable
+@SerialName("success")
 data class WalletInteractionSuccessResponse(
-    @SerialName("requestId")
-    val requestId: String,
+    @SerialName("interactionId")
+    val interactionId: String,
     @SerialName("items")
     val items: WalletInteractionResponseItems
 ) : WalletInteractionResponse()
 
 @Serializable
+@SerialName("failure")
 data class WalletInteractionFailureResponse(
-    @SerialName("requestId")
-    val requestId: String,
+    @SerialName("interactionId")
+    val interactionId: String,
     @SerialName("error")
     val error: WalletErrorType,
     @SerialName("message")
