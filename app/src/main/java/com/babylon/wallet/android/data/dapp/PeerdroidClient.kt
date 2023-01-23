@@ -29,7 +29,7 @@ interface PeerdroidClient {
 
     fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
 
-    suspend fun close()
+    suspend fun close(shouldCloseConnectionToSignalingServer: Boolean = false)
 
     val isAlreadyOpen: Boolean
 }
@@ -137,7 +137,7 @@ class PeerdroidClientImpl @Inject constructor(
         return walletRequestItemDomainModels.first()
     }
 
-    override suspend fun close() {
+    override suspend fun close(shouldCloseConnectionToSignalingServer: Boolean) {
         dataChannel?.close()
         dataChannel = null
         peerdroidConnector.close()

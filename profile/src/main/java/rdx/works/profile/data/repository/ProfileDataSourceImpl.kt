@@ -2,6 +2,7 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -63,7 +64,7 @@ class ProfileDataSourceImpl @Inject constructor(
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
         profile?.appPreferences?.p2pClients?.firstOrNull()
-    }
+    }.distinctUntilChanged()
 
     override val networkAndGateway = profile
         .filterNotNull()

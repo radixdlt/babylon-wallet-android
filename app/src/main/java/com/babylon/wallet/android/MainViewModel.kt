@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
@@ -43,6 +45,13 @@ class MainViewModel @Inject constructor(
             hasProfile = profileSnapshot != null,
             showOnboarding = showOnboarding
         )
+    }.onStart {
+        // this will also ensure that it won't execute when the viewmodel is initialized the first time
+        if (currentConnectionPassword.isNotBlank()) {
+            connectToDapp(currentConnectionPassword)
+        }
+    }.onCompletion {
+        terminatePeerdroid()
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -50,13 +59,12 @@ class MainViewModel @Inject constructor(
     )
 
     private var currentConnectionPassword: String = ""
+    private var observeP2PJob: Job? = null
     private var incomingRequestsJob: Job? = null
-
-    @Suppress("MagicNumber")
-    private val requestHandlingDelayMs = 500L
+    private var handlingRequestsJob: Job? = null
 
     init {
-        profileDataSource.p2pClient
+        observeP2PJob = profileDataSource.p2pClient
             .map { p2pClient ->
                 if (p2pClient != null) {
                     Timber.d("found connection password")
@@ -65,16 +73,6 @@ class MainViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
-        observeIncomingRequests()
-    }
-
-    private fun observeIncomingRequests() {
-        viewModelScope.launch {
-            incomingRequestRepository.currentRequestToHandle.collect { request ->
-                delay(requestHandlingDelayMs)
-                sendEvent(MainEvent.IncomingRequestEvent(request))
-            }
-        }
     }
 
     private fun connectToDapp(connectionPassword: String) {
@@ -97,6 +95,13 @@ class MainViewModel @Inject constructor(
     }
 
     private fun listenForIncomingDappRequests() {
+        handlingRequestsJob = viewModelScope.launch {
+            incomingRequestRepository.currentRequestToHandle.collect { request ->
+                delay(REQUEST_HANDLING_DELAY)
+                sendEvent(MainEvent.IncomingRequestEvent(request))
+            }
+        }
+
         incomingRequestsJob = viewModelScope.launch {
             peerdroidClient
                 .listenForIncomingRequests()
@@ -116,13 +121,24 @@ class MainViewModel @Inject constructor(
     private fun restartConnectionToDapp() {
         viewModelScope.launch {
             incomingRequestsJob?.cancel()
+            handlingRequestsJob?.cancel()
             peerdroidClient.close()
             connectToDapp(currentConnectionPassword)
         }
     }
 
+    private fun terminatePeerdroid() {
+        viewModelScope.launch {
+            incomingRequestsJob?.cancel()
+            handlingRequestsJob?.cancel()
+            observeP2PJob?.cancel()
+            peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
+        }
+    }
+
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5000L
+        private const val REQUEST_HANDLING_DELAY = 500L
     }
 }
 
