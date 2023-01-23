@@ -80,6 +80,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"authorizedRequest",
                   "auth":{
+                    "discriminator":"usePersona",
                     "identityAddress":"randomAddress1"
                   }
                   "oneTimeAccounts":{
