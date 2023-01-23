@@ -45,6 +45,7 @@ data class WalletTransactionResponseItems(
 
 @Serializable
 @JsonClassDiscriminator("type")
+@Suppress("UnnecessaryAbstractClass")
 abstract class WalletInteractionResponseItems
 
 @Serializable
@@ -65,4 +66,5 @@ data class WalletInteractionFailureResponse(
     val message: String? = null,
 ) : WalletInteractionResponse()
 
+@Suppress("UnnecessaryAbstractClass")
 abstract class WalletInteractionResponse

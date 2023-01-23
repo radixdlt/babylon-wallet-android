@@ -28,7 +28,9 @@ data class OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
 ) : OngoingAccountsRequestResponseItem()
 
 @Serializable
+@Suppress("UnnecessaryAbstractClass")
 abstract class OngoingAccountsRequestResponseItem
 
 @Serializable
+@Suppress("UnnecessaryAbstractClass")
 abstract class OneTimeAccountsRequestResponseItem
