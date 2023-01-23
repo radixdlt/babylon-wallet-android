@@ -59,13 +59,13 @@ data class WalletAuthorizedRequestItems(
     @SerialName("auth")
     val auth: AuthRequestItem,
     @SerialName("oneTimeAccounts")
-    val oneTimeAccounts: OneTimeAccountsRequestItem?,
+    val oneTimeAccounts: OneTimeAccountsRequestItem? = null,
     @SerialName("ongoingAccounts")
-    val ongoingAccounts: OngoingAccountsRequestItem?,
+    val ongoingAccounts: OngoingAccountsRequestItem? = null,
     @SerialName("oneTimePersonaData")
-    val oneTimePersonaData: OneTimePersonaDataRequestItem?,
+    val oneTimePersonaData: OneTimePersonaDataRequestItem? = null,
     @SerialName("ongoingPersonaData")
-    val ongoingPersonaData: OngoingPersonaDataRequestItem?
+    val ongoingPersonaData: OngoingPersonaDataRequestItem? = null
 ) : WalletInteractionItems()
 
 private val walletRequestSerializersModule = SerializersModule {
@@ -88,10 +88,6 @@ private val walletRequestSerializersModule = SerializersModule {
             OngoingAccountsWithoutProofOfOwnershipRequestResponseItem::class,
             OngoingAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
         )
-    }
-    polymorphic(AuthRequestItem::class) {
-        subclass(AuthUsePersonaRequestItem::class, AuthUsePersonaRequestItem.serializer())
-        subclass(AuthLoginRequestItem::class, AuthLoginRequestItem.serializer())
     }
     polymorphic(AuthRequestResponseItem::class) {
         subclass(
