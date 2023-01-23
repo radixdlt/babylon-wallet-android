@@ -25,14 +25,14 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionApprovalViewModel>() {
 
     private val transactionClient = mockk<TransactionClient>()
-    private val networkRepository = mockk<NetworkRepository>()
+    private val profileDataSource = mockk<ProfileDataSource>()
     private val incomingRequestRepository = IncomingRequestRepository()
     private val dAppMessenger = mockk<DAppMessenger>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
@@ -51,7 +51,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns sampleRequestId
-        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Betanet
+        coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Betanet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
@@ -75,7 +75,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         return TransactionApprovalViewModel(
             transactionClient,
             incomingRequestRepository,
-            networkRepository,
+            profileDataSource,
             deviceSecurityHelper,
             dAppMessenger,
             TestScope(),
@@ -106,7 +106,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { networkRepository.getCurrentNetworkId() } returns NetworkId.Hammunet
+        coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Hammunet
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction()

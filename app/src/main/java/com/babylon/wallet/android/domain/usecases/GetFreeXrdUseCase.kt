@@ -16,20 +16,20 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
 class GetFreeXrdUseCase @Inject constructor(
     private val transactionClient: TransactionClient,
     private val transactionRepository: TransactionRepository,
-    private val networkRepository: NetworkRepository,
+    private val profileDataSource: ProfileDataSource,
     private val preferencesManager: PreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
     suspend operator fun invoke(includeLockFeeInstruction: Boolean, address: String): Result<String> {
         return withContext(ioDispatcher) {
-            val networkId = networkRepository.getCurrentNetworkId()
+            val networkId = profileDataSource.getCurrentNetworkId()
             val knownAddresses = KnownAddresses.addressMap[networkId]
             if (knownAddresses != null) {
                 val manifest = buildFaucetManifest(knownAddresses, address, includeLockFeeInstruction)

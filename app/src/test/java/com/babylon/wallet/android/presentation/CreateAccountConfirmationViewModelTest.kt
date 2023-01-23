@@ -45,6 +45,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                 displayName = accountName,
                 index = 0,
+                networkID = 10,
                 securityState = SecurityState.Unsecured(
                     discriminator = "dsics",
                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(

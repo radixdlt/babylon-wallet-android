@@ -19,12 +19,12 @@ import com.babylon.wallet.android.utils.isValidUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.repository.NetworkRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
-    private val networkRepository: NetworkRepository,
+    private val profileDataSource: ProfileDataSource,
     private val networkInfoRepository: NetworkInfoRepository,
 ) : ViewModel(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
@@ -37,7 +37,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private fun observeProfile() {
         viewModelScope.launch {
-            networkRepository.networkAndGateway.collect { networkAndGateway ->
+            profileDataSource.networkAndGateway.collect { networkAndGateway ->
                 state = state.copy(
                     currentNetworkAndGateway = networkAndGateway,
                     newUrl = networkAndGateway.gatewayAPIEndpointURL
@@ -62,8 +62,8 @@ class SettingsEditGatewayViewModel @Inject constructor(
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(state.newUrl)
             newGatewayInfo.onValue { networkName ->
                 state = state.copy(newNetworkName = networkName)
-                if (networkRepository.hasAccountOnNetwork(state.newUrl, networkName)) {
-                    networkRepository.setNetworkAndGateway(state.newUrl, networkName)
+                if (profileDataSource.hasAccountOnNetwork(state.newUrl, networkName)) {
+                    profileDataSource.setNetworkAndGateway(state.newUrl, networkName)
                     state = state.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.GatewayUpdated))
                 } else {
                     val urlEncoded = state.newUrl.encodeUtf8()

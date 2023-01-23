@@ -52,6 +52,13 @@ data class Persona(
     val index: Int,
 
     /**
+     * The ID of the network that has been used to generate the accounts, to which personas
+     * have been added and dApps connected.
+     */
+    @SerialName("networkID")
+    val networkID: Int,
+
+    /**
      * Security of this persona
      */
     @SerialName("securityState")
@@ -97,6 +104,7 @@ fun createNewPersona(
         displayName = displayName,
         fields = fields,
         index = entityIndex,
+        networkID = networkId.value,
         securityState = unsecuredSecurityState
     )
 }

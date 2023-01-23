@@ -53,6 +53,13 @@ data class Account(
     val index: Int,
 
     /**
+     * The ID of the network that has been used to generate the accounts, to which personas
+     * have been added and dApps connected.
+     */
+    @SerialName("networkID")
+    val networkID: Int,
+
+    /**
      * Security of this account
      */
     @SerialName("securityState")
@@ -131,6 +138,7 @@ fun createNewVirtualAccount(
         derivationPath = derivationPath,
         displayName = displayName,
         index = entityIndex,
+        networkID = networkId.value,
         securityState = unsecuredSecurityState
     )
 }
