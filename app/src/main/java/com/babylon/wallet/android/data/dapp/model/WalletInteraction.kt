@@ -45,7 +45,7 @@ data class WalletTransactionItems(
 ) : WalletInteractionItems()
 
 @Serializable
-@SerialName("unauthorized")
+@SerialName("unauthorizedRequest")
 data class WalletUnauthorizedRequestItems(
     @SerialName("oneTimePersonaData")
     val oneTimePersonaData: OneTimePersonaDataRequestItem? = null,
@@ -54,7 +54,7 @@ data class WalletUnauthorizedRequestItems(
 ) : WalletInteractionItems()
 
 @Serializable
-@SerialName("authorized")
+@SerialName("authorizedRequest")
 data class WalletAuthorizedRequestItems(
     @SerialName("auth")
     val auth: AuthRequestItem,

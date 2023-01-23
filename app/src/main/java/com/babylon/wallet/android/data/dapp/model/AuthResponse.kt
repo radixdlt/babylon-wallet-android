@@ -4,14 +4,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("auth1")
 data class AuthLoginWithoutChallengeRequestResponseItem(
     @SerialName("personaId")
     val personaId: String
 ) : AuthLoginRequestResponseItem()
 
 @Serializable
-@SerialName("auth2")
 data class AuthLoginWithChallengeRequestResponseItem(
     @SerialName("persona")
     val persona: PersonaDto,
