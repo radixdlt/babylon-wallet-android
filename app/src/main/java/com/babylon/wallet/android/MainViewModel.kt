@@ -111,11 +111,38 @@ class MainViewModel @Inject constructor(
                         if (message == ConnectionStateChanged.CLOSING || message == ConnectionStateChanged.CLOSE) {
                             restartConnectionToDapp()
                         }
-                    } else if (message is IncomingRequest && message != IncomingRequest.None) {
-                        incomingRequestRepository.add(message)
+                    } else if (message is IncomingRequest) {
+                        when (message) {
+                            is IncomingRequest.AccountsRequest -> {
+                                if (message.isOngoing) {
+                                    handleOngoingAccountRequest(message)
+                                } else {
+                                    incomingRequestRepository.add(message)
+                                }
+                            }
+                            is IncomingRequest.PersonaRequest -> {
+                                if (message.isOngoing) {
+                                    handleOngoingPersonaRequest(message)
+                                } else {
+                                    incomingRequestRepository.add(message)
+                                }
+                            }
+                            is IncomingRequest.TransactionItem -> {
+                                incomingRequestRepository.add(message)
+                            }
+                            else -> {}
+                        }
                     }
                 }
         }
+    }
+
+    private fun handleOngoingPersonaRequest(request: IncomingRequest.PersonaRequest) {
+        Timber.d("request $request")
+    }
+
+    private fun handleOngoingAccountRequest(request: IncomingRequest.AccountsRequest) {
+        Timber.d("request $request")
     }
 
     private fun restartConnectionToDapp() {

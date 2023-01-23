@@ -7,7 +7,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("sendTransactionWrite")
 data class SendTransactionItem(
     @SerialName("transactionManifest")
     val transactionManifest: String,

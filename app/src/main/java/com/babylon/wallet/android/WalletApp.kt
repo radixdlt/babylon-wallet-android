@@ -64,7 +64,6 @@ fun WalletApp(
                         }
                         MessageFromDataChannel.IncomingRequest.Unknown -> {}
                         is MessageFromDataChannel.IncomingRequest.PersonaRequest -> {
-
                         }
                     }
                 }
