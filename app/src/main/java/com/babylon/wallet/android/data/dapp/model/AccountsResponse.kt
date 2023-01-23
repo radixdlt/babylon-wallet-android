@@ -4,20 +4,31 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class OneTimeAccountsWithProofOfOwnershipResponseItem(
-    override val requestType: String,
+data class OneTimeAccountsWithProofOfOwnershipRequestResponseItem(
     @SerialName("accounts")
     val accounts: List<AccountWithProofOfOwnership>
-) : WalletResponseItem()
+) : OneTimeAccountsRequestResponseItem()
 
 @Serializable
-data class OneTimeAccountsWithoutProofOfOwnershipResponseItem(
-    override val requestType: String,
+data class OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
     @SerialName("accounts")
     val accounts: List<AccountDto>
-) : WalletResponseItem()
+) : OneTimeAccountsRequestResponseItem()
 
-enum class OneTimeAccountsRequestType(val requestType: String) {
-    ONE_TIME_ACCOUNTS_READ("oneTimeAccountsRead"),
-    ONGOING_ACCOUNTS_READ("ongoingAccountsRead")
-}
+@Serializable
+data class OngoingAccountsWithProofOfOwnershipRequestResponseItem(
+    @SerialName("accounts")
+    val accounts: List<AccountWithProofOfOwnership>
+) : OngoingAccountsRequestResponseItem()
+
+@Serializable
+data class OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
+    @SerialName("accounts")
+    val accounts: List<AccountDto>
+) : OngoingAccountsRequestResponseItem()
+
+@Serializable
+abstract class OngoingAccountsRequestResponseItem
+
+@Serializable
+abstract class OneTimeAccountsRequestResponseItem
