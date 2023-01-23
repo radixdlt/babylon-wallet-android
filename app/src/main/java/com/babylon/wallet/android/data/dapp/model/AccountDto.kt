@@ -6,30 +6,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AccountDto(
-    @SerialName("address")
-    val address: String,
-    @SerialName("label")
-    val label: String,
-    @SerialName("appearanceId")
-    val appearanceId: Int
+    @SerialName("address") val address: String,
+    @SerialName("label") val label: String,
+    @SerialName("appearanceId") val appearanceId: Int,
 )
 
 @Serializable
 data class AccountWithProofOfOwnership(
-    @SerialName("account")
-    val accountDto: AccountDto,
-    @SerialName("challenge")
-    val challenge: String,
-    @SerialName("signature")
-    val signature: String
-)
-
-@Serializable
-data class PersonaDataField(
-    @SerialName("field")
-    val field: String,
-    @SerialName("value")
-    val value: String
+    @SerialName("account") val accountDto: AccountDto,
+    @SerialName("challenge") val challenge: String,
+    @SerialName("signature") val signature: String,
 )
 
 fun List<AccountItemUiModel>.toDataModel() = map { accountResources ->

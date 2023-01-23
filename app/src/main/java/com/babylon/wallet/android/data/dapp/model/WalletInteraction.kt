@@ -1,0 +1,158 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
+package com.babylon.wallet.android.data.dapp.model
+
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+
+@Serializable
+data class WalletInteraction(
+    @SerialName("interactionId")
+    val interactionId: String,
+    @SerialName("items")
+    val items: WalletInteractionItems,
+    @SerialName("metadata")
+    val metadata: Metadata,
+) {
+
+    @Serializable
+    data class Metadata(
+        @SerialName("networkId")
+        val networkId: Int,
+        @SerialName("origin")
+        val origin: String,
+        @SerialName("dAppId")
+        val dAppId: String,
+    )
+}
+
+@Suppress("UnnecessaryAbstractClass")
+@Serializable
+@JsonClassDiscriminator("discriminator")
+sealed class WalletInteractionItems
+
+@Serializable
+@SerialName("transaction")
+data class WalletTransactionItems(
+    @SerialName("send")
+    val send: SendTransactionItem,
+) : WalletInteractionItems()
+
+@Serializable
+@SerialName("unauthorized")
+data class WalletUnauthorizedRequestItems(
+    @SerialName("oneTimePersonaData")
+    val oneTimePersonaData: OneTimePersonaDataRequestItem? = null,
+    @SerialName("oneTimeAccounts")
+    val oneTimeAccounts: OneTimeAccountsRequestItem? = null
+) : WalletInteractionItems()
+
+@Serializable
+@SerialName("authorized")
+data class WalletAuthorizedRequestItems(
+    @SerialName("auth")
+    val auth: AuthRequestItem,
+    @SerialName("oneTimeAccounts")
+    val oneTimeAccounts: OneTimeAccountsRequestItem?,
+    @SerialName("ongoingAccounts")
+    val ongoingAccounts: OngoingAccountsRequestItem?,
+    @SerialName("oneTimePersonaData")
+    val oneTimePersonaData: OneTimePersonaDataRequestItem?,
+    @SerialName("ongoingPersonaData")
+    val ongoingPersonaData: OngoingPersonaDataRequestItem?
+) : WalletInteractionItems()
+
+private val walletRequestSerializersModule = SerializersModule {
+    polymorphic(OneTimeAccountsRequestResponseItem::class) {
+        subclass(
+            OneTimeAccountsWithProofOfOwnershipRequestResponseItem::class,
+            OneTimeAccountsWithProofOfOwnershipRequestResponseItem.serializer()
+        )
+        subclass(
+            OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem::class,
+            OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
+        )
+    }
+    polymorphic(OngoingAccountsRequestResponseItem::class) {
+        subclass(
+            OngoingAccountsWithProofOfOwnershipRequestResponseItem::class,
+            OngoingAccountsWithProofOfOwnershipRequestResponseItem.serializer()
+        )
+        subclass(
+            OngoingAccountsWithoutProofOfOwnershipRequestResponseItem::class,
+            OngoingAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
+        )
+    }
+    polymorphic(AuthRequestItem::class) {
+        subclass(AuthUsePersonaRequestItem::class, AuthUsePersonaRequestItem.serializer())
+        subclass(AuthLoginRequestItem::class, AuthLoginRequestItem.serializer())
+    }
+    polymorphic(AuthRequestResponseItem::class) {
+        subclass(
+            AuthLoginWithChallengeRequestResponseItem::class,
+            AuthLoginWithChallengeRequestResponseItem.serializer()
+        )
+        subclass(
+            AuthLoginWithoutChallengeRequestResponseItem::class,
+            AuthLoginWithoutChallengeRequestResponseItem.serializer()
+        )
+        subclass(
+            AuthUsePersonaRequestResponseItem::class,
+            AuthUsePersonaRequestResponseItem.serializer()
+        )
+    }
+    polymorphic(WalletInteractionItems::class) {
+        subclass(WalletUnauthorizedRequestItems::class, WalletUnauthorizedRequestItems.serializer())
+        subclass(WalletAuthorizedRequestItems::class, WalletAuthorizedRequestItems.serializer())
+        subclass(WalletTransactionItems::class, WalletTransactionItems.serializer())
+    }
+}
+
+val walletRequestJson = Json {
+    serializersModule = walletRequestSerializersModule
+}
+
+fun WalletInteractionItems.toDomainModel(requestId: String, networkId: Int): MessageFromDataChannel.IncomingRequest {
+    return when (this) {
+        is SendTransactionItem -> toDomainModel(requestId, networkId)
+        is WalletTransactionItems -> this.send.toDomainModel(requestId, networkId)
+        is WalletAuthorizedRequestItems -> {
+            val auth = when (this.auth) {
+                is AuthLoginRequestItem -> this.auth.toDomainModel()
+                is AuthUsePersonaRequestItem -> this.auth.toDomainModel()
+            }
+            return when {
+                this.oneTimeAccounts != null -> {
+                    this.oneTimeAccounts.toDomainModel(requestId, auth)
+                }
+                this.oneTimePersonaData != null -> {
+                    this.oneTimePersonaData.toDomainModel(requestId, auth)
+                }
+                this.ongoingAccounts != null -> {
+                    this.ongoingAccounts.toDomainModel(requestId, auth)
+                }
+                this.ongoingPersonaData != null -> {
+                    this.ongoingPersonaData.toDomainModel(requestId, auth)
+                }
+                else -> MessageFromDataChannel.IncomingRequest.Unknown
+            }
+        }
+        is WalletUnauthorizedRequestItems -> {
+            return when {
+                this.oneTimeAccounts != null -> {
+                    this.oneTimeAccounts.toDomainModel(requestId)
+                }
+                this.oneTimePersonaData != null -> {
+                    this.oneTimePersonaData.toDomainModel(requestId)
+                }
+                else -> MessageFromDataChannel.IncomingRequest.Unknown
+            }
+        }
+    }
+}

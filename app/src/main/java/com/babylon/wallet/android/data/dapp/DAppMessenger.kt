@@ -1,11 +1,12 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestType
-import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipResponseItem
+import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
-import com.babylon.wallet.android.data.dapp.model.WalletErrorResponse
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.WalletResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
+import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.toDataModel
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
@@ -48,13 +49,12 @@ class DAppMessengerImpl @Inject constructor(
         requestId: String,
         accounts: List<AccountItemUiModel>
     ): Result<Unit> {
-        val responseItem = OneTimeAccountsWithoutProofOfOwnershipResponseItem(
-            requestType = OneTimeAccountsRequestType.ONE_TIME_ACCOUNTS_READ.requestType,
+        val responseItem = OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
             accounts = accounts.toDataModel()
         )
-        val walletResponse = WalletResponse(
+        val walletResponse = WalletInteractionSuccessResponse(
             requestId = requestId,
-            items = listOf(responseItem)
+            items = WalletUnauthorizedRequestResponseItems(oneTimeAccounts = responseItem)
         )
         val json = Json.encodeToString(walletResponse)
 
@@ -75,14 +75,9 @@ class DAppMessengerImpl @Inject constructor(
         txId: String
     ): Result<Unit> {
         val message = Json.encodeToString(
-            WalletResponse(
+            WalletInteractionSuccessResponse(
                 requestId = requestId,
-                items = listOf(
-                    SendTransactionResponseItem(
-                        requestType = SendTransactionResponseItem.REQUEST_TYPE,
-                        transactionIntentHash = txId
-                    )
-                )
+                items = WalletTransactionResponseItems(type = "transaction", SendTransactionResponseItem(txId))
             )
         )
         return when (peerdroidClient.sendMessage(message)) {
@@ -100,7 +95,7 @@ class DAppMessengerImpl @Inject constructor(
         message: String?
     ): Result<Unit> {
         val messageJson = Json.encodeToString(
-            WalletErrorResponse(
+            WalletInteractionFailureResponse(
                 requestId = requestId,
                 error = error,
                 message = message
