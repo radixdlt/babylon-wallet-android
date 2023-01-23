@@ -123,36 +123,46 @@ fun WalletInteractionItems.toDomainModel(requestId: String, networkId: Int): Mes
         is SendTransactionItem -> toDomainModel(requestId, networkId)
         is WalletTransactionItems -> this.send.toDomainModel(requestId, networkId)
         is WalletAuthorizedRequestItems -> {
-            val auth = when (this.auth) {
-                is AuthLoginRequestItem -> this.auth.toDomainModel()
-                is AuthUsePersonaRequestItem -> this.auth.toDomainModel()
-            }
-            return when {
-                this.oneTimeAccounts != null -> {
-                    this.oneTimeAccounts.toDomainModel(requestId, auth)
-                }
-                this.oneTimePersonaData != null -> {
-                    this.oneTimePersonaData.toDomainModel(requestId, auth)
-                }
-                this.ongoingAccounts != null -> {
-                    this.ongoingAccounts.toDomainModel(requestId, auth)
-                }
-                this.ongoingPersonaData != null -> {
-                    this.ongoingPersonaData.toDomainModel(requestId, auth)
-                }
-                else -> MessageFromDataChannel.IncomingRequest.Unknown
-            }
+            parseAuthorizedRequest(requestId)
         }
         is WalletUnauthorizedRequestItems -> {
-            return when {
-                this.oneTimeAccounts != null -> {
-                    this.oneTimeAccounts.toDomainModel(requestId)
-                }
-                this.oneTimePersonaData != null -> {
-                    this.oneTimePersonaData.toDomainModel(requestId)
-                }
-                else -> MessageFromDataChannel.IncomingRequest.Unknown
-            }
+            parseUnauthorizedRequest(requestId)
         }
+    }
+}
+
+private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
+    requestId: String
+) = when {
+    this.oneTimeAccounts != null -> {
+        oneTimeAccounts.toDomainModel(requestId)
+    }
+    this.oneTimePersonaData != null -> {
+        oneTimePersonaData.toDomainModel(requestId)
+    }
+    else -> MessageFromDataChannel.IncomingRequest.Unknown
+}
+
+private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
+    requestId: String,
+): MessageFromDataChannel.IncomingRequest {
+    val auth = when (this.auth) {
+        is AuthLoginRequestItem -> auth.toDomainModel()
+        is AuthUsePersonaRequestItem -> auth.toDomainModel()
+    }
+    return when {
+        this.oneTimeAccounts != null -> {
+            oneTimeAccounts.toDomainModel(requestId, auth)
+        }
+        this.oneTimePersonaData != null -> {
+            oneTimePersonaData.toDomainModel(requestId, auth)
+        }
+        this.ongoingAccounts != null -> {
+            ongoingAccounts.toDomainModel(requestId, auth)
+        }
+        this.ongoingPersonaData != null -> {
+            ongoingPersonaData.toDomainModel(requestId, auth)
+        }
+        else -> MessageFromDataChannel.IncomingRequest.Unknown
     }
 }
