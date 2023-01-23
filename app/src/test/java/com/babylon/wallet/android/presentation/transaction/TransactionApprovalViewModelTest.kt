@@ -39,7 +39,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
-    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionWriteRequest(
+    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionItem(
         sampleRequestId,
         11,
         TransactionManifestData("", 1, 11)

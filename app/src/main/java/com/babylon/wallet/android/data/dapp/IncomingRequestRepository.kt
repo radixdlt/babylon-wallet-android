@@ -47,12 +47,20 @@ class IncomingRequestRepository @Inject constructor() {
         return (listOfIncomingRequests[requestId] as IncomingRequest.AccountsRequest)
     }
 
-    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionWriteRequest {
+    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionItem {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionWriteRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionItem)
+    }
+
+    fun getOneTimePersonaRequest(requestId: String): IncomingRequest.PersonaRequest {
+        require(listOfIncomingRequests.containsKey(requestId)) {
+            "IncomingRequestRepository does not contain this request"
+        }
+
+        return (listOfIncomingRequests[requestId] as IncomingRequest.PersonaRequest)
     }
 
     fun getAmountOfRequests() = listOfIncomingRequests.size
