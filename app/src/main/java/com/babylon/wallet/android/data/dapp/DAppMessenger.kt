@@ -53,7 +53,7 @@ class DAppMessengerImpl @Inject constructor(
             accounts = accounts.toDataModel()
         )
         val walletResponse = WalletInteractionSuccessResponse(
-            requestId = requestId,
+            interactionId = requestId,
             items = WalletUnauthorizedRequestResponseItems(oneTimeAccounts = responseItem)
         )
         val json = Json.encodeToString(walletResponse)
@@ -76,8 +76,8 @@ class DAppMessengerImpl @Inject constructor(
     ): Result<Unit> {
         val message = Json.encodeToString(
             WalletInteractionSuccessResponse(
-                requestId = requestId,
-                items = WalletTransactionResponseItems(type = "transaction", SendTransactionResponseItem(txId))
+                interactionId = requestId,
+                items = WalletTransactionResponseItems(SendTransactionResponseItem(txId))
             )
         )
         return when (peerdroidClient.sendMessage(message)) {
@@ -96,7 +96,7 @@ class DAppMessengerImpl @Inject constructor(
     ): Result<Unit> {
         val messageJson = Json.encodeToString(
             WalletInteractionFailureResponse(
-                requestId = requestId,
+                interactionId = requestId,
                 error = error,
                 message = message
             )

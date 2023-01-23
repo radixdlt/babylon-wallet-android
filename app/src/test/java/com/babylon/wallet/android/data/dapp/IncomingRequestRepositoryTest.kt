@@ -38,7 +38,7 @@ class IncomingRequestRepositoryTest {
                                     isOngoing = false,
                                     requiresProofOfOwnership = false,
                                     numberOfAccounts = i,
-                                    quantifier = MessageFromDataChannel.AccountNumberQuantifier.Exactly
+                                    quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
                                 )
                             )
                         }
@@ -66,7 +66,7 @@ class IncomingRequestRepositoryTest {
                     isOngoing = false,
                     requiresProofOfOwnership = false,
                     numberOfAccounts = i,
-                    quantifier = MessageFromDataChannel.AccountNumberQuantifier.Exactly
+                    quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
                 )
             )
         }
