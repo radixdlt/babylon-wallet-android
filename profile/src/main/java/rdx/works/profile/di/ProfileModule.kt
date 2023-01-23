@@ -23,7 +23,6 @@ interface ProfileModule {
     ): ProfileDataSource
 
     @Binds
-    @Singleton
     fun bindAccountRepository(
         accountRepositoryImpl: AccountRepositoryImpl
     ): AccountRepository
