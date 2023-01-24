@@ -2,6 +2,8 @@ package com.babylon.wallet.android.di
 
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.DAppMessengerImpl
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
@@ -38,6 +40,11 @@ interface DataModule {
     fun bindNetworkInfoRepository(
         networkInfoRepository: NetworkInfoRepositoryImpl
     ): NetworkInfoRepository
+
+    @Binds
+    fun bindDappMetadataRepository(
+        dappMetadataRepository: DappMetadataRepositoryImpl
+    ): DappMetadataRepository
 
     @Binds
     fun bindDAppMessenger(
