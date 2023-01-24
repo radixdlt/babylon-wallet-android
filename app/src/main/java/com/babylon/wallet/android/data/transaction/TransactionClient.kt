@@ -5,6 +5,7 @@ package com.babylon.wallet.android.data.transaction
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
+import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -15,7 +16,6 @@ import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.CallMethodReceiver
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionIntentResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
@@ -26,7 +26,6 @@ import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
-import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
 
@@ -79,7 +78,7 @@ class TransactionClient @Inject constructor(
         val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
             TransactionApprovalException(TransactionApprovalFailure.NoFunds)
         )
-        return Result.Success(addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee))
+        return Result.Success(jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee))
     }
 
     suspend fun manifestInStringFormat(manifest: TransactionManifest): Result<TransactionManifest> {
@@ -112,7 +111,7 @@ class TransactionClient @Inject constructor(
                     val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
                         TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
                     )
-                    addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
+                    jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
                 }
                 val notarizedTransaction = try {
                     val notarizedTransactionBuilder = TransactionBuilder()
@@ -258,31 +257,6 @@ class TransactionClient @Inject constructor(
         } catch (e: Exception) {
             Result.Error(TransactionApprovalException(TransactionApprovalFailure.ConvertManifest, e.message, e))
         }
-    }
-
-    fun addLockFeeInstructionToManifest(
-        manifest: TransactionManifest,
-        addressToLockFee: String,
-    ): TransactionManifest {
-        val instructions = manifest.instructions
-        val lockFeeInstruction: Instruction = Instruction.CallMethod(
-            Value.ComponentAddress(addressToLockFee),
-            Value.String(MethodName.LockFee.stringValue),
-            arrayOf(
-                Value.Decimal(
-                    BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
-                )
-            )
-        )
-        var updatedInstructions = instructions
-        when (instructions) {
-            is ManifestInstructions.JSONInstructions -> {
-                updatedInstructions =
-                    instructions.copy(instructions = arrayOf(lockFeeInstruction) + instructions.instructions)
-            }
-            is ManifestInstructions.StringInstructions -> {}
-        }
-        return manifest.copy(updatedInstructions, manifest.blobs)
     }
 
     private suspend fun submitNotarizedTransaction(

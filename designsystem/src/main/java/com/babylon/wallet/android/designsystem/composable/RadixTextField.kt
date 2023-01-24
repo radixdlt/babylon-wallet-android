@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +33,7 @@ fun RadixTextField(
     error: String? = null,
     rightLabel: String? = null,
     optionalHint: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     trailingIcon: @Composable (() -> Unit)? = null,
     singleLine: Boolean = false
 ) {
@@ -66,6 +68,7 @@ fun RadixTextField(
             },
             trailingIcon = trailingIcon,
             isError = error != null,
+            keyboardOptions = keyboardOptions,
             singleLine = singleLine,
             textStyle = RadixTheme.typography.body1Regular
         )

@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.settings.addconnection.settingsConnectionScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
+import com.babylon.wallet.android.presentation.transfer.tokenTransferScreen
 import com.google.accompanist.navigation.animation.composable
 
 fun NavGraphBuilder.settingsNavGraph(
@@ -56,6 +57,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingSectionItem.InspectProfile -> {}
                     SettingSectionItem.LinkedConnector -> {
                         navController.settingsConnectionScreen()
+                    }
+                    SettingSectionItem.TokenTransfer -> {
+                        navController.tokenTransferScreen()
                     }
                 }
             }

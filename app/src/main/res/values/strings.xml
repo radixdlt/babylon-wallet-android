@@ -117,4 +117,5 @@
     <string name="your_persona_has_been_created">Your persona has been created.</string>
     <string name="create_new_persona">Create New Persona</string>
     <string name="all_personas_info">Here are all the personas connected to your account</string>
+    <string name="token_transfer">Token transfer</string>
 </resources>

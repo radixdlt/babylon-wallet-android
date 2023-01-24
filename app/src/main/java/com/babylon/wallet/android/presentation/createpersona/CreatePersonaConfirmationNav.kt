@@ -12,6 +12,7 @@ import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_PERSONA_ID = "persona_id"
+private const val ROUTE_PERSONA_COMPLETION = "persona_completion_route"
 
 internal class CreatePersonaConfirmationArgs(val personaId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -20,7 +21,7 @@ internal class CreatePersonaConfirmationArgs(val personaId: String) {
 }
 
 fun NavController.createPersonaConfirmationScreen(personaId: String) {
-    navigate("persona_completion_route/$personaId")
+    navigate("$ROUTE_PERSONA_COMPLETION/$personaId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -28,7 +29,7 @@ fun NavGraphBuilder.createPersonaConfirmationScreen(
     finishPersonaCreation: () -> Unit
 ) {
     composable(
-        route = "persona_completion_route/{$ARG_PERSONA_ID}",
+        route = "$ROUTE_PERSONA_COMPLETION/{$ARG_PERSONA_ID}",
         arguments = listOf(
             navArgument(ARG_PERSONA_ID) { type = NavType.StringType },
         )

@@ -15,6 +15,8 @@ sealed class SettingSectionItem {
 
     object Personas : SettingSectionItem()
 
+    object TokenTransfer : SettingSectionItem()
+
     @StringRes
     fun descriptionRes(): Int {
         return when (this) {
@@ -24,6 +26,7 @@ sealed class SettingSectionItem {
             InspectProfile -> R.string.inspect_profile
             LinkedConnector -> R.string.linked_connector
             Personas -> R.string.settings_personas
+            TokenTransfer -> R.string.token_transfer
         }
     }
 

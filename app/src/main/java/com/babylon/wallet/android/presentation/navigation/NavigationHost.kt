@@ -26,6 +26,7 @@ import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccoun
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.transfer.tokenTransferScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -140,5 +141,8 @@ fun NavigationHost(
                 navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
             }
         )
+        tokenTransferScreen(onBackClick = {
+            navController.popBackStack()
+        })
     }
 }

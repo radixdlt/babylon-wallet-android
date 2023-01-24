@@ -56,6 +56,7 @@ data class SettingsUiState(
         SettingSectionItem.LinkedConnector,
         SettingSectionItem.Gateway,
         SettingSectionItem.Personas,
+        SettingSectionItem.TokenTransfer,
         SettingSectionItem.DeleteAll
     )
 )
