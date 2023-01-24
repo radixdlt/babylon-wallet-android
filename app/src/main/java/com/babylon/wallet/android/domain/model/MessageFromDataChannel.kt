@@ -44,5 +44,4 @@ sealed interface MessageFromDataChannel {
     enum class ConnectionStateChanged : MessageFromDataChannel {
         OPEN, CLOSE, CLOSING, ERROR, CONNECTING
     }
-
 }
