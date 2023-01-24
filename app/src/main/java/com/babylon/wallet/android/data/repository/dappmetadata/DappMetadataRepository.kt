@@ -48,7 +48,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                         )
                     }
                 } else {
-                    Result.Success(metadata)
+                    Result.Error()
                 }
             }
         }
