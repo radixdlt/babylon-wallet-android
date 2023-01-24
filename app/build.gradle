@@ -46,6 +46,7 @@ android {
         versionName "0.0.1"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "GATEWAY_API_URL", '"https://betanet.radixdlt.com"'
+        buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -32,7 +32,7 @@ class WalletViewModel @Inject constructor(
     private val clipboardManager: ClipboardManager,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileDataSource: ProfileDataSource,
-    private val accountRepository: AccountRepository,
+    private val accountRepository: AccountRepository
 ) : ViewModel(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState())
