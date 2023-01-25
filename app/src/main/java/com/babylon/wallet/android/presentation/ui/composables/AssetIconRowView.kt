@@ -18,7 +18,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.domain.model.TokenMetadataConstants
+import com.babylon.wallet.android.domain.model.MetadataConstants
 
 private const val MAX_ASSETS_DISPLAYED = 10
 private const val RELATIVE_PADDING = 0.7f
@@ -64,7 +64,7 @@ fun AssetIconRowView(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = assets[i].token.metadata[TokenMetadataConstants.KEY_SYMBOL].orEmpty(),
+                        text = assets[i].token.metadata[MetadataConstants.KEY_SYMBOL].orEmpty(),
                         style = RadixTheme.typography.body2Regular.copy(fontSize = fontSize.sp),
                         color = RadixTheme.colors.gray1
                     )

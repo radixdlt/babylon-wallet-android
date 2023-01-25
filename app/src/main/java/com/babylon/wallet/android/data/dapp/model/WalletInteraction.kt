@@ -23,8 +23,8 @@ data class WalletInteraction(
         val networkId: Int,
         @SerialName("origin")
         val origin: String,
-        @SerialName("dAppId")
-        val dAppId: String,
+        @SerialName("dAppDefinitionAddress")
+        val dAppDefinitionAddress: String,
     )
 }
 
