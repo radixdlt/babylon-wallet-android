@@ -14,7 +14,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface DappMetadataRepository {
-    suspend fun getWellKnownDappMetadata(origin: String, dAppId: String): Result<DappMetadata?>
+    suspend fun getWellKnownDappMetadata(origin: String, dAppDefinitionAddress: String): Result<DappMetadata?>
+    suspend fun validateDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -23,7 +24,10 @@ class DappMetadataRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : DappMetadataRepository {
 
-    override suspend fun getWellKnownDappMetadata(origin: String, dAppId: String): Result<DappMetadata?> {
+    override suspend fun getWellKnownDappMetadata(
+        origin: String,
+        dAppDefinitionAddress: String
+    ): Result<DappMetadata?> {
         // TODO we need to load additional dAppDefiniton metadata as per cap-27 to do origin check
         return withContext(ioDispatcher) {
             performHttpRequest(
@@ -33,7 +37,8 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     )
                 },
                 map = { response ->
-                    response.dapps.map { it.toDomainModel() }.firstOrNull { it.id == dAppId }
+                    response.map { it.toDomainModel() }
+                        .firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
                 }
             ).map { metadata ->
                 if (metadata != null) {
@@ -53,4 +58,21 @@ class DappMetadataRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun validateDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
+        return withContext(ioDispatcher) {
+            performHttpRequest(
+                call = {
+                    dynamicUrlApi.wellKnownDappDefinition(
+                        "$origin/${BuildConfig.WELL_KNOWN_URL_SUFFIX}"
+                    )
+                },
+                map = { response ->
+                    response.any { it.dAppDefinitionAddress == dAppDefinitionAddress }
+                }
+            )
+        }
+    }
+
+
 }
