@@ -33,8 +33,8 @@ sealed class WalletRequestResponseItems : WalletInteractionResponseItems()
 @Serializable
 @SerialName("transaction")
 data class WalletTransactionResponseItems(
-    @SerialName("sendTransaction")
-    val sendTransaction: SendTransactionResponseItem
+    @SerialName("send")
+    val send: SendTransactionResponseItem
 ) : WalletInteractionResponseItems()
 
 @Serializable
