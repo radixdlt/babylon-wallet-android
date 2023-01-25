@@ -6,14 +6,14 @@ data class NonFungibleToken(
     val metadataContainer: NonFungibleMetadataContainer? = null
 ) {
     fun getTokenName(): String? {
-        return metadataContainer?.metadata?.get(TokenMetadataConstants.KEY_NAME)
+        return metadataContainer?.metadata?.get(MetadataConstants.KEY_NAME)
     }
 
     fun getTokenSymbol(): String? {
-        return metadataContainer?.metadata?.get(TokenMetadataConstants.KEY_SYMBOL)
+        return metadataContainer?.metadata?.get(MetadataConstants.KEY_SYMBOL)
     }
 
     fun getImageUrl(): String? {
-        return metadataContainer?.metadata?.get(TokenMetadataConstants.KEY_NFT_IMAGE)
+        return metadataContainer?.metadata?.get(MetadataConstants.KEY_NFT_IMAGE)
     }
 }
