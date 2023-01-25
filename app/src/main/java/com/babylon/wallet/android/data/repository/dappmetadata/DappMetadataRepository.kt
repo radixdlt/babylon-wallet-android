@@ -73,6 +73,4 @@ class DappMetadataRepositoryImpl @Inject constructor(
             )
         }
     }
-
-
 }
