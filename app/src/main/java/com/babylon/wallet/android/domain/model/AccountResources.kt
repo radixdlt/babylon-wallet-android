@@ -15,13 +15,13 @@ data class AccountResources(
 ) {
     fun hasXrdToken(): Boolean {
         return fungibleTokens.any {
-            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD
+            it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
         }
     }
 
     fun hasXrdWithBalance(): Boolean {
         return fungibleTokens.any {
-            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD &&
+            it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD &&
                 it.amount >= BigDecimal.ONE
         }
     }
