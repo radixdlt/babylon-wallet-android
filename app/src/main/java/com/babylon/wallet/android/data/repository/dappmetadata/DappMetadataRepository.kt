@@ -14,8 +14,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface DappMetadataRepository {
-    suspend fun getWellKnownDappMetadata(origin: String, dAppDefinitionAddress: String): Result<DappMetadata?>
-    suspend fun validateDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
+    suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean>
+    suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -24,7 +24,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : DappMetadataRepository {
 
-    override suspend fun getWellKnownDappMetadata(
+    private suspend fun getWellKnownDappMetadata(
         origin: String,
         dAppDefinitionAddress: String
     ): Result<DappMetadata?> {
@@ -59,7 +59,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun validateDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
+    override suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
         return withContext(ioDispatcher) {
             performHttpRequest(
                 call = {
@@ -71,6 +71,19 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     response.any { it.dAppDefinitionAddress == dAppDefinitionAddress }
                 }
             )
+        }
+    }
+
+    override suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
+        return withContext(ioDispatcher) {
+            getWellKnownDappMetadata(origin, dAppDefinitionAddress).map { result ->
+                val dAppDomainName = result?.getRelatedDomainName()
+                if (dAppDomainName != null && origin.contains(dAppDomainName)) {
+                    Result.Success(true)
+                } else {
+                    Result.Error()
+                }
+            }
         }
     }
 }
