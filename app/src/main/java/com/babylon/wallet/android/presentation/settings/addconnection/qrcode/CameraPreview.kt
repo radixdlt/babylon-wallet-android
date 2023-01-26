@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.qr
+package com.babylon.wallet.android.presentation.settings.addconnection.qrcode
 
 import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector
@@ -29,7 +29,7 @@ fun CameraPreview(
 }
 
 @Composable
-fun BarcodePreviewView(
+private fun BarcodePreviewView(
     onQrCodeDetected: (qrCode: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
