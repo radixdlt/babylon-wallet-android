@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
+import com.babylon.wallet.android.presentation.dapp.account.chooseAccountsScreen
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
@@ -48,11 +49,7 @@ fun WalletApp(
                 is MainEvent.IncomingRequestEvent -> {
                     when (val incomingRequest = event.request) {
                         is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
-                            navController.navigate(
-                                route = Screen.RequestAccountsDestination.routeWithArgs(
-                                    incomingRequest.requestId
-                                )
-                            )
+                            navController.chooseAccountsScreen(requestId = incomingRequest.requestId)
                         }
                         MessageFromDataChannel.IncomingRequest.None -> {
                         }

@@ -75,7 +75,7 @@ fun ChooseAccountsScreen(
     }
 
     state.error?.let { error ->
-        DAppAlertDialog(
+        ErrorAlertDialog(
             title = stringResource(id = R.string.dapp_verification_error_title),
             body = error,
             dismissErrorDialog = dismissErrorDialog
@@ -85,7 +85,7 @@ fun ChooseAccountsScreen(
 
 @Suppress("UnstableCollections")
 @Composable
-fun ChooseAccountContent(
+private fun ChooseAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
     isContinueButtonEnabled: Boolean,
@@ -165,7 +165,7 @@ fun ChooseAccountContent(
 }
 
 @Composable
-fun DAppAlertDialog(
+private fun ErrorAlertDialog(
     title: String,
     body: String,
     dismissErrorDialog: () -> Unit,
