@@ -11,7 +11,7 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_PERSONA_ID = "persona_id"
+internal const val ARG_PERSONA_ID = "arg_persona_id"
 
 internal class CreatePersonaConfirmationArgs(val personaId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(

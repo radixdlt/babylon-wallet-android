@@ -11,10 +11,10 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_ACCOUNT_ID = "account_id"
+internal const val ARG_ACCOUNT_ID = "arg_account_id"
 
 @VisibleForTesting
-internal const val ARG_REQUEST_SOURCE = "request_source"
+internal const val ARG_REQUEST_SOURCE = "arg_request_source"
 
 internal class CreateAccountConfirmationArgs(val accountId: String, val requestSource: CreateAccountRequestSource) {
     constructor(savedStateHandle: SavedStateHandle) : this(

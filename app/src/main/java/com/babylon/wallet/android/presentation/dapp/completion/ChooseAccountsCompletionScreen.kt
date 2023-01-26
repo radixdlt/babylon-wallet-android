@@ -31,20 +31,20 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.White
 
 @Composable
-fun DAppCompletionScreen(
-    viewModel: DAppCompletionViewModel,
+fun ChooseAccountsCompletionScreen(
+    viewModel: ChooseAccountsCompletionViewModel,
     onContinueClick: () -> Unit
 ) {
     val dAppName = viewModel.dAppName
 
-    DAppCompletionContent(
+    ChooseAccountsCompletionContent(
         dAppName = dAppName,
         onContinueClick = onContinueClick
     )
 }
 
 @Composable
-fun DAppCompletionContent(
+private fun ChooseAccountsCompletionContent(
     dAppName: String,
     modifier: Modifier = Modifier,
     onContinueClick: () -> Unit
@@ -105,8 +105,8 @@ fun DAppCompletionContent(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun DAppCompletionContentPreview() {
-    DAppCompletionContent(
+fun ChooseAccountsCompletionContentPreview() {
+    ChooseAccountsCompletionContent(
         dAppName = "Radaswap",
         onContinueClick = {}
     )

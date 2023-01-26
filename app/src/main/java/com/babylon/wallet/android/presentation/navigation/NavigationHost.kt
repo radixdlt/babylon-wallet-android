@@ -20,9 +20,9 @@ import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSON
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
+import com.babylon.wallet.android.presentation.dapp.account.chooseAccountsScreen
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
@@ -119,21 +119,24 @@ fun NavigationHost(
                 navController.createPersonaConfirmationScreen(personaId = personaId)
             }
         )
-
         personasScreen(
             onBackClick = { navController.navigateUp() },
             createPersonaScreen = {
                 navController.createPersonaScreen()
             }
         )
-
         transactionApprovalScreen(onBackClick = {
             navController.popBackStack()
         })
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()
         })
-        dAppRequestAccountsGraph(navController)
+        chooseAccountsScreen(
+            onBackClick = { navController.navigateUp() },
+            onAccountCreationClick = {
+                navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
+            }
+        )
         settingsNavGraph(navController)
         createPersonaConfirmationScreen(
             finishPersonaCreation = {

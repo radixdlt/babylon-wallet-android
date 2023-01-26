@@ -5,9 +5,9 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
 import com.babylon.wallet.android.mockdata.accountsRequest
+import com.babylon.wallet.android.presentation.dapp.account.ARG_ACCOUNTS_REQUEST_ID
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsEvent
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsViewModel
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_INCOMING_REQUEST_ID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -37,7 +37,7 @@ class ChooseAccountsViewModelTest {
         incomingRequestRepository.add(accountsRequest)
 
         viewModel = ChooseAccountsViewModel(
-            savedStateHandle = SavedStateHandle(mapOf(ARG_INCOMING_REQUEST_ID to accountsRequest.requestId)),
+            savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequest.requestId)),
             accountRepository = accountRepository,
             dAppMessenger = dAppMessenger,
             incomingRequestRepository = incomingRequestRepository

@@ -13,7 +13,6 @@ import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
@@ -24,13 +23,12 @@ class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
-    private val incomingRequestRepository: IncomingRequestRepository
+    incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     // the incoming request from dapp
-    private val accountsRequest = incomingRequestRepository.getAccountsRequest(
-        savedStateHandle.get<String>(Screen.ARG_INCOMING_REQUEST_ID).orEmpty()
-    )
+    private val args = ChooseAccountsScreenArgs(savedStateHandle)
+    private val accountsRequest = incomingRequestRepository.getAccountsRequest(args.requestId)
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
