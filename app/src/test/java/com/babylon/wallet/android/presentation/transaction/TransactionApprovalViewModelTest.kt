@@ -50,7 +50,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     override fun setUp() = runTest {
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
-        every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns sampleRequestId
+        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Betanet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)

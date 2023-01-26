@@ -12,7 +12,7 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_SCAN_QR = "request_source"
+internal const val ARG_SCAN_QR = "arg_request_source"
 
 internal class SettingsConnectionScreenArgs(val scanQr: Boolean) {
     constructor(savedStateHandle: SavedStateHandle) : this(

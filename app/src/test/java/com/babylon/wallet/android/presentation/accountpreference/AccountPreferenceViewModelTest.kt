@@ -46,7 +46,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
         coEvery { getFreeXrdUseCase(true, any()) } returns Result.Success(sampleTxId)
-        every { savedStateHandle.get<String>(AddressArg) } returns sampleAddress
+        every { savedStateHandle.get<String>(ARG_ADDRESS) } returns sampleAddress
         coEvery { eventBus.sendEvent(any()) } just Runs
     }
 
