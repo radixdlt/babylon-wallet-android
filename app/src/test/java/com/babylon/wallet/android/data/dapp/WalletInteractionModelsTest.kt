@@ -65,7 +65,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -89,7 +89,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -121,7 +121,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -154,7 +154,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -183,7 +183,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -211,7 +211,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -242,7 +242,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -275,7 +275,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -303,7 +303,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -332,7 +332,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """
@@ -360,7 +360,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "networkId":34,
                   "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
-                  "dAppId":"dashboard"
+                  "dAppDefinitionAddress":"dashboard"
                }
             }
         """

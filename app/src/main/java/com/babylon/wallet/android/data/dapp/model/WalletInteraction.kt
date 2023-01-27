@@ -114,51 +114,50 @@ val walletRequestJson = Json {
     classDiscriminator = "discriminator"
 }
 
-fun WalletInteractionItems.toDomainModel(requestId: String, networkId: Int): MessageFromDataChannel.IncomingRequest {
-    return when (this) {
-        is SendTransactionItem -> toDomainModel(requestId, networkId)
-        is WalletTransactionItems -> this.send.toDomainModel(requestId, networkId)
+fun WalletInteraction.toDomainModel(): MessageFromDataChannel.IncomingRequest {
+    val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+        metadata.networkId,
+        metadata.origin,
+        metadata.dAppDefinitionAddress
+    )
+    return when (items) {
+        is WalletTransactionItems -> items.send.toDomainModel(interactionId, metadata)
         is WalletAuthorizedRequestItems -> {
-            parseAuthorizedRequest(requestId)
+            items.parseAuthorizedRequest(interactionId, metadata)
         }
         is WalletUnauthorizedRequestItems -> {
-            parseUnauthorizedRequest(requestId)
+            items.parseUnauthorizedRequest(interactionId, metadata)
         }
     }
 }
 
 private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
-    requestId: String
-) = when {
-    this.oneTimeAccounts != null -> {
-        oneTimeAccounts.toDomainModel(requestId)
-    }
-    this.oneTimePersonaData != null -> {
-        oneTimePersonaData.toDomainModel(requestId)
-    }
-    else -> MessageFromDataChannel.IncomingRequest.Unknown
+    requestId: String,
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
+): MessageFromDataChannel.IncomingRequest.UnauthorizedRequest {
+    return MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
+        requestId,
+        metadata,
+        oneTimeAccounts?.toDomainModel(),
+        oneTimePersonaData?.toDomainModel(),
+    )
 }
 
 private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
     requestId: String,
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ): MessageFromDataChannel.IncomingRequest {
     val auth = when (this.auth) {
         is AuthLoginRequestItem -> auth.toDomainModel()
         is AuthUsePersonaRequestItem -> auth.toDomainModel()
     }
-    return when {
-        this.oneTimeAccounts != null -> {
-            oneTimeAccounts.toDomainModel(requestId, auth)
-        }
-        this.oneTimePersonaData != null -> {
-            oneTimePersonaData.toDomainModel(requestId, auth)
-        }
-        this.ongoingAccounts != null -> {
-            ongoingAccounts.toDomainModel(requestId, auth)
-        }
-        this.ongoingPersonaData != null -> {
-            ongoingPersonaData.toDomainModel(requestId, auth)
-        }
-        else -> MessageFromDataChannel.IncomingRequest.Unknown
-    }
+    return MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        requestId = requestId,
+        requestMetadata = metadata,
+        authRequest = auth,
+        oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
+        ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(),
+        oneTimePersonaRequestItem = oneTimePersonaData?.toDomainModel(),
+        ongoingPersonaRequestItem = ongoingPersonaData?.toDomainModel(),
+    )
 }

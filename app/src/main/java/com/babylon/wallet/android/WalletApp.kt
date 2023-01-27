@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.flow.Flow
-import timber.log.Timber
 
 @ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
@@ -47,23 +46,12 @@ fun WalletApp(
             when (event) {
                 is MainEvent.IncomingRequestEvent -> {
                     when (val incomingRequest = event.request) {
-                        is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
-                            navController.navigate(
-                                route = Screen.RequestAccountsDestination.routeWithArgs(
-                                    incomingRequest.requestId
-                                )
-                            )
-                        }
-                        MessageFromDataChannel.IncomingRequest.None -> {
-                        }
-                        MessageFromDataChannel.IncomingRequest.ParsingError -> {
-                            Timber.d("Failed to parse incoming request")
-                        }
-                        is MessageFromDataChannel.IncomingRequest.TransactionItem -> {
+                        is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
                             navController.transactionApproval(incomingRequest.requestId)
                         }
-                        MessageFromDataChannel.IncomingRequest.Unknown -> {}
-                        is MessageFromDataChannel.IncomingRequest.PersonaRequest -> {
+                        is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
+                        }
+                        is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
                         }
                     }
                 }
