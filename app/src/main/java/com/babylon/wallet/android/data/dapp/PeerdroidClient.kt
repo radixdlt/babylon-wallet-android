@@ -91,14 +91,13 @@ class PeerdroidClientImpl @Inject constructor(
                         parseIncomingMessage(messageInJsonString = dataChannelEvent.message)
                     }
                     else -> { // TODO later we might need to handle other cases here
-                        MessageFromDataChannel.IncomingRequest.None
+                        MessageFromDataChannel.None
                     }
                 }
-            }
-            ?.catch { exception ->
+            }?.catch { exception ->
                 Timber.e("caught exception: ${exception.localizedMessage}")
                 if (exception is SerializationException) {
-                    emit(MessageFromDataChannel.IncomingRequest.ParsingError)
+                    emit(MessageFromDataChannel.ParsingError)
                 } else {
                     throw exception
                 }
@@ -130,9 +129,7 @@ class PeerdroidClientImpl @Inject constructor(
 
     private fun parseIncomingMessage(messageInJsonString: String): MessageFromDataChannel.IncomingRequest {
         val request = walletRequestJson.decodeFromString<WalletInteraction>(messageInJsonString)
-        val requestId = request.interactionId
-        val walletRequestItems = request.items
-        return walletRequestItems.toDomainModel(requestId, request.metadata.networkId)
+        return request.toDomainModel()
     }
 
     override suspend fun close(shouldCloseConnectionToSignalingServer: Boolean) {

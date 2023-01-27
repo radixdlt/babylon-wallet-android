@@ -37,7 +37,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     )
                 },
                 map = { response ->
-                    response.map { it.toDomainModel() }
+                    response.dAppMetadata.map { it.toDomainModel() }
                         .firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
                 }
             ).map { metadata ->
@@ -68,7 +68,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     )
                 },
                 map = { response ->
-                    response.any { it.dAppDefinitionAddress == dAppDefinitionAddress }
+                    response.dAppMetadata.any { it.dAppDefinitionAddress == dAppDefinitionAddress }
                 }
             )
         }

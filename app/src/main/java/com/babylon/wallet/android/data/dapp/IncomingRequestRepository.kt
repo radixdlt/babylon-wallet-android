@@ -20,13 +20,10 @@ class IncomingRequestRepository @Inject constructor() {
 
     suspend fun add(incomingRequest: IncomingRequest) {
         mutex.withLock {
-            val id = incomingRequest.id
-            if (id != null) {
-                if (listOfIncomingRequests.isEmpty()) {
-                    _currentRequestToHandle.emit(incomingRequest)
-                }
-                listOfIncomingRequests.putIfAbsent(id, incomingRequest)
+            if (listOfIncomingRequests.isEmpty()) {
+                _currentRequestToHandle.emit(incomingRequest)
             }
+            listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)
         }
     }
 
@@ -39,28 +36,28 @@ class IncomingRequestRepository @Inject constructor() {
         }
     }
 
-    fun getAccountsRequest(requestId: String): IncomingRequest.AccountsRequest {
+    fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.AccountsRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.UnauthorizedRequest)
     }
 
-    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionItem {
+    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionItem)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionRequest)
     }
 
-    fun getOneTimePersonaRequest(requestId: String): IncomingRequest.PersonaRequest {
+    fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.PersonaRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.AuthorizedRequest)
     }
 
     fun getAmountOfRequests() = listOfIncomingRequests.size

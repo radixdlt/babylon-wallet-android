@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.gateway
 
 import com.babylon.wallet.android.data.gateway.generated.model.GatewayInformationResponse
-import com.babylon.wallet.android.data.gateway.model.DappMetadataDto
+import com.babylon.wallet.android.data.gateway.model.DappMetadataResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -13,5 +13,5 @@ interface DynamicUrlApi {
     suspend fun gatewayInfo(@Url gatewayUrl: String): Response<GatewayInformationResponse>
 
     @GET
-    suspend fun wellKnownDappDefinition(@Url dappWellKnownUrl: String): Response<List<DappMetadataDto>>
+    suspend fun wellKnownDappDefinition(@Url dappWellKnownUrl: String): Response<DappMetadataResponse>
 }
