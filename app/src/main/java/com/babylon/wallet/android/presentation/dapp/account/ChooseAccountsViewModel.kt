@@ -27,8 +27,17 @@ class ChooseAccountsViewModel @Inject constructor(
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     // the incoming request from dapp
+    private val accountsRequest = incomingRequestRepository.getUnauthorizedRequest(
+        savedStateHandle.get<String>(Screen.ARG_INCOMING_REQUEST_ID).orEmpty()
+    )
     private val args = ChooseAccountsScreenArgs(savedStateHandle)
     private val accountsRequest = incomingRequestRepository.getAccountsRequest(args.requestId)
+
+    // TODO this is temporary until we have proper handling of CAP-21 requests models!
+    @Suppress("TooGenericExceptionThrown")
+    private val oneTimeAccountRequestItem =
+        accountsRequest.oneTimeAccountsRequestItem
+            ?: throw RuntimeException("Only oneTimeAccountsRequestItem supported")
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
@@ -75,7 +84,7 @@ class ChooseAccountsViewModel @Inject constructor(
             .availableAccountItems
             .count { accountItem ->
                 accountItem.isSelected
-            } >= accountsRequest.numberOfAccounts
+            } >= oneTimeAccountRequestItem.numberOfAccounts
 
         state = state.copy(isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected)
     }

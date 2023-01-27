@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("loginWithoutChallenge")
 data class AuthLoginWithoutChallengeRequestResponseItem(
-    @SerialName("personaId")
-    val personaId: String
+    @SerialName("persona")
+    val persona: PersonaDto
 ) : AuthLoginRequestResponseItem()
 
 @Serializable

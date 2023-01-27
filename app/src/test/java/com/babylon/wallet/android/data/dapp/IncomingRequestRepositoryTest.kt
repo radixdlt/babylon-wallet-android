@@ -13,12 +13,24 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 class IncomingRequestRepositoryTest {
 
     private val incomingRequestRepository = IncomingRequestRepository()
     private val amountOfIncomingRequests = 1000
+    private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        requestId = UUID.randomUUID().toString(),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(),
+        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            isOngoing = true,
+            requiresProofOfOwnership = false,
+            numberOfAccounts = 1,
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+        )
+    )
 
     @Test
     fun `given 1000 consequent incoming requests, when adding all of them one by one, then the amount of the incoming requests is 1000`() =
@@ -32,15 +44,7 @@ class IncomingRequestRepositoryTest {
                 val coroutines = 1.rangeTo(1000).map { // create 1000 coroutines
                     launch {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
-                            incomingRequestRepository.add(
-                                incomingRequest = MessageFromDataChannel.IncomingRequest.AccountsRequest(
-                                    requestId = i.toString(),
-                                    isOngoing = false,
-                                    requiresProofOfOwnership = false,
-                                    numberOfAccounts = i,
-                                    quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
-                                )
-                            )
+                            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(requestId = i.toString()))
                         }
                     }
                 }
@@ -60,15 +64,7 @@ class IncomingRequestRepositoryTest {
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         for (i in 1..5) { // and in each of them, add an incoming request
-            incomingRequestRepository.add(
-                incomingRequest = MessageFromDataChannel.IncomingRequest.AccountsRequest(
-                    requestId = i.toString(),
-                    isOngoing = false,
-                    requiresProofOfOwnership = false,
-                    numberOfAccounts = i,
-                    quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
-                )
-            )
+            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(requestId = i.toString()))
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)

@@ -2,44 +2,61 @@ package com.babylon.wallet.android.domain.model
 
 sealed interface MessageFromDataChannel {
 
-    sealed class IncomingRequest(val id: String? = null) : MessageFromDataChannel {
+    sealed class IncomingRequest(val id: String, val metadata: RequestMetadata) :
+        MessageFromDataChannel {
 
-        data class AccountsRequest(
+        data class AuthorizedRequest(
             val requestId: String,
-            val isOngoing: Boolean,
-            val requiresProofOfOwnership: Boolean,
-            val numberOfAccounts: Int,
-            val quantifier: AccountNumberQuantifier,
-            val authRequest: AuthRequest? = null
-        ) : IncomingRequest(requestId)
+            val requestMetadata: RequestMetadata,
+            val authRequest: AuthRequest,
+            val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
+            val ongoingAccountsRequestItem: AccountsRequestItem? = null,
+            val oneTimePersonaRequestItem: PersonaRequestItem? = null,
+            val ongoingPersonaRequestItem: PersonaRequestItem? = null
+        ) : IncomingRequest(requestId, requestMetadata)
 
-        data class PersonaRequest(
+        data class UnauthorizedRequest(
             val requestId: String,
-            val fields: List<String>,
-            val isOngoing: Boolean,
-            val authRequest: AuthRequest? = null
-        ) : IncomingRequest(requestId)
+            val requestMetadata: RequestMetadata,
+            val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
+            val oneTimePersonaRequestItem: PersonaRequestItem? = null
+        ) : IncomingRequest(requestId, requestMetadata)
 
-        data class TransactionItem(
+        data class TransactionRequest(
             val requestId: String,
-            val networkId: Int,
             val transactionManifestData: TransactionManifestData,
-        ) : IncomingRequest(requestId)
+            val requestMetadata: RequestMetadata
+        ) : IncomingRequest(requestId, requestMetadata)
 
-        object Unknown : IncomingRequest()
-
-        object ParsingError : IncomingRequest()
-
-        object None : IncomingRequest()
         sealed interface AuthRequest {
-            data class LoginRequest(val challenge: String) : AuthRequest
+            data class LoginRequest(val challenge: String? = null) : AuthRequest
             data class UsePersonaRequest(val id: String) : AuthRequest
         }
 
         enum class AccountNumberQuantifier {
             Exactly, AtLeast
         }
+
+        data class RequestMetadata(val networkId: Int, val origin: String, val dAppDefinitionAddress: String)
+
+        data class AccountsRequestItem(
+            val isOngoing: Boolean,
+            val requiresProofOfOwnership: Boolean,
+            val numberOfAccounts: Int,
+            val quantifier: AccountNumberQuantifier
+        )
+
+        data class PersonaRequestItem(
+            val fields: List<String>,
+            val isOngoing: Boolean
+        )
     }
+
+    object Unknown : MessageFromDataChannel
+
+    object ParsingError : MessageFromDataChannel
+
+    object None : MessageFromDataChannel
 
     enum class ConnectionStateChanged : MessageFromDataChannel {
         OPEN, CLOSE, CLOSING, ERROR, CONNECTING

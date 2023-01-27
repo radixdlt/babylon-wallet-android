@@ -16,16 +16,19 @@ data class SendTransactionItem(
     val blobs: List<String>? = null,
     @SerialName("message")
     val message: String? = null
-) : WalletInteractionItems()
+)
 
-fun SendTransactionItem.toDomainModel(requestId: String, networkId: Int) =
-    MessageFromDataChannel.IncomingRequest.TransactionItem(
+fun SendTransactionItem.toDomainModel(
+    requestId: String,
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
+) =
+    MessageFromDataChannel.IncomingRequest.TransactionRequest(
         requestId = requestId,
-        networkId = networkId,
         transactionManifestData = TransactionManifestData(
             transactionManifest,
             version,
-            networkId,
+            metadata.networkId,
             blobs?.map { decode(it) }.orEmpty()
-        )
+        ),
+        metadata
     )

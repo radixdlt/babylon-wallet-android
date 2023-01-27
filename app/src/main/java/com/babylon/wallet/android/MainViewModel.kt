@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
@@ -34,6 +35,7 @@ class MainViewModel @Inject constructor(
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val dappMetadataRepository: DappMetadataRepository
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -112,37 +114,32 @@ class MainViewModel @Inject constructor(
                             restartConnectionToDapp()
                         }
                     } else if (message is IncomingRequest) {
-                        when (message) {
-                            is IncomingRequest.AccountsRequest -> {
-                                if (message.isOngoing) {
-                                    handleOngoingAccountRequest(message)
-                                } else {
-                                    incomingRequestRepository.add(message)
-                                }
-                            }
-                            is IncomingRequest.PersonaRequest -> {
-                                if (message.isOngoing) {
-                                    handleOngoingPersonaRequest(message)
-                                } else {
-                                    incomingRequestRepository.add(message)
-                                }
-                            }
-                            is IncomingRequest.TransactionItem -> {
-                                incomingRequestRepository.add(message)
-                            }
-                            else -> {}
-                        }
+                        handleIncomingRequest(message)
                     }
                 }
         }
     }
 
-    private fun handleOngoingPersonaRequest(request: IncomingRequest.PersonaRequest) {
-        Timber.d("request $request")
-    }
-
-    private fun handleOngoingAccountRequest(request: IncomingRequest.AccountsRequest) {
-        Timber.d("request $request")
+    private fun handleIncomingRequest(request: IncomingRequest) {
+        viewModelScope.launch {
+            val result =
+                dappMetadataRepository.verifyDappSimple(request.metadata.origin, request.metadata.dAppDefinitionAddress)
+            if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
+                when (request) {
+                    is IncomingRequest.AuthorizedRequest -> {
+                        // TODO auth request
+                    }
+                    is IncomingRequest.TransactionRequest -> {
+                        incomingRequestRepository.add(request)
+                    }
+                    is IncomingRequest.UnauthorizedRequest -> {
+                        // TODO no auth request
+                    }
+                }
+            } else {
+                // TODO dApp verification failed
+            }
+        }
     }
 
     private fun restartConnectionToDapp() {

@@ -16,16 +16,10 @@ data class OngoingPersonaDataRequestItem(
     val fields: List<String>
 )
 
-fun OneTimePersonaDataRequestItem.toDomainModel(
-    requestId: String,
-    auth: MessageFromDataChannel.IncomingRequest.AuthRequest? = null
-): MessageFromDataChannel.IncomingRequest.PersonaRequest {
-    return MessageFromDataChannel.IncomingRequest.PersonaRequest(requestId, fields, false, auth)
+fun OneTimePersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem {
+    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, false)
 }
 
-fun OngoingPersonaDataRequestItem.toDomainModel(
-    requestId: String,
-    auth: MessageFromDataChannel.IncomingRequest.AuthRequest? = null
-): MessageFromDataChannel.IncomingRequest.PersonaRequest {
-    return MessageFromDataChannel.IncomingRequest.PersonaRequest(requestId, fields, true, auth)
+fun OngoingPersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem {
+    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, true)
 }
