@@ -122,8 +122,10 @@ class MainViewModel @Inject constructor(
 
     private fun handleIncomingRequest(request: IncomingRequest) {
         viewModelScope.launch {
-            val result =
-                dappMetadataRepository.verifyDappSimple(request.metadata.origin, request.metadata.dAppDefinitionAddress)
+            val result = dappMetadataRepository.verifyDappSimple(
+                origin = request.metadata.origin,
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+            )
             if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
                 when (request) {
                     is IncomingRequest.AuthorizedRequest -> {
