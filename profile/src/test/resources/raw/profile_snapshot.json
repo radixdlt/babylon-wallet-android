@@ -133,7 +133,22 @@
         }
       ],
       "connectedDapps" : [
-
+        {
+          "networkID" : 34,
+          "address" : "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu",
+          "displayName" : "My Mac DApp",
+          "referencesToAuthorizedPersonas" : [
+            {
+              "identityAddress" : "account_tdx_22_1qa803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvs98ghge",
+              "fieldIDs" : [ "1", "2" ],
+              "referencesToAuthorizedAccounts" : [
+                {
+                  "accountAddress" : "account_tdx_22_1qa803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvs98ghge"
+                }
+              ]
+            }
+          ]
+        }
       ],
       "networkID" : 34,
       "personas" : [

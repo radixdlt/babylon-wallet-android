@@ -37,7 +37,7 @@ class AddP2PClientUseCaseTest {
                 curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
                 secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
             ),
-            perNetwork = emptyList(),
+            onNetwork = emptyList(),
             version = "0.0.1"
         )
         whenever(profileDataSource.readProfile()).thenReturn(initialProfile)
@@ -54,7 +54,7 @@ class AddP2PClientUseCaseTest {
                 p2pClients = listOf(expectedP2pClient)
             ),
             factorSources = initialProfile.factorSources,
-            perNetwork = initialProfile.perNetwork,
+            onNetwork = initialProfile.onNetwork,
             version = initialProfile.version
         )
         verify(profileDataSource).saveProfile(updatedProfile)

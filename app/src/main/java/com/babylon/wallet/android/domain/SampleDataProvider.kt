@@ -55,7 +55,7 @@ class SampleDataProvider {
                 curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
                 secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
             ),
-            perNetwork = emptyList(),
+            onNetwork = emptyList(),
             version = "0.0.1"
         )
     }

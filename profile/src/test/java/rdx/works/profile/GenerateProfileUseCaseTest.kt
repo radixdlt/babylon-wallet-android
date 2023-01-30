@@ -18,12 +18,11 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
-import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.PerNetwork
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -68,10 +67,10 @@ class GenerateProfileUseCaseTest {
                     ),
                     secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
                 ),
-                perNetwork = listOf(
-                    PerNetwork(
+                onNetwork = listOf(
+                    OnNetwork(
                         accounts = listOf(
-                            Account(
+                            OnNetwork.Account(
                                 entityAddress = EntityAddress("fj3489fj348f"),
                                 appearanceID = 123,
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
@@ -142,7 +141,7 @@ class GenerateProfileUseCaseTest {
             )
 
             Assert.assertEquals(
-                profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
+                profile.onNetwork.first().accounts.first().securityState.unsecuredEntityControl
                     .genesisFactorInstance.factorInstanceID,
                 expectedFactorInstanceId
             )
@@ -175,7 +174,7 @@ class GenerateProfileUseCaseTest {
             )
 
             Assert.assertEquals(
-                profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
+                profile.onNetwork.first().accounts.first().securityState.unsecuredEntityControl
                     .genesisFactorInstance.factorInstanceID,
                 expectedFactorInstanceId
             )

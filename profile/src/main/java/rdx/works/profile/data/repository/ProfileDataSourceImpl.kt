@@ -111,7 +111,7 @@ class ProfileDataSourceImpl @Inject constructor(
         )
 
         return readProfile()?.let { profile ->
-            profile.perNetwork.any { perNetwork ->
+            profile.onNetwork.any { perNetwork ->
                 perNetwork.networkID == newNetworkAndGateway.network.id
             }
         } ?: false

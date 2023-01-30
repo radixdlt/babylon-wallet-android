@@ -7,19 +7,18 @@ import rdx.works.profile.data.extensions.signerPrivateKey
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.data.model.pernetwork.PerNetwork
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.domain.GetMnemonicUseCase
 import javax.inject.Inject
 
 interface AccountRepository {
 
-    val accounts: Flow<List<Account>>
+    val accounts: Flow<List<OnNetwork.Account>>
 
-    suspend fun getAccounts(): List<Account>
+    suspend fun getAccounts(): List<OnNetwork.Account>
 
-    suspend fun getAccountByAddress(address: String): Account?
+    suspend fun getAccountByAddress(address: String): OnNetwork.Account?
 
     suspend fun getSignersForAddresses(
         networkId: Int,
@@ -32,10 +31,10 @@ class AccountRepositoryImpl @Inject constructor(
     private val getMnemonicUseCase: GetMnemonicUseCase
 ) : AccountRepository {
 
-    override val accounts: Flow<List<Account>> = profileDataSource.profile
+    override val accounts: Flow<List<OnNetwork.Account>> = profileDataSource.profile
         .map { profile ->
             profile
-                ?.perNetwork
+                ?.onNetwork
                 ?.firstOrNull { perNetwork ->
                     perNetwork.networkID == getCurrentNetwork().networkId().value
                 }
@@ -43,12 +42,12 @@ class AccountRepositoryImpl @Inject constructor(
             perNetwork?.accounts.orEmpty()
         }
 
-    override suspend fun getAccounts(): List<Account> {
+    override suspend fun getAccounts(): List<OnNetwork.Account> {
         val perNetwork = getPerNetwork()
         return perNetwork?.accounts.orEmpty()
     }
 
-    override suspend fun getAccountByAddress(address: String): Account? {
+    override suspend fun getAccountByAddress(address: String): OnNetwork.Account? {
         val perNetwork = getPerNetwork()
         return perNetwork
             ?.accounts
@@ -85,14 +84,14 @@ class AccountRepositoryImpl @Inject constructor(
         profile: Profile?,
         addresses: List<String>,
         networkId: Int,
-    ): List<Account> {
+    ): List<OnNetwork.Account> {
         val accounts = if (addresses.isNotEmpty()) {
             addresses.mapNotNull { address ->
                 getAccountByAddress(address)
             }
         } else {
             listOfNotNull(
-                profile?.perNetwork
+                profile?.onNetwork
                     ?.firstOrNull { perNetwork ->
                         perNetwork.networkID == networkId
                     }
@@ -103,9 +102,9 @@ class AccountRepositoryImpl @Inject constructor(
         return accounts
     }
 
-    private suspend fun getPerNetwork(): PerNetwork? {
+    private suspend fun getPerNetwork(): OnNetwork? {
         return profileDataSource.readProfile()
-            ?.perNetwork
+            ?.onNetwork
             ?.firstOrNull { perNetwork ->
                 perNetwork.networkID == getCurrentNetwork().networkId().value
             }
