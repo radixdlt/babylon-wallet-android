@@ -176,7 +176,7 @@ class ProfileTest {
         )
 
         profile = profile.addConnectedDapp(
-            dAppDefinitionAddress = "account_tdx_22_1qa803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvs98ghge",
+            dAppDefinitionAddress = "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu",
             dAppDisplayName = "My Mac DApp",
             networkId = networkId.value,
             referencesToAuthorizedPersona = setOf(
