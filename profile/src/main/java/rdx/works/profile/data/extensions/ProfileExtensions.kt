@@ -7,7 +7,6 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -123,17 +122,21 @@ fun Profile.addConnectedDapp(
     dAppDefinitionAddress: String,
     dAppDisplayName: String,
     networkId: Int,
-    referencesToAuthorizedPersona: Set<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
+    referencesToAuthorizedPersona: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
 ): Profile {
-    val connectedDapp = OnNetwork.ConnectedDapp(
+    // Instead of using SortedSet/Set, i use List which is ordered and make sure duplicates are gone
+    val referencesToAuthorizedPersonaNoDuplicates = referencesToAuthorizedPersona.toSet().toList()
+    val unverifiedConnectedDapp = OnNetwork.ConnectedDapp(
         networkID = networkId,
-        address = dAppDefinitionAddress,
+        dAppDefinitionAddress = dAppDefinitionAddress,
         displayName = dAppDisplayName,
-        referencesToAuthorizedPersonas = referencesToAuthorizedPersona
+        referencesToAuthorizedPersonas = referencesToAuthorizedPersonaNoDuplicates
     )
 
     val updatedOnNetwork = onNetwork.map { network ->
-        if (network.networkID == connectedDapp.networkID) {
+
+        if (network.networkID == unverifiedConnectedDapp.networkID) {
+            val connectedDapp = network.validateAuthorizedPersonas(unverifiedConnectedDapp)
             network.copy(
                 accounts = network.accounts,
                 connectedDapps = network.connectedDapps + connectedDapp,
@@ -152,12 +155,39 @@ fun Profile.addConnectedDapp(
     )
 }
 
+private fun OnNetwork.validateAuthorizedPersonas(connectedDapp: OnNetwork.ConnectedDapp): OnNetwork.ConnectedDapp {
+    // Validate that all Personas are known and that every Field.ID is known for each Persona
+    connectedDapp.referencesToAuthorizedPersonas.map { authorizedPersona ->
+        val persona = personas.find {
+            it.address == authorizedPersona.identityAddress
+        }
+        requireNotNull(persona)
+        persona.fields.map { field ->
+            require(authorizedPersona.fieldIDs.contains(field.id)) {
+                throw IllegalArgumentException("Unknown persona field")
+            }
+        }
+    }
+
+    // Validate that all Accounts are known
+    connectedDapp.referencesToAuthorizedPersonas.flatMap {
+        it.sharedAccounts.accountsReferencedByAddress
+    }.map { accountAddressReference ->
+        require(accounts.any { it.address == accountAddressReference }) {
+            throw IllegalArgumentException("Unknown account reference")
+        }
+    }
+
+    // All good
+    return connectedDapp
+}
+
 fun deriveAddress(
     networkID: NetworkId,
     publicKey: PublicKey
-): EntityAddress {
+): String {
     val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
     // TODO handle error
     val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
-    return EntityAddress(response.virtualAccountAddress.address.componentAddress)
+    return response.virtualAccountAddress.address.componentAddress
 }

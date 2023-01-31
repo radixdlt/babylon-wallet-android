@@ -25,9 +25,9 @@ data class Profile(
     val onNetwork: List<OnNetwork>,
 
     /**
-     * Version starting from 0.0.1
+     * Incrementing from 1
      */
-    val version: String
+    val version: Int
 ) {
 
     internal fun snapshot(): ProfileSnapshot {
@@ -45,7 +45,7 @@ data class Profile(
     }
 
     companion object {
-        private const val INITIAL_VERSION = "0.0.1"
+        private const val INITIAL_VERSION = 1
         fun init(
             networkAndGateway: NetworkAndGateway,
             mnemonic: MnemonicWords,

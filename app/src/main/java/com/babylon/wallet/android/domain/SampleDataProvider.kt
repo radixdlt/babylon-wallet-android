@@ -56,7 +56,7 @@ class SampleDataProvider {
                 secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
             ),
             onNetwork = emptyList(),
-            version = "0.0.1"
+            version = 1
         )
     }
 

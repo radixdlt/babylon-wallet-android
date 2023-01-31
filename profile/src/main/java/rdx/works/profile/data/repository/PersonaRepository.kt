@@ -30,7 +30,7 @@ class PersonaRepositoryImpl @Inject constructor(
 
     override suspend fun getPersonaByAddress(address: String): OnNetwork.Persona? {
         return getPerNetwork()?.personas?.firstOrNull { persona ->
-            persona.entityAddress.address == address
+            persona.address == address
         }
     }
 

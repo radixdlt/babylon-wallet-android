@@ -29,7 +29,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         val results = accountRepository.getAccounts().map { account ->
             async {
                 getSingleAccountResources(
-                    account.entityAddress.address,
+                    account.address,
                     account.displayName.orEmpty(),
                     account.appearanceID
                 )
@@ -54,7 +54,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             "account is null"
         }
         return getSingleAccountResources(
-            account.entityAddress.address,
+            account.address,
             account.displayName.orEmpty(),
             account.appearanceID
         )

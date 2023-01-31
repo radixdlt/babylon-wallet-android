@@ -16,18 +16,6 @@ import java.util.*
 @Serializable
 data class OnNetwork(
     /**
-     * Accounts created by the user for this network.
-     */
-    @SerialName("accounts")
-    val accounts: List<Account>,
-
-    /**
-     * ConnectedDapp the user has connected with on this network.
-     */
-    @SerialName("connectedDapps")
-    val connectedDapps: List<ConnectedDapp>,
-
-    /**
      * The ID of the network that has been used to generate the accounts, to which personas
      * have been added and dApps connected.
      */
@@ -35,10 +23,22 @@ data class OnNetwork(
     val networkID: Int,
 
     /**
+     * Accounts created by the user for this network.
+     */
+    @SerialName("accounts")
+    val accounts: List<Account>,
+
+    /**
      * Personas created by the user for this network.
      */
     @SerialName("personas")
-    val personas: List<Persona>
+    val personas: List<Persona>,
+
+    /**
+     * ConnectedDapp the user has connected with on this network.
+     */
+    @SerialName("connectedDapps")
+    val connectedDapps: List<ConnectedDapp>
 ) {
     init {
         /**
@@ -56,7 +56,7 @@ data class OnNetwork(
          * typically used in the primary role of this account).
          */
         @SerialName("address")
-        val entityAddress: EntityAddress,
+        val address: String,
 
         /**
          * An identifier for the gradient for this account, to be displayed in wallet
@@ -166,7 +166,7 @@ data class OnNetwork(
                 )
 
                 return Account(
-                    entityAddress = address,
+                    address = address,
                     appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
                     derivationPath = derivationPath,
                     displayName = displayName,
@@ -187,7 +187,7 @@ data class OnNetwork(
          * typically used in the primary role of this persona).
          */
         @SerialName("address")
-        val entityAddress: EntityAddress,
+        val address: String,
 
         /**
          * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
@@ -263,7 +263,7 @@ data class OnNetwork(
                 )
 
                 return Persona(
-                    entityAddress = address,
+                    address = address,
                     derivationPath = derivationPath,
                     displayName = displayName,
                     fields = fields,
@@ -280,14 +280,14 @@ data class OnNetwork(
             val id: String,
 
             @SerialName("kind")
-            val kind: FieldKind,
+            val kind: Kind,
 
             @SerialName("value")
             val value: String
         ) {
 
             @Serializable
-            enum class FieldKind {
+            enum class Kind {
                 @SerialName("firstName")
                 FirstName,
 
@@ -306,11 +306,12 @@ data class OnNetwork(
 
             companion object {
                 fun init(
-                    kind: FieldKind,
+                    id: String = UUID.randomUUID().toString(),
+                    kind: Kind,
                     value: String
                 ): Field {
                     return Field(
-                        id = UUID.randomUUID().toString(),
+                        id = id,
                         kind = kind,
                         value = value
                     )
@@ -325,14 +326,14 @@ data class OnNetwork(
         @SerialName("networkID")
         val networkID: Int,
 
-        @SerialName("address")
-        val address: String,
+        @SerialName("dAppDefinitionAddress")
+        val dAppDefinitionAddress: String,
 
         @SerialName("displayName")
         val displayName: String,
 
         @SerialName("referencesToAuthorizedPersonas")
-        internal val referencesToAuthorizedPersonas: Set<AuthorizedPersonaSimple>
+        val referencesToAuthorizedPersonas: List<AuthorizedPersonaSimple>
     ) {
 
         @Serializable
@@ -347,61 +348,60 @@ data class OnNetwork(
              * List of "ongoing personaData" (identified by OnNetwork.Persona.Field.ID) user has given Dapp access to.
              */
             @SerialName("fieldIDs")
-            val fieldIDs: Set<String>,
+            val fieldIDs: List<String>,
 
             /**
              * List of shared accounts that user given the dApp access to.
              */
-            @SerialName("referencesToAuthorizedAccounts")
-            val referencesToAuthorizedAccounts: Set<SharedAccounts>
+            @SerialName("sharedAccounts")
+            val sharedAccounts: SharedAccounts
         ) {
 
-            // TODO add nOrMore and exactly
             @Serializable
             data class SharedAccounts(
-                @SerialName("accountAddress")
-                val accountAddress: String
-            )
+                @SerialName("accountsReferencedByAddress")
+                val accountsReferencedByAddress: List<String>,
+
+                @SerialName("mode")
+                val mode: Mode
+            ) {
+                enum class Mode {
+                    @SerialName("exactly")
+                    Exactly,
+
+                    @SerialName("atLeast")
+                    AtLeast
+                }
+            }
         }
     }
 
-    @Serializable
     data class AuthorizedPersona(
 
         /**
          * The globally unique identifier of a Persona is its address, used to lookup persona
          */
-        @SerialName("identityAddress")
         val identityAddress: String,
 
         /**
          * The display name of the Persona, as stored in `OnNetwork.Persona`
          */
-        @SerialName("displayName")
         val displayName: String,
 
         /**
          * The persona data that the user has given the Dapp access to, being the tripple: `(id, kind, value)`
          */
-        @SerialName("fields")
         val fields: Set<Persona.Field>,
 
         /**
          * Information of accounts the user has given the Dapp access to,
          * being the tripple `(accountAddress, displayName, appearanceID)`
          */
-        @SerialName("walletAccounts")
-        val walletAccounts: Set<WalletAccount>
+        val walletUiAccounts: Set<WalletUiAccount>
     ) {
-        @Serializable
-        data class WalletAccount(
-            @SerialName("accountAddress")
+        data class WalletUiAccount(
             val accountAddress: String,
-
-            @SerialName("displayName")
             val displayName: String,
-
-            @SerialName("appearanceID")
             val appearanceID: Int
         )
     }
@@ -414,7 +414,7 @@ data class OnNetwork(
         return dApp.referencesToAuthorizedPersonas.map { authorizedPersonaSimple ->
 
             // Fetch existing persona from the to authorized personas reference
-            val persona = personas.first { it.entityAddress.address == authorizedPersonaSimple.identityAddress }
+            val persona = personas.first { it.address == authorizedPersonaSimple.identityAddress }
 
             // Find correct persona fields from reference to persona field id
             val fieldIds = authorizedPersonaSimple.fieldIDs.map { simpleFieldIds ->
@@ -422,20 +422,20 @@ data class OnNetwork(
             }.toSet()
 
             // Find referenced accounts from its persona reference
-            val walletAccounts = authorizedPersonaSimple.referencesToAuthorizedAccounts.map { accountAddress ->
-                val referencedAccount = accounts.first { it.entityAddress.address == accountAddress.accountAddress }
-                AuthorizedPersona.WalletAccount(
-                    accountAddress = referencedAccount.entityAddress.address,
+            val walletUiAccounts = authorizedPersonaSimple.sharedAccounts.accountsReferencedByAddress.map { accRefs ->
+                val referencedAccount = accounts.first { it.address == accRefs }
+                AuthorizedPersona.WalletUiAccount(
+                    accountAddress = referencedAccount.address,
                     displayName = referencedAccount.displayName.orEmpty(),
                     appearanceID = referencedAccount.appearanceID
                 )
             }.toSet()
 
             AuthorizedPersona(
-                identityAddress = persona.entityAddress.address,
+                identityAddress = persona.address,
                 displayName = persona.displayName.orEmpty(),
                 fields = fieldIds,
-                walletAccounts = walletAccounts
+                walletUiAccounts = walletUiAccounts
             )
         }.toSet()
     }

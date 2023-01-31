@@ -18,7 +18,6 @@ import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
@@ -41,12 +40,12 @@ class CreatePersonaUseCaseTest {
         val personaFields = listOf(
             OnNetwork.Persona.Field(
                 id = "ID213",
-                kind = OnNetwork.Persona.Field.FieldKind.FirstName,
+                kind = OnNetwork.Persona.Field.Kind.FirstName,
                 value = "Emily"
             ),
             OnNetwork.Persona.Field(
                 id = "ID0921",
-                kind = OnNetwork.Persona.Field.FieldKind.LastName,
+                kind = OnNetwork.Persona.Field.Kind.LastName,
                 value = "Jacobs"
             )
         )
@@ -77,7 +76,7 @@ class CreatePersonaUseCaseTest {
                     OnNetwork(
                         accounts = listOf(
                             OnNetwork.Account(
-                                entityAddress = EntityAddress("fj3489fj348f"),
+                                address = "fj3489fj348f",
                                 appearanceID = 123,
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
@@ -105,7 +104,7 @@ class CreatePersonaUseCaseTest {
                         personas = emptyList()
                     )
                 ),
-                version = "9.9.9"
+                version = 1
             )
 
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {

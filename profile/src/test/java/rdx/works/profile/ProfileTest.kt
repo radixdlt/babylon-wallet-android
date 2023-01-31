@@ -64,8 +64,16 @@ class ProfileTest {
         val firstPersona = createNewPersona(
             displayName = "First",
             fields = listOf(
-                OnNetwork.Persona.Field.init(OnNetwork.Persona.Field.FieldKind.FirstName, "Alice"),
-                OnNetwork.Persona.Field.init(OnNetwork.Persona.Field.FieldKind.LastName, "Anderson")
+                OnNetwork.Persona.Field.init(
+                    id = "3AC4F94D-DCFA-4012-80AD-1DAF51AE000A",
+                    kind = OnNetwork.Persona.Field.Kind.FirstName,
+                    value = "Alice"
+                ),
+                OnNetwork.Persona.Field.init(
+                    id = "342E48F5-4D7F-4D09-A58A-4E49E399212C",
+                    kind = OnNetwork.Persona.Field.Kind.LastName,
+                    value = "Anderson"
+                )
             ),
             entityIndex = profile.onNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
@@ -98,11 +106,11 @@ class ProfileTest {
         val hammunetProfile = Json.decodeFromString<ProfileSnapshot>(hammunetProfileTestVector).toProfile()
 
         val mnemonic = MnemonicWords(
-            "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+            "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
+                    "sudden possible story mask neutral prize goose mandate"
         )
 
-        val networkAndGateway = NetworkAndGateway.hammunet
+        val networkAndGateway = NetworkAndGateway.betanet
         val networkId = networkAndGateway.network.networkId()
         var profile = Profile.init(
             networkAndGateway = networkAndGateway,
@@ -137,8 +145,16 @@ class ProfileTest {
         val firstPersona = createNewPersona(
             displayName = "Mrs Incognito",
             fields = listOf(
-                OnNetwork.Persona.Field.init(OnNetwork.Persona.Field.FieldKind.FirstName, "Jane"),
-                OnNetwork.Persona.Field.init(OnNetwork.Persona.Field.FieldKind.LastName, "Incognitoson")
+                OnNetwork.Persona.Field.init(
+                    id = "3AC4F94D-DCFA-4012-80AD-1DAF51AE000A",
+                    kind = OnNetwork.Persona.Field.Kind.FirstName,
+                    value = "Jane"
+                ),
+                OnNetwork.Persona.Field.init(
+                    id = "342E48F5-4D7F-4D09-A58A-4E49E399212C",
+                    kind = OnNetwork.Persona.Field.Kind.LastName,
+                    value = "Incognitoson"
+                )
             ),
             entityIndex = profile.onNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
@@ -153,8 +169,16 @@ class ProfileTest {
         val secondPersona = createNewPersona(
             displayName = "Mrs Public",
             fields = listOf(
-                OnNetwork.Persona.Field.init(OnNetwork.Persona.Field.FieldKind.FirstName, "Maria"),
-                OnNetwork.Persona.Field.init(OnNetwork.Persona.Field.FieldKind.LastName, "Publicson")
+                OnNetwork.Persona.Field.init(
+                    id = "DAB2877E-95A4-40A6-8A0F-89098CE6251B",
+                    kind = OnNetwork.Persona.Field.Kind.FirstName,
+                    value = "Maria"
+                ),
+                OnNetwork.Persona.Field.init(
+                    id = "08DDBC25-1FAC-46A8-B437-5A5CE302180A",
+                    kind = OnNetwork.Persona.Field.Kind.LastName,
+                    value = "Publicson"
+                )
             ),
             entityIndex = profile.onNetwork.personasPerNetworkCount(networkId),
             mnemonicWords = mnemonic,
@@ -176,17 +200,37 @@ class ProfileTest {
         )
 
         profile = profile.addConnectedDapp(
-            dAppDefinitionAddress = "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu",
-            dAppDisplayName = "My Mac DApp",
+            dAppDefinitionAddress = "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
+            dAppDisplayName = "RadiSwap",
             networkId = networkId.value,
-            referencesToAuthorizedPersona = setOf(
+            referencesToAuthorizedPersona = listOf(
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "account_tdx_22_1qa803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvs98ghge",
-                    fieldIDs = setOf("1", "2"),
-                    referencesToAuthorizedAccounts = setOf(
-                        OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
-                            "account_tdx_22_1qa803nvt5fqp89wg7lrayga3r727s5fsgxcdanrqmjvs98ghge"
-                        )
+                    identityAddress = "account_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
+                    fieldIDs = listOf(
+                        "3AC4F94D-DCFA-4012-80AD-1DAF51AE000A",
+                        "342E48F5-4D7F-4D09-A58A-4E49E399212C"
+                    ),
+                    sharedAccounts =
+                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                        accountsReferencedByAddress = listOf(
+                            "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32",
+                            "account_tdx_b_1ql2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54ts25dgyv"
+                        ),
+                        mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
+                    )
+                ),
+                OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
+                    identityAddress = "account_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
+                    fieldIDs = listOf(
+                        "DAB2877E-95A4-40A6-8A0F-89098CE6251B",
+                        "08DDBC25-1FAC-46A8-B437-5A5CE302180A"
+                    ),
+                    sharedAccounts =
+                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                        accountsReferencedByAddress = listOf(
+                            "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32"
+                        ),
+                        mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast
                     )
                 )
             )
@@ -249,8 +293,8 @@ class ProfileTest {
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().address,
-            hammunetProfile.onNetwork.first().connectedDapps.first().address
+            profile.onNetwork.first().connectedDapps.first().dAppDefinitionAddress,
+            hammunetProfile.onNetwork.first().connectedDapps.first().dAppDefinitionAddress
         )
 
         Assert.assertEquals(
@@ -269,10 +313,66 @@ class ProfileTest {
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.first()
-                .referencesToAuthorizedAccounts.first(),
-            hammunetProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.first()
-                .referencesToAuthorizedAccounts.first()
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.mode,
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.mode
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size,
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0),
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0)
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1),
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1)
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).identityAddress,
+            hammunetProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).identityAddress
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).fieldIDs,
+            hammunetProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).fieldIDs
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.mode,
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.mode
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size,
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0),
+            hammunetProfile.onNetwork.first().connectedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 
 
@@ -284,8 +384,8 @@ class ProfileTest {
 
         // 1st
         Assert.assertEquals(
-            profile.onNetwork.first().accounts.first().entityAddress.address,
-            hammunetProfile.onNetwork.first().accounts.first().entityAddress.address
+            profile.onNetwork.first().accounts.first().address,
+            hammunetProfile.onNetwork.first().accounts.first().address
         )
 
         Assert.assertEquals(
@@ -346,8 +446,8 @@ class ProfileTest {
 
         // 2nd
         Assert.assertEquals(
-            profile.onNetwork.first().accounts[1].entityAddress.address,
-            hammunetProfile.onNetwork.first().accounts[1].entityAddress.address
+            profile.onNetwork.first().accounts[1].address,
+            hammunetProfile.onNetwork.first().accounts[1].address
         )
 
         Assert.assertEquals(
@@ -401,8 +501,8 @@ class ProfileTest {
 
         // 3rd
         Assert.assertEquals(
-            profile.onNetwork.first().accounts[2].entityAddress.address,
-            hammunetProfile.onNetwork.first().accounts[2].entityAddress.address
+            profile.onNetwork.first().accounts[2].address,
+            hammunetProfile.onNetwork.first().accounts[2].address
         )
 
         Assert.assertEquals(
@@ -467,8 +567,8 @@ class ProfileTest {
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().personas.first().entityAddress.address,
-            hammunetProfile.onNetwork.first().personas.first().entityAddress.address
+            profile.onNetwork.first().personas.first().address,
+            hammunetProfile.onNetwork.first().personas.first().address
         )
 
         Assert.assertEquals(
@@ -536,6 +636,85 @@ class ProfileTest {
             profile.onNetwork.first().personas.first()
                 .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
             hammunetProfile.onNetwork.first().personas.first()
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID
+        )
+
+        // 2nd
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].index,
+            hammunetProfile.onNetwork.first().personas[1].index
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].address,
+            hammunetProfile.onNetwork.first().personas[1].address
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].derivationPath,
+            hammunetProfile.onNetwork.first().personas[1].derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].displayName,
+            hammunetProfile.onNetwork.first().personas[1].displayName
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].fields[0].kind,
+            hammunetProfile.onNetwork.first().personas[1].fields[0].kind
+        )
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].fields[0].value,
+            hammunetProfile.onNetwork.first().personas[1].fields[0].value
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].fields[1].kind,
+            hammunetProfile.onNetwork.first().personas[1].fields[1].kind
+        )
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].fields[1].value,
+            hammunetProfile.onNetwork.first().personas[1].fields[1].value
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1].securityState.discriminator,
+            hammunetProfile.onNetwork.first().personas[1].securityState.discriminator
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID,
+            hammunetProfile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorInstanceID
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath,
+            hammunetProfile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey,
+            hammunetProfile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.publicKey
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind,
+            hammunetProfile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceKind
+        )
+
+        Assert.assertEquals(
+            profile.onNetwork.first().personas[1]
+                .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID,
+            hammunetProfile.onNetwork.first().personas[1]
                 .securityState.unsecuredEntityControl.genesisFactorInstance.factorSourceReference.factorSourceID
         )
 

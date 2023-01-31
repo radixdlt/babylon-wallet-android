@@ -31,7 +31,7 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
             }
             personaUiState = personaUiState.copy(
                 personaName = persona.displayName.orEmpty(),
-                personaAddressTruncated = persona.entityAddress.address.truncatedHash()
+                personaAddressTruncated = persona.address.truncatedHash()
             )
         }
     }

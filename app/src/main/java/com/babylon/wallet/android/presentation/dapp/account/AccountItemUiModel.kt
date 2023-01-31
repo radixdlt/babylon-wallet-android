@@ -10,7 +10,7 @@ data class AccountItemUiModel(
 )
 
 fun OnNetwork.Account.toUiModel(isSelected: Boolean) = AccountItemUiModel(
-    address = entityAddress.address,
+    address = address,
     displayName = displayName,
     appearanceID = appearanceID,
     isSelected = isSelected

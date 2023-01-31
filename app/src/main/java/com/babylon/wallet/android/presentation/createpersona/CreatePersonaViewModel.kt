@@ -44,7 +44,7 @@ class CreatePersonaViewModel @Inject constructor(
                 fields = emptyList()
             )
 
-            val personaId = persona.entityAddress.address
+            val personaId = persona.address
 
             state = state.copy(
                 loading = true

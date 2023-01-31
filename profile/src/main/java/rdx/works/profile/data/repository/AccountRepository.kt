@@ -52,7 +52,7 @@ class AccountRepositoryImpl @Inject constructor(
         return perNetwork
             ?.accounts
             ?.firstOrNull { account ->
-                account.entityAddress.address == address
+                account.address == address
             }
     }
 

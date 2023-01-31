@@ -29,7 +29,7 @@ data class AccountResources(
 
 fun OnNetwork.Account.toDomainModel(): AccountResources {
     return AccountResources(
-        address = this.entityAddress.address,
+        address = this.address,
         displayName = displayName.orEmpty(),
         isStub = true,
         appearanceID = this.appearanceID

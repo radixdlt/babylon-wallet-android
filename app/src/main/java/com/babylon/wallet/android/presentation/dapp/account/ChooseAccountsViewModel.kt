@@ -41,7 +41,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 // remains once the user returns from the account creation flow
                 val accountItems = accounts.map { account ->
                     val currentAccountItemState = state.availableAccountItems.find { accountItemUiModel ->
-                        accountItemUiModel.address == account.entityAddress.address
+                        accountItemUiModel.address == account.address
                     }
                     account.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }

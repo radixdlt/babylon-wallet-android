@@ -28,10 +28,10 @@ internal data class ProfileSnapshot(
     private val onNetwork: List<OnNetwork>,
 
     /**
-     * Version starting from 0.0.1
+     * Incrementing from 1
      */
     @SerialName("version")
-    private val version: String
+    private val version: Int
 ) {
 
     fun toProfile(): Profile {
