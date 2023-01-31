@@ -19,10 +19,10 @@ data class AccountResources(
         }
     }
 
-    fun hasXrdWithBalance(): Boolean {
+    fun hasXrdWithEnoughBalance(minimumBalance: Long): Boolean {
         return fungibleTokens.any {
             it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD &&
-                it.amount >= BigDecimal.ONE
+                it.amount >= BigDecimal(minimumBalance)
         }
     }
 }
