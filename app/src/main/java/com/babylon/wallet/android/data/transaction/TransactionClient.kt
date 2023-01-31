@@ -169,7 +169,9 @@ class TransactionClient @Inject constructor(
         return when (val accounts = getAccountResourcesUseCase()) {
             is Result.Error -> null
             is Result.Success -> {
-                val accountWithXrd = accounts.data.firstOrNull { it.hasXrdWithBalance() }
+                val accountWithXrd = accounts.data.firstOrNull {
+                    it.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+                }
                 accountWithXrd?.address
             }
         }
