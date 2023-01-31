@@ -18,7 +18,7 @@ import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.Persona
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.domain.CreatePersonaUseCase
 
@@ -39,8 +39,8 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             deviceSecurityHelper.isDeviceSecure()
         } returns true
 
-        coEvery { createPersonaUseCase.invoke(any(), any()) } returns Persona(
-            entityAddress = EntityAddress(personaId),
+        coEvery { createPersonaUseCase.invoke(any(), any()) } returns OnNetwork.Persona(
+            address = personaId,
             derivationPath = "m/1'/1'/1'/1'/1'/1'",
             displayName = personaName,
             index = 0,
