@@ -2,10 +2,8 @@ package com.babylon.wallet.android.mockdata
 
 import rdx.works.profile.data.model.pernetwork.*
 
-val account1 = Account(
-    entityAddress = EntityAddress(
-        address = "address1"
-    ),
+val account1 = OnNetwork.Account(
+    address = "address1",
     appearanceID = 1,
     derivationPath = "derivationPath1",
     displayName = "displayName1",
@@ -28,10 +26,8 @@ val account1 = Account(
     )
 )
 
-val account2 = Account(
-    entityAddress = EntityAddress(
-        address = "address2"
-    ),
+val account2 = OnNetwork.Account(
+    address = "address2",
     appearanceID = 2,
     derivationPath = "derivationPath2",
     displayName = "displayName2",

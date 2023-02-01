@@ -19,10 +19,9 @@ import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.Persona
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.PersonaRepository
 
@@ -39,8 +38,8 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
         super.setUp()
         whenever(savedStateHandle.get<String>(ARG_PERSONA_ID)).thenReturn(personaId)
         whenever(personaRepository.getPersonaByAddress(any())).thenReturn(
-            Persona(
-                entityAddress = EntityAddress(personaId),
+            OnNetwork.Persona(
+                address = personaId,
                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                 displayName = personaName,
                 index = 0,

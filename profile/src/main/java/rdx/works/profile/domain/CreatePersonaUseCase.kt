@@ -4,9 +4,8 @@ import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
-import rdx.works.profile.data.model.pernetwork.Persona
-import rdx.works.profile.data.model.pernetwork.PersonaField
-import rdx.works.profile.data.model.pernetwork.createNewPersona
+import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -20,8 +19,8 @@ class CreatePersonaUseCase @Inject constructor(
 
     suspend operator fun invoke(
         displayName: String,
-        fields: List<PersonaField>
-    ): Persona {
+        fields: List<OnNetwork.Persona.Field>
+    ): OnNetwork.Persona {
         return withContext(defaultDispatcher) {
             val profile = profileDataSource.readProfile()
             checkNotNull(profile) {
@@ -33,7 +32,7 @@ class CreatePersonaUseCase @Inject constructor(
             val newPersona = createNewPersona(
                 displayName = displayName,
                 fields = fields,
-                entityIndex = profile.perNetwork.personasPerNetworkCount(networkID),
+                entityIndex = profile.onNetwork.personasPerNetworkCount(networkID),
                 mnemonicWords = MnemonicWords(
                     phrase = generateMnemonicUseCase(
                         mnemonicKey = profile.factorSources

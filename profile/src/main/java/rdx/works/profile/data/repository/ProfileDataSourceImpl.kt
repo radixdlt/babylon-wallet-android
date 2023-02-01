@@ -35,6 +35,7 @@ interface ProfileDataSource {
 
     suspend fun clear()
 
+    suspend fun getCurrentNetwork(): Network
     suspend fun getCurrentNetworkId(): NetworkId
 
     suspend fun getCurrentNetworkBaseUrl(): String
@@ -87,6 +88,11 @@ class ProfileDataSourceImpl @Inject constructor(
         encryptedPreferencesManager.clear()
     }
 
+    override suspend fun getCurrentNetwork(): Network = readProfile()
+        ?.appPreferences
+        ?.networkAndGateway?.network
+        ?: NetworkAndGateway.betanet.network
+
     override suspend fun getCurrentNetworkId(): NetworkId {
         return getNetworkAndGateway().network.networkId()
     }
@@ -111,7 +117,7 @@ class ProfileDataSourceImpl @Inject constructor(
         )
 
         return readProfile()?.let { profile ->
-            profile.perNetwork.any { perNetwork ->
+            profile.onNetwork.any { perNetwork ->
                 perNetwork.networkID == newNetworkAndGateway.network.id
             }
         } ?: false

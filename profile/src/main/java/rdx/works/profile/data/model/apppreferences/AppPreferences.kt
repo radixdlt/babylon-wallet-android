@@ -65,7 +65,7 @@ data class P2PClient(
                 connectionPassword = connectionPassword,
                 displayName = displayName,
                 firstEstablishedOn = now,
-                lastUsedOn = now,
+                lastUsedOn = now
             )
         }
     }
