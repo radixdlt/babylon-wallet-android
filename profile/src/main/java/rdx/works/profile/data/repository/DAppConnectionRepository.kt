@@ -1,14 +1,10 @@
 package rdx.works.profile.data.repository
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import javax.inject.Inject
 
 interface DAppConnectionRepository {
-
-    val connectedDapps: Flow<List<OnNetwork.ConnectedDapp>>
 
     suspend fun addConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp)
 
@@ -18,17 +14,6 @@ interface DAppConnectionRepository {
 class DAppConnectionRepositoryImpl @Inject constructor(
     private val profileDataSource: ProfileDataSource
 ) : DAppConnectionRepository {
-
-    override val connectedDapps: Flow<List<OnNetwork.ConnectedDapp>> = profileDataSource.profile
-        .map { profile ->
-            profile
-                ?.onNetwork
-                ?.firstOrNull { perNetwork ->
-                    perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
-                }
-        }.map { perNetwork ->
-            perNetwork?.connectedDapps.orEmpty()
-        }
 
     override suspend fun addConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
         val profile = profileDataSource.readProfile()
@@ -99,11 +84,7 @@ fun Profile.updateConnectedDapp(
             val connectedDapp = network.validateAuthorizedPersonas(unverifiedConnectedDapp)
             // Remove old connectedDapp
             val updatedDapps = network.connectedDapps.toMutableList().apply {
-                // Remove old connectedDapp
-                remove(existingDapp)
-
-                // Add new one
-                add(connectedDapp)
+                set(network.connectedDapps.indexOf(existingDapp), connectedDapp)
             }
 
             network.copy(
