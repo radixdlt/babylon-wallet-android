@@ -236,7 +236,7 @@ class ProfileTest {
             )
         )
         profile = profile.addConnectedDapp(
-            unverifiedConnectedDapp = connectedDapp
+            connectedDapp = connectedDapp
         )
 
         // Network and gateway
