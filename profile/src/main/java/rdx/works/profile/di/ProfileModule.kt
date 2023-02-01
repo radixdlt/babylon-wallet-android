@@ -6,6 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.AccountRepositoryImpl
+import rdx.works.profile.data.repository.DAppConnectionRepository
+import rdx.works.profile.data.repository.DAppConnectionRepositoryImpl
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.PersonaRepositoryImpl
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -31,4 +33,9 @@ interface ProfileModule {
     fun bindPersonaRepository(
         personaRepositoryImpl: PersonaRepositoryImpl
     ): PersonaRepository
+
+    @Binds
+    fun bindDAppConnectionRepository(
+        dAppConnectionRepositoryImpl: DAppConnectionRepositoryImpl
+    ): DAppConnectionRepository
 }

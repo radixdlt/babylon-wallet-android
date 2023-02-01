@@ -6,7 +6,6 @@ import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Test
 import rdx.works.profile.data.extensions.addAccountOnNetwork
-import rdx.works.profile.data.extensions.addConnectedDapp
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.addPersonaOnNetwork
 import rdx.works.profile.data.model.Profile
@@ -17,6 +16,7 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
+import rdx.works.profile.data.repository.addConnectedDapp
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
@@ -199,11 +199,11 @@ class ProfileTest {
             p2pClient = p2pClient
         )
 
-        profile = profile.addConnectedDapp(
+        val connectedDapp = OnNetwork.ConnectedDapp(
+            networkID = networkId.value,
             dAppDefinitionAddress = "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
-            dAppDisplayName = "RadiSwap",
-            networkId = networkId.value,
-            referencesToAuthorizedPersona = listOf(
+            displayName = "RadiSwap",
+            referencesToAuthorizedPersonas = listOf(
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                     identityAddress = "account_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
                     fieldIDs = listOf(
@@ -234,6 +234,9 @@ class ProfileTest {
                     )
                 )
             )
+        )
+        profile = profile.addConnectedDapp(
+            unverifiedConnectedDapp = connectedDapp
         )
 
         // Network and gateway
