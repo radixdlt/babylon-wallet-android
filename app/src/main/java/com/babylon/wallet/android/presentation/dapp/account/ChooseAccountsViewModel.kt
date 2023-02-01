@@ -9,10 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.AccountNumberQuantifier
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
@@ -76,13 +78,25 @@ class ChooseAccountsViewModel @Inject constructor(
             }
         )
 
-        val isMinRequiredCountOfAccountsSelected = state
-            .availableAccountItems
-            .count { accountItem ->
-                accountItem.isSelected
-            } >= oneTimeAccountRequestItem.numberOfAccounts
+        val numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts
+        val isContinueButtonEnabled = when (oneTimeAccountRequestItem.quantifier) {
+            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> {
+                state
+                    .availableAccountItems
+                    .count { accountItem ->
+                        accountItem.isSelected
+                    } == numberOfAccounts
+            }
+            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> {
+                state
+                    .availableAccountItems
+                    .count { accountItem ->
+                        accountItem.isSelected
+                    } >= numberOfAccounts
+            }
+        }
 
-        state = state.copy(isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected)
+        state = state.copy(isContinueButtonEnabled = isContinueButtonEnabled)
     }
 
     fun sendAccountsResponse() {
