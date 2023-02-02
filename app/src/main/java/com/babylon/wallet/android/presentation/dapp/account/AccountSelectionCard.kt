@@ -25,7 +25,7 @@ fun AccountSelectionCard(
     accountName: String,
     address: String,
     checked: Boolean,
-    singleChoice: Boolean,
+    isSingleChoice: Boolean,
     radioButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -56,7 +56,7 @@ fun AccountSelectionCard(
             )
         }
         Spacer(modifier = Modifier.weight(0.1f))
-        if (singleChoice) {
+        if (isSingleChoice) {
             RadioButton(
                 selected = checked,
                 colors = RadioButtonDefaults.colors(
@@ -87,7 +87,7 @@ fun DAppAccountCardPreview() {
         AccountSelectionCard(
             accountName = "Account name",
             address = "jf932j9f32o",
-            singleChoice = false,
+            isSingleChoice = false,
             radioButtonClicked = {},
             checked = true
         )
@@ -102,7 +102,7 @@ fun DAppAccountCardLargeFontPreview() {
         AccountSelectionCard(
             accountName = "Account name",
             address = "jf932j9f32o",
-            singleChoice = false,
+            isSingleChoice = false,
             radioButtonClicked = {},
             checked = true
         )
@@ -116,7 +116,7 @@ fun DAppAccountCardSingleChoicePreview() {
         AccountSelectionCard(
             accountName = "Account name",
             address = "jf932j9f32o",
-            singleChoice = true,
+            isSingleChoice = true,
             radioButtonClicked = {},
             checked = true
         )

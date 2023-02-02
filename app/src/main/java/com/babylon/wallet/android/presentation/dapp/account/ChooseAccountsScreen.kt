@@ -68,7 +68,7 @@ fun ChooseAccountsScreen(
         accountItems = state.availableAccountItems,
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
-        singleChoice = state.singleChoice
+        isSingleChoice = state.isSingleChoice
     )
 
     if (state.showProgress) {
@@ -92,7 +92,7 @@ private fun ChooseAccountContent(
     isContinueButtonEnabled: Boolean,
     accountItems: List<AccountItemUiModel>,
     onAccountSelect: (Int) -> Unit,
-    singleChoice: Boolean,
+    isSingleChoice: Boolean,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
 ) {
@@ -144,7 +144,7 @@ private fun ChooseAccountContent(
                         accountName = accountItem.displayName.orEmpty(),
                         address = accountItem.address,
                         checked = accountItem.isSelected,
-                        singleChoice = singleChoice,
+                        isSingleChoice = isSingleChoice,
                         radioButtonClicked = {
                             onAccountSelect(index)
                         }
@@ -214,7 +214,7 @@ fun ChooseAccountContentPreview() {
                 )
             ),
             onAccountSelect = {},
-            singleChoice = false
+            isSingleChoice = false
         ) {}
     }
 }
