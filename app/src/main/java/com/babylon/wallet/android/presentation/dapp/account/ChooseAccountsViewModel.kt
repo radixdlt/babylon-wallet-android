@@ -38,7 +38,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
     private val numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts
     private val isExactCountRequired = oneTimeAccountRequestItem
-        .quantifier== MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+        .quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
