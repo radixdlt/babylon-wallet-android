@@ -37,12 +37,22 @@ class ChooseAccountsViewModel @Inject constructor(
         accountsRequest.oneTimeAccountsRequestItem
             ?: throw RuntimeException("Only oneTimeAccountsRequestItem supported")
 
+    private val numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts
+    private val quantifier = oneTimeAccountRequestItem.quantifier
+
     var state by mutableStateOf(ChooseAccountUiState())
         private set
 
     init {
         viewModelScope.launch {
             accountRepository.accounts.collect { accounts ->
+                // Check if single or multiple choice (radio or chechbox)
+                val singleChoice = numberOfAccounts == 1 &&
+                    quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+                state = state.copy(
+                    singleChoice = singleChoice
+                )
+
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
@@ -68,18 +78,32 @@ class ChooseAccountsViewModel @Inject constructor(
 
     fun onAccountSelect(index: Int) {
         // update the isSelected property of the AccountItemUiModel based on index
-        state = state.copy(
-            availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
-                if (index == i) {
-                    accountItem.copy(isSelected = !accountItem.isSelected)
-                } else {
-                    accountItem
+        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly &&
+            numberOfAccounts == 1
+        ) {
+            // Radio buttons selection unselects the previous one
+            state = state.copy(
+                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                    if (index == i) {
+                        accountItem.copy(isSelected = true)
+                    } else {
+                        accountItem.copy(isSelected = false)
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            state = state.copy(
+                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                    if (index == i) {
+                        accountItem.copy(isSelected = !accountItem.isSelected)
+                    } else {
+                        accountItem
+                    }
+                }
+            )
+        }
 
-        val numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts
-        val isContinueButtonEnabled = when (oneTimeAccountRequestItem.quantifier) {
+        val isContinueButtonEnabled = when (quantifier) {
             MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> {
                 state
                     .availableAccountItems
@@ -126,6 +150,7 @@ data class ChooseAccountUiState(
     val availableAccountItems: List<AccountItemUiModel> = emptyList(),
     val dAppDetails: DAppDetailsResponse? = null,
     val isContinueButtonEnabled: Boolean = false,
+    val singleChoice: Boolean = false,
     val error: String? = null,
     val showProgress: Boolean = true
 )
