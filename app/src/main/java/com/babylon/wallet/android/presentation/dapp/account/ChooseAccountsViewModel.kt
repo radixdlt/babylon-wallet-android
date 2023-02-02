@@ -140,8 +140,7 @@ class ChooseAccountsViewModel @Inject constructor(
     }
 }
 
-sealed interface ChooseAccountsEvent : OneOffEvent {
-}
+sealed interface ChooseAccountsEvent : OneOffEvent
 
 data class ChooseAccountUiState(
     val numberOfAccounts: Int,

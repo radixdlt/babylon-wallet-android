@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
@@ -34,8 +33,7 @@ class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestRepository: IncomingRequestRepository,
-    private val dappMetadataRepository: DappMetadataRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -75,46 +73,6 @@ class MainViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
-        viewModelScope.launch {
-            delay(3000)
-            val request = IncomingRequest.AuthorizedRequest(
-                requestId = "1",
-                requestMetadata = IncomingRequest.RequestMetadata(
-                    11,
-                    "origin",
-                    "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu"
-                ),
-                authRequest = IncomingRequest.AuthRequest.LoginRequest(),
-                ongoingAccountsRequestItem = IncomingRequest.AccountsRequestItem(
-                    isOngoing = true,
-                    requiresProofOfOwnership = false,
-                    numberOfAccounts = 1,
-                    quantifier = IncomingRequest.AccountNumberQuantifier.Exactly
-                ),
-//                 oneTimeAccountsRequestItem = IncomingRequest.AccountsRequestItem(
-//                     isOngoing = false,
-//                     requiresProofOfOwnership = false,
-//                     numberOfAccounts = 1,
-//                     quantifier = IncomingRequest.AccountNumberQuantifier.AtLeast
-//                 )
-            )
-//            val request = IncomingRequest.UnauthorizedRequest(
-//                requestId = "1",
-//                requestMetadata = IncomingRequest.RequestMetadata(
-//                    11,
-//                    "origin",
-//                    "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu"
-//                ),
-//                oneTimeAccountsRequestItem = IncomingRequest.AccountsRequestItem(
-//                    isOngoing = false,
-//                    requiresProofOfOwnership = false,
-//                    numberOfAccounts = 1,
-//                    quantifier = IncomingRequest.AccountNumberQuantifier.AtLeast
-//                )
-//            )
-            incomingRequestRepository.add(request)
-            sendEvent(MainEvent.IncomingRequestEvent(request))
-        }
     }
 
     private fun connectToDapp(connectionPassword: String) {
@@ -162,16 +120,15 @@ class MainViewModel @Inject constructor(
 
     private fun handleIncomingRequest(request: IncomingRequest) {
         viewModelScope.launch {
-            val result = dappMetadataRepository.verifyDappSimple(
-                origin = request.metadata.origin,
-                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-            )
-            if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
-                incomingRequestRepository.add(request)
-                sendEvent(MainEvent.IncomingRequestEvent(request))
-            } else {
-                // TODO dApp verification failed
-            }
+//            val result = dappMetadataRepository.verifyDappSimple(
+//                origin = request.metadata.origin,
+//                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+//            )
+//            if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
+            incomingRequestRepository.add(request)
+//            } else {
+//                 TODO dApp verification failed
+//            }
         }
     }
 

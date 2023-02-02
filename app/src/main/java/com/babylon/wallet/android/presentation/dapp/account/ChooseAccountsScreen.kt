@@ -125,7 +125,7 @@ private fun ChooseAccountContent(
         LazyColumn(
             contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
+            modifier = Modifier.fillMaxSize()
         ) {
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

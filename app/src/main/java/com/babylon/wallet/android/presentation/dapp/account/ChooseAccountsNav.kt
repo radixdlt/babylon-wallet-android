@@ -31,7 +31,8 @@ internal class ChooseAccountsArgs(
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_NUMBER_OF_ACCOUNTS]) as Int,
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_QUANTIFIER]) as MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+        checkNotNull(savedStateHandle[ARG_ACCOUNT_QUANTIFIER])
+            as MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
         checkNotNull(savedStateHandle[ARG_ONE_TIME]) as Boolean
     )
 }
@@ -44,6 +45,7 @@ fun NavController.chooseAccounts(
     navigate("choose_accounts_route/$numberOfAccounts/$quantifier/$oneTime")
 }
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccounts(
     navController: NavController,

@@ -25,6 +25,7 @@ fun NavController.dAppLogin(requestId: String) {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
+@Suppress("LongParameterList")
 fun NavGraphBuilder.dAppLogin(
     onBackClick: () -> Unit,
     navController: NavController,

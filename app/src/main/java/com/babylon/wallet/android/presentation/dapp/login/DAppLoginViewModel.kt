@@ -10,6 +10,8 @@ import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.transaction.TransactionApprovalException
+import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
@@ -21,28 +23,33 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsMode
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
+import com.babylon.wallet.android.utils.LAST_USED_PERSONA_DATE_FORMAT
 import com.babylon.wallet.android.utils.fromISO8601String
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.data.repository.ProfileDataSource
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
+@Suppress("LongParameterList", "TooManyFunctions")
 class DAppLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppMessenger: DAppMessenger,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val personaRepository: PersonaRepository,
     private val accountRepository: AccountRepository,
+    private val profileDataSource: ProfileDataSource,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<DAppLoginEvent> by OneOffEventHandlerImpl() {
@@ -62,6 +69,11 @@ class DAppLoginViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
+            if (currentNetworkId != authRequest.requestMetadata.networkId) {
+                handleWrongNetwork(currentNetworkId)
+                return@launch
+            }
             connectedDapp = dAppConnectionRepository.getConnectedDapp(
                 authRequest.requestMetadata.dAppDefinitionAddress
             )
@@ -69,8 +81,8 @@ class DAppLoginViewModel @Inject constructor(
                 connectedDapp?.referencesToAuthorizedPersonas
             state = state.copy(
                 firstTimeLogin = connectedDapp == null,
-                personas = generatePersonasList(allAuthorizedPersonas, state.personas).toPersistentList(),
-                loginButtonEnabled = allAuthorizedPersonas?.firstOrNull() != null
+                personas = generatePersonasListForDisplay(allAuthorizedPersonas, state.personas).toPersistentList(),
+                loginButtonEnabled = allAuthorizedPersonas?.any() != null
             )
             val result = dappMetadataRepository.getDappMetadata(
                 authRequest.metadata.dAppDefinitionAddress
@@ -85,6 +97,22 @@ class DAppLoginViewModel @Inject constructor(
         observePersonas()
     }
 
+    @Suppress("MagicNumber")
+    private suspend fun handleWrongNetwork(currentNetworkId: Int) {
+        val failure = TransactionApprovalFailure.WrongNetwork(
+            currentNetworkId,
+            authRequest.requestMetadata.networkId
+        )
+        state = state.copy(uiMessage = UiMessage.ErrorMessage(TransactionApprovalException(failure)))
+        dAppMessenger.sendWalletInteractionResponseFailure(
+            args.requestId,
+            failure.toWalletErrorType(),
+            failure.getDappMessage()
+        )
+        delay(4000)
+        sendEvent(DAppLoginEvent.RejectLogin)
+    }
+
     private fun observePersonas() {
         viewModelScope.launch {
             personaRepository.personas.collect { personas ->
@@ -94,15 +122,16 @@ class DAppLoginViewModel @Inject constructor(
                 val allAuthorizedPersonas =
                     connectedDapp?.referencesToAuthorizedPersonas
                 state = state.copy(
-                    personas = generatePersonasList(
+                    personas = generatePersonasListForDisplay(
                         allAuthorizedPersonas,
-                        personas.map { it.toUiModel() }).toPersistentList()
+                        personas.map { it.toUiModel() }
+                    ).toPersistentList()
                 )
             }
         }
     }
 
-    private suspend fun generatePersonasList(
+    private suspend fun generatePersonasListForDisplay(
         allAuthorizedPersonas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>?,
         profilePersonas: List<PersonaUiModel>
     ): List<PersonaUiModel> {
@@ -115,7 +144,7 @@ class DAppLoginViewModel @Inject constructor(
                 selected = true,
                 pinned = true,
                 lastUsedOn = defaultAuthorizedPersonaSimple.lastUsedOn.fromISO8601String()
-                    ?.format(DateTimeFormatter.ofPattern("d MMM yyyy")),
+                    ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
                 sharedAccountNumber = defaultAuthorizedPersonaSimple.sharedAccounts.accountsReferencedByAddress.size
             )
         }
@@ -127,7 +156,7 @@ class DAppLoginViewModel @Inject constructor(
                 personaUiModel.copy(
                     sharedAccountNumber = matchingAuthorizedPersona.sharedAccounts.accountsReferencedByAddress.size,
                     lastUsedOn = matchingAuthorizedPersona.lastUsedOn.fromISO8601String()
-                        ?.format(DateTimeFormatter.ofPattern("d MMM yyyy")),
+                        ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
                 )
             } else {
                 personaUiModel
@@ -191,7 +220,8 @@ class DAppLoginViewModel @Inject constructor(
             }
             state = state.copy(selectedAccountsOngoing = selectedAccounts)
             dAppConnectionRepository.updateConnectedDappPersonas(
-                connectedDapp.dAppDefinitionAddress, connectedDapp.referencesToAuthorizedPersonas.map { ref ->
+                connectedDapp.dAppDefinitionAddress,
+                connectedDapp.referencesToAuthorizedPersonas.map { ref ->
                     if (ref.identityAddress == selectedPersona.address) {
                         ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
                     } else {
@@ -236,7 +266,8 @@ class DAppLoginViewModel @Inject constructor(
             val personaExists = connectedDapp.hasAuthorizedPersona(selectedPersona.address)
             if (!personaExists) {
                 dAppConnectionRepository.updateConnectedDappPersonas(
-                    connectedDapp.dAppDefinitionAddress, listOf(
+                    connectedDapp.dAppDefinitionAddress,
+                    listOf(
                         OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
                             fieldIDs = emptyList(),

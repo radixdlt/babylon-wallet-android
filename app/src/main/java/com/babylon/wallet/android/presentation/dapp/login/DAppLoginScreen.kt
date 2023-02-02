@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.dapp.login
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,8 +43,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BottomContinueButton
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
@@ -77,6 +82,8 @@ fun DAppLoginScreen(
         firstTimeLogin = state.firstTimeLogin,
         continueButtonEnabled = state.loginButtonEnabled,
         personas = state.personas,
+        errorMessage = state.uiMessage,
+        onMessageShown = viewModel::onMessageShown,
         createNewPersona = createNewPersona
     )
 }
@@ -89,10 +96,12 @@ private fun DAppLoginContent(
     dappMetadata: DappMetadata?,
     showProgress: Boolean,
     firstTimeLogin: Boolean,
-    modifier: Modifier = Modifier,
     continueButtonEnabled: Boolean,
     personas: ImmutableList<PersonaUiModel>,
     createNewPersona: () -> Unit,
+    errorMessage: UiMessage?,
+    onMessageShown: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
@@ -101,14 +110,24 @@ private fun DAppLoginContent(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
     ) {
-        AnimatedVisibility(visible = showProgress, modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = showProgress,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
             FullscreenCircularProgressContent()
         }
-        AnimatedVisibility(visible = !showProgress, modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = !showProgress,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
             LazyColumn(
                 contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier
+                modifier = Modifier.fillMaxSize()
             ) {
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -137,6 +156,7 @@ private fun DAppLoginContent(
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1
                     )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     LoginRequestHeader(
                         dappName = dappMetadata?.getName() ?: "Unknown dApp",
                         firstTimeLogin = firstTimeLogin,
@@ -188,6 +208,11 @@ private fun DAppLoginContent(
                 .background(RadixTheme.colors.defaultBackground)
                 .align(Alignment.BottomCenter)
         )
+        SnackbarUiMessageHandler(
+            message = errorMessage,
+            onMessageShown = onMessageShown,
+            modifier = Modifier.imePadding()
+        )
     }
 }
 
@@ -195,11 +220,16 @@ private fun DAppLoginContent(
 private fun LoginRequestHeader(dappName: String, firstTimeLogin: Boolean, modifier: Modifier = Modifier) {
     val spanStyle = SpanStyle(color = RadixTheme.colors.gray1)
     val text = if (firstTimeLogin) {
-        stringResource(R.string.dapp_login_first_time_subtitle, dappName).setSpanForPlaceholder(dappName, spanStyle)
+        stringResource(
+            R.string.dapp_login_first_time_subtitle,
+            dappName
+        ).setSpanForPlaceholder(dappName, spanStyle)
     } else {
-        stringResource(R.string.dapp_login_subtitle, dappName).setSpanForPlaceholder(dappName, spanStyle)
+        stringResource(
+            R.string.dapp_login_subtitle,
+            dappName
+        ).setSpanForPlaceholder(dappName, spanStyle)
     }
-    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     Text(
         modifier = modifier,
         text = text,
@@ -220,10 +250,12 @@ fun DAppLoginContentPreview() {
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             showProgress = false,
             firstTimeLogin = false,
-            modifier = Modifier.fillMaxSize(),
             continueButtonEnabled = false,
             personas = persistentListOf(),
-            createNewPersona = {}
+            createNewPersona = {},
+            errorMessage = null,
+            onMessageShown = {},
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
@@ -239,10 +271,12 @@ fun DAppLoginContentFirstTimePreview() {
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             showProgress = false,
             firstTimeLogin = true,
-            modifier = Modifier.fillMaxSize(),
             continueButtonEnabled = false,
             personas = persistentListOf(),
-            createNewPersona = {}
+            createNewPersona = {},
+            errorMessage = null,
+            onMessageShown = {},
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
