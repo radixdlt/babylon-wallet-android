@@ -4,6 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
+import com.babylon.wallet.android.mockdata.accountsRequest
+import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.ARG_REQUEST_ID
+import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.UnauthorizedChooseAccountsEvent
+import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.UnauthorizedChooseAccountsViewModel
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact
 import com.babylon.wallet.android.mockdata.accountsTwoRequestExact
@@ -32,12 +36,14 @@ class ChooseAccountsViewModelTest {
     private val dAppMessenger = DAppMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepository()
 
-    private lateinit var viewModel: ChooseAccountsViewModel
+    private lateinit var viewModel: UnauthorizedChooseAccountsViewModel
 
     @Before
     fun setup() = runTest {
         incomingRequestRepository.add(accountsRequestAtLeast)
 
+        viewModel = UnauthorizedChooseAccountsViewModel(
+            savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsRequest.requestId)),
         viewModel = ChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequestAtLeast.requestId)),
             accountRepository = accountRepository,
@@ -167,6 +173,6 @@ class ChooseAccountsViewModelTest {
         runTest {
             viewModel.sendAccountsResponse()
             advanceUntilIdle()
-            assert(viewModel.oneOffEvent.first() is ChooseAccountsEvent.NavigateToCompletionScreen)
+            assert(viewModel.oneOffEvent.first() is UnauthorizedChooseAccountsEvent.NavigateToCompletionScreen)
         }
 }

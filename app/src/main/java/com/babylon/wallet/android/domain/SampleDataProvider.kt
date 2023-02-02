@@ -20,6 +20,11 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.FactorSourceReference
+import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.SecurityState
 import java.math.BigDecimal
 
 class SampleDataProvider {
@@ -31,6 +36,35 @@ class SampleDataProvider {
             sb.append(characters.random())
         }
         return sb.toString()
+    }
+
+    fun samplePersona(personaId: String = "1", personaName: String = "Test Persona"): OnNetwork.Persona {
+        return OnNetwork.Persona(
+            address = personaId,
+            derivationPath = "m/1'/1'/1'/1'/1'/1'",
+            displayName = personaName,
+            index = 0,
+            networkID = 10,
+            fields = listOf(
+                OnNetwork.Persona.Field("1", OnNetwork.Persona.Field.Kind.Email, "test@test.pl"),
+                OnNetwork.Persona.Field("2", OnNetwork.Persona.Field.Kind.FirstName, "John")
+            ),
+            securityState = SecurityState.Unsecured(
+                discriminator = "dsics",
+                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    genesisFactorInstance = FactorInstance(
+                        derivationPath = DerivationPath("few", "disc"),
+                        factorInstanceID = "IDIDDIIDD",
+                        factorSourceReference = FactorSourceReference(
+                            factorSourceID = "f32f3",
+                            factorSourceKind = "kind"
+                        ),
+                        initializationDate = "Date1",
+                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                    )
+                )
+            )
+        )
     }
 
     fun sampleAccountResource(address: String = randomTokenAddress()): AccountResources {

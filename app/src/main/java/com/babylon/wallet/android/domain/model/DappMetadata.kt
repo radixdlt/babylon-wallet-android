@@ -8,6 +8,10 @@ data class DappMetadata(
         return metadata[MetadataConstants.KEY_NAME]
     }
 
+    fun getIcon(): String? {
+        return metadata[MetadataConstants.KEY_IMAGE_URL]
+    }
+
     fun getRelatedDomainName(): String? {
         return metadata[MetadataConstants.KEY_RELATED_DOMAIN_NAME]
     }

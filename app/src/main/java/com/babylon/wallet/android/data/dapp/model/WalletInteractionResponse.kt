@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
 @SerialName("unauthorizedRequest")
@@ -18,16 +19,17 @@ data class WalletAuthorizedRequestResponseItems(
     @SerialName("auth")
     val auth: AuthRequestResponseItem?,
     @SerialName("oneTimeAccounts")
-    val oneTimeAccounts: OneTimeAccountsRequestResponseItem?,
+    val oneTimeAccounts: OneTimeAccountsRequestResponseItem? = null,
     @SerialName("ongoingAccounts")
-    val ongoingAccounts: OngoingAccountsRequestResponseItem?,
+    val ongoingAccounts: OngoingAccountsRequestResponseItem? = null,
     @SerialName("oneTimePersonaData")
-    val oneTimePersonaData: OneTimePersonaDataRequestResponseItem?,
+    val oneTimePersonaData: OneTimePersonaDataRequestResponseItem? = null,
     @SerialName("ongoingPersonaData")
-    val ongoingPersonaData: OngoingPersonaDataRequestResponseItem?
+    val ongoingPersonaData: OngoingPersonaDataRequestResponseItem? = null
 ) : WalletRequestResponseItems()
 
 @Serializable
+@JsonClassDiscriminator("discriminator")
 sealed class WalletRequestResponseItems : WalletInteractionResponseItems()
 
 @Serializable
@@ -38,8 +40,9 @@ data class WalletTransactionResponseItems(
 ) : WalletInteractionResponseItems()
 
 @Serializable
+@JsonClassDiscriminator("discriminator")
 @Suppress("UnnecessaryAbstractClass")
-abstract class WalletInteractionResponseItems
+sealed class WalletInteractionResponseItems
 
 @Serializable
 @SerialName("success")
@@ -62,4 +65,6 @@ data class WalletInteractionFailureResponse(
 ) : WalletInteractionResponse()
 
 @Suppress("UnnecessaryAbstractClass")
-abstract class WalletInteractionResponse
+@Serializable
+@JsonClassDiscriminator("discriminator")
+sealed class WalletInteractionResponse

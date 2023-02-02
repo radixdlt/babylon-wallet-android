@@ -62,7 +62,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             )
         } returns Result.Success(Unit)
         coEvery {
-            dAppMessenger.sendTransactionWriteResponseFailure(
+            dAppMessenger.sendWalletInteractionResponseFailure(
                 sampleRequestId,
                 any(),
                 any()
@@ -113,7 +113,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseFailure(
+            dAppMessenger.sendWalletInteractionResponseFailure(
                 sampleRequestId,
                 capture(errorSlot),
                 any()
@@ -136,7 +136,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseFailure(
+            dAppMessenger.sendWalletInteractionResponseFailure(
                 sampleRequestId,
                 capture(errorSlot),
                 any()

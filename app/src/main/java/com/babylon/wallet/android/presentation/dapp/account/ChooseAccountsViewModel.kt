@@ -6,15 +6,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
-import com.babylon.wallet.android.data.dapp.DAppMessenger
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
@@ -22,14 +23,19 @@ import javax.inject.Inject
 @HiltViewModel
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val accountRepository: AccountRepository,
-    private val dAppMessenger: DAppMessenger,
-    incomingRequestRepository: IncomingRequestRepository
+    private val accountRepository: AccountRepository
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
-    private val args = ChooseAccountsScreenArgs(savedStateHandle)
-    private val accountsRequest = incomingRequestRepository.getAuthorizedRequest(args.requestId)
+    // the incoming request from dapp
+    private val args = ChooseAccountsArgs(savedStateHandle)
 
+    var state by mutableStateOf(
+        ChooseAccountUiState(
+            numberOfAccounts = args.numberOfAccounts,
+            quantifier = args.accountQuantifier,
+            oneTimeRequest = args.oneTime
+        )
+    )
     // TODO this is temporary until we have proper handling of CAP-21 requests models!
     @Suppress("TooGenericExceptionThrown")
     private val oneTimeAccountRequestItem =
@@ -63,11 +69,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 }
 
                 state = state.copy(
-                    availableAccountItems = accountItems,
-                    dAppDetails = DAppDetailsResponse( // TODO when we have the actual dapp validation
-                        imageUrl = "https://cdn-icons-png.flaticon.com/512/738/738680.png",
-                        dAppName = "RadixSwap"
-                    ),
+                    availableAccountItems = accountItems.toPersistentList(),
                     error = null,
                     showProgress = false
                 )
@@ -105,16 +107,19 @@ class ChooseAccountsViewModel @Inject constructor(
                 .availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
-                } == numberOfAccounts
+                } == args.numberOfAccounts
         } else {
             state
                 .availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
-                } >= numberOfAccounts
+                } >= args.numberOfAccounts
         }
 
-        state = state.copy(isContinueButtonEnabled = isContinueButtonEnabled)
+        state = state.copy(
+            isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected,
+            selectedAccounts = state.availableAccountItems.filter { accountItem -> accountItem.isSelected }
+        )
     }
 
     fun sendAccountsResponse() {
@@ -136,15 +141,16 @@ class ChooseAccountsViewModel @Inject constructor(
 }
 
 sealed interface ChooseAccountsEvent : OneOffEvent {
-    object NavigateToCompletionScreen : ChooseAccountsEvent
-    object FailedToSendResponse : ChooseAccountsEvent
 }
 
 data class ChooseAccountUiState(
-    val availableAccountItems: List<AccountItemUiModel> = emptyList(),
-    val dAppDetails: DAppDetailsResponse? = null,
+    val numberOfAccounts: Int,
+    val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
+    val oneTimeRequest: Boolean = false,
     val isSingleChoice: Boolean = false,
     val error: String? = null,
-    val showProgress: Boolean = true
+    val showProgress: Boolean = true,
+    val selectedAccounts: List<AccountItemUiModel> = emptyList()
 )

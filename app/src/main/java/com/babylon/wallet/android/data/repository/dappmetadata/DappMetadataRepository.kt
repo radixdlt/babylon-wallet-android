@@ -16,6 +16,7 @@ import javax.inject.Inject
 interface DappMetadataRepository {
     suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean>
     suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
+    suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -25,6 +26,22 @@ class DappMetadataRepositoryImpl @Inject constructor(
 ) : DappMetadataRepository {
 
     private suspend fun getWellKnownDappMetadata(
+        origin: String,
+        dAppDefinitionAddress: String
+    ): Result<DappMetadata?> {
+        // TODO we need to load additional dAppDefiniton metadata as per cap-27 to do origin check
+        return withContext(ioDispatcher) {
+            isDappWellKnown(origin, dAppDefinitionAddress).map { metadata ->
+                if (metadata != null) {
+                    getDappMetadata(dAppDefinitionAddress)
+                } else {
+                    Result.Error()
+                }
+            }
+        }
+    }
+
+    private suspend fun isDappWellKnown(
         origin: String,
         dAppDefinitionAddress: String
     ): Result<DappMetadata?> {
@@ -40,37 +57,29 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     response.dAppMetadata.map { it.toDomainModel() }
                         .firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
                 }
-            ).map { metadata ->
-                if (metadata != null) {
-                    when (
-                        val result = entityRepository.entityDetails(
-                            metadata.dAppDefinitionAddress
-                        )
-                    ) {
-                        is Result.Error -> Result.Error(result.exception)
-                        is Result.Success -> Result.Success(
-                            metadata.copy(metadata = result.data.metadata.items.associate { it.key to it.value })
-                        )
-                    }
-                } else {
-                    Result.Error()
-                }
+            )
+        }
+    }
+
+    override suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata> {
+        return withContext(ioDispatcher) {
+            when (val result = entityRepository.entityDetails(defitnionAddress)) {
+                is Result.Error -> Result.Error(result.exception)
+                is Result.Success -> Result.Success(
+                    DappMetadata(
+                        defitnionAddress,
+                        result.data.metadata.items.associate { it.key to it.value }
+                    )
+                )
             }
         }
     }
 
     override suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
         return withContext(ioDispatcher) {
-            performHttpRequest(
-                call = {
-                    dynamicUrlApi.wellKnownDappDefinition(
-                        "$origin/${BuildConfig.WELL_KNOWN_URL_SUFFIX}"
-                    )
-                },
-                map = { response ->
-                    response.dAppMetadata.any { it.dAppDefinitionAddress == dAppDefinitionAddress }
-                }
-            )
+            isDappWellKnown(origin, dAppDefinitionAddress).map {
+                Result.Success(it != null)
+            }
         }
     }
 

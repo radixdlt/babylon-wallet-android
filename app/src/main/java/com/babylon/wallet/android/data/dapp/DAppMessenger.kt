@@ -1,9 +1,15 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.AccountDto
+import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OngoingAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.PersonaDto
 import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
+import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
@@ -12,6 +18,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -28,7 +35,7 @@ interface DAppMessenger {
         accounts: List<AccountItemUiModel>
     ): Result<Unit>
 
-    suspend fun sendTransactionWriteResponseFailure(
+    suspend fun sendWalletInteractionResponseFailure(
         requestId: String,
         error: WalletErrorType,
         message: String? = null
@@ -37,6 +44,13 @@ interface DAppMessenger {
     suspend fun sendTransactionWriteResponseSuccess(
         requestId: String,
         txId: String
+    ): Result<Unit>
+
+    suspend fun sendWalletInteractionSuccessResponse(
+        interactionId: String,
+        persona: OnNetwork.Persona,
+        oneTimeAccounts: List<AccountItemUiModel>?,
+        ongoingAccounts: List<AccountItemUiModel>?
     ): Result<Unit>
 }
 
@@ -89,7 +103,7 @@ class DAppMessengerImpl @Inject constructor(
         }
     }
 
-    override suspend fun sendTransactionWriteResponseFailure(
+    override suspend fun sendWalletInteractionResponseFailure(
         requestId: String,
         error: WalletErrorType,
         message: String?
@@ -105,6 +119,52 @@ class DAppMessengerImpl @Inject constructor(
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(requestId)
+                Result.Success(Unit)
+            }
+        }
+    }
+
+    override suspend fun sendWalletInteractionSuccessResponse(
+        interactionId: String,
+        persona: OnNetwork.Persona,
+        oneTimeAccounts: List<AccountItemUiModel>?,
+        ongoingAccounts: List<AccountItemUiModel>?
+    ): Result<Unit> {
+        val walletSuccessResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
+            interactionId = interactionId,
+            items = WalletAuthorizedRequestResponseItems(
+                auth = AuthLoginWithoutChallengeRequestResponseItem(
+                    PersonaDto(
+                        persona.address,
+                        persona.displayName.orEmpty()
+                    )
+                ),
+                oneTimeAccounts = oneTimeAccounts?.let { accounts ->
+                    OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
+                        accounts.map {
+                            AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
+                        }
+                    )
+                },
+                ongoingAccounts = ongoingAccounts?.let { accounts ->
+                    OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
+                        accounts.map {
+                            AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
+                        }
+                    )
+                }
+            )
+        )
+        val messageJson = try {
+            Json.encodeToString(walletSuccessResponse)
+        } catch (e: Exception) {
+            Timber.d(e)
+            ""
+        }
+        return when (peerdroidClient.sendMessage(messageJson)) {
+            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
+            is rdx.works.peerdroid.helpers.Result.Success -> {
+                incomingRequestRepository.requestHandled(interactionId)
                 Result.Success(Unit)
             }
         }

@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
+import rdx.works.profile.data.model.pernetwork.OnNetwork
+
 sealed interface MessageFromDataChannel {
 
     sealed class IncomingRequest(val id: String, val metadata: RequestMetadata) :
@@ -60,5 +62,16 @@ sealed interface MessageFromDataChannel {
 
     enum class ConnectionStateChanged : MessageFromDataChannel {
         OPEN, CLOSE, CLOSING, ERROR, CONNECTING
+    }
+}
+
+fun MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.toProfileShareAccountsMode(): OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode {
+    return when (this) {
+        MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> {
+            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
+        }
+        MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> {
+            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast
+        }
     }
 }
