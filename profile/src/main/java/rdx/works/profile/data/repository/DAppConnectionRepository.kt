@@ -104,7 +104,8 @@ class DAppConnectionRepositoryImpl @Inject constructor(
             dapp.copy(
                 referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.toMutableList().apply {
                     set(indexOf(persona), persona.copy(sharedAccounts = sharedAccounts))
-                })
+                }
+            )
         )
     }
 
@@ -119,11 +120,10 @@ class DAppConnectionRepositoryImpl @Inject constructor(
 }
 
 fun Profile.getConnectedDapp(dAppDefinitionAddress: String, networkId: Int): OnNetwork.ConnectedDapp? {
-    return onNetwork.firstOrNull { it.networkID == networkId }?.let {
-        it.connectedDapps.firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
+    return onNetwork.firstOrNull { it.networkID == networkId }?.let { onNetwork ->
+        onNetwork.connectedDapps.firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
     }
 }
-
 
 fun Profile.addConnectedDapp(
     connectedDapp: OnNetwork.ConnectedDapp
@@ -197,7 +197,6 @@ fun Profile.updateConnectedDapp(
 fun OnNetwork.ConnectedDapp.updateConnectedDappPersonas(
     connectedDAppPersonas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
 ): OnNetwork.ConnectedDapp {
-
     val updatedAuthPersonas = (connectedDAppPersonas + referencesToAuthorizedPersonas).distinctBy { it.identityAddress }
     return copy(
         networkID = networkID,

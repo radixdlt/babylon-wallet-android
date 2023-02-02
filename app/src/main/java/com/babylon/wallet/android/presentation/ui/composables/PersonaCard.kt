@@ -30,6 +30,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.login.PersonaUiModel
 
 @Composable
+@Suppress("DestructuringDeclarationWithTooManyEntries")
 fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (PersonaUiModel) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     val hasLastUsedDate = persona.lastUsedOn != null
@@ -66,13 +67,15 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (P
             color = RadixTheme.colors.gray1
         )
         if (hasSharingSection) {
-            Column(Modifier.constrainAs(sharingSection) {
-                top.linkTo(title.bottom)
-                if (hasLastUsedDate) {
-                    bottom.linkTo(lastUsed.top, paddingDefault)
+            Column(
+                Modifier.constrainAs(sharingSection) {
+                    top.linkTo(title.bottom)
+                    if (hasLastUsedDate) {
+                        bottom.linkTo(lastUsed.top, paddingDefault)
+                    }
+                    linkTo(start = image.end, end = radio.end, bias = 0f, startMargin = paddingDefault)
                 }
-                linkTo(start = image.end, end = radio.end, bias = 0f, startMargin = paddingDefault)
-            }) {
+            ) {
                 Text(
                     text = stringResource(id = R.string.sharing),
                     textAlign = TextAlign.Start,
@@ -111,13 +114,15 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (P
             ),
         )
         persona.lastUsedOn?.let {
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .constrainAs(lastUsed) {
-                    centerHorizontallyTo(parent)
-                    bottom.linkTo(parent.bottom)
-                    width = Dimension.fillToConstraints
-                }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .constrainAs(lastUsed) {
+                        centerHorizontallyTo(parent)
+                        bottom.linkTo(parent.bottom)
+                        width = Dimension.fillToConstraints
+                    }
+            ) {
                 Divider(color = RadixTheme.colors.gray4)
                 Spacer(modifier = Modifier.height(paddingDefault))
                 Text(
@@ -129,7 +134,6 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (P
                 Spacer(modifier = Modifier.height(paddingDefault))
             }
         }
-
     }
 }
 

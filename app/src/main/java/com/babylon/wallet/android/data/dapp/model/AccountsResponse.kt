@@ -40,9 +40,12 @@ sealed class OngoingAccountsRequestResponseItem
 @Suppress("UnnecessaryAbstractClass")
 sealed class OneTimeAccountsRequestResponseItem
 
+@Suppress("SwallowedException")
 object OneTimeAccountsRequestResponseItemSerializer :
     JsonContentPolymorphicSerializer<OneTimeAccountsRequestResponseItem>(OneTimeAccountsRequestResponseItem::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out OneTimeAccountsRequestResponseItem> {
+    override fun selectDeserializer(
+        element: JsonElement
+    ): DeserializationStrategy<out OneTimeAccountsRequestResponseItem> {
         val isResponseWithProof = try {
             element.jsonObject["accounts"]?.jsonArray?.get(0)?.jsonObject?.get("account") != null
         } catch (e: Exception) {
@@ -56,9 +59,12 @@ object OneTimeAccountsRequestResponseItemSerializer :
     }
 }
 
+@Suppress("SwallowedException")
 object OngoingAccountsRequestResponseItemSerializer :
     JsonContentPolymorphicSerializer<OngoingAccountsRequestResponseItem>(OngoingAccountsRequestResponseItem::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out OngoingAccountsRequestResponseItem> {
+    override fun selectDeserializer(
+        element: JsonElement
+    ): DeserializationStrategy<out OngoingAccountsRequestResponseItem> {
         val isResponseWithProof = try {
             element.jsonObject["accounts"]?.jsonArray?.get(0)?.jsonObject?.get("account") != null
         } catch (e: Exception) {
