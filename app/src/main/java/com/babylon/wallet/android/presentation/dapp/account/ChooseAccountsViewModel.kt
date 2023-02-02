@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppDetailsResponse
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.AccountNumberQuantifier
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
@@ -38,7 +37,8 @@ class ChooseAccountsViewModel @Inject constructor(
             ?: throw RuntimeException("Only oneTimeAccountsRequestItem supported")
 
     private val numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts
-    private val quantifier = oneTimeAccountRequestItem.quantifier
+    private val isExactCountRequired = oneTimeAccountRequestItem
+        .quantifier== MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
 
     var state by mutableStateOf(ChooseAccountUiState())
         private set
@@ -47,10 +47,9 @@ class ChooseAccountsViewModel @Inject constructor(
         viewModelScope.launch {
             accountRepository.accounts.collect { accounts ->
                 // Check if single or multiple choice (radio or chechbox)
-                val singleChoice = numberOfAccounts == 1 &&
-                    quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+                val isSingleChoice = numberOfAccounts == 1 && isExactCountRequired
                 state = state.copy(
-                    singleChoice = singleChoice
+                    isSingleChoice = isSingleChoice
                 )
 
                 // user can create a new account at the Choose Accounts screen,
@@ -78,9 +77,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
     fun onAccountSelect(index: Int) {
         // update the isSelected property of the AccountItemUiModel based on index
-        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly &&
-            numberOfAccounts == 1
-        ) {
+        if (isExactCountRequired && numberOfAccounts == 1) {
             // Radio buttons selection unselects the previous one
             state = state.copy(
                 availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
@@ -103,21 +100,18 @@ class ChooseAccountsViewModel @Inject constructor(
             )
         }
 
-        val isContinueButtonEnabled = when (quantifier) {
-            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> {
-                state
-                    .availableAccountItems
-                    .count { accountItem ->
-                        accountItem.isSelected
-                    } == numberOfAccounts
-            }
-            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> {
-                state
-                    .availableAccountItems
-                    .count { accountItem ->
-                        accountItem.isSelected
-                    } >= numberOfAccounts
-            }
+        val isContinueButtonEnabled = if (isExactCountRequired) {
+            state
+                .availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } == numberOfAccounts
+        } else {
+            state
+                .availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } >= numberOfAccounts
         }
 
         state = state.copy(isContinueButtonEnabled = isContinueButtonEnabled)
@@ -150,7 +144,7 @@ data class ChooseAccountUiState(
     val availableAccountItems: List<AccountItemUiModel> = emptyList(),
     val dAppDetails: DAppDetailsResponse? = null,
     val isContinueButtonEnabled: Boolean = false,
-    val singleChoice: Boolean = false,
+    val isSingleChoice: Boolean = false,
     val error: String? = null,
     val showProgress: Boolean = true
 )

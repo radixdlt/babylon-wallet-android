@@ -14,6 +14,17 @@ val accountsRequestExact = MessageFromDataChannel.IncomingRequest.AuthorizedRequ
         quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
     )
 )
+val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+    requestId = UUID.randomUUID().toString(),
+    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
+    authRequest = MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(""),
+    oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+        isOngoing = false,
+        requiresProofOfOwnership = false,
+        numberOfAccounts = 2,
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+    )
+)
 
 val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
     requestId = UUID.randomUUID().toString(),
