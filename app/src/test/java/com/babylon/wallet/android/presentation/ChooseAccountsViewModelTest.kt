@@ -115,7 +115,7 @@ class ChooseAccountsViewModelTest {
         }
 
     @Test
-    fun `given a request for exactly 1 account, when selected two, then continue button is disabled`() =
+    fun `given a request for exactly 1 account, when selecting one, then continue button is enabled`() =
         runTest {
             // given
             incomingRequestRepository.add(accountsRequestExact)
@@ -132,10 +132,9 @@ class ChooseAccountsViewModelTest {
 
             // when
             viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
 
             // then
-            assertFalse(viewModel.state.isContinueButtonEnabled)
+            assertTrue(viewModel.state.isContinueButtonEnabled)
         }
 
     @Test
