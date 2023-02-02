@@ -50,7 +50,6 @@ import com.babylon.wallet.android.utils.setSpanForPlaceholder
 fun DAppPermissionScreen(
     viewModel: DAppLoginViewModel,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    isOneTime: Boolean,
     numberOfAccounts: Int,
     quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier
 ) {
@@ -70,7 +69,6 @@ fun DAppPermissionScreen(
         },
         dappMetadata = state.dappMetadata,
         showProgress = state.showProgress,
-        isOneTime = isOneTime,
         onRejectClick = viewModel::onRejectLogin,
         numberOfAccounts = numberOfAccounts,
         quantifier = quantifier
@@ -82,11 +80,10 @@ private fun DAppPermissionContent(
     onContinueClick: () -> Unit,
     dappMetadata: DappMetadata?,
     showProgress: Boolean,
-    isOneTime: Boolean,
     onRejectClick: () -> Unit,
-    modifier: Modifier = Modifier,
     numberOfAccounts: Int,
     quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
@@ -199,11 +196,10 @@ fun DAppLoginContentPreview() {
             onContinueClick = {},
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             showProgress = false,
-            isOneTime = false,
             onRejectClick = {},
-            modifier = Modifier.fillMaxSize(),
             numberOfAccounts = 2,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
@@ -216,11 +212,10 @@ fun DAppLoginContentFirstTimePreview() {
             onContinueClick = {},
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             showProgress = false,
-            isOneTime = true,
             onRejectClick = {},
-            modifier = Modifier.fillMaxSize(),
             numberOfAccounts = 2,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
