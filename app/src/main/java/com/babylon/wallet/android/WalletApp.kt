@@ -5,8 +5,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
+import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.chooseAccounts1
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.navigation.dapp.dappLogin
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -50,8 +52,12 @@ fun WalletApp(
                             navController.transactionApproval(incomingRequest.requestId)
                         }
                         is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
+                            navController.dappLogin(incomingRequest.requestId)
                         }
                         is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
+                            if (incomingRequest.oneTimeAccountsRequestItem != null) {
+                                navController.chooseAccounts1(incomingRequest.requestId)
+                            }
                         }
                     }
                 }

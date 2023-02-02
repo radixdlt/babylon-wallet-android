@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.createpersona
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,14 +17,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.CardStack
 
 @Composable
 fun CreatePersonaConfirmationScreen(
@@ -36,7 +40,6 @@ fun CreatePersonaConfirmationScreen(
     CreatePersonaConfirmationContent(
         modifier = modifier,
         personaName = personaState.personaName,
-        personaId = personaState.personaAddressTruncated,
         personaConfirmed = viewModel::personaConfirmed
     )
 
@@ -53,11 +56,11 @@ fun CreatePersonaConfirmationScreen(
 fun CreatePersonaConfirmationContent(
     modifier: Modifier,
     personaName: String,
-    personaId: String,
     personaConfirmed: () -> Unit
 ) {
     Column(
-        modifier = modifier.background(RadixTheme.colors.defaultBackground)
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground)
             .navigationBarsPadding()
             .fillMaxSize()
             .padding(
@@ -67,11 +70,30 @@ fun CreatePersonaConfirmationContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(0.2f))
-        CardStack(
-            Modifier.fillMaxWidth(0.8f),
-            accountName = personaName,
-            accountAddress = personaId
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(
+                    RadixTheme.colors.gray4,
+                    RadixTheme.shapes.roundedRectSmall
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    text = personaName,
+                    textAlign = TextAlign.Center,
+                    style = RadixTheme.typography.body2Regular,
+                    color = Color.White
+                )
+            }
+        }
         Spacer(modifier = Modifier.weight(0.2f))
         Text(
             text = stringResource(id = R.string.congratulations),
@@ -100,9 +122,7 @@ fun CreateAccountConfirmationContentPreview() {
     RadixWalletTheme {
         CreatePersonaConfirmationContent(
             modifier = Modifier,
-            personaConfirmed = {},
-            personaName = "My persona",
-            personaId = "d32d32"
-        )
+            personaName = "My persona"
+        ) {}
     }
 }

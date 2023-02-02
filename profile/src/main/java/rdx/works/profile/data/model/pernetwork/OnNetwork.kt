@@ -351,6 +351,9 @@ data class OnNetwork(
             @SerialName("fieldIDs")
             val fieldIDs: List<String>,
 
+            @SerialName("lastUsedOn")
+            val lastUsedOn: String,
+
             /**
              * List of shared accounts that user given the dApp access to.
              */
@@ -374,6 +377,10 @@ data class OnNetwork(
                     AtLeast
                 }
             }
+        }
+
+        fun hasAuthorizedPersona(personaAddress: String): Boolean {
+            return referencesToAuthorizedPersonas.any { it.identityAddress == personaAddress }
         }
     }
 

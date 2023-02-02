@@ -110,7 +110,7 @@ fun PersonasContent(
                 RadixPrimaryButton(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.create_new_persona),
+                    text = stringResource(id = R.string.create_a_new_persona),
                     onClick = createNewPersona
                 )
                 Spacer(modifier = Modifier.height(100.dp))

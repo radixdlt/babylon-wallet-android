@@ -14,7 +14,7 @@ class DAppMessengerFake : DAppMessenger {
         return Result.Success(Unit)
     }
 
-    override suspend fun sendTransactionWriteResponseFailure(
+    override suspend fun sendWalletInteractionResponseFailure(
         requestId: String,
         error: WalletErrorType,
         message: String?

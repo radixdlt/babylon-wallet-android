@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
 @SerialName("loginWithoutChallenge")
@@ -24,9 +25,11 @@ data class AuthLoginWithChallengeRequestResponseItem(
 ) : AuthLoginRequestResponseItem()
 
 @Serializable
+@JsonClassDiscriminator("discriminator")
 sealed class AuthLoginRequestResponseItem : AuthRequestResponseItem()
 
 @Serializable
+@JsonClassDiscriminator("discriminator")
 sealed class AuthRequestResponseItem
 
 @Serializable

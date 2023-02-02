@@ -75,6 +75,46 @@ class MainViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+        viewModelScope.launch {
+            delay(3000)
+            val request = IncomingRequest.AuthorizedRequest(
+                requestId = "1",
+                requestMetadata = IncomingRequest.RequestMetadata(
+                    11,
+                    "origin",
+                    "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu"
+                ),
+                authRequest = IncomingRequest.AuthRequest.LoginRequest(),
+                ongoingAccountsRequestItem = IncomingRequest.AccountsRequestItem(
+                    isOngoing = true,
+                    requiresProofOfOwnership = false,
+                    numberOfAccounts = 1,
+                    quantifier = IncomingRequest.AccountNumberQuantifier.Exactly
+                ),
+//                 oneTimeAccountsRequestItem = IncomingRequest.AccountsRequestItem(
+//                     isOngoing = false,
+//                     requiresProofOfOwnership = false,
+//                     numberOfAccounts = 1,
+//                     quantifier = IncomingRequest.AccountNumberQuantifier.AtLeast
+//                 )
+            )
+//            val request = IncomingRequest.UnauthorizedRequest(
+//                requestId = "1",
+//                requestMetadata = IncomingRequest.RequestMetadata(
+//                    11,
+//                    "origin",
+//                    "account_tdx_a_1qd5svul20u30qnq408zhj2tw5evqrunq48eg0jsjf9qsx5t8qu"
+//                ),
+//                oneTimeAccountsRequestItem = IncomingRequest.AccountsRequestItem(
+//                    isOngoing = false,
+//                    requiresProofOfOwnership = false,
+//                    numberOfAccounts = 1,
+//                    quantifier = IncomingRequest.AccountNumberQuantifier.AtLeast
+//                )
+//            )
+            incomingRequestRepository.add(request)
+            sendEvent(MainEvent.IncomingRequestEvent(request))
+        }
     }
 
     private fun connectToDapp(connectionPassword: String) {
@@ -127,17 +167,8 @@ class MainViewModel @Inject constructor(
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
             if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
-                when (request) {
-                    is IncomingRequest.AuthorizedRequest -> {
-                        // TODO auth request
-                    }
-                    is IncomingRequest.TransactionRequest -> {
-                        incomingRequestRepository.add(request)
-                    }
-                    is IncomingRequest.UnauthorizedRequest -> {
-                        // TODO no auth request
-                    }
-                }
+                incomingRequestRepository.add(request)
+                sendEvent(MainEvent.IncomingRequestEvent(request))
             } else {
                 // TODO dApp verification failed
             }

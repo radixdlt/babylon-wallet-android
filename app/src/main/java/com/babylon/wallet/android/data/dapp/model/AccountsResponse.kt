@@ -1,7 +1,12 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 
 @Serializable
 data class OneTimeAccountsWithProofOfOwnershipRequestResponseItem(
@@ -27,10 +32,42 @@ data class OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
     val accounts: List<AccountDto>
 ) : OngoingAccountsRequestResponseItem()
 
-@Serializable
+@Serializable(with = OngoingAccountsRequestResponseItemSerializer::class)
 @Suppress("UnnecessaryAbstractClass")
-abstract class OngoingAccountsRequestResponseItem
+sealed class OngoingAccountsRequestResponseItem
 
-@Serializable
+@Serializable(with = OneTimeAccountsRequestResponseItemSerializer::class)
 @Suppress("UnnecessaryAbstractClass")
-abstract class OneTimeAccountsRequestResponseItem
+sealed class OneTimeAccountsRequestResponseItem
+
+object OneTimeAccountsRequestResponseItemSerializer :
+    JsonContentPolymorphicSerializer<OneTimeAccountsRequestResponseItem>(OneTimeAccountsRequestResponseItem::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out OneTimeAccountsRequestResponseItem> {
+        val isResponseWithProof = try {
+            element.jsonObject["accounts"]?.jsonArray?.get(0)?.jsonObject?.get("account") != null
+        } catch (e: Exception) {
+            false
+        }
+        return if (isResponseWithProof) {
+            OneTimeAccountsWithProofOfOwnershipRequestResponseItem.serializer()
+        } else {
+            OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
+        }
+    }
+}
+
+object OngoingAccountsRequestResponseItemSerializer :
+    JsonContentPolymorphicSerializer<OngoingAccountsRequestResponseItem>(OngoingAccountsRequestResponseItem::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out OngoingAccountsRequestResponseItem> {
+        val isResponseWithProof = try {
+            element.jsonObject["accounts"]?.jsonArray?.get(0)?.jsonObject?.get("account") != null
+        } catch (e: Exception) {
+            false
+        }
+        return if (isResponseWithProof) {
+            OngoingAccountsWithProofOfOwnershipRequestResponseItem.serializer()
+        } else {
+            OngoingAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
+        }
+    }
+}

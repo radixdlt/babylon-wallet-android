@@ -64,25 +64,10 @@ data class WalletAuthorizedRequestItems(
 ) : WalletInteractionItems()
 
 private val walletRequestSerializersModule = SerializersModule {
-    polymorphic(OneTimeAccountsRequestResponseItem::class) {
-        subclass(
-            OneTimeAccountsWithProofOfOwnershipRequestResponseItem::class,
-            OneTimeAccountsWithProofOfOwnershipRequestResponseItem.serializer()
-        )
-        subclass(
-            OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem::class,
-            OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
-        )
-    }
-    polymorphic(OngoingAccountsRequestResponseItem::class) {
-        subclass(
-            OngoingAccountsWithProofOfOwnershipRequestResponseItem::class,
-            OngoingAccountsWithProofOfOwnershipRequestResponseItem.serializer()
-        )
-        subclass(
-            OngoingAccountsWithoutProofOfOwnershipRequestResponseItem::class,
-            OngoingAccountsWithoutProofOfOwnershipRequestResponseItem.serializer()
-        )
+    polymorphic(WalletInteractionResponseItems::class) {
+        subclass(WalletUnauthorizedRequestResponseItems::class, WalletUnauthorizedRequestResponseItems.serializer())
+        subclass(WalletAuthorizedRequestResponseItems::class, WalletAuthorizedRequestResponseItems.serializer())
+        subclass(WalletTransactionResponseItems::class, WalletTransactionResponseItems.serializer())
     }
     polymorphic(AuthRequestItem::class) {
         subclass(AuthUsePersonaRequestItem::class, AuthUsePersonaRequestItem.serializer())
@@ -106,6 +91,10 @@ private val walletRequestSerializersModule = SerializersModule {
         subclass(WalletUnauthorizedRequestItems::class, WalletUnauthorizedRequestItems.serializer())
         subclass(WalletAuthorizedRequestItems::class, WalletAuthorizedRequestItems.serializer())
         subclass(WalletTransactionItems::class, WalletTransactionItems.serializer())
+    }
+    polymorphic(WalletInteractionResponse::class) {
+        subclass(WalletInteractionSuccessResponse::class, WalletInteractionSuccessResponse.serializer())
+        subclass(WalletInteractionFailureResponse::class, WalletInteractionFailureResponse.serializer())
     }
 }
 

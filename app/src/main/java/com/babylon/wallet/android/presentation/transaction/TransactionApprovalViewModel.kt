@@ -85,7 +85,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     isLoading = false,
                     error = UiMessage.ErrorMessage(error)
                 )
-                dAppMessenger.sendTransactionWriteResponseFailure(
+                dAppMessenger.sendWalletInteractionResponseFailure(
                     args.requestId,
                     error = WalletErrorType.FailedToPrepareTransaction
                 )
@@ -99,7 +99,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 val currentNetworkId = profileDataSource.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    dAppMessenger.sendTransactionWriteResponseFailure(
+                    dAppMessenger.sendWalletInteractionResponseFailure(
                         args.requestId,
                         failure.toWalletErrorType(),
                         failure.getDappMessage()
@@ -120,7 +120,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
                             val exception = it as? TransactionApprovalException
                             if (exception != null) {
-                                dAppMessenger.sendTransactionWriteResponseFailure(
+                                dAppMessenger.sendWalletInteractionResponseFailure(
                                     args.requestId,
                                     error = exception.failure.toWalletErrorType(),
                                     message = exception.failure.getDappMessage()
@@ -141,7 +141,7 @@ class TransactionApprovalViewModel @Inject constructor(
             if (approvalJob != null || state.approved) {
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
-                dAppMessenger.sendTransactionWriteResponseFailure(
+                dAppMessenger.sendWalletInteractionResponseFailure(
                     args.requestId,
                     error = WalletErrorType.RejectedByUser
                 )
