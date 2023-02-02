@@ -61,9 +61,8 @@ fun NavGraphBuilder.dappPermission(
         DAppPermissionScreen(
             viewModel = vm,
             onChooseAccounts = onChooseAccounts,
-            quantifier = quantifier,
             numberOfAccounts = numberOfAccounts,
-            isOneTime = oneTime
+            quantifier = quantifier
         )
     }
 }

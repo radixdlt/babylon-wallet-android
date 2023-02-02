@@ -176,7 +176,6 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     fun onLogin() {
-        // TODO add dApp to connected dapps?
         viewModelScope.launch {
             val selectedPersona = state.selectedPersona()?.persona
             requireNotNull(selectedPersona)
