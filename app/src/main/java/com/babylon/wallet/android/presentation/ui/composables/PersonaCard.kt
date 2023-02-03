@@ -60,7 +60,7 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (P
                 top.linkTo(image.top)
                 linkTo(start = image.end, end = radio.end, bias = 0f, startMargin = paddingDefault)
             },
-            text = persona.persona.displayName.orEmpty(),
+            text = persona.persona.displayName,
             textAlign = TextAlign.Start,
             maxLines = 2,
             style = RadixTheme.typography.secondaryHeader,

@@ -58,6 +58,7 @@ fun DAppPermissionScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
+                is DAppLoginEvent.RejectLogin -> viewModel.onRejectLogin()
                 else -> {}
             }
         }
@@ -132,31 +133,14 @@ private fun DAppPermissionContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 PermissionRequestHeader(dappName = dappMetadata?.getName() ?: "Unknown dApp")
                 Spacer(modifier = Modifier.weight(0.5f))
-                Column(
+                RequestedPermissionsList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingLarge),
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    val text = when (quantifier) {
-                        MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> pluralStringResource(
-                            id = R.plurals.view_x_accounts,
-                            numberOfAccounts,
-                            numberOfAccounts
-                        )
-                        MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> pluralStringResource(
-                            id = R.plurals.view_x_or_more_accounts,
-                            numberOfAccounts,
-                            numberOfAccounts
-                        )
-                    }
-                    Text(
-                        text = text,
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                }
+                    quantifier = quantifier,
+                    numberOfAccounts = numberOfAccounts
+                )
                 Spacer(modifier = Modifier.weight(0.5f))
                 RadixPrimaryButton(
                     modifier = Modifier.fillMaxWidth(),
@@ -165,6 +149,36 @@ private fun DAppPermissionContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RequestedPermissionsList(
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    numberOfAccounts: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    ) {
+        val text = when (quantifier) {
+            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> pluralStringResource(
+                id = R.plurals.view_x_accounts,
+                numberOfAccounts,
+                numberOfAccounts
+            )
+            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> pluralStringResource(
+                id = R.plurals.view_x_or_more_accounts,
+                numberOfAccounts,
+                numberOfAccounts
+            )
+        }
+        Text(
+            text = text,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1
+        )
     }
 }
 

@@ -8,14 +8,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
@@ -25,12 +32,13 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val dappMetadataRepository: DappMetadataRepository
 ) : ViewModel(), OneOffEventHandler<UnauthorizedChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     // the incoming request from dapp
 
-    private val args = ChooseAccountsArgs(savedStateHandle)
+    private val args = UnauthorizedChooseAccountsArgs(savedStateHandle)
 
     private val accountsRequest = incomingRequestRepository.getUnauthorizedRequest(
         args.requestId
@@ -42,7 +50,12 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
         accountsRequest.oneTimeAccountsRequestItem
             ?: throw RuntimeException("Only oneTimeAccountsRequestItem supported")
 
-    var state by mutableStateOf(UnauthorizedChooseAccountUiState())
+    var state by mutableStateOf(
+        UnauthorizedChooseAccountUiState(
+            numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts,
+            quantifier = oneTimeAccountRequestItem.quantifier,
+        )
+    )
         private set
 
     init {
@@ -59,10 +72,18 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
                 }
 
                 state = state.copy(
-                    availableAccountItems = accountItems,
+                    availableAccountItems = accountItems.toPersistentList(),
                     error = null,
                     showProgress = false
                 )
+            }
+        }
+        viewModelScope.launch {
+            val result = dappMetadataRepository.getDappMetadata(
+                accountsRequest.metadata.dAppDefinitionAddress
+            )
+            result.onValue {
+                state = state.copy(dappMetadata = it, showProgress = false)
             }
         }
     }
@@ -76,7 +97,7 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
                 } else {
                     accountItem
                 }
-            }
+            }.toPersistentList()
         )
 
         val isMinRequiredCountOfAccountsSelected = state
@@ -107,6 +128,16 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
             }
         }
     }
+
+    fun onRejectRequest() {
+        viewModelScope.launch {
+            dAppMessenger.sendWalletInteractionResponseFailure(
+                args.requestId,
+                error = WalletErrorType.RejectedByUser
+            )
+            sendEvent(UnauthorizedChooseAccountsEvent.FailedToSendResponse)
+        }
+    }
 }
 
 sealed interface UnauthorizedChooseAccountsEvent : OneOffEvent {
@@ -115,8 +146,11 @@ sealed interface UnauthorizedChooseAccountsEvent : OneOffEvent {
 }
 
 data class UnauthorizedChooseAccountUiState(
-    val availableAccountItems: List<AccountItemUiModel> = emptyList(),
+    val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
     val error: String? = null,
-    val showProgress: Boolean = true
+    val showProgress: Boolean = true,
+    val numberOfAccounts: Int,
+    val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    val dappMetadata: DappMetadata? = null
 )

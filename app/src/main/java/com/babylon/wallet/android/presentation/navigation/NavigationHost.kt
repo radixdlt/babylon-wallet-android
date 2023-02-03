@@ -136,17 +136,15 @@ fun NavigationHost(
         dAppLoginGraph(navController)
         settingsNavGraph(navController)
         chooseAccounts1(
-            onBackClick = { navController.navigateUp() },
-            onAccountCreationClick = {
-                navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
-            },
             exitRequestFlow = {
                 navController.popBackStack()
             },
             dismissErrorDialog = {
                 navController.popBackStack()
             }
-        )
+        ) {
+            navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
+        }
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
                 navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
