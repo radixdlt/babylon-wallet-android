@@ -13,7 +13,7 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_REQUEST_ID = "request_id"
 
-internal class UnauthorizedChooseAccountsArgs(val requestId: String) {
+internal class OneTimeChooseAccountsArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 

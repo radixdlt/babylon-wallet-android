@@ -28,17 +28,17 @@ import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class UnauthorizedChooseAccountsViewModel @Inject constructor(
+class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val dappMetadataRepository: DappMetadataRepository
-) : ViewModel(), OneOffEventHandler<UnauthorizedChooseAccountsEvent> by OneOffEventHandlerImpl() {
+) : ViewModel(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     // the incoming request from dapp
 
-    private val args = UnauthorizedChooseAccountsArgs(savedStateHandle)
+    private val args = OneTimeChooseAccountsArgs(savedStateHandle)
 
     private val accountsRequest = incomingRequestRepository.getUnauthorizedRequest(
         args.requestId
@@ -51,7 +51,7 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
             ?: throw RuntimeException("Only oneTimeAccountsRequestItem supported")
 
     var state by mutableStateOf(
-        UnauthorizedChooseAccountUiState(
+        OneTimeChooseAccountUiState(
             numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts,
             quantifier = oneTimeAccountRequestItem.quantifier,
         )
@@ -121,10 +121,10 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
                 accounts = selectedAccounts
             )
             result.onValue {
-                sendEvent(UnauthorizedChooseAccountsEvent.NavigateToCompletionScreen)
+                sendEvent(OneTimeChooseAccountsEvent.NavigateToCompletionScreen)
             }
             result.onError {
-                sendEvent(UnauthorizedChooseAccountsEvent.NavigateToCompletionScreen)
+                sendEvent(OneTimeChooseAccountsEvent.NavigateToCompletionScreen)
             }
         }
     }
@@ -135,17 +135,17 @@ class UnauthorizedChooseAccountsViewModel @Inject constructor(
                 args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
-            sendEvent(UnauthorizedChooseAccountsEvent.FailedToSendResponse)
+            sendEvent(OneTimeChooseAccountsEvent.FailedToSendResponse)
         }
     }
 }
 
-sealed interface UnauthorizedChooseAccountsEvent : OneOffEvent {
-    object NavigateToCompletionScreen : UnauthorizedChooseAccountsEvent
-    object FailedToSendResponse : UnauthorizedChooseAccountsEvent
+sealed interface OneTimeChooseAccountsEvent : OneOffEvent {
+    object NavigateToCompletionScreen : OneTimeChooseAccountsEvent
+    object FailedToSendResponse : OneTimeChooseAccountsEvent
 }
 
-data class UnauthorizedChooseAccountUiState(
+data class OneTimeChooseAccountUiState(
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
     val error: String? = null,

@@ -217,7 +217,8 @@ class ProfileTest {
                             "account_tdx_b_1ql2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54ts25dgyv"
                         ),
                         mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
-                    )
+                    ),
+                    lastUsedOn = "some date"
                 ),
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                     identityAddress = "account_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
@@ -231,7 +232,8 @@ class ProfileTest {
                             "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32"
                         ),
                         mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast
-                    )
+                    ),
+                    lastUsedOn = "some date"
                 )
             )
         )

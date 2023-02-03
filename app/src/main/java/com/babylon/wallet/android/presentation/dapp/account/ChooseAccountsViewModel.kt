@@ -33,7 +33,7 @@ class ChooseAccountsViewModel @Inject constructor(
         ChooseAccountUiState(
             numberOfAccounts = args.numberOfAccounts,
             quantifier = args.accountQuantifier,
-            oneTimeRequest = args.oneTime
+            isOneTime = args.oneTime
         )
     )
     // TODO this is temporary until we have proper handling of CAP-21 requests models!
@@ -149,6 +149,7 @@ data class ChooseAccountUiState(
     val isContinueButtonEnabled: Boolean = false,
     val oneTimeRequest: Boolean = false,
     val isSingleChoice: Boolean = false,
+    val isOneTime: Boolean = false,
     val error: String? = null,
     val showProgress: Boolean = true,
     val selectedAccounts: List<AccountItemUiModel> = emptyList()

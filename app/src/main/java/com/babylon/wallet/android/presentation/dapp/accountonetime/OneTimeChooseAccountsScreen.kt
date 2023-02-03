@@ -21,7 +21,7 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun UnauthorizedChooseAccountsScreen(
-    viewModel: UnauthorizedChooseAccountsViewModel,
+    viewModel: OneTimeChooseAccountsViewModel,
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -29,10 +29,10 @@ fun UnauthorizedChooseAccountsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                UnauthorizedChooseAccountsEvent.NavigateToCompletionScreen -> {
+                OneTimeChooseAccountsEvent.NavigateToCompletionScreen -> {
                     exitRequestFlow()
                 }
-                UnauthorizedChooseAccountsEvent.FailedToSendResponse -> {
+                OneTimeChooseAccountsEvent.FailedToSendResponse -> {
                     exitRequestFlow() // TODO probably later we need to show an error message
                 }
             }
