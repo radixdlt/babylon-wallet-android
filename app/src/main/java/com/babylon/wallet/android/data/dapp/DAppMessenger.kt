@@ -66,7 +66,7 @@ class DAppMessengerImpl @Inject constructor(
         val responseItem = OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
             accounts = accounts.toDataModel()
         )
-        val walletResponse = WalletInteractionSuccessResponse(
+        val walletResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
             interactionId = requestId,
             items = WalletUnauthorizedRequestResponseItems(oneTimeAccounts = responseItem)
         )

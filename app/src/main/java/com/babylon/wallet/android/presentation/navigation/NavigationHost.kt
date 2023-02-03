@@ -20,8 +20,8 @@ import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSON
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
+import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
-import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.chooseAccounts1
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.dapp.dAppLoginGraph
@@ -135,7 +135,7 @@ fun NavigationHost(
         })
         dAppLoginGraph(navController)
         settingsNavGraph(navController)
-        chooseAccounts1(
+        chooseAccountsOneTime(
             exitRequestFlow = {
                 navController.popBackStack()
             },

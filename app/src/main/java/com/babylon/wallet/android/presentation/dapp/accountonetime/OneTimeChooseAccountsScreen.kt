@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.unauthorizedaccount
+package com.babylon.wallet.android.presentation.dapp.accountonetime
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.material.AlertDialog

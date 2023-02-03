@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.dapp.account.chooseAccounts
 import com.babylon.wallet.android.presentation.dapp.login.ROUTE_DAPP_LOGIN
 import com.babylon.wallet.android.presentation.dapp.login.dAppLogin
 import com.babylon.wallet.android.presentation.dapp.permission.dappPermission
+import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
 
 internal const val ARG_REQUEST_ID = "request_id"
 
@@ -45,8 +46,9 @@ fun NavGraphBuilder.dAppLoginGraph(
             createNewPersona = {
                 navController.createPersonaScreen()
             },
-            onLoginFlowComplete = {
+            onLoginFlowComplete = { dappName ->
                 navController.popBackStack(ROUTE_DAPP_FLOW, true)
+                navController.requestSuccess(dappName)
             }
         )
         dappPermission(
@@ -69,9 +71,13 @@ fun NavGraphBuilder.dAppLoginGraph(
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
             },
-            onLoginFlowComplete = {
+            onLoginFlowComplete = { dappName ->
                 navController.popBackStack(ROUTE_DAPP_FLOW, true)
+                navController.requestSuccess(dappName)
             }
         )
+        requestSuccess(onBackPress = {
+            navController.popBackStack()
+        })
     }
 }

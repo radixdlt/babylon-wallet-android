@@ -31,7 +31,7 @@ fun NavGraphBuilder.dAppLogin(
     navController: NavController,
     onHandleOngoingAccounts: (DAppLoginEvent.HandleOngoingAccounts) -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: () -> Unit,
+    onLoginFlowComplete: (String) -> Unit,
     createNewPersona: () -> Unit
 ) {
     composable(

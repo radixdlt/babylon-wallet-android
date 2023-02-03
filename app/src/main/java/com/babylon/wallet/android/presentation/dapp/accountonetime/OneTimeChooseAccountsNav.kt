@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.unauthorizedaccount
+package com.babylon.wallet.android.presentation.dapp.accountonetime
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -17,12 +17,12 @@ internal class UnauthorizedChooseAccountsArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 
-fun NavController.chooseAccounts1(requestId: String) {
+fun NavController.chooseAccountsOneTime(requestId: String) {
     navigate("choose_accounts_route/$requestId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.chooseAccounts1(
+fun NavGraphBuilder.chooseAccountsOneTime(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit
