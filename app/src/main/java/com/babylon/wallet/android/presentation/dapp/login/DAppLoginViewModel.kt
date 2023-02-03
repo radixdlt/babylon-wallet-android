@@ -79,11 +79,11 @@ class DAppLoginViewModel @Inject constructor(
             )
             val allAuthorizedPersonas =
                 connectedDapp?.referencesToAuthorizedPersonas
-            state = state.copy(
+            val newState = state.copy(
                 firstTimeLogin = connectedDapp == null,
                 personas = generatePersonasListForDisplay(allAuthorizedPersonas, state.personas).toPersistentList(),
-                loginButtonEnabled = allAuthorizedPersonas?.any() != null
             )
+            state = newState.copy(loginButtonEnabled = newState.selectedPersona() != null)
             val result = dappMetadataRepository.getDappMetadata(
                 authRequest.metadata.dAppDefinitionAddress
             )
@@ -357,7 +357,7 @@ class DAppLoginViewModel @Inject constructor(
             state.selectedAccountsOneTime,
             state.selectedAccountsOngoing
         )
-        sendEvent(DAppLoginEvent.LoginFlowCompleted)
+        sendEvent(DAppLoginEvent.LoginFlowCompleted(state.dappMetadata?.getName() ?: "Unknown dApp"))
     }
 }
 
@@ -369,7 +369,7 @@ sealed interface DAppLoginEvent : OneOffEvent {
         val oneTime: Boolean = false
     ) : DAppLoginEvent
 
-    object LoginFlowCompleted : DAppLoginEvent
+    data class LoginFlowCompleted(val dappName: String) : DAppLoginEvent
     data class ChooseAccounts(
         val numberOfAccounts: Int,
         val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,

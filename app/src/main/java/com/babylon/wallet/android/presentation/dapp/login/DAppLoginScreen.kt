@@ -59,7 +59,7 @@ fun DAppLoginScreen(
     onBackClick: () -> Unit,
     onHandleOngoingAccounts: (DAppLoginEvent.HandleOngoingAccounts) -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: () -> Unit,
+    onLoginFlowComplete: (String) -> Unit,
     createNewPersona: () -> Unit
 ) {
     LaunchedEffect(Unit) {
@@ -67,7 +67,7 @@ fun DAppLoginScreen(
             when (event) {
                 DAppLoginEvent.RejectLogin -> onBackClick()
                 is DAppLoginEvent.HandleOngoingAccounts -> onHandleOngoingAccounts(event)
-                DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete()
+                is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
             }
         }

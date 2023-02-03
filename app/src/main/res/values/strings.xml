@@ -143,6 +143,8 @@
     <string name="account_request">Account Request</string>
     <string name="your_last_login">Your last login was on %s</string>
     <string name="sharing">Sharing</string>
+    <string name="success">Success</string>
+    <string name="request_complete">Request from %s complete</string>
     <plurals name="one_time_at_least_request">
         <item quantity="one">%s is making a one-time request for at least %d account.</item>
         <item quantity="other">%s is making a one-time request for at least %d accounts.</item>

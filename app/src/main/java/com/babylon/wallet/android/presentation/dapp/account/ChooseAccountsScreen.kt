@@ -14,7 +14,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
@@ -28,13 +27,13 @@ fun ChooseAccountsScreen(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: () -> Unit
+    onLoginFlowComplete: (String) -> Unit
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
-                is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete()
+                is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 else -> {}
             }
         }
@@ -57,10 +56,6 @@ fun ChooseAccountsScreen(
         isOneTime = state.oneTimeRequest,
         isSingleChoice = state.isSingleChoice
     )
-
-    if (state.showProgress) {
-        FullscreenCircularProgressContent()
-    }
 
     state.error?.let { error ->
         ErrorAlertDialog(

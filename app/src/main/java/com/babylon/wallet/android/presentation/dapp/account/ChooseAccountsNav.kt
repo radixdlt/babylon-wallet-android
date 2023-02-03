@@ -53,7 +53,7 @@ fun NavGraphBuilder.chooseAccounts(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: () -> Unit
+    onLoginFlowComplete: (String) -> Unit
 ) {
     composable(
         route = "choose_accounts_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_ACCOUNT_QUANTIFIER}/{$ARG_ONE_TIME}",

@@ -4,7 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
+import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequest
+import com.babylon.wallet.android.presentation.dapp.accountonetime.ARG_REQUEST_ID
+import com.babylon.wallet.android.presentation.dapp.accountonetime.UnauthorizedChooseAccountsEvent
+import com.babylon.wallet.android.presentation.dapp.accountonetime.UnauthorizedChooseAccountsViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.ARG_REQUEST_ID
 import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.UnauthorizedChooseAccountsEvent
 import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.UnauthorizedChooseAccountsViewModel
@@ -32,6 +36,7 @@ class ChooseAccountsViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     private val accountRepository = AccountRepositoryFake()
+    private val dappMetadataRepository = DappMetadataRepositoryFake()
 
     private val dAppMessenger = DAppMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepository()
@@ -48,7 +53,8 @@ class ChooseAccountsViewModelTest {
             savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequestAtLeast.requestId)),
             accountRepository = accountRepository,
             dAppMessenger = dAppMessenger,
-            incomingRequestRepository = incomingRequestRepository
+            incomingRequestRepository = incomingRequestRepository,
+            dappMetadataRepository = dappMetadataRepository
         )
     }
 
