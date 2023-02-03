@@ -5,6 +5,8 @@ import androidx.compose.material.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -40,7 +42,7 @@ fun ChooseAccountsScreen(
     }
 
     val state = viewModel.state
-    val sharedState = sharedViewModel.state
+    val sharedState by sharedViewModel.state.collectAsState()
     ChooseAccountContent(
         onBackClick = onBackClick,
         onContinueClick = {
