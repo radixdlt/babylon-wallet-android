@@ -7,6 +7,8 @@ import com.babylon.wallet.android.fakes.DAppMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequest
 import com.babylon.wallet.android.presentation.dapp.accountonetime.ARG_REQUEST_ID
+import com.babylon.wallet.android.presentation.dapp.accountonetime.OneTimeChooseAccountsEvent
+import com.babylon.wallet.android.presentation.dapp.accountonetime.OneTimeChooseAccountsViewModel
 import com.babylon.wallet.android.presentation.dapp.accountonetime.UnauthorizedChooseAccountsEvent
 import com.babylon.wallet.android.presentation.dapp.accountonetime.UnauthorizedChooseAccountsViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorizedaccount.ARG_REQUEST_ID
@@ -41,13 +43,13 @@ class ChooseAccountsViewModelTest {
     private val dAppMessenger = DAppMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepository()
 
-    private lateinit var viewModel: UnauthorizedChooseAccountsViewModel
+    private lateinit var viewModel: OneTimeChooseAccountsViewModel
 
     @Before
     fun setup() = runTest {
         incomingRequestRepository.add(accountsRequestAtLeast)
 
-        viewModel = UnauthorizedChooseAccountsViewModel(
+        viewModel = OneTimeChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsRequest.requestId)),
         viewModel = ChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequestAtLeast.requestId)),
@@ -179,6 +181,6 @@ class ChooseAccountsViewModelTest {
         runTest {
             viewModel.sendAccountsResponse()
             advanceUntilIdle()
-            assert(viewModel.oneOffEvent.first() is UnauthorizedChooseAccountsEvent.NavigateToCompletionScreen)
+            assert(viewModel.oneOffEvent.first() is OneTimeChooseAccountsEvent.NavigateToCompletionScreen)
         }
 }
