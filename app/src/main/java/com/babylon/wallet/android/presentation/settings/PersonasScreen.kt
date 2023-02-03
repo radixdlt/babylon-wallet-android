@@ -90,7 +90,7 @@ fun PersonasContent(
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
                     Text(
-                        text = personaItem.displayName.orEmpty(),
+                        text = personaItem.displayName,
                         style = RadixTheme.typography.body2Header,
                         color = RadixTheme.colors.gray1
                     )

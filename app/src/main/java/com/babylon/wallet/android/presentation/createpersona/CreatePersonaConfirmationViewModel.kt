@@ -30,7 +30,7 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
                 "persona is null"
             }
             personaUiState = personaUiState.copy(
-                personaName = persona.displayName.orEmpty(),
+                personaName = persona.displayName,
                 personaAddressTruncated = persona.address.truncatedHash()
             )
         }

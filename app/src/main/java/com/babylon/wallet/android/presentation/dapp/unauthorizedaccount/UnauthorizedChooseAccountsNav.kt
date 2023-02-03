@@ -13,7 +13,7 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_REQUEST_ID = "request_id"
 
-internal class ChooseAccountsArgs(val requestId: String) {
+internal class UnauthorizedChooseAccountsArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 
@@ -23,7 +23,6 @@ fun NavController.chooseAccounts1(requestId: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccounts1(
-    onBackClick: () -> Unit,
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit
@@ -36,7 +35,6 @@ fun NavGraphBuilder.chooseAccounts1(
     ) {
         UnauthorizedChooseAccountsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
             exitRequestFlow = exitRequestFlow,
             dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick

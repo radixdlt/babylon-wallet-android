@@ -30,7 +30,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             async {
                 getSingleAccountResources(
                     account.address,
-                    account.displayName.orEmpty(),
+                    account.displayName,
                     account.appearanceID
                 )
             }
@@ -55,7 +55,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         }
         return getSingleAccountResources(
             account.address,
-            account.displayName.orEmpty(),
+            account.displayName,
             account.appearanceID
         )
     }

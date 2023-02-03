@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -89,8 +88,8 @@ fun CreatePersonaConfirmationContent(
                 Text(
                     text = personaName,
                     textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body2Regular,
-                    color = Color.White
+                    style = RadixTheme.typography.header,
+                    color = RadixTheme.colors.gray1
                 )
             }
         }
@@ -109,7 +108,7 @@ fun CreatePersonaConfirmationContent(
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.go_to_settings),
+            text = stringResource(R.string.continue_button_title),
             onClick = personaConfirmed
         )
     }

@@ -136,7 +136,7 @@ class DAppMessengerImpl @Inject constructor(
                 auth = AuthLoginWithoutChallengeRequestResponseItem(
                     PersonaDto(
                         persona.address,
-                        persona.displayName.orEmpty()
+                        persona.displayName
                     )
                 ),
                 oneTimeAccounts = oneTimeAccounts?.let { accounts ->
