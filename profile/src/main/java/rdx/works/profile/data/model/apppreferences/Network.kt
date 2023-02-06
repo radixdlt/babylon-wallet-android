@@ -13,6 +13,14 @@ data class Network(
     val name: String
 ) {
 
+    fun displayName(): String {
+        return if (id == nebunet.networkId().value) {
+            "betanet"
+        } else {
+            name
+        }
+    }
+
     fun networkId(): NetworkId {
         return NetworkId.values().find { it.value == id } ?: throw IllegalArgumentException("Network ID not valid")
     }
@@ -26,9 +34,9 @@ data class Network(
             id = NetworkId.Hammunet.value,
             name = "hammunet"
         )
-        val betanet = Network(
-            id = NetworkId.Betanet.value,
-            name = "betanet"
+        val nebunet = Network(
+            id = NetworkId.Nebunet.value,
+            name = "nebunet"
         )
         val mardunet = Network(
             id = NetworkId.Mardunet.value,
@@ -44,7 +52,7 @@ data class Network(
         )
 
         fun allKnownNetworks(): List<Network> {
-            return listOf(adapanet, hammunet, betanet, mardunet, enkinet, gilganet)
+            return listOf(adapanet, hammunet, nebunet, mardunet, enkinet, gilganet)
         }
     }
 }

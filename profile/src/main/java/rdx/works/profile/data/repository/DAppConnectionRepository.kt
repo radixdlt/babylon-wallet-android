@@ -21,7 +21,7 @@ interface DAppConnectionRepository {
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        mode: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode
+        quantifier: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String>
 
     suspend fun updateAuthorizedPersonaSharedAccounts(
@@ -78,30 +78,17 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        mode: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode
+        quantifier: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String> {
         val sharedAccounts = getConnectedDapp(
             dAppDefinitionAddress
         )?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }?.sharedAccounts
-        if (mode != sharedAccounts?.mode) return emptyList()
-        val sharedAccountSize = sharedAccounts.accountsReferencedByAddress.size
-        return when (mode) {
-            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly -> {
-                if (sharedAccountSize == numberOfAccounts) {
-                    sharedAccounts.accountsReferencedByAddress
-                } else {
-                    emptyList()
-                }
-            }
-            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast -> {
-                if (sharedAccountSize >= numberOfAccounts) {
-                    sharedAccounts.accountsReferencedByAddress
-                } else {
-                    emptyList()
-                }
-            }
+        return if (quantifier == sharedAccounts?.request?.quantifier && numberOfAccounts == sharedAccounts.request.quantity) {
+            sharedAccounts.accountsReferencedByAddress
+        } else {
+            emptyList()
         }
     }
 

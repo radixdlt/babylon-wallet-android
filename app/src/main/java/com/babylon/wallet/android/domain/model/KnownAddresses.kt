@@ -6,7 +6,7 @@ data class KnownAddresses(val faucetAddress: String, val createAccountComponent:
     companion object {
 
         val addressMap = mapOf(
-            NetworkId.Betanet to KnownAddresses(
+            NetworkId.Nebunet to KnownAddresses(
                 "component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4",
                 "package_tdx_b_1qy4hrp8a9apxldp5cazvxgwdj80cxad4u8cpkaqqnhlssf7lg2",
                 "resource_tdx_b_1qzkcyv5dwq3r6kawy6pxpvcythx8rh8ntum6ws62p95s9hhz9x"

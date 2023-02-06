@@ -33,7 +33,7 @@ data class NetworkAndGateway(
         )
         val betanet = NetworkAndGateway(
             gatewayAPIEndpointURL = "https://betanet.radixdlt.com",
-            network = Network.betanet
+            network = Network.nebunet
         )
     }
 }

@@ -205,7 +205,7 @@ class ProfileTest {
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "account_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
+                    identityAddress = "identity_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
                     fieldIDs = listOf(
                         "3AC4F94D-DCFA-4012-80AD-1DAF51AE000A",
                         "342E48F5-4D7F-4D09-A58A-4E49E399212C"
@@ -216,12 +216,15 @@ class ProfileTest {
                             "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32",
                             "account_tdx_b_1ql2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54ts25dgyv"
                         ),
-                        mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
+                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                            2
+                        )
                     ),
                     lastUsedOn = "some date"
                 ),
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "account_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
+                    identityAddress = "identity_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
                     fieldIDs = listOf(
                         "DAB2877E-95A4-40A6-8A0F-89098CE6251B",
                         "08DDBC25-1FAC-46A8-B437-5A5CE302180A"
@@ -231,7 +234,10 @@ class ProfileTest {
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32"
                         ),
-                        mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast
+                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                            1
+                        )
                     ),
                     lastUsedOn = "some date"
                 )
@@ -319,9 +325,9 @@ class ProfileTest {
 
         Assert.assertEquals(
             profile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.mode,
+                .referencesToAuthorizedPersonas.first().sharedAccounts.request,
             hammunetProfile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.mode
+                .referencesToAuthorizedPersonas.first().sharedAccounts.request
         )
 
         Assert.assertEquals(
@@ -361,9 +367,9 @@ class ProfileTest {
 
         Assert.assertEquals(
             profile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.mode,
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
             hammunetProfile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.mode
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
         )
 
         Assert.assertEquals(

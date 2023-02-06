@@ -7,7 +7,7 @@
       "gatewayAPIEndpointURL" : "https://betanet.radixdlt.com",
       "network" : {
         "id" : 11,
-        "name" : "betanet"
+        "name" : "nebunet"
       }
     },
     "p2pClients" : [
@@ -138,13 +138,16 @@
                 "342E48F5-4D7F-4D09-A58A-4E49E399212C"
               ],
               "lastUsedOn": "2023-01-31T10:28:14Z",
-              "identityAddress": "account_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
+              "identityAddress": "identity_tdx_b_1pwvt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpsedwrfm",
               "sharedAccounts": {
                 "accountsReferencedByAddress": [
                   "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32",
                   "account_tdx_b_1ql2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54ts25dgyv"
                 ],
-                "mode": "exactly"
+                "request": {
+                  "quantifier" : "exactly",
+                  "quantity" : 2
+                }
               }
             },
             {
@@ -153,12 +156,15 @@
                 "08DDBC25-1FAC-46A8-B437-5A5CE302180A"
               ],
               "lastUsedOn": "2023-01-31T10:28:14Z",
-              "identityAddress": "account_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
+              "identityAddress": "identity_tdx_b_1p0vtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkshkxgen",
               "sharedAccounts": {
                 "accountsReferencedByAddress": [
                   "account_tdx_b_1qavvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqxgpf32"
                 ],
-                "mode": "atLeast"
+                "request" : {
+                  "quantifier" : "atLeast",
+                  "quantity" : 1
+                }
               }
             }
           ]
@@ -167,7 +173,7 @@
       "networkID" : 11,
       "personas" : [
         {
-          "address" : "account_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
+          "address" : "identity_tdx_b_1q7vt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpskvpcn0",
           "derivationPath" : "m/44H/1022H/11H/618H/0H/1238H",
           "displayName" : "Mrs Incognito",
           "fields" : [
@@ -207,7 +213,7 @@
           }
         },
         {
-          "address" : "account_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
+          "address" : "identity_tdx_b_1qlvtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkschfnr8",
           "derivationPath" : "m/44H/1022H/11H/618H/1H/1238H",
           "displayName" : "Mrs Public",
           "fields" : [

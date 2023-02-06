@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.OnNetwork.ConnectedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
@@ -142,7 +143,7 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     private suspend fun generatePersonasListForDisplay(
-        allAuthorizedPersonas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>?,
+        allAuthorizedPersonas: List<AuthorizedPersonaSimple>?,
         profilePersonas: List<PersonaUiModel>
     ): List<PersonaUiModel> {
         val defaultAuthorizedPersonaSimple = allAuthorizedPersonas?.firstOrNull()
@@ -257,13 +258,15 @@ class DAppLoginViewModel @Inject constructor(
                 authRequest.metadata.dAppDefinitionAddress,
                 dAppName,
                 listOf(
-                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
+                    AuthorizedPersonaSimple(
                         identityAddress = selectedPersona.address,
                         fieldIDs = emptyList(),
                         lastUsedOn = date,
-                        sharedAccounts = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                        sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                             emptyList(),
-                            mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
+                            request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly, 0
+                            )
                         )
                     )
                 )
@@ -275,13 +278,15 @@ class DAppLoginViewModel @Inject constructor(
                 dAppConnectionRepository.updateConnectedDappPersonas(
                     connectedDapp.dAppDefinitionAddress,
                     listOf(
-                        OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
+                        AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
                             fieldIDs = emptyList(),
                             lastUsedOn = date,
-                            sharedAccounts = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                            sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                                 emptyList(),
-                                mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
+                                request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                    AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly, 0
+                                )
                             )
                         )
                     )
@@ -329,9 +334,12 @@ class DAppLoginViewModel @Inject constructor(
                 dAppConnectionRepository.updateAuthorizedPersonaSharedAccounts(
                     connectedDapp.dAppDefinitionAddress,
                     selectedPersona.address,
-                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    AuthorizedPersonaSimple.SharedAccounts(
                         selectedAccounts.map { it.address },
-                        request.quantifier.toProfileShareAccountsMode()
+                        AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            request.quantifier.toProfileShareAccountsMode(),
+                            request.numberOfAccounts
+                        )
                     )
                 )
                 if (authRequest.oneTimeAccountsRequestItem != null) {
