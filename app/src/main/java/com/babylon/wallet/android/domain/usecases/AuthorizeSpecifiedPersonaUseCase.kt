@@ -2,7 +2,8 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DAppMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
 import com.babylon.wallet.android.utils.toISO8601String
 import kotlinx.coroutines.coroutineScope
@@ -19,16 +20,18 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val personaRepository: PersonaRepository
 ) {
 
-    suspend operator fun invoke(request: MessageFromDataChannel.IncomingRequest): com.babylon.wallet.android.domain.common.Result<String> =
+    suspend operator fun invoke(request: IncomingRequest): Result<String> =
         coroutineScope {
-            var operationResult: com.babylon.wallet.android.domain.common.Result<String> =
-                com.babylon.wallet.android.domain.common.Result.Error()
-            if (request is MessageFromDataChannel.IncomingRequest.AuthorizedRequest
-                && request.authRequest is MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
+            var operationResult: Result<String> =
+                Result.Error()
+            if (request is IncomingRequest.AuthorizedRequest &&
+                request.authRequest is IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
             ) {
                 val dappDefinitionAddress = request.metadata.dAppDefinitionAddress
                 val authRequest = request.authRequest
-                val connectedDapp = dAppConnectionRepository.getConnectedDapp(dappDefinitionAddress)
+                val connectedDapp = dAppConnectionRepository.getConnectedDapp(
+                    dappDefinitionAddress
+                )
                 val authorizedPersonaSimple =
                     connectedDapp?.referencesToAuthorizedPersonas?.firstOrNull {
                         it.identityAddress == authRequest.personaAddress
@@ -60,8 +63,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
                     )
                     when (result) {
-                        is com.babylon.wallet.android.domain.common.Result.Success -> {
-                            operationResult = com.babylon.wallet.android.domain.common.Result.Success(
+                        is Result.Success -> {
+                            operationResult = Result.Success(
                                 connectedDapp.displayName
                             )
                         }

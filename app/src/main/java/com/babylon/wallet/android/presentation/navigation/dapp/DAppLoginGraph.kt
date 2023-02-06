@@ -22,6 +22,7 @@ fun NavController.dappLogin(requestId: String) {
     navigate("authorized_request_route/$requestId")
 }
 
+@Suppress("LongMethod")
 fun NavGraphBuilder.dAppLoginGraph(
     navController: NavController,
 ) {

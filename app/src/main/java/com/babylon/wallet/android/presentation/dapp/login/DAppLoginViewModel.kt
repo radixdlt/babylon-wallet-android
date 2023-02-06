@@ -82,10 +82,13 @@ class DAppLoginViewModel @Inject constructor(
             )
             val allAuthorizedPersonas =
                 connectedDapp?.referencesToAuthorizedPersonas
-            _state.update {
-                val personas = generatePersonasListForDisplay(allAuthorizedPersonas, it.personas).toPersistentList()
+            _state.update { state ->
+                val personas = generatePersonasListForDisplay(
+                    allAuthorizedPersonas,
+                    state.personas
+                ).toPersistentList()
                 val selected = personas.any { it.selected }
-                it.copy(
+                state.copy(
                     firstTimeLogin = connectedDapp == null,
                     personas = personas,
                     loginButtonEnabled = selected
@@ -130,8 +133,8 @@ class DAppLoginViewModel @Inject constructor(
                 )
                 val allAuthorizedPersonas =
                     connectedDapp?.referencesToAuthorizedPersonas
-                _state.update {
-                    it.copy(
+                _state.update { state ->
+                    state.copy(
                         personas = generatePersonasListForDisplay(
                             allAuthorizedPersonas,
                             personas.map { it.toUiModel() }
