@@ -16,22 +16,23 @@
 package com.babylon.wallet.android.data.gateway.generated.model
 
 import com.babylon.wallet.android.data.gateway.generated.model.LedgerState
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsCollection
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsCollection
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
  *
- * @param ledgerState 
+ *
+ * @param ledgerState
  * @param address The Bech32m-encoded human readable version of the entity's global address.
- * @param nonFungibleIds 
+ * @param resourceAddress The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param nonFungibleIds
  */
 @Serializable
 
-data class NonFungibleIdsResponse (
+data class EntityNonFungibleLocalIdsResponse(
 
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState,
@@ -40,8 +41,12 @@ data class NonFungibleIdsResponse (
     @SerialName(value = "address")
     val address: kotlin.String,
 
+    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    @SerialName(value = "resource_address")
+    val resourceAddress: kotlin.String,
+
     @SerialName(value = "non_fungible_ids")
-    val nonFungibleIds: NonFungibleIdsCollection
+    val nonFungibleIds: NonFungibleLocalIdsCollection
 
 )
 

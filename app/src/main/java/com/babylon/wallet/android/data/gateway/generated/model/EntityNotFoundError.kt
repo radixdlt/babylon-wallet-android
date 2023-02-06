@@ -29,7 +29,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class EntityNotFoundError (
+data class EntityNotFoundError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")
@@ -39,5 +39,5 @@ data class EntityNotFoundError (
     @SerialName(value = "address")
     val address: kotlin.String
 
-) : GatewayError()
+) : GatewayError
 

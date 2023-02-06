@@ -27,10 +27,10 @@ import kotlinx.serialization.Contextual
  * @param type The type of error. Each subtype may have its own additional structured fields.
  */
 @Serializable(with = GatewayErrorSerializer::class)
-abstract class GatewayError {
+interface GatewayError {
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")
-    abstract val type: kotlin.String
+    val type: kotlin.String
 }
 

@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ *
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
  * @param requestType The request type that triggered this exception.
@@ -31,7 +31,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class NotSyncedUpError (
+data class NotSyncedUpError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")
@@ -49,5 +49,5 @@ data class NotSyncedUpError (
     @SerialName(value = "max_allowed_sync_delay_seconds")
     val maxAllowedSyncDelaySeconds: kotlin.Long
 
-) : GatewayError()
+) : GatewayError
 

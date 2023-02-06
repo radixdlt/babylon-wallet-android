@@ -20,12 +20,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
+ *
  *
  * Values: string,u32,u64,bytes,uuid
  */
 @Serializable
-enum class NonFungibleIdType(val value: kotlin.String) {
+enum class NonFungibleLocalIdType(val value: kotlin.String) {
 
     @SerialName(value = "string")
     string("string"),
@@ -55,16 +55,16 @@ enum class NonFungibleIdType(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is NonFungibleIdType) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is NonFungibleLocalIdType) "$data" else null
 
         /**
-         * Returns a valid [NonFungibleIdType] for [data], null otherwise.
+         * Returns a valid [NonFungibleLocalIdType] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): NonFungibleIdType? = data?.let {
-          val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
-            it == value || normalizedData == "$value".lowercase()
-          }
+        fun decode(data: kotlin.Any?): NonFungibleLocalIdType? = data?.let {
+            val normalizedData = "$it".lowercase()
+            values().firstOrNull { value ->
+                it == value || normalizedData == "$value".lowercase()
+            }
         }
     }
 }

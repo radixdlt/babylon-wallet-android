@@ -23,14 +23,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ *
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
- * @param transactionNotFound 
+ * @param transactionNotFound
  */
 @Serializable
 
-data class TransactionNotFoundError (
+data class TransactionNotFoundError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")
@@ -39,5 +39,5 @@ data class TransactionNotFoundError (
     @SerialName(value = "transaction_not_found")
     val transactionNotFound: TransactionCommittedDetailsRequestIdentifier
 
-) : GatewayError()
+) : GatewayError
 

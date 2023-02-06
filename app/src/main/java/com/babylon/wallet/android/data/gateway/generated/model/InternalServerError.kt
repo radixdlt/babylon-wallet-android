@@ -30,7 +30,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class InternalServerError (
+data class InternalServerError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")
@@ -44,5 +44,5 @@ data class InternalServerError (
     @SerialName(value = "cause")
     val cause: kotlin.String
 
-) : GatewayError()
+) : GatewayError
 

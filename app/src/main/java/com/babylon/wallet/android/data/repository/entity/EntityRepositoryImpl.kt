@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsRequ
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleLocalIdsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleLocalIdsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
@@ -83,10 +83,10 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
         address: String,
         page: String?,
         limit: Int?
-    ): Result<EntityNonFungibleIdsResponse> {
+    ): Result<EntityNonFungibleLocalIdsResponse> {
         return performHttpRequest(
             call = {
-                gatewayApi.entityNonFungibleIds(EntityNonFungibleIdsRequest(address))
+                gatewayApi.entityNonFungibleIds(EntityNonFungibleLocalIdsRequest(address))
             },
             map = {
                 it

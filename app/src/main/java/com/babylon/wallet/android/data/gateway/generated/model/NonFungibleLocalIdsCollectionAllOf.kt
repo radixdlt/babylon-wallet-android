@@ -15,17 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsCollectionItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param items */
+ *
+ *
+ * @param items
+ */
 @Serializable
 
-data class EntityResourcesResponseNonFungibleResourcesAllOf(
+data class NonFungibleLocalIdsCollectionAllOf(
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<EntityResourcesResponseNonFungibleResourcesItem>
+    val items: kotlin.collections.List<NonFungibleLocalIdsCollectionItem>
 
 )
+
