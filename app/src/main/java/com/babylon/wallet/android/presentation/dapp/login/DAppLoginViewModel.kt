@@ -265,7 +265,8 @@ class DAppLoginViewModel @Inject constructor(
                         sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                             emptyList(),
                             request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly, 0
+                                AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                                0
                             )
                         )
                     )
@@ -285,7 +286,8 @@ class DAppLoginViewModel @Inject constructor(
                             sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                                 emptyList(),
                                 request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                    AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly, 0
+                                    AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                                    0
                                 )
                             )
                         )
