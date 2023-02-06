@@ -65,7 +65,7 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsMode():
-        SharedAccounts.NumberOfAccounts.Quantifier {
+    SharedAccounts.NumberOfAccounts.Quantifier {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             SharedAccounts.NumberOfAccounts.Quantifier.Exactly

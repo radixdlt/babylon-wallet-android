@@ -16,6 +16,33 @@ data class OngoingAccountsRequestItem(
     @SerialName("numberOfAccounts") val numberOfAccounts: NumberOfAccounts,
 )
 
+@Serializable
+data class NumberOfAccounts(
+    @SerialName("quantifier") val quantifier: AccountNumberQuantifier,
+    @SerialName("quantity") val quantity: Int,
+) {
+
+    @Serializable
+    enum class AccountNumberQuantifier {
+        @SerialName("exactly")
+        Exactly,
+
+        @SerialName("atLeast")
+        AtLeast,
+    }
+}
+
+fun NumberOfAccounts.AccountNumberQuantifier.toDomainModel(): IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
+    return when (this) {
+        NumberOfAccounts.AccountNumberQuantifier.Exactly -> {
+            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+        }
+        NumberOfAccounts.AccountNumberQuantifier.AtLeast -> {
+            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        }
+    }
+}
+
 fun OneTimeAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem {
     return IncomingRequest.AccountsRequestItem(
         isOngoing = false,
