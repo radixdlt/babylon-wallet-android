@@ -65,7 +65,7 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsMode():
-        OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode {
+    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly

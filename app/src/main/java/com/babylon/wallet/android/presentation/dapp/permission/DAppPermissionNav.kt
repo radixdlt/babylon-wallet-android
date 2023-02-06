@@ -42,7 +42,9 @@ fun NavGraphBuilder.dappPermission(
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType },
             navArgument(ARG_ACCOUNT_QUANTIFIER) {
-                type = NavType.EnumType(MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier::class.java)
+                type = NavType.EnumType(
+                    MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier::class.java
+                )
             },
             navArgument(ARG_ONE_TIME) { type = NavType.BoolType },
         )

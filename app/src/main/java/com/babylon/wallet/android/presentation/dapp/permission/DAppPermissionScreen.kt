@@ -166,16 +166,20 @@ private fun RequestedPermissionsList(
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         val text = when (quantifier) {
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> pluralStringResource(
-                id = R.plurals.view_x_accounts,
-                numberOfAccounts,
-                numberOfAccounts
-            )
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> pluralStringResource(
-                id = R.plurals.view_x_or_more_accounts,
-                numberOfAccounts,
-                numberOfAccounts
-            )
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
+                pluralStringResource(
+                    id = R.plurals.view_x_accounts,
+                    numberOfAccounts,
+                    numberOfAccounts
+                )
+            }
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
+                pluralStringResource(
+                    id = R.plurals.view_x_or_more_accounts,
+                    numberOfAccounts,
+                    numberOfAccounts
+                )
+            }
         }
         Text(
             text = text,

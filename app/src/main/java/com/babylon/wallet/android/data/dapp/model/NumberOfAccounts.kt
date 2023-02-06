@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -19,9 +19,13 @@ enum class AccountNumberQuantifier {
     AtLeast,
 }
 
-fun AccountNumberQuantifier.toDomainModel(): MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
+fun AccountNumberQuantifier.toDomainModel(): IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
     return when (this) {
-        AccountNumberQuantifier.Exactly -> MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
-        AccountNumberQuantifier.AtLeast -> MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        AccountNumberQuantifier.Exactly -> {
+            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+        }
+        AccountNumberQuantifier.AtLeast -> {
+            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,10 +21,10 @@ data class AuthUsePersonaRequestItem(
 @Serializable
 sealed class AuthRequestItem
 
-fun AuthLoginRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest {
-    return MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest(challenge.orEmpty())
+fun AuthLoginRequestItem.toDomainModel(): AuthorizedRequest.AuthRequest.LoginRequest {
+    return AuthorizedRequest.AuthRequest.LoginRequest(challenge.orEmpty())
 }
 
-fun AuthUsePersonaRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest {
-    return MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(identityAddress)
+fun AuthUsePersonaRequestItem.toDomainModel(): AuthorizedRequest.AuthRequest.UsePersonaRequest {
+    return AuthorizedRequest.AuthRequest.UsePersonaRequest(identityAddress)
 }
