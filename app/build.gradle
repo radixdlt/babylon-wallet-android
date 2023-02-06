@@ -196,6 +196,7 @@ dependencies {
     testImplementation libs.coroutinesTest
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
+    testImplementation libs.turbine
 
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso

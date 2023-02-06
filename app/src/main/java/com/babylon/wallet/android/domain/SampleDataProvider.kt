@@ -44,7 +44,7 @@ class SampleDataProvider {
             derivationPath = "m/1'/1'/1'/1'/1'/1'",
             displayName = personaName,
             index = 0,
-            networkID = 10,
+            networkID = 11,
             fields = listOf(
                 OnNetwork.Persona.Field("1", OnNetwork.Persona.Field.Kind.Email, "test@test.pl"),
                 OnNetwork.Persona.Field("2", OnNetwork.Persona.Field.Kind.FirstName, "John")

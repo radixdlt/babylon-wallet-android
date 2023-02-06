@@ -8,8 +8,17 @@ import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface IncomingRequestRepository {
+    suspend fun add(incomingRequest: IncomingRequest)
+    suspend fun requestHandled(requestId: String)
+    fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest
+    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest
+    fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest
+    fun getAmountOfRequests(): Int
+}
+
 @Singleton
-class IncomingRequestRepository @Inject constructor() {
+class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepository {
 
     private val listOfIncomingRequests = mutableMapOf<String, IncomingRequest>()
 
@@ -18,7 +27,7 @@ class IncomingRequestRepository @Inject constructor() {
 
     private val mutex = Mutex()
 
-    suspend fun add(incomingRequest: IncomingRequest) {
+    override suspend fun add(incomingRequest: IncomingRequest) {
         mutex.withLock {
             if (listOfIncomingRequests.isEmpty()) {
                 _currentRequestToHandle.emit(incomingRequest)
@@ -27,7 +36,7 @@ class IncomingRequestRepository @Inject constructor() {
         }
     }
 
-    suspend fun requestHandled(requestId: String) {
+    override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
             listOfIncomingRequests.remove(requestId)
             listOfIncomingRequests.values.firstOrNull()?.let { nextRequest ->
@@ -36,7 +45,7 @@ class IncomingRequestRepository @Inject constructor() {
         }
     }
 
-    fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest {
+    override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
@@ -44,7 +53,7 @@ class IncomingRequestRepository @Inject constructor() {
         return (listOfIncomingRequests[requestId] as IncomingRequest.UnauthorizedRequest)
     }
 
-    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest {
+    override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
@@ -52,7 +61,7 @@ class IncomingRequestRepository @Inject constructor() {
         return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionRequest)
     }
 
-    fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest {
+    override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest {
         require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
@@ -60,5 +69,5 @@ class IncomingRequestRepository @Inject constructor() {
         return (listOfIncomingRequests[requestId] as IncomingRequest.AuthorizedRequest)
     }
 
-    fun getAmountOfRequests() = listOfIncomingRequests.size
+    override fun getAmountOfRequests() = listOfIncomingRequests.size
 }

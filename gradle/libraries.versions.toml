@@ -45,6 +45,7 @@ composeUiTestJunit = "1.4.0-alpha04"
 composeUiTooling = "1.4.0-alpha04"
 ktor = "2.2.2"
 slf4j = "2.0.6"
+turbine = "0.12.1"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -112,3 +113,4 @@ composeUiTestJunit = { module = "androidx.compose.ui:ui-test-junit4", version.re
 composeUiTooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUiTooling" }
 composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
 slf4j = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }

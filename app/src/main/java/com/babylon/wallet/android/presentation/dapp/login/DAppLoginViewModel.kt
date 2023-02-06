@@ -56,14 +56,10 @@ class DAppLoginViewModel @Inject constructor(
 
     private val args = DAppLoginArgs(savedStateHandle)
 
-    // the incoming request from dapp
     private val authRequest =
         incomingRequestRepository.getAuthorizedRequest(
             args.requestId
         )
-
-//    var state by mutableStateOf(DAppLoginUiState())
-//        private set
 
     private val _state = MutableStateFlow(DAppLoginUiState())
     val state = _state.asStateFlow()
@@ -255,11 +251,11 @@ class DAppLoginViewModel @Inject constructor(
         val connectedDapp = connectedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (connectedDapp == null) {
-            val dAppName = state.value.dappMetadata?.getName()
+            val dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
             val dApp = OnNetwork.ConnectedDapp(
                 authRequest.metadata.networkId,
                 authRequest.metadata.dAppDefinitionAddress,
-                dAppName.orEmpty(),
+                dAppName,
                 listOf(
                     OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                         identityAddress = selectedPersona.address,

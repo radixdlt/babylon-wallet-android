@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DAppMessenger
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
@@ -33,7 +33,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     private val transactionClient = mockk<TransactionClient>()
     private val profileDataSource = mockk<ProfileDataSource>()
-    private val incomingRequestRepository = IncomingRequestRepository()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DAppMessenger>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
