@@ -8,7 +8,6 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.KnownAddresses
 import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.CallMethodReceiver
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.Value
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -54,25 +53,32 @@ class GetFreeXrdUseCase @Inject constructor(
         address: String,
         includeLockFeeInstruction: Boolean,
     ): TransactionManifest {
-        var manifest = ManifestBuilder().addInstruction(
-            Instruction.CallMethod(
-                componentAddress = CallMethodReceiver.ComponentAddress(
-                    Value.ComponentAddress(knownAddresses.faucetAddress)
-                ),
-                methodName = Value.String(MethodName.Free.stringValue)
+        var manifest = ManifestBuilder()
+            .addInstruction(
+                Instruction.CallMethod(
+                    componentAddress = Value.ComponentAddress(
+                        address = knownAddresses.faucetAddress
+                    ),
+                    methodName = Value.String(MethodName.Free.stringValue)
+                )
+            ).addInstruction(
+                Instruction.CallMethod(
+                    componentAddress = Value.ComponentAddress(
+                        address = address
+                    ),
+                    methodName = Value.String(MethodName.DepositBatch.stringValue),
+                    arguments = arrayOf(Value.Expression("ENTIRE_WORKTOP"))
+                )
             )
-        ).addInstruction(
-            Instruction.CallMethod(
-                componentAddress = CallMethodReceiver.ComponentAddress(
-                    Value.ComponentAddress(address)
-                ),
-                methodName = Value.String(MethodName.DepositBatch.stringValue),
-                arrayOf(Value.Expression("ENTIRE_WORKTOP"))
-            )
-        ).build()
+            .build()
+
         if (includeLockFeeInstruction) {
-            manifest = transactionClient.addLockFeeInstructionToManifest(manifest, knownAddresses.faucetAddress)
+            manifest = transactionClient.addLockFeeInstructionToManifest(
+                manifest = manifest,
+                addressToLockFee = knownAddresses.faucetAddress
+            )
         }
+
         return manifest
     }
 

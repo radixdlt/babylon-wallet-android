@@ -35,7 +35,7 @@ fun PrivateKey.toEngineModel(): EnginePrivateKey {
 }
 
 fun TransactionManifest.toPrettyString(): String {
-    if (instructions is ManifestInstructions.JSONInstructions) return ""
+    if (instructions is ManifestInstructions.ParsedInstructions) return ""
     val blobSeparator = "\n"
     val blobPreamble = "BLOBS\n"
     val blobLabel = "BLOB\n"
