@@ -26,20 +26,20 @@ internal const val ARG_ONE_TIME = "one_time"
 
 internal class ChooseAccountsArgs(
     val numberOfAccounts: Int,
-    val accountQuantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    val accountQuantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     val oneTime: Boolean
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_NUMBER_OF_ACCOUNTS]) as Int,
         checkNotNull(savedStateHandle[ARG_ACCOUNT_QUANTIFIER])
-            as MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+            as MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
         checkNotNull(savedStateHandle[ARG_ONE_TIME]) as Boolean
     )
 }
 
 fun NavController.chooseAccounts(
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     oneTime: Boolean = false
 ) {
     navigate("choose_accounts_route/$numberOfAccounts/$quantifier/$oneTime")
@@ -60,7 +60,7 @@ fun NavGraphBuilder.chooseAccounts(
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType },
             navArgument(ARG_ACCOUNT_QUANTIFIER) {
-                type = NavType.EnumType(MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier::class.java)
+                type = NavType.EnumType(MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier::class.java)
             },
             navArgument(ARG_ONE_TIME) { type = NavType.BoolType },
         )

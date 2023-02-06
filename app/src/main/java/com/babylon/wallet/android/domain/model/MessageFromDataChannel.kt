@@ -15,7 +15,13 @@ sealed interface MessageFromDataChannel {
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(requestId, requestMetadata)
+        ) : IncomingRequest(requestId, requestMetadata) {
+
+            sealed interface AuthRequest {
+                data class LoginRequest(val challenge: String? = null) : AuthRequest
+                data class UsePersonaRequest(val personaAddress: String) : AuthRequest
+            }
+        }
 
         data class UnauthorizedRequest(
             val requestId: String,
@@ -30,15 +36,6 @@ sealed interface MessageFromDataChannel {
             val requestMetadata: RequestMetadata
         ) : IncomingRequest(requestId, requestMetadata)
 
-        sealed interface AuthRequest {
-            data class LoginRequest(val challenge: String? = null) : AuthRequest
-            data class UsePersonaRequest(val id: String) : AuthRequest
-        }
-
-        enum class AccountNumberQuantifier {
-            Exactly, AtLeast
-        }
-
         data class RequestMetadata(val networkId: Int, val origin: String, val dAppDefinitionAddress: String)
 
         data class AccountsRequestItem(
@@ -46,15 +43,17 @@ sealed interface MessageFromDataChannel {
             val requiresProofOfOwnership: Boolean,
             val numberOfAccounts: Int,
             val quantifier: AccountNumberQuantifier
-        )
+        ) {
+            enum class AccountNumberQuantifier {
+                Exactly, AtLeast
+            }
+        }
 
         data class PersonaRequestItem(
             val fields: List<String>,
             val isOngoing: Boolean
         )
     }
-
-    object Unknown : MessageFromDataChannel
 
     object ParsingError : MessageFromDataChannel
 
@@ -65,13 +64,13 @@ sealed interface MessageFromDataChannel {
     }
 }
 
-fun MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.toProfileShareAccountsMode():
-    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode {
+fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsMode():
+        OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode {
     return when (this) {
-        MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> {
+        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
         }
-        MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> {
+        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
             OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast
         }
     }

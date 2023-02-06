@@ -12,7 +12,10 @@ interface DAppConnectionRepository {
 
     suspend fun updateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp)
 
-    suspend fun dAppHasConnectedPersona(dAppDefinitionAddress: String, personaAddress: String): Boolean
+    suspend fun getDAppConnectedPersona(
+        dAppDefinitionAddress: String,
+        personaAddress: String
+    ): OnNetwork.ConnectedDapp.AuthorizedPersonaSimple?
 
     suspend fun dAppConnectedPersonaAccountAddresses(
         dAppDefinitionAddress: String,
@@ -62,10 +65,13 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         profileDataSource.saveProfile(updatedProfile)
     }
 
-    override suspend fun dAppHasConnectedPersona(dAppDefinitionAddress: String, personaAddress: String): Boolean {
-        return getConnectedDapp(dAppDefinitionAddress)?.referencesToAuthorizedPersonas?.any {
+    override suspend fun getDAppConnectedPersona(
+        dAppDefinitionAddress: String,
+        personaAddress: String
+    ): OnNetwork.ConnectedDapp.AuthorizedPersonaSimple? {
+        return getConnectedDapp(dAppDefinitionAddress)?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
-        } == true
+        }
     }
 
     override suspend fun dAppConnectedPersonaAccountAddresses(
@@ -79,12 +85,23 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         )?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }?.sharedAccounts
-        val hasNeededAccounts =
-            sharedAccounts?.accountsReferencedByAddress?.size == numberOfAccounts && mode == sharedAccounts.mode
-        return if (hasNeededAccounts) {
-            sharedAccounts?.accountsReferencedByAddress.orEmpty()
-        } else {
-            emptyList()
+        if (mode != sharedAccounts?.mode) return emptyList()
+        val sharedAccountSize = sharedAccounts.accountsReferencedByAddress.size
+        return when (mode) {
+            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly -> {
+                if (sharedAccountSize == numberOfAccounts) {
+                    sharedAccounts.accountsReferencedByAddress
+                } else {
+                    emptyList()
+                }
+            }
+            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast -> {
+                if (sharedAccountSize >= numberOfAccounts) {
+                    sharedAccounts.accountsReferencedByAddress
+                } else {
+                    emptyList()
+                }
+            }
         }
     }
 

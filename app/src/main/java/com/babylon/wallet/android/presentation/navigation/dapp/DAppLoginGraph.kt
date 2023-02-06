@@ -55,6 +55,9 @@ fun NavGraphBuilder.dAppLoginGraph(
             navController = navController,
             onChooseAccounts = { event ->
                 navController.chooseAccounts(event.numberOfAccounts, event.quantifier, event.oneTime)
+            },
+            onCompleteFlow = {
+                navController.popBackStack(ROUTE_DAPP_FLOW, true)
             }
         )
         chooseAccounts(

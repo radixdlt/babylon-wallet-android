@@ -6,8 +6,7 @@ data class PersonaUiModel(
     val persona: OnNetwork.Persona,
     val selected: Boolean = false,
     val pinned: Boolean = false,
-    val lastUsedOn: String? = null,
-    val sharedAccountNumber: Int = 0
+    val lastUsedOn: String? = null
 )
 
 fun OnNetwork.Persona.toUiModel(): PersonaUiModel {

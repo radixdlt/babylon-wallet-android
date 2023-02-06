@@ -22,7 +22,7 @@ val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.AuthorizedR
         isOngoing = false,
         requiresProofOfOwnership = false,
         numberOfAccounts = 2,
-        quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
     )
 )
 
