@@ -53,14 +53,15 @@ fun DAppPermissionScreen(
     viewModel: DAppLoginViewModel,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    onCompleteFlow: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
-                is DAppLoginEvent.RejectLogin -> viewModel.onRejectLogin()
+                is DAppLoginEvent.RejectLogin -> onCompleteFlow()
                 else -> {}
             }
         }
@@ -85,7 +86,7 @@ private fun DAppPermissionContent(
     showProgress: Boolean,
     onRejectClick: () -> Unit,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -156,7 +157,7 @@ private fun DAppPermissionContent(
 
 @Composable
 private fun RequestedPermissionsList(
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     numberOfAccounts: Int,
     modifier: Modifier = Modifier
 ) {
@@ -165,12 +166,12 @@ private fun RequestedPermissionsList(
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         val text = when (quantifier) {
-            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly -> pluralStringResource(
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> pluralStringResource(
                 id = R.plurals.view_x_accounts,
                 numberOfAccounts,
                 numberOfAccounts
             )
-            MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast -> pluralStringResource(
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> pluralStringResource(
                 id = R.plurals.view_x_or_more_accounts,
                 numberOfAccounts,
                 numberOfAccounts
@@ -214,7 +215,7 @@ fun DAppLoginContentPreview() {
             showProgress = false,
             onRejectClick = {},
             numberOfAccounts = 2,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast,
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -230,7 +231,7 @@ fun DAppLoginContentFirstTimePreview() {
             showProgress = false,
             onRejectClick = {},
             numberOfAccounts = 2,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast,
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
             modifier = Modifier.fillMaxSize()
         )
     }

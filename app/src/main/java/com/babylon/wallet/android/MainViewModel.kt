@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -33,7 +34,8 @@ class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -125,7 +127,15 @@ class MainViewModel @Inject constructor(
 //                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
 //            )
 //            if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
-            incomingRequestRepository.add(request)
+
+            when (val result = authorizeSpecifiedPersonaUseCase(request)) {
+                is com.babylon.wallet.android.domain.common.Result.Error -> {
+                    incomingRequestRepository.add(request)
+                }
+                is com.babylon.wallet.android.domain.common.Result.Success -> {
+                    sendEvent(MainEvent.HandledUsePersonaAuthRequest(result.data))
+                }
+            }
 //            } else {
 //                 TODO dApp verification failed
 //            }
@@ -158,6 +168,7 @@ class MainViewModel @Inject constructor(
 
 sealed class MainEvent : OneOffEvent {
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
+    data class HandledUsePersonaAuthRequest(val dAppName: String) : MainEvent()
 }
 
 data class MainUiState(

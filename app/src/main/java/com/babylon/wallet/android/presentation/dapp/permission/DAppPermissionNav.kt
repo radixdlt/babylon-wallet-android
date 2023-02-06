@@ -25,7 +25,7 @@ internal const val ARG_ONE_TIME = "one_time"
 
 fun NavController.dappPermission(
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     oneTime: Boolean = false
 ) {
     navigate("dapp_permission/$numberOfAccounts/$quantifier/$oneTime")
@@ -34,14 +34,15 @@ fun NavController.dappPermission(
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dappPermission(
     navController: NavController,
-    onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit
+    onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
+    onCompleteFlow: () -> Unit
 ) {
     composable(
         route = "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_ACCOUNT_QUANTIFIER}/{$ARG_ONE_TIME}",
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType },
             navArgument(ARG_ACCOUNT_QUANTIFIER) {
-                type = NavType.EnumType(MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier::class.java)
+                type = NavType.EnumType(MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier::class.java)
             },
             navArgument(ARG_ONE_TIME) { type = NavType.BoolType },
         )
@@ -55,14 +56,14 @@ fun NavGraphBuilder.dappPermission(
             checkNotNull(
                 entry.arguments?.getSerializable(
                     ARG_ACCOUNT_QUANTIFIER
-                ) as MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier
+                ) as MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier
             )
-        val oneTime = checkNotNull(entry.arguments?.getBoolean(ARG_ONE_TIME))
         DAppPermissionScreen(
             viewModel = vm,
             onChooseAccounts = onChooseAccounts,
             numberOfAccounts = numberOfAccounts,
-            quantifier = quantifier
+            quantifier = quantifier,
+            onCompleteFlow = onCompleteFlow
         )
     }
 }

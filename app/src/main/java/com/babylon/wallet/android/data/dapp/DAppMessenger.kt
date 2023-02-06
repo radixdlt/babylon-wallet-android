@@ -49,8 +49,8 @@ interface DAppMessenger {
     suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
         persona: OnNetwork.Persona,
-        oneTimeAccounts: List<AccountItemUiModel>?,
-        ongoingAccounts: List<AccountItemUiModel>?
+        oneTimeAccounts: List<AccountItemUiModel>? = null,
+        ongoingAccounts: List<AccountItemUiModel>? = null
     ): Result<Unit>
 }
 

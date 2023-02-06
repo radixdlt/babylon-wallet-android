@@ -94,7 +94,7 @@ fun UnauthorizedAccountContentPreview() {
             onContinueClick = {},
             isContinueButtonEnabled = true,
             numberOfAccounts = 1,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast,
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
             isOneTime = true,
             dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
             onAccountSelect = {},

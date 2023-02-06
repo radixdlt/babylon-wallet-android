@@ -36,15 +36,12 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     private val dappMetadataRepository: DappMetadataRepository
 ) : ViewModel(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
-    // the incoming request from dapp
-
     private val args = OneTimeChooseAccountsArgs(savedStateHandle)
 
     private val accountsRequest = incomingRequestRepository.getUnauthorizedRequest(
         args.requestId
     )
 
-    // TODO this is temporary until we have proper handling of CAP-21 requests models!
     @Suppress("TooGenericExceptionThrown")
     private val oneTimeAccountRequestItem =
         accountsRequest.oneTimeAccountsRequestItem
@@ -151,6 +148,6 @@ data class OneTimeChooseAccountUiState(
     val error: String? = null,
     val showProgress: Boolean = true,
     val numberOfAccounts: Int,
-    val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     val dappMetadata: DappMetadata? = null
 )

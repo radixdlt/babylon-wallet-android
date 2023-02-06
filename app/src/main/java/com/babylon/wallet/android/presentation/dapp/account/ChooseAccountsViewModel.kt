@@ -144,7 +144,7 @@ sealed interface ChooseAccountsEvent : OneOffEvent
 
 data class ChooseAccountUiState(
     val numberOfAccounts: Int,
-    val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
     val oneTimeRequest: Boolean = false,

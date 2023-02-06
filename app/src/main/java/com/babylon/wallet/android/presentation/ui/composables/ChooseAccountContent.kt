@@ -55,7 +55,7 @@ fun ChooseAccountContent(
     dappMetadata: DappMetadata?,
     isOneTime: Boolean,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
 ) {
     Box(
         modifier = modifier
@@ -153,11 +153,11 @@ private fun ChooseAccountsSubtitle(
     dappName: String,
     isOneTime: Boolean,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
     modifier: Modifier = Modifier
 ) {
     val text = if (isOneTime) {
-        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast) {
+        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast) {
             pluralStringResource(
                 id = R.plurals.one_time_at_least_request,
                 count = numberOfAccounts,
@@ -173,7 +173,7 @@ private fun ChooseAccountsSubtitle(
             )
         }
     } else {
-        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast) {
+        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast) {
             pluralStringResource(
                 id = R.plurals.ongoing_at_least_request,
                 count = numberOfAccounts,

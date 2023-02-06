@@ -116,6 +116,7 @@
     <string name="create_persona">Create Persona</string>
     <string name="your_persona_has_been_created">Your persona has been created.</string>
     <string name="create_a_new_persona">Create a New Persona</string>
+    <string name="create_new_persona">Create New Persona</string>
     <string name="all_personas_info">Here are all the personas connected to your account</string>
     <string name="login_request">Login Request</string>
     <string name="dapp_login_subtitle">%s is requesting you login with a Persona.</string>
@@ -145,6 +146,8 @@
     <string name="sharing">Sharing</string>
     <string name="success">Success</string>
     <string name="request_complete">Request from %s complete</string>
+    <string name="the_personal_data_you_specify">The personal data you specify for this Persona does not live on Radix Network, only in your Radix wallet.</string>
+    <string name="go_to_choose_personas">Go to Choose Personas</string>
     <plurals name="one_time_at_least_request">
         <item quantity="one">%s is making a one-time request for at least %d account.</item>
         <item quantity="other">%s is making a one-time request for at least %d accounts.</item>

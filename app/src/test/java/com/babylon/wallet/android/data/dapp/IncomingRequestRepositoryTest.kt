@@ -23,12 +23,12 @@ class IncomingRequestRepositoryTest {
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         requestId = UUID.randomUUID().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest(),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
             requiresProofOfOwnership = false,
             numberOfAccounts = 1,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
         )
     )
 

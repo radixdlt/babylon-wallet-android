@@ -156,7 +156,6 @@ class DAppLoginViewModel @Inject constructor(
                 pinned = true,
                 lastUsedOn = defaultAuthorizedPersonaSimple.lastUsedOn.fromISO8601String()
                     ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
-                sharedAccountNumber = defaultAuthorizedPersonaSimple.sharedAccounts.accountsReferencedByAddress.size
             )
         }
         var updatedPersonas = profilePersonas.map { personaUiModel ->
@@ -165,7 +164,6 @@ class DAppLoginViewModel @Inject constructor(
             }
             if (matchingAuthorizedPersona != null) {
                 personaUiModel.copy(
-                    sharedAccountNumber = matchingAuthorizedPersona.sharedAccounts.accountsReferencedByAddress.size,
                     lastUsedOn = matchingAuthorizedPersona.lastUsedOn.fromISO8601String()
                         ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
                 )
@@ -313,7 +311,7 @@ class DAppLoginViewModel @Inject constructor(
 
     fun onPermissionAgree(
         numberOfAccounts: Int,
-        quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier
+        quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier
     ) {
         viewModelScope.launch {
             sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, quantifier))
@@ -376,14 +374,14 @@ sealed interface DAppLoginEvent : OneOffEvent {
     object RejectLogin : DAppLoginEvent
     data class HandleOngoingAccounts(
         val numberOfAccounts: Int,
-        val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+        val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
         val oneTime: Boolean = false
     ) : DAppLoginEvent
 
     data class LoginFlowCompleted(val dappName: String) : DAppLoginEvent
     data class ChooseAccounts(
         val numberOfAccounts: Int,
-        val quantifier: MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier,
+        val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
         val oneTime: Boolean = false
     ) : DAppLoginEvent
 }
