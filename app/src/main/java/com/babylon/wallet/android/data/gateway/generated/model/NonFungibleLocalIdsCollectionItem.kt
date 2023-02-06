@@ -23,14 +23,14 @@ import kotlinx.serialization.Contextual
 /**
  *
  *
- * @param nonFungibleId
+ * @param nonFungibleLocalId
  */
 @Serializable
 
 data class NonFungibleLocalIdsCollectionItem(
 
     @SerialName(value = "non_fungible_id")
-    val nonFungibleId: kotlin.String
+    val nonFungibleLocalId: kotlin.String
 
 )
 

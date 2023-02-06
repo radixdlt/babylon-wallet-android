@@ -20,7 +20,9 @@ fun EntityDetailsResponse.toFungibleToken(): FungibleToken {
         totalSupply = BigDecimal(details.totalSupply),
         totalMinted = BigDecimal(details.totalMinted),
         totalBurnt = BigDecimal(details.totalBurnt),
-        metadata = metadata.items.associate { it.key to it.value }
+        metadata = metadata.items.associate { entityMetadataItem ->
+            entityMetadataItem.key to entityMetadataItem.value
+        }
     )
 }
 
@@ -35,7 +37,11 @@ fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): Li
 }
 
 fun NonFungibleLocalIdsResponse.toDomainModel(): NonFungibleTokenIdContainer {
-    return NonFungibleTokenIdContainer(ids = this.nonFungibleIds.items.map { it.nonFungibleId })
+    return NonFungibleTokenIdContainer(
+        ids = nonFungibleIds.items.map { nonFungibleLocalIdsCollectionItem ->
+            nonFungibleLocalIdsCollectionItem.nonFungibleLocalId
+        }
+    )
 }
 
 fun EntityDetailsResponse.toNonFungibleToken(
@@ -50,7 +56,9 @@ fun EntityDetailsResponse.toNonFungibleToken(
 
 fun EntityMetadataCollection.toNonFungibleMetadataContainer(): NonFungibleMetadataContainer {
     return NonFungibleMetadataContainer(
-        metadata = items.associate { it.key to it.value },
+        metadata = items.associate { entityMetadataItem ->
+            entityMetadataItem.key to entityMetadataItem.value
+        },
         nextCursor = nextCursor,
         previousCursor = previousCursor
     )
