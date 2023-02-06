@@ -7,7 +7,7 @@
       "gatewayAPIEndpointURL" : "https://betanet.radixdlt.com",
       "network" : {
         "id" : 11,
-        "name" : "betanet"
+        "name" : "nebunet"
       }
     },
     "p2pClients" : [
@@ -144,7 +144,10 @@
                   "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu",
                   "account_tdx_b_1pr2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54tshau0z6"
                 ],
-                "mode": "exactly"
+                "request": {
+                  "quantifier" : "exactly",
+                  "quantity" : 2
+                }
               }
             },
             {
@@ -158,7 +161,10 @@
                 "accountsReferencedByAddress" : [
                   "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu"
                 ],
-                "mode": "atLeast"
+                "request" : {
+                  "quantifier" : "atLeast",
+                  "quantity" : 1
+                }
               }
             }
           ]

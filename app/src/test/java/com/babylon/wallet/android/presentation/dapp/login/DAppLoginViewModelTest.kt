@@ -73,7 +73,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         super.setUp()
         val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { profileDataSource.getCurrentNetwork() } returns Network.betanet
+        coEvery { profileDataSource.getCurrentNetwork() } returns Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)
         }

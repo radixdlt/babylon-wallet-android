@@ -366,15 +366,26 @@ data class OnNetwork(
                 @SerialName("accountsReferencedByAddress")
                 val accountsReferencedByAddress: List<String>,
 
-                @SerialName("mode")
-                val mode: Mode
+                @SerialName("request")
+                val request: NumberOfAccounts
             ) {
-                enum class Mode {
-                    @SerialName("exactly")
-                    Exactly,
 
-                    @SerialName("atLeast")
-                    AtLeast
+                @Serializable
+                data class NumberOfAccounts(
+                    @SerialName("quantifier")
+                    val quantifier: Quantifier,
+
+                    @SerialName("quantity")
+                    val quantity: Int
+                ) {
+
+                    enum class Quantifier {
+                        @SerialName("exactly")
+                        Exactly,
+
+                        @SerialName("atLeast")
+                        AtLeast
+                    }
                 }
             }
         }
