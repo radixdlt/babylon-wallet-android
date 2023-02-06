@@ -3,7 +3,7 @@ package com.babylon.wallet.android
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
@@ -34,7 +34,7 @@ class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestRepository: IncomingRequestRepository,
+    private val incomingRequestRepository: IncomingRequestRepositoryImpl,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 

@@ -18,7 +18,7 @@ import java.util.UUID
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 class IncomingRequestRepositoryTest {
 
-    private val incomingRequestRepository = IncomingRequestRepository()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val amountOfIncomingRequests = 1000
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         requestId = UUID.randomUUID().toString(),

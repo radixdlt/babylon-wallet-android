@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.OneOffEvent
@@ -32,7 +32,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
-    private val incomingRequestRepository: IncomingRequestRepository,
+    private val incomingRequestRepository: IncomingRequestRepositoryImpl,
     private val dappMetadataRepository: DappMetadataRepository
 ) : ViewModel(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 

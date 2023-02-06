@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
@@ -41,7 +41,7 @@ class ChooseAccountsViewModelTest {
     private val dappMetadataRepository = DappMetadataRepositoryFake()
 
     private val dAppMessenger = DAppMessengerFake()
-    private val incomingRequestRepository = IncomingRequestRepository()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
 

@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DAppMessenger
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
@@ -34,7 +34,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    private val incomingRequestRepository: IncomingRequestRepository,
+    private val incomingRequestRepository: IncomingRequestRepositoryImpl,
     private val profileDataSource: ProfileDataSource,
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
