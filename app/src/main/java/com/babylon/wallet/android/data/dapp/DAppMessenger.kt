@@ -49,8 +49,8 @@ interface DAppMessenger {
     suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
         persona: OnNetwork.Persona,
-        oneTimeAccounts: List<AccountItemUiModel>? = null,
-        ongoingAccounts: List<AccountItemUiModel>? = null
+        oneTimeAccounts: List<AccountItemUiModel> = emptyList(),
+        ongoingAccounts: List<AccountItemUiModel> = emptyList()
     ): Result<Unit>
 }
 
@@ -127,8 +127,8 @@ class DAppMessengerImpl @Inject constructor(
     override suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
         persona: OnNetwork.Persona,
-        oneTimeAccounts: List<AccountItemUiModel>?,
-        ongoingAccounts: List<AccountItemUiModel>?
+        oneTimeAccounts: List<AccountItemUiModel>,
+        ongoingAccounts: List<AccountItemUiModel>
     ): Result<Unit> {
         val walletSuccessResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
             interactionId = interactionId,
@@ -139,20 +139,20 @@ class DAppMessengerImpl @Inject constructor(
                         persona.displayName
                     )
                 ),
-                oneTimeAccounts = oneTimeAccounts?.let { accounts ->
+                oneTimeAccounts = if (oneTimeAccounts.isNotEmpty()) {
                     OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
-                        accounts.map {
+                        oneTimeAccounts.map {
                             AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
                         }
                     )
-                },
-                ongoingAccounts = ongoingAccounts?.let { accounts ->
+                } else null,
+                ongoingAccounts = if (ongoingAccounts.isNotEmpty()) {
                     OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
-                        accounts.map {
+                        ongoingAccounts.map {
                             AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
                         }
                     )
-                }
+                } else null
             )
         )
         val messageJson = try {
