@@ -39,10 +39,10 @@ fun NavGraphBuilder.dAppLoginGraph(
             },
             navController = navController,
             onHandleOngoingAccounts = { event ->
-                navController.dappPermission(event.numberOfAccounts, event.quantifier, event.oneTime)
+                navController.dappPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             onChooseAccounts = { event ->
-                navController.chooseAccounts(event.numberOfAccounts, event.quantifier, event.oneTime)
+                navController.chooseAccounts(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             createNewPersona = {
                 navController.createPersonaScreen()
@@ -55,7 +55,7 @@ fun NavGraphBuilder.dAppLoginGraph(
         dappPermission(
             navController = navController,
             onChooseAccounts = { event ->
-                navController.chooseAccounts(event.numberOfAccounts, event.quantifier, event.oneTime)
+                navController.chooseAccounts(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             onCompleteFlow = {
                 navController.popBackStack(ROUTE_DAPP_FLOW, true)
@@ -70,7 +70,7 @@ fun NavGraphBuilder.dAppLoginGraph(
                 navController.navigateUp()
             },
             onChooseAccounts = { event ->
-                navController.chooseAccounts(event.numberOfAccounts, event.quantifier, event.oneTime)
+                navController.chooseAccounts(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)

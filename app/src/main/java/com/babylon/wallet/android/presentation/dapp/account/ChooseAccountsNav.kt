@@ -9,7 +9,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.login.ROUTE_DAPP_LOGIN
@@ -19,30 +18,29 @@ import com.google.accompanist.navigation.animation.composable
 internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
 
 @VisibleForTesting
-internal const val ARG_ACCOUNT_QUANTIFIER = "account_quantifier"
+internal const val ARG_EXACT_ACCOUNT_COUNT = "exact_account_count"
 
 @VisibleForTesting
 internal const val ARG_ONE_TIME = "one_time"
 
 internal class ChooseAccountsArgs(
     val numberOfAccounts: Int,
-    val accountQuantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    val isExactAccountsCount: Boolean,
     val oneTime: Boolean
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_NUMBER_OF_ACCOUNTS]) as Int,
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_QUANTIFIER])
-            as MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+        checkNotNull(savedStateHandle[ARG_EXACT_ACCOUNT_COUNT]) as Boolean,
         checkNotNull(savedStateHandle[ARG_ONE_TIME]) as Boolean
     )
 }
 
 fun NavController.chooseAccounts(
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
     oneTime: Boolean = false
 ) {
-    navigate("choose_accounts_route/$numberOfAccounts/$quantifier/$oneTime")
+    navigate("choose_accounts_route/$numberOfAccounts/$isExactAccountsCount/$oneTime")
 }
 
 @Suppress("LongParameterList")
@@ -56,14 +54,10 @@ fun NavGraphBuilder.chooseAccounts(
     onLoginFlowComplete: (String) -> Unit
 ) {
     composable(
-        route = "choose_accounts_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_ACCOUNT_QUANTIFIER}/{$ARG_ONE_TIME}",
+        route = "choose_accounts_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}",
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType },
-            navArgument(ARG_ACCOUNT_QUANTIFIER) {
-                type = NavType.EnumType(
-                    MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier::class.java
-                )
-            },
+            navArgument(ARG_EXACT_ACCOUNT_COUNT) { type = NavType.BoolType },
             navArgument(ARG_ONE_TIME) { type = NavType.BoolType },
         )
     ) { entry ->

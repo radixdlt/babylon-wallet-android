@@ -56,7 +56,7 @@ interface DAppMessenger {
 
 class DAppMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestRepository: IncomingRequestRepositoryImpl
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : DAppMessenger {
 
     override suspend fun sendAccountsResponse(

@@ -41,7 +41,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
@@ -53,7 +52,7 @@ fun DAppPermissionScreen(
     viewModel: DAppLoginViewModel,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -69,13 +68,13 @@ fun DAppPermissionScreen(
     BackHandler(enabled = true) {}
     DAppPermissionContent(
         onContinueClick = {
-            viewModel.onPermissionAgree(numberOfAccounts, quantifier)
+            viewModel.onPermissionAgree(numberOfAccounts, isExactAccountsCount)
         },
         dappMetadata = state.dappMetadata,
         showProgress = state.showProgress,
         onRejectClick = viewModel::onRejectLogin,
         numberOfAccounts = numberOfAccounts,
-        quantifier = quantifier
+        isExactAccountsCount = isExactAccountsCount
     )
 }
 
@@ -86,7 +85,7 @@ private fun DAppPermissionContent(
     showProgress: Boolean,
     onRejectClick: () -> Unit,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -141,7 +140,7 @@ private fun DAppPermissionContent(
                         .fillMaxWidth()
                         .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingLarge),
-                    quantifier = quantifier,
+                    isExactAccountsCount = isExactAccountsCount,
                     numberOfAccounts = numberOfAccounts
                 )
                 Spacer(modifier = Modifier.weight(0.5f))
@@ -157,7 +156,7 @@ private fun DAppPermissionContent(
 
 @Composable
 private fun RequestedPermissionsList(
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
     numberOfAccounts: Int,
     modifier: Modifier = Modifier
 ) {
@@ -165,21 +164,18 @@ private fun RequestedPermissionsList(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        val text = when (quantifier) {
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
-                pluralStringResource(
-                    id = R.plurals.view_x_accounts,
-                    numberOfAccounts,
-                    numberOfAccounts
-                )
-            }
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
-                pluralStringResource(
-                    id = R.plurals.view_x_or_more_accounts,
-                    numberOfAccounts,
-                    numberOfAccounts
-                )
-            }
+        val text = if (isExactAccountsCount) {
+            pluralStringResource(
+                id = R.plurals.view_x_accounts,
+                numberOfAccounts,
+                numberOfAccounts
+            )
+        } else {
+            pluralStringResource(
+                id = R.plurals.view_x_or_more_accounts,
+                numberOfAccounts,
+                numberOfAccounts
+            )
         }
         Text(
             text = text,
@@ -219,7 +215,7 @@ fun DAppLoginContentPreview() {
             showProgress = false,
             onRejectClick = {},
             numberOfAccounts = 2,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -235,7 +231,7 @@ fun DAppLoginContentFirstTimePreview() {
             showProgress = false,
             onRejectClick = {},
             numberOfAccounts = 2,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize()
         )
     }

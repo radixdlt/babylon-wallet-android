@@ -50,7 +50,8 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     var state by mutableStateOf(
         OneTimeChooseAccountUiState(
             numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts,
-            quantifier = oneTimeAccountRequestItem.quantifier,
+            isExactAccountsCount = oneTimeAccountRequestItem.quantifier
+                    == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
         )
     )
         private set
@@ -148,6 +149,6 @@ data class OneTimeChooseAccountUiState(
     val error: String? = null,
     val showProgress: Boolean = true,
     val numberOfAccounts: Int,
-    val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    val isExactAccountsCount: Boolean,
     val dappMetadata: DappMetadata? = null
 )

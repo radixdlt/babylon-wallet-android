@@ -37,7 +37,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.AccountSelectionCard
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
@@ -55,7 +54,7 @@ fun ChooseAccountContent(
     dappMetadata: DappMetadata?,
     isOneTime: Boolean,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
 ) {
     Box(
         modifier = modifier
@@ -106,7 +105,7 @@ fun ChooseAccountContent(
                         dappName = dappMetadata?.getName() ?: "Unknown dApp",
                         isOneTime = isOneTime,
                         numberOfAccounts = numberOfAccounts,
-                        quantifier = quantifier
+                        isExactAccountsCount = isExactAccountsCount
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -153,36 +152,36 @@ private fun ChooseAccountsSubtitle(
     dappName: String,
     isOneTime: Boolean,
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
     modifier: Modifier = Modifier
 ) {
     val text = if (isOneTime) {
-        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast) {
-            pluralStringResource(
-                id = R.plurals.one_time_at_least_request,
-                count = numberOfAccounts,
-                dappName,
-                numberOfAccounts
-            )
-        } else {
+        if (isExactAccountsCount) {
             pluralStringResource(
                 id = R.plurals.one_time_exactly_request,
                 count = numberOfAccounts,
                 dappName,
                 numberOfAccounts
             )
+        } else {
+            pluralStringResource(
+                id = R.plurals.one_time_at_least_request,
+                count = numberOfAccounts,
+                dappName,
+                numberOfAccounts
+            )
         }
     } else {
-        if (quantifier == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast) {
+        if (isExactAccountsCount) {
             pluralStringResource(
-                id = R.plurals.ongoing_at_least_request,
+                id = R.plurals.ongoing_exactly_request,
                 count = numberOfAccounts,
                 numberOfAccounts,
                 dappName
             )
         } else {
             pluralStringResource(
-                id = R.plurals.ongoing_exactly_request,
+                id = R.plurals.ongoing_at_least_request,
                 count = numberOfAccounts,
                 numberOfAccounts,
                 dappName

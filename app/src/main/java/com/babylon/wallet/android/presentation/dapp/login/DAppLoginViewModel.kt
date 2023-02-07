@@ -15,8 +15,8 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.toProfileShareAccountsMode
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
+import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
@@ -202,25 +202,27 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleOneTimeAccountRequestItem(
-        oneTimeAccountsRequestItem: MessageFromDataChannel.IncomingRequest.AccountsRequestItem
+        oneTimeAccountsRequestItem: AccountsRequestItem
     ) {
         val numberOfAccounts = oneTimeAccountsRequestItem.numberOfAccounts
-        val quantifier = oneTimeAccountsRequestItem.quantifier
-        sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, quantifier, oneTime = true))
+        val isExactAccountsCount =
+            oneTimeAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
+        sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount, oneTime = true))
     }
 
     private suspend fun handleOngoingAddressRequestItem(
-        ongoingAccountsRequestItem: MessageFromDataChannel.IncomingRequest.AccountsRequestItem,
+        ongoingAccountsRequestItem: AccountsRequestItem,
         connectedDapp: OnNetwork.ConnectedDapp,
         selectedPersona: OnNetwork.Persona
     ) {
         val numberOfAccounts = ongoingAccountsRequestItem.numberOfAccounts
-        val quantifier = ongoingAccountsRequestItem.quantifier
+        val isExactAccountsCount =
+            ongoingAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
         val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
             connectedDapp.dAppDefinitionAddress,
             selectedPersona.address,
             numberOfAccounts,
-            quantifier.toProfileShareAccountsMode()
+            ongoingAccountsRequestItem.quantifier.toProfileShareAccountsQuantifier()
         )
         if (potentialOngoingAddresses.isNotEmpty()) {
             val selectedAccounts = potentialOngoingAddresses.mapNotNull {
@@ -244,7 +246,7 @@ class DAppLoginViewModel @Inject constructor(
                 sendRequestResponse()
             }
         } else {
-            sendEvent(DAppLoginEvent.HandleOngoingAccounts(numberOfAccounts, quantifier))
+            sendEvent(DAppLoginEvent.HandleOngoingAccounts(numberOfAccounts, isExactAccountsCount))
         }
     }
 
@@ -317,10 +319,10 @@ class DAppLoginViewModel @Inject constructor(
 
     fun onPermissionAgree(
         numberOfAccounts: Int,
-        quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier
+        isExactAccountsCount: Boolean
     ) {
         viewModelScope.launch {
-            sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, quantifier))
+            sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount))
         }
     }
 
@@ -339,7 +341,7 @@ class DAppLoginViewModel @Inject constructor(
                     AuthorizedPersonaSimple.SharedAccounts(
                         selectedAccounts.map { it.address },
                         AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            request.quantifier.toProfileShareAccountsMode(),
+                            request.quantifier.toProfileShareAccountsQuantifier(),
                             request.numberOfAccounts
                         )
                     )
@@ -349,7 +351,8 @@ class DAppLoginViewModel @Inject constructor(
                     sendEvent(
                         DAppLoginEvent.ChooseAccounts(
                             numberOfAccounts = authRequest.oneTimeAccountsRequestItem.numberOfAccounts,
-                            quantifier = authRequest.oneTimeAccountsRequestItem.quantifier,
+                            isExactAccountsCount = authRequest.oneTimeAccountsRequestItem.quantifier
+                                    == AccountsRequestItem.AccountNumberQuantifier.Exactly,
                             oneTime = true
                         )
                     )
@@ -383,14 +386,14 @@ sealed interface DAppLoginEvent : OneOffEvent {
     object RejectLogin : DAppLoginEvent
     data class HandleOngoingAccounts(
         val numberOfAccounts: Int,
-        val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+        val isExactAccountsCount: Boolean,
         val oneTime: Boolean = false
     ) : DAppLoginEvent
 
     data class LoginFlowCompleted(val dappName: String) : DAppLoginEvent
     data class ChooseAccounts(
         val numberOfAccounts: Int,
-        val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+        val isExactAccountsCount: Boolean,
         val oneTime: Boolean = false
     ) : DAppLoginEvent
 }
@@ -404,7 +407,7 @@ data class DAppLoginUiState(
     val isOngoing: Boolean = false,
     val selectedAccountsOngoing: List<AccountItemUiModel>? = null,
     val selectedAccountsOneTime: List<AccountItemUiModel>? = null,
-    val processedRequestItem: MessageFromDataChannel.IncomingRequest.AccountsRequestItem? = null,
+    val processedRequestItem: AccountsRequestItem? = null,
     val personas: ImmutableList<PersonaUiModel> = persistentListOf()
 ) {
     fun selectedPersona(): PersonaUiModel? {

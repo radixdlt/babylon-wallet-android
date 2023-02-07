@@ -101,7 +101,6 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         val persona = dapp?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }
-        requireNotNull(dapp)
         requireNotNull(persona)
 
         updateConnectedDApp(
