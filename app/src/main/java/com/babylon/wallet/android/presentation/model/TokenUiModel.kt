@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.domain.model.TokenMetadataConstants
 import com.babylon.wallet.android.utils.truncatedHash
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -84,7 +84,7 @@ data class TokenUiModel(
     }
 
     fun isXrd(): Boolean {
-        return symbol == TokenMetadataConstants.SYMBOL_XRD
+        return symbol == MetadataConstants.SYMBOL_XRD
     }
 
     companion object {

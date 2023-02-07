@@ -30,7 +30,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
                 "account is null"
             }
             accountUiState = accountUiState.copy(
-                accountName = account.displayName.orEmpty(),
+                accountName = account.displayName,
                 accountAddressTruncated = account.address.truncatedHash(),
                 appearanceId = account.appearanceID
             )

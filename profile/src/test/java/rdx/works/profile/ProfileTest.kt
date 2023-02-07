@@ -216,8 +216,12 @@ class ProfileTest {
                             "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu",
                             "account_tdx_b_1pr2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54tshau0z6"
                         ),
-                        mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.Exactly
-                    )
+                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                            2
+                        )
+                    ),
+                    lastUsedOn = "some date"
                 ),
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                     identityAddress = "identity_tdx_b_1p0vtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkshkxgen",
@@ -230,8 +234,12 @@ class ProfileTest {
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu"
                         ),
-                        mode = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Mode.AtLeast
-                    )
+                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                            1
+                        )
+                    ),
+                    lastUsedOn = "some date"
                 )
             )
         )
@@ -317,9 +325,9 @@ class ProfileTest {
 
         Assert.assertEquals(
             profile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.mode,
+                .referencesToAuthorizedPersonas.first().sharedAccounts.request,
             currentProfile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.mode
+                .referencesToAuthorizedPersonas.first().sharedAccounts.request
         )
 
         Assert.assertEquals(
@@ -359,9 +367,9 @@ class ProfileTest {
 
         Assert.assertEquals(
             profile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.mode,
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
             currentProfile.onNetwork.first().connectedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.mode
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
         )
 
         Assert.assertEquals(

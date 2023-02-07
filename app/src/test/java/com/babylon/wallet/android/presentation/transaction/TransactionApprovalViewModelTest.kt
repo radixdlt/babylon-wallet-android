@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DAppMessenger
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
@@ -33,16 +33,16 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     private val transactionClient = mockk<TransactionClient>()
     private val profileDataSource = mockk<ProfileDataSource>()
-    private val incomingRequestRepository = IncomingRequestRepository()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DAppMessenger>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
-    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionWriteRequest(
+    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
         sampleRequestId,
-        11,
-        TransactionManifestData("", 1, 11)
+        TransactionManifestData("", 1, 11),
+        MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 
@@ -62,7 +62,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             )
         } returns Result.Success(Unit)
         coEvery {
-            dAppMessenger.sendTransactionWriteResponseFailure(
+            dAppMessenger.sendWalletInteractionResponseFailure(
                 sampleRequestId,
                 any(),
                 any()
@@ -113,7 +113,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseFailure(
+            dAppMessenger.sendWalletInteractionResponseFailure(
                 sampleRequestId,
                 capture(errorSlot),
                 any()
@@ -136,7 +136,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseFailure(
+            dAppMessenger.sendWalletInteractionResponseFailure(
                 sampleRequestId,
                 capture(errorSlot),
                 any()

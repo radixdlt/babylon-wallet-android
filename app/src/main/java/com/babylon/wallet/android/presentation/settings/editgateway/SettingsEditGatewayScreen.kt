@@ -45,7 +45,7 @@ fun SettingsEditGatewayScreen(
         newUrl = state.newUrl,
         onNewUrlChanged = viewModel::onNewUrlChanged,
         newUrlValid = state.newUrlValid,
-        currentNetworkName = state.currentNetworkAndGateway?.network?.name.orEmpty(),
+        currentNetworkName = state.currentNetworkAndGateway?.network?.displayName().orEmpty(),
         currentNetworkId = state.currentNetworkAndGateway?.network?.id?.toString().orEmpty(),
         currentNetworkEndpoint = state.currentNetworkAndGateway?.gatewayAPIEndpointURL.orEmpty(),
         modifier = modifier

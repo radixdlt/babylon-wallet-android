@@ -7,8 +7,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("sendTransactionWrite")
-data class SendTransactionWriteRequestItem(
+data class SendTransactionItem(
     @SerialName("transactionManifest")
     val transactionManifest: String,
     @SerialName("version")
@@ -17,16 +16,19 @@ data class SendTransactionWriteRequestItem(
     val blobs: List<String>? = null,
     @SerialName("message")
     val message: String? = null
-) : WalletRequestItem()
+)
 
-fun SendTransactionWriteRequestItem.toDomainModel(requestId: String, networkId: Int) =
-    MessageFromDataChannel.IncomingRequest.TransactionWriteRequest(
+fun SendTransactionItem.toDomainModel(
+    requestId: String,
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
+) =
+    MessageFromDataChannel.IncomingRequest.TransactionRequest(
         requestId = requestId,
-        networkId = networkId,
         transactionManifestData = TransactionManifestData(
             transactionManifest,
             version,
-            networkId,
+            metadata.networkId,
             blobs?.map { decode(it) }.orEmpty()
-        )
+        ),
+        metadata
     )

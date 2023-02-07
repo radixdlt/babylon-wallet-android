@@ -4,6 +4,8 @@ package com.babylon.wallet.android.utils
 
 import android.net.Uri
 import android.util.Patterns
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import java.text.DecimalFormat
 
 fun String.truncatedHash(): String {
@@ -13,6 +15,32 @@ fun String.truncatedHash(): String {
     val first = substring(IntRange(0, 3))
     val last = substring(IntRange(length - 6, length - 1))
     return "$first...$last"
+}
+
+fun String.setSpanForPlaceholder(placeholder: String, spanStyle: SpanStyle): AnnotatedString {
+    val index = indexOf(placeholder)
+    if (index == -1) return AnnotatedString(this)
+    val spans = listOf(
+        AnnotatedString.Range(
+            spanStyle,
+            index,
+            index + placeholder.length
+        ),
+    )
+    return AnnotatedString(this, spanStyles = spans)
+}
+
+fun AnnotatedString.setSpanForPlaceholder(placeholder: String, spanStyle: SpanStyle): AnnotatedString {
+    val index = indexOf(placeholder)
+    if (index == -1) return this
+    val spans = listOf(
+        AnnotatedString.Range(
+            spanStyle,
+            index,
+            index + placeholder.length
+        ),
+    )
+    return AnnotatedString(this.text, spanStyles = this.spanStyles + spans)
 }
 
 fun String.formatDecimalSeparator(): String {

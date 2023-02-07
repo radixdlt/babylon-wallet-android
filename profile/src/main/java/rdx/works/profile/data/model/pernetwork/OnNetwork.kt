@@ -78,7 +78,7 @@ data class OnNetwork(
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
-        val displayName: String?,
+        val displayName: String,
 
         /**
          * The index of this account, in the list of accounts for a certain network. This means that
@@ -202,7 +202,7 @@ data class OnNetwork(
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
-        val displayName: String?,
+        val displayName: String,
 
         @SerialName("fields")
         val fields: List<Field>,
@@ -351,6 +351,9 @@ data class OnNetwork(
             @SerialName("fieldIDs")
             val fieldIDs: List<String>,
 
+            @SerialName("lastUsedOn")
+            val lastUsedOn: String,
+
             /**
              * List of shared accounts that user given the dApp access to.
              */
@@ -363,17 +366,32 @@ data class OnNetwork(
                 @SerialName("accountsReferencedByAddress")
                 val accountsReferencedByAddress: List<String>,
 
-                @SerialName("mode")
-                val mode: Mode
+                @SerialName("request")
+                val request: NumberOfAccounts
             ) {
-                enum class Mode {
-                    @SerialName("exactly")
-                    Exactly,
 
-                    @SerialName("atLeast")
-                    AtLeast
+                @Serializable
+                data class NumberOfAccounts(
+                    @SerialName("quantifier")
+                    val quantifier: Quantifier,
+
+                    @SerialName("quantity")
+                    val quantity: Int
+                ) {
+
+                    enum class Quantifier {
+                        @SerialName("exactly")
+                        Exactly,
+
+                        @SerialName("atLeast")
+                        AtLeast
+                    }
                 }
             }
+        }
+
+        fun hasAuthorizedPersona(personaAddress: String): Boolean {
+            return referencesToAuthorizedPersonas.any { it.identityAddress == personaAddress }
         }
     }
 
@@ -427,14 +445,14 @@ data class OnNetwork(
                 val referencedAccount = accounts.first { it.address == accRefs }
                 AuthorizedPersona.WalletUiAccount(
                     accountAddress = referencedAccount.address,
-                    displayName = referencedAccount.displayName.orEmpty(),
+                    displayName = referencedAccount.displayName,
                     appearanceID = referencedAccount.appearanceID
                 )
             }.toSet()
 
             AuthorizedPersona(
                 identityAddress = persona.address,
-                displayName = persona.displayName.orEmpty(),
+                displayName = persona.displayName,
                 fields = fieldIds,
                 walletUiAccounts = walletUiAccounts
             )

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.WalletRequest
+import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -91,14 +91,13 @@ class PeerdroidClientImpl @Inject constructor(
                         parseIncomingMessage(messageInJsonString = dataChannelEvent.message)
                     }
                     else -> { // TODO later we might need to handle other cases here
-                        MessageFromDataChannel.IncomingRequest.None
+                        MessageFromDataChannel.None
                     }
                 }
-            }
-            ?.catch { exception ->
+            }?.catch { exception ->
                 Timber.e("caught exception: ${exception.localizedMessage}")
                 if (exception is SerializationException) {
-                    emit(MessageFromDataChannel.IncomingRequest.ParsingError)
+                    emit(MessageFromDataChannel.ParsingError)
                 } else {
                     throw exception
                 }
@@ -129,12 +128,8 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     private fun parseIncomingMessage(messageInJsonString: String): MessageFromDataChannel.IncomingRequest {
-        val request = walletRequestJson.decodeFromString<WalletRequest>(messageInJsonString)
-        val requestId = request.requestId
-        val walletRequestItemsList = request.items
-        val walletRequestItemDomainModels =
-            walletRequestItemsList.map { it.toDomainModel(requestId, request.metadata.networkId) }
-        return walletRequestItemDomainModels.first()
+        val request = walletRequestJson.decodeFromString<WalletInteraction>(messageInJsonString)
+        return request.toDomainModel()
     }
 
     override suspend fun close(shouldCloseConnectionToSignalingServer: Boolean) {

@@ -101,7 +101,7 @@ fun CreatePersonaContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                    horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 )
                 .verticalScroll(rememberScrollState()),
@@ -153,7 +153,7 @@ fun CreatePersonaContent(
                     }
                 },
                 enabled = buttonEnabled,
-                text = stringResource(id = com.babylon.wallet.android.R.string.create_persona)
+                text = stringResource(id = com.babylon.wallet.android.R.string.continue_button_title)
             )
         }
 

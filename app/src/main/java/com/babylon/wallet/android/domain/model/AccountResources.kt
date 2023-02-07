@@ -15,13 +15,13 @@ data class AccountResources(
 ) {
     fun hasXrdToken(): Boolean {
         return fungibleTokens.any {
-            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD
+            it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
         }
     }
 
     fun hasXrdWithEnoughBalance(minimumBalance: Long): Boolean {
         return fungibleTokens.any {
-            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD &&
+            it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD &&
                 it.amount >= BigDecimal(minimumBalance)
         }
     }
@@ -30,7 +30,7 @@ data class AccountResources(
 fun OnNetwork.Account.toDomainModel(): AccountResources {
     return AccountResources(
         address = this.address,
-        displayName = displayName.orEmpty(),
+        displayName = displayName,
         isStub = true,
         appearanceID = this.appearanceID
     )

@@ -5,14 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
-import com.babylon.wallet.android.presentation.dapp.account.chooseAccountsScreen
+import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
+import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.navigation.dapp.dappLogin
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.flow.Flow
-import timber.log.Timber
 
 @ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
@@ -48,19 +49,21 @@ fun WalletApp(
             when (event) {
                 is MainEvent.IncomingRequestEvent -> {
                     when (val incomingRequest = event.request) {
-                        is MessageFromDataChannel.IncomingRequest.AccountsRequest -> {
-                            navController.chooseAccountsScreen(requestId = incomingRequest.requestId)
-                        }
-                        MessageFromDataChannel.IncomingRequest.None -> {
-                        }
-                        MessageFromDataChannel.IncomingRequest.ParsingError -> {
-                            Timber.d("Failed to parse incoming request")
-                        }
-                        is MessageFromDataChannel.IncomingRequest.TransactionWriteRequest -> {
+                        is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
                             navController.transactionApproval(incomingRequest.requestId)
                         }
-                        MessageFromDataChannel.IncomingRequest.Unknown -> {}
+                        is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
+                            navController.dappLogin(incomingRequest.requestId)
+                        }
+                        is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
+                            if (incomingRequest.oneTimeAccountsRequestItem != null) {
+                                navController.chooseAccountsOneTime(incomingRequest.requestId)
+                            }
+                        }
                     }
+                }
+                is MainEvent.HandledUsePersonaAuthRequest -> {
+                    navController.requestSuccess(event.dAppName)
                 }
             }
         }

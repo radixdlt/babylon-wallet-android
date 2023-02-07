@@ -22,7 +22,6 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.CardStack
 
 @Composable
 fun CreatePersonaConfirmationScreen(
@@ -30,13 +29,9 @@ fun CreatePersonaConfirmationScreen(
     modifier: Modifier = Modifier,
     finishPersonaCreation: () -> Unit
 ) {
-    val personaState = viewModel.personaUiState
-
     SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     CreatePersonaConfirmationContent(
         modifier = modifier,
-        personaName = personaState.personaName,
-        personaId = personaState.personaAddressTruncated,
         personaConfirmed = viewModel::personaConfirmed
     )
 
@@ -52,12 +47,11 @@ fun CreatePersonaConfirmationScreen(
 @Composable
 fun CreatePersonaConfirmationContent(
     modifier: Modifier,
-    personaName: String,
-    personaId: String,
     personaConfirmed: () -> Unit
 ) {
     Column(
-        modifier = modifier.background(RadixTheme.colors.defaultBackground)
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground)
             .navigationBarsPadding()
             .fillMaxSize()
             .padding(
@@ -66,12 +60,6 @@ fun CreatePersonaConfirmationContent(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.weight(0.2f))
-        CardStack(
-            Modifier.fillMaxWidth(0.8f),
-            accountName = personaName,
-            accountAddress = personaId
-        )
         Spacer(modifier = Modifier.weight(0.2f))
         Text(
             text = stringResource(id = R.string.congratulations),
@@ -84,10 +72,16 @@ fun CreatePersonaConfirmationContent(
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Text(
+            text = stringResource(id = R.string.the_personal_data_you_specify),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1
+        )
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.go_to_settings),
+            text = stringResource(R.string.go_to_choose_personas),
             onClick = personaConfirmed
         )
     }
@@ -99,10 +93,7 @@ fun CreatePersonaConfirmationContent(
 fun CreateAccountConfirmationContentPreview() {
     RadixWalletTheme {
         CreatePersonaConfirmationContent(
-            modifier = Modifier,
-            personaConfirmed = {},
-            personaName = "My persona",
-            personaId = "d32d32"
-        )
+            modifier = Modifier
+        ) {}
     }
 }
