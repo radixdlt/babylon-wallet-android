@@ -16,7 +16,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,7 +51,9 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
         OneTimeChooseAccountUiState(
             numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts,
             isExactAccountsCount = oneTimeAccountRequestItem.quantifier
-                == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
+                == AccountsRequestItem.AccountNumberQuantifier.Exactly,
+            isSingleChoice = oneTimeAccountRequestItem.numberOfAccounts == 1 &&
+                oneTimeAccountRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
         )
     )
         private set
@@ -87,24 +89,43 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     }
 
     fun onAccountSelect(index: Int) {
-        // update the isSelected property of the AccountItemUiModel based on index
-        state = state.copy(
-            availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
-                if (index == i) {
-                    accountItem.copy(isSelected = !accountItem.isSelected)
-                } else {
-                    accountItem
-                }
-            }.toPersistentList()
-        )
+        if (state.isExactAccountsCount && state.numberOfAccounts == 1) {
+            // Radio buttons selection unselects the previous one
+            state = state.copy(
+                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                    if (index == i) {
+                        accountItem.copy(isSelected = true)
+                    } else {
+                        accountItem.copy(isSelected = false)
+                    }
+                }.toPersistentList()
+            )
+        } else {
+            state = state.copy(
+                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                    if (index == i) {
+                        accountItem.copy(isSelected = !accountItem.isSelected)
+                    } else {
+                        accountItem
+                    }
+                }.toPersistentList()
+            )
+        }
+        val isContinueButtonEnabled = if (state.isExactAccountsCount) {
+            state
+                .availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } == oneTimeAccountRequestItem.numberOfAccounts
+        } else {
+            state
+                .availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } >= oneTimeAccountRequestItem.numberOfAccounts
+        }
 
-        val isMinRequiredCountOfAccountsSelected = state
-            .availableAccountItems
-            .count { accountItem ->
-                accountItem.isSelected
-            } >= oneTimeAccountRequestItem.numberOfAccounts
-
-        state = state.copy(isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected)
+        state = state.copy(isContinueButtonEnabled = isContinueButtonEnabled)
     }
 
     fun sendAccountsResponse() {
@@ -150,5 +171,6 @@ data class OneTimeChooseAccountUiState(
     val showProgress: Boolean = true,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
-    val dappMetadata: DappMetadata? = null
+    val dappMetadata: DappMetadata? = null,
+    val isSingleChoice: Boolean = false,
 )

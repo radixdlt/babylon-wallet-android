@@ -53,6 +53,7 @@ fun ChooseAccountContent(
     onCreateNewAccount: () -> Unit,
     dappMetadata: DappMetadata?,
     isOneTime: Boolean,
+    isSingleChoice: Boolean,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
 ) {
@@ -123,7 +124,11 @@ fun ChooseAccountContent(
                             },
                         accountName = accountItem.displayName.orEmpty(),
                         address = accountItem.address,
-                        checked = accountItem.isSelected
+                        checked = accountItem.isSelected,
+                        isSingleChoice = isSingleChoice,
+                        radioButtonClicked = {
+                            onAccountSelect(index)
+                        }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
