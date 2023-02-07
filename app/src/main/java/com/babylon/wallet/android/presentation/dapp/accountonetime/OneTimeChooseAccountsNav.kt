@@ -33,7 +33,7 @@ fun NavGraphBuilder.chooseAccountsOneTime(
             navArgument(ARG_REQUEST_ID) { type = NavType.StringType },
         )
     ) {
-        UnauthorizedChooseAccountsScreen(
+        OneTimeChooseAccountsScreen(
             viewModel = hiltViewModel(),
             exitRequestFlow = exitRequestFlow,
             dismissErrorDialog = dismissErrorDialog,

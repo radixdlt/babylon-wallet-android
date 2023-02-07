@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
@@ -51,7 +50,7 @@ fun ChooseAccountsScreen(
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
         numberOfAccounts = state.numberOfAccounts,
-        quantifier = state.quantifier,
+        isExactAccountsCount = state.isExactAccountsCount,
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
         dappMetadata = sharedState.dappMetadata,
@@ -100,7 +99,7 @@ fun ChooseAccountContentPreview() {
             onContinueClick = {},
             isContinueButtonEnabled = true,
             numberOfAccounts = 1,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            isExactAccountsCount = false,
             isOneTime = false,
             dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
             onAccountSelect = {},

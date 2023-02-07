@@ -13,14 +13,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun UnauthorizedChooseAccountsScreen(
+fun OneTimeChooseAccountsScreen(
     viewModel: OneTimeChooseAccountsViewModel,
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
@@ -48,7 +47,7 @@ fun UnauthorizedChooseAccountsScreen(
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
         numberOfAccounts = state.numberOfAccounts,
-        quantifier = state.quantifier,
+        isExactAccountsCount = state.isExactAccountsCount,
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
         dappMetadata = state.dappMetadata,
@@ -87,14 +86,14 @@ fun DAppAlertDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun UnauthorizedAccountContentPreview() {
+fun OneTimeAccountContentPreview() {
     RadixWalletTheme {
         ChooseAccountContent(
             onBackClick = {},
             onContinueClick = {},
             isContinueButtonEnabled = true,
             numberOfAccounts = 1,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            isExactAccountsCount = false,
             isOneTime = true,
             dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
             onAccountSelect = {},

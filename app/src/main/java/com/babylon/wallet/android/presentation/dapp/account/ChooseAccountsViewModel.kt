@@ -32,7 +32,7 @@ class ChooseAccountsViewModel @Inject constructor(
     var state by mutableStateOf(
         ChooseAccountUiState(
             numberOfAccounts = args.numberOfAccounts,
-            quantifier = args.accountQuantifier,
+            isExactAccountsCount = args.isExactAccountsCount,
             isOneTime = args.oneTime
         )
     )
@@ -144,7 +144,7 @@ sealed interface ChooseAccountsEvent : OneOffEvent
 
 data class ChooseAccountUiState(
     val numberOfAccounts: Int,
-    val quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    val isExactAccountsCount: Boolean,
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
     val oneTimeRequest: Boolean = false,

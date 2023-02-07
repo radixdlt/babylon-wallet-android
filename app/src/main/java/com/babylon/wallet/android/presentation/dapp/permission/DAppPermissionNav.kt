@@ -8,7 +8,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.login.ROUTE_DAPP_LOGIN
@@ -18,17 +17,17 @@ import com.google.accompanist.navigation.animation.composable
 internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
 
 @VisibleForTesting
-internal const val ARG_ACCOUNT_QUANTIFIER = "account_quantifier"
+internal const val ARG_EXACT_ACCOUNT_COUNT = "exact_account_count"
 
 @VisibleForTesting
 internal const val ARG_ONE_TIME = "one_time"
 
 fun NavController.dappPermission(
     numberOfAccounts: Int,
-    quantifier: MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier,
+    isExactAccountsCount: Boolean,
     oneTime: Boolean = false
 ) {
-    navigate("dapp_permission/$numberOfAccounts/$quantifier/$oneTime")
+    navigate("dapp_permission/$numberOfAccounts/$isExactAccountsCount/$oneTime")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -38,14 +37,10 @@ fun NavGraphBuilder.dappPermission(
     onCompleteFlow: () -> Unit
 ) {
     composable(
-        route = "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_ACCOUNT_QUANTIFIER}/{$ARG_ONE_TIME}",
+        route = "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}",
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) { type = NavType.IntType },
-            navArgument(ARG_ACCOUNT_QUANTIFIER) {
-                type = NavType.EnumType(
-                    MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier::class.java
-                )
-            },
+            navArgument(ARG_EXACT_ACCOUNT_COUNT) { type = NavType.BoolType },
             navArgument(ARG_ONE_TIME) { type = NavType.BoolType },
         )
     ) { entry ->
@@ -54,17 +49,12 @@ fun NavGraphBuilder.dappPermission(
         }
         val vm = hiltViewModel<DAppLoginViewModel>(parentEntry)
         val numberOfAccounts = checkNotNull(entry.arguments?.getInt(ARG_NUMBER_OF_ACCOUNTS))
-        val quantifier =
-            checkNotNull(
-                entry.arguments?.getSerializable(
-                    ARG_ACCOUNT_QUANTIFIER
-                ) as MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier
-            )
+        val quantifier = checkNotNull(entry.arguments?.getBoolean(ARG_EXACT_ACCOUNT_COUNT))
         DAppPermissionScreen(
             viewModel = vm,
             onChooseAccounts = onChooseAccounts,
             numberOfAccounts = numberOfAccounts,
-            quantifier = quantifier,
+            isExactAccountsCount = quantifier,
             onCompleteFlow = onCompleteFlow
         )
     }
