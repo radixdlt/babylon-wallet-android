@@ -13,10 +13,9 @@ import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
-import com.radixdlt.toolkit.models.CallMethodReceiver
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.Value
-import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionIntentResponse
+import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
@@ -39,39 +38,42 @@ class TransactionClient @Inject constructor(
 
     private val engine = RadixEngineToolkit
 
-    suspend fun signAndSubmitTransaction(manifest: TransactionManifest, hasLockFee: Boolean): Result<String> {
+    suspend fun signAndSubmitTransaction(
+        manifest: TransactionManifest,
+        hasLockFee: Boolean
+    ): Result<String> {
         val networkId = profileDataSource.getCurrentNetworkId().value
         return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
 
     suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
         val networkId = profileDataSource.getCurrentNetworkId().value
-        val manifestConversionResult =
-            convertManifestInstructionsToJSON(
-                version = manifestData.version,
-                TransactionManifest(
-                    ManifestInstructions.StringInstructions(manifestData.instructions),
-                    manifestData.blobs.toTypedArray()
-                )
+        val manifestConversionResult = convertManifestInstructionsToJSON(
+            manifest = TransactionManifest(
+                instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
+                blobs = manifestData.blobs.toTypedArray()
             )
+        )
         val jsonTransactionManifest = when (manifestConversionResult) {
             is Result.Error -> return manifestConversionResult
             is Result.Success -> manifestConversionResult.data
         }
-        return signAndSubmitTransaction(jsonTransactionManifest, networkId, false)
+        return signAndSubmitTransaction(
+            jsonTransactionManifest = jsonTransactionManifest,
+            networkId = networkId,
+            hasLockFeeInstruction = false
+        )
     }
 
     suspend fun addLockFeeToTransactionManifestData(
         manifestData: TransactionManifestData
     ): Result<TransactionManifest> {
-        val manifestConversionResult =
-            convertManifestInstructionsToJSON(
-                version = manifestData.version,
-                TransactionManifest(
-                    ManifestInstructions.StringInstructions(manifestData.instructions),
-                    manifestData.blobs.toTypedArray()
-                )
+        val manifestConversionResult = convertManifestInstructionsToJSON(
+            manifest = TransactionManifest(
+                instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
+                blobs = manifestData.blobs.toTypedArray()
             )
+        )
         val jsonTransactionManifest = when (manifestConversionResult) {
             is Result.Error -> return manifestConversionResult
             is Result.Success -> manifestConversionResult.data
@@ -79,15 +81,18 @@ class TransactionClient @Inject constructor(
         val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
             TransactionApprovalException(TransactionApprovalFailure.NoFunds)
         )
-        return Result.Success(addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee))
+        return Result.Success(
+            addLockFeeInstructionToManifest(
+                manifest = jsonTransactionManifest,
+                addressToLockFee = accountAddressToLockFee
+            )
+        )
     }
 
     suspend fun manifestInStringFormat(manifest: TransactionManifest): Result<TransactionManifest> {
-        val manifestConversionResult =
-            convertManifestInstructionsToString(
-                version = TransactionVersion.Default.value,
-                manifest = manifest
-            )
+        val manifestConversionResult = convertManifestInstructionsToString(
+            manifest = manifest
+        )
         val stringManifest = when (manifestConversionResult) {
             is Result.Error -> return manifestConversionResult
             is Result.Success -> manifestConversionResult.data
@@ -100,11 +105,13 @@ class TransactionClient @Inject constructor(
         networkId: Int,
         hasLockFeeInstruction: Boolean,
     ): Result<String> {
-        val addressesNeededToSign =
-            getAddressesNeededToSignTransaction(jsonTransactionManifest)
+        val addressesNeededToSign = getAddressesNeededToSignTransaction(jsonTransactionManifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
+
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
-            is Result.Error -> return transactionHeaderResult
+            is Result.Error -> {
+                return transactionHeaderResult
+            }
             is Result.Success -> {
                 val manifestWithTransactionFee = if (hasLockFeeInstruction) {
                     jsonTransactionManifest
@@ -119,9 +126,9 @@ class TransactionClient @Inject constructor(
                         .manifest(manifestWithTransactionFee)
                         .header(transactionHeaderResult.data)
                         .sign(
-                            notaryAndSigners.signers.map {
-                                it.privateKey.toEngineModel()
-                            }
+                            privateKeys = notaryAndSigners.signers.map { accountSigner ->
+                                accountSigner.privateKey.toEngineModel()
+                            }.toTypedArray()
                         )
                     notarizedTransactionBuilder.notarize(notaryAndSigners.notarySigner.privateKey.toEngineModel())
                 } catch (e: Exception) {
@@ -153,7 +160,7 @@ class TransactionClient @Inject constructor(
                 }
                 val submitResult = submitNotarizedTransaction(
                     txID.toHexString(),
-                    CompileNotarizedTransactionIntentResponse(compiledNotarizedTransaction)
+                    CompileNotarizedTransactionResponse(compiledNotarizedTransaction)
                 )
                 return when (submitResult) {
                     is Result.Error -> submitResult
@@ -169,8 +176,8 @@ class TransactionClient @Inject constructor(
         return when (val accounts = getAccountResourcesUseCase()) {
             is Result.Error -> null
             is Result.Success -> {
-                val accountWithXrd = accounts.data.firstOrNull {
-                    it.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+                val accountWithXrd = accounts.data.firstOrNull { accountResources ->
+                    accountResources.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)
                 }
                 accountWithXrd?.address
             }
@@ -187,14 +194,16 @@ class TransactionClient @Inject constructor(
             return try {
                 Result.Success(
                     TransactionHeader(
-                        TransactionVersion.Default.value.toUByte(),
-                        networkId.toUByte(),
-                        epoch.toULong(),
-                        epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
-                        generateNonce(),
-                        notaryAndSigners.notarySigner.privateKey.toECKeyPair().toEnginePublicKeyModel(),
-                        false,
-                        TransactionConfig.COST_UNIT_LIMIT,
+                        version = TransactionVersion.Default.value.toUByte(),
+                        networkId = networkId.toUByte(),
+                        startEpochInclusive = epoch.toULong(),
+                        endEpochExclusive = epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
+                        nonce = generateNonce(),
+                        notaryPublicKey = notaryAndSigners.notarySigner.privateKey
+                            .toECKeyPair()
+                            .toEnginePublicKeyModel(),
+                        notaryAsSignatory = false,
+                        costUnitLimit = TransactionConfig.COST_UNIT_LIMIT,
                         tipPercentage = TransactionConfig.TIP_PERCENTAGE
                     )
                 )
@@ -221,28 +230,31 @@ class TransactionClient @Inject constructor(
     }
 
     private suspend fun convertManifestInstructionsToJSON(
-        version: Long,
-        manifest: TransactionManifest,
+        manifest: TransactionManifest
     ): Result<ConvertManifestResponse> {
         val networkId = profileDataSource.getCurrentNetworkId()
         return try {
             Result.Success(
                 engine.convertManifest(
                     ConvertManifestRequest(
-                        transactionVersion = version.toUByte(),
                         networkId = networkId.value.toUByte(),
-                        manifestInstructionsOutputFormat = ManifestInstructionsKind.JSON,
+                        instructionsOutputKind = ManifestInstructionsKind.Parsed,
                         manifest = manifest
                     )
                 ).getOrThrow()
             )
         } catch (e: Exception) {
-            Result.Error(TransactionApprovalException(TransactionApprovalFailure.ConvertManifest, e.message, e))
+            Result.Error(
+                TransactionApprovalException(
+                    failure = TransactionApprovalFailure.ConvertManifest,
+                    msg = e.message,
+                    e = e
+                )
+            )
         }
     }
 
     private suspend fun convertManifestInstructionsToString(
-        version: Long,
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
         val networkId = profileDataSource.getCurrentNetworkId()
@@ -250,15 +262,20 @@ class TransactionClient @Inject constructor(
             Result.Success(
                 engine.convertManifest(
                     ConvertManifestRequest(
-                        transactionVersion = version.toUByte(),
                         networkId = networkId.value.toUByte(),
-                        manifestInstructionsOutputFormat = ManifestInstructionsKind.String,
+                        instructionsOutputKind = ManifestInstructionsKind.String,
                         manifest = manifest
                     )
                 ).getOrThrow()
             )
         } catch (e: Exception) {
-            Result.Error(TransactionApprovalException(TransactionApprovalFailure.ConvertManifest, e.message, e))
+            Result.Error(
+                TransactionApprovalException(
+                    TransactionApprovalFailure.ConvertManifest,
+                    e.message,
+                    e
+                )
+            )
         }
     }
 
@@ -268,9 +285,9 @@ class TransactionClient @Inject constructor(
     ): TransactionManifest {
         val instructions = manifest.instructions
         val lockFeeInstruction: Instruction = Instruction.CallMethod(
-            Value.ComponentAddress(addressToLockFee),
-            Value.String(MethodName.LockFee.stringValue),
-            arrayOf(
+            componentAddress = Value.ComponentAddress(addressToLockFee),
+            methodName = Value.String(MethodName.LockFee.stringValue),
+            arguments = arrayOf(
                 Value.Decimal(
                     BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
                 )
@@ -278,9 +295,10 @@ class TransactionClient @Inject constructor(
         )
         var updatedInstructions = instructions
         when (instructions) {
-            is ManifestInstructions.JSONInstructions -> {
-                updatedInstructions =
-                    instructions.copy(instructions = arrayOf(lockFeeInstruction) + instructions.instructions)
+            is ManifestInstructions.ParsedInstructions -> {
+                updatedInstructions = instructions.copy(
+                    instructions = arrayOf(lockFeeInstruction) + instructions.instructions
+                )
             }
             is ManifestInstructions.StringInstructions -> {}
         }
@@ -289,10 +307,11 @@ class TransactionClient @Inject constructor(
 
     private suspend fun submitNotarizedTransaction(
         txID: String,
-        notarizedTransaction: CompileNotarizedTransactionIntentResponse,
+        notarizedTransaction: CompileNotarizedTransactionResponse,
     ): Result<String> {
-        val submitResult =
-            transactionRepository.submitTransaction(notarizedTransaction.compiledNotarizedIntent.toHexString())
+        val submitResult = transactionRepository.submitTransaction(
+            notarizedTransaction = notarizedTransaction.compiledNotarizedIntent.toHexString()
+        )
         return when (submitResult) {
             is Result.Error -> {
                 Result.Error(
@@ -354,27 +373,25 @@ class TransactionClient @Inject constructor(
         return Result.Success(txID)
     }
 
-    private fun getAddressesNeededToSignTransaction(
-        jsonTransactionManifest: TransactionManifest,
-    ): List<String> {
+    private fun getAddressesNeededToSignTransaction(jsonTransactionManifest: TransactionManifest): List<String> {
         val addressesNeededToSign = mutableListOf<String>()
-        when (val instructions = jsonTransactionManifest.instructions) {
-            is ManifestInstructions.JSONInstructions -> {
-                instructions.instructions.filterIsInstance<Instruction.CallMethod>().forEach { callMethod ->
-                    val componentAddress = when (val callMethodReceiver = callMethod.componentAddress) {
-                        is CallMethodReceiver.Component -> null
-                        is CallMethodReceiver.ComponentAddress -> {
-                            callMethodReceiver.componentAddress.address.componentAddress
+        when (val manifestInstructions = jsonTransactionManifest.instructions) {
+            is ManifestInstructions.ParsedInstructions -> {
+                manifestInstructions.instructions
+                    .filterIsInstance<Instruction.CallMethod>()
+                    .forEach { callMethod ->
+                        val componentAddress = callMethod.componentAddress.address.componentAddress
+                        val isAccountComponent = componentAddress.contains("account")
+                        val isMethodThatRequiresAuth = MethodName
+                            .methodsThatRequireAuth()
+                            .map { methodName ->
+                                methodName.stringValue
+                            }
+                            .contains(callMethod.methodName.value)
+                        if (isAccountComponent && isMethodThatRequiresAuth) {
+                            addressesNeededToSign.add(componentAddress)
                         }
                     }
-                    val isAccountComponent = componentAddress?.contains("account") == true
-                    val isMethodThatRequiresAuth =
-                        MethodName.methodsThatRequireAuth().map { name -> name.stringValue }
-                            .contains(callMethod.methodName.value)
-                    if (isAccountComponent && isMethodThatRequiresAuth && componentAddress != null) {
-                        addressesNeededToSign.add(componentAddress)
-                    }
-                }
             }
             is ManifestInstructions.StringInstructions -> {
             }

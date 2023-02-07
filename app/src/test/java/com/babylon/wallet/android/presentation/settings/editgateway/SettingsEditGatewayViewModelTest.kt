@@ -69,7 +69,7 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `on network switch changes network`() = runTest {
-        val sampleUrl = NetworkAndGateway.betanet.gatewayAPIEndpointURL
+        val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
         coEvery { profileDataSource.hasAccountOnNetwork(sampleUrl, any()) } returns true
         vm.onSwitchToClick()
@@ -79,7 +79,7 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `on network switch calls for create account`() = runTest {
-        val sampleUrl = NetworkAndGateway.betanet.gatewayAPIEndpointURL
+        val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
         coEvery { profileDataSource.hasAccountOnNetwork(sampleUrl, any()) } returns false
         vm.onSwitchToClick()
@@ -90,7 +90,7 @@ class SettingsEditGatewayViewModelTest {
     @Test
     fun `network info error triggers ui error`() = runTest {
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Error()
-        val sampleUrl = NetworkAndGateway.betanet.gatewayAPIEndpointURL
+        val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
         vm.onNewUrlChanged(sampleUrl)
         vm.onSwitchToClick()
         advanceUntilIdle()

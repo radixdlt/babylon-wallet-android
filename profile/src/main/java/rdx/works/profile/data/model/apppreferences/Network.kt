@@ -26,8 +26,8 @@ data class Network(
             id = NetworkId.Hammunet.value,
             name = "hammunet"
         )
-        val betanet = Network(
-            id = NetworkId.Betanet.value,
+        val nebunet = Network(
+            id = NetworkId.Nebunet.value,
             name = "betanet"
         )
         val mardunet = Network(
@@ -44,7 +44,7 @@ data class Network(
         )
 
         fun allKnownNetworks(): List<Network> {
-            return listOf(adapanet, hammunet, betanet, mardunet, enkinet, gilganet)
+            return listOf(adapanet, hammunet, nebunet, mardunet, enkinet, gilganet)
         }
     }
 }
