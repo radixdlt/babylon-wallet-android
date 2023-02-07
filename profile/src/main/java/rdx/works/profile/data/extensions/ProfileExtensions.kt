@@ -3,6 +3,7 @@ package rdx.works.profile.data.extensions
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
+import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
@@ -118,7 +119,7 @@ fun Profile.deleteP2PClient(connectionPassword: String): Profile {
     )
 }
 
-fun deriveAddress(
+fun deriveAccountAddress(
     networkID: NetworkId,
     publicKey: PublicKey
 ): String {
@@ -126,4 +127,14 @@ fun deriveAddress(
     // TODO handle error
     val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
     return response.virtualAccountAddress.address.componentAddress
+}
+
+fun deriveIdentityAddress(
+    networkID: NetworkId,
+    publicKey: PublicKey
+): String {
+    val request = DeriveVirtualIdentityAddressRequest(networkID.value.toUByte(), publicKey)
+    // TODO handle error
+    val response = RadixEngineToolkit.deriveVirtualIdentityAddress(request).getOrThrow()
+    return response.virtualIdentityAddress.address.componentAddress
 }

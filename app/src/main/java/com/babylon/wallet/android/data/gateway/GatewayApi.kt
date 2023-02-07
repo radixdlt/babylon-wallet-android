@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityFungiblesRe
 import com.babylon.wallet.android.data.gateway.generated.model.EntityFungiblesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleLocalIdsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleLocalIdsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
@@ -18,15 +18,15 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRe
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleDataResponse
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionCommittedDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionCommittedDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionConstructionResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
@@ -48,8 +48,8 @@ interface GatewayApi {
 
     @POST("entity/non-fungible/ids")
     suspend fun entityNonFungibleIds(
-        @Body entityNonFungibleIdsRequest: EntityNonFungibleIdsRequest
-    ): Response<EntityNonFungibleIdsResponse>
+        @Body entityNonFungibleLocalIdsRequest: EntityNonFungibleLocalIdsRequest
+    ): Response<EntityNonFungibleLocalIdsResponse>
 
     @POST("entity/non-fungibles")
     suspend fun entityNonFungibles(
@@ -60,7 +60,9 @@ interface GatewayApi {
     suspend fun nonFungibleData(@Body nonFungibleDataRequest: NonFungibleDataRequest): Response<NonFungibleDataResponse>
 
     @POST("non-fungible/ids")
-    suspend fun nonFungibleIds(@Body nonFungibleIdsRequest: NonFungibleIdsRequest): Response<NonFungibleIdsResponse>
+    suspend fun nonFungibleIds(
+        @Body nonFungibleIdsRequest: NonFungibleLocalIdsRequest
+    ): Response<NonFungibleLocalIdsResponse>
 
     @POST("entity/overview")
     suspend fun entityOverview(@Body entityOverviewRequest: EntityOverviewRequest): Response<EntityOverviewResponse>
@@ -77,9 +79,9 @@ interface GatewayApi {
     suspend fun transactionConstruction(): Response<TransactionConstructionResponse>
 
     @POST("transaction/recent")
-    suspend fun recentTransactions(
-        @Body recentTransactionsRequest: RecentTransactionsRequest
-    ): Response<RecentTransactionsResponse>
+    suspend fun transactionRecent(
+        @Body recentTransactionsRequest: TransactionRecentRequest
+    ): Response<TransactionRecentResponse>
 
     @POST("transaction/submit")
     suspend fun submitTransaction(

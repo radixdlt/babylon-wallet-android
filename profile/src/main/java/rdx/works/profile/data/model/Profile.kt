@@ -45,7 +45,7 @@ data class Profile(
     }
 
     companion object {
-        private const val INITIAL_VERSION = 1
+        private const val INITIAL_VERSION = 9
         fun init(
             networkAndGateway: NetworkAndGateway,
             mnemonic: MnemonicWords,

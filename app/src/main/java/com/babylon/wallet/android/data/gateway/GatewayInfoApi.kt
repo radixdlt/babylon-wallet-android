@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.gateway
 
-import com.babylon.wallet.android.data.gateway.generated.model.GatewayInfoResponse
+import com.babylon.wallet.android.data.gateway.generated.model.GatewayInformationResponse
 import retrofit2.Response
 import retrofit2.http.POST
 import retrofit2.http.Url
@@ -8,5 +8,5 @@ import retrofit2.http.Url
 interface GatewayInfoApi {
 
     @POST
-    suspend fun gatewayInfo(@Url gatewayUrl: String): Response<GatewayInfoResponse>
+    suspend fun gatewayInfo(@Url gatewayUrl: String): Response<GatewayInformationResponse>
 }

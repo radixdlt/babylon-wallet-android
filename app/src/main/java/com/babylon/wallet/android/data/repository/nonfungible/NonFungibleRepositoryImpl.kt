@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.repository.nonfungible
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsRequest
 import com.babylon.wallet.android.data.gateway.toDomainModel
 import com.babylon.wallet.android.data.repository.performHttpRequest
 import com.babylon.wallet.android.domain.common.Result
@@ -17,7 +17,7 @@ class NonFungibleRepositoryImpl @Inject constructor(private val gatewayApi: Gate
     ): Result<NonFungibleTokenIdContainer> {
         return performHttpRequest(
             call = {
-                gatewayApi.nonFungibleIds(NonFungibleIdsRequest(address))
+                gatewayApi.nonFungibleIds(NonFungibleLocalIdsRequest(address))
             },
             map = {
                 it.toDomainModel()

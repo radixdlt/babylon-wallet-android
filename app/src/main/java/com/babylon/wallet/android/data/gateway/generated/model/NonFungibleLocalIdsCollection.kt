@@ -15,32 +15,35 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsCollectionItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param items * @param totalCount TBD (make it nullable when we're dealing with unknown result set sizes?)
- * @param previousCursor TBD (maybe we should use HATEOAS-like permalinks?)
- * @param nextCursor TBD (maybe we should use HATEOAS-like permalinks?)
+ *
+ *
+ * @param items
+ * @param totalCount
+ * @param previousCursor
+ * @param nextCursor
  */
 @Serializable
 
-data class EntityDetailsResponseNonFungibleResourceDetailsIds(
+data class NonFungibleLocalIdsCollection(
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<EntityDetailsResponseNonFungibleResourceDetailsIdsItem>,
+    val items: kotlin.collections.List<NonFungibleLocalIdsCollectionItem>,
 
-    /* TBD (make it nullable when we're dealing with unknown result set sizes?) */
     @SerialName(value = "total_count")
     val totalCount: kotlin.Long? = null,
 
-    /* TBD (maybe we should use HATEOAS-like permalinks?) */
     @SerialName(value = "previous_cursor")
     val previousCursor: kotlin.String? = null,
 
-    /* TBD (maybe we should use HATEOAS-like permalinks?) */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 
 )
+

@@ -15,27 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsCollectionItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  *
  *
- * @param ledgerState
- * @param knownTarget
- * @param releaseInfo
+ * @param items
  */
 @Serializable
 
-data class GatewayInfoResponse(
+data class NonFungibleLocalIdsCollectionAllOf(
 
-    @SerialName(value = "ledger_state")
-    val ledgerState: LedgerState,
-
-    @SerialName(value = "known_target")
-    val knownTarget: GatewayInfoResponseKnownTarget,
-
-    @SerialName(value = "release_info")
-    val releaseInfo: GatewayInfoResponseReleaseInfo
+    @SerialName(value = "items")
+    val items: kotlin.collections.List<NonFungibleLocalIdsCollectionItem>
 
 )
+

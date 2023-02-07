@@ -28,7 +28,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class InvalidTransactionError (
+data class InvalidTransactionError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")

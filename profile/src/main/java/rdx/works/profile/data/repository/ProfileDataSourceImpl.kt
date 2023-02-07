@@ -91,7 +91,7 @@ class ProfileDataSourceImpl @Inject constructor(
     override suspend fun getCurrentNetwork(): Network = readProfile()
         ?.appPreferences
         ?.networkAndGateway?.network
-        ?: NetworkAndGateway.betanet.network
+        ?: NetworkAndGateway.nebunet.network
 
     override suspend fun getCurrentNetworkId(): NetworkId {
         return getNetworkAndGateway().network.networkId()
@@ -145,6 +145,6 @@ class ProfileDataSourceImpl @Inject constructor(
         return readProfile()
             ?.appPreferences
             ?.networkAndGateway
-            ?: NetworkAndGateway.betanet
+            ?: NetworkAndGateway.nebunet
     }
 }
