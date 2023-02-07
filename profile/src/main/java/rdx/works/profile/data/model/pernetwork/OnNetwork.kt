@@ -6,7 +6,8 @@ import com.radixdlt.toolkit.models.crypto.PublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.extensions.compressedPublicKey
-import rdx.works.profile.data.extensions.deriveAddress
+import rdx.works.profile.data.extensions.deriveAccountAddress
+import rdx.works.profile.data.extensions.deriveIdentityAddress
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.IdentityDerivationPath
@@ -152,7 +153,7 @@ data class OnNetwork(
                 val publicKey = PublicKey.EddsaEd25519(
                     compressedPublicKey.removeLeadingZero()
                 )
-                val address = deriveAddress(
+                val address = deriveAccountAddress(
                     networkID = networkId,
                     publicKey = publicKey
                 )
@@ -249,7 +250,7 @@ data class OnNetwork(
                 val publicKey = PublicKey.EddsaEd25519(
                     compressedPublicKey.removeLeadingZero()
                 )
-                val address = deriveAddress(
+                val address = deriveIdentityAddress(
                     networkID = networkId,
                     publicKey = publicKey
                 )
