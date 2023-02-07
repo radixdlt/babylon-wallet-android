@@ -39,5 +39,5 @@ data class TransactionNotFoundError(
     @SerialName(value = "transaction_not_found")
     val transactionNotFound: TransactionCommittedDetailsRequestIdentifier
 
-) : GatewayError
+) : GatewayError()
 

@@ -34,5 +34,5 @@ data class InvalidTransactionError(
     @SerialName(value = "type")
     override val type: kotlin.String
 
-) : GatewayError
+) : GatewayError()
 

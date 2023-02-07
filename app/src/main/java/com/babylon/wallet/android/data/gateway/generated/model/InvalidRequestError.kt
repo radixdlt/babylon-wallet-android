@@ -40,5 +40,5 @@ data class InvalidRequestError(
     @SerialName(value = "validation_errors")
     val validationErrors: kotlin.collections.List<ValidationErrorsAtPath>
 
-) : GatewayError
+) : GatewayError()
 

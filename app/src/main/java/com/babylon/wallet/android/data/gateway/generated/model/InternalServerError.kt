@@ -44,5 +44,5 @@ data class InternalServerError(
     @SerialName(value = "cause")
     val cause: kotlin.String
 
-) : GatewayError
+) : GatewayError()
 

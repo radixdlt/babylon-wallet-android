@@ -39,5 +39,5 @@ data class EntityNotFoundError(
     @SerialName(value = "address")
     val address: kotlin.String
 
-) : GatewayError
+) : GatewayError()
 

@@ -49,5 +49,5 @@ data class NotSyncedUpError(
     @SerialName(value = "max_allowed_sync_delay_seconds")
     val maxAllowedSyncDelaySeconds: kotlin.Long
 
-) : GatewayError
+) : GatewayError()
 
