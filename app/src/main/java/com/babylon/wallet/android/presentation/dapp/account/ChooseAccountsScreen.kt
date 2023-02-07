@@ -68,6 +68,7 @@ fun ChooseAccountsScreen(
         accountItems = state.availableAccountItems,
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
+        isSingleChoice = state.isSingleChoice
     )
 
     if (state.showProgress) {
@@ -91,12 +92,12 @@ private fun ChooseAccountContent(
     isContinueButtonEnabled: Boolean,
     accountItems: List<AccountItemUiModel>,
     onAccountSelect: (Int) -> Unit,
+    isSingleChoice: Boolean,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
 ) {
     Column(
         modifier = modifier
-//            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
@@ -142,7 +143,11 @@ private fun ChooseAccountContent(
                             },
                         accountName = accountItem.displayName.orEmpty(),
                         address = accountItem.address,
-                        checked = accountItem.isSelected
+                        checked = accountItem.isSelected,
+                        isSingleChoice = isSingleChoice,
+                        radioButtonClicked = {
+                            onAccountSelect(index)
+                        }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -209,6 +214,7 @@ fun ChooseAccountContentPreview() {
                 )
             ),
             onAccountSelect = {},
+            isSingleChoice = false
         ) {}
     }
 }

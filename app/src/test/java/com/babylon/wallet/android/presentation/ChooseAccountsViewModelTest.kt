@@ -4,7 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
-import com.babylon.wallet.android.mockdata.accountsRequest
+import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
+import com.babylon.wallet.android.mockdata.accountsRequestExact
+import com.babylon.wallet.android.mockdata.accountsTwoRequestExact
 import com.babylon.wallet.android.presentation.dapp.account.ARG_ACCOUNTS_REQUEST_ID
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsEvent
 import com.babylon.wallet.android.presentation.dapp.account.ChooseAccountsViewModel
@@ -34,10 +36,10 @@ class ChooseAccountsViewModelTest {
 
     @Before
     fun setup() = runTest {
-        incomingRequestRepository.add(accountsRequest)
+        incomingRequestRepository.add(accountsRequestAtLeast)
 
         viewModel = ChooseAccountsViewModel(
-            savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequest.requestId)),
+            savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequestAtLeast.requestId)),
             accountRepository = accountRepository,
             dAppMessenger = dAppMessenger,
             incomingRequestRepository = incomingRequestRepository
@@ -88,6 +90,76 @@ class ChooseAccountsViewModelTest {
             viewModel.onAccountSelect(1)
             viewModel.onAccountSelect(1)
             assertFalse(viewModel.state.isContinueButtonEnabled)
+        }
+
+    @Test
+    fun `given a request for exactly 1 account, when selected one, then continue button is enabled`() =
+        runTest {
+            // given
+            incomingRequestRepository.add(accountsRequestExact)
+
+            viewModel = ChooseAccountsViewModel(
+                savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsRequestExact.requestId)),
+                accountRepository = accountRepository,
+                dAppMessenger = dAppMessenger,
+                incomingRequestRepository = incomingRequestRepository
+            )
+
+            viewModel.state
+            advanceUntilIdle()
+
+            // when
+            viewModel.onAccountSelect(0)
+
+            // then
+            assertTrue(viewModel.state.isContinueButtonEnabled)
+        }
+
+    @Test
+    fun `given a request for exactly 2 account, when selecting one, then continue button is disabled`() =
+        runTest {
+            // given
+            incomingRequestRepository.add(accountsTwoRequestExact)
+
+            viewModel = ChooseAccountsViewModel(
+                savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsTwoRequestExact.requestId)),
+                accountRepository = accountRepository,
+                dAppMessenger = dAppMessenger,
+                incomingRequestRepository = incomingRequestRepository
+            )
+
+            viewModel.state
+            advanceUntilIdle()
+
+            // when
+            viewModel.onAccountSelect(0)
+
+            // then
+            assertFalse(viewModel.state.isContinueButtonEnabled)
+        }
+
+    @Test
+    fun `given a request for exactly 2 account, when selecting two, then continue button is enabled`() =
+        runTest {
+            // given
+            incomingRequestRepository.add(accountsTwoRequestExact)
+
+            viewModel = ChooseAccountsViewModel(
+                savedStateHandle = SavedStateHandle(mapOf(ARG_ACCOUNTS_REQUEST_ID to accountsTwoRequestExact.requestId)),
+                accountRepository = accountRepository,
+                dAppMessenger = dAppMessenger,
+                incomingRequestRepository = incomingRequestRepository
+            )
+
+            viewModel.state
+            advanceUntilIdle()
+
+            // when
+            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelect(1)
+
+            // then
+            assertTrue(viewModel.state.isContinueButtonEnabled)
         }
 
     @Test

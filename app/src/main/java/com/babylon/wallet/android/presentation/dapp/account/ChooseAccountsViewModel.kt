@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
@@ -35,12 +36,22 @@ class ChooseAccountsViewModel @Inject constructor(
         accountsRequest.oneTimeAccountsRequestItem
             ?: throw RuntimeException("Only oneTimeAccountsRequestItem supported")
 
+    private val numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts
+    private val isExactCountRequired = oneTimeAccountRequestItem
+        .quantifier == MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+
     var state by mutableStateOf(ChooseAccountUiState())
         private set
 
     init {
         viewModelScope.launch {
             accountRepository.accounts.collect { accounts ->
+                // Check if single or multiple choice (radio or chechbox)
+                val isSingleChoice = numberOfAccounts == 1 && isExactCountRequired
+                state = state.copy(
+                    isSingleChoice = isSingleChoice
+                )
+
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
@@ -66,23 +77,44 @@ class ChooseAccountsViewModel @Inject constructor(
 
     fun onAccountSelect(index: Int) {
         // update the isSelected property of the AccountItemUiModel based on index
-        state = state.copy(
-            availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
-                if (index == i) {
-                    accountItem.copy(isSelected = !accountItem.isSelected)
-                } else {
-                    accountItem
+        if (isExactCountRequired && numberOfAccounts == 1) {
+            // Radio buttons selection unselects the previous one
+            state = state.copy(
+                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                    if (index == i) {
+                        accountItem.copy(isSelected = true)
+                    } else {
+                        accountItem.copy(isSelected = false)
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            state = state.copy(
+                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
+                    if (index == i) {
+                        accountItem.copy(isSelected = !accountItem.isSelected)
+                    } else {
+                        accountItem
+                    }
+                }
+            )
+        }
 
-        val isMinRequiredCountOfAccountsSelected = state
-            .availableAccountItems
-            .count { accountItem ->
-                accountItem.isSelected
-            } >= oneTimeAccountRequestItem.numberOfAccounts
+        val isContinueButtonEnabled = if (isExactCountRequired) {
+            state
+                .availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } == numberOfAccounts
+        } else {
+            state
+                .availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } >= numberOfAccounts
+        }
 
-        state = state.copy(isContinueButtonEnabled = isMinRequiredCountOfAccountsSelected)
+        state = state.copy(isContinueButtonEnabled = isContinueButtonEnabled)
     }
 
     fun sendAccountsResponse() {
@@ -112,6 +144,7 @@ data class ChooseAccountUiState(
     val availableAccountItems: List<AccountItemUiModel> = emptyList(),
     val dAppDetails: DAppDetailsResponse? = null,
     val isContinueButtonEnabled: Boolean = false,
+    val isSingleChoice: Boolean = false,
     val error: String? = null,
     val showProgress: Boolean = true
 )

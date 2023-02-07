@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +25,8 @@ fun AccountSelectionCard(
     accountName: String,
     address: String,
     checked: Boolean,
+    isSingleChoice: Boolean,
+    radioButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -52,15 +56,27 @@ fun AccountSelectionCard(
             )
         }
         Spacer(modifier = Modifier.weight(0.1f))
-        Checkbox(
-            checked = checked,
-            colors = CheckboxDefaults.colors(
-                checkedColor = RadixTheme.colors.gray1,
-                uncheckedColor = RadixTheme.colors.gray3,
-                checkmarkColor = Color.White
-            ),
-            onCheckedChange = null
-        )
+        if (isSingleChoice) {
+            RadioButton(
+                selected = checked,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = RadixTheme.colors.gray1,
+                    unselectedColor = RadixTheme.colors.gray3,
+                    disabledSelectedColor = Color.White
+                ),
+                onClick = radioButtonClicked,
+            )
+        } else {
+            Checkbox(
+                checked = checked,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = RadixTheme.colors.gray1,
+                    uncheckedColor = RadixTheme.colors.gray3,
+                    checkmarkColor = Color.White
+                ),
+                onCheckedChange = null
+            )
+        }
     }
 }
 
@@ -71,6 +87,8 @@ fun DAppAccountCardPreview() {
         AccountSelectionCard(
             accountName = "Account name",
             address = "jf932j9f32o",
+            isSingleChoice = false,
+            radioButtonClicked = {},
             checked = true
         )
     }
@@ -84,6 +102,22 @@ fun DAppAccountCardLargeFontPreview() {
         AccountSelectionCard(
             accountName = "Account name",
             address = "jf932j9f32o",
+            isSingleChoice = false,
+            radioButtonClicked = {},
+            checked = true
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DAppAccountCardSingleChoicePreview() {
+    RadixWalletTheme {
+        AccountSelectionCard(
+            accountName = "Account name",
+            address = "jf932j9f32o",
+            isSingleChoice = true,
+            radioButtonClicked = {},
             checked = true
         )
     }
