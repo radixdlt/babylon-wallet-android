@@ -405,8 +405,8 @@ data class DAppLoginUiState(
     val firstTimeLogin: Boolean = true,
     val showProgress: Boolean = true,
     val isOngoing: Boolean = false,
-    val selectedAccountsOngoing: List<AccountItemUiModel>? = null,
-    val selectedAccountsOneTime: List<AccountItemUiModel>? = null,
+    val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
+    val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val processedRequestItem: AccountsRequestItem? = null,
     val personas: ImmutableList<PersonaUiModel> = persistentListOf()
 ) {

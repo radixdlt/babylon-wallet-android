@@ -33,8 +33,8 @@ class DAppMessengerFake : DAppMessenger {
     override suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
         persona: OnNetwork.Persona,
-        oneTimeAccounts: List<AccountItemUiModel>?,
-        ongoingAccounts: List<AccountItemUiModel>?
+        oneTimeAccounts: List<AccountItemUiModel>,
+        ongoingAccounts: List<AccountItemUiModel>
     ): Result<Unit> {
         return Result.Success(Unit)
     }

@@ -3,21 +3,19 @@ package com.babylon.wallet.android.mockdata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import java.util.UUID
 
-val accountsRequestExact = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
     requestId = UUID.randomUUID().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
-    authRequest = MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
         requiresProofOfOwnership = false,
         numberOfAccounts = 1,
-        quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.Exactly
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
     )
 )
-val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
     requestId = UUID.randomUUID().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
-    authRequest = MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
         requiresProofOfOwnership = false,
@@ -26,14 +24,13 @@ val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.AuthorizedR
     )
 )
 
-val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
     requestId = UUID.randomUUID().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
-    authRequest = MessageFromDataChannel.IncomingRequest.AuthRequest.LoginRequest(""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
         requiresProofOfOwnership = false,
         numberOfAccounts = 2,
-        quantifier = MessageFromDataChannel.IncomingRequest.AccountNumberQuantifier.AtLeast
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
     )
 )

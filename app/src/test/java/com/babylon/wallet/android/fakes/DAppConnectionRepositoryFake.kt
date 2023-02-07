@@ -24,7 +24,11 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             fieldIDs = emptyList(),
                             lastUsedOn = "",
                             sharedAccounts = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
-                                listOf(), OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Quantifier.AtLeast
+                                listOf(),
+                                OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                    1
+                                )
                             )
                         )
                     )
@@ -54,7 +58,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.Quantifier
+        quantifier: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String> {
         return emptyList()
     }

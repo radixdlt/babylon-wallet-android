@@ -52,6 +52,7 @@ fun OneTimeChooseAccountsScreen(
         onCreateNewAccount = onAccountCreationClick,
         dappMetadata = state.dappMetadata,
         isOneTime = true,
+        isSingleChoice = state.isSingleChoice
     )
     state.error?.let { error ->
         DAppAlertDialog(
@@ -112,6 +113,7 @@ fun OneTimeAccountContentPreview() {
                     isSelected = false
                 )
             ),
+            isSingleChoice = false
         )
     }
 }

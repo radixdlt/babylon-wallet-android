@@ -145,14 +145,18 @@ class DAppMessengerImpl @Inject constructor(
                             AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
                         }
                     )
-                } else null,
+                } else {
+                    null
+                },
                 ongoingAccounts = if (ongoingAccounts.isNotEmpty()) {
                     OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
                         ongoingAccounts.map {
                             AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
                         }
                     )
-                } else null
+                } else {
+                    null
+                }
             )
         )
         val messageJson = try {

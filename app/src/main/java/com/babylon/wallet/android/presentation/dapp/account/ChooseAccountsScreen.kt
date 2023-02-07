@@ -54,7 +54,6 @@ fun ChooseAccountsScreen(
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
         dappMetadata = sharedState.dappMetadata,
-        isOneTime = state.isOneTime,
         isOneTime = state.oneTimeRequest,
         isSingleChoice = state.isSingleChoice
     )
@@ -118,8 +117,7 @@ fun ChooseAccountContentPreview() {
                     isSelected = false
                 )
             ),
-            onAccountSelect = {},
-            isSingleChoice = false
-        ) {}
+            isSingleChoice = false,
+        )
     }
 }
