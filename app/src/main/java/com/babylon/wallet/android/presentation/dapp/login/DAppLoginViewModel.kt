@@ -352,7 +352,7 @@ class DAppLoginViewModel @Inject constructor(
                         DAppLoginEvent.ChooseAccounts(
                             numberOfAccounts = authRequest.oneTimeAccountsRequestItem.numberOfAccounts,
                             isExactAccountsCount = authRequest.oneTimeAccountsRequestItem.quantifier
-                                    == AccountsRequestItem.AccountNumberQuantifier.Exactly,
+                                == AccountsRequestItem.AccountNumberQuantifier.Exactly,
                             oneTime = true
                         )
                     )

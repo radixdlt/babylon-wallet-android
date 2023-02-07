@@ -51,7 +51,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
         OneTimeChooseAccountUiState(
             numberOfAccounts = oneTimeAccountRequestItem.numberOfAccounts,
             isExactAccountsCount = oneTimeAccountRequestItem.quantifier
-                    == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
+                == MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
         )
     )
         private set
