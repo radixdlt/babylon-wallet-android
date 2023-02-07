@@ -1,14 +1,17 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
-import javax.inject.Singleton
 
 interface IncomingRequestRepository {
+
+    val currentRequestToHandle: Flow<IncomingRequest>
+
     suspend fun add(incomingRequest: IncomingRequest)
     suspend fun requestHandled(requestId: String)
     fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest
@@ -17,13 +20,12 @@ interface IncomingRequestRepository {
     fun getAmountOfRequests(): Int
 }
 
-@Singleton
 class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepository {
 
     private val listOfIncomingRequests = mutableMapOf<String, IncomingRequest>()
 
     private val _currentRequestToHandle = MutableSharedFlow<IncomingRequest>()
-    val currentRequestToHandle = _currentRequestToHandle.asSharedFlow()
+    override val currentRequestToHandle = _currentRequestToHandle.asSharedFlow()
 
     private val mutex = Mutex()
 
