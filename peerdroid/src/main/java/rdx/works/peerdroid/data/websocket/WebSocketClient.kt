@@ -106,7 +106,7 @@ internal class WebSocketClientImpl(
             }
             ?.takeWhile { signalingServerIncomingMessage ->
                 signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected &&
-                        signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
+                    signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
             }
             ?.collect()
     }

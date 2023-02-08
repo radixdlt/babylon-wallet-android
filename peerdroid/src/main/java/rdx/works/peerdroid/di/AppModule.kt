@@ -60,7 +60,6 @@ object AppModule {
         }
     )
 
-
     @Provides
     @Singleton
     fun providePeerConnectionFactory( // WebRTC PeerConnectionFactory
