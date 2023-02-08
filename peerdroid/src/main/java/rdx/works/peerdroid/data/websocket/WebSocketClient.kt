@@ -55,7 +55,8 @@ internal interface WebSocketClient {
 // The signaling server is responsible for exchanging network information which is needed for the WebRTC
 // between the mobile wallet and the browser extension.
 internal class WebSocketClientImpl(
-    private val client: HttpClient
+    private val client: HttpClient,
+    private val json: Json
 ) : WebSocketClient {
 
     // represents a web socket session between two peers
@@ -105,13 +106,13 @@ internal class WebSocketClientImpl(
             }
             ?.takeWhile { signalingServerIncomingMessage ->
                 signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected &&
-                    signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
+                        signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
             }
             ?.collect()
     }
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
-        val offerJson = Json.encodeToString(offerPayload)
+        val offerJson = json.encodeToString(offerPayload)
         val encryptedOffer = encryptData(
             input = offerJson.toByteArray(),
             encryptionKey = encryptionKey
@@ -124,7 +125,7 @@ internal class WebSocketClientImpl(
             encryptedPayload = encryptedOffer.toHexString()
         )
 
-        val message = Json.encodeToString(rpcMessage)
+        val message = json.encodeToString(rpcMessage)
         Timber.d("=> sending offer with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
@@ -141,7 +142,7 @@ internal class WebSocketClientImpl(
             encryptedPayload = encryptedIceCandidates.toHexString()
         )
 
-        val message = Json.encodeToString(rpcMessage)
+        val message = json.encodeToString(rpcMessage)
         Timber.d("=> sending ice candidates with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
@@ -178,7 +179,7 @@ internal class WebSocketClientImpl(
     }
 
     private fun decodeAndParseResponseFromJson(responseJsonString: String): SignalingServerIncomingMessage {
-        val responseJson = Json.decodeFromString<SignalingServerResponse>(responseJsonString)
+        val responseJson = json.decodeFromString<SignalingServerResponse>(responseJsonString)
         // based on the info of the response return the corresponding SignalingServerIncomingMessage data model
         // if info is remoteData then encapsulate the encrypted payload in the SignalingServerIncomingMessage data model
         return when (SignalingServerResponse.Info.from(responseJson.info)) {
@@ -260,7 +261,7 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val answer = Json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
+        val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
         return SignalingServerIncomingMessage.BrowserExtensionAnswer(
             requestId = responseJson.requestId,
@@ -281,7 +282,7 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val iceCandidate = Json.decodeFromString<RpcMessage.IceCandidatePayload>(
+        val iceCandidate = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)
         )
 
@@ -312,7 +313,7 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val iceCandidates = Json.decodeFromString<List<RpcMessage.IceCandidatePayload>>(
+        val iceCandidates = json.decodeFromString<List<RpcMessage.IceCandidatePayload>>(
             String(message, StandardCharsets.UTF_8)
         )
 
