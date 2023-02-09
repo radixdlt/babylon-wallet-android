@@ -79,7 +79,7 @@ class TransactionClient @Inject constructor(
             is Result.Success -> manifestConversionResult.data
         }
         val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
-            TransactionApprovalException(TransactionApprovalFailure.NoFunds)
+            TransactionApprovalException(TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
         )
         return Result.Success(
             addLockFeeInstructionToManifest(

@@ -160,7 +160,7 @@ class SettingsConnectionViewModel @Inject constructor(
 }
 
 data class SettingsConnectionUiState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val connectionName: String? = null,
     val editedConnectionDisplayName: String = "",
     val buttonEnabled: Boolean = false,

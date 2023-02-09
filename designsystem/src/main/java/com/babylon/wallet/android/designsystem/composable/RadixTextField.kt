@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -59,7 +61,12 @@ fun RadixTextField(
                 textColor = RadixTheme.colors.gray1,
                 focusedBorderColor = RadixTheme.colors.gray1,
                 unfocusedBorderColor = Color.Transparent,
-                errorBorderColor = RadixTheme.colors.red1
+                errorBorderColor = RadixTheme.colors.red1,
+                cursorColor = RadixTheme.colors.gray1,
+                selectionColors = TextSelectionColors(
+                    RadixTheme.colors.gray1,
+                    LocalTextSelectionColors.current.backgroundColor
+                )
             ),
             placeholder = {
                 hint?.let { Text(text = it, style = RadixTheme.typography.body1Regular) }
