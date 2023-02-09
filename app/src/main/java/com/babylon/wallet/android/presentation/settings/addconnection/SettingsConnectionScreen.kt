@@ -76,6 +76,7 @@ fun SettingsConnectionScreen(
     )
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun SettingsAddConnectionContent(
     connectionName: String?,
@@ -128,11 +129,12 @@ private fun SettingsAddConnectionContent(
                 }
                 SettingsConnectionMode.ShowDetails -> {
                     ActiveConnectionDetails(
-                        connectionName,
-                        onAddConnection,
-                        cameraPermissionState,
-                        onDeleteConnectionClick,
-                        Modifier.fillMaxWidth()
+                        connectionName = connectionName,
+                        onAddConnection = onAddConnection,
+                        cameraPermissionState = cameraPermissionState,
+                        onDeleteConnectionClick = onDeleteConnectionClick,
+                        isLoading = isLoading,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
                 SettingsConnectionMode.ScanQr -> {
@@ -159,6 +161,7 @@ private fun ActiveConnectionDetails(
     onAddConnection: () -> Unit,
     cameraPermissionState: PermissionState,
     onDeleteConnectionClick: () -> Unit,
+    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -169,7 +172,7 @@ private fun ActiveConnectionDetails(
             color = RadixTheme.colors.gray2
         )
         Divider(color = RadixTheme.colors.gray5)
-        AnimatedVisibility(visible = connectionName == null) {
+        AnimatedVisibility(visible = connectionName == null && !isLoading) {
             Column {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixSecondaryButton(
