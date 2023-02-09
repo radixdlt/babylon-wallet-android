@@ -15,6 +15,7 @@ import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.address.Address
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
@@ -107,7 +108,9 @@ class TransactionClient @Inject constructor(
     ): Result<String> {
         val addressesNeededToSign = getAddressesNeededToSignTransaction(jsonTransactionManifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
-
+            ?: return Result.Error(
+                TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+            )
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> {
                 return transactionHeaderResult
@@ -224,9 +227,13 @@ class TransactionClient @Inject constructor(
     private suspend fun getNotaryAndSigners(
         networkId: Int,
         addressesNeededToSign: List<String>,
-    ): NotaryAndSigners {
+    ): NotaryAndSigners? {
         val signers = accountRepository.getSignersForAddresses(networkId, addressesNeededToSign)
-        return NotaryAndSigners(signers.first(), signers)
+        if (signers.isEmpty()) {
+            return null
+        } else {
+            return NotaryAndSigners(signers.first(), signers)
+        }
     }
 
     private suspend fun convertManifestInstructionsToJSON(
@@ -374,29 +381,56 @@ class TransactionClient @Inject constructor(
     }
 
     private fun getAddressesNeededToSignTransaction(jsonTransactionManifest: TransactionManifest): List<String> {
+        val allowed: Set<Any> = setOf(
+            Instruction.CallMethod,
+            Instruction.SetMetadata,
+            Instruction.SetComponentRoyaltyConfig,
+            Instruction.SetMethodAccessRule,
+            Instruction.ClaimComponentRoyalty
+        )
         val addressesNeededToSign = mutableListOf<String>()
         when (val manifestInstructions = jsonTransactionManifest.instructions) {
             is ManifestInstructions.ParsedInstructions -> {
                 manifestInstructions.instructions
-                    .filterIsInstance<Instruction.CallMethod>()
-                    .forEach { callMethod ->
-                        val componentAddress = callMethod.componentAddress.address.componentAddress
-                        val isAccountComponent = componentAddress.contains("account")
-                        val isMethodThatRequiresAuth = MethodName
-                            .methodsThatRequireAuth()
-                            .map { methodName ->
-                                methodName.stringValue
+                    .forEach { instruction ->
+                        when (instruction) {
+                            is Instruction.CallMethod -> {
+                                val componentAddress = instruction.componentAddress.address.componentAddress
+                                val isAccountComponent = componentAddress.contains("account")
+                                val isMethodThatRequiresAuth = MethodName
+                                    .methodsThatRequireAuth()
+                                    .map { methodName ->
+                                        methodName.stringValue
+                                    }
+                                    .contains(instruction.methodName.value)
+                                if (isAccountComponent && isMethodThatRequiresAuth) {
+                                    addressesNeededToSign.add(componentAddress)
+                                }
                             }
-                            .contains(callMethod.methodName.value)
-                        if (isAccountComponent && isMethodThatRequiresAuth) {
-                            addressesNeededToSign.add(componentAddress)
+                            is Instruction.SetMetadata -> {
+                                (instruction.entityAddress as? Address.ComponentAddress)?.let {
+                                    addressesNeededToSign.add(it.componentAddress)
+                                }
+                            }
+                            is Instruction.SetMethodAccessRule -> {
+                                (instruction.entityAddress as? Address.ComponentAddress)?.let {
+                                    addressesNeededToSign.add(it.componentAddress)
+                                }
+                            }
+                            is Instruction.SetComponentRoyaltyConfig -> {
+                                addressesNeededToSign.add(instruction.componentAddress.address.componentAddress)
+                            }
+                            is Instruction.ClaimComponentRoyalty -> {
+                                addressesNeededToSign.add(instruction.componentAddress.address.componentAddress)
+                            }
+                            else -> {}
                         }
                     }
             }
             is ManifestInstructions.StringInstructions -> {
             }
         }
-        return addressesNeededToSign.toList()
+        return addressesNeededToSign.distinct().toList()
     }
 
     @Suppress("MagicNumber")
