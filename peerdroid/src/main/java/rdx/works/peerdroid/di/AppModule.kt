@@ -55,7 +55,7 @@ object AppModule {
         client: HttpClient
     ): WebSocketClient = WebSocketClientImpl(
         client = client,
-        //fixes https://radixdlt.atlassian.net/browse/ABW-902
+        // fixes https://radixdlt.atlassian.net/browse/ABW-902
         json = Json {
             ignoreUnknownKeys = true
         }
