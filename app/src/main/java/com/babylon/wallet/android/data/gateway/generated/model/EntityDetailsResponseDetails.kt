@@ -27,51 +27,45 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
  *
- * @param discriminator 
- * @param accessRulesChain 
- * @param vaultAccessRulesChain 
- * @param divisibility 
+ *
+ * @param discriminator
+ * @param accessRulesChain
+ * @param vaultAccessRulesChain
+ * @param divisibility
  * @param totalSupply The string-encoded decimal representing the amount
  * @param totalMinted The string-encoded decimal representing the amount
  * @param totalBurnt The string-encoded decimal representing the amount
  * @param nonFungibleLocalIdType
- * @param codeHex 
+ * @param codeHex
  * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
- * @param blueprintName 
- * @param state 
+ * @param blueprintName
+ * @param state
  */
 @Serializable
 data class EntityDetailsResponseDetails(
 
     @Contextual @SerialName(value = "discriminator")
-    val discriminator: EntityDetailsResponseDetailsType,
-    @Contextual @SerialName(value = "access_rules_chain")
-    val accessRulesChain: kotlin.Any,
-    @Contextual @SerialName(value = "vault_access_rules_chain")
-    val vaultAccessRulesChain: kotlin.Any,
+    val discriminator: EntityDetailsResponseDetailsType? = null,
     @SerialName(value = "divisibility")
-    val divisibility: kotlin.Int,
+    val divisibility: kotlin.Int? = null,
     /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_supply")
-    val totalSupply: kotlin.String,
+    val totalSupply: kotlin.String? = null,
     /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_minted")
-    val totalMinted: kotlin.String,
+    val totalMinted: kotlin.String? = null,
     /* The string-encoded decimal representing the amount */
     @SerialName(value = "total_burnt")
-    val totalBurnt: kotlin.String,
+    val totalBurnt: kotlin.String? = null,
     @Contextual @SerialName(value = "non_fungible_id_type")
-    val nonFungibleLocalIdType: NonFungibleLocalIdType,
+    val nonFungibleLocalIdType: NonFungibleLocalIdType? = null,
     @SerialName(value = "code_hex")
-    val codeHex: kotlin.String,
+    val codeHex: kotlin.String? = null,
     /* The Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "package_address")
-    val packageAddress: kotlin.String,
+    val packageAddress: kotlin.String? = null,
     @SerialName(value = "blueprint_name")
-    val blueprintName: kotlin.String,
-    @Contextual @SerialName(value = "state")
-    val state: kotlin.Any
+    val blueprintName: kotlin.String? = null
 )
 
