@@ -380,14 +380,8 @@ class TransactionClient @Inject constructor(
         return Result.Success(txID)
     }
 
+    @Suppress("NestedBlockDepth")
     private fun getAddressesNeededToSignTransaction(jsonTransactionManifest: TransactionManifest): List<String> {
-        val allowed: Set<Any> = setOf(
-            Instruction.CallMethod,
-            Instruction.SetMetadata,
-            Instruction.SetComponentRoyaltyConfig,
-            Instruction.SetMethodAccessRule,
-            Instruction.ClaimComponentRoyalty
-        )
         val addressesNeededToSign = mutableListOf<String>()
         when (val manifestInstructions = jsonTransactionManifest.instructions) {
             is ManifestInstructions.ParsedInstructions -> {
