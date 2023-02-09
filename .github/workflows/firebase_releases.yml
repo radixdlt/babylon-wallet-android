@@ -114,3 +114,25 @@ jobs:
           RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
           RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
           RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
+
+      - name: Distribute Google Play flavor
+        if: ( github.event_name == 'release' && github.event.release.prerelease )
+        run: |
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane release_to_google_play
+          echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+          GROUPS: "internal"
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}

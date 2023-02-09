@@ -76,6 +76,47 @@ lane :preview do
     )
 end
 
+
+desc "Deploy to Google Play Console"
+lane :release_to_google_play do
+
+    bump_build_number
+    gradle(
+        task: "assemble",
+        flavor: "???",
+        build_type: "???",
+        properties: {
+            "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
+            "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
+            "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
+            "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
+          }
+        )
+    # firebase_app_distribution(
+    #     app: ENV["FIREBASE_APP_ID"],
+    #     release_notes: ENV["RELEASE_NOTES"],
+    #     groups: ENV["GROUPS"]
+    # )
+
+    upload_to_play_store(
+        package_name: ??,
+        version_name: ??
+    )
+
+
+    build_number_to_commit = File.read("../versioning/BUILD_NUMBER")
+    version_name = android_get_version_name
+    git_commit(
+        path: "./versioning/BUILD_NUMBER",
+        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
+    )
+    push_to_git_remote(
+        remote_branch: ENV["RELEASE_BRANCH"],
+        tags: false
+    )
+end
+
+
 # after_all do |beta|
 #   slack(
 #     message: "New Android version of Babylon Wallet is released!",
