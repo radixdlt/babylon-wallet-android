@@ -7,13 +7,18 @@ import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionItems
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import org.junit.Assert
 import org.junit.Test
 
 class WalletInteractionModelsTest {
@@ -368,6 +373,16 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletTransactionItems)
         val item = result.items as WalletTransactionItems
         assert(item.send.transactionManifest == "manifest")
+    }
+
+    @Test
+    fun `transaction approval response matches expected`() {
+        val expected = """{"discriminator":"success","interactionId":"1","items":{"discriminator":"transaction","send":{"transactionIntentHash":"1"}}}"""
+        val response: WalletInteractionResponse = WalletInteractionSuccessResponse(
+            interactionId = "1", items = WalletTransactionResponseItems(SendTransactionResponseItem("1"))
+        )
+        val result = walletRequestJson.encodeToString(response)
+        Assert.assertEquals(expected, result)
     }
 
 }

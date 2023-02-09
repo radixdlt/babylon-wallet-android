@@ -88,12 +88,11 @@ class DAppMessengerImpl @Inject constructor(
         requestId: String,
         txId: String
     ): Result<Unit> {
-        val message = Json.encodeToString(
-            WalletInteractionSuccessResponse(
-                interactionId = requestId,
-                items = WalletTransactionResponseItems(SendTransactionResponseItem(txId))
-            )
+        val response: WalletInteractionResponse = WalletInteractionSuccessResponse(
+            interactionId = requestId,
+            items = WalletTransactionResponseItems(SendTransactionResponseItem(txId))
         )
+        val message = Json.encodeToString(response)
         return when (peerdroidClient.sendMessage(message)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
             is rdx.works.peerdroid.helpers.Result.Success -> {

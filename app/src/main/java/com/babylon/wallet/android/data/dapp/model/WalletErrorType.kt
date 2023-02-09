@@ -15,6 +15,9 @@ enum class WalletErrorType {
     @SerialName("failedToCompileTransaction")
     FailedToCompileTransaction,
 
+    @SerialName("failedToFindAccountWithEnoughFundsToLockFee")
+    FailedToFindAccountWithEnoughFundsToLockFee,
+
     @SerialName("failedToSignTransaction")
     FailedToSignTransaction,
 
