@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "main"
-      - "DO-1195"
   release:
     types:
       - "published"
@@ -118,7 +117,6 @@ jobs:
     name: "Publish to playstore"
     runs-on: ubuntu-latest
     if: >
-      ( github.ref == 'refs/heads/DO-1195' && github.event_name == 'push' ) ||
       ( github.event_name == 'release' && !github.event.release.prerelease )
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
@@ -147,11 +145,6 @@ jobs:
         with:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_BASE_64 }}
-
-      - name: set commit branch for push
-        if: github.event_name == 'push'
-        run: |
-          echo "RELEASE_BRANCH=${{ github.event.ref }}" >> $GITHUB_ENV
 
       - name: set commit branch for release
         if: github.event_name == 'release'
