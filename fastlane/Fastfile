@@ -93,7 +93,7 @@ lane :release_to_google_play do
         )
 
     upload_to_play_store(
-        ##package_name: "???",
+        package_name: "com.babylon.wallet.android.preview",
         track: "internal",
         aab: Actions.lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
         skip_upload_apk: true,
