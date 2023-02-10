@@ -46,7 +46,8 @@ end
 
 desc "Deploy pre-releases"
 lane :preview do
-    bump_build_number versioning_file: "../versioning/BUILD_NUMBER"
+    versioning_file = "../versioning/BUILD_NUMBER"
+    bump_build_number versioning_file: versioning_file
     gradle(
         task: "assemble",
         flavor: "Debug",
@@ -63,10 +64,10 @@ lane :preview do
         release_notes: ENV["RELEASE_NOTES"],
         groups: ENV["GROUPS"]
     )
-    build_number_to_commit = File.read("../versioning/BUILD_NUMBER")
+    build_number_to_commit = File.read(versioning_file)
     version_name = android_get_version_name
     git_commit(
-        path: "./versioning/BUILD_NUMBER",
+        path: versioning_file,
         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
     )
     push_to_git_remote(
@@ -78,7 +79,8 @@ end
 
 desc "Deploy to Google Play Console"
 lane :release_to_google_play do
-    bump_build_number versioning_file: "../versioning/PLAYSTORE_BUILD_NUMBER"
+    versioning_file = "../versioning/PLAYSTORE_BUILD_NUMBER"
+    bump_build_number versioning_file: versioning_file
     gradle(
         task: "bundle",
         build_type: "releasePreview",
@@ -100,10 +102,10 @@ lane :release_to_google_play do
         json_key: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE"]
         )
 
-    build_number_to_commit = File.read("../versioning/PLAYSTORE_BUILD_NUMBER")
+    build_number_to_commit = File.read(versioning_file)
     version_name = android_get_version_name
     git_commit(
-        path: "./versioning/BUILD_NUMBER",
+        path: versioning_file,
         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
     )
     push_to_git_remote(
