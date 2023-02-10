@@ -35,7 +35,7 @@ data class ErrorResponse (
 
     /* A human-readable error message. */
     @SerialName(value = "message")
-    val message: kotlin.String,
+    val message: kotlin.String? = null,
 
     /* A numeric code corresponding to the given error type. */
     @SerialName(value = "code")
