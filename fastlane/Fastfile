@@ -46,8 +46,7 @@ end
 
 desc "Deploy pre-releases"
 lane :preview do
-    environmentVariable(set: ["versioning_file": "../versioning/BUILD_NUMBER"])
-    bump_build_number
+    bump_build_number versioning_file: "../versioning/BUILD_NUMBER"
     gradle(
         task: "assemble",
         flavor: "Debug",
@@ -79,8 +78,7 @@ end
 
 desc "Deploy to Google Play Console"
 lane :release_to_google_play do
-    environmentVariable(set: ["versioning_file": "../versioning/PLAYSTORE_BUILD_NUMBER"])
-    bump_build_number
+    bump_build_number versioning_file: "../versioning/PLAYSTORE_BUILD_NUMBER"
     gradle(
         task: "bundle",
         build_type: "releasePreview",
@@ -101,6 +99,17 @@ lane :release_to_google_play do
         skip_upload_screenshots: true,
         json_key: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE"]
         )
+
+    build_number_to_commit = File.read("../versioning/PLAYSTORE_BUILD_NUMBER")
+    version_name = android_get_version_name
+    git_commit(
+        path: "./versioning/BUILD_NUMBER",
+        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
+    )
+    push_to_git_remote(
+        remote_branch: ENV["RELEASE_BRANCH"],
+        tags: false
+    )
 end
 
 
@@ -122,14 +131,14 @@ end
 #   )
 # end
 
-lane :bump_build_number do
+lane :bump_build_number do |options|
 
-    current_build_number = File.read("../versioning/BUILD_NUMBER").to_i
+    current_build_number = File.read(options[:versioning_file]).to_i
     new_build_number = current_build_number + 1
-    File.write("../versioning/BUILD_NUMBER", new_build_number, mode:"w")
+    File.write(options[:versioning_file], new_build_number, mode:"w")
 
     android_set_version_code(
-        version_code: File.read("../versioning/BUILD_NUMBER"), # optional, if not specified, Version Code will be incremented
+        version_code: File.read(options[:versioning_file]), # optional, if not specified, Version Code will be incremented
         gradle_file: "app/build.gradle"
     )
 
