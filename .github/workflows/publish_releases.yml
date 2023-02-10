@@ -151,12 +151,12 @@ jobs:
       - name: set commit branch for push
         if: github.event_name == 'push'
         run: |
-          echo "RELEASE_BRANCH= ${{ github.event.ref }}
+          echo "RELEASE_BRANCH=${{ github.event.ref }}"
 
       - name: set commit branch for release
         if: github.event_name == 'release'
         run: |        
-          echo "RELEASE_BRANCH= ${{ github.event.release.target_commitish }}
+          echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}"
 
       - name: Distribute Google Play flavor
         run: |
