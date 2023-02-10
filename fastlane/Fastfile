@@ -46,7 +46,7 @@ end
 
 desc "Deploy pre-releases"
 lane :preview do
-
+    environmentVariable(set: ["versioning_file": "../versioning/BUILD_NUMBER"])
     bump_build_number
     gradle(
         task: "assemble",
@@ -79,7 +79,7 @@ end
 
 desc "Deploy to Google Play Console"
 lane :release_to_google_play do
-
+    environmentVariable(set: ["versioning_file": "../versioning/PLAYSTORE_BUILD_NUMBER"])
     bump_build_number
     gradle(
         task: "bundle",
