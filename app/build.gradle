@@ -36,6 +36,12 @@ android {
             storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
             storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
         }
+        releasePreview {
+            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
+            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
+            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
+            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
+        }
     }
 
     defaultConfig {
@@ -74,6 +80,15 @@ android {
             debuggable false
             resValue "string", "app_name", "Radix Wallet Preview"
             matchingFallbacks = ['debug']
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        releasePreview {
+            initWith release
+            signingConfig signingConfigs.releasePreview
+            applicationIdSuffix ".preview"
+            minifyEnabled true
+            resValue "string", "app_name", "Radix Wallet Preview"
+            matchingFallbacks = ['release']
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
