@@ -34,7 +34,7 @@ on:
 jobs:
 
   alpha_firebase_releases:
-    name: "Build and distribute"
+    name: "Publish to firebase"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
@@ -63,6 +63,17 @@ jobs:
         with:
           fileName: "debugPreview.jks"
           encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+
+      - name: Cache Gradle packages
+        uses: actions/cache@b8204782bbb5f872091ecc5eb9cb7d004e35b1fa
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
 
       - name: Distribute Alpha flavor
         if: >
@@ -113,6 +124,12 @@ jobs:
           RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
           RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
 
+      - name: Cleanup Gradle Cache
+        # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+        # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
 
   playstore_releases:
     name: "Publish to playstore"
@@ -148,6 +165,16 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_BASE_64 }}
 
+      - name: Cache Gradle packages
+        uses: actions/cache@b8204782bbb5f872091ecc5eb9cb7d004e35b1fa
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Distribute Google Play flavor
         run: |
           git config user.name $GIT_USER
@@ -165,3 +192,10 @@ jobs:
           RADIX_ANDROID_KEYSTORE_ALIAS: "upload"
           RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
           GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE: ${{ steps.google_play_service_account_json.outputs.filePath }}
+
+      - name: Cleanup Gradle Cache
+        # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+        # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
