@@ -159,9 +159,9 @@ jobs:
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-          GOOGLE_PLAY_PREVIEW_KEYSTORE_FILE: ${{ steps.google_play_keystore.outputs.filePath }}
-          GOOGLE_PLAY_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
-          GOOGLE_PLAY_KEYSTORE_KEY_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.google_play_keystore.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
           RADIX_ANDROID_KEYSTORE_ALIAS: "upload"
           RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
           GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE: ${{ steps.google_play_service_account_json.outputs.filePath }}
