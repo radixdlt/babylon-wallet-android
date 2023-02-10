@@ -60,7 +60,7 @@ sealed interface MessageFromDataChannel {
     object None : MessageFromDataChannel
 
     enum class ConnectionStateChanged : MessageFromDataChannel {
-        OPEN, CLOSE, CLOSING, ERROR, CONNECTING
+        OPEN, CLOSE, CLOSING, ERROR, CONNECTING, DELETE_CONNECTION
     }
 }
 
