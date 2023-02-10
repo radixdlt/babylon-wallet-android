@@ -83,7 +83,6 @@ lane :release_to_google_play do
     bump_build_number
     gradle(
         task: "bundle",
-        flavor: "debugPreview",
         build_type: "debugPreview",
         properties: {
             "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
@@ -94,27 +93,15 @@ lane :release_to_google_play do
         )
 
     upload_to_play_store(
-        package_name: "???",
-        track: "production",
+        ##package_name: "???",
+        track: "internal",
         aab: Actions.lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
-        json_key:"",
         skip_upload_apk: true,
         skip_upload_images: true,
         skip_upload_screenshots: true,
-        ##json_key_data: ENV["PLAY_STORE_SERVICE_ACCOUNT_JSON"],
+        json_key_data: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON"],
         mapping: mapping_file_exists() ? Actions.lane_context[SharedValues::GRADLE_MAPPING_TXT_OUTPUT_PATH] : nil
         )
-
-    build_number_to_commit = File.read("../versioning/BUILD_NUMBER")
-    version_name = android_get_version_name
-    git_commit(
-        path: "./versioning/BUILD_NUMBER",
-        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
-    )
-    push_to_git_remote(
-        remote_branch: ENV["RELEASE_BRANCH"],
-        tags: false
-    )
 end
 
 
