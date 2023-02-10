@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
@@ -107,7 +109,12 @@ internal class PeerdroidConnectorImpl(
     private fun observeWebRtcEvents() {
         webRtcJob = webRtcManager
             .createPeerConnection(connectionId)
-            .cancellable()
+            .onStart { // for debugging
+                Timber.d("start observing webrtc events")
+            }
+            .onCompletion { // for debugging
+                Timber.d("end observing webrtc events")
+            }
             .onEach { event ->
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
@@ -148,6 +155,7 @@ internal class PeerdroidConnectorImpl(
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
             .flowOn(ioDispatcher)
+            .cancellable()
             .launchIn(applicationScope)
     }
 
@@ -155,7 +163,12 @@ internal class PeerdroidConnectorImpl(
     private fun listenForIncomingMessagesFromSignalingServer() {
         webSocketJob = webSocketClient
             .observeMessages()
-            .cancellable()
+            .onStart { // for debugging
+                Timber.d("start observing incoming messages from signaling server")
+            }
+            .onCompletion { // for debugging
+                Timber.d("end observing incoming messages from signaling server")
+            }
             .onEach { incomingMessage ->
                 when (incomingMessage) {
                     is SignalingServerIncomingMessage.BrowserExtensionAnswer -> {
@@ -210,6 +223,7 @@ internal class PeerdroidConnectorImpl(
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
             .flowOn(ioDispatcher)
+            .cancellable()
             .launchIn(applicationScope)
     }
 
@@ -300,7 +314,7 @@ internal class PeerdroidConnectorImpl(
             terminate()
             return
         }
-        Timber.d("close")
+        Timber.d("close webrtc but keep open web socket connection")
         iceCandidatesJob?.cancel()
         webRtcJob?.cancel()
         localIceCandidatesList.clear()
@@ -312,7 +326,7 @@ internal class PeerdroidConnectorImpl(
     }
 
     private suspend fun terminate() {
-        Timber.d("terminate")
+        Timber.d("terminate webrtc and web socket connection")
         webRtcJob?.cancel()
         iceCandidatesJob?.cancel()
         webSocketClient.closeSession()
