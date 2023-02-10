@@ -87,7 +87,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 )
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     args.requestId,
-                    error = WalletErrorType.FailedToPrepareTransaction
+                    error = WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
                 )
             }
         }
