@@ -389,33 +389,39 @@ class TransactionClient @Inject constructor(
                     .forEach { instruction ->
                         when (instruction) {
                             is Instruction.CallMethod -> {
-                                val componentAddress = instruction.componentAddress.address.componentAddress
-                                val isAccountComponent = componentAddress.contains("account")
-                                val isMethodThatRequiresAuth = MethodName
-                                    .methodsThatRequireAuth()
-                                    .map { methodName ->
-                                        methodName.stringValue
+                                instruction.componentAddress.executeWhenIfAccountComponent { accountAddress ->
+                                    val isMethodThatRequiresAuth = MethodName
+                                        .methodsThatRequireAuth()
+                                        .map { methodName ->
+                                            methodName.stringValue
+                                        }
+                                        .contains(instruction.methodName.value)
+                                    if (isMethodThatRequiresAuth) {
+                                        addressesNeededToSign.add(accountAddress)
                                     }
-                                    .contains(instruction.methodName.value)
-                                if (isAccountComponent && isMethodThatRequiresAuth) {
-                                    addressesNeededToSign.add(componentAddress)
                                 }
                             }
                             is Instruction.SetMetadata -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)?.let {
-                                    addressesNeededToSign.add(it.componentAddress)
-                                }
+                                (instruction.entityAddress as? Address.ComponentAddress)
+                                    ?.executeWhenIfAccountComponent { accountAddress ->
+                                        addressesNeededToSign.add(accountAddress)
+                                    }
                             }
                             is Instruction.SetMethodAccessRule -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)?.let {
-                                    addressesNeededToSign.add(it.componentAddress)
-                                }
+                                (instruction.entityAddress as? Address.ComponentAddress)
+                                    ?.executeWhenIfAccountComponent { accountAddress ->
+                                        addressesNeededToSign.add(accountAddress)
+                                    }
                             }
                             is Instruction.SetComponentRoyaltyConfig -> {
-                                addressesNeededToSign.add(instruction.componentAddress.address.componentAddress)
+                                instruction.componentAddress.executeWhenIfAccountComponent { accountAddress ->
+                                    addressesNeededToSign.add(accountAddress)
+                                }
                             }
                             is Instruction.ClaimComponentRoyalty -> {
-                                addressesNeededToSign.add(instruction.componentAddress.address.componentAddress)
+                                instruction.componentAddress.executeWhenIfAccountComponent { accountAddress ->
+                                    addressesNeededToSign.add(accountAddress)
+                                }
                             }
                             else -> {}
                         }
@@ -425,6 +431,18 @@ class TransactionClient @Inject constructor(
             }
         }
         return addressesNeededToSign.distinct().toList()
+    }
+
+    private fun Value.ComponentAddress.executeWhenIfAccountComponent(action: (String) -> Unit) {
+        if (address.componentAddress.contains("account")) {
+            action(address.componentAddress)
+        }
+    }
+
+    private fun Address.ComponentAddress.executeWhenIfAccountComponent(action: (String) -> Unit) {
+        if (componentAddress.contains("account")) {
+            action(componentAddress)
+        }
     }
 
     @Suppress("MagicNumber")
