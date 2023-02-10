@@ -83,7 +83,7 @@ lane :release_to_google_play do
     bump_build_number
     gradle(
         task: "bundle",
-        build_type: "debugPreview",
+        build_type: "releasePreview",
         properties: {
             "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
             "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
