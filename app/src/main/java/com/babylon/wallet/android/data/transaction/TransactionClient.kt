@@ -229,14 +229,14 @@ class TransactionClient @Inject constructor(
         addressesNeededToSign: List<String>,
     ): NotaryAndSigners? {
         val signers = accountRepository.getSignersForAddresses(networkId, addressesNeededToSign)
-        if (signers.isEmpty()) {
-            return null
+        return if (signers.isEmpty()) {
+            null
         } else {
-            return NotaryAndSigners(signers.first(), signers)
+            NotaryAndSigners(signers.first(), signers)
         }
     }
 
-    private suspend fun convertManifestInstructionsToJSON(
+    suspend fun convertManifestInstructionsToJSON(
         manifest: TransactionManifest
     ): Result<ConvertManifestResponse> {
         val networkId = profileDataSource.getCurrentNetworkId()
@@ -261,7 +261,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private suspend fun convertManifestInstructionsToString(
+    suspend fun convertManifestInstructionsToString(
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
         val networkId = profileDataSource.getCurrentNetworkId()
@@ -381,7 +381,7 @@ class TransactionClient @Inject constructor(
     }
 
     @Suppress("NestedBlockDepth")
-    private fun getAddressesNeededToSignTransaction(jsonTransactionManifest: TransactionManifest): List<String> {
+    fun getAddressesNeededToSignTransaction(jsonTransactionManifest: TransactionManifest): List<String> {
         val addressesNeededToSign = mutableListOf<String>()
         when (val manifestInstructions = jsonTransactionManifest.instructions) {
             is ManifestInstructions.ParsedInstructions -> {
@@ -389,7 +389,7 @@ class TransactionClient @Inject constructor(
                     .forEach { instruction ->
                         when (instruction) {
                             is Instruction.CallMethod -> {
-                                instruction.componentAddress.executeWhenIfAccountComponent { accountAddress ->
+                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
                                     val isMethodThatRequiresAuth = MethodName
                                         .methodsThatRequireAuth()
                                         .map { methodName ->
@@ -403,23 +403,23 @@ class TransactionClient @Inject constructor(
                             }
                             is Instruction.SetMetadata -> {
                                 (instruction.entityAddress as? Address.ComponentAddress)
-                                    ?.executeWhenIfAccountComponent { accountAddress ->
+                                    ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
                             }
                             is Instruction.SetMethodAccessRule -> {
                                 (instruction.entityAddress as? Address.ComponentAddress)
-                                    ?.executeWhenIfAccountComponent { accountAddress ->
+                                    ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
                             }
                             is Instruction.SetComponentRoyaltyConfig -> {
-                                instruction.componentAddress.executeWhenIfAccountComponent { accountAddress ->
+                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
                                     addressesNeededToSign.add(accountAddress)
                                 }
                             }
                             is Instruction.ClaimComponentRoyalty -> {
-                                instruction.componentAddress.executeWhenIfAccountComponent { accountAddress ->
+                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
                                     addressesNeededToSign.add(accountAddress)
                                 }
                             }
@@ -433,14 +433,14 @@ class TransactionClient @Inject constructor(
         return addressesNeededToSign.distinct().toList()
     }
 
-    private fun Value.ComponentAddress.executeWhenIfAccountComponent(action: (String) -> Unit) {
-        if (address.componentAddress.contains("account")) {
+    private fun Value.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
+        if (address.componentAddress.startsWith("account")) {
             action(address.componentAddress)
         }
     }
 
-    private fun Address.ComponentAddress.executeWhenIfAccountComponent(action: (String) -> Unit) {
-        if (componentAddress.contains("account")) {
+    private fun Address.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
+        if (componentAddress.startsWith("account")) {
             action(componentAddress)
         }
     }
