@@ -29,7 +29,10 @@ interface PeerdroidClient {
 
     fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
 
-    suspend fun close(shouldCloseConnectionToSignalingServer: Boolean = false)
+    suspend fun close(
+        shouldCloseConnectionToSignalingServer: Boolean = false,
+        isDeleteConnectionEvent: Boolean = false
+    )
 
     val isAlreadyOpen: Boolean
 }
@@ -105,6 +108,15 @@ class PeerdroidClientImpl @Inject constructor(
             ?: emptyFlow()
     }
 
+    override suspend fun close(
+        shouldCloseConnectionToSignalingServer: Boolean,
+        isDeleteConnectionEvent: Boolean
+    ) {
+        dataChannel?.close(isDeleteConnectionEvent = isDeleteConnectionEvent)
+        dataChannel = null
+        peerdroidConnector.close(shouldCloseConnectionToSignalingServer)
+    }
+
     private fun parseDataChannelState(
         dataChannelEvent: DataChannelEvent.StateChanged
     ): MessageFromDataChannel.ConnectionStateChanged {
@@ -121,6 +133,9 @@ class PeerdroidClientImpl @Inject constructor(
             DataChannelEvent.StateChanged.CLOSE -> {
                 MessageFromDataChannel.ConnectionStateChanged.CLOSE
             }
+            DataChannelEvent.StateChanged.DELETE_CONNECTION -> {
+                MessageFromDataChannel.ConnectionStateChanged.DELETE_CONNECTION
+            }
             DataChannelEvent.StateChanged.UNKNOWN -> {
                 MessageFromDataChannel.ConnectionStateChanged.ERROR
             }
@@ -130,11 +145,5 @@ class PeerdroidClientImpl @Inject constructor(
     private fun parseIncomingMessage(messageInJsonString: String): MessageFromDataChannel.IncomingRequest {
         val request = walletRequestJson.decodeFromString<WalletInteraction>(messageInJsonString)
         return request.toDomainModel()
-    }
-
-    override suspend fun close(shouldCloseConnectionToSignalingServer: Boolean) {
-        dataChannel?.close()
-        dataChannel = null
-        peerdroidConnector.close()
     }
 }

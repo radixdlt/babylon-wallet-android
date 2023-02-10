@@ -61,12 +61,11 @@ class MainViewModel @Inject constructor(
     )
 
     private var currentConnectionPassword: String = ""
-    private var observeP2PJob: Job? = null
     private var incomingRequestsJob: Job? = null
     private var handlingRequestsJob: Job? = null
 
     init {
-        observeP2PJob = profileDataSource.p2pClient
+        profileDataSource.p2pClient
             .map { p2pClient ->
                 if (p2pClient != null) {
                     Timber.d("found connection password")
@@ -113,6 +112,13 @@ class MainViewModel @Inject constructor(
                         if (message == ConnectionStateChanged.CLOSING || message == ConnectionStateChanged.CLOSE) {
                             restartConnectionToDapp()
                         }
+                        // This message will be received
+                        // when the user deletes the connection from connection settings screen.
+                        // Therefore here we should not restart connection to dapp
+                        // but to terminate the Peerdroid connection
+                        if (message == ConnectionStateChanged.DELETE_CONNECTION) {
+                            terminatePeerdroid()
+                        }
                     } else if (message is IncomingRequest) {
                         handleIncomingRequest(message)
                     }
@@ -155,7 +161,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             incomingRequestsJob?.cancel()
             handlingRequestsJob?.cancel()
-            observeP2PJob?.cancel()
             peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
         }
     }
