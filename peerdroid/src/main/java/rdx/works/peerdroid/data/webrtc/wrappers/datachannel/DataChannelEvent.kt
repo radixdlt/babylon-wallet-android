@@ -37,6 +37,7 @@ sealed interface DataChannelEvent {
         OPEN,
         CLOSING,
         CLOSE,
+        DELETE_CONNECTION,
         UNKNOWN
     }
 

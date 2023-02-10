@@ -8,11 +8,18 @@ import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
@@ -27,6 +34,8 @@ import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
 import rdx.works.peerdroid.data.websocket.model.SignalingServerResponse
+import rdx.works.peerdroid.di.ApplicationScope
+import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
@@ -56,19 +65,25 @@ internal interface WebSocketClient {
 // between the mobile wallet and the browser extension.
 internal class WebSocketClientImpl(
     private val client: HttpClient,
-    private val json: Json
+    private val json: Json,
+    @ApplicationScope private val applicationScope: CoroutineScope,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : WebSocketClient {
 
     // represents a web socket session between two peers
     private var socket: WebSocketSession? = null
+
     private lateinit var connectionId: String
     private lateinit var encryptionKey: ByteArray
+
+    private lateinit var sessionDeferred: CompletableDeferred<Result<Unit>>
 
     override suspend fun initSession(
         connectionId: String,
         encryptionKey: ByteArray
     ): Result<Unit> {
-        return try {
+        sessionDeferred = CompletableDeferred()
+        try {
             this.connectionId = connectionId
             this.encryptionKey = encryptionKey
 
@@ -82,33 +97,43 @@ internal class WebSocketClientImpl(
                 Timber.d("successfully connected to signaling server")
                 Timber.d("waiting remote peer to connect to signaling server")
                 waitUntilRemotePeerIsConnected()
-                Result.Success(Unit)
             } else {
                 Timber.d("failed to connect to signaling server")
-                Result.Error("Couldn't establish a connection.")
+                sessionDeferred.complete(Result.Error("Couldn't establish a connection."))
             }
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
             Timber.e("connection exception: ${exception.localizedMessage}")
-            Result.Error(exception.localizedMessage ?: "Unknown error")
+            sessionDeferred.complete(Result.Error(exception.localizedMessage ?: "Unknown error"))
         }
+
+        return sessionDeferred.await()
     }
 
-    private suspend fun waitUntilRemotePeerIsConnected() {
+    private fun waitUntilRemotePeerIsConnected() {
         socket?.incoming
             ?.receiveAsFlow()
+            ?.onStart { // for debugging
+                Timber.d("start observing remote peer connection until is connected")
+            }
+            ?.onCompletion { // for debugging
+                Timber.d("end observing remote peer connection until is connected")
+            }
             ?.filterIsInstance<Frame.Text>()
             ?.mapNotNull { frameText ->
                 val responseJsonString = frameText.readText()
                 decodeAndParseResponseFromJson(responseJsonString)
             }
             ?.takeWhile { signalingServerIncomingMessage ->
+                sessionDeferred.complete(Result.Success(Unit))
                 signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected &&
                     signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
             }
-            ?.collect()
+            ?.flowOn(ioDispatcher)
+            ?.cancellable()
+            ?.launchIn(applicationScope)
     }
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
@@ -162,6 +187,7 @@ internal class WebSocketClientImpl(
         return try {
             socket?.incoming // web socket channel
                 ?.receiveAsFlow()
+                ?.cancellable()
                 ?.filterIsInstance<Frame.Text>()
                 ?.mapNotNull { frameText ->
                     val responseJsonString = frameText.readText()
