@@ -52,13 +52,17 @@ object AppModule {
     @Provides
     @Singleton
     internal fun provideWebSocketClient(
-        client: HttpClient
+        client: HttpClient,
+        @ApplicationScope applicationScope: CoroutineScope,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): WebSocketClient = WebSocketClientImpl(
         client = client,
         // fixes https://radixdlt.atlassian.net/browse/ABW-902
         json = Json {
             ignoreUnknownKeys = true
-        }
+        },
+        applicationScope = applicationScope,
+        ioDispatcher = ioDispatcher
     )
 
     @Provides
