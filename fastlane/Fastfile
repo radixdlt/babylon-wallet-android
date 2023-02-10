@@ -99,8 +99,7 @@ lane :release_to_google_play do
         skip_upload_apk: true,
         skip_upload_images: true,
         skip_upload_screenshots: true,
-        json_key_data: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON"],
-        mapping: mapping_file_exists() ? Actions.lane_context[SharedValues::GRADLE_MAPPING_TXT_OUTPUT_PATH] : nil
+        json_key_data: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON"]
         )
 end
 
