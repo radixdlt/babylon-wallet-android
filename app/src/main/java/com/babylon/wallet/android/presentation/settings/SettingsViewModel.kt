@@ -35,7 +35,9 @@ class SettingsViewModel @Inject constructor(
                         }
                     }
                 } else {
-                    state.settings.filter { it != SettingSectionItem.Connection }
+                    state.settings.filter { settingSectionItem ->
+                        settingSectionItem != SettingSectionItem.Connection
+                    }
                 }
                 state = state.copy(settings = updatedSettings.toPersistentList())
             }
@@ -46,7 +48,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             profileDataSource.clear()
             preferencesManager.clear()
-            peerdroidClient.close()
+            peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
         }
     }
 }
