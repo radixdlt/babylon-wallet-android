@@ -107,7 +107,7 @@ lane :release_to_google_play do
     version_name = android_get_version_name
     git_commit(
         path: "./versioning/#{BUILD_NUMBER_FILE}",
-        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
+        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Playstore"
     )
     push_to_git_remote(
         remote_branch: ENV["RELEASE_BRANCH"],
