@@ -44,7 +44,11 @@ object NetworkModule {
                 chain.proceed(request)
             }
         }
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
         return OkHttpClient.Builder().addInterceptor(baseUrlInterceptor).addInterceptor(loggingInterceptor).build()
     }
 
@@ -71,7 +75,11 @@ object NetworkModule {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
         val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
         val retrofitBuilder = Retrofit.Builder().client(httpClient)
             .baseUrl(BuildConfig.GATEWAY_API_URL)

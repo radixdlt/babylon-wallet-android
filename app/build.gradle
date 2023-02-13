@@ -84,6 +84,7 @@ android {
         }
         releasePreview {
             initWith release
+            buildConfigField "boolean", "DEBUG_MODE", "false"
             signingConfig signingConfigs.releasePreview
             applicationIdSuffix ".preview"
             minifyEnabled true
@@ -93,6 +94,7 @@ android {
         }
         release {
             minifyEnabled true
+            buildConfigField "boolean", "DEBUG_MODE", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
