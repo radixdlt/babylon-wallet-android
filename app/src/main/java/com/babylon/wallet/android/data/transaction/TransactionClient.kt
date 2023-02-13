@@ -117,7 +117,7 @@ class TransactionClient @Inject constructor(
                 )
             addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
         }
-        val addressesNeededToSign = getAddressesNeededToSign(jsonTransactionManifest)
+        val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
                 TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
