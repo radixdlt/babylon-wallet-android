@@ -24,7 +24,7 @@ class GetAccountResourcesUseCase @Inject constructor(
     private val accountRepository: AccountRepository
 ) {
 
-    suspend operator fun invoke(): Result<List<AccountResources>> = coroutineScope {
+    suspend operator fun invoke(failOnAnyError: Boolean = true): Result<List<AccountResources>> = coroutineScope {
         val accountResourceList = mutableListOf<AccountResources>()
         val results = accountRepository.getAccounts().map { account ->
             async {
@@ -37,6 +37,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         }.awaitAll()
 
         results.forEach { result ->
+            if (failOnAnyError && result is Result.Error) return@coroutineScope Result.Error(result.exception)
             result.onValue {
                 accountResourceList.add(it)
             }
