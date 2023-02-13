@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.toolkit.builders.ManifestBuilder
@@ -36,28 +38,35 @@ internal class TransactionClientTest {
         transactionClient = TransactionClient(
             transactionRepository, profileDataSource, accountRepository, getAccountResourceUseCase
         )
+        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab") } returns Result.Success(
+            SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab")
+        )
+        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej") } returns Result.Success(
+            SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
+        )
         coEvery { profileDataSource.getCurrentNetworkId() } returns Network.nebunet.networkId()
+
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `correctly finds address needed for signing set metadata manifest`() = runTest {
-        val manifest = ManifestBuilder().addInstruction(
+    fun `finds address involved & signing for set metadata manifest`() = runTest {
+        var manifest = ManifestBuilder().addInstruction(
             Instruction.SetMetadata(
-                entityAddress = Address.ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr"),
-                Value.String("name"),
-                Value.String("RadixDashboard")
-            )
-        ).addInstruction(
-            Instruction.SetMetadata(
-                entityAddress = Address.ComponentAddress("account_sim1q0egd2wpyslhkd28yuwpzq0qdg4aq73kl4urcnc3qsxsk6kug3"),
+                entityAddress = Address.ComponentAddress("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"),
                 Value.String("name"),
                 Value.String("RadixDashboard")
             )
         ).build()
-        val addresses = transactionClient.getAddressesNeededToSignTransaction(
-            manifest
+        val addressesInvolved = transactionClient.getAddressesInvolvedInATransaction(manifest)
+        val addressToLockFee = transactionClient.selectAccountAddressToLockFee(addressesInvolved)
+        assert(addressToLockFee != null)
+        manifest = transactionClient.addLockFeeInstructionToManifest(manifest, addressToLockFee!!)
+        val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
+        Assert.assertEquals(1, addressesNeededToSign.size)
+        Assert.assertEquals(
+            "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej",
+            addressesNeededToSign.first()
         )
-        Assert.assertEquals("account_sim1q0egd2wpyslhkd28yuwpzq0qdg4aq73kl4urcnc3qsxsk6kug3", addresses.first())
     }
 }

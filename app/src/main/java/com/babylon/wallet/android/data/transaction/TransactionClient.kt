@@ -79,7 +79,8 @@ class TransactionClient @Inject constructor(
             is Result.Error -> return manifestConversionResult
             is Result.Success -> manifestConversionResult.data
         }
-        val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
+        val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
+        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
             TransactionApprovalException(TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
         )
         return Result.Success(
@@ -106,24 +107,24 @@ class TransactionClient @Inject constructor(
         networkId: Int,
         hasLockFeeInstruction: Boolean,
     ): Result<String> {
-        val addressesNeededToSign = getAddressesNeededToSignTransaction(jsonTransactionManifest)
+        val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
+        val manifestWithTransactionFee = if (hasLockFeeInstruction) {
+            jsonTransactionManifest
+        } else {
+            val accountAddressToLockFee =
+                selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
+                    TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+                )
+            addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
+        }
+        val addressesNeededToSign = getAddressesNeededToSign(jsonTransactionManifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
                 TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
             )
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
-            is Result.Error -> {
-                return transactionHeaderResult
-            }
+            is Result.Error -> return transactionHeaderResult
             is Result.Success -> {
-                val manifestWithTransactionFee = if (hasLockFeeInstruction) {
-                    jsonTransactionManifest
-                } else {
-                    val accountAddressToLockFee = getAccountAddressToLockFee() ?: return Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
-                    )
-                    addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
-                }
                 val notarizedTransaction = try {
                     val notarizedTransactionBuilder = TransactionBuilder()
                         .manifest(manifestWithTransactionFee)
@@ -175,16 +176,20 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private suspend fun getAccountAddressToLockFee(): String? {
-        return when (val accounts = getAccountResourcesUseCase(failOnAnyError = false)) {
-            is Result.Error -> null
-            is Result.Success -> {
-                val accountWithXrd = accounts.data.firstOrNull { accountResources ->
-                    accountResources.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+    suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
+        var selectedAddress: String? = null
+        for (address in involvedAddresses) {
+            when (val account = getAccountResourcesUseCase(address)) {
+                is Result.Error -> null
+                is Result.Success -> {
+                    if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
+                        selectedAddress = account.data.address
+                        break
+                    }
                 }
-                accountWithXrd?.address
             }
         }
+        return selectedAddress
     }
 
     private suspend fun buildTransactionHeader(
@@ -380,8 +385,15 @@ class TransactionClient @Inject constructor(
         return Result.Success(txID)
     }
 
+    fun getAddressesNeededToSign(jsonTransactionManifest: TransactionManifest): List<String> {
+        return getAddressesInvolvedInATransaction(jsonTransactionManifest, ::callMethodAuthorizedFilter)
+    }
+
     @Suppress("NestedBlockDepth")
-    fun getAddressesNeededToSignTransaction(jsonTransactionManifest: TransactionManifest): List<String> {
+    fun getAddressesInvolvedInATransaction(
+        jsonTransactionManifest: TransactionManifest,
+        callInstructionFilter: ((String) -> Boolean) = { true }
+    ): List<String> {
         val addressesNeededToSign = mutableListOf<String>()
         when (val manifestInstructions = jsonTransactionManifest.instructions) {
             is ManifestInstructions.ParsedInstructions -> {
@@ -390,13 +402,7 @@ class TransactionClient @Inject constructor(
                         when (instruction) {
                             is Instruction.CallMethod -> {
                                 instruction.componentAddress.executeIfAccountComponent { accountAddress ->
-                                    val isMethodThatRequiresAuth = MethodName
-                                        .methodsThatRequireAuth()
-                                        .map { methodName ->
-                                            methodName.stringValue
-                                        }
-                                        .contains(instruction.methodName.value)
-                                    if (isMethodThatRequiresAuth) {
+                                    if (callInstructionFilter(instruction.methodName.value)) {
                                         addressesNeededToSign.add(accountAddress)
                                     }
                                 }
@@ -431,6 +437,15 @@ class TransactionClient @Inject constructor(
             }
         }
         return addressesNeededToSign.distinct().toList()
+    }
+
+    private fun callMethodAuthorizedFilter(instructionName: String): Boolean {
+        return MethodName
+            .methodsThatRequireAuth()
+            .map { methodName ->
+                methodName.stringValue
+            }
+            .contains(instructionName)
     }
 
     private fun Value.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
