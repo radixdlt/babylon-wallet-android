@@ -50,7 +50,7 @@ android {
         targetSdk rootProject.ext.targetSdk
         versionCode 1
         versionName "0.0.1"
-        buildConfigField "boolean", "DEBUG_MODE", "false"
+        buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "GATEWAY_API_URL", '"https://betanet.radixdlt.com"'
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         resValue "string", "app_name", "Radix Wallet"
@@ -84,6 +84,7 @@ android {
         }
         releasePreview {
             initWith release
+            buildConfigField "boolean", "DEBUG_MODE", "false"
             signingConfig signingConfigs.releasePreview
             applicationIdSuffix ".preview"
             minifyEnabled true
@@ -93,6 +94,7 @@ android {
         }
         release {
             minifyEnabled true
+            buildConfigField "boolean", "DEBUG_MODE", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
