@@ -15,21 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param origin * @param valueHex */
+ * 
+ *
+ * @param keyHex The hex-encoded compressed EdDSA Ed25519 public key (32 bytes)
+ */
 @Serializable
 
-data class TransactionLookupIdentifier(
+data class PublicKeyEddsaEd25519AllOf (
 
-    @Contextual @SerialName(value = "origin")
-    val origin: TransactionLookupOrigin,
-
-    @SerialName(value = "value_hex")
-    val valueHex: kotlin.String
+    /* The hex-encoded compressed EdDSA Ed25519 public key (32 bytes) */
+    @SerialName(value = "key_hex")
+    val keyHex: kotlin.String
 
 )
+

@@ -23,19 +23,15 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
- * @param amount 
+ * @param keyHex The hex-encoded compressed ECDSA Secp256k1 public key (33 bytes)
  */
 @Serializable
 
-data class NonFungibleResourcesCollectionItem (
+data class PublicKeyEcdsaSecp256k1AllOf (
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
-    @SerialName(value = "address")
-    val address: kotlin.String,
-
-    @SerialName(value = "amount")
-    val amount: kotlin.Long
+    /* The hex-encoded compressed ECDSA Secp256k1 public key (33 bytes) */
+    @SerialName(value = "key_hex")
+    val keyHex: kotlin.String
 
 )
 

@@ -20,27 +20,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * 
  *
- *
- * Values: string,u32,u64,bytes,uuid
+ * Values: ecdsaSecp256k1,eddsaEd25519
  */
 @Serializable
-enum class NonFungibleLocalIdType(val value: kotlin.String) {
+enum class PublicKeyType(val value: kotlin.String) {
 
-    @SerialName(value = "string")
-    string("string"),
+    @SerialName(value = "EcdsaSecp256k1")
+    ecdsaSecp256k1("EcdsaSecp256k1"),
 
-    @SerialName(value = "u32")
-    u32("u32"),
-
-    @SerialName(value = "u64")
-    u64("u64"),
-
-    @SerialName(value = "bytes")
-    bytes("bytes"),
-
-    @SerialName(value = "uuid")
-    uuid("uuid");
+    @SerialName(value = "EddsaEd25519")
+    eddsaEd25519("EddsaEd25519");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use
@@ -55,16 +46,16 @@ enum class NonFungibleLocalIdType(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is NonFungibleLocalIdType) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is PublicKeyType) "$data" else null
 
         /**
-         * Returns a valid [NonFungibleLocalIdType] for [data], null otherwise.
+         * Returns a valid [PublicKeyType] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): NonFungibleLocalIdType? = data?.let {
-            val normalizedData = "$it".lowercase()
-            values().firstOrNull { value ->
-                it == value || normalizedData == "$value".lowercase()
-            }
+        fun decode(data: kotlin.Any?): PublicKeyType? = data?.let {
+          val normalizedData = "$it".lowercase()
+          values().firstOrNull { value ->
+            it == value || normalizedData == "$value".lowercase()
+          }
         }
     }
 }

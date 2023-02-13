@@ -23,13 +23,13 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param notarizedTransactionHex The notarized transaction payload which can be submitted, hex encoded.
+ * @param notarizedTransactionHex Hex-encoded notarized transaction payload which can be submitted.
  */
 @Serializable
 
 data class TransactionSubmitRequest (
 
-    /* The notarized transaction payload which can be submitted, hex encoded. */
+    /* Hex-encoded notarized transaction payload which can be submitted. */
     @SerialName(value = "notarized_transaction_hex")
     val notarizedTransactionHex: kotlin.String
 

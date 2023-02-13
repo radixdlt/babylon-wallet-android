@@ -16,6 +16,8 @@
 package com.babylon.wallet.android.data.gateway.generated.model
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
+import com.babylon.wallet.android.data.gateway.generated.model.PublicKey
+import com.babylon.wallet.android.data.gateway.generated.model.ValidatorCollectionItemActiveInEpochStake
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -24,19 +26,22 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the entity's global address.
+ * @param stake 
+ * @param key 
  * @param metadata 
  */
 @Serializable
 
-data class EntityOverviewResponseEntityItem (
+data class ValidatorCollectionItemActiveInEpoch (
 
-    /* Bech32m-encoded human readable version of the entity's global address. */
-    @SerialName(value = "address")
-    val address: kotlin.String,
+    @SerialName(value = "stake")
+    val stake: ValidatorCollectionItemActiveInEpochStake,
+
+    @SerialName(value = "key")
+    val key: PublicKey,
 
     @SerialName(value = "metadata")
-    val metadata: EntityMetadataCollection
+    val metadata: EntityMetadataCollection? = null
 
 )
 

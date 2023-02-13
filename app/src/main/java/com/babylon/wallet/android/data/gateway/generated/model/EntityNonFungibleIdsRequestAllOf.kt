@@ -15,33 +15,28 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.LedgerStateSelector
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param address The Bech32m-encoded human readable version of the entity's global address.
- * @param atLedgerState
- * @param resourceAddress The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param address Bech32m-encoded human readable version of the entity's global address.
+ * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limit The page size requested.
  */
 @Serializable
 
-data class EntityNonFungibleLocalIdsRequest(
+data class EntityNonFungibleIdsRequestAllOf (
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
-    @SerialName(value = "at_ledger_state")
-    val atLedgerState: LedgerStateSelector? = null,
-
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String? = null,
 

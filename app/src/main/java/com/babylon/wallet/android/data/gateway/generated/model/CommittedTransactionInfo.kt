@@ -32,9 +32,11 @@ data class CommittedTransactionInfo (
     @Contextual @SerialName(value = "transaction_status")
     val transactionStatus: TransactionStatus,
 
+    /* Hex-encoded SHA-256 hash. */
     @SerialName(value = "payload_hash_hex")
     val payloadHashHex: kotlin.String,
 
+    /* Hex-encoded SHA-256 hash. */
     @SerialName(value = "intent_hash_hex")
     val intentHashHex: kotlin.String,
 

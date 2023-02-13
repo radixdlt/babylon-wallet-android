@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address The Bech32m-encoded human readable version of the entity's global address.
+ * @param address Bech32m-encoded human readable version of the entity's global address.
  * @param fungibleResources 
  * @param nonFungibleResources 
  */
@@ -33,7 +33,7 @@ import kotlinx.serialization.Contextual
 
 data class EntityResourcesResponseAllOf (
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 

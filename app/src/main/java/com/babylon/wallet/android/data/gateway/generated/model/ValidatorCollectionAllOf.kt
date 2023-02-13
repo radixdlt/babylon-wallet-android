@@ -15,20 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.ValidatorCollectionItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param rri The radix resource identifier of the token.
+ * @param items 
  */
 @Serializable
 
-data class TokenIdentifier(
+data class ValidatorCollectionAllOf (
 
-    /* The radix resource identifier of the token. */
-    @SerialName(value = "rri")
-    val rri: kotlin.String
+    @SerialName(value = "items")
+    val items: kotlin.collections.List<ValidatorCollectionItem>
 
 )
+

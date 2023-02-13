@@ -15,23 +15,21 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.model.PublicKeyType
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param items
+ * @param keyType 
  */
 @Serializable
+abstract class PublicKey {
 
-data class NonFungibleLocalIdsCollectionAllOf(
-
-    @SerialName(value = "items")
-    val items: kotlin.collections.List<NonFungibleLocalIdsCollectionItem>
-
-)
+    @Contextual @SerialName(value = "key_type")
+    abstract val keyType: PublicKeyType
+}
 

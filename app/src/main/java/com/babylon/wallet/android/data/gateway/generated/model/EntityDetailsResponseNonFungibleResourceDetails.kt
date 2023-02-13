@@ -16,7 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.model
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponseDetailsType
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdType
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdType
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -28,7 +28,7 @@ import kotlinx.serialization.Contextual
  * @param discriminator 
  * @param accessRulesChain 
  * @param vaultAccessRulesChain 
- * @param nonFungibleLocalIdType
+ * @param nonFungibleIdType 
  */
 @Serializable
 
@@ -44,7 +44,7 @@ data class EntityDetailsResponseNonFungibleResourceDetails (
     val vaultAccessRulesChain: kotlin.Any,
 
     @Contextual @SerialName(value = "non_fungible_id_type")
-    val nonFungibleLocalIdType: NonFungibleLocalIdType
+    val nonFungibleIdType: NonFungibleIdType
 
 )
 

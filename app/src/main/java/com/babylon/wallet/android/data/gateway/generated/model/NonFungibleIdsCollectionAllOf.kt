@@ -15,27 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsCollectionItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param ledgerState
- * @param transaction
- * @param details
+ * @param items 
  */
 @Serializable
 
-data class TransactionDetailsResponse(
+data class NonFungibleIdsCollectionAllOf (
 
-    @SerialName(value = "ledger_state")
-    val ledgerState: LedgerState,
-
-    @SerialName(value = "transaction")
-    val transaction: TransactionInfo,
-
-    @SerialName(value = "details")
-    val details: TransactionDetails
+    @SerialName(value = "items")
+    val items: kotlin.collections.List<NonFungibleIdsCollectionItem>
 
 )
+

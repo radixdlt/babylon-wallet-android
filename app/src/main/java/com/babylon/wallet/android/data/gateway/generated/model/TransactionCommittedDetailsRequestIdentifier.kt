@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param type 
- * @param valueHex 
+ * @param valueHex Hex-encoded binary blob.
  */
 @Serializable
 
@@ -34,6 +34,7 @@ data class TransactionCommittedDetailsRequestIdentifier (
     @Contextual @SerialName(value = "type")
     val type: TransactionCommittedDetailsRequestIdentifierType,
 
+    /* Hex-encoded binary blob. */
     @SerialName(value = "value_hex")
     val valueHex: kotlin.String
 

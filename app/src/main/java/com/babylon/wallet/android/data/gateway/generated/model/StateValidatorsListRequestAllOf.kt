@@ -15,20 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param address The radix address of the validator.
+ * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  */
 @Serializable
 
-data class ValidatorIdentifier(
+data class StateValidatorsListRequestAllOf (
 
-    /* The radix address of the validator. */
-    @SerialName(value = "address")
-    val address: kotlin.String
+    /* This cursor allows forward pagination, by providing the cursor from the previous request. */
+    @SerialName(value = "cursor")
+    val cursor: kotlin.String? = null
 
 )
+
