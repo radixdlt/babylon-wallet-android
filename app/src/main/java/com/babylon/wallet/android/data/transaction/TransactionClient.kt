@@ -176,7 +176,7 @@ class TransactionClient @Inject constructor(
     }
 
     private suspend fun getAccountAddressToLockFee(): String? {
-        return when (val accounts = getAccountResourcesUseCase()) {
+        return when (val accounts = getAccountResourcesUseCase(failOnAnyError = false)) {
             is Result.Error -> null
             is Result.Success -> {
                 val accountWithXrd = accounts.data.firstOrNull { accountResources ->
@@ -236,7 +236,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun convertManifestInstructionsToJSON(
+    private suspend fun convertManifestInstructionsToJSON(
         manifest: TransactionManifest
     ): Result<ConvertManifestResponse> {
         val networkId = profileDataSource.getCurrentNetworkId()
@@ -261,7 +261,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun convertManifestInstructionsToString(
+    private suspend fun convertManifestInstructionsToString(
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
         val networkId = profileDataSource.getCurrentNetworkId()
