@@ -28,7 +28,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -57,7 +57,9 @@ class AccountViewModel @Inject constructor(
     init {
         loadAccountData()
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.GotFreeXrd>().collect {
+            appEventBus.events.filter { event ->
+                event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
+            }.collect {
                 refresh()
             }
         }

@@ -18,4 +18,5 @@ class AppEventBus @Inject constructor() {
 
 sealed interface AppEvent {
     object GotFreeXrd : AppEvent
+    object ApprovedTransaction : AppEvent
 }
