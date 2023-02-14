@@ -10,6 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.data.repository.updateConnectedDappPersonas
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -50,8 +51,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                             .mapNotNull {
                                 accountRepository.getAccountByAddress(it)?.toUiModel(true)
                             }
-                        dAppConnectionRepository.updateConnectedDappPersonas(
-                            connectedDapp.dAppDefinitionAddress,
+                        val updatedDapp = connectedDapp.updateConnectedDappPersonas(
                             connectedDapp.referencesToAuthorizedPersonas.map { ref ->
                                 if (ref.identityAddress == authorizedPersonaSimple.identityAddress) {
                                     ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
@@ -69,6 +69,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                             usePersona = request.isUsePersonaAuth(),
                             ongoingAccounts = selectedAccounts
                         )
+                        dAppConnectionRepository.updateOrCreateConnectedDApp(updatedDapp)
                         when (result) {
                             is Result.Success -> {
                                 operationResult = Result.Success(

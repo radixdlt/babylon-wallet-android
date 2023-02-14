@@ -8,9 +8,7 @@ interface DAppConnectionRepository {
 
     suspend fun getConnectedDapp(dAppDefinitionAddress: String): OnNetwork.ConnectedDapp?
 
-    suspend fun addConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp)
-
-    suspend fun updateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp)
+    suspend fun updateOrCreateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp)
 
     suspend fun getDAppConnectedPersona(
         dAppDefinitionAddress: String,
@@ -24,16 +22,11 @@ interface DAppConnectionRepository {
         quantifier: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String>
 
-    suspend fun updateAuthorizedPersonaSharedAccounts(
+    suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
         sharedAccounts: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
-    )
-
-    suspend fun updateConnectedDappPersonas(
-        dAppDefinitionAddress: String,
-        personas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
-    )
+    ): OnNetwork.ConnectedDapp?
 }
 
 class DAppConnectionRepositoryImpl @Inject constructor(
@@ -45,22 +38,12 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         return profileDataSource.readProfile()?.getConnectedDapp(dAppDefinitionAddress, networkId)
     }
 
-    override suspend fun addConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
+    override suspend fun updateOrCreateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
         val profile = profileDataSource.readProfile()
 
         requireNotNull(profile)
 
-        val updatedProfile = profile.addConnectedDapp(connectedDApp)
-
-        profileDataSource.saveProfile(updatedProfile)
-    }
-
-    override suspend fun updateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
-        val profile = profileDataSource.readProfile()
-
-        requireNotNull(profile)
-
-        val updatedProfile = profile.updateConnectedDapp(connectedDApp)
+        val updatedProfile = profile.createOrUpdateConnectedDapp(connectedDApp)
 
         profileDataSource.saveProfile(updatedProfile)
     }
@@ -92,33 +75,21 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateAuthorizedPersonaSharedAccounts(
+    override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
         sharedAccounts: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
-    ) {
+    ): OnNetwork.ConnectedDapp {
         val dapp = getConnectedDapp(dAppDefinitionAddress)
         val persona = dapp?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }
         requireNotNull(persona)
-
-        updateConnectedDApp(
-            dapp.copy(
-                referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.toMutableList().apply {
-                    set(indexOf(persona), persona.copy(sharedAccounts = sharedAccounts))
-                }
-            )
+        return dapp.copy(
+            referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.toMutableList().apply {
+                set(indexOf(persona), persona.copy(sharedAccounts = sharedAccounts))
+            }
         )
-    }
-
-    override suspend fun updateConnectedDappPersonas(
-        dAppDefinitionAddress: String,
-        personas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
-    ) {
-        getConnectedDapp(dAppDefinitionAddress)?.updateConnectedDappPersonas(personas)?.let { updatedDapp ->
-            updateConnectedDApp(updatedDapp)
-        }
     }
 }
 
@@ -128,39 +99,7 @@ fun Profile.getConnectedDapp(dAppDefinitionAddress: String, networkId: Int): OnN
     }
 }
 
-fun Profile.addConnectedDapp(
-    connectedDapp: OnNetwork.ConnectedDapp
-): Profile {
-    val updatedOnNetwork = onNetwork.map { network ->
-        if (network.networkID == connectedDapp.networkID) {
-            // Check if this dapp exists in the profile and if so throw exception
-            val dAppExists = network.connectedDapps.any { dApp ->
-                dApp.dAppDefinitionAddress == connectedDapp.dAppDefinitionAddress
-            }
-            require(dAppExists.not()) {
-                throw IllegalArgumentException("Dapp already exists")
-            }
-
-            val validatedConnectedDapp = network.validateAuthorizedPersonas(connectedDapp)
-            network.copy(
-                accounts = network.accounts,
-                connectedDapps = network.connectedDapps + validatedConnectedDapp,
-                networkID = network.networkID,
-                personas = network.personas
-            )
-        } else {
-            network
-        }
-    }
-
-    return this.copy(
-        appPreferences = appPreferences,
-        factorSources = factorSources,
-        onNetwork = updatedOnNetwork,
-    )
-}
-
-fun Profile.updateConnectedDapp(
+fun Profile.createOrUpdateConnectedDapp(
     unverifiedConnectedDapp: OnNetwork.ConnectedDapp
 ): Profile {
     val updatedOnNetwork = onNetwork.map { network ->
@@ -169,22 +108,26 @@ fun Profile.updateConnectedDapp(
             val existingDapp = network.connectedDapps.find { dAppInProfile ->
                 dAppInProfile.dAppDefinitionAddress == unverifiedConnectedDapp.dAppDefinitionAddress
             }
-            requireNotNull(existingDapp) {
-                throw IllegalArgumentException("Dapp does NOT exist")
+            if (existingDapp == null) {
+                network.copy(
+                    accounts = network.accounts,
+                    connectedDapps = network.connectedDapps + listOf(unverifiedConnectedDapp),
+                    networkID = network.networkID,
+                    personas = network.personas
+                )
+            } else {
+                val connectedDapp = network.validateAuthorizedPersonas(unverifiedConnectedDapp)
+                // Remove old connectedDapp
+                val updatedDapps = network.connectedDapps.toMutableList().apply {
+                    set(network.connectedDapps.indexOf(existingDapp), connectedDapp)
+                }
+                network.copy(
+                    accounts = network.accounts,
+                    connectedDapps = updatedDapps,
+                    networkID = network.networkID,
+                    personas = network.personas
+                )
             }
-
-            val connectedDapp = network.validateAuthorizedPersonas(unverifiedConnectedDapp)
-            // Remove old connectedDapp
-            val updatedDapps = network.connectedDapps.toMutableList().apply {
-                set(network.connectedDapps.indexOf(existingDapp), connectedDapp)
-            }
-
-            network.copy(
-                accounts = network.accounts,
-                connectedDapps = updatedDapps,
-                networkID = network.networkID,
-                personas = network.personas
-            )
         } else {
             network
         }
@@ -206,6 +149,21 @@ fun OnNetwork.ConnectedDapp.updateConnectedDappPersonas(
         dAppDefinitionAddress = dAppDefinitionAddress,
         displayName = displayName,
         referencesToAuthorizedPersonas = updatedAuthPersonas
+    )
+}
+
+fun OnNetwork.ConnectedDapp.updateDappAuthorizedPersonaSharedAccounts(
+    personaAddress: String,
+    sharedAccounts: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
+): OnNetwork.ConnectedDapp {
+    val persona = referencesToAuthorizedPersonas.firstOrNull {
+        it.identityAddress == personaAddress
+    }
+    requireNotNull(persona)
+    return this.copy(
+        referencesToAuthorizedPersonas = referencesToAuthorizedPersonas.toMutableList().apply {
+            set(indexOf(persona), persona.copy(sharedAccounts = sharedAccounts))
+        }
     )
 }
 

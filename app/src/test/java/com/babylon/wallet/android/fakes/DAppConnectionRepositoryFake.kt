@@ -39,11 +39,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         }
     }
 
-    override suspend fun addConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
-        this.connectedDApp = connectedDApp
-    }
-
-    override suspend fun updateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
+    override suspend fun updateOrCreateConnectedDApp(connectedDApp: OnNetwork.ConnectedDapp) {
         this.connectedDApp = connectedDApp
     }
 
@@ -63,16 +59,12 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         return emptyList()
     }
 
-    override suspend fun updateAuthorizedPersonaSharedAccounts(
+    override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
         sharedAccounts: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
-    ) {
+    ): OnNetwork.ConnectedDapp? {
+        return this.connectedDApp
     }
 
-    override suspend fun updateConnectedDappPersonas(
-        dAppDefinitionAddress: String,
-        personas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
-    ) {
-    }
 }
