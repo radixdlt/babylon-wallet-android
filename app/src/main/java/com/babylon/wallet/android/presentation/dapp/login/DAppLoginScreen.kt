@@ -128,96 +128,98 @@ private fun DAppLoginContent(
             exit = fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                IconButton(onClick = onCancelClick) {
-                    Icon(
-                        imageVector = Icons.Filled.Clear,
-                        contentDescription = "clear"
-                    )
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    IconButton(onClick = onCancelClick) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = "clear"
+                        )
+                    }
+                    LazyColumn(
+                        contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            AsyncImage(
+                                model = dappMetadata?.getIcon(),
+                                placeholder = painterResource(id = R.drawable.img_placeholder),
+                                fallback = painterResource(id = R.drawable.img_placeholder),
+                                error = painterResource(id = R.drawable.img_placeholder),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(104.dp)
+                                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
+                                    .clip(RadixTheme.shapes.roundedRectDefault)
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            Text(
+                                text = stringResource(
+                                    id = if (firstTimeLogin) {
+                                        R.string.new_login_request
+                                    } else {
+                                        R.string.login_request
+                                    }
+                                ),
+                                textAlign = TextAlign.Center,
+                                style = RadixTheme.typography.title,
+                                color = RadixTheme.colors.gray1
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            LoginRequestHeader(
+                                dappName = dappMetadata?.getName() ?: "Unknown dApp",
+                                firstTimeLogin = firstTimeLogin,
+                                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
+                            )
+                            Text(
+                                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(R.string.choose_a_persona),
+                                textAlign = TextAlign.Center,
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.gray1
+                            )
+                        }
+                        itemsIndexed(items = personas) { _, personaItem ->
+                            PersonaCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
+                                    .clip(RadixTheme.shapes.roundedRectMedium)
+                                    .throttleClickable {
+                                        onSelectPersona(personaItem.persona.address)
+                                    },
+                                persona = personaItem,
+                                onSelectPersona = onSelectPersona
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        }
+                        item {
+                            RadixSecondaryButton(
+                                text = stringResource(id = R.string.create_a_new_persona),
+                                onClick = createNewPersona
+                            )
+                            Spacer(modifier = Modifier.height(100.dp))
+                        }
+                    }
                 }
-                LazyColumn(
-                    contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        AsyncImage(
-                            model = dappMetadata?.getIcon(),
-                            placeholder = painterResource(id = R.drawable.img_placeholder),
-                            fallback = painterResource(id = R.drawable.img_placeholder),
-                            error = painterResource(id = R.drawable.img_placeholder),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(104.dp)
-                                .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
-                                .clip(RadixTheme.shapes.roundedRectDefault)
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        Text(
-                            text = stringResource(
-                                id = if (firstTimeLogin) {
-                                    R.string.new_login_request
-                                } else {
-                                    R.string.login_request
-                                }
-                            ),
-                            textAlign = TextAlign.Center,
-                            style = RadixTheme.typography.title,
-                            color = RadixTheme.colors.gray1
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        LoginRequestHeader(
-                            dappName = dappMetadata?.getName() ?: "Unknown dApp",
-                            firstTimeLogin = firstTimeLogin,
-                            modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
-                        )
-                        Text(
-                            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(R.string.choose_a_persona),
-                            textAlign = TextAlign.Center,
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1
-                        )
-                    }
-                    itemsIndexed(items = personas) { _, personaItem ->
-                        PersonaCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
-                                .clip(RadixTheme.shapes.roundedRectMedium)
-                                .throttleClickable {
-                                    onSelectPersona(personaItem.persona.address)
-                                },
-                            persona = personaItem,
-                            onSelectPersona = onSelectPersona
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    }
-                    item {
-                        RadixSecondaryButton(
-                            text = stringResource(id = R.string.create_a_new_persona),
-                            onClick = createNewPersona
-                        )
-                        Spacer(modifier = Modifier.height(100.dp))
-                    }
-                }
+                BottomContinueButton(
+                    onLoginClick = onLoginClick,
+                    loginButtonEnabled = continueButtonEnabled,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.defaultBackground)
+                        .align(Alignment.BottomCenter)
+                )
             }
+            SnackbarUiMessageHandler(
+                message = errorMessage,
+                onMessageShown = onMessageShown,
+                modifier = Modifier.imePadding()
+            )
         }
-        BottomContinueButton(
-            onLoginClick = onLoginClick,
-            loginButtonEnabled = continueButtonEnabled,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground)
-                .align(Alignment.BottomCenter)
-        )
-        SnackbarUiMessageHandler(
-            message = errorMessage,
-            onMessageShown = onMessageShown,
-            modifier = Modifier.imePadding()
-        )
     }
 }
 
