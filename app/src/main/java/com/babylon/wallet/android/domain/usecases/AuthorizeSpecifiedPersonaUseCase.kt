@@ -25,10 +25,10 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             var operationResult: Result<String> =
                 Result.Error()
             if (request is IncomingRequest.AuthorizedRequest &&
-                request.authRequest is IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
+                request.isUsePersonaWithOngoingAccountsOnly()
             ) {
                 val dappDefinitionAddress = request.metadata.dAppDefinitionAddress
-                val authRequest = request.authRequest
+                val authRequest = request.authRequest as IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
                 val connectedDapp = dAppConnectionRepository.getConnectedDapp(
                     dappDefinitionAddress
                 )
