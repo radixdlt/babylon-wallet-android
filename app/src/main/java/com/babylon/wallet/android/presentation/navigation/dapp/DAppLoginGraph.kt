@@ -59,6 +59,9 @@ fun NavGraphBuilder.dAppLoginGraph(
             },
             onCompleteFlow = {
                 navController.popBackStack(ROUTE_DAPP_FLOW, true)
+            },
+            onBackClick = {
+                navController.navigateUp()
             }
         )
         chooseAccounts(

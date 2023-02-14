@@ -25,7 +25,8 @@ fun NavController.chooseAccountsOneTime(requestId: String) {
 fun NavGraphBuilder.chooseAccountsOneTime(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
-    onAccountCreationClick: () -> Unit
+    onAccountCreationClick: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     composable(
         route = "choose_accounts_route/{$ARG_REQUEST_ID}",
@@ -37,7 +38,8 @@ fun NavGraphBuilder.chooseAccountsOneTime(
             viewModel = hiltViewModel(),
             exitRequestFlow = exitRequestFlow,
             dismissErrorDialog = dismissErrorDialog,
-            onAccountCreationClick = onAccountCreationClick
+            onAccountCreationClick = onAccountCreationClick,
+            onBackClick = onBackClick
         )
     }
 }

@@ -46,7 +46,9 @@ import kotlinx.collections.immutable.ImmutableList
 fun ChooseAccountContent(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onRejectClick: () -> Unit,
     isContinueButtonEnabled: Boolean,
+    isDismissable: Boolean,
     accountItems: ImmutableList<AccountItemUiModel>,
     onAccountSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -59,18 +61,27 @@ fun ChooseAccountContent(
 ) {
     Box(
         modifier = modifier
-//            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.Filled.Clear,
-                    contentDescription = "clear"
-                )
-            }
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = {
+                    if (isDismissable) {
+                        onRejectClick()
+                    } else {
+                        onBackClick()
+                    }
+                },
+                contentColor = RadixTheme.colors.gray1,
+                backIconType = if (isDismissable) {
+                    BackIconType.Close
+                } else {
+                    BackIconType.Back
+                }
+            )
             LazyColumn(
                 contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,

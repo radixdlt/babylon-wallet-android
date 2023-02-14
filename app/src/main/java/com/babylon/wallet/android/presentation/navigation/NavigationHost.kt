@@ -141,10 +141,14 @@ fun NavigationHost(
             },
             dismissErrorDialog = {
                 navController.popBackStack()
+            },
+            onAccountCreationClick = {
+                navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
+            },
+            onBackClick = {
+                navController.navigateUp()
             }
-        ) {
-            navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
-        }
+        )
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
                 navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)

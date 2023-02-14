@@ -45,6 +45,9 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
+import com.babylon.wallet.android.presentation.settings.addconnection.SettingsConnectionMode
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 
 @Composable
@@ -53,7 +56,9 @@ fun DAppPermissionScreen(
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
-    onCompleteFlow: () -> Unit
+    isDismissable: Boolean,
+    onCompleteFlow: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     LaunchedEffect(Unit) {
@@ -73,6 +78,8 @@ fun DAppPermissionScreen(
         dappMetadata = state.dappMetadata,
         showProgress = state.showProgress,
         onRejectClick = viewModel::onRejectLogin,
+        isDismissable = isDismissable,
+        onBackClick = onBackClick,
         numberOfAccounts = numberOfAccounts,
         isExactAccountsCount = isExactAccountsCount
     )
@@ -84,23 +91,34 @@ private fun DAppPermissionContent(
     dappMetadata: DappMetadata?,
     showProgress: Boolean,
     onRejectClick: () -> Unit,
+    isDismissable: Boolean,
+    onBackClick: () -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
-//            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
     ) {
-        IconButton(onClick = onRejectClick) {
-            Icon(
-                imageVector = Icons.Filled.Clear,
-                contentDescription = "clear"
-            )
-        }
+        RadixCenteredTopAppBar(
+            title = stringResource(id = R.string.empty),
+            onBackClick = {
+                if (isDismissable) {
+                    onRejectClick()
+                } else {
+                    onBackClick()
+                }
+            },
+            contentColor = RadixTheme.colors.gray1,
+            backIconType = if (isDismissable) {
+                BackIconType.Close
+            } else {
+                BackIconType.Back
+            }
+        )
         AnimatedVisibility(visible = showProgress, modifier = Modifier.fillMaxSize()) {
             FullscreenCircularProgressContent()
         }
@@ -214,6 +232,8 @@ fun DAppLoginContentPreview() {
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             showProgress = false,
             onRejectClick = {},
+            isDismissable = true,
+            onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize()
@@ -230,6 +250,8 @@ fun DAppLoginContentFirstTimePreview() {
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             showProgress = false,
             onRejectClick = {},
+            isDismissable = true,
+            onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize()

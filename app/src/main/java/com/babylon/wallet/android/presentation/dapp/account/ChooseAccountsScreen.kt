@@ -47,7 +47,11 @@ fun ChooseAccountsScreen(
         onContinueClick = {
             sharedViewModel.onAccountsSelected(state.selectedAccounts)
         },
+        onRejectClick = {
+            // Reject entire flow, not applicable right now ?
+        },
         isContinueButtonEnabled = state.isContinueButtonEnabled,
+        isDismissable = false,
         accountItems = state.availableAccountItems,
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
@@ -96,7 +100,9 @@ fun ChooseAccountContentPreview() {
         ChooseAccountContent(
             onBackClick = {},
             onContinueClick = {},
+            onRejectClick = {},
             isContinueButtonEnabled = true,
+            isDismissable = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
             isOneTime = false,

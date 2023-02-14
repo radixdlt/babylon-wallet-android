@@ -34,7 +34,8 @@ fun NavController.dappPermission(
 fun NavGraphBuilder.dappPermission(
     navController: NavController,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onCompleteFlow: () -> Unit
+    onCompleteFlow: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     composable(
         route = "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}",
@@ -55,7 +56,9 @@ fun NavGraphBuilder.dappPermission(
             onChooseAccounts = onChooseAccounts,
             numberOfAccounts = numberOfAccounts,
             isExactAccountsCount = quantifier,
-            onCompleteFlow = onCompleteFlow
+            isDismissable = false, // For now it always appears next, so it wont be dismissable, can only navigate back
+            onCompleteFlow = onCompleteFlow,
+            onBackClick = onBackClick
         )
     }
 }

@@ -24,6 +24,7 @@ fun OneTimeChooseAccountsScreen(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
@@ -40,11 +41,13 @@ fun OneTimeChooseAccountsScreen(
     BackHandler(true) {}
     val state = viewModel.state
     ChooseAccountContent(
-        onBackClick = viewModel::onRejectRequest,
+        onBackClick = onBackClick,
         onContinueClick = {
             viewModel.sendAccountsResponse()
         },
+        onRejectClick = viewModel::onRejectRequest,
         isContinueButtonEnabled = state.isContinueButtonEnabled,
+        isDismissable = false, // For now it will never be dismissable i.e. always have back arrow
         accountItems = state.availableAccountItems,
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
@@ -92,7 +95,9 @@ fun OneTimeAccountContentPreview() {
         ChooseAccountContent(
             onBackClick = {},
             onContinueClick = {},
+            onRejectClick = {},
             isContinueButtonEnabled = true,
+            isDismissable = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
             isOneTime = true,
