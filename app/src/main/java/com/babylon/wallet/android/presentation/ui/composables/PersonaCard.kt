@@ -31,7 +31,7 @@ import com.babylon.wallet.android.presentation.dapp.login.PersonaUiModel
 
 @Composable
 @Suppress("DestructuringDeclarationWithTooManyEntries")
-fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (PersonaUiModel) -> Unit) {
+fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (String) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     Column(modifier) {
         Row(
@@ -63,7 +63,7 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (P
             RadioButton(
                 selected = persona.selected,
                 onClick = {
-                    onSelectPersona(persona)
+                    onSelectPersona(persona.persona.address)
                 },
                 colors = RadioButtonDefaults.colors(
                     selectedColor = RadixTheme.colors.gray1,
@@ -95,8 +95,7 @@ fun DAppLoginContentPreview() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
-            persona = PersonaUiModel(SampleDataProvider().samplePersona()),
-            onSelectPersona = {}
-        )
+            persona = PersonaUiModel(SampleDataProvider().samplePersona())
+        ) {}
     }
 }

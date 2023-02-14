@@ -44,12 +44,15 @@ fun NavGraphBuilder.dAppLoginGraph(
             onChooseAccounts = { event ->
                 navController.chooseAccounts(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
-            createNewPersona = {
-                navController.createPersonaScreen()
-            },
             onLoginFlowComplete = { dappName ->
                 navController.popBackStack(ROUTE_DAPP_FLOW, true)
                 navController.requestSuccess(dappName)
+            },
+            createNewPersona = {
+                navController.createPersonaScreen()
+            },
+            skipLoginScreen = {
+                navController.popBackStack(ROUTE_DAPP_FLOW, true)
             }
         )
         dappPermission(

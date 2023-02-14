@@ -35,6 +35,6 @@ sealed class AuthRequestResponseItem
 @Serializable
 @SerialName("usePersona")
 data class AuthUsePersonaRequestResponseItem(
-    @SerialName("identityAddress")
-    val identityAddress: String
+    @SerialName("persona")
+    val persona: PersonaDto
 ) : AuthRequestResponseItem()

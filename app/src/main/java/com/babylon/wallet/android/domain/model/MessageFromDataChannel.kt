@@ -22,6 +22,10 @@ sealed interface MessageFromDataChannel {
                     ongoingAccountsRequestItem != null && oneTimeAccountsRequestItem == null
             }
 
+            fun isUsePersonaAuth(): Boolean {
+                return authRequest is AuthRequest.UsePersonaRequest
+            }
+
             sealed interface AuthRequest {
                 data class LoginRequest(val challenge: String? = null) : AuthRequest
                 data class UsePersonaRequest(val personaAddress: String) : AuthRequest

@@ -32,7 +32,8 @@ fun NavGraphBuilder.dAppLogin(
     onHandleOngoingAccounts: (DAppLoginEvent.HandleOngoingAccounts) -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String) -> Unit,
-    createNewPersona: () -> Unit
+    createNewPersona: () -> Unit,
+    skipLoginScreen: () -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN,
@@ -50,7 +51,8 @@ fun NavGraphBuilder.dAppLogin(
             onHandleOngoingAccounts = onHandleOngoingAccounts,
             onChooseAccounts = onChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
-            createNewPersona = createNewPersona
+            createNewPersona = createNewPersona,
+            skipLoginScreen = skipLoginScreen
         )
     }
 }
