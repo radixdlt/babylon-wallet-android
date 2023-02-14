@@ -46,8 +46,8 @@ end
 
 desc "Deploy pre-releases"
 lane :preview do
-
-    bump_build_number
+    BUILD_NUMBER_FILE = "BUILD_NUMBER"
+    bump_build_number versioning_file: "../versioning/#{BUILD_NUMBER_FILE}"
     gradle(
         task: "assemble",
         flavor: "Debug",
@@ -64,10 +64,10 @@ lane :preview do
         release_notes: ENV["RELEASE_NOTES"],
         groups: ENV["GROUPS"]
     )
-    build_number_to_commit = File.read("../versioning/BUILD_NUMBER")
+    build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
     version_name = android_get_version_name
     git_commit(
-        path: "./versioning/BUILD_NUMBER",
+        path: "./versioning/#{BUILD_NUMBER_FILE}",
         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
     )
     push_to_git_remote(
@@ -75,6 +75,46 @@ lane :preview do
         tags: false
     )
 end
+
+
+desc "Deploy to Google Play Console"
+lane :release_to_google_play do
+
+    BUILD_NUMBER_FILE = "PLAYSTORE_BUILD_NUMBER"
+    bump_build_number versioning_file: "../versioning/#{BUILD_NUMBER_FILE}"
+    gradle(
+        task: "bundle",
+        build_type: "releasePreview",
+        properties: {
+            "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
+            "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
+            "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
+            "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
+          }
+        )
+
+    upload_to_play_store(
+        package_name: "com.babylon.wallet.android.preview",
+        track: "internal",
+        aab: Actions.lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+        skip_upload_apk: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        json_key: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE"]
+        )
+
+    build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
+    version_name = android_get_version_name
+    git_commit(
+        path: "./versioning/#{BUILD_NUMBER_FILE}",
+        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Playstore"
+    )
+    push_to_git_remote(
+        remote_branch: ENV["RELEASE_BRANCH"],
+        tags: false
+    )
+end
+
 
 # after_all do |beta|
 #   slack(
@@ -94,14 +134,14 @@ end
 #   )
 # end
 
-lane :bump_build_number do
+lane :bump_build_number do |options|
 
-    current_build_number = File.read("../versioning/BUILD_NUMBER").to_i
+    current_build_number = File.read(options[:versioning_file]).to_i
     new_build_number = current_build_number + 1
-    File.write("../versioning/BUILD_NUMBER", new_build_number, mode:"w")
+    File.write(options[:versioning_file], new_build_number, mode:"w")
 
     android_set_version_code(
-        version_code: File.read("../versioning/BUILD_NUMBER"), # optional, if not specified, Version Code will be incremented
+        version_code: File.read(options[:versioning_file]), # optional, if not specified, Version Code will be incremented
         gradle_file: "app/build.gradle"
     )
 
