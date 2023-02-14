@@ -22,6 +22,8 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +41,7 @@ class TransactionApprovalViewModel @Inject constructor(
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
+    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
@@ -114,6 +117,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             state = state.copy(isSigning = false, approved = true)
                             dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
                             approvalJob = null
+                            appEventBus.sendEvent(AppEvent.ApprovedTransaction)
                             sendEvent(TransactionApprovalEvent.NavigateBack)
                         }
                         result.onError {

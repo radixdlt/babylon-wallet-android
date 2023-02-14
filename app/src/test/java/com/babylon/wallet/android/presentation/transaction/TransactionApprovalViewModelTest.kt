@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -35,6 +36,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     private val profileDataSource = mockk<ProfileDataSource>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DAppMessenger>()
+    private val appEventBus = mockk<AppEventBus>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val sampleTxId = "txId1"
@@ -79,6 +81,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             deviceSecurityHelper,
             dAppMessenger,
             TestScope(),
+            appEventBus,
             savedStateHandle
         )
     }
