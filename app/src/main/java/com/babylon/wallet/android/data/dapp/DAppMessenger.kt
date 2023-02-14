@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.AccountDto
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OngoingAccountsWithoutProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.PersonaDto
@@ -49,6 +50,7 @@ interface DAppMessenger {
     suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
         persona: OnNetwork.Persona,
+        usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel> = emptyList(),
         ongoingAccounts: List<AccountItemUiModel> = emptyList()
     ): Result<Unit>
@@ -126,18 +128,28 @@ class DAppMessengerImpl @Inject constructor(
     override suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
         persona: OnNetwork.Persona,
+        usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel>,
         ongoingAccounts: List<AccountItemUiModel>
     ): Result<Unit> {
         val walletSuccessResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
             interactionId = interactionId,
             items = WalletAuthorizedRequestResponseItems(
-                auth = AuthLoginWithoutChallengeRequestResponseItem(
-                    PersonaDto(
-                        persona.address,
-                        persona.displayName
+                auth = if (usePersona) {
+                    AuthUsePersonaRequestResponseItem(
+                        PersonaDto(
+                            persona.address,
+                            persona.displayName
+                        )
                     )
-                ),
+                } else {
+                    AuthLoginWithoutChallengeRequestResponseItem(
+                        PersonaDto(
+                            persona.address,
+                            persona.displayName
+                        )
+                    )
+                },
                 oneTimeAccounts = if (oneTimeAccounts.isNotEmpty()) {
                     OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
                         oneTimeAccounts.map {

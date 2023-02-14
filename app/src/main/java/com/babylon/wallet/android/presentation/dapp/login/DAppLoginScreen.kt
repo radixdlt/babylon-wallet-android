@@ -61,7 +61,8 @@ fun DAppLoginScreen(
     onHandleOngoingAccounts: (DAppLoginEvent.HandleOngoingAccounts) -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String) -> Unit,
-    createNewPersona: () -> Unit
+    createNewPersona: () -> Unit,
+    skipLoginScreen: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
@@ -70,6 +71,7 @@ fun DAppLoginScreen(
                 is DAppLoginEvent.HandleOngoingAccounts -> onHandleOngoingAccounts(event)
                 is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
+                DAppLoginEvent.SkipSelectPersona -> skipLoginScreen()
             }
         }
     }
@@ -94,7 +96,7 @@ fun DAppLoginScreen(
 private fun DAppLoginContent(
     onCancelClick: () -> Unit,
     onLoginClick: () -> Unit,
-    onSelectPersona: (PersonaUiModel) -> Unit,
+    onSelectPersona: (String) -> Unit,
     dappMetadata: DappMetadata?,
     showProgress: Boolean,
     firstTimeLogin: Boolean,
@@ -186,7 +188,7 @@ private fun DAppLoginContent(
                                 .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
                                 .clip(RadixTheme.shapes.roundedRectMedium)
                                 .throttleClickable {
-                                    onSelectPersona(personaItem)
+                                    onSelectPersona(personaItem.persona.address)
                                 },
                             persona = personaItem,
                             onSelectPersona = onSelectPersona

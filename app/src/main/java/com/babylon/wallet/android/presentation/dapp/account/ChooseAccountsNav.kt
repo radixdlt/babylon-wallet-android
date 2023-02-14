@@ -47,11 +47,10 @@ fun NavController.chooseAccounts(
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccounts(
     navController: NavController,
-    onBackClick: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String) -> Unit
+    onLoginFlowComplete: (String?) -> Unit
 ) {
     composable(
         route = "choose_accounts_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}",
@@ -68,7 +67,6 @@ fun NavGraphBuilder.chooseAccounts(
         ChooseAccountsScreen(
             viewModel = hiltViewModel(),
             sharedViewModel = sharedVm,
-            onBackClick = onBackClick,
             dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick,
             onChooseAccounts = onChooseAccounts,

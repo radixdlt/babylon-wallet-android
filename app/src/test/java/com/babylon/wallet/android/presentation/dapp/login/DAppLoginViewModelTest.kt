@@ -99,7 +99,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.SavedDapp
         val vm = vm.value
         advanceUntilIdle()
-        vm.onSelectPersona(samplePersona.toUiModel())
+        vm.onSelectPersona(samplePersona.address)
         advanceUntilIdle()
         vm.onLogin()
         advanceUntilIdle()
