@@ -144,6 +144,14 @@ private fun DAppPermissionContent(
                     numberOfAccounts = numberOfAccounts
                 )
                 Spacer(modifier = Modifier.weight(0.5f))
+                Text(
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(R.string.you_can_update_permission_at_any_time),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(0.5f))
                 RadixPrimaryButton(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onContinueClick,
