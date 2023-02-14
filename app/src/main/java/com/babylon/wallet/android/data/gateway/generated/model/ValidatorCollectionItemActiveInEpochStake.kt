@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+import com.babylon.wallet.android.data.gateway.generated.model.TokenAmount
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -23,19 +24,18 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
- * @param amount 
+ * @param stake 
+ * @param stakePercentage 
  */
 @Serializable
 
-data class NonFungibleResourcesCollectionItem (
+data class ValidatorCollectionItemActiveInEpochStake (
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
-    @SerialName(value = "address")
-    val address: kotlin.String,
+    @SerialName(value = "stake")
+    val stake: TokenAmount,
 
-    @SerialName(value = "amount")
-    val amount: kotlin.Long
+    @SerialName(value = "stake_percentage")
+    val stakePercentage: kotlin.Double
 
 )
 

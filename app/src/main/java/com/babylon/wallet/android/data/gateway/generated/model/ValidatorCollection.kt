@@ -15,14 +15,14 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataItem
+import com.babylon.wallet.android.data.gateway.generated.model.ValidatorCollectionItem
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Entity metadata collection.
+ * 
  *
  * @param items 
  * @param totalCount Total number of items in underlying collection, fragment of which is available in `items` collection.
@@ -31,10 +31,10 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class EntityMetadataCollection (
+data class ValidatorCollection (
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<EntityMetadataItem>,
+    val items: kotlin.collections.List<ValidatorCollectionItem>,
 
     /* Total number of items in underlying collection, fragment of which is available in `items` collection. */
     @SerialName(value = "total_count")

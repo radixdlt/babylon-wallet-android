@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param network The name of the network against which the request is made.
  * @param stateVersion The state version of the ledger. Each transaction increments the state version by 1.
- * @param proposerRoundTimestamp The round timestamp of the consensus round when this transaction was committed to ledger. This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set. If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated information, or the network has stalled. 
+ * @param proposerRoundTimestamp The proposer round timestamp of the consensus round when this transaction was committed to ledger. This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set. If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated information, or the network has stalled. 
  * @param epoch The epoch number of the ledger at this state version.
  * @param round The consensus round in the epoch that this state version was committed in.
  */
@@ -41,7 +41,7 @@ data class LedgerState (
     @SerialName(value = "state_version")
     val stateVersion: kotlin.Long,
 
-    /* The round timestamp of the consensus round when this transaction was committed to ledger. This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set. If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated information, or the network has stalled.  */
+    /* The proposer round timestamp of the consensus round when this transaction was committed to ledger. This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set. If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated information, or the network has stalled.  */
     @SerialName(value = "proposer_round_timestamp")
     val proposerRoundTimestamp: kotlin.String,
 

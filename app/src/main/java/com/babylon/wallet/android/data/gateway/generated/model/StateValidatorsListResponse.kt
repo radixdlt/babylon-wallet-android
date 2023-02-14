@@ -15,22 +15,28 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+import com.babylon.wallet.android.data.gateway.generated.model.LedgerState
+import com.babylon.wallet.android.data.gateway.generated.model.ValidatorCollection
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param nonFungibleLocalId
+ * @param ledgerState 
+ * @param validators 
  */
 @Serializable
 
-data class NonFungibleLocalIdsCollectionItem(
+data class StateValidatorsListResponse (
 
-    @SerialName(value = "non_fungible_id")
-    val nonFungibleLocalId: kotlin.String
+    @SerialName(value = "ledger_state")
+    val ledgerState: LedgerState,
+
+    @SerialName(value = "validators")
+    val validators: ValidatorCollection
 
 )
 

@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.repository.entity
 
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleLocalIdsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
 import com.babylon.wallet.android.domain.common.Result
@@ -30,5 +30,5 @@ interface EntityRepository {
         address: String,
         page: String? = null,
         limit: Int? = null
-    ): Result<EntityNonFungibleLocalIdsResponse>
+    ): Result<EntityNonFungibleIdsResponse>
 }

@@ -15,27 +15,29 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * *
- * Values: intent,signedIntent,notarized,payload
+ * 
+ *
+ * Values: string,number,bytes,uuid
  */
 @Serializable
-enum class TransactionLookupOrigin(val value: kotlin.String) {
+enum class NonFungibleIdType(val value: kotlin.String) {
 
-    @SerialName(value = "intent")
-    intent("intent"),
+    @SerialName(value = "string")
+    string("string"),
 
-    @SerialName(value = "signed_intent")
-    signedIntent("signed_intent"),
+    @SerialName(value = "number")
+    number("number"),
 
-    @SerialName(value = "notarized")
-    notarized("notarized"),
+    @SerialName(value = "bytes")
+    bytes("bytes"),
 
-    @SerialName(value = "payload")
-    payload("payload");
+    @SerialName(value = "uuid")
+    uuid("uuid");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use
@@ -50,16 +52,17 @@ enum class TransactionLookupOrigin(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionLookupOrigin) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is NonFungibleIdType) "$data" else null
 
         /**
-         * Returns a valid [TransactionLookupOrigin] for [data], null otherwise.
+         * Returns a valid [NonFungibleIdType] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): TransactionLookupOrigin? = data?.let {
-            val normalizedData = "$it".lowercase()
-            values().firstOrNull { value ->
-                it == value || normalizedData == "$value".lowercase()
-            }
+        fun decode(data: kotlin.Any?): NonFungibleIdType? = data?.let {
+          val normalizedData = "$it".lowercase()
+          values().firstOrNull { value ->
+            it == value || normalizedData == "$value".lowercase()
+          }
         }
     }
 }
+

@@ -21,29 +21,30 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Allows a client to request a response referencing an earlier (`at_*` properties) or later (`from_*` properties) ledger state.
+ * Optional. This allows for a request to be made against a historic state. If a constraint is specified, the Gateway will resolve the request against the ledger state at that time. If not specified, requests will be made with respect to the top of the committed ledger. 
  *
- * @param stateVersion If the version is provided, the latest ledger state <= the given version is returned.
- * @param timestamp If a timestamp is provided, the latest ledger state <= the given timestamp is returned.
- * @param epoch If an epoch is provided, the ledger state at the given epoch <= the given round (else round 0) is returned.
- * @param round 
+ * @param stateVersion If provided, the latest ledger state lower than or equal to the given state version is returned.
+ * @param timestamp If provided, the latest ledger state lower than or equal to the given round timestamp is returned.
+ * @param epoch If provided, the ledger state lower than or equal to the given epoch at round 0 is returned.
+ * @param round If provided must be accompanied with `epoch`, the ledger state lower than or equal to the given epoch and round is returned.
  */
 @Serializable
 
 data class LedgerStateSelector (
 
-    /* If the version is provided, the latest ledger state <= the given version is returned. */
+    /* If provided, the latest ledger state lower than or equal to the given state version is returned. */
     @SerialName(value = "state_version")
     val stateVersion: kotlin.Long? = null,
 
-    /* If a timestamp is provided, the latest ledger state <= the given timestamp is returned. */
+    /* If provided, the latest ledger state lower than or equal to the given round timestamp is returned. */
     @Contextual @SerialName(value = "timestamp")
     val timestamp: java.time.OffsetDateTime? = null,
 
-    /* If an epoch is provided, the ledger state at the given epoch <= the given round (else round 0) is returned. */
+    /* If provided, the ledger state lower than or equal to the given epoch at round 0 is returned. */
     @SerialName(value = "epoch")
     val epoch: kotlin.Long? = null,
 
+    /* If provided must be accompanied with `epoch`, the ledger state lower than or equal to the given epoch and round is returned. */
     @SerialName(value = "round")
     val round: kotlin.Long? = null
 

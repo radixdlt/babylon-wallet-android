@@ -27,9 +27,9 @@ import kotlinx.serialization.Contextual
  *
  * @param ledgerState 
  * @param items The page of user transactions.
- * @param totalCount 
- * @param previousCursor 
- * @param nextCursor 
+ * @param totalCount Total number of items in underlying collection, fragment of which is available in `items` collection.
+ * @param previousCursor If specified, contains a cursor to query previous page of the `items` collection.
+ * @param nextCursor If specified, contains a cursor to query next page of the `items` collection.
  */
 @Serializable
 
@@ -42,12 +42,15 @@ data class TransactionRecentResponse (
     @SerialName(value = "items")
     val items: kotlin.collections.List<CommittedTransactionInfo>,
 
+    /* Total number of items in underlying collection, fragment of which is available in `items` collection. */
     @SerialName(value = "total_count")
     val totalCount: kotlin.Long? = null,
 
+    /* If specified, contains a cursor to query previous page of the `items` collection. */
     @SerialName(value = "previous_cursor")
     val previousCursor: kotlin.String? = null,
 
+    /* If specified, contains a cursor to query next page of the `items` collection. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

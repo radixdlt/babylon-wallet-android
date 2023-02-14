@@ -24,14 +24,14 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address The Bech32m-encoded human readable version of the entity's global address.
+ * @param address Bech32m-encoded human readable version of the entity's global address.
  * @param atLedgerState 
  */
 @Serializable
 
 data class EntityResourcesRequest (
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 

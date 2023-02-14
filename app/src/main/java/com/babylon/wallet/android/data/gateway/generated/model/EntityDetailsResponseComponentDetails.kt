@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param discriminator 
- * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
+ * @param packageAddress Bech32m-encoded human readable version of the entity's global address.
  * @param blueprintName 
  * @param state 
  * @param accessRulesChain 
@@ -37,7 +37,7 @@ data class EntityDetailsResponseComponentDetails (
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String,
 

@@ -26,12 +26,13 @@ import kotlinx.serialization.Contextual
  *
  * @param address Bech32m-encoded human readable version of the entity's global address.
  * @param atLedgerState 
+ * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limit The page size requested.
  */
 @Serializable
 
-data class EntityNonFungiblesRequest (
+data class EntityNonFungibleIdsRequest (
 
     /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
@@ -39,6 +40,10 @@ data class EntityNonFungiblesRequest (
 
     @SerialName(value = "at_ledger_state")
     val atLedgerState: LedgerStateSelector? = null,
+
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    @SerialName(value = "resource_address")
+    val resourceAddress: kotlin.String? = null,
 
     /* This cursor allows forward pagination, by providing the cursor from the previous request. */
     @SerialName(value = "cursor")

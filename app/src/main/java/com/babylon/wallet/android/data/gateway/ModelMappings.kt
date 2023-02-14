@@ -3,7 +3,7 @@ package com.babylon.wallet.android.data.gateway
 import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleLocalIdsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleResourcesCollection
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
@@ -36,10 +36,10 @@ fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): Li
     }
 }
 
-fun NonFungibleLocalIdsResponse.toDomainModel(): NonFungibleTokenIdContainer {
+fun NonFungibleIdsResponse.toDomainModel(): NonFungibleTokenIdContainer {
     return NonFungibleTokenIdContainer(
-        ids = nonFungibleIds.items.map { nonFungibleLocalIdsCollectionItem ->
-            nonFungibleLocalIdsCollectionItem.nonFungibleLocalId
+        ids = nonFungibleIds.items.map { nonFungibleIdsCollectionItem ->
+            nonFungibleIdsCollectionItem.nonFungibleId
         }
     )
 }

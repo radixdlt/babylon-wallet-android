@@ -15,20 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.model
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.model.ValidatorCollection
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * *
- * @param transactionIdentifier * @param atStateIdentifier */
+ * 
+ *
+ * @param validators 
+ */
 @Serializable
 
-data class TransactionDetailsRequest(
+data class StateValidatorsListResponseAllOf (
 
-    @SerialName(value = "transaction_identifier")
-    val transactionIdentifier: TransactionLookupIdentifier,
-
-    @SerialName(value = "at_state_identifier")
-    val atStateIdentifier: PartialLedgerStateIdentifier? = null
+    @SerialName(value = "validators")
+    val validators: ValidatorCollection
 
 )
+

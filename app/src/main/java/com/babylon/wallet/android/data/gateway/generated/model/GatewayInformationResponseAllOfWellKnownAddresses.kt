@@ -23,43 +23,43 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param accountPackage The Bech32m-encoded human readable version of the entity's global address.
- * @param faucet The Bech32m-encoded human readable version of the component (normal, account, system) global address.
- * @param epochManager The Bech32m-encoded human readable version of the entity's global address.
- * @param clock The Bech32m-encoded human readable version of the entity's global address.
- * @param ecdsaSecp256k1 The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
- * @param eddsaEd25519 The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
- * @param xrd The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param accountPackage Bech32m-encoded human readable version of the entity's global address.
+ * @param faucet Bech32m-encoded human readable version of the component (normal, account, system) global address.
+ * @param epochManager Bech32m-encoded human readable version of the entity's global address.
+ * @param clock Bech32m-encoded human readable version of the entity's global address.
+ * @param ecdsaSecp256k1 Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param eddsaEd25519 Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param xrd Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  */
 @Serializable
 
 data class GatewayInformationResponseAllOfWellKnownAddresses (
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "account_package")
     val accountPackage: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the component (normal, account, system) global address. */
+    /* Bech32m-encoded human readable version of the component (normal, account, system) global address. */
     @SerialName(value = "faucet")
     val faucet: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "epoch_manager")
     val epochManager: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "clock")
     val clock: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "ecdsa_secp256k1")
     val ecdsaSecp256k1: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "eddsa_ed25519")
     val eddsaEd25519: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "xrd")
     val xrd: kotlin.String
 

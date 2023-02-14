@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.data.repository.transaction
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusRequest
@@ -58,19 +55,6 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
         return performHttpRequest(
             call = {
                 gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = intentHashHex))
-            },
-            map = {
-                it
-            }
-        )
-    }
-
-    override suspend fun getTransactionDetails(
-        identifier: TransactionLookupIdentifier
-    ): Result<TransactionDetailsResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.transactionDetails(TransactionDetailsRequest(identifier))
             },
             map = {
                 it

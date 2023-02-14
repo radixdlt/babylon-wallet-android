@@ -27,7 +27,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param ledgerState 
- * @param address The Bech32m-encoded human readable version of the entity's global address.
+ * @param address Bech32m-encoded human readable version of the entity's global address.
  * @param fungibleResources 
  * @param nonFungibleResources 
  */
@@ -38,7 +38,7 @@ data class EntityResourcesResponse (
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState,
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
