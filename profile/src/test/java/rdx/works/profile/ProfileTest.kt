@@ -16,7 +16,7 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
-import rdx.works.profile.data.repository.addConnectedDapp
+import rdx.works.profile.data.repository.createOrUpdateConnectedDapp
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
@@ -243,8 +243,8 @@ class ProfileTest {
                 )
             )
         )
-        profile = profile.addConnectedDapp(
-            connectedDapp = connectedDapp
+        profile = profile.createOrUpdateConnectedDapp(
+            unverifiedConnectedDapp = connectedDapp
         )
 
         // Network and gateway
