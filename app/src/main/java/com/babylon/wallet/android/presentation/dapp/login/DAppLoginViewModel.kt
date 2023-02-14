@@ -123,9 +123,11 @@ class DAppLoginViewModel @Inject constructor(
                     } else {
                         onRejectLogin()
                     }
+                    _state.update { it.copy(showProgress = false) }
                 }
+            } else {
+                _state.update { it.copy(showProgress = false) }
             }
-            _state.update { it.copy(showProgress = false) }
         }
         observePersonas()
     }
