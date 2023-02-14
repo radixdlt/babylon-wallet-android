@@ -66,23 +66,19 @@ fun NavGraphBuilder.dAppLoginGraph(
         )
         chooseAccounts(
             navController = navController,
-            onBackClick = {
-                navController.navigateUp()
-            },
             dismissErrorDialog = {
                 navController.navigateUp()
-            },
-            onChooseAccounts = { event ->
-                navController.chooseAccounts(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
             },
-            onLoginFlowComplete = { dappName ->
-                navController.popBackStack(ROUTE_DAPP_FLOW, true)
-                navController.requestSuccess(dappName)
+            onChooseAccounts = { event ->
+                navController.chooseAccounts(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             }
-        )
+        ) { dappName ->
+            navController.popBackStack(ROUTE_DAPP_FLOW, true)
+            dappName?.let { navController.requestSuccess(it) }
+        }
         requestSuccess(onBackPress = {
             navController.popBackStack()
         })

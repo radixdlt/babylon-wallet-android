@@ -24,17 +24,17 @@ import kotlinx.collections.immutable.persistentListOf
 fun ChooseAccountsScreen(
     viewModel: ChooseAccountsViewModel,
     sharedViewModel: DAppLoginViewModel,
-    onBackClick: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String) -> Unit
+    onLoginFlowComplete: (String?) -> Unit
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
                 is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppLoginEvent.RejectLogin -> onLoginFlowComplete(null)
                 else -> {}
             }
         }
@@ -43,7 +43,7 @@ fun ChooseAccountsScreen(
     val state = viewModel.state
     val sharedState by sharedViewModel.state.collectAsState()
     ChooseAccountContent(
-        onBackClick = onBackClick,
+        onBackClick = sharedViewModel::onRejectLogin,
         onContinueClick = {
             sharedViewModel.onAccountsSelected(state.selectedAccounts)
         },
