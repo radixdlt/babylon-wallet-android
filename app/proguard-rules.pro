@@ -14,6 +14,7 @@
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
+#-dontobfuscate
 #-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
@@ -22,6 +23,7 @@
 
 # Keep `Companion` object fields of serializable classes.
 # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.
+
 -if @kotlinx.serialization.Serializable class **
 -keepclassmembers class <1> {
     static <1>$Companion Companion;
@@ -48,3 +50,5 @@
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 
 -keep class org.webrtc.**  { *; }
+
+-keep class org.bouncycastle.**  { *; }
