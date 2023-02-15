@@ -116,7 +116,7 @@
     <string name="create_persona">Create Persona</string>
     <string name="your_persona_has_been_created">Your persona has been created.</string>
     <string name="create_a_new_persona">Create a New Persona</string>
-    <string name="create_new_persona">Create New Persona</string>
+    <string name="create_a_persona">Create a Persona</string>
     <string name="all_personas_info">Here are all the personas connected to your account</string>
     <string name="login_request">Login Request</string>
     <string name="dapp_login_subtitle">%s is requesting you login with a Persona.</string>
