@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.presentation.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -40,7 +43,10 @@ fun PersonasScreen(
 
     PersonasContent(
         personas = state.personas.toImmutableList(),
-        modifier = modifier,
+        modifier = modifier
+            .navigationBarsPadding()
+            .fillMaxSize()
+            .background(RadixTheme.colors.defaultBackground),
         onBackClick = onBackClick,
         createNewPersona = createNewPersona
     )
@@ -54,7 +60,7 @@ fun PersonasContent(
     createNewPersona: () -> Unit
 ) {
     Column(
-        modifier = Modifier,
+        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
