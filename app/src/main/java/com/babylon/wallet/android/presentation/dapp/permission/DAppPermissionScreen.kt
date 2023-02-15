@@ -174,16 +174,20 @@ private fun RequestedPermissionsList(
     ) {
         val text = if (isExactAccountsCount) {
             pluralStringResource(
-                id = R.plurals.view_x_accounts,
+                id = R.plurals.view_exactly_x_accounts,
                 numberOfAccounts,
                 numberOfAccounts
             )
         } else {
-            pluralStringResource(
-                id = R.plurals.view_x_or_more_accounts,
-                numberOfAccounts,
-                numberOfAccounts
-            )
+            if (numberOfAccounts == 0) {
+                stringResource(id = R.string.any_number_of_accounts)
+            } else {
+                pluralStringResource(
+                    id = R.plurals.view_at_least_x_accounts,
+                    numberOfAccounts,
+                    numberOfAccounts
+                )
+            }
         }
         Text(
             text = text,
@@ -240,6 +244,18 @@ fun DAppLoginContentFirstTimePreview() {
             onRejectClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RequestedPermissionsListPreview() {
+    RadixWalletTheme {
+        RequestedPermissionsList(
+            numberOfAccounts = 2,
+            isExactAccountsCount = true,
             modifier = Modifier.fillMaxSize()
         )
     }
