@@ -60,7 +60,7 @@ fun PersonasContent(
     createNewPersona: () -> Unit
 ) {
     Column(
-        modifier = modifier,
+        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
