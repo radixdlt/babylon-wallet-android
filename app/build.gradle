@@ -74,10 +74,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debugPreview {
-            initWith debug
+            initWith release
             applicationIdSuffix ".preview"
             minifyEnabled true
-            debuggable false
+            signingConfig signingConfigs.debugPreview
             resValue "string", "app_name", "Radix Wallet Preview"
             matchingFallbacks = ['debug']
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
