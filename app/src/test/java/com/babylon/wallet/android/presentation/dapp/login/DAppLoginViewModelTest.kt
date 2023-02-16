@@ -134,7 +134,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is DAppLoginEvent.ChooseAccounts)
         }
-        vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), state.oneTimeRequest)
+        vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is DAppLoginEvent.LoginFlowCompleted)
