@@ -73,10 +73,11 @@ fun CreatePersonaConfirmationContent(
         Text(
             text = stringResource(
                 id =
-                if (isFirstPersona)
+                if (isFirstPersona) {
                     R.string.your_first_persona_has_been_created
-                else
+                } else {
                     R.string.your_persona_has_been_created
+                }
             ),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
