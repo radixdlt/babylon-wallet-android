@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.presentation.createpersona.ARG_PERSONA_ID
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaConfirmationEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaConfirmationViewModel
-import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -33,48 +32,50 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     private val personaId = "fj3489fj348f"
     private val personaName = "My first persona"
 
+    private val persona =  OnNetwork.Persona(
+        address = personaId,
+        derivationPath = "m/1'/1'/1'/1'/1'/1'",
+        displayName = personaName,
+        index = 0,
+        networkID = 10,
+        fields = emptyList(),
+        securityState = SecurityState.Unsecured(
+            discriminator = "dsics",
+            unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                genesisFactorInstance = FactorInstance(
+                    derivationPath = DerivationPath("few", "disc"),
+                    factorInstanceID = "IDIDDIIDD",
+                    factorSourceReference = FactorSourceReference(
+                        factorSourceID = "f32f3",
+                        factorSourceKind = "kind"
+                    ),
+                    initializationDate = "Date1",
+                    publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                )
+            )
+        )
+    )
+
     @Before
     override fun setUp() = runTest {
         super.setUp()
         whenever(savedStateHandle.get<String>(ARG_PERSONA_ID)).thenReturn(personaId)
-        whenever(personaRepository.getPersonaByAddress(any())).thenReturn(
-            OnNetwork.Persona(
-                address = personaId,
-                derivationPath = "m/1'/1'/1'/1'/1'/1'",
-                displayName = personaName,
-                index = 0,
-                networkID = 10,
-                fields = emptyList(),
-                securityState = SecurityState.Unsecured(
-                    discriminator = "dsics",
-                    unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                        genesisFactorInstance = FactorInstance(
-                            derivationPath = DerivationPath("few", "disc"),
-                            factorInstanceID = "IDIDDIIDD",
-                            factorSourceReference = FactorSourceReference(
-                                factorSourceID = "f32f3",
-                                factorSourceKind = "kind"
-                            ),
-                            initializationDate = "Date1",
-                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
-                        )
-                    )
-                )
-            )
-        )
+        whenever(personaRepository.getPersonaByAddress(any())).thenReturn(persona)
     }
 
     @Test
     fun `when view model init, verify persona details are fetched and passed to ui`() = runTest {
         // when
+        whenever(personaRepository.getPersonas()).thenReturn(
+            listOf(persona)
+        )
         val viewModel = vm.value
         advanceUntilIdle()
 
         // then
         Assert.assertEquals(
             CreatePersonaConfirmationViewModel.PersonaConfirmationUiState(
-                personaName = personaName,
-                personaAddressTruncated = personaId.truncatedHash()
+                isFirstPersona = true
             ),
             viewModel.personaUiState
         )
@@ -83,6 +84,9 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     @Test
     fun `given view model init, when persona created clicked, verify finish person creation event sent`() = runTest {
         // given
+        whenever(personaRepository.getPersonas()).thenReturn(
+            listOf(persona, persona)
+        )
         val viewModel = vm.value
         val event = mutableListOf<CreatePersonaConfirmationEvent>()
 
@@ -103,8 +107,7 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
         // then
         Assert.assertEquals(
             CreatePersonaConfirmationViewModel.PersonaConfirmationUiState(
-                personaName = personaName,
-                personaAddressTruncated = personaId.truncatedHash()
+                isFirstPersona = false
             ),
             viewModel.personaUiState
         )
