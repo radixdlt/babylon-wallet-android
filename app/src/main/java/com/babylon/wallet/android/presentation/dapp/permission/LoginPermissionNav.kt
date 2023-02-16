@@ -6,7 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.InitialRoute
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.google.accompanist.navigation.animation.composable
@@ -23,7 +23,7 @@ internal const val ARG_ONE_TIME = "one_time"
 const val ROUTE_DAPP_PERMISSION =
     "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}"
 
-fun NavController.dappPermission(
+fun NavController.loginPermission(
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     oneTime: Boolean = false
@@ -32,10 +32,10 @@ fun NavController.dappPermission(
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.dappPermission(
+fun NavGraphBuilder.loginPermission(
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     onCompleteFlow: () -> Unit,
-    initialRoute: InitialRoute.Permission?,
+    initialDappLoginRoute: InitialDappLoginRoute.Permission?,
     sharedViewModel: DAppLoginViewModel,
     onBackClick: () -> Unit
 ) {
@@ -44,27 +44,27 @@ fun NavGraphBuilder.dappPermission(
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) {
                 type = NavType.IntType
-                initialRoute?.let {
-                    defaultValue = initialRoute.numberOfAccounts
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.numberOfAccounts
                 }
             },
             navArgument(ARG_EXACT_ACCOUNT_COUNT) {
                 type = NavType.BoolType
-                initialRoute?.let {
-                    defaultValue = initialRoute.isExactAccountsCount
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.isExactAccountsCount
                 }
             },
             navArgument(ARG_ONE_TIME) {
                 type = NavType.BoolType
-                initialRoute?.let {
-                    defaultValue = initialRoute.oneTime
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.oneTime
                 }
             },
         )
     ) { entry ->
         val numberOfAccounts = checkNotNull(entry.arguments?.getInt(ARG_NUMBER_OF_ACCOUNTS))
         val quantifier = checkNotNull(entry.arguments?.getBoolean(ARG_EXACT_ACCOUNT_COUNT))
-        DAppPermissionScreen(
+        LoginPermissionScreen(
             viewModel = sharedViewModel,
             onChooseAccounts = onChooseAccounts,
             numberOfAccounts = numberOfAccounts,

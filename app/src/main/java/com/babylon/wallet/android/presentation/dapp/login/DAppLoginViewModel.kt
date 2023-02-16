@@ -19,7 +19,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRe
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.dapp.InitialRoute
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.selectpersona.PersonaUiModel
@@ -71,6 +71,9 @@ class DAppLoginViewModel @Inject constructor(
     private var connectedDapp: OnNetwork.ConnectedDapp? = null
     private var editedDapp: OnNetwork.ConnectedDapp? = null
 
+    private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppLoginEvent>()
+    val topLevelOneOffEvent by topLevelOneOffEventHandler
+
     init {
         viewModelScope.launch {
             val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
@@ -93,19 +96,19 @@ class DAppLoginViewModel @Inject constructor(
             result.onError { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            setInitialRoute()
+            setInitialDappLoginRoute()
         }
     }
 
-    private suspend fun setInitialRoute() {
+    private suspend fun setInitialDappLoginRoute() {
         when (authorizedRequest.authRequest) {
             is AuthorizedRequest.AuthRequest.LoginRequest -> {
-                _state.update { it.copy(initialRoute = InitialRoute.SelectPersona(args.requestId)) }
+                _state.update { it.copy(initialDappLoginRoute = InitialDappLoginRoute.SelectPersona(args.requestId)) }
             }
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 val dapp = connectedDapp
                 if (dapp != null) {
-                    setInitialRouteForUsePersonaRequest(dapp, authorizedRequest.authRequest)
+                    setInitialDappLoginRouteForUsePersonaRequest(dapp, authorizedRequest.authRequest)
                 } else {
                     onRejectLogin()
                 }
@@ -113,7 +116,7 @@ class DAppLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun setInitialRouteForUsePersonaRequest(
+    private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
         dapp: OnNetwork.ConnectedDapp,
         authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
     ) {
@@ -132,7 +135,7 @@ class DAppLoginViewModel @Inject constructor(
             ) {
                 _state.update {
                     it.copy(
-                        initialRoute = InitialRoute.Permission(
+                        initialDappLoginRoute = InitialDappLoginRoute.Permission(
                             ongoingAccountsRequestItem.numberOfAccounts,
                             isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
                         )
@@ -141,7 +144,7 @@ class DAppLoginViewModel @Inject constructor(
             } else if (oneTimeAccountsRequestItem != null) {
                 _state.update {
                     it.copy(
-                        initialRoute = InitialRoute.ChooseAccount(
+                        initialDappLoginRoute = InitialDappLoginRoute.ChooseAccount(
                             oneTimeAccountsRequestItem.numberOfAccounts,
                             isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
                             oneTime = true
@@ -167,7 +170,7 @@ class DAppLoginViewModel @Inject constructor(
             failure.getDappMessage()
         )
         delay(4000)
-        sendEvent(DAppLoginEvent.RejectLogin)
+        topLevelOneOffEventHandler.sendEvent(DAppLoginEvent.RejectLogin)
     }
 
     fun onMessageShown() {
@@ -202,10 +205,7 @@ class DAppLoginViewModel @Inject constructor(
         personaAddress: String,
         accountsRequestItem: AccountsRequestItem
     ): Boolean {
-        val dapp = connectedDapp
-        return if (dapp == null) {
-            false
-        } else {
+        return connectedDapp?.let { dapp ->
             val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
                 dapp.dAppDefinitionAddress,
                 personaAddress,
@@ -213,7 +213,7 @@ class DAppLoginViewModel @Inject constructor(
                 accountsRequestItem.quantifier.toProfileShareAccountsQuantifier()
             )
             potentialOngoingAddresses.isNotEmpty()
-        }
+        } ?: false
     }
 
     private suspend fun handleOngoingAddressRequestItem(
@@ -401,7 +401,7 @@ sealed interface DAppLoginEvent : OneOffEvent {
 data class DAppLoginUiState(
     val dappMetadata: DappMetadata? = null,
     val uiMessage: UiMessage? = null,
-    val initialRoute: InitialRoute? = null,
+    val initialDappLoginRoute: InitialDappLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null

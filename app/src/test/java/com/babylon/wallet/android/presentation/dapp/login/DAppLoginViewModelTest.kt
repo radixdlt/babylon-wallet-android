@@ -12,7 +12,7 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
-import com.babylon.wallet.android.presentation.dapp.InitialRoute
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import io.mockk.coEvery
 import io.mockk.every
@@ -118,7 +118,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialRoute is InitialRoute.SelectPersona)
+            assert(item.initialDappLoginRoute is InitialDappLoginRoute.SelectPersona)
         }
     }
 
@@ -149,7 +149,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialRoute is InitialRoute.Permission)
+            assert(item.initialDappLoginRoute is InitialDappLoginRoute.Permission)
         }
     }
 
@@ -161,7 +161,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialRoute is InitialRoute.ChooseAccount)
+            assert(item.initialDappLoginRoute is InitialDappLoginRoute.ChooseAccount)
         }
     }
 

@@ -22,7 +22,7 @@ import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class DappSelectPersonaViewModelTest : BaseViewModelTest<DappSelectPersonaViewModel>() {
+internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val profileDataSource = mockk<ProfileDataSource>()
@@ -47,8 +47,8 @@ internal class DappSelectPersonaViewModelTest : BaseViewModelTest<DappSelectPers
         )
     )
 
-    override fun initVM(): DappSelectPersonaViewModel {
-        return DappSelectPersonaViewModel(
+    override fun initVM(): SelectPersonaViewModel {
+        return SelectPersonaViewModel(
             savedStateHandle,
             dAppConnectionRepository,
             personaRepository,

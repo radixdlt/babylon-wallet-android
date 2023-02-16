@@ -37,6 +37,7 @@ fun ChooseAccountsScreen(
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
                 is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 is DAppLoginEvent.RejectLogin -> onLoginFlowComplete(null)
+                else -> {}
             }
         }
     }

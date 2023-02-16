@@ -8,7 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.InitialRoute
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.google.accompanist.navigation.animation.composable
@@ -58,7 +58,7 @@ fun NavGraphBuilder.chooseAccounts(
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String?) -> Unit,
-    initialRoute: InitialRoute.ChooseAccount?,
+    initialDappLoginRoute: InitialDappLoginRoute.ChooseAccount?,
     sharedViewModel: DAppLoginViewModel,
     onBackClick: () -> Boolean
 ) {
@@ -67,26 +67,26 @@ fun NavGraphBuilder.chooseAccounts(
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) {
                 type = NavType.IntType
-                initialRoute?.let {
-                    defaultValue = initialRoute.numberOfAccounts
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.numberOfAccounts
                 }
             },
             navArgument(ARG_EXACT_ACCOUNT_COUNT) {
                 type = NavType.BoolType
-                initialRoute?.let {
-                    defaultValue = initialRoute.isExactAccountsCount
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.isExactAccountsCount
                 }
             },
             navArgument(ARG_ONE_TIME) {
                 type = NavType.BoolType
-                initialRoute?.let {
-                    defaultValue = initialRoute.oneTime
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.oneTime
                 }
             },
             navArgument(ARG_SHOW_BACK) {
                 type = NavType.BoolType
-                initialRoute?.let {
-                    defaultValue = initialRoute.showBack
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.showBack
                 }
             },
         )

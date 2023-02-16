@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,12 +44,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.presentation.ui.composables.BottomContinueButton
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
@@ -58,8 +55,8 @@ import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Composable
-fun DappSelectPersonaScreen(
-    viewModel: DappSelectPersonaViewModel,
+fun SelectPersonaScreen(
+    viewModel: SelectPersonaViewModel,
     sharedViewModel: DAppLoginViewModel,
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
@@ -85,7 +82,7 @@ fun DappSelectPersonaScreen(
     val state by viewModel.state.collectAsState()
     val sharedState by sharedViewModel.state.collectAsState()
     BackHandler(enabled = true) {}
-    DappSelectPersonaContent(
+    SelectPersonaContent(
         onCancelClick = sharedViewModel::onRejectLogin,
         onLoginClick = sharedViewModel::onLogin,
         onSelectPersona = {
@@ -96,15 +93,13 @@ fun DappSelectPersonaScreen(
         firstTimeLogin = state.firstTimeLogin,
         continueButtonEnabled = state.continueButtonEnabled,
         personas = state.personaListToDisplay,
-        errorMessage = sharedState.uiMessage,
-        onMessageShown = sharedViewModel::onMessageShown,
         createNewPersona = createNewPersona,
         isLoading = state.isLoading
     )
 }
 
 @Composable
-private fun DappSelectPersonaContent(
+private fun SelectPersonaContent(
     onCancelClick: () -> Unit,
     onLoginClick: () -> Unit,
     onSelectPersona: (OnNetwork.Persona) -> Unit,
@@ -113,8 +108,6 @@ private fun DappSelectPersonaContent(
     continueButtonEnabled: Boolean,
     personas: ImmutableList<PersonaUiModel>,
     createNewPersona: () -> Unit,
-    errorMessage: UiMessage?,
-    onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean,
 ) {
@@ -226,11 +219,6 @@ private fun DappSelectPersonaContent(
                     .align(Alignment.BottomCenter)
             )
         }
-        SnackbarUiMessageHandler(
-            message = errorMessage,
-            onMessageShown = onMessageShown,
-            modifier = Modifier.imePadding()
-        )
     }
 }
 
@@ -259,9 +247,9 @@ private fun LoginRequestHeader(dappName: String, firstTimeLogin: Boolean, modifi
 
 @Preview(showBackground = true)
 @Composable
-fun DAppLoginContentPreview() {
+fun SelectPersonaPreview() {
     RadixWalletTheme {
-        DappSelectPersonaContent(
+        SelectPersonaContent(
             onCancelClick = {},
             onLoginClick = {},
             onSelectPersona = {},
@@ -270,8 +258,6 @@ fun DAppLoginContentPreview() {
             continueButtonEnabled = false,
             personas = persistentListOf(),
             createNewPersona = {},
-            errorMessage = null,
-            onMessageShown = {},
             modifier = Modifier.fillMaxSize(),
             isLoading = false
         )
@@ -280,9 +266,9 @@ fun DAppLoginContentPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun DAppLoginContentFirstTimePreview() {
+fun SelectPersonaFirstTimePreview() {
     RadixWalletTheme {
-        DappSelectPersonaContent(
+        SelectPersonaContent(
             onCancelClick = {},
             onLoginClick = {},
             onSelectPersona = {},
@@ -291,8 +277,6 @@ fun DAppLoginContentFirstTimePreview() {
             continueButtonEnabled = false,
             personas = persistentListOf(),
             createNewPersona = {},
-            errorMessage = null,
-            onMessageShown = {},
             modifier = Modifier.fillMaxSize(),
             isLoading = false
         )

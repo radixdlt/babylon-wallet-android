@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.dapp.account.ROUTE_CHOOSE_ACCOUNT
 import com.babylon.wallet.android.presentation.dapp.account.chooseAccounts
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.permission.ROUTE_DAPP_PERMISSION
-import com.babylon.wallet.android.presentation.dapp.permission.dappPermission
+import com.babylon.wallet.android.presentation.dapp.permission.loginPermission
 import com.babylon.wallet.android.presentation.dapp.selectpersona.ROUTE_SELECT_PERSONA
 import com.babylon.wallet.android.presentation.dapp.selectpersona.selectPersona
 import com.babylon.wallet.android.presentation.navigation.Screen
@@ -23,7 +23,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DappLoginNavigationHost(
-    initialRoute: InitialRoute,
+    initialDappLoginRoute: InitialDappLoginRoute,
     navController: NavHostController,
     finishDappLogin: () -> Unit,
     showSuccessDialog: (String) -> Unit,
@@ -31,7 +31,7 @@ fun DappLoginNavigationHost(
 ) {
     AnimatedNavHost(
         navController = navController,
-        startDestination = initialRoute.toRouteString()
+        startDestination = initialDappLoginRoute.toRouteString()
     ) {
         selectPersona(
             onBackClick = finishDappLogin,
@@ -50,7 +50,7 @@ fun DappLoginNavigationHost(
             createNewPersona = {
                 navController.createPersonaScreen()
             },
-            initialRoute = initialRoute as? InitialRoute.SelectPersona,
+            initialDappLoginRoute = initialDappLoginRoute as? InitialDappLoginRoute.SelectPersona,
             sharedViewModel = sharedViewModel
         )
         createPersonaScreen(
@@ -84,7 +84,7 @@ fun DappLoginNavigationHost(
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
             }
         )
-        dappPermission(
+        loginPermission(
             onChooseAccounts = { event ->
                 navController.chooseAccounts(
                     event.numberOfAccounts,
@@ -96,7 +96,7 @@ fun DappLoginNavigationHost(
             onCompleteFlow = {
                 finishDappLogin()
             },
-            initialRoute = initialRoute as? InitialRoute.Permission,
+            initialDappLoginRoute = initialDappLoginRoute as? InitialDappLoginRoute.Permission,
             sharedViewModel = sharedViewModel
         ) {
             navController.popBackStack()
@@ -120,7 +120,7 @@ fun DappLoginNavigationHost(
                 finishDappLogin()
                 dappName?.let { showSuccessDialog(it) }
             },
-            initialRoute = initialRoute as? InitialRoute.ChooseAccount,
+            initialDappLoginRoute = initialDappLoginRoute as? InitialDappLoginRoute.ChooseAccount,
             sharedViewModel = sharedViewModel
         ) {
             navController.popBackStack()
@@ -128,20 +128,20 @@ fun DappLoginNavigationHost(
     }
 }
 
-sealed interface InitialRoute {
-    data class SelectPersona(val reqId: String) : InitialRoute
+sealed interface InitialDappLoginRoute {
+    data class SelectPersona(val reqId: String) : InitialDappLoginRoute
     data class Permission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,
         val oneTime: Boolean = false
-    ) : InitialRoute
+    ) : InitialDappLoginRoute
 
     data class ChooseAccount(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,
         val oneTime: Boolean = false,
         val showBack: Boolean = false
-    ) : InitialRoute
+    ) : InitialDappLoginRoute
 
     fun toRouteString(): String {
         return when (this) {

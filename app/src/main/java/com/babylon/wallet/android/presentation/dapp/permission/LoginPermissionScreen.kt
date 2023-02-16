@@ -42,13 +42,13 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.presentation.dapp.InitialRoute
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 
 @Composable
-fun DAppPermissionScreen(
+fun LoginPermissionScreen(
     viewModel: DAppLoginViewModel,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
@@ -66,14 +66,14 @@ fun DAppPermissionScreen(
             }
         }
     }
-    BackHandler(enabled = state.initialRoute !is InitialRoute.Permission) {}
-    DAppPermissionContent(
+    BackHandler(enabled = state.initialDappLoginRoute !is InitialDappLoginRoute.Permission) {}
+    LoginPermissionContent(
         onContinueClick = {
             viewModel.onPermissionAgree(numberOfAccounts, isExactAccountsCount)
         },
         dappMetadata = state.dappMetadata,
         onBackClick = {
-            if (state.initialRoute is InitialRoute.Permission) {
+            if (state.initialDappLoginRoute is InitialDappLoginRoute.Permission) {
                 viewModel.onRejectLogin()
             } else {
                 onBackClick()
@@ -81,12 +81,12 @@ fun DAppPermissionScreen(
         },
         numberOfAccounts = numberOfAccounts,
         isExactAccountsCount = isExactAccountsCount,
-        isFirstScreenInFlow = state.initialRoute is InitialRoute.Permission
+        isFirstScreenInFlow = state.initialDappLoginRoute is InitialDappLoginRoute.Permission
     )
 }
 
 @Composable
-private fun DAppPermissionContent(
+private fun LoginPermissionContent(
     onContinueClick: () -> Unit,
     dappMetadata: DappMetadata?,
     onBackClick: () -> Unit,
@@ -221,9 +221,9 @@ private fun PermissionRequestHeader(
 
 @Preview(showBackground = true)
 @Composable
-fun DAppPermissionContentPreview() {
+fun LoginPermissionContentPreview() {
     RadixWalletTheme {
-        DAppPermissionContent(
+        LoginPermissionContent(
             onContinueClick = {},
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             onBackClick = {},
@@ -237,9 +237,9 @@ fun DAppPermissionContentPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun DAppPermissionContentFirstTimePreview() {
+fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
-        DAppPermissionContent(
+        LoginPermissionContent(
             onContinueClick = {},
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
             onBackClick = {},

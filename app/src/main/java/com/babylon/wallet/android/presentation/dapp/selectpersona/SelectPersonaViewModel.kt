@@ -26,14 +26,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 @Suppress("LongParameterList")
-class DappSelectPersonaViewModel @Inject constructor(
+class SelectPersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val personaRepository: PersonaRepository,
     incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<DAppSelectPersonaEvent> by OneOffEventHandlerImpl() {
 
-    private val args = DappSelectPersonaArgs(savedStateHandle)
+    private val args = SelectPersonaArgs(savedStateHandle)
 
     private val authorizedRequest = incomingRequestRepository.getAuthorizedRequest(
         args.requestId

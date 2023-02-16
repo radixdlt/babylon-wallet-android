@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.InitialRoute
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.google.accompanist.navigation.animation.composable
@@ -17,8 +17,7 @@ internal const val ARG_REQUEST_ID = "request_id"
 
 const val ROUTE_SELECT_PERSONA = "select_persona/{$ARG_REQUEST_ID}"
 
-
-internal class DappSelectPersonaArgs(val requestId: String) {
+internal class SelectPersonaArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 
@@ -29,7 +28,7 @@ fun NavGraphBuilder.selectPersona(
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String) -> Unit,
     createNewPersona: () -> Unit,
-    initialRoute: InitialRoute.SelectPersona?,
+    initialDappLoginRoute: InitialDappLoginRoute.SelectPersona?,
     sharedViewModel: DAppLoginViewModel
 ) {
     composable(
@@ -38,13 +37,13 @@ fun NavGraphBuilder.selectPersona(
             navArgument(ARG_REQUEST_ID) {
                 type = NavType.StringType
                 nullable = false
-                initialRoute?.let {
-                    defaultValue = initialRoute.reqId
+                initialDappLoginRoute?.let {
+                    defaultValue = initialDappLoginRoute.reqId
                 }
             }
         )
     ) {
-        DappSelectPersonaScreen(
+        SelectPersonaScreen(
             viewModel = hiltViewModel(),
             sharedViewModel = sharedViewModel,
             onBackClick = onBackClick,
