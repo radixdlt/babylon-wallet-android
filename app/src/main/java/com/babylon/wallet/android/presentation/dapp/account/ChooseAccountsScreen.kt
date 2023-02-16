@@ -54,7 +54,7 @@ fun ChooseAccountsScreen(
             }
         },
         onContinueClick = {
-            sharedViewModel.onAccountsSelected(state.selectedAccounts)
+            sharedViewModel.onAccountsSelected(state.selectedAccounts, state.oneTimeRequest)
         },
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,

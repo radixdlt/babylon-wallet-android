@@ -331,10 +331,14 @@ class DAppLoginViewModel @Inject constructor(
         }
     }
 
-    fun onAccountsSelected(selectedAccounts: List<AccountItemUiModel>) {
+    fun onAccountsSelected(selectedAccounts: List<AccountItemUiModel>, oneTimeRequest: Boolean) {
         val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(selectedPersona)
-        val request = authorizedRequest.ongoingAccountsRequestItem ?: authorizedRequest.oneTimeAccountsRequestItem
+        val request = if (oneTimeRequest) {
+            authorizedRequest.oneTimeAccountsRequestItem
+        } else {
+            authorizedRequest.ongoingAccountsRequestItem
+        }
         if (request?.isOngoing == true) {
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             viewModelScope.launch {
