@@ -81,6 +81,7 @@ class DAppLoginViewModel @Inject constructor(
             connectedDapp = dAppConnectionRepository.getConnectedDapp(
                 authorizedRequest.requestMetadata.dAppDefinitionAddress
             )
+            editedDapp = connectedDapp
             val result = dappMetadataRepository.getDappMetadata(
                 authorizedRequest.metadata.dAppDefinitionAddress
             )
