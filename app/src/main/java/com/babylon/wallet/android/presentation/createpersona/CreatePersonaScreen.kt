@@ -108,7 +108,7 @@ fun CreatePersonaContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.create_new_persona),
+                text = stringResource(id = com.babylon.wallet.android.R.string.create_a_persona),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
