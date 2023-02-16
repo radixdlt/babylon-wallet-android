@@ -15,7 +15,7 @@ import com.babylon.wallet.android.presentation.dapp.account.chooseAccounts
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.permission.ROUTE_DAPP_PERMISSION
 import com.babylon.wallet.android.presentation.dapp.permission.dappPermission
-import com.babylon.wallet.android.presentation.dapp.selectpersona.ROUTE_MAIN_DAPP_LOGIN
+import com.babylon.wallet.android.presentation.dapp.selectpersona.ROUTE_SELECT_PERSONA
 import com.babylon.wallet.android.presentation.dapp.selectpersona.selectPersona
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -147,7 +147,7 @@ sealed interface InitialRoute {
         return when (this) {
             is ChooseAccount -> ROUTE_CHOOSE_ACCOUNTS
             is Permission -> ROUTE_DAPP_PERMISSION
-            is SelectPersona -> ROUTE_MAIN_DAPP_LOGIN
+            is SelectPersona -> ROUTE_SELECT_PERSONA
         }
     }
 }

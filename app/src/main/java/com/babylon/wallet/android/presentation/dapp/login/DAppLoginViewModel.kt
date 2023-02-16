@@ -69,6 +69,7 @@ class DAppLoginViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private var connectedDapp: OnNetwork.ConnectedDapp? = null
+    private var editedDapp: OnNetwork.ConnectedDapp? = null
 
     init {
         viewModelScope.launch {
@@ -177,8 +178,6 @@ class DAppLoginViewModel @Inject constructor(
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
             updateOrCreateConnectedDappWithSelectedPersona(selectedPersona)
-            val connectedDapp = connectedDapp
-            requireNotNull(connectedDapp)
             if (authorizedRequest.ongoingAccountsRequestItem != null) {
                 handleOngoingAddressRequestItem(
                     authorizedRequest.ongoingAccountsRequestItem,
@@ -221,7 +220,7 @@ class DAppLoginViewModel @Inject constructor(
         personaAddress: String,
         transitionToAccountSelection: Boolean = true
     ) {
-        val dapp = requireNotNull(connectedDapp)
+        val dapp = requireNotNull(editedDapp)
         val numberOfAccounts = ongoingAccountsRequestItem.numberOfAccounts
         val isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
         val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
@@ -236,8 +235,8 @@ class DAppLoginViewModel @Inject constructor(
             }
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             mutex.withLock {
-                connectedDapp =
-                    connectedDapp?.updateConnectedDappPersonas(
+                editedDapp =
+                    editedDapp?.updateConnectedDappPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
                                 ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
@@ -263,7 +262,7 @@ class DAppLoginViewModel @Inject constructor(
         if (dApp == null) {
             val dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
             mutex.withLock {
-                connectedDapp = OnNetwork.ConnectedDapp(
+                editedDapp = OnNetwork.ConnectedDapp(
                     authorizedRequest.metadata.networkId,
                     authorizedRequest.metadata.dAppDefinitionAddress,
                     dAppName,
@@ -287,7 +286,7 @@ class DAppLoginViewModel @Inject constructor(
             val personaExists = dApp.hasAuthorizedPersona(selectedPersona.address)
             if (!personaExists) {
                 mutex.withLock {
-                    connectedDapp = connectedDapp?.updateConnectedDappPersonas(
+                    editedDapp = connectedDapp?.updateConnectedDappPersonas(
                         listOf(
                             AuthorizedPersonaSimple(
                                 identityAddress = selectedPersona.address,
@@ -332,16 +331,14 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     fun onAccountsSelected(selectedAccounts: List<AccountItemUiModel>) {
-        val dApp = connectedDapp
         val selectedPersona = state.value.selectedPersona?.persona
-        requireNotNull(dApp)
         requireNotNull(selectedPersona)
         val request = authorizedRequest.ongoingAccountsRequestItem ?: authorizedRequest.oneTimeAccountsRequestItem
         if (request?.isOngoing == true) {
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             viewModelScope.launch {
                 mutex.withLock {
-                    connectedDapp = connectedDapp?.updateDappAuthorizedPersonaSharedAccounts(
+                    editedDapp = editedDapp?.updateDappAuthorizedPersonaSharedAccounts(
                         selectedPersona.address,
                         AuthorizedPersonaSimple.SharedAccounts(
                             selectedAccounts.map { it.address },
@@ -383,7 +380,7 @@ class DAppLoginViewModel @Inject constructor(
             state.value.selectedAccountsOngoing
         )
         mutex.withLock {
-            connectedDapp?.let { dAppConnectionRepository.updateOrCreateConnectedDApp(it) }
+            editedDapp?.let { dAppConnectionRepository.updateOrCreateConnectedDApp(it) }
         }
         sendEvent(DAppLoginEvent.LoginFlowCompleted(state.value.dappMetadata?.getName() ?: "Unknown dApp"))
     }
