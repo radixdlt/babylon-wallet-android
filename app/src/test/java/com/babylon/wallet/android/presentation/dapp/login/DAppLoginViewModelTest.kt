@@ -12,6 +12,7 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DAppMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.dapp.InitialRoute
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import io.mockk.coEvery
 import io.mockk.every
@@ -55,6 +56,34 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         )
     )
 
+    private val usePersonaRequestOngoing = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        "1",
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "",
+            "address"
+        ),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            true, false, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        )
+    )
+
+    private val usePersonaRequestOneTime = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        "1",
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "",
+            "address"
+        ),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            false, false, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        )
+    )
+
     override fun initVM(): DAppLoginViewModel {
         return DAppLoginViewModel(
             savedStateHandle,
@@ -84,13 +113,12 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     }
 
     @Test
-    fun `init sets correct state when there is no connected dApp`() = runTest {
+    fun `init sets correct state for login request`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.firstTimeLogin)
-            assert(item.personas.size == 1)
+            assert(item.initialRoute is InitialRoute.SelectPersona)
         }
     }
 
@@ -99,12 +127,12 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.SavedDapp
         val vm = vm.value
         advanceUntilIdle()
-        vm.onSelectPersona(samplePersona.address)
+        vm.onSelectPersona(samplePersona)
         advanceUntilIdle()
         vm.onLogin()
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppLoginEvent.HandleOngoingAccounts)
+            assert(expectMostRecentItem() is DAppLoginEvent.ChooseAccounts)
         }
         vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)))
         advanceUntilIdle()
@@ -114,14 +142,26 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     }
 
     @Test
-    fun `init sets correct state when there is connected dApp`() = runTest {
+    fun `init sets correct state for use persona ongoing request`() = runTest {
+        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoing
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         val vm = vm.value
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(!item.firstTimeLogin)
-            assert(item.personas.size == 2)
+            assert(item.initialRoute is InitialRoute.Permission)
+        }
+    }
+
+    @Test
+    fun `init sets correct state for use persona onetime request`() = runTest {
+        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOneTime
+        dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.initialRoute is InitialRoute.ChooseAccount)
         }
     }
 

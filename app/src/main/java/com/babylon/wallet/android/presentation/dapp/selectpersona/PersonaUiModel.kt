@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.login
+package com.babylon.wallet.android.presentation.dapp.selectpersona
 
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 

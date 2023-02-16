@@ -30,7 +30,8 @@ class ChooseAccountsViewModel @Inject constructor(
         ChooseAccountUiState(
             numberOfAccounts = args.numberOfAccounts,
             isExactAccountsCount = args.isExactAccountsCount,
-            oneTimeRequest = args.oneTime
+            oneTimeRequest = args.oneTime,
+            showBackButton = args.showBack
         )
     )
 
@@ -118,5 +119,6 @@ data class ChooseAccountUiState(
     val isSingleChoice: Boolean = false,
     val error: String? = null,
     val showProgress: Boolean = true,
+    val showBackButton: Boolean = false,
     val selectedAccounts: List<AccountItemUiModel> = emptyList()
 )

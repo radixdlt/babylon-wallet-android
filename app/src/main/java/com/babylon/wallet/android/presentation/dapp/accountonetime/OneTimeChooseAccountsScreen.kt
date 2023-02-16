@@ -46,13 +46,14 @@ fun OneTimeChooseAccountsScreen(
         },
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
-        numberOfAccounts = state.numberOfAccounts,
-        isExactAccountsCount = state.isExactAccountsCount,
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
         dappMetadata = state.dappMetadata,
         isOneTime = true,
-        isSingleChoice = state.isSingleChoice
+        isSingleChoice = state.isSingleChoice,
+        numberOfAccounts = state.numberOfAccounts,
+        isExactAccountsCount = state.isExactAccountsCount,
+        showBackButton = false
     )
     state.error?.let { error ->
         DAppAlertDialog(
@@ -93,12 +94,6 @@ fun OneTimeAccountContentPreview() {
             onBackClick = {},
             onContinueClick = {},
             isContinueButtonEnabled = true,
-            numberOfAccounts = 1,
-            isExactAccountsCount = false,
-            isOneTime = true,
-            dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
-            onAccountSelect = {},
-            onCreateNewAccount = {},
             accountItems = persistentListOf(
                 AccountItemUiModel(
                     displayName = "Account name 1",
@@ -113,7 +108,14 @@ fun OneTimeAccountContentPreview() {
                     isSelected = false
                 )
             ),
-            isSingleChoice = false
+            onAccountSelect = {},
+            onCreateNewAccount = {},
+            dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
+            isOneTime = true,
+            isSingleChoice = false,
+            numberOfAccounts = 1,
+            isExactAccountsCount = false,
+            showBackButton = false
         )
     }
 }

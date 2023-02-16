@@ -19,15 +19,13 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRe
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.dapp.InitialRoute
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
-import com.babylon.wallet.android.utils.LAST_USED_PERSONA_DATE_FORMAT
-import com.babylon.wallet.android.utils.fromISO8601String
+import com.babylon.wallet.android.presentation.dapp.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.dapp.selectpersona.toUiModel
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,7 +42,6 @@ import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.repository.updateConnectedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -64,14 +61,12 @@ class DAppLoginViewModel @Inject constructor(
 
     private val mutex = Mutex()
 
-    private val authorizedRequest =
-        incomingRequestRepository.getAuthorizedRequest(
-            args.requestId
-        )
+    private val authorizedRequest = incomingRequestRepository.getAuthorizedRequest(
+        args.requestId
+    )
 
     private val _state = MutableStateFlow(DAppLoginUiState())
     val state = _state.asStateFlow()
-    private val isUsePersonaRequest = authorizedRequest.isUsePersonaAuth()
 
     private var connectedDapp: OnNetwork.ConnectedDapp? = null
 
@@ -96,58 +91,61 @@ class DAppLoginViewModel @Inject constructor(
             result.onError { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            val allAuthorizedPersonas =
-                connectedDapp?.referencesToAuthorizedPersonas
-            _state.update { state ->
-                val personas = generatePersonasListForDisplay(
-                    allAuthorizedPersonas,
-                    state.personas
-                ).toPersistentList()
-                val selected = personas.any { it.selected }
-                state.copy(
-                    firstTimeLogin = connectedDapp == null,
-                    personas = personas,
-                    loginButtonEnabled = selected
-                )
-            }
-            if (isUsePersonaRequest) {
-                if (connectedDapp != null && authorizedRequest.isUsePersonaAuth()) {
-                    authorizedRequest.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
-                    val connectedDapp = checkNotNull(connectedDapp)
-                    val hasAuthorizedPersona = connectedDapp.hasAuthorizedPersona(
-                        authorizedRequest.authRequest.personaAddress
-                    )
-                    if (hasAuthorizedPersona) {
-                        onSelectPersona(authorizedRequest.authRequest.personaAddress)
-                        handleUsePersonaAuthRequest()
-                    } else {
-                        onRejectLogin()
-                    }
-                    _state.update { it.copy(showProgress = false) }
-                }
-            } else {
-                _state.update { it.copy(showProgress = false) }
-            }
+            setInitialRoute()
         }
-        observePersonas()
     }
 
-    private suspend fun handleUsePersonaAuthRequest() {
-        authorizedRequest.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
-        val connectedDapp = checkNotNull(connectedDapp)
-        val hasAuthorizedPersona = connectedDapp.hasAuthorizedPersona(
-            authorizedRequest.authRequest.personaAddress
+    private suspend fun setInitialRoute() {
+        when (authorizedRequest.authRequest) {
+            is AuthorizedRequest.AuthRequest.LoginRequest -> {
+                _state.update { it.copy(initialRoute = InitialRoute.SelectPersona(args.requestId)) }
+            }
+            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+                val dapp = connectedDapp
+                if (dapp != null) {
+                    setInitialRouteForUsePersonaRequest(dapp, authorizedRequest.authRequest)
+                } else {
+                    onRejectLogin()
+                }
+            }
+        }
+    }
+
+    private suspend fun setInitialRouteForUsePersonaRequest(
+        dapp: OnNetwork.ConnectedDapp,
+        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
+    ) {
+        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(
+            authRequest.personaAddress
         )
         if (hasAuthorizedPersona) {
-            onSelectPersona(authorizedRequest.authRequest.personaAddress)
-            val personaAddress = authorizedRequest.authRequest.personaAddress
-            personaRepository.getPersonaByAddress(personaAddress)
-            if (authorizedRequest.ongoingAccountsRequestItem != null) {
-                val ongoingRequestItem = checkNotNull(authorizedRequest.ongoingAccountsRequestItem)
-                handleOngoingAddressRequestItem(ongoingRequestItem, personaAddress, false)
-            } else if (authorizedRequest.oneTimeAccountsRequestItem != null) {
-                _state.update { it.copy(processedRequestItem = authorizedRequest.oneTimeAccountsRequestItem) }
-                handleOneTimeAccountRequestItem(authorizedRequest.oneTimeAccountsRequestItem)
+            val persona = checkNotNull(personaRepository.getPersonaByAddress(authRequest.personaAddress))
+            onSelectPersona(persona)
+            val ongoingAccountsRequestItem = authorizedRequest.ongoingAccountsRequestItem
+            val oneTimeAccountsRequestItem = authorizedRequest.oneTimeAccountsRequestItem
+            if (ongoingAccountsRequestItem != null && !requestedPermissionAlreadyGranted(
+                    authRequest.personaAddress,
+                    ongoingAccountsRequestItem
+                )
+            ) {
+                _state.update {
+                    it.copy(
+                        initialRoute = InitialRoute.Permission(
+                            ongoingAccountsRequestItem.numberOfAccounts,
+                            isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
+                        )
+                    )
+                }
+            } else if (oneTimeAccountsRequestItem != null) {
+                _state.update {
+                    it.copy(
+                        initialRoute = InitialRoute.ChooseAccount(
+                            oneTimeAccountsRequestItem.numberOfAccounts,
+                            isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
+                            oneTime = true
+                        )
+                    )
+                }
             }
         } else {
             onRejectLogin()
@@ -170,83 +168,23 @@ class DAppLoginViewModel @Inject constructor(
         sendEvent(DAppLoginEvent.RejectLogin)
     }
 
-    private fun observePersonas() {
-        viewModelScope.launch {
-            personaRepository.personas.collect { personas ->
-                connectedDapp = dAppConnectionRepository.getConnectedDapp(
-                    authorizedRequest.requestMetadata.dAppDefinitionAddress
-                )
-                val allAuthorizedPersonas =
-                    connectedDapp?.referencesToAuthorizedPersonas
-                _state.update { state ->
-                    state.copy(
-                        personas = generatePersonasListForDisplay(
-                            allAuthorizedPersonas,
-                            personas.map { it.toUiModel() }
-                        ).toPersistentList()
-                    )
-                }
-            }
-        }
-    }
-
-    private suspend fun generatePersonasListForDisplay(
-        allAuthorizedPersonas: List<AuthorizedPersonaSimple>?,
-        profilePersonas: List<PersonaUiModel>
-    ): List<PersonaUiModel> {
-        val defaultAuthorizedPersonaSimple = allAuthorizedPersonas?.firstOrNull()
-        val authorizedPersona = defaultAuthorizedPersonaSimple?.let {
-            personaRepository.getPersonaByAddress(it.identityAddress)
-        }?.let {
-            PersonaUiModel(
-                it,
-                selected = true,
-                pinned = true,
-                lastUsedOn = defaultAuthorizedPersonaSimple.lastUsedOn.fromISO8601String()
-                    ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
-            )
-        }
-        var updatedPersonas = profilePersonas.map { personaUiModel ->
-            val matchingAuthorizedPersona = allAuthorizedPersonas?.firstOrNull {
-                personaUiModel.persona.address == it.identityAddress
-            }
-            if (matchingAuthorizedPersona != null) {
-                personaUiModel.copy(
-                    lastUsedOn = matchingAuthorizedPersona.lastUsedOn.fromISO8601String()
-                        ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
-                )
-            } else {
-                personaUiModel
-            }
-        }
-        val selectedPersona = state.value.personas.firstOrNull { it.selected }
-        updatedPersonas = if (selectedPersona != null && selectedPersona != authorizedPersona) {
-            updatedPersonas.map { p -> p.copy(selected = p.persona.address == selectedPersona.persona.address) }
-        } else {
-            updatedPersonas.filter { it.persona.address != authorizedPersona?.persona?.address }
-        }
-        return authorizedPersona?.let { listOf(authorizedPersona) }.orEmpty() + updatedPersonas
-    }
-
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
 
     fun onLogin() {
         viewModelScope.launch {
-            val selectedPersona = state.value.selectedPersona()?.persona
+            val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
             updateOrCreateConnectedDappWithSelectedPersona(selectedPersona)
             val connectedDapp = connectedDapp
             requireNotNull(connectedDapp)
             if (authorizedRequest.ongoingAccountsRequestItem != null) {
-                _state.update { it.copy(processedRequestItem = authorizedRequest.ongoingAccountsRequestItem) }
                 handleOngoingAddressRequestItem(
                     authorizedRequest.ongoingAccountsRequestItem,
                     selectedPersona.address
                 )
             } else if (authorizedRequest.oneTimeAccountsRequestItem != null) {
-                _state.update { it.copy(processedRequestItem = authorizedRequest.oneTimeAccountsRequestItem) }
                 handleOneTimeAccountRequestItem(authorizedRequest.oneTimeAccountsRequestItem)
             }
         }
@@ -256,9 +194,26 @@ class DAppLoginViewModel @Inject constructor(
         oneTimeAccountsRequestItem: AccountsRequestItem
     ) {
         val numberOfAccounts = oneTimeAccountsRequestItem.numberOfAccounts
-        val isExactAccountsCount =
-            oneTimeAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
+        val isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly()
         sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount, oneTime = true))
+    }
+
+    private suspend fun requestedPermissionAlreadyGranted(
+        personaAddress: String,
+        accountsRequestItem: AccountsRequestItem
+    ): Boolean {
+        val dapp = connectedDapp
+        return if (dapp == null) {
+            false
+        } else {
+            val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
+                dapp.dAppDefinitionAddress,
+                personaAddress,
+                accountsRequestItem.numberOfAccounts,
+                accountsRequestItem.quantifier.toProfileShareAccountsQuantifier()
+            )
+            potentialOngoingAddresses.isNotEmpty()
+        }
     }
 
     private suspend fun handleOngoingAddressRequestItem(
@@ -268,8 +223,7 @@ class DAppLoginViewModel @Inject constructor(
     ) {
         val dapp = requireNotNull(connectedDapp)
         val numberOfAccounts = ongoingAccountsRequestItem.numberOfAccounts
-        val isExactAccountsCount =
-            ongoingAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
+        val isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
         val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
             dapp.dAppDefinitionAddress,
             personaAddress,
@@ -294,13 +248,12 @@ class DAppLoginViewModel @Inject constructor(
                     )
             }
             if (authorizedRequest.oneTimeAccountsRequestItem != null) {
-                _state.update { it.copy(processedRequestItem = authorizedRequest.oneTimeAccountsRequestItem) }
                 handleOneTimeAccountRequestItem(authorizedRequest.oneTimeAccountsRequestItem)
             } else {
                 sendRequestResponse()
             }
         } else if (transitionToAccountSelection) {
-            sendEvent(DAppLoginEvent.HandleOngoingAccounts(numberOfAccounts, isExactAccountsCount))
+            sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount))
         }
     }
 
@@ -365,11 +318,8 @@ class DAppLoginViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(personaAddress: String) {
-        val updatedPersonas = state.value.personas.map {
-            it.copy(selected = it.persona.address == personaAddress)
-        }.toPersistentList()
-        _state.update { it.copy(personas = updatedPersonas, loginButtonEnabled = true) }
+    fun onSelectPersona(persona: OnNetwork.Persona) {
+        _state.update { it.copy(selectedPersona = persona.toUiModel()) }
     }
 
     fun onPermissionAgree(
@@ -383,10 +333,10 @@ class DAppLoginViewModel @Inject constructor(
 
     fun onAccountsSelected(selectedAccounts: List<AccountItemUiModel>) {
         val dApp = connectedDapp
-        val selectedPersona = state.value.selectedPersona()?.persona
+        val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(dApp)
         requireNotNull(selectedPersona)
-        val request = state.value.processedRequestItem
+        val request = authorizedRequest.ongoingAccountsRequestItem ?: authorizedRequest.oneTimeAccountsRequestItem
         if (request?.isOngoing == true) {
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             viewModelScope.launch {
@@ -403,12 +353,10 @@ class DAppLoginViewModel @Inject constructor(
                     )
                 }
                 if (authorizedRequest.oneTimeAccountsRequestItem != null) {
-                    _state.update { it.copy(processedRequestItem = authorizedRequest.oneTimeAccountsRequestItem) }
                     sendEvent(
                         DAppLoginEvent.ChooseAccounts(
                             numberOfAccounts = authorizedRequest.oneTimeAccountsRequestItem.numberOfAccounts,
-                            isExactAccountsCount = authorizedRequest.oneTimeAccountsRequestItem.quantifier
-                                == AccountsRequestItem.AccountNumberQuantifier.Exactly,
+                            isExactAccountsCount = authorizedRequest.oneTimeAccountsRequestItem.quantifier.exactly(),
                             oneTime = true
                         )
                     )
@@ -425,9 +373,8 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     private suspend fun sendRequestResponse() {
-        val selectedPersona = state.value.selectedPersona()?.persona
+        val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(selectedPersona)
-        _state.update { it.copy(processedRequestItem = null) }
         dAppMessenger.sendWalletInteractionSuccessResponse(
             args.requestId,
             selectedPersona,
@@ -444,34 +391,20 @@ class DAppLoginViewModel @Inject constructor(
 
 sealed interface DAppLoginEvent : OneOffEvent {
     object RejectLogin : DAppLoginEvent
-    object SkipSelectPersona : DAppLoginEvent
-    data class HandleOngoingAccounts(
-        val numberOfAccounts: Int,
-        val isExactAccountsCount: Boolean,
-        val oneTime: Boolean = false
-    ) : DAppLoginEvent
-
     data class LoginFlowCompleted(val dappName: String) : DAppLoginEvent
     data class ChooseAccounts(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,
-        val oneTime: Boolean = false
+        val oneTime: Boolean = false,
+        val showBack: Boolean = true
     ) : DAppLoginEvent
 }
 
 data class DAppLoginUiState(
     val dappMetadata: DappMetadata? = null,
-    val loginButtonEnabled: Boolean = false,
     val uiMessage: UiMessage? = null,
-    val firstTimeLogin: Boolean = true,
-    val showProgress: Boolean = true,
-    val isOngoing: Boolean = false,
+    val initialRoute: InitialRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
-    val processedRequestItem: AccountsRequestItem? = null,
-    val personas: ImmutableList<PersonaUiModel> = persistentListOf()
-) {
-    fun selectedPersona(): PersonaUiModel? {
-        return personas.firstOrNull { it.selected }
-    }
-}
+    val selectedPersona: PersonaUiModel? = null
+)

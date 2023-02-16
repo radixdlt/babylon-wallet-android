@@ -27,32 +27,26 @@ fun NavController.dAppLogin(requestId: String) {
 @OptIn(ExperimentalAnimationApi::class)
 @Suppress("LongParameterList")
 fun NavGraphBuilder.dAppLogin(
-    onBackClick: () -> Unit,
     navController: NavController,
-    onHandleOngoingAccounts: (DAppLoginEvent.HandleOngoingAccounts) -> Unit,
-    onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
-    createNewPersona: () -> Unit,
-    skipLoginScreen: () -> Unit
+    onBackClick: () -> Unit,
+    showSuccessDialog: (String) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN,
         arguments = listOf(
-            navArgument(ARG_REQUEST_ID) { type = NavType.StringType }
+            navArgument(ARG_REQUEST_ID) {
+                type = NavType.StringType
+            }
         )
     ) { entry ->
         val parentEntry = remember(entry) {
             navController.getBackStackEntry(ROUTE_DAPP_LOGIN)
         }
         val vm = hiltViewModel<DAppLoginViewModel>(parentEntry)
-        DAppLoginScreen(
+        DappLoginScreen(
             viewModel = vm,
             onBackClick = onBackClick,
-            onHandleOngoingAccounts = onHandleOngoingAccounts,
-            onChooseAccounts = onChooseAccounts,
-            onLoginFlowComplete = onLoginFlowComplete,
-            createNewPersona = createNewPersona,
-            skipLoginScreen = skipLoginScreen
+            showSuccessDialog = showSuccessDialog
         )
     }
 }

@@ -79,7 +79,7 @@ android {
             minifyEnabled true
             signingConfig signingConfigs.debugPreview
             resValue "string", "app_name", "Radix Wallet Preview"
-            matchingFallbacks = ['debug']
+            matchingFallbacks = ['release']
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         releasePreview {

@@ -54,7 +54,11 @@ sealed interface MessageFromDataChannel {
             val quantifier: AccountNumberQuantifier
         ) {
             enum class AccountNumberQuantifier {
-                Exactly, AtLeast
+                Exactly, AtLeast;
+
+                fun exactly(): Boolean {
+                    return this == Exactly
+                }
             }
         }
 

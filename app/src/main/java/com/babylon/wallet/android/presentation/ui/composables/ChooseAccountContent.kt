@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +57,7 @@ fun ChooseAccountContent(
     isSingleChoice: Boolean,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
+    showBackButton: Boolean,
 ) {
     Box(
         modifier = modifier
@@ -67,7 +69,7 @@ fun ChooseAccountContent(
         Column(modifier = Modifier.fillMaxSize()) {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Filled.Clear,
+                    imageVector = if (showBackButton) Icons.Filled.ArrowBack else Icons.Filled.Clear,
                     contentDescription = "clear"
                 )
             }
