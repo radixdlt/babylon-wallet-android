@@ -27,11 +27,12 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.dapp.login.PersonaUiModel
+import com.babylon.wallet.android.presentation.dapp.selectpersona.PersonaUiModel
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Composable
 @Suppress("DestructuringDeclarationWithTooManyEntries")
-fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (String) -> Unit) {
+fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (OnNetwork.Persona) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     Column(modifier) {
         Row(
@@ -63,7 +64,7 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (S
             RadioButton(
                 selected = persona.selected,
                 onClick = {
-                    onSelectPersona(persona.persona.address)
+                    onSelectPersona(persona.persona)
                 },
                 colors = RadioButtonDefaults.colors(
                     selectedColor = RadixTheme.colors.gray1,

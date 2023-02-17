@@ -22,9 +22,10 @@ import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
+import com.babylon.wallet.android.presentation.dapp.login.dAppLogin
+import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.dapp.dAppLoginGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
@@ -133,8 +134,19 @@ fun NavigationHost(
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()
         })
-        dAppLoginGraph(navController)
+        dAppLogin(
+            navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            showSuccessDialog = {
+                navController.requestSuccess(it)
+            }
+        )
         settingsNavGraph(navController)
+        requestSuccess(onBackPress = {
+            navController.popBackStack()
+        })
         chooseAccountsOneTime(
             exitRequestFlow = {
                 navController.popBackStack()

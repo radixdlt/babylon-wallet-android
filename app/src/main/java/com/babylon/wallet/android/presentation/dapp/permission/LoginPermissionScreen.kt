@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.permission
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,18 +42,19 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginEvent
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 
 @Composable
-fun DAppPermissionScreen(
+fun LoginPermissionScreen(
     viewModel: DAppLoginViewModel,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
-    onCompleteFlow: () -> Unit
+    onCompleteFlow: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     LaunchedEffect(Unit) {
@@ -65,28 +66,34 @@ fun DAppPermissionScreen(
             }
         }
     }
-    BackHandler(enabled = true) {}
-    DAppPermissionContent(
+    BackHandler(enabled = state.initialDappLoginRoute !is InitialDappLoginRoute.Permission) {}
+    LoginPermissionContent(
         onContinueClick = {
             viewModel.onPermissionAgree(numberOfAccounts, isExactAccountsCount)
         },
         dappMetadata = state.dappMetadata,
-        showProgress = state.showProgress,
-        onRejectClick = viewModel::onRejectLogin,
+        onBackClick = {
+            if (state.initialDappLoginRoute is InitialDappLoginRoute.Permission) {
+                viewModel.onRejectLogin()
+            } else {
+                onBackClick()
+            }
+        },
         numberOfAccounts = numberOfAccounts,
-        isExactAccountsCount = isExactAccountsCount
+        isExactAccountsCount = isExactAccountsCount,
+        isFirstScreenInFlow = state.initialDappLoginRoute is InitialDappLoginRoute.Permission
     )
 }
 
 @Composable
-private fun DAppPermissionContent(
+private fun LoginPermissionContent(
     onContinueClick: () -> Unit,
     dappMetadata: DappMetadata?,
-    showProgress: Boolean,
-    onRejectClick: () -> Unit,
+    onBackClick: () -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     modifier: Modifier = Modifier,
+    isFirstScreenInFlow: Boolean,
 ) {
     Column(
         modifier = modifier
@@ -95,69 +102,64 @@ private fun DAppPermissionContent(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
     ) {
-        IconButton(onClick = onRejectClick) {
+        IconButton(onClick = onBackClick) {
             Icon(
-                imageVector = Icons.Filled.Clear,
+                imageVector = if (isFirstScreenInFlow) Icons.Filled.Clear else Icons.Filled.ArrowBack,
                 contentDescription = "clear"
             )
         }
-        AnimatedVisibility(visible = showProgress, modifier = Modifier.fillMaxSize()) {
-            FullscreenCircularProgressContent()
-        }
-        AnimatedVisibility(visible = !showProgress, modifier = Modifier.fillMaxSize()) {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(RadixTheme.dimensions.paddingDefault)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            AsyncImage(
+                model = dappMetadata?.getIcon(),
+                placeholder = painterResource(id = R.drawable.img_placeholder),
+                fallback = painterResource(id = R.drawable.img_placeholder),
+                error = painterResource(id = R.drawable.img_placeholder),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AsyncImage(
-                    model = dappMetadata?.getIcon(),
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    fallback = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
-                        .clip(RadixTheme.shapes.roundedRectDefault)
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                Text(
-                    text = stringResource(id = R.string.account_permission),
-                    textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                PermissionRequestHeader(dappName = dappMetadata?.getName() ?: "Unknown dApp")
-                Spacer(modifier = Modifier.weight(0.5f))
-                RequestedPermissionsList(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
-                        .padding(RadixTheme.dimensions.paddingLarge),
-                    isExactAccountsCount = isExactAccountsCount,
-                    numberOfAccounts = numberOfAccounts
-                )
-                Spacer(modifier = Modifier.weight(0.5f))
-                Text(
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(R.string.you_can_update_permission_at_any_time),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.weight(0.5f))
-                RadixPrimaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onContinueClick,
-                    text = stringResource(id = R.string.continue_button_title)
-                )
-            }
+                    .size(64.dp)
+                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
+                    .clip(RadixTheme.shapes.roundedRectDefault)
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Text(
+                text = stringResource(id = R.string.account_permission),
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            PermissionRequestHeader(dappName = dappMetadata?.getName() ?: "Unknown dApp")
+            Spacer(modifier = Modifier.weight(0.5f))
+            RequestedPermissionsList(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
+                    .padding(RadixTheme.dimensions.paddingLarge),
+                isExactAccountsCount = isExactAccountsCount,
+                numberOfAccounts = numberOfAccounts
+            )
+            Spacer(modifier = Modifier.weight(0.5f))
+            Text(
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(R.string.you_can_update_permission_at_any_time),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.weight(0.5f))
+            RadixPrimaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onContinueClick,
+                text = stringResource(id = R.string.continue_button_title)
+            )
         }
     }
 }
@@ -219,32 +221,32 @@ private fun PermissionRequestHeader(
 
 @Preview(showBackground = true)
 @Composable
-fun DAppLoginContentPreview() {
+fun LoginPermissionContentPreview() {
     RadixWalletTheme {
-        DAppPermissionContent(
+        LoginPermissionContent(
             onContinueClick = {},
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
-            showProgress = false,
-            onRejectClick = {},
+            onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            isFirstScreenInFlow = false
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DAppLoginContentFirstTimePreview() {
+fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
-        DAppPermissionContent(
+        LoginPermissionContent(
             onContinueClick = {},
             dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
-            showProgress = false,
-            onRejectClick = {},
+            onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            isFirstScreenInFlow = false
         )
     }
 }

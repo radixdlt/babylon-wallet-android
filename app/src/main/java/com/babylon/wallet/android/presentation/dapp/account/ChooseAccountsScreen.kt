@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.account
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.TextButton
 import androidx.compose.material3.Text
@@ -27,7 +28,8 @@ fun ChooseAccountsScreen(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String?) -> Unit
+    onLoginFlowComplete: (String?) -> Unit,
+    onBackClick: () -> Boolean
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
@@ -42,10 +44,17 @@ fun ChooseAccountsScreen(
 
     val state = viewModel.state
     val sharedState by sharedViewModel.state.collectAsState()
+    BackHandler(enabled = !state.showBackButton) {}
     ChooseAccountContent(
-        onBackClick = sharedViewModel::onRejectLogin,
+        onBackClick = {
+            if (state.showBackButton) {
+                onBackClick()
+            } else {
+                sharedViewModel.onRejectLogin()
+            }
+        },
         onContinueClick = {
-            sharedViewModel.onAccountsSelected(state.selectedAccounts)
+            sharedViewModel.onAccountsSelected(state.selectedAccounts, state.oneTimeRequest)
         },
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
@@ -55,7 +64,8 @@ fun ChooseAccountsScreen(
         onCreateNewAccount = onAccountCreationClick,
         dappMetadata = sharedState.dappMetadata,
         isOneTime = state.oneTimeRequest,
-        isSingleChoice = state.isSingleChoice
+        isSingleChoice = state.isSingleChoice,
+        showBackButton = state.showBackButton
     )
 
     state.error?.let { error ->
@@ -97,12 +107,6 @@ fun ChooseAccountContentPreview() {
             onBackClick = {},
             onContinueClick = {},
             isContinueButtonEnabled = true,
-            numberOfAccounts = 1,
-            isExactAccountsCount = false,
-            isOneTime = false,
-            dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
-            onAccountSelect = {},
-            onCreateNewAccount = {},
             accountItems = persistentListOf(
                 AccountItemUiModel(
                     displayName = "Account name 1",
@@ -117,7 +121,14 @@ fun ChooseAccountContentPreview() {
                     isSelected = false
                 )
             ),
+            onAccountSelect = {},
+            onCreateNewAccount = {},
+            dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
+            isOneTime = false,
             isSingleChoice = false,
+            numberOfAccounts = 1,
+            isExactAccountsCount = false,
+            showBackButton = true
         )
     }
 }
