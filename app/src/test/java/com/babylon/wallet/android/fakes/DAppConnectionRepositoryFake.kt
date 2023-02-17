@@ -22,7 +22,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                         OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                             identityAddress = "address1",
                             fieldIDs = emptyList(),
-                            lastUsedOn = "",
+                            lastUsedOn = "2023-01-31T10:28:14Z",
                             sharedAccounts = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                 listOf(),
                                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(

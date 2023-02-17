@@ -38,9 +38,9 @@ class SampleDataProvider {
         return sb.toString()
     }
 
-    fun samplePersona(personaId: String = "1", personaName: String = "Test Persona"): OnNetwork.Persona {
+    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): OnNetwork.Persona {
         return OnNetwork.Persona(
-            address = personaId,
+            address = personaAddress,
             derivationPath = "m/1'/1'/1'/1'/1'/1'",
             displayName = personaName,
             index = 0,
