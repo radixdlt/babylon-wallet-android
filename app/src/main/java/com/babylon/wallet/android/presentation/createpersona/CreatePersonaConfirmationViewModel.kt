@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.OneOffEvent
 import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.PersonaRepository
@@ -30,8 +29,7 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
                 "persona is null"
             }
             personaUiState = personaUiState.copy(
-                personaName = persona.displayName,
-                personaAddressTruncated = persona.address.truncatedHash()
+                isFirstPersona = personaRepository.getPersonas().count() == 1
             )
         }
     }
@@ -46,8 +44,7 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
     }
 
     data class PersonaConfirmationUiState(
-        val personaName: String = "",
-        val personaAddressTruncated: String = ""
+        val isFirstPersona: Boolean = true
     )
 }
 
