@@ -30,8 +30,6 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
-    private val samplePersona = SampleDataProvider().samplePersona()
-
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
@@ -66,7 +64,12 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
             SampleDataProvider().samplePersona(addressSlot.captured)
         }
         coEvery { personaRepository.personas } returns flow {
-            emit(listOf(samplePersona))
+            emit(
+                listOf(
+                    SampleDataProvider().samplePersona("address1"),
+                    SampleDataProvider().samplePersona("address2")
+                )
+            )
         }
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
@@ -80,6 +83,8 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
             val item = expectMostRecentItem()
             assert(item.continueButtonEnabled)
             assert(item.personaListToDisplay.size == 2)
+            val onePersonaAuthorized = item.personaListToDisplay.count { it.lastUsedOn != null } == 1
+            assert(onePersonaAuthorized)
         }
     }
 
@@ -90,7 +95,9 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
         vm.state.test {
             val item = expectMostRecentItem()
             assert(!item.continueButtonEnabled)
-            assert(item.personaListToDisplay.size == 1)
+            assert(item.personaListToDisplay.size == 2)
+            val noPersonaAuthorized = item.personaListToDisplay.all { it.lastUsedOn == null }
+            assert(noPersonaAuthorized)
         }
     }
 
