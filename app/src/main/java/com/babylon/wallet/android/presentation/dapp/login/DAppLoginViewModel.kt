@@ -284,26 +284,23 @@ class DAppLoginViewModel @Inject constructor(
                 )
             }
         } else {
-            val personaExists = dApp.hasAuthorizedPersona(selectedPersona.address)
-            if (!personaExists) {
-                mutex.withLock {
-                    editedDapp = connectedDapp?.updateConnectedDappPersonas(
-                        listOf(
-                            AuthorizedPersonaSimple(
-                                identityAddress = selectedPersona.address,
-                                fieldIDs = emptyList(),
-                                lastUsedOn = date,
-                                sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
-                                    emptyList(),
-                                    request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                        AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
-                                        0
-                                    )
+            mutex.withLock {
+                editedDapp = connectedDapp?.updateConnectedDappPersonas(
+                    listOf(
+                        AuthorizedPersonaSimple(
+                            identityAddress = selectedPersona.address,
+                            fieldIDs = emptyList(),
+                            lastUsedOn = date,
+                            sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
+                                emptyList(),
+                                request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                    AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                                    0
                                 )
                             )
                         )
                     )
-                }
+                )
             }
         }
     }
