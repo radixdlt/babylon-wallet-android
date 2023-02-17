@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.utils.LAST_USED_PERSONA_DATE_FORMAT
 import com.babylon.wallet.android.utils.fromISO8601String
+import com.babylon.wallet.android.utils.toEpochMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -75,11 +76,14 @@ class SelectPersonaViewModel @Inject constructor(
                 )
                 val allAuthorizedPersonas = connectedDapp?.referencesToAuthorizedPersonas
                 _state.update { state ->
+                    val personasListForDisplay = generatePersonasListForDisplay(
+                        allAuthorizedPersonas,
+                        personas.map { it.toUiModel() }
+                    )
+                    val selected = personasListForDisplay.any { it.selected }
                     state.copy(
-                        personaListToDisplay = generatePersonasListForDisplay(
-                            allAuthorizedPersonas,
-                            personas.map { it.toUiModel() }
-                        ).toPersistentList()
+                        personaListToDisplay = personasListForDisplay.toPersistentList(),
+                        continueButtonEnabled = selected
                     )
                 }
             }
@@ -90,41 +94,29 @@ class SelectPersonaViewModel @Inject constructor(
         allAuthorizedPersonas: List<AuthorizedPersonaSimple>?,
         profilePersonas: List<PersonaUiModel>
     ): List<PersonaUiModel> {
-        val defaultAuthorizedPersonaSimple = allAuthorizedPersonas?.firstOrNull()
-        val authorizedPersona = defaultAuthorizedPersonaSimple?.let {
-            personaRepository.getPersonaByAddress(it.identityAddress)
-        }?.let {
-            PersonaUiModel(
-                it,
-                selected = true,
-                pinned = true,
-                lastUsedOn = defaultAuthorizedPersonaSimple.lastUsedOn.fromISO8601String()
-                    ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
-            )
-        }
-        var updatedPersonas = profilePersonas.map { personaUiModel ->
+        val updatedPersonas = profilePersonas.map { personaUiModel ->
             val matchingAuthorizedPersona = allAuthorizedPersonas?.firstOrNull {
                 personaUiModel.persona.address == it.identityAddress
             }
             if (matchingAuthorizedPersona != null) {
+                val localDateTime = matchingAuthorizedPersona.lastUsedOn.fromISO8601String()
                 personaUiModel.copy(
-                    lastUsedOn = matchingAuthorizedPersona.lastUsedOn.fromISO8601String()
+                    lastUsedOn = localDateTime
                         ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),
+                    lastUsedOnTimestamp = localDateTime?.toEpochMillis() ?: 0
                 )
             } else {
                 personaUiModel
             }
-        }
-        val selectedPersona = state.value.personaListToDisplay.firstOrNull { it.selected }
-        selectedPersona?.persona?.let {
+        }.sortedByDescending { it.lastUsedOnTimestamp }
+        val currentlySelectedPersona = state.value.personaListToDisplay.firstOrNull { it.selected }
+            ?: updatedPersonas.firstOrNull { it.lastUsedOn != null }
+        currentlySelectedPersona?.persona?.let {
             sendEvent(DAppSelectPersonaEvent.PersonaSelected(it))
         }
-        updatedPersonas = if (selectedPersona != null && selectedPersona != authorizedPersona) {
-            updatedPersonas.map { p -> p.copy(selected = p.persona.address == selectedPersona.persona.address) }
-        } else {
-            updatedPersonas.filter { it.persona.address != authorizedPersona?.persona?.address }
+        return updatedPersonas.map { p ->
+            p.copy(selected = p.persona.address == currentlySelectedPersona?.persona?.address)
         }
-        return authorizedPersona?.let { listOf(authorizedPersona) }.orEmpty() + updatedPersonas
     }
 
     fun onSelectPersona(personaAddress: String) {

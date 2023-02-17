@@ -3,6 +3,7 @@ package com.babylon.wallet.android.utils
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -15,6 +16,10 @@ fun LocalDateTime.toISO8601String(): String {
         ).withZoneSameInstant(ZoneOffset.UTC)
             .truncatedTo(ChronoUnit.SECONDS)
     )
+}
+
+fun LocalDateTime.toEpochMillis(): Long {
+    return ZonedDateTime.of(this, ZoneId.systemDefault()).toInstant().toEpochMilli()
 }
 
 @Suppress("SwallowedException")
