@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.gateway.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// NOT USED
 @Serializable
 data class GatewayErrorResponse(
     @SerialName(value = "errors")

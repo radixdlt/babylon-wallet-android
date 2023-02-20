@@ -9,6 +9,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 
+// NOT USED
 fun Modifier.contentLoadingDefault(visible: Boolean): Modifier = composed {
     this.placeholder(
         visible = visible,
