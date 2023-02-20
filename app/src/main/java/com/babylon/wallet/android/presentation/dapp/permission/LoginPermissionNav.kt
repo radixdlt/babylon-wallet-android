@@ -23,7 +23,6 @@ internal const val ARG_ONE_TIME = "one_time"
 const val ROUTE_DAPP_PERMISSION =
     "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}"
 
-// NOT USED
 fun NavController.loginPermission(
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
