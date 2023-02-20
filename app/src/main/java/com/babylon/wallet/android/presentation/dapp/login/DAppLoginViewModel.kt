@@ -324,7 +324,13 @@ class DAppLoginViewModel @Inject constructor(
         isOneTime: Boolean
     ) {
         viewModelScope.launch {
-            sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount))
+            sendEvent(
+                DAppLoginEvent.ChooseAccounts(
+                    numberOfAccounts = numberOfAccounts,
+                    isExactAccountsCount = isExactAccountsCount,
+                    oneTime = isOneTime
+                )
+            )
         }
     }
 
