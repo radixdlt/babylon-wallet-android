@@ -32,7 +32,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountRepository: AccountRepository,
     private val dAppMessenger: DAppMessenger,
-    private val incomingRequestRepository: IncomingRequestRepository,
+    incomingRequestRepository: IncomingRequestRepository,
     private val dappMetadataRepository: DappMetadataRepository
 ) : ViewModel(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 

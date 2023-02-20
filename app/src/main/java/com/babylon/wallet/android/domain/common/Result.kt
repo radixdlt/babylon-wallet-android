@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.domain.common
 
-import com.babylon.wallet.android.R
-
 sealed interface Result<out T> {
 
     data class Success<T>(val data: T) : Result<T>
