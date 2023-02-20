@@ -26,7 +26,7 @@ const val ROUTE_DAPP_PERMISSION =
 fun NavController.loginPermission(
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
-    oneTime: Boolean = false
+    oneTime: Boolean
 ) {
     navigate("dapp_permission/$numberOfAccounts/$isExactAccountsCount/$oneTime")
 }
@@ -59,18 +59,20 @@ fun NavGraphBuilder.loginPermission(
                 initialDappLoginRoute?.let {
                     defaultValue = initialDappLoginRoute.oneTime
                 }
-            },
+            }
         )
     ) { entry ->
         val numberOfAccounts = checkNotNull(entry.arguments?.getInt(ARG_NUMBER_OF_ACCOUNTS))
         val quantifier = checkNotNull(entry.arguments?.getBoolean(ARG_EXACT_ACCOUNT_COUNT))
+        val oneTime = checkNotNull(entry.arguments?.getBoolean(ARG_ONE_TIME))
         LoginPermissionScreen(
             viewModel = sharedViewModel,
             onChooseAccounts = onChooseAccounts,
             numberOfAccounts = numberOfAccounts,
             isExactAccountsCount = quantifier,
             onCompleteFlow = onCompleteFlow,
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            oneTime = oneTime
         )
     }
 }

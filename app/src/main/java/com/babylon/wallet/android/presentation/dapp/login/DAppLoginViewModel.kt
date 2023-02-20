@@ -218,8 +218,7 @@ class DAppLoginViewModel @Inject constructor(
 
     private suspend fun handleOngoingAddressRequestItem(
         ongoingAccountsRequestItem: AccountsRequestItem,
-        personaAddress: String,
-        transitionToAccountSelection: Boolean = true
+        personaAddress: String
     ) {
         val dapp = requireNotNull(editedDapp)
         val numberOfAccounts = ongoingAccountsRequestItem.numberOfAccounts
@@ -252,8 +251,8 @@ class DAppLoginViewModel @Inject constructor(
             } else {
                 sendRequestResponse()
             }
-        } else if (transitionToAccountSelection) {
-            sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount))
+        } else {
+            sendEvent(DAppLoginEvent.DisplayPermission(numberOfAccounts, isExactAccountsCount))
         }
     }
 
@@ -319,12 +318,19 @@ class DAppLoginViewModel @Inject constructor(
         _state.update { it.copy(selectedPersona = persona.toUiModel()) }
     }
 
-    fun onPermissionAgree(
+    fun onPermissionGranted(
         numberOfAccounts: Int,
-        isExactAccountsCount: Boolean
+        isExactAccountsCount: Boolean,
+        isOneTime: Boolean
     ) {
         viewModelScope.launch {
-            sendEvent(DAppLoginEvent.ChooseAccounts(numberOfAccounts, isExactAccountsCount))
+            sendEvent(
+                DAppLoginEvent.ChooseAccounts(
+                    numberOfAccounts = numberOfAccounts,
+                    isExactAccountsCount = isExactAccountsCount,
+                    oneTime = isOneTime
+                )
+            )
         }
     }
 
@@ -391,6 +397,12 @@ class DAppLoginViewModel @Inject constructor(
 sealed interface DAppLoginEvent : OneOffEvent {
     object RejectLogin : DAppLoginEvent
     data class LoginFlowCompleted(val dappName: String) : DAppLoginEvent
+    data class DisplayPermission(
+        val numberOfAccounts: Int,
+        val isExactAccountsCount: Boolean,
+        val oneTime: Boolean = false
+    ) : DAppLoginEvent
+
     data class ChooseAccounts(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

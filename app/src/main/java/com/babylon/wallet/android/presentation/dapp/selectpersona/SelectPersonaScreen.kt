@@ -61,7 +61,8 @@ fun SelectPersonaScreen(
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String) -> Unit,
-    createNewPersona: () -> Unit
+    createNewPersona: () -> Unit,
+    onDisplayPermission: (DAppLoginEvent.DisplayPermission) -> Unit
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
@@ -69,6 +70,7 @@ fun SelectPersonaScreen(
                 DAppLoginEvent.RejectLogin -> onBackClick()
                 is DAppLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 is DAppLoginEvent.ChooseAccounts -> onChooseAccounts(event)
+                is DAppLoginEvent.DisplayPermission -> onDisplayPermission(event)
             }
         }
     }

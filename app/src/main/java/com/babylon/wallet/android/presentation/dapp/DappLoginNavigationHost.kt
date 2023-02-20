@@ -51,7 +51,10 @@ fun DappLoginNavigationHost(
                 navController.createPersonaScreen()
             },
             initialDappLoginRoute = initialDappLoginRoute as? InitialDappLoginRoute.SelectPersona,
-            sharedViewModel = sharedViewModel
+            sharedViewModel = sharedViewModel,
+            onDisplayPermission = { event ->
+                navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
+            }
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() },
@@ -133,6 +136,7 @@ sealed interface InitialDappLoginRoute {
     data class Permission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,
+        val showBack: Boolean = false,
         val oneTime: Boolean = false
     ) : InitialDappLoginRoute
 
