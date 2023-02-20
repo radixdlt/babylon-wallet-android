@@ -54,7 +54,8 @@ fun LoginPermissionScreen(
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    oneTime: Boolean
 ) {
     val state by viewModel.state.collectAsState()
     LaunchedEffect(Unit) {
@@ -69,7 +70,7 @@ fun LoginPermissionScreen(
     BackHandler(enabled = state.initialDappLoginRoute !is InitialDappLoginRoute.Permission) {}
     LoginPermissionContent(
         onContinueClick = {
-            viewModel.onPermissionAgree(numberOfAccounts, isExactAccountsCount)
+            viewModel.onPermissionGranted(numberOfAccounts, isExactAccountsCount, oneTime)
         },
         dappMetadata = state.dappMetadata,
         onBackClick = {

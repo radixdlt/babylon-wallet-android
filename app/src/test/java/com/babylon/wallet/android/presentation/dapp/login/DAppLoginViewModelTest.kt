@@ -132,7 +132,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         vm.onLogin()
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppLoginEvent.ChooseAccounts)
+            assert(expectMostRecentItem() is DAppLoginEvent.DisplayPermission)
         }
         vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
         advanceUntilIdle()
