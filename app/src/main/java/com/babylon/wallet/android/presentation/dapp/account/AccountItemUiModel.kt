@@ -9,7 +9,7 @@ data class AccountItemUiModel(
     val isSelected: Boolean = false
 )
 
-fun OnNetwork.Account.toUiModel(isSelected: Boolean) = AccountItemUiModel(
+fun OnNetwork.Account.toUiModel(isSelected: Boolean = false) = AccountItemUiModel(
     address = address,
     displayName = displayName,
     appearanceID = appearanceID,

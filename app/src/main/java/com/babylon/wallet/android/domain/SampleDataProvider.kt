@@ -29,7 +29,33 @@ import java.math.BigDecimal
 
 class SampleDataProvider {
 
-    fun randomTokenAddress(): String {
+    fun sampleAccount(address: String = "fj3489fj348f"): OnNetwork.Account {
+        return OnNetwork.Account(
+            address = address,
+            appearanceID = 123,
+            derivationPath = "m/1'/1'/1'/1'/1'/1'",
+            displayName = "my account",
+            index = 0,
+            networkID = 999,
+            securityState = SecurityState.Unsecured(
+                discriminator = "dsics",
+                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    genesisFactorInstance = FactorInstance(
+                        derivationPath = DerivationPath("few", "disc"),
+                        factorInstanceID = "IDIDDIIDD",
+                        factorSourceReference = FactorSourceReference(
+                            factorSourceID = "f32f3",
+                            factorSourceKind = "kind"
+                        ),
+                        initializationDate = "Date1",
+                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                    )
+                )
+            )
+        )
+    }
+
+    fun randomAddress(): String {
         val characters = "abcdefghijklmnopqrstuvwxyz0123456789"
         val sb = StringBuilder()
         repeat((0 until 26).count()) {
@@ -67,7 +93,7 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountResource(address: String = randomTokenAddress()): AccountResources {
+    fun sampleAccountResource(address: String = randomAddress()): AccountResources {
         return AccountResources(
             address = address,
             displayName = "My account",
@@ -94,11 +120,11 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleFungibleTokens(ownerAddress: String = randomTokenAddress()): List<OwnedFungibleToken> {
+    fun sampleFungibleTokens(ownerAddress: String = randomAddress()): List<OwnedFungibleToken> {
         val result = mutableListOf<OwnedFungibleToken>()
         return result.apply {
             repeat(3) {
-                val tokenAddress = randomTokenAddress()
+                val tokenAddress = randomAddress()
                 add(
                     OwnedFungibleToken(
                         AccountAddress(ownerAddress),
@@ -135,8 +161,8 @@ class SampleDataProvider {
         ownedFungibleToken.toTokenUiModel()
     }
 
-    fun sampleSimpleFungibleTokens(address: String = randomTokenAddress()): List<SimpleOwnedFungibleToken> {
-        val tokenAddress = randomTokenAddress()
+    fun sampleSimpleFungibleTokens(address: String = randomAddress()): List<SimpleOwnedFungibleToken> {
+        val tokenAddress = randomAddress()
         return listOf(
             SimpleOwnedFungibleToken(
                 AccountAddress(address),

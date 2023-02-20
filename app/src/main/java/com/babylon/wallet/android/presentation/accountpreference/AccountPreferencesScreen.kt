@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -64,7 +66,7 @@ private fun AccountPreferenceContent(
     error: UiMessage?,
     modifier: Modifier = Modifier,
 ) {
-    val showNotSecuredDialog = remember { mutableStateOf(false) }
+    var showNotSecuredDialog by remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
@@ -100,7 +102,7 @@ private fun AccountPreferenceContent(
                                 }
                             }
                         } else {
-                            showNotSecuredDialog.value = true
+                            showNotSecuredDialog = true
                         }
                     },
                     enabled = !loading && canUseFaucet
@@ -121,12 +123,14 @@ private fun AccountPreferenceContent(
                 onMessageShown()
             }
         }
-        NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
-            showNotSecuredDialog.value = false
-            if (it) {
-                onGetFreeXrdClick()
-            }
-        })
+        if (showNotSecuredDialog) {
+            NotSecureAlertDialog(finish = {
+                showNotSecuredDialog = false
+                if (it) {
+                    onGetFreeXrdClick()
+                }
+            })
+        }
     }
 }
 

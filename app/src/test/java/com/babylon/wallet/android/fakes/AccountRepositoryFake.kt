@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.fakes
 
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.mockdata.account1
 import com.babylon.wallet.android.mockdata.account2
 import kotlinx.coroutines.flow.Flow
@@ -21,8 +22,8 @@ class AccountRepositoryFake : AccountRepository {
         return accountsData.first()
     }
 
-    override suspend fun getAccountByAddress(address: String): OnNetwork.Account? {
-        TODO("Not yet implemented")
+    override suspend fun getAccountByAddress(address: String): OnNetwork.Account {
+        return SampleDataProvider().sampleAccount(address)
     }
 
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {

@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingSectionItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.settings.addconnection.settingsConnectionScreen
+import com.babylon.wallet.android.presentation.settings.connecteddapps.connectedDappsScreen
+import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.google.accompanist.navigation.animation.composable
 
@@ -25,6 +27,17 @@ fun NavGraphBuilder.settingsNavGraph(
     ) {
         settingsAll(navController)
         settingsConnectionScreen(onBackClick = {
+            navController.popBackStack()
+        })
+        connectedDappsScreen(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onDappClick = { dappDefinitionAddress ->
+                navController.dappDetailScreen(dappDefinitionAddress)
+            }
+        )
+        dappDetailScreen(onBackClick = {
             navController.popBackStack()
         })
         settingsGatewayEdit(navController)
@@ -56,6 +69,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingSectionItem.InspectProfile -> {}
                     SettingSectionItem.LinkedConnector -> {
                         navController.settingsConnectionScreen()
+                    }
+                    SettingSectionItem.ConnectedDapps -> {
+                        navController.connectedDappsScreen()
                     }
                     else -> {}
                 }
