@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
@@ -61,7 +62,7 @@ internal class TransactionClientTest {
         val addressesInvolved = transactionClient.getAddressesInvolvedInATransaction(manifest)
         val addressToLockFee = transactionClient.selectAccountAddressToLockFee(addressesInvolved)
         assert(addressToLockFee != null)
-        manifest = transactionClient.addLockFeeInstructionToManifest(manifest, addressToLockFee!!)
+        manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
         val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
         Assert.assertEquals(1, addressesNeededToSign.size)
         Assert.assertEquals(
