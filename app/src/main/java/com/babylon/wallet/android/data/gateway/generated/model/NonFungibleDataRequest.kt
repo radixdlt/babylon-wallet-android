@@ -24,8 +24,8 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address The Bech32m-encoded human readable version of the entity's global address.
- * @param nonFungibleId 
+ * @param address Bech32m-encoded human readable version of the entity's global address.
+ * @param nonFungibleId String-encoded non-fungible ID.
  * @param atLedgerState 
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limit The page size requested.
@@ -34,10 +34,11 @@ import kotlinx.serialization.Contextual
 
 data class NonFungibleDataRequest (
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
+    /* String-encoded non-fungible ID. */
     @SerialName(value = "non_fungible_id")
     val nonFungibleId: kotlin.String,
 

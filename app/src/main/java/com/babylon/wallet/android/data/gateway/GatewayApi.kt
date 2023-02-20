@@ -20,13 +20,11 @@ import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleDataRe
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsRequest
 import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionCommittedDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionCommittedDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionConstructionResponse
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
@@ -77,19 +75,14 @@ interface GatewayApi {
     suspend fun transactionConstruction(): Response<TransactionConstructionResponse>
 
     @POST("transaction/recent")
-    suspend fun recentTransactions(
-        @Body recentTransactionsRequest: RecentTransactionsRequest
-    ): Response<RecentTransactionsResponse>
+    suspend fun transactionRecent(
+        @Body recentTransactionsRequest: TransactionRecentRequest
+    ): Response<TransactionRecentResponse>
 
     @POST("transaction/submit")
     suspend fun submitTransaction(
         @Body transactionSubmitRequest: TransactionSubmitRequest
     ): Response<TransactionSubmitResponse>
-
-    @POST("transaction/details")
-    suspend fun transactionDetails(
-        @Body transactionDetailsRequest: TransactionDetailsRequest
-    ): Response<TransactionDetailsResponse>
 
     @POST("transaction/status")
     suspend fun transactionStatus(

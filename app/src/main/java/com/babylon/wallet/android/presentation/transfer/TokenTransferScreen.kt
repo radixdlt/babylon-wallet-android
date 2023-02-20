@@ -47,7 +47,7 @@ import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.profile.data.model.pernetwork.Account
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Composable
 fun TokenTransferScreen(
@@ -79,7 +79,7 @@ fun TokenTransferScreen(
 @Composable
 fun TokenTransferContent(
     modifier: Modifier,
-    accounts: ImmutableList<Account>,
+    accounts: ImmutableList<OnNetwork.Account>,
     onBackClick: () -> Unit,
     senderAddress: String,
     onSenderAddressChanged: (String) -> Unit,
@@ -122,7 +122,7 @@ fun TokenTransferContent(
             ) {
                 Text("From")
                 DropdownTextField(
-                    items = accounts.map { it.entityAddress.address }.toImmutableList(),
+                    items = accounts.map { it.address }.toImmutableList(),
                     expanded = senderExpanded,
                     onExpandedChanged = { senderExpanded = it },
                     selectedText = senderAddress,
@@ -142,7 +142,7 @@ fun TokenTransferContent(
             ) {
                 Text("To")
                 DropdownTextField(
-                    items = accounts.map { it.entityAddress.address }.toImmutableList(),
+                    items = accounts.map { it.address }.toImmutableList(),
                     expanded = recipientExpanded,
                     onExpandedChanged = { recipientExpanded = it },
                     selectedText = recipientAddress,

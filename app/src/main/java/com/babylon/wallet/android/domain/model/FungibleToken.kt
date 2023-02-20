@@ -10,24 +10,24 @@ data class FungibleToken(
     val metadata: Map<String, String> = emptyMap()
 ) {
     fun getImageUrl(): String? {
-        return metadata[TokenMetadataConstants.KEY_URL]
+        return metadata[MetadataConstants.KEY_IMAGE_URL]
     }
 
     fun getTokenName(): String? {
-        return metadata[TokenMetadataConstants.KEY_NAME]
+        return metadata[MetadataConstants.KEY_NAME]
     }
 
     fun getTokenSymbol(): String? {
-        return metadata[TokenMetadataConstants.KEY_SYMBOL]
+        return metadata[MetadataConstants.KEY_SYMBOL]
     }
 
     fun getTokenDescription(): String? {
-        return metadata[TokenMetadataConstants.KEY_DESCRIPTION]
+        return metadata[MetadataConstants.KEY_DESCRIPTION]
     }
 
     fun getDisplayableMetadata(): Map<String, String> {
         return metadata.filterKeys {
-            !TokenMetadataConstants.SPECIAL_METADATA.contains(it)
+            !MetadataConstants.SPECIAL_METADATA.contains(it)
         }
     }
 }

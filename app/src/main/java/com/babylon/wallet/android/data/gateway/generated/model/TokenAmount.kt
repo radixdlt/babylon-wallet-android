@@ -21,20 +21,20 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Represents a decimal amount of a given resource.
  *
- * @param `value` The string-encoded decimal representing the amount
- * @param address The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param `value` String-encoded decimal representing the amount of a related fungible resource.
+ * @param address Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  */
 @Serializable
 
 data class TokenAmount (
 
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "value")
     val `value`: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "address")
     val address: kotlin.String? = null
 

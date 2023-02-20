@@ -3,8 +3,9 @@ package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -21,10 +22,10 @@ import timber.log.Timber
 import java.nio.ByteBuffer
 
 @Suppress("InjectDispatcher")
-@JvmInline
-value class DataChannelWrapper(
+data class DataChannelWrapper(
     private val webRtcDataChannel: DataChannel
 ) {
+    private val deleteConnectionObservable = MutableStateFlow(false)
 
     val state: DataChannelEvent.StateChanged
         get() = when (webRtcDataChannel.state()) {
@@ -65,24 +66,28 @@ value class DataChannelWrapper(
     val dataChannelEvents: Flow<DataChannelEvent>
         get() = webRtcDataChannel
             .eventFlow()
-            .map { dataChannelEvent ->
-                if (dataChannelEvent is DataChannelEvent.IncomingMessage.Package) {
-                    val result = assembleAndVerifyMessageFromPackageList(
-                        packageList = dataChannelEvent.messageInListOfPackages
-                    )
-                    when (result) {
-                        is Result.Success -> {
-                            val incomingMessageByteArray = result.data
-                            DataChannelEvent.IncomingMessage.DecodedMessage(
-                                message = incomingMessageByteArray.decodeToString()
-                            )
-                        }
-                        is Result.Error -> {
-                            DataChannelEvent.IncomingMessage.MessageHashMismatch
-                        }
-                    }
+            .combine(deleteConnectionObservable) { dataChannelEvent, isDeleteConnectionEvent ->
+                if (isDeleteConnectionEvent) {
+                    DataChannelEvent.StateChanged.DELETE_CONNECTION
                 } else {
-                    dataChannelEvent
+                    if (dataChannelEvent is DataChannelEvent.IncomingMessage.Package) {
+                        val result = assembleAndVerifyMessageFromPackageList(
+                            packageList = dataChannelEvent.messageInListOfPackages
+                        )
+                        when (result) {
+                            is Result.Success -> {
+                                val incomingMessageByteArray = result.data
+                                DataChannelEvent.IncomingMessage.DecodedMessage(
+                                    message = incomingMessageByteArray.decodeToString()
+                                )
+                            }
+                            is Result.Error -> {
+                                DataChannelEvent.IncomingMessage.MessageHashMismatch
+                            }
+                        }
+                    } else {
+                        dataChannelEvent
+                    }
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -138,7 +143,10 @@ value class DataChannelWrapper(
         }
     }
 
-    fun close() {
+    fun close(isDeleteConnectionEvent: Boolean) {
+        if (isDeleteConnectionEvent) {
+            deleteConnectionObservable.value = true
+        }
         webRtcDataChannel.close()
     }
 }

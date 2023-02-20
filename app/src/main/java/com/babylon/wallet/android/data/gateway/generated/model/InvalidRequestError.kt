@@ -30,7 +30,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class InvalidRequestError (
+data class InvalidRequestError(
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")

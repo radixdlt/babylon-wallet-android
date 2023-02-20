@@ -24,29 +24,32 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param address Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  * @param nonFungibleIdType 
- * @param nonFungibleId 
- * @param mutableDataHex 
- * @param immutableDataHex 
+ * @param nonFungibleId String-encoded non-fungible ID.
+ * @param mutableDataHex Hex-encoded binary blob.
+ * @param immutableDataHex Hex-encoded binary blob.
  */
 @Serializable
 
 data class NonFungibleDataResponseAllOf (
 
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
     @Contextual @SerialName(value = "non_fungible_id_type")
     val nonFungibleIdType: NonFungibleIdType,
 
+    /* String-encoded non-fungible ID. */
     @SerialName(value = "non_fungible_id")
     val nonFungibleId: kotlin.String,
 
+    /* Hex-encoded binary blob. */
     @SerialName(value = "mutable_data_hex")
     val mutableDataHex: kotlin.String,
 
+    /* Hex-encoded binary blob. */
     @SerialName(value = "immutable_data_hex")
     val immutableDataHex: kotlin.String
 

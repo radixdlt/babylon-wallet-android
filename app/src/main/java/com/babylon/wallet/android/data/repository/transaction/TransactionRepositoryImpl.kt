@@ -1,11 +1,8 @@
 package com.babylon.wallet.android.data.repository.transaction
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.RecentTransactionsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionLookupIdentifier
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
@@ -32,10 +29,10 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
         address: String,
         page: String?,
         limit: Int?
-    ): Result<RecentTransactionsResponse> {
+    ): Result<TransactionRecentResponse> {
         return performHttpRequest(
             call = {
-                gatewayApi.recentTransactions(RecentTransactionsRequest(cursor = page, limit = limit))
+                gatewayApi.transactionRecent(TransactionRecentRequest(cursor = page, limit = limit))
             },
             map = {
                 it
@@ -54,25 +51,10 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
         )
     }
 
-    override suspend fun getTransactionStatus(
-        intentHashHex: String?
-    ): Result<TransactionStatusResponse> {
+    override suspend fun getTransactionStatus(intentHashHex: String?): Result<TransactionStatusResponse> {
         return performHttpRequest(
             call = {
                 gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = intentHashHex))
-            },
-            map = {
-                it
-            }
-        )
-    }
-
-    override suspend fun getTransactionDetails(
-        identifier: TransactionLookupIdentifier
-    ): Result<TransactionDetailsResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.transactionDetails(TransactionDetailsRequest(identifier))
             },
             map = {
                 it

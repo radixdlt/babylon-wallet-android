@@ -32,7 +32,7 @@
     <string name="continue_button_title">Continue</string>
     <string name="congratulations">Congratulations</string>
     <string name="your_account_has_been_created">Your account has been created.</string>
-    <string name="account_created_info">Your account lives on the Radix Network and you can access it anytime in Radix Wallet.</string>
+    <string name="account_created_info">Your account lives on the Radix Network and you can access it anytime in the Radix Wallet.</string>
     <string name="go_to_home">Go to Home</string>
     <string name="dapp_connection_request">dApp Connection Request</string>
     <string name="radaswap_wants_to_connect_wallet">Radaswap wants to connect to your wallet</string>
@@ -114,8 +114,61 @@
     <string name="persona_creation_text">What would you like to call your persona?</string>
     <string name="hint_persona_name">e.g. My Main Persona</string>
     <string name="create_persona">Create Persona</string>
-    <string name="your_persona_has_been_created">Your persona has been created.</string>
-    <string name="create_new_persona">Create New Persona</string>
+    <string name="your_persona_has_been_created">Your Persona has been created.</string>
+    <string name="your_first_persona_has_been_created">You\'ve created your first Persona.</string>
+    <string name="create_a_new_persona">Create a New Persona</string>
+    <string name="create_a_persona">Create a Persona</string>
     <string name="all_personas_info">Here are all the personas connected to your account</string>
+    <string name="login_request">Login Request</string>
+    <string name="dapp_login_subtitle">%s is requesting you login with a Persona.</string>
+    <string name="dapp_login_first_time_subtitle">%s is requesting you login for the first time with a Persona.</string>
+    <string name="choose_a_persona">Choose a Persona</string>
+    <string name="change_persona">Change Persona</string>
+    <string name="login">Login</string>
+    <string name="select_a_persona">Select a Persona</string>
+    <string name="account_permission">Account Permission</string>
+    <string name="dapp_is_requesting_ongoing_permission">%s is requesting permission to always be able to view account information when you login with this Persona.</string>
+    <string name="always">always</string>
+    <string name="dapp_is_requesting_permission">%s is requesting permission to view the following</string>
+    <string name="revoke">Revoke</string>
+    <string name="bullet_string">\u2022 %s</string>
+    <plurals name="view_exactly_x_accounts">
+        <item quantity="one">\u2022 %d account</item>
+        <item quantity="other">\u2022 %d accounts</item>
+    </plurals>
+    <plurals name="view_at_least_x_accounts">
+        <item quantity="other">\u2022 %d or more accounts</item>
+    </plurals>
+    <string name="any_number_of_accounts">\u2022 Any number of accounts</string>
+    <string name="agree">Agree</string>
+    <string name="new_login_request">New Login Request</string>
+    <string name="account_request">Account Request</string>
+    <string name="your_last_login">Your last login was on %s</string>
+    <string name="sharing">Sharing</string>
+    <string name="success">Success</string>
+    <string name="request_complete">Request from %s complete</string>
+    <string name="the_personal_data_you_specify">Personal data that you add to your Persona will only be shared with dApp websites with your permission in the Radix Wallet.</string>
+    <string name="go_to_choose_personas">Go to Choose Personas</string>
+    <string name="you_can_update_permission_at_any_time">You can update this permission in your settings at any time.</string>
+    <plurals name="one_time_at_least_request">
+        <item quantity="one">%s is making a one-time request for at least %d account.</item>
+        <item quantity="other">%s is making a one-time request for at least %d accounts.</item>
+    </plurals>
+    <plurals name="one_time_exactly_request">
+        <item quantity="one">"%s is making a one-time request for %d account.</item>
+        <item quantity="other">"%s is making a one-time request for %d accounts.</item>
+    </plurals>
+    <plurals name="ongoing_at_least_request">
+        <item quantity="one">Choose at least %d account you wish to use with %s.</item>
+        <item quantity="other">Choose at least %d accounts you wish to use with %s.</item>
+    </plurals>
+    <plurals name="ongoing_exactly_request">
+        <item quantity="one">Choose %d account you wish to use with %s.</item>
+        <item quantity="other">Choose %d accounts you wish to use with %s.</item>
+    </plurals>
+    <plurals name="number_of_accounts">
+        <item quantity="one">%d account</item>
+        <item quantity="other">%d accounts</item>
+    </plurals>>
     <string name="token_transfer">Token transfer</string>
 </resources>

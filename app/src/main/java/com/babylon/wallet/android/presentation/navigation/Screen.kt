@@ -19,8 +19,6 @@ sealed class Screen(override val route: String, override val args: String = "") 
     object SettingsAllDestination : Screen("settings_all_route")
     object SettingsEditGatewayApiDestination : Screen("settings_edit_gateway_api_route")
     object AccountDestination : Screen("account_route")
-    object RequestAccountsDestination : Screen("request_accounts_route")
-    object ChooseAccountsDestination : Screen("choose_accounts_route")
     object ChooseAccountsCompleteDestination : Screen("choose_accounts_completion_route")
 
     fun routeWithArgs(vararg args: Any): String {
@@ -37,6 +35,5 @@ sealed class Screen(override val route: String, override val args: String = "") 
         const val ARG_ACCOUNT_NAME = "arg_account_name"
         const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"
-        const val ARG_INCOMING_REQUEST_ID = "arg_incoming_request_id"
     }
 }

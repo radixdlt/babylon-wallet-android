@@ -21,18 +21,20 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Entity metadata key-value pair.
  *
- * @param key 
- * @param `value` 
+ * @param key Entity metadata key.
+ * @param `value` Entity metadata value.
  */
 @Serializable
 
 data class EntityMetadataItem (
 
+    /* Entity metadata key. */
     @SerialName(value = "key")
     val key: kotlin.String,
 
+    /* Entity metadata value. */
     @SerialName(value = "value")
     val `value`: kotlin.String
 

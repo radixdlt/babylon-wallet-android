@@ -29,6 +29,14 @@ Deploy merges to main and any other manual trigger
 
 Deploy pre-releases
 
+### release_to_google_play
+
+```sh
+[bundle exec] fastlane release_to_google_play
+```
+
+Deploy to Google Play Console
+
 ### bump_build_number
 
 ```sh

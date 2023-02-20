@@ -18,12 +18,10 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
-import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.EntityAddress
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.PerNetwork
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -68,11 +66,11 @@ class GenerateProfileUseCaseTest {
                     ),
                     secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
                 ),
-                perNetwork = listOf(
-                    PerNetwork(
+                onNetwork = listOf(
+                    OnNetwork(
                         accounts = listOf(
-                            Account(
-                                entityAddress = EntityAddress("fj3489fj348f"),
+                            OnNetwork.Account(
+                                address = "fj3489fj348f",
                                 appearanceID = 123,
                                 derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
@@ -100,7 +98,7 @@ class GenerateProfileUseCaseTest {
                         personas = emptyList()
                     )
                 ),
-                version = "9.9.9"
+                version = 1
             )
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             whenever(profileDataSource.readProfile()).thenReturn(profile)
@@ -125,7 +123,7 @@ class GenerateProfileUseCaseTest {
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
             val expectedFactorInstanceId = generateInstanceId(
                 mnemonicPhrase,
-                NetworkAndGateway.betanet.network.networkId()
+                NetworkAndGateway.nebunet.network.networkId()
             )
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
@@ -142,7 +140,7 @@ class GenerateProfileUseCaseTest {
             )
 
             Assert.assertEquals(
-                profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
+                profile.onNetwork.first().accounts.first().securityState.unsecuredEntityControl
                     .genesisFactorInstance.factorInstanceID,
                 expectedFactorInstanceId
             )
@@ -156,7 +154,7 @@ class GenerateProfileUseCaseTest {
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking { invoke() } doReturn mnemonicPhrase
             }
-            val networkAndGateway = NetworkAndGateway.betanet
+            val networkAndGateway = NetworkAndGateway.nebunet
 
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
             val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, networkAndGateway.network.networkId())
@@ -175,7 +173,7 @@ class GenerateProfileUseCaseTest {
             )
 
             Assert.assertEquals(
-                profile.perNetwork.first().accounts.first().securityState.unsecuredEntityControl
+                profile.onNetwork.first().accounts.first().securityState.unsecuredEntityControl
                     .genesisFactorInstance.factorInstanceID,
                 expectedFactorInstanceId
             )

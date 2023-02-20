@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.Account
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import java.math.BigDecimal
 
 data class AccountResources(
@@ -15,22 +15,22 @@ data class AccountResources(
 ) {
     fun hasXrdToken(): Boolean {
         return fungibleTokens.any {
-            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD
+            it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
         }
     }
 
-    fun hasXrdWithBalance(): Boolean {
+    fun hasXrdWithEnoughBalance(minimumBalance: Long): Boolean {
         return fungibleTokens.any {
-            it.token.metadata[TokenMetadataConstants.KEY_SYMBOL] == TokenMetadataConstants.SYMBOL_XRD &&
-                it.amount >= BigDecimal.ONE
+            it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD &&
+                it.amount >= BigDecimal(minimumBalance)
         }
     }
 }
 
-fun Account.toDomainModel(): AccountResources {
+fun OnNetwork.Account.toDomainModel(): AccountResources {
     return AccountResources(
-        address = this.entityAddress.address,
-        displayName = displayName.orEmpty(),
+        address = this.address,
+        displayName = displayName,
         isStub = true,
         appearanceID = this.appearanceID
     )

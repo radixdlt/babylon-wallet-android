@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param discriminator 
- * @param codeHex 
+ * @param codeHex Hex-encoded binary blob.
  */
 @Serializable
 
@@ -34,6 +34,7 @@ data class EntityDetailsResponsePackageDetails (
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
 
+    /* Hex-encoded binary blob. */
     @SerialName(value = "code_hex")
     val codeHex: kotlin.String
 

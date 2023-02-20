@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
@@ -103,8 +104,11 @@ class SettingsConnectionViewModel @Inject constructor(
     fun onDeleteConnectionClick() {
         viewModelScope.launch {
             deleteP2PClientUseCase(currentConnectionPassword)
+            peerdroidClient.close(
+                shouldCloseConnectionToSignalingServer = true,
+                isDeleteConnectionEvent = true
+            )
             _state.update { it.copy(connectionName = null) }
-            peerdroidClient.close()
         }
     }
 
@@ -129,6 +133,7 @@ class SettingsConnectionViewModel @Inject constructor(
         listenIncomingMessagesJob = viewModelScope.launch {
             peerdroidClient
                 .listenForStateEvents()
+                .cancellable()
                 .collect { connectionState ->
                     if (connectionState == ConnectionStateChanged.CLOSE ||
                         connectionState == ConnectionStateChanged.CLOSING
@@ -160,7 +165,7 @@ class SettingsConnectionViewModel @Inject constructor(
 }
 
 data class SettingsConnectionUiState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val connectionName: String? = null,
     val editedConnectionDisplayName: String = "",
     val buttonEnabled: Boolean = false,

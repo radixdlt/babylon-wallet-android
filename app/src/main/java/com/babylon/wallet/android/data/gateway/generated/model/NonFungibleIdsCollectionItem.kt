@@ -23,12 +23,13 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param nonFungibleId 
+ * @param nonFungibleId String-encoded non-fungible ID.
  */
 @Serializable
 
 data class NonFungibleIdsCollectionItem (
 
+    /* String-encoded non-fungible ID. */
     @SerialName(value = "non_fungible_id")
     val nonFungibleId: kotlin.String
 

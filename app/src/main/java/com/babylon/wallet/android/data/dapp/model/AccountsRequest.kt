@@ -5,33 +5,58 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("oneTimeAccountsRead")
-data class OneTimeAccountsReadRequestItem(
-    @SerialName("requiresProofOfOwnership")
-    val requiresProofOfOwnership: Boolean,
-    @SerialName("numberOfAccounts")
-    val numberOfAccounts: Int? = null
-) : WalletRequestItem()
+data class OneTimeAccountsRequestItem(
+    @SerialName("requiresProofOfOwnership") val requiresProofOfOwnership: Boolean,
+    @SerialName("numberOfAccounts") val numberOfAccounts: NumberOfAccounts,
+)
 
 @Serializable
-@SerialName("ongoingAccountsRead")
-data class OngoingAccountsReadRequestItem(
-    @SerialName("requiresProofOfOwnership")
-    val requiresProofOfOwnership: Boolean,
-    @SerialName("numberOfAccounts")
-    val numberOfAccounts: Int? = null
-) : WalletRequestItem()
-
-fun OneTimeAccountsReadRequestItem.toDomainModel(requestId: String) = IncomingRequest.AccountsRequest(
-    requestId = requestId,
-    isOngoing = false,
-    requiresProofOfOwnership = requiresProofOfOwnership,
-    numberOfAccounts = numberOfAccounts ?: 0
+data class OngoingAccountsRequestItem(
+    @SerialName("requiresProofOfOwnership") val requiresProofOfOwnership: Boolean,
+    @SerialName("numberOfAccounts") val numberOfAccounts: NumberOfAccounts,
 )
 
-fun OngoingAccountsReadRequestItem.toDomainModel(requestId: String) = IncomingRequest.AccountsRequest(
-    requestId = requestId,
-    isOngoing = true,
-    requiresProofOfOwnership = requiresProofOfOwnership,
-    numberOfAccounts = numberOfAccounts ?: 1
-)
+@Serializable
+data class NumberOfAccounts(
+    @SerialName("quantifier") val quantifier: AccountNumberQuantifier,
+    @SerialName("quantity") val quantity: Int,
+) {
+
+    @Serializable
+    enum class AccountNumberQuantifier {
+        @SerialName("exactly")
+        Exactly,
+
+        @SerialName("atLeast")
+        AtLeast,
+    }
+}
+
+fun NumberOfAccounts.AccountNumberQuantifier.toDomainModel(): IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
+    return when (this) {
+        NumberOfAccounts.AccountNumberQuantifier.Exactly -> {
+            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+        }
+        NumberOfAccounts.AccountNumberQuantifier.AtLeast -> {
+            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        }
+    }
+}
+
+fun OneTimeAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem {
+    return IncomingRequest.AccountsRequestItem(
+        isOngoing = false,
+        requiresProofOfOwnership = requiresProofOfOwnership,
+        numberOfAccounts = numberOfAccounts.quantity,
+        quantifier = numberOfAccounts.quantifier.toDomainModel()
+    )
+}
+
+fun OngoingAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem {
+    return IncomingRequest.AccountsRequestItem(
+        isOngoing = true,
+        requiresProofOfOwnership = requiresProofOfOwnership,
+        numberOfAccounts = numberOfAccounts.quantity,
+        quantifier = numberOfAccounts.quantifier.toDomainModel()
+    )
+}

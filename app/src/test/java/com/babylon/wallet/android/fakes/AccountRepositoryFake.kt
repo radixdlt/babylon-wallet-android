@@ -5,8 +5,8 @@ import com.babylon.wallet.android.mockdata.account2
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import rdx.works.profile.data.model.pernetwork.Account
 import rdx.works.profile.data.model.pernetwork.AccountSigner
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.AccountRepository
 
 class AccountRepositoryFake : AccountRepository {
@@ -15,13 +15,13 @@ class AccountRepositoryFake : AccountRepository {
         listOf(account1, account2)
     )
 
-    override val accounts: Flow<List<Account>> = accountsData
+    override val accounts: Flow<List<OnNetwork.Account>> = accountsData
 
-    override suspend fun getAccounts(): List<Account> {
+    override suspend fun getAccounts(): List<OnNetwork.Account> {
         return accountsData.first()
     }
 
-    override suspend fun getAccountByAddress(address: String): Account? {
+    override suspend fun getAccountByAddress(address: String): OnNetwork.Account? {
         TODO("Not yet implemented")
     }
 

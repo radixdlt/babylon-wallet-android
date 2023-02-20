@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
- * @param address The Bech32m-encoded human readable version of the entity's global address.
+ * @param address Bech32m-encoded human readable version of the entity's global address.
  */
 @Serializable
 
@@ -35,7 +35,7 @@ data class EntityNotFoundError (
     @SerialName(value = "type")
     override val type: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String
 

@@ -27,50 +27,51 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
+ * 
  *
- *
- * @param discriminator
- * @param accessRulesChain
- * @param vaultAccessRulesChain
- * @param divisibility
- * @param totalSupply The string-encoded decimal representing the amount
- * @param totalMinted The string-encoded decimal representing the amount
- * @param totalBurnt The string-encoded decimal representing the amount
- * @param nonFungibleIdType
- * @param codeHex
- * @param packageAddress The Bech32m-encoded human readable version of the entity's global address.
- * @param blueprintName
- * @param state
+ * @param discriminator 
+ * @param accessRulesChain 
+ * @param vaultAccessRulesChain 
+ * @param divisibility 
+ * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalBurnt String-encoded decimal representing the amount of a related fungible resource.
+ * @param nonFungibleIdType 
+ * @param codeHex Hex-encoded binary blob.
+ * @param packageAddress Bech32m-encoded human readable version of the entity's global address.
+ * @param blueprintName 
+ * @param state 
  */
 @Serializable
 data class EntityDetailsResponseDetails(
+
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType? = null,
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: Any? = null,
-//    @Contextual @SerialName(value = "vault_access_rules_chain")
-//    val vaultAccessRulesChain: Any? = null,
+//    @Contextual @SerialName(value = "access_rules_chain") // for future usage
+//    val accessRulesChain: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "vault_access_rules_chain") // for future usage
+//    val vaultAccessRulesChain: kotlin.Any? = null,
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int? = null,
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_supply")
     val totalSupply: kotlin.String? = null,
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_minted")
     val totalMinted: kotlin.String? = null,
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_burnt")
     val totalBurnt: kotlin.String? = null,
     @Contextual @SerialName(value = "non_fungible_id_type")
     val nonFungibleIdType: NonFungibleIdType? = null,
+    /* Hex-encoded binary blob. */
     @SerialName(value = "code_hex")
     val codeHex: kotlin.String? = null,
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null,
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String? = null,
-//    @Contextual @SerialName(value = "state")
-//    val state: Any? = null
+//    @Contextual @SerialName(value = "state") // for future usage
+//    val state: kotlin.Any? = null
 )
-

@@ -11,9 +11,9 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
@@ -42,7 +42,9 @@ object AppModule {
             } // register logging plugin
             install(WebSockets) // register WebSockets plugin
             install(ContentNegotiation) {
-                json() // register the JSON serializer
+                Json {
+                    ignoreUnknownKeys = true
+                } // register the JSON serializer
             }
         }
     }
@@ -50,9 +52,17 @@ object AppModule {
     @Provides
     @Singleton
     internal fun provideWebSocketClient(
-        client: HttpClient
+        client: HttpClient,
+        @ApplicationScope applicationScope: CoroutineScope,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): WebSocketClient = WebSocketClientImpl(
-        client = client
+        client = client,
+        // fixes https://radixdlt.atlassian.net/browse/ABW-902
+        json = Json {
+            ignoreUnknownKeys = true
+        },
+        applicationScope = applicationScope,
+        ioDispatcher = ioDispatcher
     )
 
     @Provides

@@ -3,25 +3,23 @@ package rdx.works.profile.data.extensions
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
+import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.pernetwork.Account
-import rdx.works.profile.data.model.pernetwork.EntityAddress
-import rdx.works.profile.data.model.pernetwork.PerNetwork
-import rdx.works.profile.data.model.pernetwork.Persona
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.derivation.model.NetworkId
 
 fun Profile.addPersonaOnNetwork(
-    persona: Persona,
+    persona: OnNetwork.Persona,
     networkID: NetworkId
 ): Profile {
-    val newPerNetwork = perNetwork.map { network ->
+    val newOnNetwork = onNetwork.map { network ->
         if (network.networkID == networkID.value) {
             val updatedPersonas = network.personas.toMutableList()
             updatedPersonas.add(persona)
-            PerNetwork(
+            OnNetwork(
                 accounts = network.accounts,
                 connectedDapps = network.connectedDapps,
                 networkID = network.networkID,
@@ -34,21 +32,21 @@ fun Profile.addPersonaOnNetwork(
     return this.copy(
         appPreferences = appPreferences,
         factorSources = factorSources,
-        perNetwork = newPerNetwork,
+        onNetwork = newOnNetwork,
     )
 }
 
 fun Profile.addAccountOnNetwork(
-    account: Account,
+    account: OnNetwork.Account,
     networkID: NetworkId
 ): Profile {
-    val networkExist = perNetwork.any { networkID.value == it.networkID }
-    val newPerNetwork = if (networkExist) {
-        perNetwork.map { network ->
+    val networkExist = onNetwork.any { networkID.value == it.networkID }
+    val newOnNetworks = if (networkExist) {
+        onNetwork.map { network ->
             if (network.networkID == networkID.value) {
                 val updatedAccounts = network.accounts.toMutableList()
                 updatedAccounts.add(account)
-                PerNetwork(
+                OnNetwork(
                     accounts = updatedAccounts.toList(),
                     connectedDapps = network.connectedDapps,
                     networkID = network.networkID,
@@ -59,7 +57,7 @@ fun Profile.addAccountOnNetwork(
             }
         }
     } else {
-        perNetwork + PerNetwork(
+        onNetwork + OnNetwork(
             accounts = listOf(account),
             connectedDapps = listOf(),
             networkID = networkID.value,
@@ -70,7 +68,7 @@ fun Profile.addAccountOnNetwork(
     return this.copy(
         appPreferences = appPreferences,
         factorSources = factorSources,
-        perNetwork = newPerNetwork,
+        onNetwork = newOnNetworks,
     )
 }
 
@@ -98,7 +96,7 @@ fun Profile.addP2PClient(
     return this.copy(
         appPreferences = newAppPreferences,
         factorSources = factorSources,
-        perNetwork = perNetwork,
+        onNetwork = onNetwork,
     )
 }
 
@@ -117,16 +115,26 @@ fun Profile.deleteP2PClient(connectionPassword: String): Profile {
     return this.copy(
         appPreferences = newAppPreferences,
         factorSources = factorSources,
-        perNetwork = perNetwork,
+        onNetwork = onNetwork,
     )
 }
 
-fun deriveAddress(
+fun deriveAccountAddress(
     networkID: NetworkId,
     publicKey: PublicKey
-): EntityAddress {
+): String {
     val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
     // TODO handle error
     val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
-    return EntityAddress(response.virtualAccountAddress.address.componentAddress)
+    return response.virtualAccountAddress.address.componentAddress
+}
+
+fun deriveIdentityAddress(
+    networkID: NetworkId,
+    publicKey: PublicKey
+): String {
+    val request = DeriveVirtualIdentityAddressRequest(networkID.value.toUByte(), publicKey)
+    // TODO handle error
+    val response = RadixEngineToolkit.deriveVirtualIdentityAddress(request).getOrThrow()
+    return response.virtualIdentityAddress.address.componentAddress
 }

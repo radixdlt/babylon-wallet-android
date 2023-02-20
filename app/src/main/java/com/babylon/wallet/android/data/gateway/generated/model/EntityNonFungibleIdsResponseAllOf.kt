@@ -24,19 +24,19 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address The Bech32m-encoded human readable version of the entity's global address.
- * @param resourceAddress The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
+ * @param address Bech32m-encoded human readable version of the entity's global address.
+ * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
  * @param nonFungibleIds 
  */
 @Serializable
 
 data class EntityNonFungibleIdsResponseAllOf (
 
-    /* The Bech32m-encoded human readable version of the entity's global address. */
+    /* Bech32m-encoded human readable version of the entity's global address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
-    /* The Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String,
 

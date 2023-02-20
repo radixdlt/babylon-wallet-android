@@ -5,8 +5,7 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.factorsources.FactorSources
-import rdx.works.profile.data.model.pernetwork.Account
-import rdx.works.profile.data.model.pernetwork.PerNetwork
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 data class Profile(
     /**
@@ -23,19 +22,19 @@ data class Profile(
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
      */
-    val perNetwork: List<PerNetwork>,
+    val onNetwork: List<OnNetwork>,
 
     /**
-     * Version starting from 0.0.1
+     * Incrementing from 1
      */
-    val version: String
+    val version: Int
 ) {
 
     internal fun snapshot(): ProfileSnapshot {
         return ProfileSnapshot(
             appPreferences = appPreferences,
             factorSources = factorSources,
-            perNetwork = perNetwork,
+            onNetwork = onNetwork,
             version = version
         )
     }
@@ -46,7 +45,7 @@ data class Profile(
     }
 
     companion object {
-        private const val INITIAL_VERSION = "0.0.1"
+        private const val INITIAL_VERSION = 9
         fun init(
             networkAndGateway: NetworkAndGateway,
             mnemonic: MnemonicWords,
@@ -68,14 +67,14 @@ data class Profile(
                 secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = listOf()
             )
 
-            val initialAccount = Account.initial(
+            val initialAccount = OnNetwork.Account.initial(
                 mnemonic = mnemonic,
                 factorSources = factorSources,
                 networkId = network.networkId(),
                 displayName = firstAccountDisplayName
             )
 
-            val mainNetwork = PerNetwork(
+            val mainNetwork = OnNetwork(
                 accounts = listOf(initialAccount),
                 connectedDapps = listOf(),
                 networkID = network.id,
@@ -91,7 +90,7 @@ data class Profile(
             return Profile(
                 appPreferences = appPreferences,
                 factorSources = factorSources,
-                perNetwork = listOf(mainNetwork),
+                onNetwork = listOf(mainNetwork),
                 version = INITIAL_VERSION
             )
         }

@@ -11,10 +11,12 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_REQUEST_ID = "request_id"
+internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
 
 internal class TransactionApprovalArgs(val requestId: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[ARG_TRANSACTION_REQUEST_ID]) as String
+    )
 }
 
 fun NavController.transactionApproval(requestId: String) {
@@ -24,9 +26,9 @@ fun NavController.transactionApproval(requestId: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
     composable(
-        route = "transaction_approval_route/{$ARG_REQUEST_ID}",
+        route = "transaction_approval_route/{$ARG_TRANSACTION_REQUEST_ID}",
         arguments = listOf(
-            navArgument(ARG_REQUEST_ID) { type = NavType.StringType }
+            navArgument(ARG_TRANSACTION_REQUEST_ID) { type = NavType.StringType }
         )
     ) {
         TransactionApprovalScreen(

@@ -28,9 +28,9 @@ import kotlinx.serialization.Contextual
  * @param accessRulesChain 
  * @param vaultAccessRulesChain 
  * @param divisibility 
- * @param totalSupply The string-encoded decimal representing the amount
- * @param totalMinted The string-encoded decimal representing the amount
- * @param totalBurnt The string-encoded decimal representing the amount
+ * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalBurnt String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
 
@@ -48,15 +48,15 @@ data class EntityDetailsResponseFungibleResourceDetails (
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int,
 
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_supply")
     val totalSupply: kotlin.String,
 
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_minted")
     val totalMinted: kotlin.String,
 
-    /* The string-encoded decimal representing the amount */
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_burnt")
     val totalBurnt: kotlin.String
 

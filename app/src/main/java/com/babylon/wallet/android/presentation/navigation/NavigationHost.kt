@@ -20,9 +20,12 @@ import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSON
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
+import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
+import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
+import com.babylon.wallet.android.presentation.dapp.login.dAppLogin
+import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.dapp.dAppRequestAccountsGraph
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
@@ -120,27 +123,60 @@ fun NavigationHost(
                 navController.createPersonaConfirmationScreen(personaId = personaId)
             }
         )
-
         personasScreen(
             onBackClick = { navController.navigateUp() },
             createPersonaScreen = {
                 navController.createPersonaScreen()
             }
         )
-
         transactionApprovalScreen(onBackClick = {
             navController.popBackStack()
         })
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()
         })
-        dAppRequestAccountsGraph(navController)
+        dAppLogin(
+            navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            showSuccessDialog = {
+                navController.requestSuccess(it)
+            }
+        )
         settingsNavGraph(navController)
+        requestSuccess(onBackPress = {
+            navController.popBackStack()
+        })
+        chooseAccountsOneTime(
+            exitRequestFlow = {
+                navController.popBackStack()
+            },
+            dismissErrorDialog = {
+                navController.popBackStack()
+            }
+        ) {
+            navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
+        }
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
                 navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
             }
         )
+        composable(
+            route = Screen.ChooseAccountsCompleteDestination.route + "/{${Screen.ARG_DAPP_NAME}}",
+            arguments = listOf(
+                navArgument(Screen.ARG_DAPP_NAME) { type = NavType.StringType }
+            )
+        ) {
+            ChooseAccountsCompletionScreen(
+                viewModel = hiltViewModel(),
+                onContinueClick = {
+                    navController.navigateUp()
+                }
+            )
+        }
+
         tokenTransferScreen(onBackClick = {
             navController.popBackStack()
         })

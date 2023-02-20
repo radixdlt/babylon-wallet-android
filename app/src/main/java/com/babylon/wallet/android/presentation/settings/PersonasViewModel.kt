@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Persona
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.PersonaRepository
 import javax.inject.Inject
 
@@ -28,6 +28,6 @@ class PersonasViewModel @Inject constructor(
     }
 
     data class PersonasUiState(
-        val personas: List<Persona> = emptyList()
+        val personas: List<OnNetwork.Persona> = emptyList()
     )
 }

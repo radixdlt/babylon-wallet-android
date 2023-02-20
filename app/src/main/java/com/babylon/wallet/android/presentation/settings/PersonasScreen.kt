@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.presentation.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -27,7 +30,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.profile.data.model.pernetwork.Persona
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Composable
 fun PersonasScreen(
@@ -40,7 +43,10 @@ fun PersonasScreen(
 
     PersonasContent(
         personas = state.personas.toImmutableList(),
-        modifier = modifier,
+        modifier = modifier
+            .navigationBarsPadding()
+            .fillMaxSize()
+            .background(RadixTheme.colors.defaultBackground),
         onBackClick = onBackClick,
         createNewPersona = createNewPersona
     )
@@ -48,13 +54,13 @@ fun PersonasScreen(
 
 @Composable
 fun PersonasContent(
-    personas: ImmutableList<Persona>,
+    personas: ImmutableList<OnNetwork.Persona>,
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit
 ) {
     Column(
-        modifier = Modifier,
+        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
@@ -90,7 +96,7 @@ fun PersonasContent(
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
                     Text(
-                        text = personaItem.displayName.orEmpty(),
+                        text = personaItem.displayName,
                         style = RadixTheme.typography.body2Header,
                         color = RadixTheme.colors.gray1
                     )
@@ -110,7 +116,7 @@ fun PersonasContent(
                 RadixPrimaryButton(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.create_new_persona),
+                    text = stringResource(id = R.string.create_a_new_persona),
                     onClick = createNewPersona
                 )
                 Spacer(modifier = Modifier.height(100.dp))

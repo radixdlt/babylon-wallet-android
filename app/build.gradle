@@ -36,6 +36,12 @@ android {
             storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
             storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
         }
+        releasePreview {
+            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
+            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
+            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
+            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
+        }
     }
 
     defaultConfig {
@@ -43,9 +49,10 @@ android {
         minSdk 27
         targetSdk rootProject.ext.targetSdk
         versionCode 1
-        versionName "0.0.1"
+        versionName "0.1.1"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "GATEWAY_API_URL", '"https://betanet.radixdlt.com"'
+        buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -67,16 +74,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debugPreview {
-            initWith debug
+            initWith release
             applicationIdSuffix ".preview"
             minifyEnabled true
-            debuggable false
+            signingConfig signingConfigs.debugPreview
             resValue "string", "app_name", "Radix Wallet Preview"
-            matchingFallbacks = ['debug']
+            matchingFallbacks = ['release']
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        releasePreview {
+            initWith release
+            buildConfigField "boolean", "DEBUG_MODE", "false"
+            signingConfig signingConfigs.releasePreview
+            applicationIdSuffix ".preview"
+            minifyEnabled true
+            resValue "string", "app_name", "Radix Wallet Preview"
+            matchingFallbacks = ['release']
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
             minifyEnabled true
+            buildConfigField "boolean", "DEBUG_MODE", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -195,6 +213,7 @@ dependencies {
     testImplementation libs.coroutinesTest
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
+    testImplementation libs.turbine
 
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso

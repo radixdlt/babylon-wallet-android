@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.common.OneOffEventHandler
 import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -34,6 +35,7 @@ class MainViewModel @Inject constructor(
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -59,12 +61,11 @@ class MainViewModel @Inject constructor(
     )
 
     private var currentConnectionPassword: String = ""
-    private var observeP2PJob: Job? = null
     private var incomingRequestsJob: Job? = null
     private var handlingRequestsJob: Job? = null
 
     init {
-        observeP2PJob = profileDataSource.p2pClient
+        profileDataSource.p2pClient
             .map { p2pClient ->
                 if (p2pClient != null) {
                     Timber.d("found connection password")
@@ -111,10 +112,39 @@ class MainViewModel @Inject constructor(
                         if (message == ConnectionStateChanged.CLOSING || message == ConnectionStateChanged.CLOSE) {
                             restartConnectionToDapp()
                         }
-                    } else if (message is IncomingRequest && message != IncomingRequest.None) {
-                        incomingRequestRepository.add(message)
+                        // This message will be received
+                        // when the user deletes the connection from connection settings screen.
+                        // Therefore here we should not restart connection to dapp
+                        // but to terminate the Peerdroid connection
+                        if (message == ConnectionStateChanged.DELETE_CONNECTION) {
+                            terminatePeerdroid()
+                        }
+                    } else if (message is IncomingRequest) {
+                        handleIncomingRequest(message)
                     }
                 }
+        }
+    }
+
+    private fun handleIncomingRequest(request: IncomingRequest) {
+        viewModelScope.launch {
+//            val result = dappMetadataRepository.verifyDappSimple(
+//                origin = request.metadata.origin,
+//                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+//            )
+//            if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
+
+            when (val result = authorizeSpecifiedPersonaUseCase(request)) {
+                is com.babylon.wallet.android.domain.common.Result.Error -> {
+                    incomingRequestRepository.add(request)
+                }
+                is com.babylon.wallet.android.domain.common.Result.Success -> {
+                    sendEvent(MainEvent.HandledUsePersonaAuthRequest(result.data))
+                }
+            }
+//            } else {
+//                 TODO dApp verification failed
+//            }
         }
     }
 
@@ -131,7 +161,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             incomingRequestsJob?.cancel()
             handlingRequestsJob?.cancel()
-            observeP2PJob?.cancel()
             peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
         }
     }
@@ -144,6 +173,7 @@ class MainViewModel @Inject constructor(
 
 sealed class MainEvent : OneOffEvent {
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
+    data class HandledUsePersonaAuthRequest(val dAppName: String) : MainEvent()
 }
 
 data class MainUiState(

@@ -13,7 +13,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Account
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
@@ -102,7 +102,7 @@ class TokenTransferViewModel @Inject constructor(
 }
 
 internal data class TokenTransferUiState(
-    val accounts: ImmutableList<Account> = persistentListOf(),
+    val accounts: ImmutableList<OnNetwork.Account> = persistentListOf(),
     val senderAddress: String = "",
     val recipientAddress: String = "",
     val tokenAmount: String = "",

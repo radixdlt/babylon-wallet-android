@@ -22,6 +22,8 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +41,7 @@ class TransactionApprovalViewModel @Inject constructor(
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DAppMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
+    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
@@ -85,9 +88,9 @@ class TransactionApprovalViewModel @Inject constructor(
                     isLoading = false,
                     error = UiMessage.ErrorMessage(error)
                 )
-                dAppMessenger.sendTransactionWriteResponseFailure(
+                dAppMessenger.sendWalletInteractionResponseFailure(
                     args.requestId,
-                    error = WalletErrorType.FailedToPrepareTransaction
+                    error = WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
                 )
             }
         }
@@ -99,7 +102,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 val currentNetworkId = profileDataSource.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    dAppMessenger.sendTransactionWriteResponseFailure(
+                    dAppMessenger.sendWalletInteractionResponseFailure(
                         args.requestId,
                         failure.toWalletErrorType(),
                         failure.getDappMessage()
@@ -114,13 +117,14 @@ class TransactionApprovalViewModel @Inject constructor(
                             state = state.copy(isSigning = false, approved = true)
                             dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
                             approvalJob = null
+                            appEventBus.sendEvent(AppEvent.ApprovedTransaction)
                             sendEvent(TransactionApprovalEvent.NavigateBack)
                         }
                         result.onError {
                             state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
                             val exception = it as? TransactionApprovalException
                             if (exception != null) {
-                                dAppMessenger.sendTransactionWriteResponseFailure(
+                                dAppMessenger.sendWalletInteractionResponseFailure(
                                     args.requestId,
                                     error = exception.failure.toWalletErrorType(),
                                     message = exception.failure.getDappMessage()
@@ -141,7 +145,7 @@ class TransactionApprovalViewModel @Inject constructor(
             if (approvalJob != null || state.approved) {
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
-                dAppMessenger.sendTransactionWriteResponseFailure(
+                dAppMessenger.sendWalletInteractionResponseFailure(
                     args.requestId,
                     error = WalletErrorType.RejectedByUser
                 )

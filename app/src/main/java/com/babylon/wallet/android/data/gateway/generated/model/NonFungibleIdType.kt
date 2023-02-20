@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: string,u32,u64,bytes,uuid
+ * Values: string,number,bytes,uuid
  */
 @Serializable
 enum class NonFungibleIdType(val value: kotlin.String) {
@@ -30,11 +30,8 @@ enum class NonFungibleIdType(val value: kotlin.String) {
     @SerialName(value = "string")
     string("string"),
 
-    @SerialName(value = "u32")
-    u32("u32"),
-
-    @SerialName(value = "u64")
-    u64("u64"),
+    @SerialName(value = "number")
+    number("number"),
 
     @SerialName(value = "bytes")
     bytes("bytes"),

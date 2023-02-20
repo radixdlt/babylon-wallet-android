@@ -3,23 +3,23 @@ package com.babylon.wallet.android.data.manifest
 import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.CallMethodReceiver
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.Value
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 /**
  * Instruction to add free xrd from given address
  */
 fun ManifestBuilder.addFreeXrdInstruction(
-    componentAddress: String
+    networkId: NetworkId
 ): ManifestBuilder {
     return addInstruction(
         Instruction.CallMethod(
-            componentAddress = CallMethodReceiver.ComponentAddress(
-                Value.ComponentAddress(componentAddress)
+            componentAddress = Value.ComponentAddress.faucetComponentAddress(
+                networkId = networkId.value.toUByte()
             ),
             methodName = Value.String(MethodName.Free.stringValue)
         )
@@ -35,11 +35,11 @@ fun ManifestBuilder.addDepositBatchInstruction(
 ): ManifestBuilder {
     return addInstruction(
         Instruction.CallMethod(
-            componentAddress = CallMethodReceiver.ComponentAddress(
-                Value.ComponentAddress(recipientComponentAddress)
+            componentAddress = Value.ComponentAddress(
+                address = recipientComponentAddress
             ),
             methodName = Value.String(MethodName.DepositBatch.stringValue),
-            arrayOf(Value.Expression("ENTIRE_WORKTOP"))
+            arguments = arrayOf(Value.Expression("ENTIRE_WORKTOP"))
         )
     )
 }
@@ -66,9 +66,7 @@ fun ManifestBuilder.addWithdrawInstruction(
 ): ManifestBuilder {
     return addInstruction(
         Instruction.CallMethod(
-            componentAddress = CallMethodReceiver.ComponentAddress(
-                Value.ComponentAddress(withdrawComponentAddress)
-            ),
+            componentAddress = Value.ComponentAddress(withdrawComponentAddress),
             methodName = Value.String(MethodName.WithdrawByAmount.stringValue),
             arrayOf(Value.Decimal(amount), Value.ResourceAddress(tokenResourceAddress))
         )
@@ -81,7 +79,7 @@ fun TransactionManifest.addLockFeeInstructionToManifest(
     val instructions = instructions
     var updatedInstructions = instructions
     when (instructions) {
-        is ManifestInstructions.JSONInstructions -> {
+        is ManifestInstructions.ParsedInstructions -> {
             updatedInstructions =
                 instructions.copy(
                     instructions = arrayOf(lockFeeInstruction(addressToLockFee)) + instructions.instructions
@@ -96,11 +94,9 @@ private fun lockFeeInstruction(
     addressToLockFee: String
 ): Instruction {
     return Instruction.CallMethod(
-        componentAddress = CallMethodReceiver.ComponentAddress(
-            Value.ComponentAddress(addressToLockFee)
-        ),
+        componentAddress = Value.ComponentAddress(addressToLockFee),
         methodName = Value.String(MethodName.LockFee.stringValue),
-        arrayOf(
+        arguments = arrayOf(
             Value.Decimal(
                 BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
             )

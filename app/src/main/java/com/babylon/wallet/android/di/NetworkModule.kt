@@ -3,8 +3,8 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
+import com.babylon.wallet.android.data.gateway.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.GatewayInfoApi
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -44,7 +44,11 @@ object NetworkModule {
                 chain.proceed(request)
             }
         }
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
         return OkHttpClient.Builder().addInterceptor(baseUrlInterceptor).addInterceptor(loggingInterceptor).build()
     }
 
@@ -67,17 +71,21 @@ object NetworkModule {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
-    fun provideGatewayInfoApi(json: Json): GatewayInfoApi {
+    fun provideGatewayInfoApi(json: Json): DynamicUrlApi {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
         val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
         val retrofitBuilder = Retrofit.Builder().client(httpClient)
             .baseUrl(BuildConfig.GATEWAY_API_URL)
             .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
             .build()
-        return retrofitBuilder.create(GatewayInfoApi::class.java)
+        return retrofitBuilder.create(DynamicUrlApi::class.java)
     }
 
     @Provides
