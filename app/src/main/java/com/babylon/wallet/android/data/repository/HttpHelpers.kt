@@ -26,16 +26,19 @@ suspend fun <T, A> performHttpRequest(
     }
 }
 
+@Suppress("SwallowedException")
 private fun tryParseServerError(
     error: (() -> Exception)?,
     errorBodyString: String
 ): Result.Error {
     val definedError = error?.invoke()
-    val errorResponse = Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(
-        errorBodyString
-    )
-    val exception = RadixGatewayException(
-        definedError?.message ?: errorResponse.message
+    val errorResponse = try {
+        Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(errorBodyString)
+    } catch (e: Exception) {
+        null
+    }
+    val exception: Exception = definedError ?: RadixGatewayException(
+        errorResponse?.message
     )
     return Result.Error(exception = exception)
 }

@@ -34,5 +34,17 @@ enum class WalletErrorType {
     SubmittedTransactionHasFailedTransactionStatus,
 
     @SerialName("submittedTransactionHasRejectedTransactionStatus")
-    SubmittedTransactionHasRejectedTransactionStatus
+    SubmittedTransactionHasRejectedTransactionStatus,
+
+    @SerialName("unknownWebsite")
+    UnknownWebsite,
+
+    @SerialName("radixJsonNotFound")
+    RadixJsonNotFound,
+
+    @SerialName("wrongAccountType")
+    WrongAccountType,
+
+    @SerialName("unknownDefinitionAddress")
+    UnknownDefinitionAddress
 }

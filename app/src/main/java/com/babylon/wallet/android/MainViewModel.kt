@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.domain.common.OneOffEvent
+import com.babylon.wallet.android.domain.common.OneOffEventHandler
+import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -35,7 +37,8 @@ class MainViewModel @Inject constructor(
     profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase
+    private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
+    private val validateDappUseCase: VerifyDappUseCase
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -128,23 +131,19 @@ class MainViewModel @Inject constructor(
 
     private fun handleIncomingRequest(request: IncomingRequest) {
         viewModelScope.launch {
-//            val result = dappMetadataRepository.verifyDappSimple(
-//                origin = request.metadata.origin,
-//                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-//            )
-//            if (result is com.babylon.wallet.android.domain.common.Result.Success && result.data) {
-
-            when (val result = authorizeSpecifiedPersonaUseCase(request)) {
-                is com.babylon.wallet.android.domain.common.Result.Error -> {
-                    incomingRequestRepository.add(request)
-                }
-                is com.babylon.wallet.android.domain.common.Result.Success -> {
-                    sendEvent(MainEvent.HandledUsePersonaAuthRequest(result.data))
+            val verificationResult = validateDappUseCase(request)
+            verificationResult.onValue { verified ->
+                if (verified) {
+                    when (val result = authorizeSpecifiedPersonaUseCase(request)) {
+                        is com.babylon.wallet.android.domain.common.Result.Error -> {
+                            incomingRequestRepository.add(request)
+                        }
+                        is com.babylon.wallet.android.domain.common.Result.Success -> {
+                            sendEvent(MainEvent.HandledUsePersonaAuthRequest(result.data))
+                        }
+                    }
                 }
             }
-//            } else {
-//                 TODO dApp verification failed
-//            }
         }
     }
 

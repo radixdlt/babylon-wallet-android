@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 
+@Suppress("CyclomaticComplexMethod")
 sealed interface TransactionApprovalFailure {
     object GetEpoch : TransactionApprovalFailure
     object RejectedByUser : TransactionApprovalFailure
@@ -25,6 +26,10 @@ sealed interface TransactionApprovalFailure {
     data class GatewayRejected(val txId: String) : TransactionApprovalFailure
 
     data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure
+    object WrongAccountType : TransactionApprovalFailure
+    object UnknownWebsite : TransactionApprovalFailure
+    object RadixJsonNotFound : TransactionApprovalFailure
+    object UnknownDefinitionAddress : TransactionApprovalFailure
 
     fun toWalletErrorType(): WalletErrorType {
         return when (this) {
@@ -40,6 +45,10 @@ sealed interface TransactionApprovalFailure {
             SubmitNotarizedTransaction -> WalletErrorType.FailedToSubmitTransaction
             is WrongNetwork -> WalletErrorType.WrongNetwork
             FailedToFindAccountWithEnoughFundsToLockFee -> WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
+            RadixJsonNotFound -> WalletErrorType.RadixJsonNotFound
+            UnknownDefinitionAddress -> WalletErrorType.UnknownDefinitionAddress
+            UnknownWebsite -> WalletErrorType.UnknownWebsite
+            WrongAccountType -> WalletErrorType.WrongAccountType
         }
     }
 
@@ -58,6 +67,10 @@ sealed interface TransactionApprovalFailure {
             SubmitNotarizedTransaction -> R.string.tx_fail_submit
             is WrongNetwork -> R.string.tx_fail_network
             FailedToFindAccountWithEnoughFundsToLockFee -> R.string.no_funds_to_approve_transaction
+            RadixJsonNotFound -> R.string.radix_json_file_is_missing
+            UnknownDefinitionAddress -> R.string.definition_address_does_not_match
+            UnknownWebsite -> R.string.origin_does_not_match
+            WrongAccountType -> R.string.expected_to_find_dapp_account_type
         }
     }
 

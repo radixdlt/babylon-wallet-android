@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.settings
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
@@ -11,6 +8,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
@@ -22,25 +22,49 @@ class SettingsViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient
 ) : ViewModel() {
 
-    var state by mutableStateOf(SettingsUiState())
-        private set
+    private val _state = MutableStateFlow(SettingsUiState())
+    val state = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
             profileDataSource.p2pClient.collect { p2pClient ->
                 val updatedSettings = if (p2pClient == null) {
-                    state.settings.toMutableList().apply {
+                    state.value.settings.toMutableList().apply {
                         if (!contains(SettingSectionItem.Connection)) {
                             add(0, SettingSectionItem.Connection)
                         }
                     }
                 } else {
-                    state.settings.filter { settingSectionItem ->
+                    state.value.settings.filter { settingSectionItem ->
                         settingSectionItem != SettingSectionItem.Connection
                     }
                 }
-                state = state.copy(settings = updatedSettings.toPersistentList())
+                _state.update {
+                    it.copy(settings = updatedSettings.toPersistentList())
+                }
             }
+        }
+        viewModelScope.launch {
+            preferencesManager.developerMode.collect { skip ->
+                val index = state.value.settings.indexOfFirst { it is SettingSectionItem.DeveloperMode }
+
+                _state.update { state ->
+                    state.copy(
+                        settings = state.settings.toMutableList().apply {
+                            if (index != -1) {
+                                removeAt(index)
+                                add(index, SettingSectionItem.DeveloperMode(skip))
+                            }
+                        }.toPersistentList()
+                    )
+                }
+            }
+        }
+    }
+
+    fun onDeveloperModeToggled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.setDeveloperMode(enabled)
         }
     }
 
@@ -58,6 +82,7 @@ data class SettingsUiState(
         SettingSectionItem.LinkedConnector,
         SettingSectionItem.Gateway,
         SettingSectionItem.Personas,
+        SettingSectionItem.DeveloperMode(false),
         SettingSectionItem.DeleteAll
     )
 )

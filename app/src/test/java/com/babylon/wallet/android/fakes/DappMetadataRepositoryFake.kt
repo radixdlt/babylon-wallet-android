@@ -6,9 +6,6 @@ import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
 
 class DappMetadataRepositoryFake : DappMetadataRepository {
-    override suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
-        return Result.Success(true)
-    }
 
     override suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
         return Result.Success(true)
