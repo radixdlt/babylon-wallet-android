@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
-import com.babylon.wallet.android.fakes.DAppMessengerFake
+import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact
@@ -31,7 +31,7 @@ class ChooseAccountsViewModelTest {
     private val accountRepository = AccountRepositoryFake()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
 
-    private val dAppMessenger = DAppMessengerFake()
+    private val dAppMessenger = DappMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel

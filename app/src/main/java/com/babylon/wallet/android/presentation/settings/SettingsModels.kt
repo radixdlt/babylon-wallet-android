@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 
-// NOT USED
 data class SettingSection(val type: SettingSectionType, val items: List<SettingSectionItem>)
 
 sealed class SettingSectionItem {

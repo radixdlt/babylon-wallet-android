@@ -9,7 +9,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.fakes.DAppMessengerFake
+import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
@@ -36,7 +36,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     private val accountRepository = AccountRepositoryFake()
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val dAppMessenger = DAppMessengerFake()
+    private val dAppMessenger = DappMessengerFake()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
     private val samplePersona = SampleDataProvider().samplePersona()

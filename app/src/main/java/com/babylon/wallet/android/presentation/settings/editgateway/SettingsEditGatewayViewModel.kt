@@ -7,12 +7,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.common.InfoMessageType
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl

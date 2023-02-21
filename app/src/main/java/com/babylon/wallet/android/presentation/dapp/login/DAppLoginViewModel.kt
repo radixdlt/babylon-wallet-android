@@ -3,21 +3,21 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DAppMessenger
+import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
@@ -48,7 +48,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 class DAppLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val dAppMessenger: DAppMessenger,
+    private val dAppMessenger: DappMessenger,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val personaRepository: PersonaRepository,
     private val accountRepository: AccountRepository,

@@ -4,14 +4,14 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.toDomainModel
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.encodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
