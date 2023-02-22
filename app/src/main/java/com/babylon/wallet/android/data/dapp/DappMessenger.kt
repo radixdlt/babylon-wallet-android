@@ -29,7 +29,7 @@ import javax.inject.Inject
  * - to send responses to dapp
  *
  */
-interface DAppMessenger {
+interface DappMessenger {
 
     suspend fun sendAccountsResponse(
         requestId: String,
@@ -56,10 +56,10 @@ interface DAppMessenger {
     ): Result<Unit>
 }
 
-class DAppMessengerImpl @Inject constructor(
+class DappMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository
-) : DAppMessenger {
+) : DappMessenger {
 
     override suspend fun sendAccountsResponse(
         requestId: String,

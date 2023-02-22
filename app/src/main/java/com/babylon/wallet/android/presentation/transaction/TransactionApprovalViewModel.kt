@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DAppMessenger
+import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
@@ -14,13 +14,13 @@ import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -39,7 +39,7 @@ class TransactionApprovalViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val profileDataSource: ProfileDataSource,
     deviceSecurityHelper: DeviceSecurityHelper,
-    private val dAppMessenger: DAppMessenger,
+    private val dAppMessenger: DappMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,

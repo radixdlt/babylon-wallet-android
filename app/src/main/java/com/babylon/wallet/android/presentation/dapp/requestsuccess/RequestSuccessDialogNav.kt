@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.requestsuccess
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -16,7 +15,6 @@ fun NavController.requestSuccess(dappName: String) {
     navigate("request_success/$dappName")
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 fun NavGraphBuilder.requestSuccess(onBackPress: () -> Unit) {
     dialog(
         route = "request_success/{$ARG_DAPP_NAME}",

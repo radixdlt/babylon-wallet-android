@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.common
+package com.babylon.wallet.android.presentation.common
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow

@@ -9,14 +9,18 @@ import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 interface IncomingRequestRepository {
-
     val currentRequestToHandle: Flow<IncomingRequest>
 
     suspend fun add(incomingRequest: IncomingRequest)
+
     suspend fun requestHandled(requestId: String)
+
     fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest
+
     fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest
+
     fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest
+
     fun getAmountOfRequests(): Int
 }
 
