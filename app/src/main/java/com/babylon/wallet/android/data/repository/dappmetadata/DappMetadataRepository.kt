@@ -34,21 +34,31 @@ class DappMetadataRepositoryImpl @Inject constructor(
             getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
                 when {
                     !gatewayMetadata.isDappDefinition() -> {
-                        Result.Error(TransactionApprovalException(DappRequestFailure.WrongAccountType))
+                        Result.Error(
+                            TransactionApprovalException(DappRequestFailure.DappVerificationFailure.WrongAccountType)
+                        )
                     }
                     gatewayMetadata.getRelatedDomainName() != origin -> {
-                        Result.Error(TransactionApprovalException(DappRequestFailure.UnknownWebsite))
+                        Result.Error(
+                            TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                        )
                     }
                     else -> {
                         wellKnownFileMetadata(origin)
                     }
                 }
             }.map { wellKnownFileDappsMetadata ->
-                val isWellKnown = wellKnownFileDappsMetadata.any { it.dAppDefinitionAddress == dAppDefinitionAddress }
+                val isWellKnown = wellKnownFileDappsMetadata.any {
+                    it.dAppDefinitionAddress == dAppDefinitionAddress
+                }
                 if (isWellKnown) {
                     Result.Success(true)
                 } else {
-                    Result.Error(TransactionApprovalException(DappRequestFailure.UnknownDefinitionAddress))
+                    Result.Error(
+                        TransactionApprovalException(
+                            DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress
+                        )
+                    )
                 }
             }
         }
@@ -68,7 +78,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     response.dAppMetadata.map { it.toDomainModel() }
                 },
                 error = {
-                    TransactionApprovalException(DappRequestFailure.RadixJsonNotFound)
+                    TransactionApprovalException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
             )
         }
