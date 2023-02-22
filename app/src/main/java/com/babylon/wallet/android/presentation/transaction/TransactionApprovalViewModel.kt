@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
-import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -101,7 +101,7 @@ class TransactionApprovalViewModel @Inject constructor(
             state.manifestData?.let { manifestData ->
                 val currentNetworkId = profileDataSource.getCurrentNetworkId().value
                 if (currentNetworkId != manifestData.networkId) {
-                    val failure = TransactionApprovalFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
+                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         args.requestId,
                         failure.toWalletErrorType(),

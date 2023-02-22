@@ -5,31 +5,31 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 
 @Suppress("CyclomaticComplexMethod")
-sealed interface TransactionApprovalFailure {
-    object GetEpoch : TransactionApprovalFailure
-    object RejectedByUser : TransactionApprovalFailure
-    data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : TransactionApprovalFailure
+sealed interface DappRequestFailure {
+    object GetEpoch : DappRequestFailure
+    object RejectedByUser : DappRequestFailure
+    data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure
 
-    object ConvertManifest : TransactionApprovalFailure
+    object ConvertManifest : DappRequestFailure
 
-    object BuildTransactionHeader : TransactionApprovalFailure
-    object FailedToFindAccountWithEnoughFundsToLockFee : TransactionApprovalFailure
+    object BuildTransactionHeader : DappRequestFailure
+    object FailedToFindAccountWithEnoughFundsToLockFee : DappRequestFailure
 
-    object PrepareNotarizedTransaction : TransactionApprovalFailure
+    object PrepareNotarizedTransaction : DappRequestFailure
 
-    object SubmitNotarizedTransaction : TransactionApprovalFailure
+    object SubmitNotarizedTransaction : DappRequestFailure
 
-    data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure
+    data class InvalidTXDuplicate(val txId: String) : DappRequestFailure
 
-    data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure
+    data class FailedToPollTXStatus(val txId: String) : DappRequestFailure
 
-    data class GatewayRejected(val txId: String) : TransactionApprovalFailure
+    data class GatewayRejected(val txId: String) : DappRequestFailure
 
-    data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure
-    object WrongAccountType : TransactionApprovalFailure
-    object UnknownWebsite : TransactionApprovalFailure
-    object RadixJsonNotFound : TransactionApprovalFailure
-    object UnknownDefinitionAddress : TransactionApprovalFailure
+    data class GatewayCommittedFailure(val txId: String) : DappRequestFailure
+    object WrongAccountType : DappRequestFailure
+    object UnknownWebsite : DappRequestFailure
+    object RadixJsonNotFound : DappRequestFailure
+    object UnknownDefinitionAddress : DappRequestFailure
 
     fun toWalletErrorType(): WalletErrorType {
         return when (this) {

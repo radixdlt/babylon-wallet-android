@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -27,8 +28,10 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileDataSource.p2pClient.collect { p2pClient ->
-                val updatedSettings = if (p2pClient == null) {
+            combine(profileDataSource.p2pClient, preferencesManager.developerMode) { p2pClient, developerMode ->
+                p2pClient to developerMode
+            }.collect { data ->
+                val updatedSettings = if (data.first == null) {
                     state.value.settings.toMutableList().apply {
                         if (!contains(SettingSectionItem.Connection)) {
                             add(0, SettingSectionItem.Connection)
@@ -39,21 +42,13 @@ class SettingsViewModel @Inject constructor(
                         settingSectionItem != SettingSectionItem.Connection
                     }
                 }
-                _state.update {
-                    it.copy(settings = updatedSettings.toPersistentList())
-                }
-            }
-        }
-        viewModelScope.launch {
-            preferencesManager.developerMode.collect { skip ->
                 val index = state.value.settings.indexOfFirst { it is SettingSectionItem.DeveloperMode }
-
-                _state.update { state ->
-                    state.copy(
-                        settings = state.settings.toMutableList().apply {
+                _state.update {
+                    it.copy(
+                        settings = updatedSettings.toMutableList().apply {
                             if (index != -1) {
                                 removeAt(index)
-                                add(index, SettingSectionItem.DeveloperMode(skip))
+                                add(index, SettingSectionItem.DeveloperMode(data.second))
                             }
                         }.toPersistentList()
                     )

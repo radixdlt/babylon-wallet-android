@@ -38,7 +38,7 @@ class MainViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
-    private val validateDappUseCase: VerifyDappUseCase
+    private val verifyDappUseCase: VerifyDappUseCase
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     val state = combine(
@@ -131,7 +131,7 @@ class MainViewModel @Inject constructor(
 
     private fun handleIncomingRequest(request: IncomingRequest) {
         viewModelScope.launch {
-            val verificationResult = validateDappUseCase(request)
+            val verificationResult = verifyDappUseCase(request)
             verificationResult.onValue { verified ->
                 if (verified) {
                     when (val result = authorizeSpecifiedPersonaUseCase(request)) {

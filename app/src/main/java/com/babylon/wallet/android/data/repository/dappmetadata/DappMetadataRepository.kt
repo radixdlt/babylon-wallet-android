@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.gateway.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.performHttpRequest
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
-import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
@@ -34,10 +34,10 @@ class DappMetadataRepositoryImpl @Inject constructor(
             getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
                 when {
                     !gatewayMetadata.isDappDefinition() -> {
-                        Result.Error(TransactionApprovalException(TransactionApprovalFailure.WrongAccountType))
+                        Result.Error(TransactionApprovalException(DappRequestFailure.WrongAccountType))
                     }
                     gatewayMetadata.getRelatedDomainName() != origin -> {
-                        Result.Error(TransactionApprovalException(TransactionApprovalFailure.UnknownWebsite))
+                        Result.Error(TransactionApprovalException(DappRequestFailure.UnknownWebsite))
                     }
                     else -> {
                         wellKnownFileMetadata(origin)
@@ -48,7 +48,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 if (isWellKnown) {
                     Result.Success(true)
                 } else {
-                    Result.Error(TransactionApprovalException(TransactionApprovalFailure.UnknownDefinitionAddress))
+                    Result.Error(TransactionApprovalException(DappRequestFailure.UnknownDefinitionAddress))
                 }
             }
         }
@@ -68,7 +68,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     response.dAppMetadata.map { it.toDomainModel() }
                 },
                 error = {
-                    TransactionApprovalException(TransactionApprovalFailure.RadixJsonNotFound)
+                    TransactionApprovalException(DappRequestFailure.RadixJsonNotFound)
                 }
             )
         }
