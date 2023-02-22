@@ -151,16 +151,16 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 }
 
-fun Profile.getConnectedDapp(dAppDefinitionAddress: String): OnNetwork.ConnectedDapp? {
+private fun Profile.getConnectedDapp(dAppDefinitionAddress: String): OnNetwork.ConnectedDapp? {
     return getConnectedDapps().firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
 }
 
-fun Profile.getConnectedDapps(): List<OnNetwork.ConnectedDapp> {
+private fun Profile.getConnectedDapps(): List<OnNetwork.ConnectedDapp> {
     val networkId = appPreferences.networkAndGateway.network.networkId().value
     return onNetwork.firstOrNull { it.networkID == networkId }?.connectedDapps.orEmpty()
 }
 
-fun Profile.createOrUpdateConnectedDapp(
+private fun Profile.createOrUpdateConnectedDapp(
     unverifiedConnectedDapp: OnNetwork.ConnectedDapp
 ): Profile {
     val updatedOnNetwork = onNetwork.map { network ->
@@ -201,7 +201,7 @@ fun Profile.createOrUpdateConnectedDapp(
     )
 }
 
-fun Profile.deleteConnectedDapp(
+private fun Profile.deleteConnectedDapp(
     dapp: OnNetwork.ConnectedDapp
 ): Profile {
     val updatedOnNetwork = onNetwork.map { network ->

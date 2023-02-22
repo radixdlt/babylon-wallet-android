@@ -41,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,7 +79,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
@@ -146,11 +144,9 @@ private fun DappDetailContent(
             rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
         val scope = rememberCoroutineScope()
         val sheetHeight = maxHeight * 0.9f
-        LaunchedEffect(bottomSheetState) {
-            snapshotFlow { bottomSheetState.isVisible }.distinctUntilChanged().collect { visible ->
-                if (!visible) {
-                    personaDetailsClosed()
-                }
+        LaunchedEffect(bottomSheetState.isVisible) {
+            if (!bottomSheetState.isVisible) {
+                personaDetailsClosed()
             }
         }
         AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {

@@ -6,32 +6,27 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import javax.inject.Inject
 
+@Suppress("MagicNumber")
 @HiltViewModel
 class ConnectedDappsViewModel @Inject constructor(
-    private val dAppConnectionRepository: DAppConnectionRepository
+    dAppConnectionRepository: DAppConnectionRepository
 ) : ViewModel() {
 
-    private val _state: MutableStateFlow<ConnectedDappsUiState> =
-        MutableStateFlow(ConnectedDappsUiState())
-    val state = _state.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            dAppConnectionRepository.getConnectedDapps().collect { dapps ->
-                _state.update {
-                    it.copy(dapps = dapps.toPersistentList())
-                }
-            }
-        }
-    }
+    val state =
+        dAppConnectionRepository.getConnectedDapps().map {
+            ConnectedDappsUiState(it.toPersistentList())
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            ConnectedDappsUiState()
+        )
 }
 
 data class ConnectedDappsUiState(

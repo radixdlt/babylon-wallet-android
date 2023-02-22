@@ -4,12 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
