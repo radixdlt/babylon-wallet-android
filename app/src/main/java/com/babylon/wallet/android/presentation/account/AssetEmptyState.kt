@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
-@Composable // NOT USED
+@Composable
 fun AssetEmptyState(title: String, subtitle: String, modifier: Modifier, onInfoClick: () -> Unit) {
     Box(modifier) {
         Column(
