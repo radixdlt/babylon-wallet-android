@@ -1,5 +1,9 @@
 package com.babylon.wallet.android.domain.model
 
+object AppConstants {
+    const val VM_STOP_TIMEOUT_MS = 5000L
+}
+
 object MetadataConstants {
     const val KEY_SYMBOL = "symbol"
     const val KEY_DESCRIPTION = "description"

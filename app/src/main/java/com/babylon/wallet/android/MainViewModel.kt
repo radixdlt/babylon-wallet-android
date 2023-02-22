@@ -5,14 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -59,7 +60,7 @@ class MainViewModel @Inject constructor(
         terminatePeerdroid()
     }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+        SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
         MainUiState()
     )
 
@@ -165,7 +166,6 @@ class MainViewModel @Inject constructor(
     }
 
     companion object {
-        private const val STOP_TIMEOUT_MILLIS = 5000L
         private const val REQUEST_HANDLING_DELAY = 500L
     }
 }
