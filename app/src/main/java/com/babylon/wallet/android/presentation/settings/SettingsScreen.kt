@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -24,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -41,7 +45,7 @@ fun SettingsScreen(
     onSettingClick: (SettingSectionItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state = viewModel.state
+    val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsContent(
         onBackClick = onBackClick,
         onDeleteWalletClick = viewModel::onDeleteWalletClick,
@@ -50,7 +54,8 @@ fun SettingsScreen(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.defaultBackground),
+        onDeveloperModeToggled = viewModel::onDeveloperModeToggled
     )
 }
 
@@ -61,6 +66,7 @@ private fun SettingsContent(
     appSettings: ImmutableList<SettingSectionItem>,
     onSettingClick: (SettingSectionItem) -> Unit,
     modifier: Modifier = Modifier,
+    onDeveloperModeToggled: (Boolean) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -101,6 +107,20 @@ private fun SettingsContent(
                                         contentColor = RadixTheme.colors.red1
                                     )
                                 }
+                            }
+                        }
+                        is SettingSectionItem.DeveloperMode -> {
+                            item {
+                                SwitchSettingsItem(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .background(RadixTheme.colors.defaultBackground)
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    settingsItem = settingsItem,
+                                    checked = settingsItem.skip,
+                                    onCheckedChange = onDeveloperModeToggled
+                                )
                             }
                         }
                         else -> {
@@ -166,6 +186,40 @@ private fun DefaultSettingsItem(
 }
 
 @Composable
+private fun SwitchSettingsItem(
+    settingsItem: SettingSectionItem,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        settingsItem.getIcon()?.let {
+            Icon(painter = painterResource(id = it), contentDescription = null)
+        }
+        Text(
+            text = stringResource(id = settingsItem.descriptionRes()),
+            style = RadixTheme.typography.body2Header,
+            color = RadixTheme.colors.gray1
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = RadixTheme.colors.gray1,
+                uncheckedThumbColor = RadixTheme.colors.gray2,
+                uncheckedTrackColor = RadixTheme.colors.gray3,
+                checkedTrackColor = RadixTheme.colors.gray1.copy(alpha = 0.6f)
+            )
+        )
+    }
+}
+
+@Composable
 private fun ConnectionSettingItem(
     onSettingClick: (SettingSectionItem) -> Unit,
     settingsItem: SettingSectionItem,
@@ -222,9 +276,11 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
                 SettingSectionItem.Connection,
                 SettingSectionItem.LinkedConnector,
                 SettingSectionItem.Gateway,
+                SettingSectionItem.DeveloperMode(false),
                 SettingSectionItem.DeleteAll
             ),
-            onSettingClick = {}
+            onSettingClick = {},
+            onDeveloperModeToggled = {}
         )
     }
 }

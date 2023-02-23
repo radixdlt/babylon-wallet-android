@@ -7,8 +7,8 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
-import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
@@ -159,7 +159,7 @@ class DAppLoginViewModel @Inject constructor(
 
     @Suppress("MagicNumber")
     private suspend fun handleWrongNetwork(currentNetworkId: Int) {
-        val failure = TransactionApprovalFailure.WrongNetwork(
+        val failure = DappRequestFailure.WrongNetwork(
             currentNetworkId,
             authorizedRequest.requestMetadata.networkId
         )

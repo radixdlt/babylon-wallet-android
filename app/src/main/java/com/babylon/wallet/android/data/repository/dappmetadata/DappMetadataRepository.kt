@@ -5,6 +5,8 @@ import com.babylon.wallet.android.data.gateway.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.performHttpRequest
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
@@ -14,7 +16,6 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface DappMetadataRepository {
-    suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean>
     suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
     suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata>
 }
@@ -25,27 +26,47 @@ class DappMetadataRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : DappMetadataRepository {
 
-    private suspend fun getWellKnownDappMetadata(
+    override suspend fun verifyDapp(
         origin: String,
         dAppDefinitionAddress: String
-    ): Result<DappMetadata?> {
-        // TODO we need to load additional dAppDefiniton metadata as per cap-27 to do origin check
+    ): Result<Boolean> {
         return withContext(ioDispatcher) {
-            isDappWellKnown(origin, dAppDefinitionAddress).map { metadata ->
-                if (metadata != null) {
-                    getDappMetadata(dAppDefinitionAddress)
+            getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
+                when {
+                    !gatewayMetadata.isDappDefinition() -> {
+                        Result.Error(
+                            TransactionApprovalException(DappRequestFailure.DappVerificationFailure.WrongAccountType)
+                        )
+                    }
+                    gatewayMetadata.getRelatedDomainName() != origin -> {
+                        Result.Error(
+                            TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                        )
+                    }
+                    else -> {
+                        wellKnownFileMetadata(origin)
+                    }
+                }
+            }.map { wellKnownFileDappsMetadata ->
+                val isWellKnown = wellKnownFileDappsMetadata.any {
+                    it.dAppDefinitionAddress == dAppDefinitionAddress
+                }
+                if (isWellKnown) {
+                    Result.Success(true)
                 } else {
-                    Result.Error()
+                    Result.Error(
+                        TransactionApprovalException(
+                            DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress
+                        )
+                    )
                 }
             }
         }
     }
 
-    private suspend fun isDappWellKnown(
-        origin: String,
-        dAppDefinitionAddress: String
-    ): Result<DappMetadata?> {
-        // TODO we need to load additional dAppDefiniton metadata as per cap-27 to do origin check
+    private suspend fun wellKnownFileMetadata(
+        origin: String
+    ): Result<List<DappMetadata>> {
         return withContext(ioDispatcher) {
             performHttpRequest(
                 call = {
@@ -55,7 +76,9 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 },
                 map = { response ->
                     response.dAppMetadata.map { it.toDomainModel() }
-                        .firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
+                },
+                error = {
+                    TransactionApprovalException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
             )
         }
@@ -71,27 +94,6 @@ class DappMetadataRepositoryImpl @Inject constructor(
                         result.data.metadata.items.associate { it.key to it.value }
                     )
                 )
-            }
-        }
-    }
-
-    override suspend fun verifyDappSimple(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
-        return withContext(ioDispatcher) {
-            isDappWellKnown(origin, dAppDefinitionAddress).map {
-                Result.Success(it != null)
-            }
-        }
-    }
-
-    override suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
-        return withContext(ioDispatcher) {
-            getWellKnownDappMetadata(origin, dAppDefinitionAddress).map { result ->
-                val dAppDomainName = result?.getRelatedDomainName()
-                if (dAppDomainName != null && origin.contains(dAppDomainName)) {
-                    Result.Success(true)
-                } else {
-                    Result.Error()
-                }
             }
         }
     }

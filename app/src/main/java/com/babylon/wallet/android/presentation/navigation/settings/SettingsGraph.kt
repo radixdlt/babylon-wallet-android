@@ -57,6 +57,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingSectionItem.LinkedConnector -> {
                         navController.settingsConnectionScreen()
                     }
+                    else -> {}
                 }
             }
         )

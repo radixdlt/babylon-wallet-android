@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
-import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.domain.common.Result
@@ -130,7 +130,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     fun `transaction approval sign and submit error`() = runTest {
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Error(
             TransactionApprovalException(
-                TransactionApprovalFailure.SubmitNotarizedTransaction
+                DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )
         )
         val vm = vm.value

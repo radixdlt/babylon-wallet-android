@@ -81,7 +81,9 @@ class TransactionClient @Inject constructor(
         }
         val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
         val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
-            TransactionApprovalException(TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
+            TransactionApprovalException(
+                DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
+            )
         )
         return Result.Success(
             addLockFeeInstructionToManifest(
@@ -113,14 +115,18 @@ class TransactionClient @Inject constructor(
         } else {
             val accountAddressToLockFee =
                 selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
-                    TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+                    TransactionApprovalException(
+                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                    )
                 )
             addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
-                TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+                TransactionApprovalException(
+                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
             )
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> return transactionHeaderResult
@@ -138,7 +144,7 @@ class TransactionClient @Inject constructor(
                 } catch (e: Exception) {
                     return Result.Error(
                         TransactionApprovalException(
-                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                             msg = e.message,
                             e = e
                         )
@@ -147,7 +153,7 @@ class TransactionClient @Inject constructor(
                 val compiledNotarizedTransaction = notarizedTransaction.compile().getOrElse { e ->
                     return Result.Error(
                         TransactionApprovalException(
-                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                             msg = e.message,
                             e = e
                         )
@@ -156,7 +162,7 @@ class TransactionClient @Inject constructor(
                 val txID = notarizedTransaction.transactionId().getOrElse { e ->
                     return Result.Error(
                         TransactionApprovalException(
-                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                             msg = e.message,
                             e = e
                         )
@@ -218,14 +224,14 @@ class TransactionClient @Inject constructor(
             } catch (e: Exception) {
                 Result.Error(
                     TransactionApprovalException(
-                        TransactionApprovalFailure.BuildTransactionHeader,
+                        DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader,
                         e.message,
                         e
                     )
                 )
             }
         } else {
-            return Result.Error(TransactionApprovalException(TransactionApprovalFailure.GetEpoch))
+            return Result.Error(TransactionApprovalException(DappRequestFailure.GetEpoch))
         }
     }
 
@@ -258,7 +264,7 @@ class TransactionClient @Inject constructor(
         } catch (e: Exception) {
             Result.Error(
                 TransactionApprovalException(
-                    failure = TransactionApprovalFailure.ConvertManifest,
+                    failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                     msg = e.message,
                     e = e
                 )
@@ -283,7 +289,7 @@ class TransactionClient @Inject constructor(
         } catch (e: Exception) {
             Result.Error(
                 TransactionApprovalException(
-                    TransactionApprovalFailure.ConvertManifest,
+                    DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                     e.message,
                     e
                 )
@@ -328,7 +334,7 @@ class TransactionClient @Inject constructor(
             is Result.Error -> {
                 Result.Error(
                     TransactionApprovalException(
-                        TransactionApprovalFailure.SubmitNotarizedTransaction,
+                        DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
                         e = submitResult.exception,
                     )
                 )
@@ -336,7 +342,7 @@ class TransactionClient @Inject constructor(
             is Result.Success -> {
                 if (submitResult.data.duplicate) {
                     Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.InvalidTXDuplicate(txID))
+                        TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(txID))
                     )
                 } else {
                     pollTransactionStatus(txID)
@@ -362,7 +368,7 @@ class TransactionClient @Inject constructor(
             }
             if (tryCount > maxTries) {
                 return Result.Error(
-                    TransactionApprovalException(TransactionApprovalFailure.FailedToPollTXStatus(txID))
+                    TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(txID))
                 )
             }
             delay(delayBetweenTriesMs)
@@ -371,12 +377,16 @@ class TransactionClient @Inject constructor(
             when (transactionStatus) {
                 TransactionStatus.committedFailure -> {
                     return Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.GatewayCommittedFailure(txID))
+                        TransactionApprovalException(
+                            DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(txID)
+                        )
                     )
                 }
                 TransactionStatus.rejected -> {
                     return Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.GatewayRejected(txID))
+                        TransactionApprovalException(
+                            DappRequestFailure.TransactionApprovalFailure.GatewayRejected(txID)
+                        )
                     )
                 }
                 else -> {}

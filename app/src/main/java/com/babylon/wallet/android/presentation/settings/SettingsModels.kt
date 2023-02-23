@@ -12,8 +12,8 @@ sealed class SettingSectionItem {
     object LinkedConnector : SettingSectionItem()
     object Gateway : SettingSectionItem()
     object DeleteAll : SettingSectionItem()
-
     object Personas : SettingSectionItem()
+    data class DeveloperMode(val skip: Boolean) : SettingSectionItem()
 
     @StringRes
     fun descriptionRes(): Int {
@@ -24,6 +24,7 @@ sealed class SettingSectionItem {
             InspectProfile -> R.string.inspect_profile
             LinkedConnector -> R.string.linked_connector
             Personas -> R.string.settings_personas
+            is DeveloperMode -> R.string.developer_mode
         }
     }
 
