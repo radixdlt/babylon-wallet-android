@@ -160,7 +160,7 @@ private fun Profile.getConnectedDapps(): List<OnNetwork.ConnectedDapp> {
     return onNetwork.firstOrNull { it.networkID == networkId }?.connectedDapps.orEmpty()
 }
 
-private fun Profile.createOrUpdateConnectedDapp(
+fun Profile.createOrUpdateConnectedDapp(
     unverifiedConnectedDapp: OnNetwork.ConnectedDapp
 ): Profile {
     val updatedOnNetwork = onNetwork.map { network ->
