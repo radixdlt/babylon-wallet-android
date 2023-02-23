@@ -34,10 +34,4 @@ data class DappMetadata(
             !MetadataConstants.SPECIAL_METADATA.contains(it)
         }
     }
-
-    fun getDisplayableMetadata(): Map<String, String> {
-        return metadata.filterKeys {
-            !MetadataConstants.SPECIAL_METADATA.contains(it)
-        }
-    }
 }
