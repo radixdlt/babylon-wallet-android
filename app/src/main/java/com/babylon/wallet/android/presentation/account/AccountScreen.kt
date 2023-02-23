@@ -570,13 +570,13 @@ fun AccountContentPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                accountName = randomTokenAddress(),
+                accountName = randomAddress(),
                 onAccountPreferenceClick = {},
                 onBackClick = {},
                 isLoading = false,
                 isRefreshing = false,
                 onRefresh = {},
-                accountAddress = randomTokenAddress(),
+                accountAddress = randomAddress(),
                 xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
                 fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
@@ -601,13 +601,13 @@ fun AccountContentDarkPreview() {
     RadixWalletTheme(darkTheme = true) {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                accountName = randomTokenAddress(),
+                accountName = randomAddress(),
                 onAccountPreferenceClick = {},
                 onBackClick = {},
                 isLoading = false,
                 isRefreshing = false,
                 onRefresh = {},
-                accountAddress = randomTokenAddress(),
+                accountAddress = randomAddress(),
                 xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
                 fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),

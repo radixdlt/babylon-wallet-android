@@ -1,0 +1,764 @@
+@file:Suppress("TooManyFunctions")
+
+package com.babylon.wallet.android.presentation.settings.dappdetail
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.IconButton
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.toDisplayResource
+import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.ui.composables.AddressWithCopyIcon
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.truncatedHash
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.OnNetwork
+
+@Composable
+fun DappDetailScreen(
+    viewModel: DappDetailViewModel,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                DappDetailEvent.LastPersonaDeleted -> onBackClick()
+                DappDetailEvent.DappDeleted -> onBackClick()
+            }
+        }
+    }
+    DappDetailContent(
+        onBackClick = onBackClick,
+        modifier = modifier
+            .navigationBarsPadding()
+            .fillMaxSize()
+            .background(RadixTheme.colors.defaultBackground),
+        dappName = state.dapp?.displayName.orEmpty(),
+        personaList = state.personas,
+        dappMetadata = state.dappMetadata,
+        onPersonaClick = viewModel::onPersonaClick,
+        selectedPersona = state.selectedPersona,
+        selectedPersonaSharedAccounts = state.sharedPersonaAccounts,
+        onDisconnectPersona = viewModel::onDisconnectPersona,
+        personaDetailsClosed = viewModel::onPersonaDetailsClosed,
+        onDeleteDapp = viewModel::onDeleteDapp,
+        onEditPersona = {},
+        onEditAccountSharing = {},
+        loading = state.loading
+    )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun DappDetailContent(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    dappName: String,
+    personaList: ImmutableList<OnNetwork.Persona>,
+    dappMetadata: DappMetadata?,
+    onPersonaClick: (OnNetwork.Persona) -> Unit,
+    selectedPersona: OnNetwork.Persona?,
+    selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
+    onDisconnectPersona: (OnNetwork.Persona) -> Unit,
+    personaDetailsClosed: () -> Unit,
+    onDeleteDapp: () -> Unit,
+    onEditPersona: (OnNetwork.Persona) -> Unit,
+    onEditAccountSharing: () -> Unit,
+    loading: Boolean
+) {
+    var showDeleteDappPrompt by remember { mutableStateOf(false) }
+    BoxWithConstraints(modifier = modifier) {
+        val addressCopyMessage = stringResource(id = R.string.address_copied)
+        val snackState = remember { SnackbarHostState() }
+        val bottomSheetState =
+            rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        val scope = rememberCoroutineScope()
+        val sheetHeight = maxHeight * 0.9f
+        LaunchedEffect(bottomSheetState.isVisible) {
+            if (!bottomSheetState.isVisible) {
+                personaDetailsClosed()
+            }
+        }
+        AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {
+            FullscreenCircularProgressContent()
+        }
+        AnimatedVisibility(modifier = Modifier.fillMaxWidth(), visible = !loading, enter = fadeIn(), exit = fadeOut()) {
+            ModalBottomSheetLayout(
+                sheetState = bottomSheetState,
+                sheetBackgroundColor = RadixTheme.colors.defaultBackground,
+                scrimColor = Color.Black.copy(alpha = 0.3f),
+                sheetShape = RadixTheme.shapes.roundedRectTopDefault,
+                sheetContent = {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(sheetHeight)
+                            .clip(shape = RadixTheme.shapes.roundedRectTopMedium)
+                    ) {
+                        selectedPersona?.let { persona ->
+                            PersonaDetailsSheet(
+                                persona = persona,
+                                sharedPersonaAccounts = selectedPersonaSharedAccounts,
+                                onCloseClick = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        RadixTheme.colors.defaultBackground,
+                                        shape = RadixTheme.shapes.roundedRectTopMedium
+                                    )
+                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                                dappName = dappName,
+                                onDisconnectPersona = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                    onDisconnectPersona(it)
+                                },
+                                onEditPersona = onEditPersona,
+                                onEditAccountSharing = onEditAccountSharing
+                            )
+                        }
+                    }
+                }
+            ) {
+                DappDetails(
+                    modifier = Modifier.fillMaxSize(),
+                    dappName = dappName,
+                    onBackClick = onBackClick,
+                    dappMetadata = dappMetadata,
+                    personaList = personaList,
+                    onPersonaClick = { persona ->
+                        onPersonaClick(persona)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
+                    },
+                    onDeleteDapp = {
+                        showDeleteDappPrompt = true
+                    },
+                    onAddressCopied = {
+                        scope.launch {
+                            snackState.showSnackbar(message = addressCopyMessage)
+                        }
+                    }
+                )
+            }
+        }
+        RadixSnackbarHost(hostState = snackState, modifier = Modifier.align(Alignment.BottomCenter))
+        if (showDeleteDappPrompt) {
+            BasicPromptAlertDialog(
+                finish = {
+                    if (it) {
+                        onDeleteDapp()
+                    }
+                    showDeleteDappPrompt = false
+                },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.delete_dapp),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(id = R.string.are_you_sure),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DappDetails(
+    modifier: Modifier,
+    dappName: String,
+    onBackClick: () -> Unit,
+    dappMetadata: DappMetadata?,
+    personaList: ImmutableList<OnNetwork.Persona>,
+    onPersonaClick: (OnNetwork.Persona) -> Unit,
+    onDeleteDapp: () -> Unit,
+    onAddressCopied: () -> Unit
+) {
+    Column(modifier = modifier) {
+        RadixCenteredTopAppBar(
+            title = dappName,
+            onBackClick = onBackClick,
+            contentColor = RadixTheme.colors.gray1
+        )
+        Divider(color = RadixTheme.colors.gray5)
+        LazyColumn(
+            contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            item {
+                AsyncImage(
+                    model = "",
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    fallback = painterResource(id = R.drawable.img_placeholder),
+                    error = painterResource(id = R.drawable.img_placeholder),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .padding(vertical = dimensions.paddingDefault)
+                        .size(104.dp)
+                        .clip(RadixTheme.shapes.circle)
+                )
+                Divider(
+                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray5
+                )
+            }
+            dappMetadata?.getDescription()?.let { description ->
+                item {
+                    Divider(color = RadixTheme.colors.gray5)
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(dimensions.paddingDefault),
+                        text = description,
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.Center
+                    )
+                    Divider(color = RadixTheme.colors.gray5)
+                }
+            }
+            dappMetadata?.dAppDefinitionAddress?.let { dappDefinitionAddress ->
+                item {
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                    DappDefinitionAddressRow(
+                        dappDefinitionAddress = dappDefinitionAddress,
+                        onAddressCopied = onAddressCopied,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingDefault)
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
+            }
+            dappMetadata?.getDisplayableMetadata()?.let { metadata ->
+                item {
+                    metadata.forEach { mapEntry ->
+                        AssetMetadataRow(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensions.paddingDefault),
+                            mapEntry.key,
+                            mapEntry.value
+                        )
+                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                    }
+                }
+            }
+            item {
+                GrayBackgroundWrapper {
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.here_are_the_personas),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                }
+            }
+            items(personaList) { persona ->
+                GrayBackgroundWrapper {
+                    PersonaCard(
+                        modifier = Modifier
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onPersonaClick(persona)
+                            }
+                            .fillMaxWidth()
+                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+                            .padding(
+                                horizontal = dimensions.paddingLarge,
+                                vertical = dimensions.paddingDefault
+                            ),
+                        personaName = persona.displayName
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    onClick = onDeleteDapp,
+                    shape = RadixTheme.shapes.roundedRectSmall,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White,
+                        containerColor = RadixTheme.colors.red1
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.forget_this_dapp),
+                        style = RadixTheme.typography.body1Header,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DappDefinitionAddressRow(
+    dappDefinitionAddress: String,
+    onAddressCopied: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val clipboard = LocalClipboardManager.current
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+    ) {
+        AssetMetadataRow(
+            modifier = Modifier.weight(1f),
+            key = stringResource(id = R.string.dapp_definition),
+            value = dappDefinitionAddress.truncatedHash()
+        )
+
+        IconButton(
+            modifier = Modifier.size(14.dp),
+            onClick = {
+                clipboard.setText(AnnotatedString(dappDefinitionAddress))
+                onAddressCopied()
+            },
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
+                tint = RadixTheme.colors.gray2,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@Composable
+private fun PersonaDetailsSheet(
+    persona: OnNetwork.Persona,
+    sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
+    onCloseClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    dappName: String,
+    onDisconnectPersona: (OnNetwork.Persona) -> Unit,
+    onEditPersona: (OnNetwork.Persona) -> Unit,
+    onEditAccountSharing: () -> Unit
+) {
+    var personaToDisconnect by remember { mutableStateOf<OnNetwork.Persona?>(null) }
+    Box(modifier = modifier) {
+        Column(Modifier.fillMaxSize()) {
+            RadixCenteredTopAppBar(
+                title = persona.displayName,
+                onBackClick = onCloseClick,
+                contentColor = RadixTheme.colors.gray1
+            )
+            Divider(color = RadixTheme.colors.gray5)
+            PersonaDetailList(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                persona = persona,
+                onEditPersona = onEditPersona,
+                sharedPersonaAccounts = sharedPersonaAccounts,
+                dappName = dappName,
+                onDisconnectPersona = {
+                    personaToDisconnect = it
+                },
+                onEditAccountSharing = onEditAccountSharing
+            )
+        }
+    }
+    if (personaToDisconnect != null) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    personaToDisconnect?.let { persona -> onDisconnectPersona(persona) }
+                }
+                personaToDisconnect = null
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.disconnect_persona_from_this_dapp),
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.are_you_sure),
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun PersonaDetailList(
+    modifier: Modifier = Modifier,
+    persona: OnNetwork.Persona,
+    onEditPersona: (OnNetwork.Persona) -> Unit,
+    sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
+    dappName: String,
+    onDisconnectPersona: (OnNetwork.Persona) -> Unit,
+    onEditAccountSharing: () -> Unit
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        item {
+            AsyncImage(
+                model = "",
+                placeholder = painterResource(id = R.drawable.img_placeholder),
+                fallback = painterResource(id = R.drawable.img_placeholder),
+                error = painterResource(id = R.drawable.img_placeholder),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .padding(vertical = dimensions.paddingDefault)
+                    .size(104.dp)
+                    .clip(RadixTheme.shapes.circle)
+            )
+        }
+        item {
+            PersonaPropertyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingDefault),
+                label = stringResource(id = R.string.persona_name),
+                value = persona.displayName
+            )
+            Divider(
+                modifier = Modifier.padding(dimensions.paddingDefault)
+            )
+        }
+        items(OnNetwork.Persona.Field.Kind.values()) { kind ->
+            PersonaPropertyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingDefault),
+                label = stringResource(id = kind.toDisplayResource()),
+                value = "-"
+            )
+            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+        }
+//            items(persona.fields) { field ->
+//                PersonaPropertyRow(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    label = stringResource(id = field.kind.toDisplayResource()),
+//                    value = field.value
+//                )
+//            }
+        item {
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                text = stringResource(R.string.edit_persona),
+                onClick = {
+                    onEditPersona(persona)
+                }
+            )
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+        }
+        if (sharedPersonaAccounts.isNotEmpty()) {
+            item {
+                GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.here_are_the_account_names, dappName),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2,
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
+            }
+            items(sharedPersonaAccounts) { account ->
+                GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
+                    PersonaSharedAccountCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.horizontalGradient(AccountGradientList[account.appearanceID]),
+                                RadixTheme.shapes.roundedRectSmall
+                            )
+                            .padding(
+                                horizontal = dimensions.paddingLarge,
+                                vertical = dimensions.paddingDefault
+                            ),
+                        account = account
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
+            }
+            if (sharedPersonaAccounts.isNotEmpty()) {
+                item {
+                    GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
+                        RadixSecondaryButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensions.paddingLarge),
+                            text = stringResource(R.string.edit_account_sharing),
+                            onClick = onEditAccountSharing
+                        )
+                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                    }
+                }
+            }
+            item {
+                Divider(color = RadixTheme.colors.gray5)
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    onClick = {
+                        onDisconnectPersona(persona)
+                    },
+                    shape = RadixTheme.shapes.roundedRectSmall,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White,
+                        containerColor = RadixTheme.colors.red1
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.disconnect_persona_from_this_dapp),
+                        style = RadixTheme.typography.body1Header,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PersonaSharedAccountCard(
+    modifier: Modifier = Modifier,
+    account: AccountItemUiModel
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        val clipboardManager = LocalClipboardManager.current
+        Text(
+            text = account.displayName.orEmpty(),
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            color = RadixTheme.colors.white
+        )
+        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+        AddressWithCopyIcon(
+            modifier = Modifier.throttleClickable {
+                clipboardManager.setText(AnnotatedString(account.address))
+            },
+            address = account.address
+        )
+    }
+}
+
+@Composable
+private fun GrayBackgroundWrapper(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier
+            .background(RadixTheme.colors.gray5)
+            .padding(horizontal = dimensions.paddingDefault),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun PersonaPropertyRow(modifier: Modifier, label: String, value: String) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray2
+        )
+        Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+        Text(
+            text = value,
+            style = RadixTheme.typography.body1HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun PersonaCard(personaName: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(dimensions.paddingDefault)
+    ) {
+        AsyncImage(
+            model = "",
+            placeholder = painterResource(id = R.drawable.img_placeholder),
+            fallback = painterResource(id = R.drawable.img_placeholder),
+            error = painterResource(id = R.drawable.img_placeholder),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RadixTheme.shapes.circle)
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = personaName,
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Icon(
+            painter = painterResource(
+                id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
+            ),
+            contentDescription = null,
+            tint = RadixTheme.colors.gray1
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DappDetailContentPreview() {
+    RadixWalletTheme {
+        DappDetailContent(
+            onBackClick = {},
+            dappName = "Dapp",
+            personaList = persistentListOf(SampleDataProvider().samplePersona()),
+            dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
+            onPersonaClick = {},
+            selectedPersona = SampleDataProvider().samplePersona(),
+            selectedPersonaSharedAccounts = persistentListOf(
+                AccountItemUiModel("address1", "Account1", 0)
+            ),
+            onDisconnectPersona = {},
+            personaDetailsClosed = {},
+            onDeleteDapp = {},
+            onEditPersona = {},
+            onEditAccountSharing = {},
+            loading = false
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PersonaDetailsSheetPreview() {
+    RadixWalletTheme {
+        PersonaDetailsSheet(
+            persona = SampleDataProvider().samplePersona(),
+            sharedPersonaAccounts = persistentListOf(
+                AccountItemUiModel("address1", "Account1", 0)
+            ),
+            onCloseClick = {},
+            dappName = "dApp",
+            onDisconnectPersona = {},
+            onEditPersona = {},
+            onEditAccountSharing = {}
+        )
+    }
+}

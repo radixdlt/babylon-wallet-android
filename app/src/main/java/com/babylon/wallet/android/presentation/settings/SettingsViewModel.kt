@@ -26,6 +26,7 @@ class SettingsViewModel @Inject constructor(
     private val defaultSettings = persistentListOf(
         SettingSectionItem.LinkedConnector,
         SettingSectionItem.Gateway,
+        SettingSectionItem.ConnectedDapps,
         SettingSectionItem.Personas,
         SettingSectionItem.DeveloperMode(false),
         SettingSectionItem.DeleteAll

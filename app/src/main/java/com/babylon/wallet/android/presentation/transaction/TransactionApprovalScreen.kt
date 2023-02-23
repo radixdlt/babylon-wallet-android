@@ -18,8 +18,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -54,7 +56,8 @@ fun TransactionApprovalScreen(
         isSigning = state.isSigning,
         manifestContent = state.manifestString,
         onApproveTransaction = viewModel::approveTransaction,
-        modifier = modifier.navigationBarsPadding()
+        modifier = modifier
+            .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         approved = state.approved,
@@ -88,7 +91,7 @@ private fun TransactionApprovalContent(
     isDeviceSecure: Boolean,
     canApprove: Boolean,
 ) {
-    val showNotSecuredDialog = remember { mutableStateOf(false) }
+    var showNotSecuredDialog by remember { mutableStateOf(false) }
     Box(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -167,7 +170,7 @@ private fun TransactionApprovalContent(
                             }
                         }
                     } else {
-                        showNotSecuredDialog.value = true
+                        showNotSecuredDialog = true
                     }
                 },
                 enabled = !isLoading && !isSigning && canApprove
@@ -177,12 +180,14 @@ private fun TransactionApprovalContent(
             onMessageShown()
         }
     }
-    NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
-        showNotSecuredDialog.value = false
-        if (it) {
-            onApproveTransaction()
-        }
-    })
+    if (showNotSecuredDialog) {
+        NotSecureAlertDialog(finish = {
+            showNotSecuredDialog = false
+            if (it) {
+                onApproveTransaction()
+            }
+        })
+    }
 }
 
 @Preview(showBackground = true)

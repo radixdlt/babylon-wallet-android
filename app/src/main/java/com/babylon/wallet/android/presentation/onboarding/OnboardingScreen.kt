@@ -83,7 +83,6 @@ private fun OnboardingScreenContent(
     onUserAuthenticated: (Boolean) -> Unit,
     onAlertClicked: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-
 ) {
     val pagerState = rememberPagerState(initialPage = currentPage)
     BoxWithConstraints(
@@ -148,7 +147,9 @@ private fun OnboardingScreenContent(
                     }
                 }
             }
-            NotSecureAlertDialog(show = showWarning, finish = { accepted -> onAlertClicked(accepted) })
+            if (showWarning) {
+                NotSecureAlertDialog(finish = { accepted -> onAlertClicked(accepted) })
+            }
         }
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),

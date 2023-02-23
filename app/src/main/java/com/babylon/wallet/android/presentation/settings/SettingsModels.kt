@@ -11,6 +11,7 @@ sealed class SettingSectionItem {
     object Connection : SettingSectionItem()
     object LinkedConnector : SettingSectionItem()
     object Gateway : SettingSectionItem()
+    object ConnectedDapps : SettingSectionItem()
     object DeleteAll : SettingSectionItem()
     object Personas : SettingSectionItem()
     data class DeveloperMode(val skip: Boolean) : SettingSectionItem()
@@ -24,6 +25,7 @@ sealed class SettingSectionItem {
             InspectProfile -> R.string.inspect_profile
             LinkedConnector -> R.string.linked_connector
             Personas -> R.string.settings_personas
+            ConnectedDapps -> R.string.connected_dapps
             is DeveloperMode -> R.string.developer_mode
         }
     }
@@ -34,6 +36,7 @@ sealed class SettingSectionItem {
             Gateway -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateway
             LinkedConnector -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
             Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
+            ConnectedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_connected_dapps
             else -> null
         }
     }

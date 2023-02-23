@@ -158,36 +158,12 @@ private fun WalletAccountList(
             Text(
                 text = stringResource(id = R.string.home_welcome_text),
                 modifier = Modifier.padding(
-                    top = RadixTheme.dimensions.paddingMedium,
-                    start = RadixTheme.dimensions.paddingXLarge,
-                    end = RadixTheme.dimensions.paddingXLarge
+                    vertical = RadixTheme.dimensions.paddingMedium,
+                    horizontal = RadixTheme.dimensions.paddingXLarge
                 ),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-        }
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = RadixTheme.dimensions.paddingLarge),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-//                Text(
-//                    text = stringResource(id = R.string.total_value).uppercase(
-//                        Locale.getDefault()
-//                    ),
-//                    style = RadixTheme.typography.body2Header,
-//                )
-//                wallet?.let { wallet ->
-//                    WalletBalanceView(
-//                        currencySignValue = wallet.currency,
-//                        amount = wallet.amount,
-//                        hidden = false,
-//                        balanceClicked = balanceClicked
-//                    )
-//                }
-            }
         }
         itemsIndexed(accounts) { _, account ->
             val gradientColors = AccountGradientList[account.appearanceID]

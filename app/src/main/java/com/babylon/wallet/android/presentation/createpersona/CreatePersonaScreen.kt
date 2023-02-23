@@ -16,8 +16,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -87,7 +89,7 @@ fun CreatePersonaContent(
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
-        val showNotSecuredDialog = remember { mutableStateOf(false) }
+        var showNotSecuredDialog by remember { mutableStateOf(false) }
         val context = LocalContext.current
 
         IconButton(onClick = onBackClick) {
@@ -149,20 +151,21 @@ fun CreatePersonaContent(
                             }
                         }
                     } else {
-                        showNotSecuredDialog.value = true
+                        showNotSecuredDialog = true
                     }
                 },
                 enabled = buttonEnabled,
                 text = stringResource(id = com.babylon.wallet.android.R.string.continue_button_title)
             )
         }
-
-        NotSecureAlertDialog(show = showNotSecuredDialog.value, finish = {
-            showNotSecuredDialog.value = false
-            if (it) {
-                onPersonaCreateClick()
-            }
-        })
+        if (showNotSecuredDialog) {
+            NotSecureAlertDialog(finish = {
+                showNotSecuredDialog = false
+                if (it) {
+                    onPersonaCreateClick()
+                }
+            })
+        }
     }
 }
 

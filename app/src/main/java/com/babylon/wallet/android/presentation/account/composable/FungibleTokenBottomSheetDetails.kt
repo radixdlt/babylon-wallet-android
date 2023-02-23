@@ -98,7 +98,12 @@ fun FungibleTokenBottomSheetDetails(
                     AssetMetadataRow(Modifier.fillMaxWidth(), mapEntry.key, mapEntry.value)
                 }
             }
-            ResourceAddressRow(modifier = Modifier.fillMaxWidth(), token, onCopyAccountAddress)
+            ResourceAddressRow(
+                modifier = Modifier.fillMaxWidth(),
+                shortenedAddress = token.shortenedAddress(),
+                address = token.address,
+                onCopyAccountAddress = onCopyAccountAddress
+            )
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
@@ -107,8 +112,9 @@ fun FungibleTokenBottomSheetDetails(
 @Composable
 private fun ResourceAddressRow(
     modifier: Modifier,
-    token: TokenUiModel,
-    onCopyAccountAddress: (String) -> Unit,
+    shortenedAddress: String,
+    address: String,
+    onCopyAccountAddress: (String) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -118,12 +124,12 @@ private fun ResourceAddressRow(
         AssetMetadataRow(
             modifier = Modifier.weight(1f),
             key = stringResource(id = R.string.resource_address),
-            value = token.shortenedAddress()
+            value = shortenedAddress
         )
         IconButton(
             modifier = Modifier.size(14.dp),
             onClick = {
-                onCopyAccountAddress(token.address)
+                onCopyAccountAddress(address)
             },
         ) {
             Icon(
