@@ -63,10 +63,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.AddressWithCopyIcon
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
