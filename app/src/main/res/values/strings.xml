@@ -185,7 +185,7 @@
     <string name="first_name_empty">First name can\'t be empty</string>
     <string name="last_name_empty">Empty last name</string>
     <string name="email_wrong">Wrong email address</string>
-    <string name="personal_identification_number_empty">Emtyp value</string>
+    <string name="personal_identification_number_empty">Empty value</string>
     <string name="zip_code_empty">Empty value</string>
     <string name="edit">Edit</string>
     <plurals name="one_time_at_least_request">
