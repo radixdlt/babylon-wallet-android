@@ -82,8 +82,7 @@ class ProfileTest {
         )
 
         updatedProfile = updatedProfile.createOrUpdatePersonaOnNetwork(
-            firstPersona,
-            networkID = NetworkId.Nebunet
+            firstPersona
         )
 
         Assert.assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
@@ -162,8 +161,7 @@ class ProfileTest {
             networkId = networkId
         )
         profile = profile.createOrUpdatePersonaOnNetwork(
-            persona = firstPersona,
-            networkID = networkId
+            persona = firstPersona
         )
 
         val secondPersona = createNewPersona(
@@ -186,8 +184,7 @@ class ProfileTest {
             networkId = networkId
         )
         profile = profile.createOrUpdatePersonaOnNetwork(
-            persona = secondPersona,
-            networkID = networkId
+            persona = secondPersona
         )
 
         val p2pClient = P2PClient.init(

@@ -23,7 +23,6 @@ import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreatePersonaUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
@@ -126,8 +125,7 @@ class CreatePersonaUseCaseTest {
             )
 
             val updatedProfile = profile.createOrUpdatePersonaOnNetwork(
-                newPersona,
-                networkID = NetworkId.Hammunet
+                newPersona
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)
