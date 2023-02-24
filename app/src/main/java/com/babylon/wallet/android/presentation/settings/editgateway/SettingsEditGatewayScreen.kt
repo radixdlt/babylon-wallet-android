@@ -114,8 +114,8 @@ private fun SettingsEditGatewayContent(
                 Spacer(modifier = Modifier.weight(0.5f))
                 RadixTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = newUrl,
                     onValueChanged = onNewUrlChanged,
+                    value = newUrl,
                     hint = stringResource(R.string.gateway_api_hint),
                     singleLine = true
                 )

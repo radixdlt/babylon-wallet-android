@@ -121,6 +121,10 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deletePersonaForDapp(dAppDefinitionAddress: String, personaAddress: String) {
     }
 
+    override fun getConnectedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.ConnectedDapp>> {
+        return getConnectedDapps()
+    }
+
     override fun getConnectedDappFlow(dAppDefinitionAddress: String): Flow<OnNetwork.ConnectedDapp?> {
         return flow {
             emit(getConnectedDapp(dAppDefinitionAddress))

@@ -12,10 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
@@ -34,16 +35,27 @@ fun RadixCenteredTopAppBar(
         modifier = modifier,
         windowInsets = WindowInsets(0.dp),
         navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                val backIcon = when (backIconType) {
-                    BackIconType.Back -> R.drawable.ic_arrow_back
-                    BackIconType.Close -> R.drawable.ic_close
+            when (backIconType) {
+                BackIconType.Back -> IconButton(onClick = onBackClick) {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
+                        tint = contentColor,
+                        contentDescription = "navigate back"
+                    )
                 }
-                Icon(
-                    painterResource(id = backIcon),
-                    tint = contentColor,
-                    contentDescription = "navigate back"
-                )
+                BackIconType.Close -> {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                        tint = contentColor,
+                        contentDescription = "navigate back"
+                    )
+                }
+                BackIconType.Cancel -> {
+                    UnderlineTextButton(
+                        text = stringResource(id = R.string.cancel),
+                        onClick = onBackClick
+                    )
+                }
             }
         },
         title = {
@@ -69,5 +81,5 @@ fun RadixCenteredTopAppBarPreview() {
 }
 
 enum class BackIconType {
-    Back, Close
+    Back, Close, Cancel
 }

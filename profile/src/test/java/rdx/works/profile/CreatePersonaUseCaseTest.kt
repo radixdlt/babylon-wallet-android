@@ -10,7 +10,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.addPersonaOnNetwork
+import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -125,7 +125,7 @@ class CreatePersonaUseCaseTest {
                 fields = personaFields
             )
 
-            val updatedProfile = profile.addPersonaOnNetwork(
+            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(
                 newPersona,
                 networkID = NetworkId.Hammunet
             )

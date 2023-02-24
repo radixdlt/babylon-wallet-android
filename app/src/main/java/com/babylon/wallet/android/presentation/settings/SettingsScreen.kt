@@ -77,82 +77,78 @@ private fun SettingsContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
-        Column(
-            Modifier.fillMaxSize()
-
-        ) {
-            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                appSettings.forEach { settingsItem ->
-                    when (settingsItem) {
-                        SettingSectionItem.Connection -> {
-                            item {
-                                ConnectionSettingItem(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(RadixTheme.dimensions.paddingDefault)
-                                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
-                                        .padding(RadixTheme.dimensions.paddingDefault),
-                                    onSettingClick = onSettingClick,
-                                    settingsItem = settingsItem
-                                )
-                            }
+        LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            appSettings.forEach { settingsItem ->
+                when (settingsItem) {
+                    SettingSectionItem.Connection -> {
+                        item {
+                            ConnectionSettingItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(RadixTheme.dimensions.paddingDefault)
+                                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
+                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                onSettingClick = onSettingClick,
+                                settingsItem = settingsItem
+                            )
                         }
-                        SettingSectionItem.DeleteAll -> {
-                            settingsItem.descriptionRes().let {
-                                item {
-                                    RadixSecondaryButton(
-                                        modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                        text = stringResource(id = it),
-                                        onClick = onDeleteWalletClick,
-                                        contentColor = RadixTheme.colors.red1
-                                    )
-                                }
-                            }
-                        }
-                        is SettingSectionItem.DeveloperMode -> {
+                    }
+                    SettingSectionItem.DeleteAll -> {
+                        settingsItem.descriptionRes().let {
                             item {
-                                SwitchSettingsItem(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp)
-                                        .background(RadixTheme.colors.defaultBackground)
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                    settingsItem = settingsItem,
-                                    checked = settingsItem.skip,
-                                    onCheckedChange = onDeveloperModeToggled
+                                RadixSecondaryButton(
+                                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(id = it),
+                                    onClick = onDeleteWalletClick,
+                                    contentColor = RadixTheme.colors.red1
                                 )
-                            }
-                        }
-                        else -> {
-                            item {
-                                DefaultSettingsItem(
-                                    settingsItem = settingsItem,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp)
-                                        .background(RadixTheme.colors.defaultBackground)
-                                        .throttleClickable { onSettingClick(settingsItem) }
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                                )
-                            }
-                            item {
-                                Divider(color = RadixTheme.colors.gray5)
                             }
                         }
                     }
+                    is SettingSectionItem.DeveloperMode -> {
+                        item {
+                            SwitchSettingsItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .background(RadixTheme.colors.defaultBackground)
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                settingsItem = settingsItem,
+                                checked = settingsItem.skip,
+                                onCheckedChange = onDeveloperModeToggled
+                            )
+                        }
+                    }
+                    else -> {
+                        item {
+                            DefaultSettingsItem(
+                                settingsItem = settingsItem,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .background(RadixTheme.colors.defaultBackground)
+                                    .throttleClickable { onSettingClick(settingsItem) }
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            )
+                        }
+                        item {
+                            Divider(color = RadixTheme.colors.gray5)
+                        }
+                    }
                 }
-                item {
-                    Text(
-                        text = stringResource(
-                            R.string.version_and_build,
-                            BuildConfig.VERSION_NAME,
-                            BuildConfig.VERSION_CODE
-                        ),
-                        style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.gray2,
-                        textAlign = TextAlign.Center
-                    )
-                }
+            }
+            item {
+                Text(
+                    text = stringResource(
+                        R.string.version_and_build,
+                        BuildConfig.VERSION_NAME,
+                        BuildConfig.VERSION_CODE
+                    ),
+                    style = RadixTheme.typography.body2Link,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
         }
     }

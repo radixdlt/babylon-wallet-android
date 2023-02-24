@@ -41,6 +41,8 @@ interface DAppConnectionRepository {
         personaAddress: String
     )
 
+    fun getConnectedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.ConnectedDapp>>
+
     fun getConnectedDappFlow(dAppDefinitionAddress: String): Flow<OnNetwork.ConnectedDapp?>
     suspend fun deleteDapp(dAppDefinitionAddress: String)
 }
@@ -146,6 +148,14 @@ class DAppConnectionRepositoryImpl @Inject constructor(
                 deleteDapp(dapp.dAppDefinitionAddress)
             } else {
                 updateOrCreateConnectedDApp(updatedDapp)
+            }
+        }
+    }
+
+    override fun getConnectedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.ConnectedDapp>> {
+        return getConnectedDapps().map { connectedDapps ->
+            connectedDapps.filter { dapp ->
+                dapp.referencesToAuthorizedPersonas.any { it.identityAddress == personaAddress }
             }
         }
     }

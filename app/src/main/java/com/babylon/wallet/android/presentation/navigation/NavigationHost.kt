@@ -28,6 +28,9 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
+import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
+import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -126,8 +129,25 @@ fun NavigationHost(
             onBackClick = { navController.navigateUp() },
             createPersonaScreen = {
                 navController.createPersonaScreen()
+            },
+            onPersonaClick = { personaAddress ->
+                navController.personaDetailScreen(personaAddress)
             }
         )
+        personaDetailScreen(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onPersonaEdit = {
+                navController.personaEditScreen(it)
+            },
+            onDappClick = {
+                navController.dappDetailScreen(it)
+            }
+        )
+        personaEditScreen(onBackClick = {
+            navController.navigateUp()
+        })
         transactionApprovalScreen(onBackClick = {
             navController.popBackStack()
         })

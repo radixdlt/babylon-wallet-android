@@ -7,7 +7,7 @@ import org.junit.Assert
 import org.junit.Test
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
-import rdx.works.profile.data.extensions.addPersonaOnNetwork
+import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
@@ -81,7 +81,7 @@ class ProfileTest {
             networkId = networkId
         )
 
-        updatedProfile = updatedProfile.addPersonaOnNetwork(
+        updatedProfile = updatedProfile.createOrUpdatePersonaOnNetwork(
             firstPersona,
             networkID = NetworkId.Nebunet
         )
@@ -161,7 +161,7 @@ class ProfileTest {
             factorSources = profile.factorSources,
             networkId = networkId
         )
-        profile = profile.addPersonaOnNetwork(
+        profile = profile.createOrUpdatePersonaOnNetwork(
             persona = firstPersona,
             networkID = networkId
         )
@@ -185,7 +185,7 @@ class ProfileTest {
             factorSources = profile.factorSources,
             networkId = networkId
         )
-        profile = profile.addPersonaOnNetwork(
+        profile = profile.createOrUpdatePersonaOnNetwork(
             persona = secondPersona,
             networkID = networkId
         )

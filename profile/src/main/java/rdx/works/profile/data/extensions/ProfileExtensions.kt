@@ -11,20 +11,34 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.derivation.model.NetworkId
 
-fun Profile.addPersonaOnNetwork(
-    persona: OnNetwork.Persona,
-    networkID: NetworkId
+fun Profile.createOrUpdatePersonaOnNetwork(
+    persona: OnNetwork.Persona
 ): Profile {
+    val networkId = appPreferences.networkAndGateway.network.networkId()
     val newOnNetwork = onNetwork.map { network ->
-        if (network.networkID == networkID.value) {
-            val updatedPersonas = network.personas.toMutableList()
-            updatedPersonas.add(persona)
-            OnNetwork(
-                accounts = network.accounts,
-                connectedDapps = network.connectedDapps,
-                networkID = network.networkID,
-                personas = updatedPersonas.toList()
-            )
+        if (network.networkID == networkId.value) {
+            val personaExist = network.personas.any { it.address == persona.address }
+            if (personaExist) {
+                OnNetwork(
+                    accounts = network.accounts,
+                    connectedDapps = network.connectedDapps,
+                    networkID = network.networkID,
+                    personas = network.personas.map {
+                        if (it.address == persona.address) {
+                            persona
+                        } else {
+                            it
+                        }
+                    }
+                )
+            } else {
+                OnNetwork(
+                    accounts = network.accounts,
+                    connectedDapps = network.connectedDapps,
+                    networkID = network.networkID,
+                    personas = network.personas + persona
+                )
+            }
         } else {
             network
         }
