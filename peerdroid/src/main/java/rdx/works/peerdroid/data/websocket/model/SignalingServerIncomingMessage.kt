@@ -18,9 +18,9 @@ internal sealed interface SignalingServerIncomingMessage {
 
     // when the incoming message is an ice candidates from browser extension
     // then return the request id and the remote ice candidates
-    data class BrowserExtensionIceCandidates(
+    data class BrowserExtensionIceCandidate(
         val requestId: String,
-        val remoteIceCandidates: List<RemoteIceCandidate>
+        val remoteIceCandidate: RemoteIceCandidate
     ) : SignalingServerIncomingMessage
 
     object RemoteClientDisconnected : SignalingServerIncomingMessage
