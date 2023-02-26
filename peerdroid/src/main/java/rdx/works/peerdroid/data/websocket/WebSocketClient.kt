@@ -50,9 +50,7 @@ internal interface WebSocketClient {
 
     suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload)
 
-    suspend fun sendIceCandidatesMessage(iceCandidatePayload: List<JsonElement>)
-
-    suspend fun sendMessage(message: String)
+    suspend fun sendIceCandidateMessage(iceCandidatePayload: JsonElement)
 
     fun observeMessages(): Flow<SignalingServerIncomingMessage>
 
@@ -155,32 +153,21 @@ internal class WebSocketClientImpl(
         sendMessage(message)
     }
 
-    override suspend fun sendIceCandidatesMessage(iceCandidatePayload: List<JsonElement>) {
-        val encryptedIceCandidates = encryptData(
+    override suspend fun sendIceCandidateMessage(iceCandidatePayload: JsonElement) {
+        val encryptedIceCandidate = encryptData(
             input = iceCandidatePayload.toString().toByteArray(),
             encryptionKey = encryptionKey
         )
         val rpcMessage = RpcMessage(
-            method = RpcMessage.RpcMethod.ICE_CANDIDATES.value,
+            method = RpcMessage.RpcMethod.ICE_CANDIDATE.value,
             source = RpcMessage.ClientSource.MOBILE_WALLET.value,
             connectionId = connectionId,
-            encryptedPayload = encryptedIceCandidates.toHexString()
+            encryptedPayload = encryptedIceCandidate.toHexString()
         )
 
         val message = json.encodeToString(rpcMessage)
-        Timber.d("=> sending ice candidates with requestId: ${rpcMessage.requestId}")
+        Timber.d("=> sending ice candidate with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
-    }
-
-    override suspend fun sendMessage(message: String) {
-        try {
-            socket?.send(Frame.Text(message))
-        } catch (exception: Exception) {
-            if (exception is CancellationException) {
-                throw exception
-            }
-            Timber.d("failed to send message: ${exception.localizedMessage}")
-        }
     }
 
     override fun observeMessages(): Flow<SignalingServerIncomingMessage> {
@@ -202,6 +189,17 @@ internal class WebSocketClientImpl(
 
     override suspend fun closeSession() {
         socket?.close()
+    }
+
+    private suspend fun sendMessage(message: String) {
+        try {
+            socket?.send(Frame.Text(message))
+        } catch (exception: Exception) {
+            if (exception is CancellationException) {
+                throw exception
+            }
+            Timber.d("failed to send message: ${exception.localizedMessage}")
+        }
     }
 
     private fun decodeAndParseResponseFromJson(responseJsonString: String): SignalingServerIncomingMessage {
@@ -251,7 +249,7 @@ internal class WebSocketClientImpl(
             if (responseJson.data.source != RpcMessage.ClientSource.BROWSER_EXTENSION.value) {
                 return SignalingServerIncomingMessage.RemoteClientSourceError
             }
-            // Check whether the method is "answer" or "iceCandidates" and build the
+            // Check whether the method is "answer" or "iceCandidate" and build the
             // corresponding SignalingServerIncomingMessage data model.
             // We do not handle the "offer" because the wallet initiates the WebRTC communication,
             // therefore in case an "offer" is received we return a UnknownMessage.
@@ -261,9 +259,6 @@ internal class WebSocketClientImpl(
                 }
                 RpcMessage.RpcMethod.ICE_CANDIDATE -> {
                     decryptAndParseIceCandidatePayload(responseJson)
-                }
-                RpcMessage.RpcMethod.ICE_CANDIDATES -> {
-                    decryptAndParseIceCandidatesPayload(responseJson)
                 }
                 RpcMessage.RpcMethod.OFFER -> {
                     SignalingServerIncomingMessage.UnknownMessage
@@ -298,7 +293,7 @@ internal class WebSocketClientImpl(
     @Suppress("UseRequire")
     private fun decryptAndParseIceCandidatePayload(
         responseJson: SignalingServerResponse
-    ): SignalingServerIncomingMessage.BrowserExtensionIceCandidates {
+    ): SignalingServerIncomingMessage.BrowserExtensionIceCandidate {
         if (responseJson.data == null || responseJson.requestId.isNullOrEmpty()) {
             // should never reach this point!
             throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
@@ -308,52 +303,19 @@ internal class WebSocketClientImpl(
             input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
             encryptionKey = encryptionKey
         )
-        val iceCandidate = json.decodeFromString<RpcMessage.IceCandidatePayload>(
+        val iceCandidateString = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)
         )
 
-        val remoteIceCandidates = RemoteIceCandidate(
-            sdpMid = iceCandidate.sdpMid,
-            sdpMLineIndex = iceCandidate.sdpMLineIndex,
-            candidate = iceCandidate.candidate
+        val remoteIceCandidate = RemoteIceCandidate(
+            sdpMid = iceCandidateString.sdpMid,
+            sdpMLineIndex = iceCandidateString.sdpMLineIndex,
+            candidate = iceCandidateString.candidate
         )
 
-        // TODO maybe later add a new data class BrowserExtensionIceCandidate to pass only one ice candidate.
-        //  At the moment it works very well this way.
-        return SignalingServerIncomingMessage.BrowserExtensionIceCandidates(
+        return SignalingServerIncomingMessage.BrowserExtensionIceCandidate(
             requestId = responseJson.requestId,
-            remoteIceCandidates = listOf(remoteIceCandidates)
-        )
-    }
-
-    @Suppress("UseRequire")
-    private fun decryptAndParseIceCandidatesPayload(
-        responseJson: SignalingServerResponse
-    ): SignalingServerIncomingMessage.BrowserExtensionIceCandidates {
-        if (responseJson.data == null || responseJson.requestId.isNullOrEmpty()) {
-            // should never reach this point!
-            throw IllegalArgumentException("rpc message is null in remote ice candidates payload")
-        }
-
-        val message = decryptData(
-            input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
-        )
-        val iceCandidates = json.decodeFromString<List<RpcMessage.IceCandidatePayload>>(
-            String(message, StandardCharsets.UTF_8)
-        )
-
-        val remoteIceCandidates = iceCandidates.map { iceCandidatePayload ->
-            RemoteIceCandidate(
-                sdpMid = iceCandidatePayload.sdpMid,
-                sdpMLineIndex = iceCandidatePayload.sdpMLineIndex,
-                candidate = iceCandidatePayload.candidate
-            )
-        }
-
-        return SignalingServerIncomingMessage.BrowserExtensionIceCandidates(
-            requestId = responseJson.requestId,
-            remoteIceCandidates = remoteIceCandidates
+            remoteIceCandidate = remoteIceCandidate
         )
     }
 

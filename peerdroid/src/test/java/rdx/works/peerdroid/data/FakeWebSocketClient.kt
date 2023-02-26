@@ -34,12 +34,8 @@ internal class FakeWebSocketClient @Inject constructor(
         println("send new offer")
     }
 
-    override suspend fun sendIceCandidatesMessage(iceCandidatePayload: List<JsonElement>) {
-        println("send new ice candidates")
-    }
-
-    override suspend fun sendMessage(message: String) {
-        println("send message")
+    override suspend fun sendIceCandidateMessage(iceCandidatePayload: JsonElement) {
+        println("send new ice candidate")
     }
 
     override fun observeMessages(): Flow<SignalingServerIncomingMessage> {
@@ -49,14 +45,12 @@ internal class FakeWebSocketClient @Inject constructor(
             emit(SignalingServerIncomingMessage.BrowserExtensionAnswer("answer request id", "sdp"))
             delay(100)
             emit(
-                SignalingServerIncomingMessage.BrowserExtensionIceCandidates(
+                SignalingServerIncomingMessage.BrowserExtensionIceCandidate(
                     "ice candidates request id",
-                    listOf(
-                        RemoteIceCandidate(
-                            sdpMid = "sdpMid",
-                            sdpMLineIndex = 1,
-                            candidate = "candidate"
-                        )
+                    RemoteIceCandidate(
+                        sdpMid = "sdpMid",
+                        sdpMLineIndex = 1,
+                        candidate = "candidate"
                     )
                 )
             )
