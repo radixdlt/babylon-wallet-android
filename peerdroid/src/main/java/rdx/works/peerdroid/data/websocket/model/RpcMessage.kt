@@ -3,6 +3,7 @@ package rdx.works.peerdroid.data.websocket.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
@@ -41,8 +42,7 @@ internal data class RpcMessage(
     enum class RpcMethod(val value: String) {
         OFFER("offer"),
         ANSWER("answer"),
-        ICE_CANDIDATE("iceCandidate"),
-        ICE_CANDIDATES("iceCandidates");
+        ICE_CANDIDATE("iceCandidate");
 
         companion object {
             fun from(value: String): RpcMethod = requireNotNull(
@@ -88,16 +88,13 @@ internal data class RpcMessage(
     ) {
 
         companion object {
-            private fun PeerConnectionEvent.IceCandidate.Data.toPayload() = IceCandidatePayload(
-                candidate = candidate,
-                sdpMid = sdpMid,
-                sdpMLineIndex = sdpMLineIndex
-            )
-
-            fun List<PeerConnectionEvent.IceCandidate.Data>.toJsonArrayPayload() = map { iceCandidateData ->
-                iceCandidateData.toPayload()
-            }.map { iceCandidatePayload ->
-                Json.encodeToJsonElement(iceCandidatePayload)
+            fun PeerConnectionEvent.IceCandidate.Data.toJsonPayload(): JsonElement {
+                val payload = IceCandidatePayload(
+                    candidate = candidate,
+                    sdpMid = sdpMid,
+                    sdpMLineIndex = sdpMLineIndex
+                )
+                return Json.encodeToJsonElement(payload)
             }
         }
     }
