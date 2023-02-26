@@ -237,7 +237,7 @@ internal class PeerdroidConnectorImpl(
                 }
             }
             else -> {
-                Timber.d("failed to create offer")
+                Timber.e("failed to create offer")
                 dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
             }
         }

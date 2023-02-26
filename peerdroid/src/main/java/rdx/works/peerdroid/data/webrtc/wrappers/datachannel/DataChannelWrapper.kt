@@ -52,13 +52,13 @@ data class DataChannelWrapper(
             }
             Result.Success(Unit)
         } catch (iobe: IndexOutOfBoundsException) {
-            Timber.d("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
+            Timber.e("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
             Result.Error("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.d("failed to convert and send the message: ${exception.localizedMessage}")
+            Timber.e("failed to convert and send the message: ${exception.localizedMessage}")
             Result.Error("failed to send message with exception: ${exception.localizedMessage}")
         }
     }

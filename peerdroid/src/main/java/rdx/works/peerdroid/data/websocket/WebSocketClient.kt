@@ -96,7 +96,7 @@ internal class WebSocketClientImpl(
                 Timber.d("waiting remote peer to connect to signaling server")
                 waitUntilRemotePeerIsConnected()
             } else {
-                Timber.d("failed to connect to signaling server")
+                Timber.e("failed to connect to signaling server")
                 sessionDeferred.complete(Result.Error("Couldn't establish a connection."))
             }
         } catch (exception: Exception) {
@@ -198,7 +198,7 @@ internal class WebSocketClientImpl(
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.d("failed to send message: ${exception.localizedMessage}")
+            Timber.e("failed to send message: ${exception.localizedMessage}")
         }
     }
 

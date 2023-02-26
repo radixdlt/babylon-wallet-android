@@ -145,7 +145,7 @@ internal class WebRtcManagerImpl @Inject constructor(
             Timber.d("added successfully ice candidate")
             Result.Success(Unit)
         } else {
-            Timber.d("failed to add ice candidate")
+            Timber.e("failed to add ice candidate")
             Result.Error("failed to add ice candidate")
         }
     }
