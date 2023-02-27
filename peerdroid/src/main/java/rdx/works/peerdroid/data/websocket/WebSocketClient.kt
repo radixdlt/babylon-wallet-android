@@ -26,12 +26,13 @@ import kotlinx.coroutines.isActive
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.decryptData
 import rdx.works.core.encryptData
+import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
+import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
 import rdx.works.peerdroid.data.websocket.model.SignalingServerResponse
 import rdx.works.peerdroid.di.ApplicationScope
@@ -50,7 +51,7 @@ internal interface WebSocketClient {
 
     suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload)
 
-    suspend fun sendIceCandidateMessage(iceCandidatePayload: JsonElement)
+    suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data)
 
     fun observeMessages(): Flow<SignalingServerIncomingMessage>
 
@@ -153,7 +154,8 @@ internal class WebSocketClientImpl(
         sendMessage(message)
     }
 
-    override suspend fun sendIceCandidateMessage(iceCandidatePayload: JsonElement) {
+    override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
+        val iceCandidatePayload = iceCandidateData.toJsonPayload()
         val encryptedIceCandidate = encryptData(
             input = iceCandidatePayload.toString().toByteArray(),
             encryptionKey = encryptionKey

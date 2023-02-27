@@ -5,7 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.serialization.json.JsonElement
+import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -34,7 +34,7 @@ internal class FakeWebSocketClient @Inject constructor(
         println("send new offer")
     }
 
-    override suspend fun sendIceCandidateMessage(iceCandidatePayload: JsonElement) {
+    override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
         println("send new ice candidate")
     }
 

@@ -20,7 +20,6 @@ import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.data.websocket.WebSocketClient
-import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.OfferPayload.Companion.toPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
 import rdx.works.peerdroid.di.ApplicationScope
@@ -273,7 +272,7 @@ internal class PeerdroidConnectorImpl(
     private fun sendIceCandidateToRemotePeer(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
         sendIceCandidatesJob = applicationScope.launch(ioDispatcher) {
             ensureActive()
-            webSocketClient.sendIceCandidateMessage(iceCandidateData.toJsonPayload())
+            webSocketClient.sendIceCandidateMessage(iceCandidateData)
         }
     }
 
