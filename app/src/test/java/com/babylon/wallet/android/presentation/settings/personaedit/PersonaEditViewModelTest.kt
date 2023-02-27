@@ -3,16 +3,16 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.fakes.UpdatePersonaUseCaseFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.utils.isValidEmail
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
@@ -31,9 +31,7 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
 
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val updatePersonaUseCase = spyk<UpdatePersonaUseCase> {
-        UpdatePersonaUseCaseFake()
-    }
+    private val updatePersonaUseCase = mockk<UpdatePersonaUseCase>()
 
     override fun initVM(): PersonaEditViewModel {
         return PersonaEditViewModel(personaRepository, updatePersonaUseCase, savedStateHandle)
@@ -46,6 +44,7 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         every { savedStateHandle.get<String>(com.babylon.wallet.android.presentation.settings.personadetail.ARG_PERSONA_ADDRESS) } returns "1"
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidEmail() } returns true
+        coEvery { updatePersonaUseCase(any()) } just Runs
         coEvery { personaRepository.getPersonaByAddressFlow(capture(addressSlot)) } answers {
             flow {
                 emit(SampleDataProvider().samplePersona(addressSlot.captured))

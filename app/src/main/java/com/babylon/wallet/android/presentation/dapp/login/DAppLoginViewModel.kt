@@ -270,7 +270,7 @@ class DAppLoginViewModel @Inject constructor(
                     listOf(
                         AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
-                            fieldIDs = selectedPersona.fields.map { it.id },
+                            fieldIDs = emptyList(),
                             lastUsedOn = date,
                             sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                                 emptyList(),

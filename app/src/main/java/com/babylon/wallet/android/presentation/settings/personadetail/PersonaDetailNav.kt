@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -45,12 +43,6 @@ fun NavGraphBuilder.personaDetailScreen(
         exitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         },
-        popEnterTransition = {
-            EnterTransition.None
-        },
-        popExitTransition = {
-            ExitTransition.None
-        }
     ) {
         PersonaDetailScreen(
             viewModel = hiltViewModel(),

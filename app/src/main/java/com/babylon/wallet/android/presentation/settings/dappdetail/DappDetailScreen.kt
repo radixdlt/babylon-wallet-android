@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.settings.dappdetail
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -147,6 +148,11 @@ private fun DappDetailContent(
     LaunchedEffect(bottomSheetState.isVisible) {
         if (!bottomSheetState.isVisible) {
             personaDetailsClosed()
+        }
+    }
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
         }
     }
     Box(modifier = modifier) {

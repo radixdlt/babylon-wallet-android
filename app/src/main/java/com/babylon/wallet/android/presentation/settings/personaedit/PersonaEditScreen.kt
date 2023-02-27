@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.personaedit
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -130,6 +131,11 @@ private fun PersonaEditContent(
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+        }
+    }
     DefaultModalSheetLayout(modifier = modifier, sheetState = bottomSheetState, sheetContent = {
         AddFieldSheet(
             onBackClick = {

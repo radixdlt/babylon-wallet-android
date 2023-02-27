@@ -31,11 +31,6 @@ interface DAppConnectionRepository {
         sharedAccounts: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
     ): OnNetwork.ConnectedDapp
 
-    suspend fun updateConnectedDappPersonas(
-        dAppDefinitionAddress: String,
-        personas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
-    )
-
     suspend fun deletePersonaForDapp(
         dAppDefinitionAddress: String,
         personaAddress: String
@@ -128,13 +123,6 @@ class DAppConnectionRepositoryImpl @Inject constructor(
                 set(indexOf(persona), persona.copy(sharedAccounts = sharedAccounts))
             }
         )
-    }
-
-    override suspend fun updateConnectedDappPersonas(
-        dAppDefinitionAddress: String,
-        personas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
-    ) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun deletePersonaForDapp(dAppDefinitionAddress: String, personaAddress: String) {
@@ -254,13 +242,19 @@ fun OnNetwork.ConnectedDapp.addOrUpdateConnectedDappPersona(
 ): OnNetwork.ConnectedDapp {
     val existing = getExistingAuthorizedPersona(persona.address)
     val updatedAuthPersonas = if (existing != null) {
-        referencesToAuthorizedPersonas
+        referencesToAuthorizedPersonas.toMutableList().apply {
+            val index = indexOf(existing)
+            if (index != -1) {
+                removeAt(index)
+                add(index, existing.copy(lastUsedOn = lastUsed))
+            }
+        }
     } else {
         (
             listOf(
                 OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
                     identityAddress = persona.address,
-                    fieldIDs = persona.fields.map { it.id },
+                    fieldIDs = emptyList(),
                     lastUsedOn = lastUsed,
                     sharedAccounts = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         emptyList(),
