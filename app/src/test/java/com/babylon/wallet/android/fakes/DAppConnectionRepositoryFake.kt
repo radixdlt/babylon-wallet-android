@@ -111,13 +111,6 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         return checkNotNull(connectedDApp)
     }
 
-    override suspend fun updateConnectedDappPersonas(
-        dAppDefinitionAddress: String,
-        personas: List<OnNetwork.ConnectedDapp.AuthorizedPersonaSimple>
-    ) {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun deletePersonaForDapp(dAppDefinitionAddress: String, personaAddress: String) {
     }
 
