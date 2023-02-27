@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @Suppress("MagicNumber")
 @HiltViewModel
-class ConnectedDappsViewModel @Inject constructor(
+class AuthorizedDappsViewModel @Inject constructor(
     dAppConnectionRepository: DAppConnectionRepository
 ) : ViewModel() {
 

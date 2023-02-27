@@ -7,12 +7,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 
-fun NavController.connectedDappsScreen() {
-    navigate("settings_connected_dapps")
+fun NavController.authorizedDappsScreen() {
+    navigate("settings_authorized_dapps")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.connectedDappsScreen(
+fun NavGraphBuilder.authorizedDappsScreen(
     onBackClick: () -> Unit,
     onDappClick: (String) -> Unit
 ) {
@@ -25,7 +25,7 @@ fun NavGraphBuilder.connectedDappsScreen(
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        ConnectedDappsScreen(
+        AuthorizedDappsScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onDappClick = onDappClick

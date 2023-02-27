@@ -25,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.addconnection.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -94,6 +98,7 @@ private fun SettingsAddConnectionContent(
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
 ) {
+    var showDeleteConnectionPrompt by remember { mutableStateOf(false) }
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
         snapshotFlow { triggerCameraPermissionPrompt }.distinctUntilChanged().filter { it }.collect {
@@ -132,7 +137,7 @@ private fun SettingsAddConnectionContent(
                         connectionName = connectionName,
                         onAddConnection = onAddConnection,
                         cameraPermissionState = cameraPermissionState,
-                        onDeleteConnectionClick = onDeleteConnectionClick,
+                        onDeleteConnectionClick = { showDeleteConnectionPrompt = true },
                         isLoading = isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -150,6 +155,31 @@ private fun SettingsAddConnectionContent(
             }
             if (isLoading) {
                 FullscreenCircularProgressContent()
+            }
+            if (showDeleteConnectionPrompt) {
+                BasicPromptAlertDialog(
+                    finish = {
+                        if (it) {
+                            onDeleteConnectionClick()
+                        }
+                        showDeleteConnectionPrompt = false
+                    },
+                    title = {
+                        Text(
+                            text = stringResource(id = R.string.remove_connection),
+                            style = RadixTheme.typography.body2Header,
+                            color = RadixTheme.colors.gray1
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.you_will_no_longer),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                    },
+                    confirmText = stringResource(id = R.string.remove)
+                )
             }
         }
     }
