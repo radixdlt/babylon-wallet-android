@@ -318,7 +318,7 @@ private fun OnNetwork.validateAuthorizedPersonas(connectedDapp: OnNetwork.Connec
 
     val accountAddressHaystack = accounts.map { it.address }.toSet()
 
-    require(accountAddressNeedles.containsAll(accountAddressHaystack))
+    require(accountAddressHaystack.containsAll(accountAddressNeedles))
 
 // All good
     return connectedDapp

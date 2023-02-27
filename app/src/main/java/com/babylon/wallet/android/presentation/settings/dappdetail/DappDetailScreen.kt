@@ -191,28 +191,28 @@ private fun DappDetailContent(
                     }
                 }
             }, content = {
-                    DappDetails(
-                        modifier = Modifier.fillMaxSize(),
-                        dappName = dappName,
-                        onBackClick = onBackClick,
-                        dappMetadata = dappMetadata,
-                        personaList = personaList,
-                        onPersonaClick = { persona ->
-                            onPersonaClick(persona)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        },
-                        onDeleteDapp = {
-                            showDeleteDappPrompt = true
-                        },
-                        onAddressCopied = {
-                            scope.launch {
-                                snackState.showSnackbar(message = addressCopyMessage)
-                            }
+                DappDetails(
+                    modifier = Modifier.fillMaxSize(),
+                    dappName = dappName,
+                    onBackClick = onBackClick,
+                    dappMetadata = dappMetadata,
+                    personaList = personaList,
+                    onPersonaClick = { persona ->
+                        onPersonaClick(persona)
+                        scope.launch {
+                            bottomSheetState.show()
                         }
-                    )
-                })
+                    },
+                    onDeleteDapp = {
+                        showDeleteDappPrompt = true
+                    },
+                    onAddressCopied = {
+                        scope.launch {
+                            snackState.showSnackbar(message = addressCopyMessage)
+                        }
+                    }
+                )
+            })
         }
         RadixSnackbarHost(hostState = snackState, modifier = Modifier.align(Alignment.BottomCenter))
         if (showDeleteDappPrompt) {
@@ -568,18 +568,16 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            if (sharedPersonaAccounts.isNotEmpty()) {
-                item {
-                    GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
-                        RadixSecondaryButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingLarge),
-                            text = stringResource(R.string.edit_account_sharing),
-                            onClick = onEditAccountSharing
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                    }
+            item {
+                GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingLarge),
+                        text = stringResource(R.string.edit_account_sharing),
+                        onClick = onEditAccountSharing
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
             item {
