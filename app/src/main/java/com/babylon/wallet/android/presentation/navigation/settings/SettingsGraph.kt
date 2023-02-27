@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.settings.addconnection.settingsCo
 import com.babylon.wallet.android.presentation.settings.connecteddapps.connectedDappsScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
+import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.google.accompanist.navigation.animation.composable
 
 fun NavGraphBuilder.settingsNavGraph(
@@ -37,9 +38,14 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.dappDetailScreen(dappDefinitionAddress)
             }
         )
-        dappDetailScreen(onBackClick = {
-            navController.popBackStack()
-        })
+        dappDetailScreen(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onEditPersona = {
+                navController.personaEditScreen(it.address)
+            }
+        )
         settingsGatewayEdit(navController)
     }
 }

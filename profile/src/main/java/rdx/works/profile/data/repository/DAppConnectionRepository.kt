@@ -248,6 +248,46 @@ fun OnNetwork.ConnectedDapp.updateConnectedDappPersonas(
     )
 }
 
+fun OnNetwork.ConnectedDapp.addOrUpdateConnectedDappPersona(
+    persona: OnNetwork.Persona,
+    lastUsed: String
+): OnNetwork.ConnectedDapp {
+    val existing = getExistingAuthorizedPersona(persona.address)
+    val updatedAuthPersonas = if (existing != null) {
+        referencesToAuthorizedPersonas
+    } else {
+        (
+            listOf(
+                OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
+                    identityAddress = persona.address,
+                    fieldIDs = persona.fields.map { it.id },
+                    lastUsedOn = lastUsed,
+                    sharedAccounts = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                        emptyList(),
+                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                            0
+                        )
+                    )
+                )
+            ) + referencesToAuthorizedPersonas
+            ).distinctBy { it.identityAddress }
+    }
+
+    return copy(
+        networkID = networkID,
+        dAppDefinitionAddress = dAppDefinitionAddress,
+        displayName = displayName,
+        referencesToAuthorizedPersonas = updatedAuthPersonas
+    )
+}
+
+fun OnNetwork.ConnectedDapp.getExistingAuthorizedPersona(
+    personaAddress: String
+): OnNetwork.ConnectedDapp.AuthorizedPersonaSimple? {
+    return referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == personaAddress }
+}
+
 fun OnNetwork.ConnectedDapp.updateDappAuthorizedPersonaSharedAccounts(
     personaAddress: String,
     sharedAccounts: OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
@@ -264,30 +304,28 @@ fun OnNetwork.ConnectedDapp.updateDappAuthorizedPersonaSharedAccounts(
 }
 
 private fun OnNetwork.validateAuthorizedPersonas(connectedDapp: OnNetwork.ConnectedDapp): OnNetwork.ConnectedDapp {
-    // Instead of using SortedSet/Set, i use List which is ordered and make sure duplicates are gone
-    val referencesToAuthorizedPersonaNoDuplicates = connectedDapp.referencesToAuthorizedPersonas.toSet().toList()
-    // Validate that all Personas are known and that every Field.ID is known for each Persona
-    referencesToAuthorizedPersonaNoDuplicates.map { authorizedPersona ->
-        val persona = personas.find {
-            it.address == authorizedPersona.identityAddress
+    require(networkID == connectedDapp.networkID)
+
+// Validate that all Personas are known and that every Field.ID is known for each Persona.
+    for (personaNeedle in connectedDapp.referencesToAuthorizedPersonas) {
+        val persona = personas.first {
+            it.address == personaNeedle.identityAddress
         }
-        requireNotNull(persona)
-        persona.fields.map { field ->
-            require(authorizedPersona.fieldIDs.contains(field.id)) {
-                throw IllegalArgumentException("Unknown persona field")
-            }
-        }
+        val fieldIDNeedles = personaNeedle.fieldIDs.toSet()
+        val fieldIDHaystack = persona.fields.map { it.id }.toSet()
+
+        require(fieldIDHaystack.containsAll(fieldIDNeedles))
     }
 
-    // Validate that all Accounts are known
-    referencesToAuthorizedPersonaNoDuplicates.flatMap {
+// Validate that all Accounts are known
+    val accountAddressNeedles = connectedDapp.referencesToAuthorizedPersonas.flatMap {
         it.sharedAccounts.accountsReferencedByAddress
-    }.map { accountAddressReference ->
-        require(accounts.any { it.address == accountAddressReference }) {
-            throw IllegalArgumentException("Unknown account reference")
-        }
-    }
+    }.toSet()
 
-    // All good
+    val accountAddressHaystack = accounts.map { it.address }.toSet()
+
+    require(accountAddressNeedles.containsAll(accountAddressHaystack))
+
+// All good
     return connectedDapp
 }

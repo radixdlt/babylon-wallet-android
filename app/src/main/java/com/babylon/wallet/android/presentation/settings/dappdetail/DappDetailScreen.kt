@@ -88,6 +88,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onEditPersona: (OnNetwork.Persona) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -113,7 +114,7 @@ fun DappDetailScreen(
         onDisconnectPersona = viewModel::onDisconnectPersona,
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
         onDeleteDapp = viewModel::onDeleteDapp,
-        onEditPersona = {},
+        onEditPersona = onEditPersona,
         onEditAccountSharing = {},
         loading = state.loading
     )

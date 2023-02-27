@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
@@ -28,7 +29,8 @@ fun NavController.dappDetailScreen(dappDefinitionAddress: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dappDetailScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onEditPersona: (OnNetwork.Persona) -> Unit
 ) {
     composable(
         route = "settings_dapp_detail/{$ARG_DAPP_ADDRESS}",
@@ -53,6 +55,7 @@ fun NavGraphBuilder.dappDetailScreen(
         DappDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
+            onEditPersona = onEditPersona
         )
     }
 }

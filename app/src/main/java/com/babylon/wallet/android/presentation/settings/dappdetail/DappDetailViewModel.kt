@@ -72,7 +72,14 @@ class DappDetailViewModel @Inject constructor(
                     personaRepository.getPersonaByAddress(personaSimple.identityAddress)
                 }
                 _state.update { state ->
-                    state.copy(dapp = connectedDapp, personas = personas.toPersistentList())
+                    val selectedPersona = personas.firstOrNull {
+                        it.address == state.selectedPersona?.address
+                    } ?: state.selectedPersona
+                    state.copy(
+                        dapp = connectedDapp,
+                        personas = personas.toPersistentList(),
+                        selectedPersona = selectedPersona
+                    )
                 }
             }
         }

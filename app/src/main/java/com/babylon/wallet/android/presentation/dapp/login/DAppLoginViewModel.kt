@@ -39,6 +39,7 @@ import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.addOrUpdateConnectedDappPersona
 import rdx.works.profile.data.repository.updateConnectedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
 import java.time.LocalDateTime
@@ -269,7 +270,7 @@ class DAppLoginViewModel @Inject constructor(
                     listOf(
                         AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
-                            fieldIDs = emptyList(),
+                            fieldIDs = selectedPersona.fields.map { it.id },
                             lastUsedOn = date,
                             sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                                 emptyList(),
@@ -284,22 +285,7 @@ class DAppLoginViewModel @Inject constructor(
             }
         } else {
             mutex.withLock {
-                editedDapp = connectedDapp?.updateConnectedDappPersonas(
-                    listOf(
-                        AuthorizedPersonaSimple(
-                            identityAddress = selectedPersona.address,
-                            fieldIDs = emptyList(),
-                            lastUsedOn = date,
-                            sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
-                                emptyList(),
-                                request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                    AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
-                                    0
-                                )
-                            )
-                        )
-                    )
-                )
+                editedDapp = connectedDapp?.addOrUpdateConnectedDappPersona(selectedPersona, date)
             }
         }
     }
