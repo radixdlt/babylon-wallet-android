@@ -151,7 +151,7 @@
     <string name="go_to_choose_personas">Go to Choose Personas</string>
     <string name="you_can_update_permission_at_any_time">You can update this permission in your settings at any time.</string>
     <string name="connected_dapps">Connected dApps</string>
-    <string name="here_are_all_the_decentralized_apps">Here are all the Decentralized Apps that you have connected to with this Radix Wallet.</string>
+    <string name="here_are_all_the_decentralized_apps">Here are all the dApps that you have logged into using this Radix Wallet.</string>
     <string name="here_are_the_personas">Here are the Personas that you have previously used to connect to this dApp.</string>
     <string name="dapp_definition">dApp Definition</string>
     <string name="first_name">First Name</string>
@@ -168,7 +168,7 @@
     <string name="address_copied">Address copied!</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="delete_dapp">Delete this dApp?</string>
-    <string name="what_is_dapp">What is dApp</string>
+    <string name="what_is_dapp">What is a dApp</string>
     <string name="developer_mode">Developer Mode</string>
     <string name="radix_json_file_is_missing">radix.json file is missing</string>
     <string name="definition_address_does_not_match">Definition address does not match any well known definition address</string>
