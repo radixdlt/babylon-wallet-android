@@ -43,15 +43,14 @@ interface PeerdroidConnector {
  * PeerdroidConnector flow in summary:
  * 1. WebSocketClient connect to signaling server
  * 2. WebRtcManager initialize
- * 3. WebRtcManager starts collecting ice candidates
- * 4. WebRtcManager create offer: local session description
- * 5. WebRtcManager set local session description in its WebRTC
- * 6. WebSocketClient sends offer to the extension
+ * 3. WebRtcManager create offer: local session description
+ * 4. WebRtcManager set local session description in its WebRTC
+ * 5. WebSocketClient sends offer to the extension
+ * 6. WebRtcManager starts collecting ice candidates and send them to the extension one by one
  * 7. WebSocketClient receives answer from the extension: remote session description
  * 8. WebRtcManager set remote session description in its WebRTC
- * 9. WebSocketClient sends local ice candidates to the extension
- * 10. WebSocketClient receives remote ice candidates from the extension
- * 11. WebRtcManager set remote ice candidates in its WebRTC
+ * 9. WebSocketClient receives remote ice candidates once by one from the extension
+ * 10. WebRtcManager set remote ice candidates one by one in its WebRTC
  *
  * Once the peer connection state changes (observeWebRtcEvents) to CONNECTED
  * it means the data channel is open therefor the PeerdroidConnector completes its flow
@@ -73,7 +72,7 @@ internal class PeerdroidConnectorImpl(
     private lateinit var connectionId: String
 
     // This CompletableDeferred will return the data channel.
-    // if the whole flow is complete (step 11) and no errors occurred will return in a Result.Success
+    // if the whole flow is complete (step 10) and no errors occurred will return in a Result.Success
     // if any error occurred during the flow will return a Result.Error along with an error message.
     private lateinit var dataChannelDeferred: CompletableDeferred<Result<DataChannelWrapper>>
 
