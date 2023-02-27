@@ -43,7 +43,7 @@ internal interface WebRtcManager {
 
     suspend fun setRemoteDescription(sessionDescription: SessionDescriptionWrapper): Result<Unit>
 
-    suspend fun addRemoteIceCandidates(remoteIceCandidates: List<RemoteIceCandidate>): Result<Unit>
+    suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit>
 
     fun getDataChannel(): DataChannel
 }
@@ -138,25 +138,15 @@ internal class WebRtcManagerImpl @Inject constructor(
         sessionDescription: SessionDescriptionWrapper
     ): Result<Unit> = peerConnection.setSuspendingRemoteDescription(sessionDescription = sessionDescription)
 
-    // this is the last step in the flow,
-    // webrtc adds all remote ice candidates successfully
-    override suspend fun addRemoteIceCandidates(
-        remoteIceCandidates: List<RemoteIceCandidate>
-    ): Result<Unit> {
-        var areAllIceCandidatesAdded = true
+    override suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
+        val isIceCandidateAdded = peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
 
-        remoteIceCandidates.forEach { remoteIceCandidate ->
-            areAllIceCandidatesAdded = areAllIceCandidatesAdded.and(
-                peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
-            )
-        }
-
-        return if (areAllIceCandidatesAdded) {
-            Timber.d("added successfully ice candidates")
+        return if (isIceCandidateAdded) {
+            Timber.d("added successfully ice candidate")
             Result.Success(Unit)
         } else {
-            Timber.d("failed to add all ice candidates")
-            Result.Error("failed to add all ice candidates")
+            Timber.e("failed to add ice candidate")
+            Result.Error("failed to add ice candidate")
         }
     }
 

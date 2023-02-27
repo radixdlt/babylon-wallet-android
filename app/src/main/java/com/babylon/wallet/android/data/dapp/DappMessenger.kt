@@ -80,7 +80,7 @@ class DappMessengerImpl @Inject constructor(
                 Result.Success(Unit)
             }
             is rdx.works.peerdroid.helpers.Result.Error -> {
-                Timber.d("failed to send response with accounts")
+                Timber.e("failed to send response with accounts")
                 Result.Error()
             }
         }

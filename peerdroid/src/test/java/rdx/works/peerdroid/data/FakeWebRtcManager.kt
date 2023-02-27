@@ -59,7 +59,7 @@ internal class FakeWebRtcManager @Inject constructor(
         return Result.Success(Unit)
     }
 
-    override suspend fun addRemoteIceCandidates(remoteIceCandidates: List<RemoteIceCandidate>): Result<Unit> {
+    override suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
         println("add remote ice candidate")
         return Result.Success(Unit)
     }

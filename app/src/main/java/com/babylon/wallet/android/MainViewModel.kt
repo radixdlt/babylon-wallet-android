@@ -92,7 +92,7 @@ class MainViewModel @Inject constructor(
                         listenForIncomingDappRequests()
                     }
                     is Result.Error -> {
-                        Timber.d("failed to connect to dapp")
+                        Timber.e("failed to connect to dapp")
                     }
                 }
             }

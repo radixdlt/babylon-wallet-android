@@ -11,7 +11,7 @@ import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate.Companion.toWebR
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.Companion.toWebRtcSessionDescription
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
-import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonArrayPayload
+import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.domain.BasePackage
 import rdx.works.peerdroid.helpers.toHexString
 import kotlin.test.Test
@@ -67,25 +67,18 @@ class DataModelMappersTest {
     }
 
     @Test
-    fun `assert mapping a list of IceCandidateData to json array payload is correct`() {
-        val expected = "[{\"candidate\":\"sdp1\",\"sdpMid\":\"sdpMid1\",\"sdpMLineIndex\":1}, {\"candidate\":\"sdp2\",\"sdpMid\":\"sdpMid2\",\"sdpMLineIndex\":2}]"
+    fun `assert mapping am IceCandidateData to json array payload is correct`() {
+        val expectedIceCandidate = "{\"candidate\":\"sdp1\",\"sdpMid\":\"sdpMid1\",\"sdpMLineIndex\":1}"
 
-        val listOfIceCandidateData = listOf(
-            PeerConnectionEvent.IceCandidate.Data(
-                candidate = "sdp1",
-                sdpMid = "sdpMid1",
-                sdpMLineIndex = 1
-            ),
-            PeerConnectionEvent.IceCandidate.Data(
-                candidate = "sdp2",
-                sdpMid = "sdpMid2",
-                sdpMLineIndex = 2
-            )
+        val iceCandidateData = PeerConnectionEvent.IceCandidate.Data(
+            candidate = "sdp1",
+            sdpMid = "sdpMid1",
+            sdpMLineIndex = 1
         )
 
-        val actual = listOfIceCandidateData.toJsonArrayPayload()
+        val actual = iceCandidateData.toJsonPayload()
 
-        assertEquals(actual.toString(), expected)
+        assertEquals(actual.toString(), expectedIceCandidate)
     }
 
     private val hashInHex = "6ea80ead36e3fc4f1ad75134776c26534e73086e93f6b3cd7fdbbe390ed428b5c2f0150fd3f16c928e968497060b39ec61660704"

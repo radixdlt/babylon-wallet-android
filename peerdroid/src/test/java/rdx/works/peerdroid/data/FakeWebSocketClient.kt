@@ -5,7 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.serialization.json.JsonElement
+import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -34,12 +34,8 @@ internal class FakeWebSocketClient @Inject constructor(
         println("send new offer")
     }
 
-    override suspend fun sendIceCandidatesMessage(iceCandidatePayload: List<JsonElement>) {
-        println("send new ice candidates")
-    }
-
-    override suspend fun sendMessage(message: String) {
-        println("send message")
+    override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
+        println("send new ice candidate")
     }
 
     override fun observeMessages(): Flow<SignalingServerIncomingMessage> {
@@ -49,14 +45,12 @@ internal class FakeWebSocketClient @Inject constructor(
             emit(SignalingServerIncomingMessage.BrowserExtensionAnswer("answer request id", "sdp"))
             delay(100)
             emit(
-                SignalingServerIncomingMessage.BrowserExtensionIceCandidates(
+                SignalingServerIncomingMessage.BrowserExtensionIceCandidate(
                     "ice candidates request id",
-                    listOf(
-                        RemoteIceCandidate(
-                            sdpMid = "sdpMid",
-                            sdpMLineIndex = 1,
-                            candidate = "candidate"
-                        )
+                    RemoteIceCandidate(
+                        sdpMid = "sdpMid",
+                        sdpMLineIndex = 1,
+                        candidate = "candidate"
                     )
                 )
             )

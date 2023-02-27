@@ -84,12 +84,12 @@ internal suspend fun PeerConnection.setSuspendingLocalDescription(
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.d("failed to create local session description: $p0")
+            Timber.e("failed to create local session description: $p0")
             continuation.resume(Result.Error("on create failure"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.d("failed to set local session description: $p0")
+            Timber.e("failed to set local session description: $p0")
             continuation.resume(Result.Error("on set failure"))
         }
     }
@@ -121,12 +121,12 @@ internal suspend fun PeerConnection.setSuspendingRemoteDescription(
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.d("failed to create remote session description: $p0")
+            Timber.e("failed to create remote session description: $p0")
             continuation.resume(Result.Error("on create failure"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.d("failed to set remote session description: $p0")
+            Timber.e("failed to set remote session description: $p0")
             continuation.resume(Result.Error("on set failure"))
         }
     }
