@@ -160,59 +160,64 @@ private fun DappDetailContent(
             FullscreenCircularProgressContent()
         }
         AnimatedVisibility(modifier = Modifier.fillMaxSize(), visible = !loading, enter = fadeIn(), exit = fadeOut()) {
-            DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
-                Column(Modifier.fillMaxSize()) {
-                    selectedPersona?.let { persona ->
-                        PersonaDetailsSheet(
-                            persona = persona,
-                            sharedPersonaAccounts = selectedPersonaSharedAccounts,
-                            onCloseClick = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    RadixTheme.colors.defaultBackground,
-                                    shape = RadixTheme.shapes.roundedRectTopMedium
-                                )
-                                .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                            dappName = dappName,
-                            onDisconnectPersona = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                                onDisconnectPersona(it)
-                            },
-                            onEditPersona = onEditPersona,
-                            onEditAccountSharing = onEditAccountSharing
-                        )
+            DefaultModalSheetLayout(
+                modifier = Modifier.fillMaxSize(),
+                sheetState = bottomSheetState,
+                sheetContent = {
+                    Column(Modifier.fillMaxSize()) {
+                        selectedPersona?.let { persona ->
+                            PersonaDetailsSheet(
+                                persona = persona,
+                                sharedPersonaAccounts = selectedPersonaSharedAccounts,
+                                onCloseClick = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        RadixTheme.colors.defaultBackground,
+                                        shape = RadixTheme.shapes.roundedRectTopMedium
+                                    )
+                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                                dappName = dappName,
+                                onDisconnectPersona = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                    onDisconnectPersona(it)
+                                },
+                                onEditPersona = onEditPersona,
+                                onEditAccountSharing = onEditAccountSharing
+                            )
+                        }
                     }
+                },
+                content = {
+                    DappDetails(
+                        modifier = Modifier.fillMaxSize(),
+                        dappName = dappName,
+                        onBackClick = onBackClick,
+                        dappMetadata = dappMetadata,
+                        personaList = personaList,
+                        onPersonaClick = { persona ->
+                            onPersonaClick(persona)
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        onDeleteDapp = {
+                            showDeleteDappPrompt = true
+                        },
+                        onAddressCopied = {
+                            scope.launch {
+                                snackState.showSnackbar(message = addressCopyMessage)
+                            }
+                        }
+                    )
                 }
-            }, content = {
-                DappDetails(
-                    modifier = Modifier.fillMaxSize(),
-                    dappName = dappName,
-                    onBackClick = onBackClick,
-                    dappMetadata = dappMetadata,
-                    personaList = personaList,
-                    onPersonaClick = { persona ->
-                        onPersonaClick(persona)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onDeleteDapp = {
-                        showDeleteDappPrompt = true
-                    },
-                    onAddressCopied = {
-                        scope.launch {
-                            snackState.showSnackbar(message = addressCopyMessage)
-                        }
-                    }
-                )
-            })
+            )
         }
         RadixSnackbarHost(hostState = snackState, modifier = Modifier.align(Alignment.BottomCenter))
         if (showDeleteDappPrompt) {
