@@ -1,11 +1,28 @@
 package rdx.works.peerdroid.data.websocket
 
-import io.ktor.client.*
-import io.ktor.client.plugins.websocket.*
-import io.ktor.client.request.*
-import io.ktor.websocket.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.webSocketSession
+import io.ktor.client.request.url
+import io.ktor.websocket.Frame
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.close
+import io.ktor.websocket.readText
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -194,7 +211,9 @@ internal class WebSocketClientImpl(
                 requestId = responseJson.requestId.orEmpty()
             )
 
-            SignalingServerResponse.Info.DATA_FROM_BROWSER_EXTENSION -> parseRemoteDataFromResponse(responseJson)
+            SignalingServerResponse.Info.DATA_FROM_BROWSER_EXTENSION -> parseRemoteDataFromResponse(
+                responseJson
+            )
 
             SignalingServerResponse.Info.REMOTE_CLIENT_DISCONNECTED ->
                 SignalingServerIncomingMessage.RemoteClientDisconnected
@@ -264,7 +283,8 @@ internal class WebSocketClientImpl(
         val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
         )
-        val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
+        val answer =
+            json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
         return SignalingServerIncomingMessage.BrowserExtensionAnswer(
             requestId = responseJson.requestId,

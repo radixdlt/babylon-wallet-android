@@ -1,7 +1,12 @@
 package com.babylon.wallet.android.data.repository.transaction
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.*
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionRecentResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
+import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
@@ -39,8 +44,8 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
             .execute(map = { it })
     }
 
-    override suspend fun getTransactionStatus(intentHashHex: String?): Result<TransactionStatusResponse> {
-        return gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = intentHashHex))
+    override suspend fun getTransactionStatus(identifier: String?): Result<TransactionStatusResponse> {
+        return gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = identifier))
             .execute(map = { it })
     }
 }

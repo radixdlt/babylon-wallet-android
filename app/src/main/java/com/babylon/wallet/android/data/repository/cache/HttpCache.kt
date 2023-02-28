@@ -26,24 +26,27 @@ interface HttpCache {
     fun <T> store(call: Call<T>, response: T, serializationStrategy: SerializationStrategy<T>)
 
     fun <T> restore(call: Call<T>, deserializationStrategy: DeserializationStrategy<T>): T?
-
 }
 
 class HttpCacheImpl @Inject constructor(
     @ApplicationContext applicationContext: Context,
     private val jsonSerializer: Json
-): HttpCache {
+) : HttpCache {
 
     private val diskCache: DiskLruCache = DiskLruCache(
         fileSystem = FileSystem.SYSTEM,
         directory = applicationContext.cacheDir.toOkioPath(),
-        appVersion = 1,
-        valueCount = 1,
-        maxSize = 5 * 1024 * 1024,
+        appVersion = CACHE_VERSION,
+        valueCount = MAX_VALUES_PER_KEY,
+        maxSize = DEFAULT_CACHE_MAX_SIZE,
         taskRunner = TaskRunner.INSTANCE
     )
 
-    override fun <T> store(call: Call<T>, response: T, serializationStrategy: SerializationStrategy<T>) {
+    override fun <T> store(
+        call: Call<T>,
+        response: T,
+        serializationStrategy: SerializationStrategy<T>
+    ) {
         val key = call.cacheKey()
         val serialized = jsonSerializer.encodeToString(serializationStrategy, response)
         diskCache.edit(key)?.let { editor ->
@@ -56,14 +59,17 @@ class HttpCacheImpl @Inject constructor(
         }
     }
 
-    override fun <T> restore(call: Call<T>, deserializationStrategy: DeserializationStrategy<T>): T? {
+    override fun <T> restore(
+        call: Call<T>,
+        deserializationStrategy: DeserializationStrategy<T>
+    ): T? {
         val key = call.cacheKey()
 
         val restored = diskCache[key]?.let { snapshot ->
             snapshot.use {
                 it.getSource(0).buffer().readUtf8()
             }
-        }
+        }?.decrypt(HTTP_CACHE_KEY_ALIAS)
 
         with(Timber.tag(TAG)) {
             i("--> [CACHE] ${call.request().method} - ${call.request().url}]")
@@ -73,7 +79,7 @@ class HttpCacheImpl @Inject constructor(
         return restored?.let { saved ->
             jsonSerializer.decodeFromString(
                 deserializationStrategy,
-                saved.decrypt(HTTP_CACHE_KEY_ALIAS)
+                saved
             )
         }
     }
@@ -86,6 +92,7 @@ class HttpCacheImpl @Inject constructor(
         return arrayOf(method, url, body).contentToString().sha256().toHexString()
     }
 
+    @Suppress("SwallowedException")
     private fun RequestBody.readUtf8(): String = try {
         val buffer = Buffer()
 
@@ -98,5 +105,9 @@ class HttpCacheImpl @Inject constructor(
     companion object {
         private const val TAG = "HTTP_CACHE"
         private const val HTTP_CACHE_KEY_ALIAS = "HttpCache"
+
+        private const val CACHE_VERSION = 1
+        private const val MAX_VALUES_PER_KEY = 1
+        const val DEFAULT_CACHE_MAX_SIZE = 5L * 1024 * 1024
     }
 }

@@ -1,7 +1,11 @@
 package rdx.works.core
 
 import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties.*
+import android.security.keystore.KeyProperties.BLOCK_MODE_GCM
+import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
+import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
+import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
+import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import android.util.Base64
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets

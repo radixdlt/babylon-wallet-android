@@ -7,7 +7,11 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.profile.di.ProfileDataStore
@@ -59,8 +63,8 @@ class EncryptedPreferencesManager @Inject constructor(
 
     suspend fun putString(key: String, newValue: String?) {
         val preferencesKey = stringPreferencesKey(key)
-        newValue?.let {
-            val encryptedValue = it.encrypt(withKeyAlias = KEY_ALIAS_DATASTORE)
+        newValue?.let { newValueNotNull ->
+            val encryptedValue = newValueNotNull.encrypt(withKeyAlias = KEY_ALIAS_DATASTORE)
             preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }

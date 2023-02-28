@@ -1,7 +1,18 @@
 package com.babylon.wallet.android.data.repository.entity
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.*
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
+import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
+import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
+import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
@@ -35,6 +46,7 @@ interface EntityRepository {
 
 class EntityRepositoryImpl @Inject constructor(
     private val gatewayApi: GatewayApi,
+    private val httpCache: HttpCache
 ) : EntityRepository {
 
     override suspend fun entityDetails(address: String): Result<EntityDetailsResponse> {
@@ -47,6 +59,7 @@ class EntityRepositoryImpl @Inject constructor(
 
     override suspend fun getAccountResources(address: String): Result<AccountResourcesSlim> {
         return gatewayApi.entityResources(EntityResourcesRequest(address)).execute(
+            httpCache = httpCache,
             map = { response -> response.toAccountResourceSlim() }
         )
     }

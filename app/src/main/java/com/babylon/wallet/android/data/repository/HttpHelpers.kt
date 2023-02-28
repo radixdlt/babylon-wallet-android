@@ -16,19 +16,17 @@ suspend inline fun <reified T, A> Call<T>.execute(
     map: (T) -> A,
     error: () -> Exception? = { null }
 ): Result<A> {
-    try {
+    return try {
         val restored = httpCache?.restore(
             call = this,
             deserializationStrategy = serializersModule.serializer()
         )
 
-        if (restored != null) {
-            return Result.Success(map(restored))
-        }
+        if (restored != null) return Result.Success(map(restored))
 
         val response = awaitResponse()
         val responseBody = response.body()
-        return if (response.isSuccessful && responseBody != null) {
+        if (response.isSuccessful && responseBody != null) {
             httpCache?.store(
                 call = this,
                 response = responseBody,
@@ -41,7 +39,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
         }
     } catch (e: Exception) {
         val exception = RadixGatewayException(e.message, e.cause)
-        return Result.Error(exception = exception)
+        Result.Error(exception = exception)
     }
 }
 

@@ -4,9 +4,9 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
+import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
-import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
