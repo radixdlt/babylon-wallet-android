@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.repository.networkinfo
 
 import com.babylon.wallet.android.data.gateway.DynamicUrlApi
-import com.babylon.wallet.android.data.repository.performHttpRequest
+import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
 
@@ -14,13 +14,7 @@ class NetworkInfoRepositoryImpl @Inject constructor(
 ) : NetworkInfoRepository {
 
     override suspend fun getNetworkInfo(networkUrl: String): Result<String> {
-        return performHttpRequest(
-            call = {
-                dynamicUrlApi.gatewayInfo("$networkUrl/gateway/information")
-            },
-            map = {
-                it.ledgerState.network
-            }
-        )
+        return dynamicUrlApi.gatewayInfo("$networkUrl/gateway/information")
+            .execute(map = { it.ledgerState.network })
     }
 }

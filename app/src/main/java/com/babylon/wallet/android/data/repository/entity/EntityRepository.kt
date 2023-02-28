@@ -1,18 +1,8 @@
 package com.babylon.wallet.android.data.repository.entity
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
-import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
-import com.babylon.wallet.android.data.repository.performHttpRequest
+import com.babylon.wallet.android.data.gateway.generated.model.*
+import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 import com.babylon.wallet.android.domain.model.toAccountResourceSlim
@@ -43,13 +33,12 @@ interface EntityRepository {
     ): Result<EntityNonFungibleIdsResponse>
 }
 
-class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : EntityRepository {
+class EntityRepositoryImpl @Inject constructor(
+    private val gatewayApi: GatewayApi,
+) : EntityRepository {
 
     override suspend fun entityDetails(address: String): Result<EntityDetailsResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.entityDetails(EntityDetailsRequest(address))
-            },
+        return gatewayApi.entityDetails(EntityDetailsRequest(address)).execute(
             map = {
                 it
             }
@@ -57,21 +46,13 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
     }
 
     override suspend fun getAccountResources(address: String): Result<AccountResourcesSlim> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.entityResources(EntityResourcesRequest(address))
-            },
-            map = { response ->
-                response.toAccountResourceSlim()
-            }
+        return gatewayApi.entityResources(EntityResourcesRequest(address)).execute(
+            map = { response -> response.toAccountResourceSlim() }
         )
     }
 
     override suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.entityOverview(EntityOverviewRequest(addresses))
-            },
+        return gatewayApi.entityOverview(EntityOverviewRequest(addresses)).execute(
             map = {
                 it
             }
@@ -83,14 +64,12 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
         page: String?,
         limit: Int?
     ): Result<EntityMetadataResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.entityMetadata(EntityMetadataRequest(address, cursor = page, limit = limit))
-            },
-            map = {
-                it
-            }
-        )
+        return gatewayApi.entityMetadata(EntityMetadataRequest(address, cursor = page, limit = limit))
+            .execute(
+                map = {
+                    it
+                }
+            )
     }
 
     override suspend fun entityNonFungibles(
@@ -98,10 +77,7 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
         page: String?,
         limit: Int?
     ): Result<EntityNonFungiblesResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.entityNonFungibles(EntityNonFungiblesRequest(address))
-            },
+        return gatewayApi.entityNonFungibles(EntityNonFungiblesRequest(address)).execute(
             map = {
                 it
             }
@@ -113,10 +89,7 @@ class EntityRepositoryImpl @Inject constructor(private val gatewayApi: GatewayAp
         page: String?,
         limit: Int?
     ): Result<EntityNonFungibleIdsResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.entityNonFungibleIds(EntityNonFungibleIdsRequest(address))
-            },
+        return gatewayApi.entityNonFungibleIds(EntityNonFungibleIdsRequest(address)).execute(
             map = {
                 it
             }
