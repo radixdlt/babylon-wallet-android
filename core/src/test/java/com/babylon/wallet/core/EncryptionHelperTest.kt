@@ -2,7 +2,7 @@ package com.babylon.wallet.core
 
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.core.decryptData
+import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
@@ -24,7 +24,7 @@ class EncryptionHelperTest {
 
         val encryptionKeyByteArray = encryptionKeyData.array()
 
-        val actualDecryptedMessage = encryptedMessageInHex.decodeHex().decryptData(
+        val actualDecryptedMessage = encryptedMessageInHex.decodeHex().decrypt(
             withEncryptionKey = encryptionKeyByteArray
         )
 

@@ -10,7 +10,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
-import rdx.works.core.decryptData
+import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
@@ -261,7 +261,7 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in answer payload")
         }
 
-        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decryptData(
+        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
         )
         val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
@@ -281,7 +281,7 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
         }
 
-        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decryptData(
+        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
         )
         val iceCandidateString = json.decodeFromString<RpcMessage.IceCandidatePayload>(

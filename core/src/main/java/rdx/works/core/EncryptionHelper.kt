@@ -2,7 +2,9 @@ package rdx.works.core
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties.*
+import android.util.Base64
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.spec.AlgorithmParameterSpec
@@ -25,6 +27,13 @@ private const val PROVIDER = "AndroidKeyStore"
  * and for a deeper knowledge please read this article:
  * https://levelup.gitconnected.com/doing-aes-gcm-in-android-adventures-in-the-field-72617401269d
  */
+
+fun String.encrypt(
+    withKeyAlias: String
+): String = Base64.encodeToString(
+    this.toByteArray().encrypt(withKeyAlias = withKeyAlias),
+    Base64.DEFAULT
+)
 
 fun ByteArray.encrypt(
     withKeyAlias: String
@@ -53,11 +62,18 @@ private fun encryptData(
     return byteBuffer.array()
 }
 
-fun ByteArray.decryptData(
+fun String.decrypt(
+    withKeyAlias: String
+): String {
+    val decryptedBytes = Base64.decode(this, Base64.DEFAULT).decrypt(withKeyAlias)
+    return String(decryptedBytes, StandardCharsets.UTF_8)
+}
+
+fun ByteArray.decrypt(
     withKeyAlias: String
 ): ByteArray = decryptData(input = this, secretKey = getOrCreateSecretKey(withKeyAlias))
 
-fun ByteArray.decryptData(
+fun ByteArray.decrypt(
     withEncryptionKey: ByteArray
 ): ByteArray = decryptData(input = this, secretKey = SecretKeySpec(withEncryptionKey, AES_ALGORITHM))
 
