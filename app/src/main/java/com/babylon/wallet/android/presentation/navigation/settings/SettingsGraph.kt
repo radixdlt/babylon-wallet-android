@@ -10,9 +10,10 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountReques
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.presentation.settings.SettingSectionItem
+import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.settings.addconnection.settingsConnectionScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.connecteddapps.connectedDappsScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
@@ -30,6 +31,11 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsConnectionScreen(onBackClick = {
             navController.popBackStack()
         })
+        appSettingsScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
         connectedDappsScreen(
             onBackClick = {
                 navController.popBackStack()
@@ -62,22 +68,23 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             },
             onSettingClick = { item ->
                 when (item) {
-                    SettingSectionItem.Connection -> {
+                    SettingsItem.TopLevelSettings.Connection -> {
                         navController.settingsConnectionScreen(scanQr = true)
                     }
-                    SettingSectionItem.DeleteAll -> {}
-                    SettingSectionItem.Gateway -> {
+                    SettingsItem.TopLevelSettings.Gateway -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
-                    SettingSectionItem.Personas -> {
+                    SettingsItem.TopLevelSettings.Personas -> {
                         navController.personaScreen()
                     }
-                    SettingSectionItem.InspectProfile -> {}
-                    SettingSectionItem.LinkedConnector -> {
+                    SettingsItem.TopLevelSettings.LinkedConnector -> {
                         navController.settingsConnectionScreen()
                     }
-                    SettingSectionItem.ConnectedDapps -> {
+                    SettingsItem.TopLevelSettings.ConnectedDapps -> {
                         navController.connectedDappsScreen()
+                    }
+                    SettingsItem.TopLevelSettings.AppSettings -> {
+                        navController.appSettingsScreen()
                     }
                     else -> {}
                 }
