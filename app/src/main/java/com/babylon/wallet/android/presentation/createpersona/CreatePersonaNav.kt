@@ -5,7 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.babylon.wallet.android.presentation.settings.PersonasScreen
+import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.google.accompanist.navigation.animation.composable
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
@@ -45,7 +45,8 @@ fun NavGraphBuilder.createPersonaScreen(
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
-    createPersonaScreen: () -> Unit
+    createPersonaScreen: () -> Unit,
+    onPersonaClick: (String) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONAS,
@@ -59,7 +60,8 @@ fun NavGraphBuilder.personasScreen(
         PersonasScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            createNewPersona = createPersonaScreen
+            createNewPersona = createPersonaScreen,
+            onPersonaClick = onPersonaClick
         )
     }
 }

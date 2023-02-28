@@ -10,7 +10,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.addPersonaOnNetwork
+import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -23,7 +23,6 @@ import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreatePersonaUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
@@ -125,9 +124,8 @@ class CreatePersonaUseCaseTest {
                 fields = personaFields
             )
 
-            val updatedProfile = profile.addPersonaOnNetwork(
-                newPersona,
-                networkID = NetworkId.Hammunet
+            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(
+                newPersona
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)

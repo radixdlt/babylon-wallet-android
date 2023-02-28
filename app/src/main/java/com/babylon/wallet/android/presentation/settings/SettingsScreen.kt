@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,7 +40,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackClick: () -> Unit,
-    onSettingClick: (SettingSectionItem) -> Unit,
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -54,8 +52,7 @@ fun SettingsScreen(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
-        onDeveloperModeToggled = viewModel::onDeveloperModeToggled
+            .background(RadixTheme.colors.defaultBackground)
     )
 }
 
@@ -63,10 +60,9 @@ fun SettingsScreen(
 private fun SettingsContent(
     onBackClick: () -> Unit,
     onDeleteWalletClick: () -> Unit,
-    appSettings: ImmutableList<SettingSectionItem>,
-    onSettingClick: (SettingSectionItem) -> Unit,
+    appSettings: ImmutableList<SettingsItem.TopLevelSettings>,
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     modifier: Modifier = Modifier,
-    onDeveloperModeToggled: (Boolean) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -77,82 +73,64 @@ private fun SettingsContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
-        Column(
-            Modifier.fillMaxSize()
-
-        ) {
-            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                appSettings.forEach { settingsItem ->
-                    when (settingsItem) {
-                        SettingSectionItem.Connection -> {
-                            item {
-                                ConnectionSettingItem(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(RadixTheme.dimensions.paddingDefault)
-                                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
-                                        .padding(RadixTheme.dimensions.paddingDefault),
-                                    onSettingClick = onSettingClick,
-                                    settingsItem = settingsItem
-                                )
-                            }
+        LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            appSettings.forEach { settingsItem ->
+                when (settingsItem) {
+                    SettingsItem.TopLevelSettings.Connection -> {
+                        item {
+                            ConnectionSettingItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(RadixTheme.dimensions.paddingDefault)
+                                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
+                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                onSettingClick = onSettingClick,
+                                settingsItem = settingsItem
+                            )
                         }
-                        SettingSectionItem.DeleteAll -> {
-                            settingsItem.descriptionRes().let {
-                                item {
-                                    RadixSecondaryButton(
-                                        modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                        text = stringResource(id = it),
-                                        onClick = onDeleteWalletClick,
-                                        contentColor = RadixTheme.colors.red1
-                                    )
-                                }
-                            }
-                        }
-                        is SettingSectionItem.DeveloperMode -> {
+                    }
+                    SettingsItem.TopLevelSettings.DeleteAll -> {
+                        settingsItem.descriptionRes().let {
                             item {
-                                SwitchSettingsItem(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp)
-                                        .background(RadixTheme.colors.defaultBackground)
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                    settingsItem = settingsItem,
-                                    checked = settingsItem.skip,
-                                    onCheckedChange = onDeveloperModeToggled
+                                RadixSecondaryButton(
+                                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(id = it),
+                                    onClick = onDeleteWalletClick,
+                                    contentColor = RadixTheme.colors.red1
                                 )
-                            }
-                        }
-                        else -> {
-                            item {
-                                DefaultSettingsItem(
-                                    settingsItem = settingsItem,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp)
-                                        .background(RadixTheme.colors.defaultBackground)
-                                        .throttleClickable { onSettingClick(settingsItem) }
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                                )
-                            }
-                            item {
-                                Divider(color = RadixTheme.colors.gray5)
                             }
                         }
                     }
+                    else -> {
+                        item {
+                            DefaultSettingsItem(
+                                settingsItem = settingsItem,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .background(RadixTheme.colors.defaultBackground)
+                                    .throttleClickable { onSettingClick(settingsItem) }
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            )
+                        }
+                        item {
+                            Divider(color = RadixTheme.colors.gray5)
+                        }
+                    }
                 }
-                item {
-                    Text(
-                        text = stringResource(
-                            R.string.version_and_build,
-                            BuildConfig.VERSION_NAME,
-                            BuildConfig.VERSION_CODE
-                        ),
-                        style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.gray2,
-                        textAlign = TextAlign.Center
-                    )
-                }
+            }
+            item {
+                Text(
+                    text = stringResource(
+                        R.string.version_and_build,
+                        BuildConfig.VERSION_NAME,
+                        BuildConfig.VERSION_CODE
+                    ),
+                    style = RadixTheme.typography.body2Link,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
         }
     }
@@ -160,7 +138,7 @@ private fun SettingsContent(
 
 @Composable
 private fun DefaultSettingsItem(
-    settingsItem: SettingSectionItem,
+    settingsItem: SettingsItem.TopLevelSettings,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -186,43 +164,9 @@ private fun DefaultSettingsItem(
 }
 
 @Composable
-private fun SwitchSettingsItem(
-    settingsItem: SettingSectionItem,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        settingsItem.getIcon()?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null)
-        }
-        Text(
-            text = stringResource(id = settingsItem.descriptionRes()),
-            style = RadixTheme.typography.body2Header,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = RadixTheme.colors.gray1,
-                uncheckedThumbColor = RadixTheme.colors.gray2,
-                uncheckedTrackColor = RadixTheme.colors.gray3,
-                checkedTrackColor = RadixTheme.colors.gray1.copy(alpha = 0.6f)
-            )
-        )
-    }
-}
-
-@Composable
 private fun ConnectionSettingItem(
-    onSettingClick: (SettingSectionItem) -> Unit,
-    settingsItem: SettingSectionItem,
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
+    settingsItem: SettingsItem.TopLevelSettings,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -273,14 +217,14 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
             onBackClick = {},
             onDeleteWalletClick = {},
             appSettings = persistentListOf(
-                SettingSectionItem.Connection,
-                SettingSectionItem.LinkedConnector,
-                SettingSectionItem.Gateway,
-                SettingSectionItem.DeveloperMode(false),
-                SettingSectionItem.DeleteAll
+                SettingsItem.TopLevelSettings.Connection,
+                SettingsItem.TopLevelSettings.LinkedConnector,
+                SettingsItem.TopLevelSettings.Gateway,
+                SettingsItem.TopLevelSettings.ConnectedDapps,
+                SettingsItem.TopLevelSettings.Personas,
+                SettingsItem.TopLevelSettings.DeleteAll
             ),
-            onSettingClick = {},
-            onDeveloperModeToggled = {}
+            onSettingClick = {}
         )
     }
 }

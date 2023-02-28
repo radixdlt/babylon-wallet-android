@@ -249,11 +249,11 @@ private fun ConnectionNameInput(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            value = connectionDisplayName,
             onValueChanged = onConnectionDisplayNameChanged,
+            value = connectionDisplayName,
             hint = stringResource(R.string.name_of_connector),
-            singleLine = true,
-            optionalHint = stringResource(id = R.string.hint_name_this_connector)
+            optionalHint = stringResource(id = R.string.hint_name_this_connector),
+            singleLine = true
         )
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
         RadixPrimaryButton(

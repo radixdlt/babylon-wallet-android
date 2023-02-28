@@ -7,7 +7,7 @@ import org.junit.Assert
 import org.junit.Test
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
-import rdx.works.profile.data.extensions.addPersonaOnNetwork
+import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
@@ -81,9 +81,8 @@ class ProfileTest {
             networkId = networkId
         )
 
-        updatedProfile = updatedProfile.addPersonaOnNetwork(
-            firstPersona,
-            networkID = NetworkId.Nebunet
+        updatedProfile = updatedProfile.createOrUpdatePersonaOnNetwork(
+            firstPersona
         )
 
         Assert.assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
@@ -161,9 +160,8 @@ class ProfileTest {
             factorSources = profile.factorSources,
             networkId = networkId
         )
-        profile = profile.addPersonaOnNetwork(
-            persona = firstPersona,
-            networkID = networkId
+        profile = profile.createOrUpdatePersonaOnNetwork(
+            persona = firstPersona
         )
 
         val secondPersona = createNewPersona(
@@ -185,9 +183,8 @@ class ProfileTest {
             factorSources = profile.factorSources,
             networkId = networkId
         )
-        profile = profile.addPersonaOnNetwork(
-            persona = secondPersona,
-            networkID = networkId
+        profile = profile.createOrUpdatePersonaOnNetwork(
+            persona = secondPersona
         )
 
         val p2pClient = P2PClient.init(

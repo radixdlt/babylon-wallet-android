@@ -10,7 +10,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -24,30 +24,24 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val defaultSettings = persistentListOf(
-        SettingSectionItem.LinkedConnector,
-        SettingSectionItem.Gateway,
-        SettingSectionItem.ConnectedDapps,
-        SettingSectionItem.Personas,
-        SettingSectionItem.DeveloperMode(false),
-        SettingSectionItem.DeleteAll
+        SettingsItem.TopLevelSettings.LinkedConnector,
+        SettingsItem.TopLevelSettings.Gateway,
+        SettingsItem.TopLevelSettings.ConnectedDapps,
+        SettingsItem.TopLevelSettings.Personas,
+        SettingsItem.TopLevelSettings.AppSettings,
+        SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state = combine(profileDataSource.p2pClient, preferencesManager.developerMode) { p2pClient, developerMode ->
+    val state = profileDataSource.p2pClient.map { p2pClient ->
         val updatedSettings = if (p2pClient == null) {
             defaultSettings.toMutableList().apply {
-                if (!contains(SettingSectionItem.Connection)) {
-                    add(0, SettingSectionItem.Connection)
+                if (!contains(SettingsItem.TopLevelSettings.Connection)) {
+                    add(0, SettingsItem.TopLevelSettings.Connection)
                 }
             }
         } else {
             defaultSettings.filter { settingSectionItem ->
-                settingSectionItem != SettingSectionItem.Connection
-            }
-        }.toMutableList().apply {
-            val index = indexOfFirst { it is SettingSectionItem.DeveloperMode }
-            if (index != -1) {
-                removeAt(index)
-                add(index, SettingSectionItem.DeveloperMode(developerMode))
+                settingSectionItem != SettingsItem.TopLevelSettings.Connection
             }
         }.toPersistentList()
         SettingsUiState(updatedSettings)
@@ -56,12 +50,6 @@ class SettingsViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
         SettingsUiState(defaultSettings)
     )
-
-    fun onDeveloperModeToggled(enabled: Boolean) {
-        viewModelScope.launch {
-            preferencesManager.setDeveloperMode(enabled)
-        }
-    }
 
     fun onDeleteWalletClick() {
         viewModelScope.launch {
@@ -73,5 +61,5 @@ class SettingsViewModel @Inject constructor(
 }
 
 data class SettingsUiState(
-    val settings: ImmutableList<SettingSectionItem>
+    val settings: ImmutableList<SettingsItem.TopLevelSettings>
 )

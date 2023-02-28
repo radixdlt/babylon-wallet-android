@@ -3,7 +3,7 @@ package rdx.works.profile.domain
 import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.addPersonaOnNetwork
+import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -45,10 +45,7 @@ class CreatePersonaUseCase @Inject constructor(
             )
 
             // Add persona to the profile
-            val updatedProfile = profile.addPersonaOnNetwork(
-                newPersona,
-                networkID = networkID
-            )
+            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(newPersona)
 
             // Save updated profile
             profileDataSource.saveProfile(updatedProfile)

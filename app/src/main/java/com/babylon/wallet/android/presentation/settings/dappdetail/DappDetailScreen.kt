@@ -2,15 +2,14 @@
 
 package com.babylon.wallet.android.presentation.settings.dappdetail
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +24,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
-import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
@@ -53,7 +51,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,14 +64,19 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.model.toDisplayResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.AddressWithCopyIcon
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
+import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
+import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.collections.immutable.ImmutableList
@@ -87,6 +89,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onEditPersona: (OnNetwork.Persona) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -112,7 +115,7 @@ fun DappDetailScreen(
         onDisconnectPersona = viewModel::onDisconnectPersona,
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
         onDeleteDapp = viewModel::onDeleteDapp,
-        onEditPersona = {},
+        onEditPersona = onEditPersona,
         onEditAccountSharing = {},
         loading = state.loading
     )
@@ -137,34 +140,31 @@ private fun DappDetailContent(
     loading: Boolean
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
-    BoxWithConstraints(modifier = modifier) {
-        val addressCopyMessage = stringResource(id = R.string.address_copied)
-        val snackState = remember { SnackbarHostState() }
-        val bottomSheetState =
-            rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-        val scope = rememberCoroutineScope()
-        val sheetHeight = maxHeight * 0.9f
-        LaunchedEffect(bottomSheetState.isVisible) {
-            if (!bottomSheetState.isVisible) {
-                personaDetailsClosed()
-            }
+    val addressCopyMessage = stringResource(id = R.string.address_copied)
+    val snackState = remember { SnackbarHostState() }
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (!bottomSheetState.isVisible) {
+            personaDetailsClosed()
         }
+    }
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+        }
+    }
+    Box(modifier = modifier) {
         AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {
             FullscreenCircularProgressContent()
         }
-        AnimatedVisibility(modifier = Modifier.fillMaxWidth(), visible = !loading, enter = fadeIn(), exit = fadeOut()) {
-            ModalBottomSheetLayout(
+        AnimatedVisibility(modifier = Modifier.fillMaxSize(), visible = !loading, enter = fadeIn(), exit = fadeOut()) {
+            DefaultModalSheetLayout(
+                modifier = Modifier.fillMaxSize(),
                 sheetState = bottomSheetState,
-                sheetBackgroundColor = RadixTheme.colors.defaultBackground,
-                scrimColor = Color.Black.copy(alpha = 0.3f),
-                sheetShape = RadixTheme.shapes.roundedRectTopDefault,
                 sheetContent = {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(sheetHeight)
-                            .clip(shape = RadixTheme.shapes.roundedRectTopMedium)
-                    ) {
+                    Column(Modifier.fillMaxSize()) {
                         selectedPersona?.let { persona ->
                             PersonaDetailsSheet(
                                 persona = persona,
@@ -193,30 +193,31 @@ private fun DappDetailContent(
                             )
                         }
                     }
+                },
+                content = {
+                    DappDetails(
+                        modifier = Modifier.fillMaxSize(),
+                        dappName = dappName,
+                        onBackClick = onBackClick,
+                        dappMetadata = dappMetadata,
+                        personaList = personaList,
+                        onPersonaClick = { persona ->
+                            onPersonaClick(persona)
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        onDeleteDapp = {
+                            showDeleteDappPrompt = true
+                        },
+                        onAddressCopied = {
+                            scope.launch {
+                                snackState.showSnackbar(message = addressCopyMessage)
+                            }
+                        }
+                    )
                 }
-            ) {
-                DappDetails(
-                    modifier = Modifier.fillMaxSize(),
-                    dappName = dappName,
-                    onBackClick = onBackClick,
-                    dappMetadata = dappMetadata,
-                    personaList = personaList,
-                    onPersonaClick = { persona ->
-                        onPersonaClick(persona)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onDeleteDapp = {
-                        showDeleteDappPrompt = true
-                    },
-                    onAddressCopied = {
-                        scope.launch {
-                            snackState.showSnackbar(message = addressCopyMessage)
-                        }
-                    }
-                )
-            }
+            )
         }
         RadixSnackbarHost(hostState = snackState, modifier = Modifier.align(Alignment.BottomCenter))
         if (showDeleteDappPrompt) {
@@ -270,17 +271,11 @@ private fun DappDetails(
             modifier = Modifier.fillMaxSize()
         ) {
             item {
-                AsyncImage(
-                    model = "",
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    fallback = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                PersonaRoundedAvatar(
+                    url = "",
                     modifier = Modifier
                         .padding(vertical = dimensions.paddingDefault)
                         .size(104.dp)
-                        .clip(RadixTheme.shapes.circle)
                 )
                 Divider(
                     modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
@@ -344,12 +339,11 @@ private fun DappDetails(
             }
             items(personaList) { persona ->
                 GrayBackgroundWrapper {
-                    PersonaCard(
+                    StandardOneLineCard(
+                        "",
+                        persona.displayName,
                         modifier = Modifier
-                            .shadow(
-                                elevation = 8.dp,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)
                             .throttleClickable {
                                 onPersonaClick(persona)
@@ -360,7 +354,7 @@ private fun DappDetails(
                                 horizontal = dimensions.paddingLarge,
                                 vertical = dimensions.paddingDefault
                             ),
-                        personaName = persona.displayName
+                        showChevron = false
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
@@ -525,23 +519,16 @@ private fun PersonaDetailList(
                 modifier = Modifier.padding(dimensions.paddingDefault)
             )
         }
-        items(OnNetwork.Persona.Field.Kind.values()) { kind ->
+        items(persona.fields) { field ->
             PersonaPropertyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = kind.toDisplayResource()),
-                value = "-"
+                label = stringResource(id = field.kind.toDisplayResource()),
+                value = field.value
             )
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         }
-//            items(persona.fields) { field ->
-//                PersonaPropertyRow(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    label = stringResource(id = field.kind.toDisplayResource()),
-//                    value = field.value
-//                )
-//            }
         item {
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             RadixSecondaryButton(
@@ -586,18 +573,16 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            if (sharedPersonaAccounts.isNotEmpty()) {
-                item {
-                    GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
-                        RadixSecondaryButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingLarge),
-                            text = stringResource(R.string.edit_account_sharing),
-                            onClick = onEditAccountSharing
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                    }
+            item {
+                GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingLarge),
+                        text = stringResource(R.string.edit_account_sharing),
+                        onClick = onEditAccountSharing
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
             item {
@@ -650,73 +635,6 @@ private fun PersonaSharedAccountCard(
                 clipboardManager.setText(AnnotatedString(account.address))
             },
             address = account.address
-        )
-    }
-}
-
-@Composable
-private fun GrayBackgroundWrapper(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier
-            .background(RadixTheme.colors.gray5)
-            .padding(horizontal = dimensions.paddingDefault),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun PersonaPropertyRow(modifier: Modifier, label: String, value: String) {
-    Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
-        )
-        Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-        Text(
-            text = value,
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
-private fun PersonaCard(personaName: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(dimensions.paddingDefault)
-    ) {
-        AsyncImage(
-            model = "",
-            placeholder = painterResource(id = R.drawable.img_placeholder),
-            fallback = painterResource(id = R.drawable.img_placeholder),
-            error = painterResource(id = R.drawable.img_placeholder),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(RadixTheme.shapes.circle)
-        )
-        Text(
-            modifier = Modifier.weight(1f),
-            text = personaName,
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Icon(
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
-            ),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray1
         )
     }
 }

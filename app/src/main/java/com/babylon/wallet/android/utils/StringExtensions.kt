@@ -58,6 +58,10 @@ fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
 }
 
+fun String.isValidEmail(): Boolean {
+    return Patterns.EMAIL_ADDRESS.matcher(this).matches()
+}
+
 fun String.encodeUtf8(): String {
     return Uri.encode(this).orEmpty()
 }

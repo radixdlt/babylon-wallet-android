@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.connecteddapps
+package com.babylon.wallet.android.presentation.settings.appsettings
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -7,17 +7,16 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 
-fun NavController.connectedDappsScreen() {
-    navigate("settings_connected_dapps")
+fun NavController.appSettingsScreen() {
+    navigate("settings_app_settings")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.connectedDappsScreen(
-    onBackClick: () -> Unit,
-    onDappClick: (String) -> Unit
+fun NavGraphBuilder.appSettingsScreen(
+    onBackClick: () -> Unit
 ) {
     composable(
-        route = "settings_connected_dapps",
+        route = "settings_app_settings",
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
@@ -25,10 +24,9 @@ fun NavGraphBuilder.connectedDappsScreen(
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        ConnectedDappsScreen(
+        AppSettingsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
-            onDappClick = onDappClick
+            onBackClick = onBackClick
         )
     }
 }

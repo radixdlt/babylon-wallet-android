@@ -1,35 +1,34 @@
-package com.babylon.wallet.android.presentation.settings
+package com.babylon.wallet.android.presentation.settings.personas
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Composable
@@ -37,18 +36,20 @@ fun PersonasScreen(
     modifier: Modifier = Modifier,
     viewModel: PersonasViewModel,
     onBackClick: () -> Unit,
-    createNewPersona: () -> Unit
+    createNewPersona: () -> Unit,
+    onPersonaClick: (String) -> Unit
 ) {
     val state = viewModel.state
 
     PersonasContent(
-        personas = state.personas.toImmutableList(),
+        personas = state.personas,
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         onBackClick = onBackClick,
-        createNewPersona = createNewPersona
+        createNewPersona = createNewPersona,
+        onPersonaClick = onPersonaClick
     )
 }
 
@@ -57,65 +58,57 @@ fun PersonasContent(
     personas: ImmutableList<OnNetwork.Persona>,
     modifier: Modifier,
     onBackClick: () -> Unit,
-    createNewPersona: () -> Unit
+    createNewPersona: () -> Unit,
+    onPersonaClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.empty),
+            title = stringResource(id = R.string.personas),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1,
             backIconType = BackIconType.Back
         )
-
-        Divider()
-
-        Text(
-            text = stringResource(id = R.string.all_personas_info),
-            style = RadixTheme.typography.body2Link,
-            color = RadixTheme.colors.gray2,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(PaddingValues(RadixTheme.dimensions.paddingXLarge))
-        )
-
-        Divider()
-
+        Divider(color = RadixTheme.colors.gray5)
         LazyColumn(
             contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
         ) {
+            item {
+                Text(
+                    text = stringResource(id = R.string.all_personas_info),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                InfoLink(stringResource(R.string.what_is_persona), modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
             itemsIndexed(items = personas) { _, personaItem ->
-                Row(
+                StandardOneLineCard(
+                    "",
+                    personaItem.displayName,
                     modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingMedium)
-                        .throttleClickable { /* TODO */ },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-                ) {
-                    Text(
-                        text = personaItem.displayName,
-                        style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        painter = painterResource(
-                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
-                        ),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray1
-                    )
-                }
-                Divider()
+                        .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .throttleClickable {
+                            onPersonaClick(personaItem.address)
+                        }
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingLarge,
+                            vertical = RadixTheme.dimensions.paddingDefault
+                        )
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
 
             item {
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingMedium),
+                RadixSecondaryButton(
                     text = stringResource(id = R.string.create_a_new_persona),
                     onClick = createNewPersona
                 )
