@@ -1,9 +1,9 @@
 [versions]
 androidxCore = "1.9.0"
-androidx-lifecycle-runtime-ktx = "2.6.0-beta01"
-androidx-lifecycle-viewmodel-ktx = "2.6.0-beta01"
-lifecycleViewModelCompose = "2.6.0-beta01"
-lifecycelRuntimeCompose = "2.6.0-beta01"
+androidx-lifecycle-runtime-ktx = "2.6.0-rc01"
+androidx-lifecycle-viewmodel-ktx = "2.6.0-rc01"
+lifecycleViewModelCompose = "2.6.0-rc01"
+lifecycelRuntimeCompose = "2.6.0-rc01"
 compose = "1.4.0-beta01"
 composeFoundation = "1.4.0-beta01"
 composeConstraintLayout = "1.1.0-alpha07"
