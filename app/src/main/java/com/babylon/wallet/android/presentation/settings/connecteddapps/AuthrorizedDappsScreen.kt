@@ -35,14 +35,14 @@ import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Composable
-fun ConnectedDappsScreen(
-    viewModel: ConnectedDappsViewModel,
+fun AuthorizedDappsScreen(
+    viewModel: AuthorizedDappsViewModel,
     onBackClick: () -> Unit,
     onDappClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ConnectedDappsContent(
+    AuthorizedDappsContent(
         onBackClick = onBackClick,
         dapps = state.dapps,
         onDappClick = onDappClick,
@@ -54,7 +54,7 @@ fun ConnectedDappsScreen(
 }
 
 @Composable
-private fun ConnectedDappsContent(
+private fun AuthorizedDappsContent(
     onBackClick: () -> Unit,
     dapps: ImmutableList<OnNetwork.ConnectedDapp>,
     onDappClick: (String) -> Unit,
@@ -108,9 +108,9 @@ private fun ConnectedDappsContent(
 
 @Preview(showBackground = true)
 @Composable
-fun ConnectedDappsContentPreview() {
+fun AuthorizedDappsContentPreview() {
     RadixWalletTheme {
-        ConnectedDappsContent(
+        AuthorizedDappsContent(
             onBackClick = {},
             dapps = persistentListOf(),
             onDappClick = {}

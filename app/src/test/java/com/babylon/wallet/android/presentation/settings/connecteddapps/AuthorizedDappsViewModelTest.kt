@@ -11,12 +11,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class ConnectedDappsViewModelTest : BaseViewModelTest<ConnectedDappsViewModel>() {
+internal class AuthorizedDappsViewModelTest : BaseViewModelTest<AuthorizedDappsViewModel>() {
 
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
-    override fun initVM(): ConnectedDappsViewModel {
-        return ConnectedDappsViewModel(dAppConnectionRepository)
+    override fun initVM(): AuthorizedDappsViewModel {
+        return AuthorizedDappsViewModel(dAppConnectionRepository)
     }
 
     @Test

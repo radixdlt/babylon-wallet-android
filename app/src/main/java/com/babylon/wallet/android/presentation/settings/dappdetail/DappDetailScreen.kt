@@ -230,15 +230,15 @@ private fun DappDetailContent(
                 },
                 title = {
                     Text(
-                        text = stringResource(id = R.string.delete_dapp),
+                        text = stringResource(id = R.string.forget_this_dapp),
                         style = RadixTheme.typography.body2Header,
                         color = RadixTheme.colors.gray1
                     )
                 },
                 text = {
                     Text(
-                        text = stringResource(id = R.string.are_you_sure),
-                        style = RadixTheme.typography.body2Header,
+                        text = stringResource(id = R.string.disconnect_dapp_prompt),
+                        style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray1
                     )
                 }
@@ -462,15 +462,15 @@ private fun PersonaDetailsSheet(
             },
             title = {
                 Text(
-                    text = stringResource(id = R.string.disconnect_persona_from_this_dapp),
+                    text = stringResource(id = R.string.remove_authorization),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.are_you_sure),
-                    style = RadixTheme.typography.body2Header,
+                    text = stringResource(id = R.string.disconnect_persona_prompt),
+                    style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
             }
@@ -602,7 +602,7 @@ private fun PersonaDetailList(
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.disconnect_persona_from_this_dapp),
+                        text = stringResource(R.string.remove_authorization),
                         style = RadixTheme.typography.body1Header,
                         maxLines = 1,
                     )
