@@ -14,6 +14,8 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path.Companion.toOkioPath
 import okio.buffer
+import rdx.works.core.decrypt
+import rdx.works.core.encrypt
 import rdx.works.peerdroid.helpers.toHexString
 import retrofit2.Call
 import timber.log.Timber
@@ -48,7 +50,7 @@ class HttpCacheImpl @Inject constructor(
             editor.newSink(0)
                 .buffer()
                 .use {
-                    it.writeUtf8(serialized)
+                    it.writeUtf8(serialized.encrypt(HTTP_CACHE_KEY_ALIAS))
                 }
             editor.commit()
         }
@@ -69,7 +71,10 @@ class HttpCacheImpl @Inject constructor(
         }
 
         return restored?.let { saved ->
-            jsonSerializer.decodeFromString(deserializationStrategy, saved)
+            jsonSerializer.decodeFromString(
+                deserializationStrategy,
+                saved.decrypt(HTTP_CACHE_KEY_ALIAS)
+            )
         }
     }
 
@@ -92,5 +97,6 @@ class HttpCacheImpl @Inject constructor(
 
     companion object {
         private const val TAG = "HTTP_CACHE"
+        private const val HTTP_CACHE_KEY_ALIAS = "HttpCache"
     }
 }
