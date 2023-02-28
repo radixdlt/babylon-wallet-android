@@ -14,7 +14,6 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.settings.addconnection.settingsConnectionScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
-import com.babylon.wallet.android.presentation.settings.connecteddapps.connectedDappsScreen
 import com.babylon.wallet.android.presentation.settings.connecteddapps.authorizedDappsScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
@@ -82,8 +81,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.settingsConnectionScreen()
                     }
                     SettingsItem.TopLevelSettings.ConnectedDapps -> {
-                        navController.connectedDappsScreen()
-                    SettingSectionItem.ConnectedDapps -> {
                         navController.authorizedDappsScreen()
                     }
                     SettingsItem.TopLevelSettings.AppSettings -> {

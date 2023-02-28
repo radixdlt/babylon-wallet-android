@@ -17,7 +17,7 @@ fun NavGraphBuilder.authorizedDappsScreen(
     onDappClick: (String) -> Unit
 ) {
     composable(
-        route = "settings_connected_dapps",
+        route = "settings_authorized_dapps",
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
