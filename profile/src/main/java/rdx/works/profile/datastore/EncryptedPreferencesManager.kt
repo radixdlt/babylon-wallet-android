@@ -7,13 +7,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import rdx.works.core.decryptData
-import rdx.works.core.encryptData
+import rdx.works.core.encrypt
 import rdx.works.profile.di.ProfileDataStore
 import rdx.works.profile.di.coroutines.IoDispatcher
 import java.io.IOException
@@ -40,7 +36,8 @@ class EncryptedPreferencesManager @Inject constructor(
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null
             }
-            val decryptedBytes = decryptData(Base64.decode(encryptedValue, Base64.DEFAULT))
+            val decryptedBytes = Base64.decode(encryptedValue, Base64.DEFAULT)
+                .decryptData(KEY_ALIAS_DATASTORE)
             String(decryptedBytes, StandardCharsets.UTF_8)
         }
         .flowOn(ioDispatcher)
@@ -59,7 +56,8 @@ class EncryptedPreferencesManager @Inject constructor(
                 if (encryptedValue.isNullOrEmpty()) {
                     return@map null
                 }
-                val decryptedBytes = decryptData(Base64.decode(encryptedValue, Base64.DEFAULT))
+                val decryptedBytes = Base64.decode(encryptedValue, Base64.DEFAULT)
+                    .decryptData(KEY_ALIAS_DATASTORE)
                 String(decryptedBytes, StandardCharsets.UTF_8)
             }.first()
     }
@@ -67,7 +65,10 @@ class EncryptedPreferencesManager @Inject constructor(
     suspend fun putString(key: String, newValue: String?) {
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
-            val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull.toByteArray()), Base64.DEFAULT)
+            val encryptedValue = Base64.encodeToString(
+                newValueNotNull.toByteArray().encrypt(withKeyAlias = KEY_ALIAS_DATASTORE),
+                Base64.DEFAULT
+            )
             preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
@@ -87,14 +88,17 @@ class EncryptedPreferencesManager @Inject constructor(
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null
             }
-            decryptData(Base64.decode(encryptedValue, Base64.DEFAULT))
+            Base64.decode(encryptedValue, Base64.DEFAULT).decryptData(KEY_ALIAS_DATASTORE)
         }
     }
 
     suspend fun putProfileBytes(newValue: ByteArray?) {
         val preferencesKey = stringPreferencesKey(PROFILE_PREFERENCES_KEY)
         newValue?.let { newValueNotNull ->
-            val encryptedValue = Base64.encodeToString(encryptData(newValueNotNull), Base64.DEFAULT)
+            val encryptedValue = Base64.encodeToString(
+                newValueNotNull.encrypt(KEY_ALIAS_DATASTORE),
+                Base64.DEFAULT
+            )
             preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
@@ -106,5 +110,6 @@ class EncryptedPreferencesManager @Inject constructor(
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
+        private const val KEY_ALIAS_DATASTORE = "EncryptedDataStoreAlias"
     }
 }

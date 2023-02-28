@@ -1,34 +1,17 @@
 package rdx.works.peerdroid.data.websocket
 
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.websocket.webSocketSession
-import io.ktor.client.request.url
-import io.ktor.websocket.Frame
-import io.ktor.websocket.WebSocketSession
-import io.ktor.websocket.close
-import io.ktor.websocket.readText
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.isActive
+import io.ktor.client.*
+import io.ktor.client.plugins.websocket.*
+import io.ktor.client.request.*
+import io.ktor.websocket.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.decryptData
-import rdx.works.core.encryptData
+import rdx.works.core.encrypt
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -137,9 +120,8 @@ internal class WebSocketClientImpl(
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
         val offerJson = json.encodeToString(offerPayload)
-        val encryptedOffer = encryptData(
-            input = offerJson.toByteArray(),
-            encryptionKey = encryptionKey
+        val encryptedOffer = offerJson.toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
         )
 
         val rpcMessage = RpcMessage(
@@ -156,9 +138,8 @@ internal class WebSocketClientImpl(
 
     override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
         val iceCandidatePayload = iceCandidateData.toJsonPayload()
-        val encryptedIceCandidate = encryptData(
-            input = iceCandidatePayload.toString().toByteArray(),
-            encryptionKey = encryptionKey
+        val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
         )
         val rpcMessage = RpcMessage(
             method = RpcMessage.RpcMethod.ICE_CANDIDATE.value,
@@ -280,9 +261,8 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in answer payload")
         }
 
-        val message = decryptData(
-            input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
+        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decryptData(
+            withEncryptionKey = encryptionKey
         )
         val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
@@ -301,9 +281,8 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
         }
 
-        val message = decryptData(
-            input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
+        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decryptData(
+            withEncryptionKey = encryptionKey
         )
         val iceCandidateString = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)
