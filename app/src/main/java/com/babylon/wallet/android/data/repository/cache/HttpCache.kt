@@ -1,11 +1,7 @@
 package com.babylon.wallet.android.data.repository.cache
 
+import com.babylon.wallet.android.data.repository.time.CurrentTime
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Date
-import javax.inject.Inject
 import kotlinx.serialization.KSerializer
 import okhttp3.RequestBody
 import okio.Buffer
@@ -13,6 +9,10 @@ import okio.IOException
 import rdx.works.peerdroid.helpers.toHexString
 import retrofit2.Call
 import timber.log.Timber
+import java.time.Duration
+import java.time.ZoneId
+import java.util.Date
+import javax.inject.Inject
 
 data class CacheParameters(
     val httpCache: HttpCache,
@@ -28,7 +28,8 @@ interface HttpCache {
 }
 
 class HttpCacheImpl @Inject constructor(
-    private val cacheClient: CacheClient
+    private val cacheClient: CacheClient,
+    private val currentTime: CurrentTime
 ) : HttpCache {
 
     private val logger = Timber.tag(TAG)
@@ -39,7 +40,7 @@ class HttpCacheImpl @Inject constructor(
         serializer: KSerializer<T>
     ) {
         val key = call.cacheKey()
-        val now = Date().time
+        val now = currentTime.now().toEpochMilli()
 
         val cachedValue = CachedValue(
             cached = response,
@@ -63,7 +64,7 @@ class HttpCacheImpl @Inject constructor(
         }
 
         return if (timeoutDuration != null) {
-            val threshold = LocalDateTime.now().minus(timeoutDuration)
+            val threshold = currentTime.now().minus(timeoutDuration)
             val minAllowedTime = Date.from(threshold.atZone(ZoneId.systemDefault()).toInstant()).time
 
             if (cachedValue.timestamp < minAllowedTime) {

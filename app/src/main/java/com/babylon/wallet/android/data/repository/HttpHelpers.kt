@@ -5,9 +5,6 @@ import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.babylon.wallet.android.data.gateway.generated.model.ErrorResponse
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.domain.common.Result
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Date
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.di
 
-import android.content.Context
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.DappMessengerImpl
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -21,9 +20,7 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepositoryImpl
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 

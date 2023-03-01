@@ -50,5 +50,4 @@ class CachedValueSerializer<T>(
 
         CachedValue(value, timestamp)
     }
-
 }

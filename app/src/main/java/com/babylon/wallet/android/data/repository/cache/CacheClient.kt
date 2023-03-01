@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.data.repository.cache
 
 import android.content.Context
-import java.io.File
-import javax.inject.Inject
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import okhttp3.internal.cache.DiskLruCache
@@ -13,13 +11,14 @@ import okio.buffer
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
 
 interface CacheClient {
 
     fun <T> write(key: String, value: CachedValue<T>, serializer: KSerializer<T>)
 
     fun <T> read(key: String, serializer: KSerializer<T>): CachedValue<T>?
-
 }
 
 class EncryptedDiskCacheClient @Inject constructor(
@@ -58,6 +57,7 @@ class EncryptedDiskCacheClient @Inject constructor(
         }
     }
 
+    @Suppress("SwallowedException")
     override fun <T> read(key: String, serializer: KSerializer<T>): CachedValue<T>? {
         val restored = diskCache[key]?.let { snapshot ->
             snapshot.use {
@@ -90,5 +90,4 @@ class EncryptedDiskCacheClient @Inject constructor(
         private const val HTTP_CACHE_FOLDER = "http_cache"
         private const val CACHE_VERSION = 1
     }
-
 }
