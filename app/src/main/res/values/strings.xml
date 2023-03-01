@@ -196,6 +196,10 @@
     <string name="remove_connection">Remove Connection</string>
     <string name="you_will_no_longer">You will no longer be able to connect your wallet to this device and browser combination</string>
     <string name="remove">Remove</string>
+    <string name="wallet_data_incompatible">Wallet Data is Incompatible</string>
+    <string name="for_this_preview_wallet_version">For this Preview wallet version, you must delete your wallet data to continue.</string>
+    <string name="delete">Delete</string>
+    <string name="delete_wallet_data">Delete Wallet Data</string>
     <string name="the_following_information_can_be_seen">The following information can be seen if requested by the dApp</string>
     <string name="here_is_the_personal_data">Here is the personal data that you are sharing with %s</string>
     <plurals name="one_time_at_least_request">

@@ -49,10 +49,13 @@ interface ProfileDataSource {
         newUrl: String,
         networkName: String
     )
+
+    val profileCompatibility: Flow<Boolean>
 }
 
 class ProfileDataSourceImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val relaxedJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ProfileDataSource {
 
@@ -76,6 +79,14 @@ class ProfileDataSourceImpl @Inject constructor(
     override suspend fun readProfile(): Profile? {
         return profile.firstOrNull()
     }
+
+    override val profileCompatibility: Flow<Boolean> =
+        encryptedPreferencesManager.encryptedProfile.map { profileContent ->
+            profileContent?.let {
+                val profileVersion = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(it)
+                profileVersion.version >= Profile.LATEST_PROFILE_VERSION
+            } ?: true
+        }
 
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {

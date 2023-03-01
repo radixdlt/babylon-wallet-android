@@ -35,7 +35,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
-    profileDataSource: ProfileDataSource,
+    private val profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
@@ -44,12 +44,17 @@ class MainViewModel @Inject constructor(
 
     val state = combine(
         preferencesManager.showOnboarding,
-        profileDataSource.profile
-    ) { showOnboarding, profileSnapshot ->
+        profileDataSource.profile,
+        profileDataSource.profileCompatibility
+    ) { showOnboarding, profileSnapshot, profileCompatible ->
         MainUiState(
             loading = false,
-            hasProfile = profileSnapshot != null,
-            showOnboarding = showOnboarding
+            initialAppState = when {
+                !profileCompatible -> InitialAppState.IncompatibleProfile
+                showOnboarding -> InitialAppState.Onboarding
+                profileSnapshot != null -> InitialAppState.Dashboard
+                else -> InitialAppState.CreateAccount
+            }
         )
     }.onStart {
         // this will also ensure that it won't execute when the viewmodel is initialized the first time
@@ -165,6 +170,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun deleteProfile() {
+        viewModelScope.launch {
+            profileDataSource.clear()
+        }
+    }
+
     companion object {
         private const val REQUEST_HANDLING_DELAY = 500L
     }
@@ -177,6 +188,12 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val loading: Boolean = true,
-    val hasProfile: Boolean = false,
-    val showOnboarding: Boolean = false,
+    val initialAppState: InitialAppState = InitialAppState.Dashboard
 )
+
+sealed interface InitialAppState {
+    object Onboarding : InitialAppState
+    object Dashboard : InitialAppState
+    object CreateAccount : InitialAppState
+    object IncompatibleProfile : InitialAppState
+}

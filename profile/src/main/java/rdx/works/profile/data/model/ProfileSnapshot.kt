@@ -43,7 +43,9 @@ internal data class ProfileSnapshot(
         )
     }
 
-    companion object {
-        const val MIN_VERSION = 17
-    }
+    @Serializable
+    internal data class ProfileVersionHolder(
+        @SerialName("version")
+        val version: Int
+    )
 }
