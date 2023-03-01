@@ -120,7 +120,7 @@ class PersonaEditViewModel @Inject constructor(
                 it.selected
             }.map { PersonaFieldKindWrapper(it.kind) }
             s.copy(
-                currentFields = existingFields.toPersistentList(),
+                currentFields = existingFields.sortedBy { it.kind.ordinal }.toPersistentList(),
                 fieldsToAdd = getFieldsToAdd(existingFields.map { it.kind }.toSet()),
                 addButtonEnabled = false
             )
@@ -153,7 +153,7 @@ class PersonaEditViewModel @Inject constructor(
         return (
             OnNetwork.Persona.Field.Kind.values()
                 .toSet() - existingFields
-            ).map { PersonaFieldKindWrapper(kind = it) }.toPersistentList()
+            ).sortedBy { it.ordinal }.map { PersonaFieldKindWrapper(kind = it) }.toPersistentList()
     }
 }
 
