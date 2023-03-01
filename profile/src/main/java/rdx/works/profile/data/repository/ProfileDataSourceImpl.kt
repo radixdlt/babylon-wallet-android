@@ -62,7 +62,7 @@ class ProfileDataSourceImpl @Inject constructor(
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
         .map { profileContent ->
             profileContent?.let { profile ->
-                Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
+                relaxedJson.decodeFromString<ProfileSnapshot>(profile).toProfile()
             }
         }
 
