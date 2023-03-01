@@ -3,8 +3,10 @@ package com.babylon.wallet.android.data.repository.cache
 import android.content.Context
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerializationStrategy
+import java.io.File
+import java.util.Date
+import javax.inject.Inject
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
 import okhttp3.internal.cache.DiskLruCache
@@ -14,18 +16,15 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path.Companion.toOkioPath
 import okio.buffer
-import rdx.works.core.decrypt
-import rdx.works.core.encrypt
 import rdx.works.peerdroid.helpers.toHexString
 import retrofit2.Call
 import timber.log.Timber
-import javax.inject.Inject
 
 interface HttpCache {
 
-    fun <T> store(call: Call<T>, response: T, serializationStrategy: SerializationStrategy<T>)
+    fun <T> store(call: Call<T>, response: T, serializationStrategy: KSerializer<T>)
 
-    fun <T> restore(call: Call<T>, deserializationStrategy: DeserializationStrategy<T>): T?
+    fun <T> restore(call: Call<T>, deserializationStrategy: KSerializer<T>): T?
 }
 
 class HttpCacheImpl @Inject constructor(
@@ -35,7 +34,9 @@ class HttpCacheImpl @Inject constructor(
 
     private val diskCache: DiskLruCache = DiskLruCache(
         fileSystem = FileSystem.SYSTEM,
-        directory = applicationContext.cacheDir.toOkioPath(),
+        directory = File(applicationContext.cacheDir, HTTP_CACHE_FOLDER)
+            .apply { mkdir() }
+            .toOkioPath(),
         appVersion = CACHE_VERSION,
         valueCount = MAX_VALUES_PER_KEY,
         maxSize = DEFAULT_CACHE_MAX_SIZE,
@@ -45,15 +46,22 @@ class HttpCacheImpl @Inject constructor(
     override fun <T> store(
         call: Call<T>,
         response: T,
-        serializationStrategy: SerializationStrategy<T>
+        serializationStrategy: KSerializer<T>
     ) {
         val key = call.cacheKey()
-        val serialized = jsonSerializer.encodeToString(serializationStrategy, response)
+        val cachedValue = CachedValue(
+            cached = response,
+            timestamp = Date().time
+        )
+        val serialized = jsonSerializer.encodeToString(
+            CachedValueSerializer(serializationStrategy),
+            cachedValue
+        )
         diskCache.edit(key)?.let { editor ->
             editor.newSink(0)
                 .buffer()
                 .use {
-                    it.writeUtf8(serialized.encrypt(HTTP_CACHE_KEY_ALIAS))
+                    it.writeUtf8(serialized/*.encrypt(HTTP_CACHE_KEY_ALIAS)*/)
                 }
             editor.commit()
         }
@@ -61,7 +69,7 @@ class HttpCacheImpl @Inject constructor(
 
     override fun <T> restore(
         call: Call<T>,
-        deserializationStrategy: DeserializationStrategy<T>
+        deserializationStrategy: KSerializer<T>
     ): T? {
         val key = call.cacheKey()
 
@@ -69,19 +77,27 @@ class HttpCacheImpl @Inject constructor(
             snapshot.use {
                 it.getSource(0).buffer().readUtf8()
             }
-        }?.decrypt(HTTP_CACHE_KEY_ALIAS)
+        }/*?.decrypt(HTTP_CACHE_KEY_ALIAS)*/
 
         with(Timber.tag(TAG)) {
             i("--> [CACHE] ${call.request().method} - ${call.request().url}]")
             i("<-- $restored")
         }
 
-        return restored?.let { saved ->
-            jsonSerializer.decodeFromString(
-                deserializationStrategy,
-                saved
-            )
+        val cachedValue =  restored?.let { saved ->
+            try {
+                jsonSerializer.decodeFromString(
+                    CachedValueSerializer(deserializationStrategy),
+                    saved
+                )
+            } catch (exception: IllegalArgumentException) {
+                Timber.tag(TAG)
+                    .w("The value extracted belongs to a previous schema, cache value is considered stale")
+                null
+            }
         }
+
+        return cachedValue?.cached
     }
 
     private fun Call<*>.cacheKey(): String {
@@ -104,6 +120,7 @@ class HttpCacheImpl @Inject constructor(
 
     companion object {
         private const val TAG = "HTTP_CACHE"
+        private const val HTTP_CACHE_FOLDER = "http_cache"
         private const val HTTP_CACHE_KEY_ALIAS = "HttpCache"
 
         private const val CACHE_VERSION = 1
