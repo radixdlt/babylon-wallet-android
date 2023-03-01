@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.connecteddapps
+package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.connecteddapps
+package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,15 +20,15 @@ class AuthorizedDappsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val state =
-        dAppConnectionRepository.getConnectedDapps().map {
-            ConnectedDappsUiState(it.toPersistentList())
+        dAppConnectionRepository.getAuthorizedDapps().map {
+            AuthorizedDappsUiState(it.toPersistentList())
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
-            ConnectedDappsUiState()
+            AuthorizedDappsUiState()
         )
 }
 
-data class ConnectedDappsUiState(
-    val dapps: ImmutableList<OnNetwork.ConnectedDapp> = persistentListOf()
+data class AuthorizedDappsUiState(
+    val dapps: ImmutableList<OnNetwork.AuthorizedDapp> = persistentListOf()
 )

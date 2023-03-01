@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.ConnectedDapp.AuthorizedPersonaSimple
+import rdx.works.profile.data.model.pernetwork.OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
 import java.time.format.DateTimeFormatter
@@ -43,14 +43,14 @@ class SelectPersonaViewModel @Inject constructor(
     private val _state = MutableStateFlow(SelectPersonaUiState())
     val state = _state.asStateFlow()
 
-    private var connectedDapp: OnNetwork.ConnectedDapp? = null
+    private var authorizedDapp: OnNetwork.AuthorizedDapp? = null
 
     init {
         viewModelScope.launch {
-            connectedDapp = dAppConnectionRepository.getConnectedDapp(
+            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                 authorizedRequest.requestMetadata.dAppDefinitionAddress
             )
-            val allAuthorizedPersonas = connectedDapp?.referencesToAuthorizedPersonas
+            val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
             _state.update { state ->
                 val personas = generatePersonasListForDisplay(
                     allAuthorizedPersonas,
@@ -58,7 +58,7 @@ class SelectPersonaViewModel @Inject constructor(
                 ).toPersistentList()
                 val selected = personas.any { it.selected }
                 state.copy(
-                    firstTimeLogin = connectedDapp == null,
+                    firstTimeLogin = authorizedDapp == null,
                     personaListToDisplay = personas,
                     continueButtonEnabled = selected,
                     isLoading = false
@@ -71,10 +71,10 @@ class SelectPersonaViewModel @Inject constructor(
     private fun observePersonas() {
         viewModelScope.launch {
             personaRepository.personas.collect { personas ->
-                connectedDapp = dAppConnectionRepository.getConnectedDapp(
+                authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     authorizedRequest.requestMetadata.dAppDefinitionAddress
                 )
-                val allAuthorizedPersonas = connectedDapp?.referencesToAuthorizedPersonas
+                val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
                 _state.update { state ->
                     val personasListForDisplay = generatePersonasListForDisplay(
                         allAuthorizedPersonas,

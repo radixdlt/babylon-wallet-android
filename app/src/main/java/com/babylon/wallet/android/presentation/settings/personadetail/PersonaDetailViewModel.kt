@@ -30,11 +30,11 @@ class PersonaDetailViewModel @Inject constructor(
 
     val state = combine(
         personaRepository.getPersonaByAddressFlow(args.personaAddress),
-        dAppConnectionRepository.getConnectedDappsByPersona(args.personaAddress)
+        dAppConnectionRepository.getAuthorizedDappsByPersona(args.personaAddress)
     ) { persona, dapps ->
         PersonaDetailUiState(
             persona = persona,
-            connectedDapps = dapps.toPersistentList(),
+            authorizedDapps = dapps.toPersistentList(),
             loading = false
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS), PersonaDetailUiState())
@@ -42,6 +42,6 @@ class PersonaDetailViewModel @Inject constructor(
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
-    val connectedDapps: ImmutableList<OnNetwork.ConnectedDapp> = persistentListOf(),
+    val authorizedDapps: ImmutableList<OnNetwork.AuthorizedDapp> = persistentListOf(),
     val persona: OnNetwork.Persona? = null
 )

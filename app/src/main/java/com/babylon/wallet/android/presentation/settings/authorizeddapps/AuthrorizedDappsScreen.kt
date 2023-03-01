@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.connecteddapps
+package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -56,7 +56,7 @@ fun AuthorizedDappsScreen(
 @Composable
 private fun AuthorizedDappsContent(
     onBackClick: () -> Unit,
-    dapps: ImmutableList<OnNetwork.ConnectedDapp>,
+    dapps: ImmutableList<OnNetwork.AuthorizedDapp>,
     onDappClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {

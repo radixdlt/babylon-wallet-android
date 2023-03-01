@@ -42,4 +42,8 @@ internal data class ProfileSnapshot(
             version = version
         )
     }
+
+    companion object {
+        const val MIN_VERSION = 17
+    }
 }

@@ -64,7 +64,7 @@ fun PersonaDetailScreen(
             .background(RadixTheme.colors.defaultBackground),
         persona = state.persona,
         onEditPersona = onEditPersona,
-        connectedDapps = state.connectedDapps,
+        authorizedDapps = state.authorizedDapps,
         onDappClick = onDappClick
     )
 }
@@ -75,7 +75,7 @@ private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
     persona: OnNetwork.Persona?,
     onEditPersona: (String) -> Unit,
-    connectedDapps: ImmutableList<OnNetwork.ConnectedDapp>,
+    authorizedDapps: ImmutableList<OnNetwork.AuthorizedDapp>,
     onDappClick: (String) -> Unit
 ) {
     Box(modifier = modifier) {
@@ -121,7 +121,7 @@ private fun PersonaDetailContent(
                             .fillMaxWidth()
                             .weight(1f),
                         persona = persona,
-                        connectedDapps = connectedDapps,
+                        authorizedDapps = authorizedDapps,
                         onDappClick = onDappClick
                     )
                 }
@@ -134,7 +134,7 @@ private fun PersonaDetailContent(
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: OnNetwork.Persona,
-    connectedDapps: ImmutableList<OnNetwork.ConnectedDapp>,
+    authorizedDapps: ImmutableList<OnNetwork.AuthorizedDapp>,
     onDappClick: (String) -> Unit
 ) {
     LazyColumn(
@@ -184,7 +184,7 @@ private fun PersonaDetailList(
                 Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             }
         }
-        items(connectedDapps) { dapp ->
+        items(authorizedDapps) { dapp ->
             GrayBackgroundWrapper {
                 StandardOneLineCard(
                     "",
@@ -217,7 +217,7 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             persona = null,
             onEditPersona = {},
-            connectedDapps = persistentListOf()
+            authorizedDapps = persistentListOf()
         ) {}
     }
 }

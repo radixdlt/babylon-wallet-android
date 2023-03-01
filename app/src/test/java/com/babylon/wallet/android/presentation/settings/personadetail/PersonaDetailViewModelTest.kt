@@ -50,7 +50,7 @@ internal class PersonaDetailViewModelTest : BaseViewModelTest<PersonaDetailViewM
         vm.state.test {
             val item = expectMostRecentItem()
             assert(item.persona?.address == "1")
-            assert(item.connectedDapps.size == 2)
+            assert(item.authorizedDapps.size == 2)
         }
         collectJob.cancel()
     }

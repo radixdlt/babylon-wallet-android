@@ -35,11 +35,11 @@ class DappDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
-    private lateinit var connectedDapp: OnNetwork.ConnectedDapp
+    private lateinit var authorizedDapp: OnNetwork.AuthorizedDapp
     private val args = DappDetailScreenArgs(savedStateHandle)
 
-    private val _state: MutableStateFlow<ConnectedDappsUiState> =
-        MutableStateFlow(ConnectedDappsUiState())
+    private val _state: MutableStateFlow<DappDetailUiState> =
+        MutableStateFlow(DappDetailUiState())
     val state = _state.asStateFlow()
 
     init {
@@ -61,14 +61,14 @@ class DappDetailViewModel @Inject constructor(
 
     private fun observeDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.getConnectedDappFlow(args.dappDefinitionAddress).collect {
+            dAppConnectionRepository.getAuthorizedDappFlow(args.dappDefinitionAddress).collect {
                 if (it == null) {
                     sendEvent(DappDetailEvent.LastPersonaDeleted)
                     return@collect
                 } else {
-                    connectedDapp = checkNotNull(dAppConnectionRepository.getConnectedDapp(args.dappDefinitionAddress))
+                    authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress))
                 }
-                val personas = connectedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
+                val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
                     personaRepository.getPersonaByAddress(personaSimple.identityAddress)
                 }
                 _state.update { state ->
@@ -76,7 +76,7 @@ class DappDetailViewModel @Inject constructor(
                         it.address == state.selectedPersona?.address
                     } ?: state.selectedPersona
                     state.copy(
-                        dapp = connectedDapp,
+                        dapp = authorizedDapp,
                         personas = personas.toPersistentList(),
                         selectedPersona = selectedPersona
                     )
@@ -88,7 +88,7 @@ class DappDetailViewModel @Inject constructor(
     fun onPersonaClick(persona: OnNetwork.Persona) {
         viewModelScope.launch {
             val personaSimple =
-                connectedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
+                authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
             val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
                 accountRepository.getAccountByAddress(it)?.toUiModel()
             }.orEmpty()
@@ -112,7 +112,7 @@ class DappDetailViewModel @Inject constructor(
 
     fun onDeleteDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.deleteDapp(args.dappDefinitionAddress)
+            dAppConnectionRepository.deleteAuthorizedDapp(args.dappDefinitionAddress)
             sendEvent(DappDetailEvent.DappDeleted)
         }
     }
@@ -123,9 +123,9 @@ sealed interface DappDetailEvent : OneOffEvent {
     object DappDeleted : DappDetailEvent
 }
 
-data class ConnectedDappsUiState(
+data class DappDetailUiState(
     val loading: Boolean = true,
-    val dapp: OnNetwork.ConnectedDapp? = null,
+    val dapp: OnNetwork.AuthorizedDapp? = null,
     val dappMetadata: DappMetadata? = null,
     val personas: ImmutableList<OnNetwork.Persona> = persistentListOf(),
     val selectedPersona: OnNetwork.Persona? = null,

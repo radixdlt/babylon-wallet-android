@@ -26,7 +26,7 @@ class SettingsViewModel @Inject constructor(
     private val defaultSettings = persistentListOf(
         SettingsItem.TopLevelSettings.LinkedConnector,
         SettingsItem.TopLevelSettings.Gateway,
-        SettingsItem.TopLevelSettings.ConnectedDapps,
+        SettingsItem.TopLevelSettings.AuthorizedDapps,
         SettingsItem.TopLevelSettings.Personas,
         SettingsItem.TopLevelSettings.AppSettings,
         SettingsItem.TopLevelSettings.DeleteAll

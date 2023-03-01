@@ -76,7 +76,7 @@ data class Profile(
 
             val mainNetwork = OnNetwork(
                 accounts = listOf(initialAccount),
-                connectedDapps = listOf(),
+                authorizedDapps = listOf(),
                 networkID = network.id,
                 personas = listOf()
             )
