@@ -12,11 +12,14 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungible
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
+import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
 import com.babylon.wallet.android.domain.model.toAccountResourceSlim
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 // TODO translate from network models to domain models
@@ -59,7 +62,10 @@ class EntityRepositoryImpl @Inject constructor(
 
     override suspend fun getAccountResources(address: String): Result<AccountResourcesSlim> {
         return gatewayApi.entityResources(EntityResourcesRequest(address)).execute(
-            httpCache = httpCache,
+            cacheParameters = CacheParameters(
+                httpCache = httpCache,
+                timeoutDuration = Duration.of(5, ChronoUnit.MINUTES)
+            ),
             map = { response -> response.toAccountResourceSlim() }
         )
     }

@@ -3,8 +3,11 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.gateway.RadixGatewayException
 import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
 import com.babylon.wallet.android.data.gateway.generated.model.ErrorResponse
-import com.babylon.wallet.android.data.repository.cache.HttpCache
+import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.domain.common.Result
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Date
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer
@@ -12,22 +15,27 @@ import retrofit2.Call
 import retrofit2.awaitResponse
 
 suspend inline fun <reified T, A> Call<T>.execute(
-    httpCache: HttpCache? = null,
+    cacheParameters: CacheParameters? = null,
     map: (T) -> A,
     error: () -> Exception? = { null }
 ): Result<A> {
     return try {
-        val restored = httpCache?.restore(
-            call = this,
-            deserializationStrategy = serializersModule.serializer()
-        )
+        val restored = if (cacheParameters != null && !cacheParameters.override) {
+            cacheParameters.httpCache.restore(
+                call = this,
+                deserializationStrategy = serializersModule.serializer(),
+                timeoutDuration = cacheParameters.timeoutDuration
+            )
+        } else {
+            null
+        }
 
         if (restored != null) return Result.Success(map(restored))
 
         val response = awaitResponse()
         val responseBody = response.body()
         if (response.isSuccessful && responseBody != null) {
-            httpCache?.store(
+            cacheParameters?.httpCache?.store(
                 call = this,
                 response = responseBody,
                 serializationStrategy = serializersModule.serializer()

@@ -1,47 +1,39 @@
 package com.babylon.wallet.android.data.repository.cache
 
-import android.content.Context
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
-import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
-import okhttp3.internal.cache.DiskLruCache
-import okhttp3.internal.concurrent.TaskRunner
 import okio.Buffer
-import okio.FileSystem
 import okio.IOException
-import okio.Path.Companion.toOkioPath
-import okio.buffer
 import rdx.works.peerdroid.helpers.toHexString
 import retrofit2.Call
 import timber.log.Timber
+
+data class CacheParameters(
+    val httpCache: HttpCache,
+    val override: Boolean = false,
+    val timeoutDuration: Duration? = null
+)
 
 interface HttpCache {
 
     fun <T> store(call: Call<T>, response: T, serializationStrategy: KSerializer<T>)
 
-    fun <T> restore(call: Call<T>, deserializationStrategy: KSerializer<T>): T?
+    fun <T> restore(call: Call<T>, deserializationStrategy: KSerializer<T>, timeoutDuration: Duration?): T?
 }
 
 class HttpCacheImpl @Inject constructor(
-    @ApplicationContext applicationContext: Context,
-    private val jsonSerializer: Json
+    private val jsonSerializer: Json,
+    private val cacheClient: CacheClient
 ) : HttpCache {
 
-    private val diskCache: DiskLruCache = DiskLruCache(
-        fileSystem = FileSystem.SYSTEM,
-        directory = File(applicationContext.cacheDir, HTTP_CACHE_FOLDER)
-            .apply { mkdir() }
-            .toOkioPath(),
-        appVersion = CACHE_VERSION,
-        valueCount = MAX_VALUES_PER_KEY,
-        maxSize = DEFAULT_CACHE_MAX_SIZE,
-        taskRunner = TaskRunner.INSTANCE
-    )
+    private val logger = Timber.tag(TAG)
 
     override fun <T> store(
         call: Call<T>,
@@ -57,47 +49,47 @@ class HttpCacheImpl @Inject constructor(
             CachedValueSerializer(serializationStrategy),
             cachedValue
         )
-        diskCache.edit(key)?.let { editor ->
-            editor.newSink(0)
-                .buffer()
-                .use {
-                    it.writeUtf8(serialized/*.encrypt(HTTP_CACHE_KEY_ALIAS)*/)
-                }
-            editor.commit()
-        }
+
+        cacheClient.write(key, serialized)
     }
 
     override fun <T> restore(
         call: Call<T>,
-        deserializationStrategy: KSerializer<T>
+        deserializationStrategy: KSerializer<T>,
+        timeoutDuration: Duration?
     ): T? {
         val key = call.cacheKey()
+        val restored = cacheClient.read(key)
 
-        val restored = diskCache[key]?.let { snapshot ->
-            snapshot.use {
-                it.getSource(0).buffer().readUtf8()
-            }
-        }/*?.decrypt(HTTP_CACHE_KEY_ALIAS)*/
-
-        with(Timber.tag(TAG)) {
-            i("--> [CACHE] ${call.request().method} - ${call.request().url}]")
-            i("<-- $restored")
-        }
-
-        val cachedValue =  restored?.let { saved ->
+        val cachedValue = restored?.let { saved ->
             try {
                 jsonSerializer.decodeFromString(
                     CachedValueSerializer(deserializationStrategy),
                     saved
                 )
             } catch (exception: IllegalArgumentException) {
-                Timber.tag(TAG)
+                logger
                     .w("The value extracted belongs to a previous schema, cache value is considered stale")
                 null
             }
-        }
+        } ?: return null
 
-        return cachedValue?.cached
+        logger.d("--> [CACHE] ${call.request().method} - ${call.request().url}]")
+        return if (timeoutDuration != null) {
+            val threshold = LocalDateTime.now().minus(timeoutDuration)
+            val minAllowedTime = Date.from(threshold.atZone(ZoneId.systemDefault()).toInstant()).time
+
+            if (cachedValue.timestamp < minAllowedTime) {
+                logger.d("<-- [CACHE] stale content")
+                null
+            } else {
+                logger.d("<-- [CACHE] $restored")
+                cachedValue.cached
+            }
+        } else {
+            logger.d("<-- [CACHE] $restored")
+            cachedValue.cached
+        }
     }
 
     private fun Call<*>.cacheKey(): String {
@@ -120,11 +112,5 @@ class HttpCacheImpl @Inject constructor(
 
     companion object {
         private const val TAG = "HTTP_CACHE"
-        private const val HTTP_CACHE_FOLDER = "http_cache"
-        private const val HTTP_CACHE_KEY_ALIAS = "HttpCache"
-
-        private const val CACHE_VERSION = 1
-        private const val MAX_VALUES_PER_KEY = 1
-        const val DEFAULT_CACHE_MAX_SIZE = 5L * 1024 * 1024
     }
 }
