@@ -207,7 +207,8 @@ private fun PersonaEditContent(
                         onDeleteField = onDeleteField,
                         onValueChanged = onValueChanged,
                         onDisplayNameChanged = onDisplayNameChanged,
-                        personaDisplayName = personaDisplayName
+                        personaDisplayName = personaDisplayName,
+                        addButtonEnabled = fieldsToAdd.isNotEmpty()
                     )
                 }
             }
@@ -271,7 +272,7 @@ private fun AddFieldSheet(
                 .padding(dimensions.paddingDefault),
             enabled = addButtonEnabled,
             text = stringResource(id = R.string.add),
-            onClick = onAddFields
+            onClick = onAddFields,
         )
     }
 }
@@ -317,7 +318,8 @@ private fun PersonaDetailList(
     onDeleteField: (OnNetwork.Persona.Field.Kind) -> Unit,
     onValueChanged: (OnNetwork.Persona.Field.Kind, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
-    personaDisplayName: String?
+    personaDisplayName: String?,
+    addButtonEnabled: Boolean
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -367,7 +369,11 @@ private fun PersonaDetailList(
         }
         item {
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            RadixSecondaryButton(text = stringResource(id = R.string.add_a_field), onClick = onAddField)
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.add_a_field),
+                onClick = onAddField,
+                enabled = addButtonEnabled
+            )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
     }
