@@ -59,10 +59,15 @@ class ProfileDataSourceImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ProfileDataSource {
 
+    @Suppress("SwallowedException")
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
         .map { profileContent ->
             profileContent?.let { profile ->
-                relaxedJson.decodeFromString<ProfileSnapshot>(profile).toProfile()
+                try {
+                    Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
 
