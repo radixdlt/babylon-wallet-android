@@ -3,6 +3,8 @@ package com.babylon.wallet.android.data.repository.cache
 import android.content.Context
 import java.io.File
 import javax.inject.Inject
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
 import okhttp3.internal.cache.DiskLruCache
 import okhttp3.internal.concurrent.TaskRunner
 import okio.FileSystem
@@ -10,17 +12,19 @@ import okio.Path.Companion.toOkioPath
 import okio.buffer
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
+import timber.log.Timber
 
 interface CacheClient {
 
-    fun write(key: String, value: String)
+    fun <T> write(key: String, value: CachedValue<T>, serializer: KSerializer<T>)
 
-    fun read(key: String): String?
+    fun <T> read(key: String, serializer: KSerializer<T>): CachedValue<T>?
 
 }
 
 class EncryptedDiskCacheClient @Inject constructor(
     applicationContext: Context,
+    private val jsonSerializer: Json,
     cacheFolderName: String = HTTP_CACHE_FOLDER,
     cacheVersion: Int = CACHE_VERSION
 ) : CacheClient {
@@ -36,24 +40,49 @@ class EncryptedDiskCacheClient @Inject constructor(
         taskRunner = TaskRunner.INSTANCE
     )
 
-    override fun write(key: String, value: String) {
+    private val logger = Timber.tag(TAG)
+
+    override fun <T> write(key: String, value: CachedValue<T>, serializer: KSerializer<T>) {
+        val serialized = jsonSerializer.encodeToString(
+            CachedValueSerializer(serializer),
+            value
+        )
+
         diskCache.edit(key)?.let { editor ->
             editor.newSink(0)
                 .buffer()
                 .use {
-                    it.writeUtf8(value.encrypt(HTTP_CACHE_KEY_ALIAS))
+                    it.writeUtf8(serialized.encrypt(HTTP_CACHE_KEY_ALIAS))
                 }
             editor.commit()
         }
     }
 
-    override fun read(key: String): String? = diskCache[key]?.let { snapshot ->
-        snapshot.use {
-            it.getSource(0).buffer().readUtf8()
+    override fun <T> read(key: String, serializer: KSerializer<T>): CachedValue<T>? {
+        val restored = diskCache[key]?.let { snapshot ->
+            snapshot.use {
+                it.getSource(0).buffer().readUtf8()
+            }
+        }?.decrypt(HTTP_CACHE_KEY_ALIAS)
+
+        return restored?.let { saved ->
+            try {
+                jsonSerializer.decodeFromString(
+                    CachedValueSerializer(serializer),
+                    saved
+                )
+            } catch (exception: IllegalArgumentException) {
+                logger
+                    .w("The value extracted belongs to a previous schema, cache value is considered stale")
+                null
+            }
+        }?.also {
+            logger.d("    [CACHE] $restored")
         }
-    }?.decrypt(HTTP_CACHE_KEY_ALIAS)
+    }
 
     companion object {
+        private const val TAG = "HTTP_CACHE"
         private const val MAX_VALUES_PER_KEY = 1
         private const val DEFAULT_CACHE_MAX_SIZE = 5L * 1024 * 1024
         private const val HTTP_CACHE_KEY_ALIAS = "HttpCache"

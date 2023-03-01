@@ -12,6 +12,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlinx.serialization.json.Json
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -38,8 +39,9 @@ object ApplicationModule {
 
     @Provides
     fun provideEncryptedDiskCacheClient(
-        @ApplicationContext applicationContext: Context
+        @ApplicationContext applicationContext: Context,
+        jsonSerializer: Json,
     ): EncryptedDiskCacheClient {
-        return EncryptedDiskCacheClient(applicationContext)
+        return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
     }
 }

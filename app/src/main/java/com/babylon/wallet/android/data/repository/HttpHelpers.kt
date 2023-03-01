@@ -23,7 +23,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
         val restored = if (cacheParameters != null && !cacheParameters.override) {
             cacheParameters.httpCache.restore(
                 call = this,
-                deserializationStrategy = serializersModule.serializer(),
+                serializer = serializersModule.serializer(),
                 timeoutDuration = cacheParameters.timeoutDuration
             )
         } else {
@@ -38,7 +38,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
             cacheParameters?.httpCache?.store(
                 call = this,
                 response = responseBody,
-                serializationStrategy = serializersModule.serializer()
+                serializer = serializersModule.serializer()
             )
 
             Result.Success(data = map(responseBody))

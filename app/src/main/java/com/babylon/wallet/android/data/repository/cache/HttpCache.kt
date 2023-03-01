@@ -7,7 +7,6 @@ import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
 import okio.Buffer
 import okio.IOException
@@ -23,13 +22,12 @@ data class CacheParameters(
 
 interface HttpCache {
 
-    fun <T> store(call: Call<T>, response: T, serializationStrategy: KSerializer<T>)
+    fun <T> store(call: Call<T>, response: T, serializer: KSerializer<T>)
 
-    fun <T> restore(call: Call<T>, deserializationStrategy: KSerializer<T>, timeoutDuration: Duration?): T?
+    fun <T> restore(call: Call<T>, serializer: KSerializer<T>, timeoutDuration: Duration?): T?
 }
 
 class HttpCacheImpl @Inject constructor(
-    private val jsonSerializer: Json,
     private val cacheClient: CacheClient
 ) : HttpCache {
 
@@ -38,56 +36,45 @@ class HttpCacheImpl @Inject constructor(
     override fun <T> store(
         call: Call<T>,
         response: T,
-        serializationStrategy: KSerializer<T>
+        serializer: KSerializer<T>
     ) {
         val key = call.cacheKey()
+        val now = Date().time
+
         val cachedValue = CachedValue(
             cached = response,
-            timestamp = Date().time
-        )
-        val serialized = jsonSerializer.encodeToString(
-            CachedValueSerializer(serializationStrategy),
-            cachedValue
+            timestamp = now
         )
 
-        cacheClient.write(key, serialized)
+        cacheClient.write(key, cachedValue, serializer)
     }
 
     override fun <T> restore(
         call: Call<T>,
-        deserializationStrategy: KSerializer<T>,
+        serializer: KSerializer<T>,
         timeoutDuration: Duration?
     ): T? {
+        logger.d("--> [CACHE] ${call.request().method} - ${call.request().url}")
+
         val key = call.cacheKey()
-        val restored = cacheClient.read(key)
+        val cachedValue = cacheClient.read(key, serializer) ?: run {
+            logger.d("<-- [CACHE] ❌ no value")
+            return null
+        }
 
-        val cachedValue = restored?.let { saved ->
-            try {
-                jsonSerializer.decodeFromString(
-                    CachedValueSerializer(deserializationStrategy),
-                    saved
-                )
-            } catch (exception: IllegalArgumentException) {
-                logger
-                    .w("The value extracted belongs to a previous schema, cache value is considered stale")
-                null
-            }
-        } ?: return null
-
-        logger.d("--> [CACHE] ${call.request().method} - ${call.request().url}]")
         return if (timeoutDuration != null) {
             val threshold = LocalDateTime.now().minus(timeoutDuration)
             val minAllowedTime = Date.from(threshold.atZone(ZoneId.systemDefault()).toInstant()).time
 
             if (cachedValue.timestamp < minAllowedTime) {
-                logger.d("<-- [CACHE] stale content")
+                logger.d("<-- [CACHE] ❌ stale content")
                 null
             } else {
-                logger.d("<-- [CACHE] $restored")
+                logger.d("<-- [CACHE] ✅ active content")
                 cachedValue.cached
             }
         } else {
-            logger.d("<-- [CACHE] $restored")
+            logger.d("<-- [CACHE] ✅ active content")
             cachedValue.cached
         }
     }

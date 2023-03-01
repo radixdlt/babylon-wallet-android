@@ -64,7 +64,7 @@ class EntityRepositoryImpl @Inject constructor(
         return gatewayApi.entityResources(EntityResourcesRequest(address)).execute(
             cacheParameters = CacheParameters(
                 httpCache = httpCache,
-                timeoutDuration = Duration.of(5, ChronoUnit.MINUTES)
+                timeoutDuration = Duration.of(5, ChronoUnit.SECONDS)
             ),
             map = { response -> response.toAccountResourceSlim() }
         )
