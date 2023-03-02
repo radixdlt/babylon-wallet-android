@@ -12,7 +12,6 @@ import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import timber.log.Timber
 import java.io.File
-import javax.inject.Inject
 
 interface CacheClient {
 
@@ -21,7 +20,7 @@ interface CacheClient {
     fun <T> read(key: String, serializer: KSerializer<T>): CachedValue<T>?
 }
 
-class EncryptedDiskCacheClient @Inject constructor(
+class EncryptedDiskCacheClient(
     applicationContext: Context,
     private val jsonSerializer: Json,
     cacheFolderName: String = HTTP_CACHE_FOLDER,
