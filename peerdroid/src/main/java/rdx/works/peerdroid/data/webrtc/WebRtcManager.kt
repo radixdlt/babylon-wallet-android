@@ -11,6 +11,7 @@ import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.addSuspendingIceCandidate
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createPeerConnectionFlow
+import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingAnswer
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingOffer
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingLocalDescription
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingRemoteDescription
@@ -38,6 +39,8 @@ internal interface WebRtcManager {
     fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent>
 
     suspend fun createOffer(): Result<SessionDescriptionValue>
+
+    suspend fun createAnswer(): Result<SessionDescriptionValue>
 
     suspend fun setLocalDescription(sessionDescription: SessionDescriptionWrapper): Result<Unit>
 
@@ -103,7 +106,7 @@ internal class WebRtcManagerImpl @Inject constructor(
     }
 
     init {
-        Timber.d("initialize WebRTC manager")
+        Timber.d("🔌 initialize WebRTC manager")
     }
 
     override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> =
@@ -118,17 +121,20 @@ internal class WebRtcManagerImpl @Inject constructor(
     private fun initializePeerConnection(peerConnection: PeerConnection?) {
         peerConnection?.let {
             this.peerConnection = it
-            Timber.d("created a peer connection")
-        } ?: Timber.e("failed to create a peer connection")
+            Timber.d("🔌 created a peer connection")
+        } ?: Timber.e("🔌 failed to create a peer connection")
     }
 
     private fun createRtcDataChannel(connectionId: String) {
         dataChannel = peerConnection.createDataChannel(connectionId, dataChannelInit)
-        Timber.d("created a RTC data channel")
+        Timber.d("🔌 created a RTC data channel")
     }
 
     override suspend fun createOffer(): Result<SessionDescriptionValue> =
         peerConnection.createSuspendingOffer(mediaConstraints = mediaConstraints)
+
+    override suspend fun createAnswer(): Result<SessionDescriptionValue> =
+        peerConnection.createSuspendingAnswer(mediaConstraints = mediaConstraints)
 
     override suspend fun setLocalDescription(
         sessionDescription: SessionDescriptionWrapper
@@ -142,10 +148,10 @@ internal class WebRtcManagerImpl @Inject constructor(
         val isIceCandidateAdded = peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
 
         return if (isIceCandidateAdded) {
-            Timber.d("added successfully ice candidate")
+            Timber.d("🔌 added successfully ice candidate")
             Result.Success(Unit)
         } else {
-            Timber.e("failed to add ice candidate")
+            Timber.e("🔌 failed to add ice candidate")
             Result.Error("failed to add ice candidate")
         }
     }

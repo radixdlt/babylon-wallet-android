@@ -83,6 +83,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                 trySend(PeerConnectionEvent.Connected)
             }
+            Timber.d("🔌 peer connection changed: $newState")
         }
     }
 
@@ -100,7 +101,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
      * is typically used to cleanup the resources after the completion, e.g. unregister a callback.
      */
     awaitClose {
-        Timber.d("peer connection: awaitClose")
+        Timber.d("🔌 peer connection: awaitClose")
         peerConnection?.close()
         peerConnection = null
     }

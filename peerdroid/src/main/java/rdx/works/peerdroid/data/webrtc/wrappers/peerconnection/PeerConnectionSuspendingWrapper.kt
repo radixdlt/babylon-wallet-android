@@ -29,7 +29,7 @@ internal suspend fun PeerConnection.createSuspendingOffer(
         // from this suspending callback we are only interested in creating an offer
         // thus return success only in case of the "onCreateSuccess"
         override fun onCreateSuccess(p0: SessionDescription?) {
-            Timber.d("WebRTC peer connection created successfully an offer")
+            Timber.d("🔌 WebRTC peer connection created successfully an offer")
 
             p0?.let {
                 continuation.resume(
@@ -43,21 +43,66 @@ internal suspend fun PeerConnection.createSuspendingOffer(
         }
 
         override fun onSetSuccess() {
-            Timber.d("createOffer, onSetSuccess")
+            Timber.d("🔌 createOffer, onSetSuccess")
             continuation.resume(Result.Error(""))
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.d("createOffer, onCreateFailure $p0")
+            Timber.e("🔌 createOffer, onCreateFailure $p0")
             continuation.resume(Result.Error("failed to create offer: $p0"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.d("createOffer, onSetFailure: $p0")
+            Timber.e("🔌 createOffer, onSetFailure: $p0")
             continuation.resume(Result.Error(""))
         }
     }
     createOffer(observer, mediaConstraints)
+}
+
+/**
+ * Transform the PeerConnection.createAnswer callback to a suspend function.
+ *
+ * It returns a [Result].
+ *
+ */
+internal suspend fun PeerConnection.createSuspendingAnswer(
+    mediaConstraints: MediaConstraints
+): Result<SessionDescriptionValue> = suspendCoroutine { continuation ->
+
+    val observer = object : SdpObserver {
+        // from this suspending callback we are only interested in creating an answer
+        // thus return success only in case of the "onCreateSuccess"
+        override fun onCreateSuccess(p0: SessionDescription?) {
+            Timber.d("🔌 WebRTC peer connection created successfully an answer")
+
+            p0?.let {
+                continuation.resume(
+                    Result.Success(
+                        SessionDescriptionValue(p0.description)
+                    )
+                )
+            } ?: continuation.resume(
+                Result.Error("sessionDescription is null")
+            )
+        }
+
+        override fun onSetSuccess() {
+            Timber.d("🔌 createAnswer, onSetSuccess")
+            continuation.resume(Result.Error(""))
+        }
+
+        override fun onCreateFailure(p0: String?) {
+            Timber.e("🔌 createAnswer, onCreateFailure $p0")
+            continuation.resume(Result.Error("failed to create answer: $p0"))
+        }
+
+        override fun onSetFailure(p0: String?) {
+            Timber.e("🔌 createAnswer, onSetFailure: $p0")
+            continuation.resume(Result.Error(""))
+        }
+    }
+    createAnswer(observer, mediaConstraints)
 }
 
 /**
@@ -72,24 +117,24 @@ internal suspend fun PeerConnection.setSuspendingLocalDescription(
 
     val observer = object : SdpObserver {
         override fun onCreateSuccess(p0: SessionDescription?) {
-            Timber.d("created successfully local session description: $p0")
+            Timber.d("🔌 created successfully local session description: $p0")
             // we want to SET the local session description, not to create one
             // thus return Error result
             continuation.resume(Result.Error("on create success"))
         }
 
         override fun onSetSuccess() {
-            Timber.d("set successfully local session description")
+            Timber.d("🔌 set successfully local session description")
             continuation.resume(Result.Success(Unit))
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.e("failed to create local session description: $p0")
+            Timber.e("🔌 failed to create local session description: $p0")
             continuation.resume(Result.Error("on create failure"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.e("failed to set local session description: $p0")
+            Timber.e("🔌 failed to set local session description: $p0")
             continuation.resume(Result.Error("on set failure"))
         }
     }
@@ -109,24 +154,24 @@ internal suspend fun PeerConnection.setSuspendingRemoteDescription(
 
     val observer = object : SdpObserver {
         override fun onCreateSuccess(p0: SessionDescription?) {
-            Timber.d("created successfully remote session description: $p0")
+            Timber.d("🔌 created successfully remote session description: $p0")
             // we want to SET the remote session description, not to create one
             // thus return Error result
             continuation.resume(Result.Error("on create success"))
         }
 
         override fun onSetSuccess() {
-            Timber.d("set successfully remote session description")
+            Timber.d("🔌 set successfully remote session description")
             continuation.resume(Result.Success(Unit))
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.e("failed to create remote session description: $p0")
+            Timber.e("🔌 failed to create remote session description: $p0")
             continuation.resume(Result.Error("on create failure"))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.e("failed to set remote session description: $p0")
+            Timber.e("🔌 failed to set remote session description: $p0")
             continuation.resume(Result.Error("on set failure"))
         }
     }
