@@ -4,8 +4,6 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.DappMessengerImpl
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.data.repository.cache.CacheClient
-import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
@@ -69,10 +67,4 @@ interface DataModule {
     fun bindHttpCache(
         cache: HttpCacheImpl
     ): HttpCache
-
-    @Binds
-    @Singleton
-    fun bindCacheClient(
-        encryptedDiskCacheClient: EncryptedDiskCacheClient
-    ): CacheClient
 }

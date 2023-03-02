@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.babylon.wallet.android.data.repository.cache.CacheClient
 import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.time.CurrentTime
 import com.babylon.wallet.android.data.repository.time.CurrentTimeImpl
@@ -40,10 +41,11 @@ object ApplicationModule {
     }
 
     @Provides
-    fun provideEncryptedDiskCacheClient(
+    @Singleton
+    fun provideCacheClient(
         @ApplicationContext applicationContext: Context,
         jsonSerializer: Json,
-    ): EncryptedDiskCacheClient {
+    ): CacheClient {
         return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
     }
 
