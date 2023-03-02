@@ -71,7 +71,7 @@ internal suspend fun PeerConnection.createSuspendingAnswer(
 ): Result<SessionDescriptionValue> = suspendCoroutine { continuation ->
 
     val observer = object : SdpObserver {
-        // from this suspending callback we are only interested in creating an offer
+        // from this suspending callback we are only interested in creating an answer
         // thus return success only in case of the "onCreateSuccess"
         override fun onCreateSuccess(p0: SessionDescription?) {
             Timber.d("🔌 WebRTC peer connection created successfully an answer")
@@ -94,7 +94,7 @@ internal suspend fun PeerConnection.createSuspendingAnswer(
 
         override fun onCreateFailure(p0: String?) {
             Timber.e("🔌 createAnswer, onCreateFailure $p0")
-            continuation.resume(Result.Error("failed to create offer: $p0"))
+            continuation.resume(Result.Error("failed to create answer: $p0"))
         }
 
         override fun onSetFailure(p0: String?) {
