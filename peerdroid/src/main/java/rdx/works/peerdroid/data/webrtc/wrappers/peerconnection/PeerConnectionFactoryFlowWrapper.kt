@@ -83,6 +83,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                 trySend(PeerConnectionEvent.Connected)
             }
+            Timber.d("🔌 peer connection changed: $newState")
         }
     }
 
