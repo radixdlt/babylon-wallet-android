@@ -93,7 +93,7 @@ class GenerateProfileUseCaseTest {
                                 )
                             )
                         ),
-                        connectedDapps = emptyList(),
+                        authorizedDapps = emptyList(),
                         networkID = 999,
                         personas = emptyList()
                     )

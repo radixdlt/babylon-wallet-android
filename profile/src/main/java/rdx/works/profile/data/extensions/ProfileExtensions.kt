@@ -21,7 +21,7 @@ fun Profile.createOrUpdatePersonaOnNetwork(
             if (personaExist) {
                 OnNetwork(
                     accounts = network.accounts,
-                    connectedDapps = network.connectedDapps,
+                    authorizedDapps = network.authorizedDapps,
                     networkID = network.networkID,
                     personas = network.personas.map {
                         if (it.address == persona.address) {
@@ -34,7 +34,7 @@ fun Profile.createOrUpdatePersonaOnNetwork(
             } else {
                 OnNetwork(
                     accounts = network.accounts,
-                    connectedDapps = network.connectedDapps,
+                    authorizedDapps = network.authorizedDapps,
                     networkID = network.networkID,
                     personas = network.personas + persona
                 )
@@ -62,7 +62,7 @@ fun Profile.addAccountOnNetwork(
                 updatedAccounts.add(account)
                 OnNetwork(
                     accounts = updatedAccounts.toList(),
-                    connectedDapps = network.connectedDapps,
+                    authorizedDapps = network.authorizedDapps,
                     networkID = network.networkID,
                     personas = network.personas
                 )
@@ -73,7 +73,7 @@ fun Profile.addAccountOnNetwork(
     } else {
         onNetwork + OnNetwork(
             accounts = listOf(account),
-            connectedDapps = listOf(),
+            authorizedDapps = listOf(),
             networkID = networkID.value,
             personas = listOf()
         )

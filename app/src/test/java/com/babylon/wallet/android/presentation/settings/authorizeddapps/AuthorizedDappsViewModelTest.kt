@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.connecteddapps
+package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake

@@ -42,4 +42,10 @@ internal data class ProfileSnapshot(
             version = version
         )
     }
+
+    @Serializable
+    internal data class ProfileVersionHolder(
+        @SerialName("version")
+        val version: Int
+    )
 }

@@ -45,7 +45,7 @@ data class Profile(
     }
 
     companion object {
-        private const val INITIAL_VERSION = 9
+        const val LATEST_PROFILE_VERSION = 17
         fun init(
             networkAndGateway: NetworkAndGateway,
             mnemonic: MnemonicWords,
@@ -76,7 +76,7 @@ data class Profile(
 
             val mainNetwork = OnNetwork(
                 accounts = listOf(initialAccount),
-                connectedDapps = listOf(),
+                authorizedDapps = listOf(),
                 networkID = network.id,
                 personas = listOf()
             )
@@ -91,7 +91,7 @@ data class Profile(
                 appPreferences = appPreferences,
                 factorSources = factorSources,
                 onNetwork = listOf(mainNetwork),
-                version = INITIAL_VERSION
+                version = LATEST_PROFILE_VERSION
             )
         }
     }

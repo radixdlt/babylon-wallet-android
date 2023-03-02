@@ -10,7 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
-import rdx.works.profile.data.repository.updateConnectedDappPersonas
+import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -32,16 +32,16 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 val ongoingRequest = checkNotNull(request.ongoingAccountsRequestItem)
                 val dappDefinitionAddress = request.metadata.dAppDefinitionAddress
                 val authRequest = request.authRequest as IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
-                val connectedDapp = dAppConnectionRepository.getConnectedDapp(
+                val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     dappDefinitionAddress
                 )
                 val authorizedPersonaSimple =
-                    connectedDapp?.referencesToAuthorizedPersonas?.firstOrNull {
+                    authorizedDapp?.referencesToAuthorizedPersonas?.firstOrNull {
                         it.identityAddress == authRequest.personaAddress
                     }
-                if (connectedDapp != null && authorizedPersonaSimple != null) {
-                    val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
-                        connectedDapp.dAppDefinitionAddress,
+                if (authorizedDapp != null && authorizedPersonaSimple != null) {
+                    val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+                        authorizedDapp.dAppDefinitionAddress,
                         authorizedPersonaSimple.identityAddress,
                         ongoingRequest.numberOfAccounts,
                         ongoingRequest.quantifier.toProfileShareAccountsQuantifier()
@@ -51,8 +51,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                             .mapNotNull {
                                 accountRepository.getAccountByAddress(it)?.toUiModel(true)
                             }
-                        val updatedDapp = connectedDapp.updateConnectedDappPersonas(
-                            connectedDapp.referencesToAuthorizedPersonas.map { ref ->
+                        val updatedDapp = authorizedDapp.updateAuthorizedDappPersonas(
+                            authorizedDapp.referencesToAuthorizedPersonas.map { ref ->
                                 if (ref.identityAddress == authorizedPersonaSimple.identityAddress) {
                                     ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
                                 } else {
@@ -69,11 +69,11 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                             usePersona = request.isUsePersonaAuth(),
                             ongoingAccounts = selectedAccounts
                         )
-                        dAppConnectionRepository.updateOrCreateConnectedDApp(updatedDapp)
+                        dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
                         when (result) {
                             is Result.Success -> {
                                 operationResult = Result.Success(
-                                    connectedDapp.displayName
+                                    authorizedDapp.displayName
                                 )
                             }
                             else -> {}

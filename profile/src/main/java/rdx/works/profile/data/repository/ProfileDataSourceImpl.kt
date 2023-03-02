@@ -2,6 +2,7 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -49,18 +50,24 @@ interface ProfileDataSource {
         newUrl: String,
         networkName: String
     )
+
+    val isProfileCompatible: Flow<Boolean>
 }
 
 class ProfileDataSourceImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val relaxedJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ProfileDataSource {
 
+    @Suppress("SwallowedException")
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
         .map { profileContent ->
             profileContent?.let { profile ->
                 Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
             }
+        }.catch { _ ->
+            emit(null)
         }
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
@@ -76,6 +83,14 @@ class ProfileDataSourceImpl @Inject constructor(
     override suspend fun readProfile(): Profile? {
         return profile.firstOrNull()
     }
+
+    override val isProfileCompatible: Flow<Boolean> =
+        encryptedPreferencesManager.encryptedProfile.map { profileContent ->
+            profileContent?.let {
+                val profileVersion = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(it)
+                profileVersion.version >= Profile.LATEST_PROFILE_VERSION
+            } ?: true
+        }
 
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {

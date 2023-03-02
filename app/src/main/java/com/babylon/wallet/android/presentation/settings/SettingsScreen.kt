@@ -220,7 +220,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
                 SettingsItem.TopLevelSettings.Connection,
                 SettingsItem.TopLevelSettings.LinkedConnector,
                 SettingsItem.TopLevelSettings.Gateway,
-                SettingsItem.TopLevelSettings.ConnectedDapps,
+                SettingsItem.TopLevelSettings.AuthorizedDapps,
                 SettingsItem.TopLevelSettings.Personas,
                 SettingsItem.TopLevelSettings.DeleteAll
             ),

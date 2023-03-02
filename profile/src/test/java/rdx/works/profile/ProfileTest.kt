@@ -16,7 +16,7 @@ import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
-import rdx.works.profile.data.repository.createOrUpdateConnectedDapp
+import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
@@ -196,43 +196,43 @@ class ProfileTest {
             p2pClient = p2pClient
         )
 
-        val connectedDapp = OnNetwork.ConnectedDapp(
+        val authorizedDapp = OnNetwork.AuthorizedDapp(
             networkID = networkId.value,
             dAppDefinitionAddress = "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
-                OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
+                OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = "identity_tdx_b_1pwvt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpsedwrfm",
                     fieldIDs = listOf(
                         "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
                         "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
                     ),
                     sharedAccounts =
-                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu",
                             "account_tdx_b_1pr2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54tshau0z6"
                         ),
-                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
                             2
                         )
                     ),
                     lastUsedOn = "some date"
                 ),
-                OnNetwork.ConnectedDapp.AuthorizedPersonaSimple(
+                OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = "identity_tdx_b_1p0vtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkshkxgen",
                     fieldIDs = listOf(
                         "FAD199A5-D6A8-425D-8807-C1561C2425C8",
                         "AC37E346-32EF-4670-9097-1AC27B20D394"
                     ),
                     sharedAccounts =
-                    OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu"
                         ),
-                        request = OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                             1
                         )
                     ),
@@ -240,8 +240,8 @@ class ProfileTest {
                 )
             )
         )
-        profile = profile.createOrUpdateConnectedDapp(
-            unverifiedConnectedDapp = connectedDapp
+        profile = profile.createOrUpdateAuthorizedDapp(
+            unverifiedAuthorizedDapp = authorizedDapp
         )
 
         // Network and gateway
@@ -286,100 +286,100 @@ class ProfileTest {
 
         // Connected Dapp
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.count(),
-            currentProfile.onNetwork.first().connectedDapps.count()
+            profile.onNetwork.first().authorizedDapps.count(),
+            currentProfile.onNetwork.first().authorizedDapps.count()
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().networkID,
-            currentProfile.onNetwork.first().connectedDapps.first().networkID
+            profile.onNetwork.first().authorizedDapps.first().networkID,
+            currentProfile.onNetwork.first().authorizedDapps.first().networkID
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().displayName,
-            currentProfile.onNetwork.first().connectedDapps.first().displayName
+            profile.onNetwork.first().authorizedDapps.first().displayName,
+            currentProfile.onNetwork.first().authorizedDapps.first().displayName
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().dAppDefinitionAddress,
-            currentProfile.onNetwork.first().connectedDapps.first().dAppDefinitionAddress
+            profile.onNetwork.first().authorizedDapps.first().dAppDefinitionAddress,
+            currentProfile.onNetwork.first().authorizedDapps.first().dAppDefinitionAddress
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.size,
-            currentProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.size
+            profile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.size,
+            currentProfile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.size
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.first().identityAddress,
-            currentProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.first().identityAddress
+            profile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress,
+            currentProfile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
-            currentProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
+            profile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
+            currentProfile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.request,
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.request
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size,
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0),
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1),
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1)
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+            profile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).identityAddress,
-            currentProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+            currentProfile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).identityAddress
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+            profile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).fieldIDs,
-            currentProfile.onNetwork.first().connectedDapps.first().referencesToAuthorizedPersonas
+            currentProfile.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).fieldIDs
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size,
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size
         )
 
         Assert.assertEquals(
-            profile.onNetwork.first().connectedDapps.first()
+            profile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0),
-            currentProfile.onNetwork.first().connectedDapps.first()
+            currentProfile.onNetwork.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 

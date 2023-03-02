@@ -38,8 +38,9 @@ class MainActivity : FragmentActivity() {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 DevelopmentPreviewWrapper {
                     WalletApp(
-                        showOnboarding = state.showOnboarding,
-                        hasProfile = state.hasProfile,
+                        initialAppState = state.initialAppState,
+                        onDeleteProfile = { viewModel.deleteProfile() },
+                        onDeleteProfileDeclined = { finish() },
                         oneOffEvent = viewModel.oneOffEvent
                     )
                 }

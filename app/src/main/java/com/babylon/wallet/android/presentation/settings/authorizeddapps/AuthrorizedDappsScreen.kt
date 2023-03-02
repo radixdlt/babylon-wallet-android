@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.connecteddapps
+package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -56,13 +56,13 @@ fun AuthorizedDappsScreen(
 @Composable
 private fun AuthorizedDappsContent(
     onBackClick: () -> Unit,
-    dapps: ImmutableList<OnNetwork.ConnectedDapp>,
+    dapps: ImmutableList<OnNetwork.AuthorizedDapp>,
     onDappClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.connected_dapps),
+            title = stringResource(R.string.authorized_dapps),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )

@@ -36,10 +36,10 @@ data class OnNetwork(
     val personas: List<Persona>,
 
     /**
-     * ConnectedDapp the user has connected with on this network.
+     * AuthorizedDapp the user has connected with on this network.
      */
-    @SerialName("connectedDapps")
-    val connectedDapps: List<ConnectedDapp>
+    @SerialName("authorizedDapps")
+    val authorizedDapps: List<AuthorizedDapp>
 ) {
     init {
         /**
@@ -322,7 +322,7 @@ data class OnNetwork(
     }
 
     @Serializable
-    data class ConnectedDapp(
+    data class AuthorizedDapp(
 
         @SerialName("networkID")
         val networkID: Int,
@@ -425,7 +425,7 @@ data class OnNetwork(
         )
     }
 
-    fun authorizedPersonas(dApp: ConnectedDapp): Set<AuthorizedPersona> {
+    fun authorizedPersonas(dApp: AuthorizedDapp): Set<AuthorizedPersona> {
         require(dApp.networkID != networkID) {
             throw java.lang.IllegalArgumentException("NetworkId does not match")
         }

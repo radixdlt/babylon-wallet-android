@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
+import rdx.works.profile.data.model.pernetwork.OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
 
 sealed interface MessageFromDataChannel {
 

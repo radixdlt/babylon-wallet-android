@@ -6,6 +6,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -19,6 +20,7 @@ fun BasicPromptAlertDialog(
     modifier: Modifier = Modifier,
     confirmText: String = stringResource(id = R.string.confirm),
     dismissText: String = stringResource(id = R.string.cancel),
+    confirmTextColor: Color = RadixTheme.colors.blue2
 ) {
     AlertDialog(
         modifier = modifier
@@ -26,7 +28,7 @@ fun BasicPromptAlertDialog(
             .clip(RadixTheme.shapes.roundedRectSmall),
         onDismissRequest = { finish(false) },
         confirmButton = {
-            RadixTextButton(text = confirmText, onClick = { finish(true) })
+            RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
         },
         dismissButton = {
             RadixTextButton(text = dismissText, onClick = { finish(false) })

@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -18,6 +19,7 @@ fun RadixTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = RadixTheme.typography.body1Header,
+    contentColor: Color = RadixTheme.colors.blue2,
     enabled: Boolean = true
 ) {
     TextButton(
@@ -26,7 +28,7 @@ fun RadixTextButton(
         shape = RadixTheme.shapes.roundedRectSmall,
         enabled = enabled,
         colors = ButtonDefaults.textButtonColors(
-            contentColor = RadixTheme.colors.blue2,
+            contentColor = contentColor,
             disabledContentColor = RadixTheme.colors.gray3,
         )
     ) {
