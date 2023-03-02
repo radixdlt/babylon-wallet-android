@@ -15,8 +15,12 @@ import java.util.Date
 import javax.inject.Inject
 
 data class CacheParameters(
+    // This is the instance of the cache, injected from the repository
     val httpCache: HttpCache,
+    // This will denote the cache to ignore any value and just perform the request,
+    // like in a pull-to-refresh scenario
     val override: Boolean = false,
+    // This is the duration that we believe that any duration more than that is considered stale
     val timeoutDuration: Duration? = null
 )
 
