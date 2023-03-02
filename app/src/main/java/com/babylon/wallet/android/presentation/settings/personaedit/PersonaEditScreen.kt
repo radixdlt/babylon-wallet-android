@@ -24,8 +24,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -46,6 +44,7 @@ import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -179,7 +178,7 @@ private fun PersonaEditContent(
             ) {
                 Column(Modifier.fillMaxSize()) {
                     RadixCenteredTopAppBar(
-                        title = stringResource(id = R.string.empty),
+                        title = persona.displayName,
                         onBackClick = onBackClick,
                         contentColor = RadixTheme.colors.gray1,
                         backIconType = BackIconType.Cancel,
@@ -207,7 +206,8 @@ private fun PersonaEditContent(
                         onDeleteField = onDeleteField,
                         onValueChanged = onValueChanged,
                         onDisplayNameChanged = onDisplayNameChanged,
-                        personaDisplayName = personaDisplayName
+                        personaDisplayName = personaDisplayName,
+                        addButtonEnabled = fieldsToAdd.isNotEmpty()
                     )
                 }
             }
@@ -271,7 +271,7 @@ private fun AddFieldSheet(
                 .padding(dimensions.paddingDefault),
             enabled = addButtonEnabled,
             text = stringResource(id = R.string.add),
-            onClick = onAddFields
+            onClick = onAddFields,
         )
     }
 }
@@ -317,7 +317,8 @@ private fun PersonaDetailList(
     onDeleteField: (OnNetwork.Persona.Field.Kind) -> Unit,
     onValueChanged: (OnNetwork.Persona.Field.Kind, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
-    personaDisplayName: String?
+    personaDisplayName: String?,
+    addButtonEnabled: Boolean
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -341,11 +342,24 @@ private fun PersonaDetailList(
                     .padding(horizontal = dimensions.paddingDefault),
                 onValueChanged = onDisplayNameChanged,
                 value = personaDisplayName.orEmpty(),
-                leftLabel = stringResource(id = R.string.persona_name),
+                leftLabel = stringResource(id = R.string.persona_label),
             )
+            Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
             Divider(
-                modifier = Modifier.padding(dimensions.paddingDefault)
+                modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
+        }
+        item {
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingDefault),
+                text = stringResource(R.string.the_following_information_can_be_seen),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
         items(editedFields) { field ->
             PersonaPropertyInput(
@@ -363,11 +377,15 @@ private fun PersonaDetailList(
                     onDeleteField(field.kind)
                 }
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
         item {
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            RadixSecondaryButton(text = stringResource(id = R.string.add_a_field), onClick = onAddField)
+            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.add_a_field),
+                onClick = onAddField,
+                enabled = addButtonEnabled
+            )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
     }
@@ -391,9 +409,9 @@ fun PersonaPropertyInput(
         iconToTheRight = {
             IconButton(onClick = onDeleteField) {
                 Icon(
-                    imageVector = Icons.Filled.Delete,
                     tint = RadixTheme.colors.gray1,
-                    contentDescription = null
+                    contentDescription = null,
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
                 )
             }
         },

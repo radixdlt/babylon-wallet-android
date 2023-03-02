@@ -512,25 +512,40 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = R.string.persona_name),
+                label = stringResource(id = R.string.persona_label),
                 value = persona.displayName
             )
+            Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
             Divider(
-                modifier = Modifier.padding(dimensions.paddingDefault)
+                modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
-        items(persona.fields) { field ->
-            PersonaPropertyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = field.kind.toDisplayResource()),
-                value = field.value
-            )
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+        if (persona.fields.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.here_is_the_personal_data, dappName),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            }
+            items(persona.fields) { field ->
+                PersonaPropertyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    label = stringResource(id = field.kind.toDisplayResource()),
+                    value = field.value
+                )
+                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            }
         }
         item {
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             RadixSecondaryButton(
                 modifier = Modifier
                     .fillMaxWidth()

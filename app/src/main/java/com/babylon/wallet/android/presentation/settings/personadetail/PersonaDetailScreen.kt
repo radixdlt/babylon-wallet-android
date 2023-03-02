@@ -155,7 +155,7 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = R.string.persona_name),
+                label = stringResource(id = R.string.persona_label),
                 value = persona.displayName
             )
             Divider(
