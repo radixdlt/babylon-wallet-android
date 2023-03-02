@@ -100,7 +100,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
      * is typically used to cleanup the resources after the completion, e.g. unregister a callback.
      */
     awaitClose {
-        Timber.d("peer connection: awaitClose")
+        Timber.d("🔌 peer connection: awaitClose")
         peerConnection?.close()
         peerConnection = null
     }
