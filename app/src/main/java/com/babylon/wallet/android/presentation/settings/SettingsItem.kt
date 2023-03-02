@@ -25,7 +25,7 @@ sealed interface SettingsItem {
                 InspectProfile -> R.string.inspect_profile
                 LinkedConnector -> R.string.linked_connector
                 Personas -> R.string.settings_personas
-                AuthorizedDapps -> R.string.connected_dapps
+                AuthorizedDapps -> R.string.authorized_dapps
                 AppSettings -> R.string.app_settings
             }
         }
@@ -36,7 +36,7 @@ sealed interface SettingsItem {
                 Gateway -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateway
                 LinkedConnector -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
-                AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_connected_dapps
+                AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 else -> null
             }

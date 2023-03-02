@@ -2,6 +2,7 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -50,7 +51,7 @@ interface ProfileDataSource {
         networkName: String
     )
 
-    val profileCompatibility: Flow<Boolean>
+    val isProfileCompatible: Flow<Boolean>
 }
 
 class ProfileDataSourceImpl @Inject constructor(
@@ -63,12 +64,10 @@ class ProfileDataSourceImpl @Inject constructor(
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
         .map { profileContent ->
             profileContent?.let { profile ->
-                try {
-                    Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
-                } catch (e: Exception) {
-                    null
-                }
+                Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
             }
+        }.catch { _ ->
+            emit(null)
         }
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
@@ -85,7 +84,7 @@ class ProfileDataSourceImpl @Inject constructor(
         return profile.firstOrNull()
     }
 
-    override val profileCompatibility: Flow<Boolean> =
+    override val isProfileCompatible: Flow<Boolean> =
         encryptedPreferencesManager.encryptedProfile.map { profileContent ->
             profileContent?.let {
                 val profileVersion = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(it)

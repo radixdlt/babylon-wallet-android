@@ -34,7 +34,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    preferencesManager: PreferencesManager,
+    private val preferencesManager: PreferencesManager,
     private val profileDataSource: ProfileDataSource,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -45,7 +45,7 @@ class MainViewModel @Inject constructor(
     val state = combine(
         preferencesManager.showOnboarding,
         profileDataSource.profile,
-        profileDataSource.profileCompatibility
+        profileDataSource.isProfileCompatible
     ) { showOnboarding, profileSnapshot, profileCompatible ->
         MainUiState(
             loading = false,
@@ -173,6 +173,8 @@ class MainViewModel @Inject constructor(
     fun deleteProfile() {
         viewModelScope.launch {
             profileDataSource.clear()
+            preferencesManager.clear()
+            peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
         }
     }
 

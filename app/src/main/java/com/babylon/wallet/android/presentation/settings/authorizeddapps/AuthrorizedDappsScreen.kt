@@ -62,7 +62,7 @@ private fun AuthorizedDappsContent(
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.connected_dapps),
+            title = stringResource(R.string.authorized_dapps),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
