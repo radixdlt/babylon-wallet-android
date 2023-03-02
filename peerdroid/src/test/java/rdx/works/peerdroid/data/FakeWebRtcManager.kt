@@ -49,6 +49,11 @@ internal class FakeWebRtcManager @Inject constructor(
         return Result.Success(SessionDescriptionWrapper.SessionDescriptionValue("local session description"))
     }
 
+    override suspend fun createAnswer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> {
+        println("create offer")
+        return Result.Success(SessionDescriptionWrapper.SessionDescriptionValue("local session description"))
+    }
+
     override suspend fun setLocalDescription(sessionDescription: SessionDescriptionWrapper): Result<Unit> {
         println("set local description")
         return Result.Success(Unit)
