@@ -61,7 +61,7 @@
     <string name="save_link">Save Link</string>
     <string name="delete_connection">Delete Connection</string>
     <string name="delete_all">Delete Wallet Data</string>
-    <string name="network_gateway">Network Gateway</string>
+    <string name="gateways">Gateways</string>
     <string name="inspect_profile">Inspect Profile</string>
     <string name="manage_connections">Manage Connections</string>
     <string name="enter_the_connection_id">Enter the connection id</string>
@@ -202,6 +202,16 @@
     <string name="delete_wallet_data">Delete Wallet Data</string>
     <string name="the_following_information_can_be_seen">The following information can be seen if requested by the dApp</string>
     <string name="here_is_the_personal_data">Here is the personal data that you are sharing with %s</string>
+    <string name="choose_the_gateway_your_wallet">Choose the gateway your wallet will use to connect. Only change this if you know what you’re doing.</string>
+    <string name="what_is_a_gateway">What is a Gateway</string>
+    <string name="add_new_gateway">Add New Gateway</string>
+    <string name="remove_gateway">Remove Gateway</string>
+    <string name="you_will_no_longer_be_able">You will no longer be able to connect to this Gateway</string>
+    <string name="enter_a_gateway_url">Enter a Gateway URL</string>
+    <string name="enter_full_url">Enter full URL</string>
+    <string name="add_gateway">Add Gateway</string>
+    <string name="adding_gateway_failed">Adding new Gateway failed</string>
+    <string name="already_exist">This url is already added.</string>
     <plurals name="one_time_at_least_request">
         <item quantity="one">%s is making a one-time request for at least %d account.</item>
         <item quantity="other">%s is making a one-time request for at least %d accounts.</item>

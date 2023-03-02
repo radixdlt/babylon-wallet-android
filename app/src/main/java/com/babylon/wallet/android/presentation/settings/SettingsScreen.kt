@@ -219,7 +219,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
             appSettings = persistentListOf(
                 SettingsItem.TopLevelSettings.Connection,
                 SettingsItem.TopLevelSettings.LinkedConnector,
-                SettingsItem.TopLevelSettings.Gateway,
+                SettingsItem.TopLevelSettings.Gateways,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
                 SettingsItem.TopLevelSettings.Personas,
                 SettingsItem.TopLevelSettings.DeleteAll

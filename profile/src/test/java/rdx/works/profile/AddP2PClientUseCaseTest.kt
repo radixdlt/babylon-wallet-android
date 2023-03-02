@@ -8,7 +8,8 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -30,7 +31,7 @@ class AddP2PClientUseCaseTest {
         val initialProfile = Profile(
             appPreferences = AppPreferences(
                 display = Display.default,
-                networkAndGateway = NetworkAndGateway.hammunet,
+                gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
                 p2pClients = emptyList()
             ),
             factorSources = FactorSources(
@@ -50,7 +51,7 @@ class AddP2PClientUseCaseTest {
         val updatedProfile = initialProfile.copy(
             appPreferences = AppPreferences(
                 display = initialProfile.appPreferences.display,
-                networkAndGateway = initialProfile.appPreferences.networkAndGateway,
+                gateways = initialProfile.appPreferences.gateways,
                 p2pClients = listOf(expectedP2pClient)
             ),
             factorSources = initialProfile.factorSources,

@@ -9,30 +9,62 @@ data class AppPreferences(
     @SerialName("display")
     val display: Display,
 
-    @SerialName("networkAndGateway")
-    val networkAndGateway: NetworkAndGateway,
+    @SerialName("gateways")
+    val gateways: Gateways,
 
     @SerialName("p2pClients")
     val p2pClients: List<P2PClient>
 )
 
 @Serializable
-data class NetworkAndGateway(
+data class Gateways(
 
-    @SerialName("gatewayAPIEndpointURL")
-    val gatewayAPIEndpointURL: String,
+    @SerialName("current")
+    private val currentGatewayUrl: String,
+
+    @SerialName("saved")
+    val saved: List<Gateway>
+) {
+    fun current(): Gateway {
+        return saved.first { it.url == currentGatewayUrl }
+    }
+
+    fun other(): List<Gateway> {
+        return saved.filter { it.url == currentGatewayUrl }
+    }
+
+    fun changeCurrent(gateway: Gateway): Gateways {
+        require(saved.contains(gateway))
+        return copy(currentGatewayUrl = gateway.url)
+    }
+
+    fun add(gateway: Gateway): Gateways {
+        require(saved.all { it.url != gateway.url })
+        return copy(saved = saved + gateway)
+    }
+
+    fun delete(gateway: Gateway): Gateways {
+        return copy(saved = saved.filter { it.url != gateway.url })
+    }
+}
+
+@Serializable
+data class Gateway(
+
+    @SerialName("url")
+    val url: String,
 
     @SerialName("network")
     val network: Network
 ) {
 
     companion object {
-        val hammunet = NetworkAndGateway(
-            gatewayAPIEndpointURL = "https://hammunet-gateway.radixdlt.com",
+        val hammunet = Gateway(
+            url = "https://hammunet-gateway.radixdlt.com",
             network = Network.hammunet
         )
-        val nebunet = NetworkAndGateway(
-            gatewayAPIEndpointURL = "https://betanet.radixdlt.com",
+        val nebunet = Gateway(
+            url = "https://betanet.radixdlt.com",
             network = Network.nebunet
         )
     }

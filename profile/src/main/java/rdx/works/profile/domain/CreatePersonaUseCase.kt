@@ -27,7 +27,7 @@ class CreatePersonaUseCase @Inject constructor(
                 "Profile does not exist"
             }
 
-            val networkID = profile.appPreferences.networkAndGateway.network.networkId()
+            val networkID = profile.appPreferences.gateways.current().network.networkId()
             // Construct new persona
             val newPersona = createNewPersona(
                 displayName = displayName,

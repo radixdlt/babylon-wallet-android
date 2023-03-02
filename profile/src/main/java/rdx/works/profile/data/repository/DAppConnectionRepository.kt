@@ -154,7 +154,7 @@ private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: String): OnNetwork.
 }
 
 private fun Profile.getAuthorizedDapps(): List<OnNetwork.AuthorizedDapp> {
-    val networkId = appPreferences.networkAndGateway.network.networkId().value
+    val networkId = appPreferences.gateways.current().network.networkId().value
     return onNetwork.firstOrNull { it.networkID == networkId }?.authorizedDapps.orEmpty()
 }
 

@@ -4,7 +4,7 @@ import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
@@ -22,10 +22,10 @@ class GenerateProfileUseCase @Inject constructor(
             return withContext(defaultDispatcher) {
                 val mnemonic = getMnemonicUseCase()
 
-                val networkAndGateway = NetworkAndGateway.nebunet
+                val gateway = Gateway.nebunet
 
                 val profile = Profile.init(
-                    networkAndGateway = networkAndGateway,
+                    gateway = gateway,
                     mnemonic = MnemonicWords(phrase = mnemonic),
                     firstAccountDisplayName = accountDisplayName
                 )

@@ -72,7 +72,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingsItem.TopLevelSettings.Connection -> {
                         navController.settingsConnectionScreen(scanQr = true)
                     }
-                    SettingsItem.TopLevelSettings.Gateway -> {
+                    SettingsItem.TopLevelSettings.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
                     SettingsItem.TopLevelSettings.Personas -> {

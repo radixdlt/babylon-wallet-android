@@ -3,7 +3,8 @@ package rdx.works.profile.data.model
 import com.radixdlt.bip39.model.MnemonicWords
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
@@ -45,9 +46,9 @@ data class Profile(
     }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 17
+        const val LATEST_PROFILE_VERSION = 19
         fun init(
-            networkAndGateway: NetworkAndGateway,
+            gateway: Gateway,
             mnemonic: MnemonicWords,
             firstAccountDisplayName: String
         ): Profile {
@@ -58,7 +59,7 @@ data class Profile(
                         label = firstAccountDisplayName
                     )
 
-            val network = networkAndGateway.network
+            val network = gateway.network
 
             val factorSources = FactorSources(
                 curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = listOf(
@@ -83,7 +84,7 @@ data class Profile(
 
             val appPreferences = AppPreferences(
                 display = Display.default,
-                networkAndGateway = networkAndGateway,
+                gateways = Gateways(gateway.url, listOf(gateway)),
                 p2pClients = emptyList()
             )
 
