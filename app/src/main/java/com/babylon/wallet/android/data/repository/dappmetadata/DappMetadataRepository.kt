@@ -17,8 +17,15 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface DappMetadataRepository {
-    suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
-    suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata>
+    suspend fun verifyDapp(
+        origin: String,
+        dAppDefinitionAddress: String
+    ): Result<Boolean>
+
+    suspend fun getDappMetadata(
+        defitnionAddress: String,
+        needMostRecentData: Boolean
+    ): Result<DappMetadata>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -33,7 +40,10 @@ class DappMetadataRepositoryImpl @Inject constructor(
     ): Result<Boolean> {
         return withContext(ioDispatcher) {
             if (origin.isValidHttpsUrl()) {
-                getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
+                getDappMetadata(
+                    defitnionAddress = dAppDefinitionAddress,
+                    needMostRecentData = false
+                ).map { gatewayMetadata ->
                     when {
                         !gatewayMetadata.isDappDefinition() -> {
                             Result.Error(
@@ -90,9 +100,17 @@ class DappMetadataRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata> {
+    override suspend fun getDappMetadata(
+        defitnionAddress: String,
+        needMostRecentData: Boolean
+    ): Result<DappMetadata> {
         return withContext(ioDispatcher) {
-            when (val result = entityRepository.entityDetails(defitnionAddress)) {
+            when (
+                val result = entityRepository.entityDetails(
+                    address = defitnionAddress,
+                    isRefreshing = needMostRecentData
+                )
+            ) {
                 is Result.Error -> Result.Error(result.exception)
                 is Result.Success -> Result.Success(
                     DappMetadata(

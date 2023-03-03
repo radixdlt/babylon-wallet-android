@@ -16,8 +16,12 @@ import javax.inject.Inject
 
 object TimeoutDuration {
 
-    val FIVE_MINUTES: Duration = Duration.ofMinutes(5L)
+    private const val ONE_MINUTE_TIME = 1L
+    private const val FIVE_MINUTES_TIME = 5L
 
+    val ONE_MINUTE: Duration = Duration.ofMinutes(ONE_MINUTE_TIME)
+
+    val FIVE_MINUTES: Duration = Duration.ofMinutes(FIVE_MINUTES_TIME)
 }
 
 data class CacheParameters(

@@ -23,7 +23,10 @@ import javax.inject.Inject
 
 // TODO translate from network models to domain models
 interface EntityRepository {
-    suspend fun entityDetails(address: String): Result<EntityDetailsResponse>
+    suspend fun entityDetails(
+        address: String,
+        isRefreshing: Boolean = true
+    ): Result<EntityDetailsResponse>
     suspend fun getAccountResources(address: String, isRefreshing: Boolean): Result<AccountResourcesSlim>
     suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse>
 
@@ -51,8 +54,16 @@ class EntityRepositoryImpl @Inject constructor(
     private val cache: HttpCache
 ) : EntityRepository {
 
-    override suspend fun entityDetails(address: String): Result<EntityDetailsResponse> {
+    override suspend fun entityDetails(
+        address: String,
+        isRefreshing: Boolean
+    ): Result<EntityDetailsResponse> {
         return gatewayApi.entityDetails(EntityDetailsRequest(address)).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                override = isRefreshing,
+                timeoutDuration = TimeoutDuration.ONE_MINUTE
+            ),
             map = {
                 it
             }

@@ -79,7 +79,10 @@ class GetAccountResourcesUseCase @Inject constructor(
                 accountResources.data.let { resources ->
                     val fungibleTokensDeferred = resources.simpleFungibleTokens.map { fungibleToken ->
                         async {
-                            entityRepository.entityDetails(fungibleToken.address)
+                            entityRepository.entityDetails(
+                                address = fungibleToken.address,
+                                isRefreshing = isRefreshing
+                            )
                         }
                     }
 
@@ -90,12 +93,18 @@ class GetAccountResourcesUseCase @Inject constructor(
                         .map { nonFungibleToken ->
                             nonFungibleTokensDeferred.add(
                                 async {
-                                    entityRepository.entityDetails(nonFungibleToken.tokenResourceAddress)
+                                    entityRepository.entityDetails(
+                                        address = nonFungibleToken.tokenResourceAddress,
+                                        isRefreshing = isRefreshing
+                                    )
                                 }
                             )
                             nonFungibleTokensIdsDeferred.add(
                                 async {
-                                    nonFungibleRepository.nonFungibleIds(nonFungibleToken.tokenResourceAddress)
+                                    nonFungibleRepository.nonFungibleIds(
+                                        address = nonFungibleToken.tokenResourceAddress,
+                                        isRefreshing = isRefreshing
+                                    )
                                 }
                             )
                         }

@@ -44,7 +44,10 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val metadataResult = dappMetadataRepository.getDappMetadata(args.dappDefinitionAddress)
+            val metadataResult = dappMetadataRepository.getDappMetadata(
+                defitnionAddress = args.dappDefinitionAddress,
+                needMostRecentData = false
+            )
             metadataResult.onValue { metadata ->
                 _state.update { state ->
                     state.copy(dappMetadata = metadata, loading = false)
