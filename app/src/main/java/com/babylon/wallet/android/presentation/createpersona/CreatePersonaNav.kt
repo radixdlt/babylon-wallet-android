@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -34,10 +33,7 @@ fun NavGraphBuilder.createPersonaScreen(
             slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
         },
         exitTransition = {
-            when (targetState.destination.route) {
-                ROUTE_PERSONAS -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-                else -> ExitTransition.None
-            }
+            null
         },
         popExitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
