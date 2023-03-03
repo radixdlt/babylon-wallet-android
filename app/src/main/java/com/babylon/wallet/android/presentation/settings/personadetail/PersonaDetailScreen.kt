@@ -170,40 +170,42 @@ private fun PersonaDetailList(
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
-        item {
-            GrayBackgroundWrapper {
-                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.here_are_the_dapps_you_have),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+        if (authorizedDapps.isNotEmpty()) {
+            item {
+                GrayBackgroundWrapper {
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.here_are_the_dapps_you_have),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                }
             }
-        }
-        items(authorizedDapps) { dapp ->
-            GrayBackgroundWrapper {
-                StandardOneLineCard(
-                    "",
-                    dapp.displayName,
-                    modifier = Modifier
-                        .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .throttleClickable {
-                            onDappClick(dapp.dAppDefinitionAddress)
-                        }
-                        .fillMaxWidth()
-                        .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
-                        .padding(
-                            horizontal = dimensions.paddingLarge,
-                            vertical = dimensions.paddingDefault
-                        ),
-                    showChevron = false
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            items(authorizedDapps) { dapp ->
+                GrayBackgroundWrapper {
+                    StandardOneLineCard(
+                        "",
+                        dapp.displayName,
+                        modifier = Modifier
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onDappClick(dapp.dAppDefinitionAddress)
+                            }
+                            .fillMaxWidth()
+                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+                            .padding(
+                                horizontal = dimensions.paddingLarge,
+                                vertical = dimensions.paddingDefault
+                            ),
+                        showChevron = false
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                }
             }
         }
     }
@@ -214,6 +216,7 @@ private fun PersonaDetailList(
 fun DappDetailContentPreview() {
     RadixWalletTheme {
         PersonaDetailContent(
+            modifier = Modifier.fillMaxSize(),
             onBackClick = {},
             persona = null,
             onEditPersona = {},
