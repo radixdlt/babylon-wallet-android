@@ -52,6 +52,8 @@ interface HttpCache {
     fun <T> store(call: Call<T>, response: T, serializer: KSerializer<T>)
 
     fun <T> restore(call: Call<T>, serializer: KSerializer<T>, timeoutDuration: Duration?): T?
+
+    fun invalidate()
 }
 
 class HttpCacheImpl @Inject constructor(
@@ -105,6 +107,10 @@ class HttpCacheImpl @Inject constructor(
             logger.d("<-- [CACHE] ✅ active content")
             cachedValue.cached
         }
+    }
+
+    override fun invalidate() {
+        cacheClient.invalidate()
     }
 
     private fun Call<*>.cacheKey(): String {

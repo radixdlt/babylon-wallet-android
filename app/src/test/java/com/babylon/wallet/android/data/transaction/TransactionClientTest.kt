@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
@@ -30,13 +31,18 @@ internal class TransactionClientTest {
     private val profileDataSource = mockk<ProfileDataSource>()
     private val accountRepository = mockk<AccountRepository>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
+    private val cache = mockk<HttpCache>()
 
     private lateinit var transactionClient: TransactionClient
 
     @Before
     fun setUp() {
         transactionClient = TransactionClient(
-            transactionRepository, profileDataSource, accountRepository, getAccountResourceUseCase
+            transactionRepository,
+            profileDataSource,
+            accountRepository,
+            getAccountResourceUseCase,
+            cache
         )
         coEvery {
             getAccountResourceUseCase(

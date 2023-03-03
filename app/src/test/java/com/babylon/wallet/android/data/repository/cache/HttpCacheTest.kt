@@ -103,6 +103,10 @@ internal class HttpCacheTest {
             return memory[key] as? CachedValue<T>
         }
 
+        override fun invalidate() {
+            memory.clear()
+        }
+
     }
 
 }

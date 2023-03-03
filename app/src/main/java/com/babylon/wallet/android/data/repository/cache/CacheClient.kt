@@ -18,6 +18,8 @@ interface CacheClient {
     fun <T> write(key: String, value: CachedValue<T>, serializer: KSerializer<T>)
 
     fun <T> read(key: String, serializer: KSerializer<T>): CachedValue<T>?
+
+    fun invalidate()
 }
 
 class EncryptedDiskCacheClient(
@@ -78,6 +80,10 @@ class EncryptedDiskCacheClient(
         }?.also {
             logger.d("    [CACHE] $restored")
         }
+    }
+
+    override fun invalidate() {
+        diskCache.evictAll()
     }
 
     companion object {
