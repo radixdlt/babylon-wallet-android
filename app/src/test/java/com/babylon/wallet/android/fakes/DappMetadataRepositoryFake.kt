@@ -11,7 +11,10 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         return Result.Success(true)
     }
 
-    override suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata> {
+    override suspend fun getDappMetadata(
+        defitnionAddress: String,
+        needMostRecentData: Boolean
+    ): Result<DappMetadata> {
         return Result.Success(
             DappMetadata("dapp_address", mapOf(MetadataConstants.KEY_NAME to "dApp"))
         )

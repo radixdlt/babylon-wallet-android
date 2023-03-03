@@ -38,10 +38,20 @@ internal class TransactionClientTest {
         transactionClient = TransactionClient(
             transactionRepository, profileDataSource, accountRepository, getAccountResourceUseCase
         )
-        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab") } returns Result.Success(
+        coEvery {
+            getAccountResourceUseCase(
+                address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab",
+                isRefreshing = true
+            )
+        } returns Result.Success(
             SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab")
         )
-        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej") } returns Result.Success(
+        coEvery {
+            getAccountResourceUseCase(
+                address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej",
+                isRefreshing = true
+            )
+        } returns Result.Success(
             SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
         )
         coEvery { profileDataSource.getCurrentNetworkId() } returns Network.nebunet.networkId()
