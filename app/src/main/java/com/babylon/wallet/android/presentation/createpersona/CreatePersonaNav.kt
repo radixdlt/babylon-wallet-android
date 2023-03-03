@@ -1,15 +1,18 @@
 package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import com.babylon.wallet.android.presentation.settings.personadetail.ROUTE_PERSONA_DETAIL
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.google.accompanist.navigation.animation.composable
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
-private const val ROUTE_PERSONAS = "personas_route"
+const val ROUTE_PERSONAS = "personas_route"
 
 fun NavController.createPersonaScreen() {
     navigate(ROUTE_CREATE_PERSONA)
@@ -31,8 +34,17 @@ fun NavGraphBuilder.createPersonaScreen(
             slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
         },
         exitTransition = {
+            when (targetState.destination.route) {
+                ROUTE_PERSONAS -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+                else -> ExitTransition.None
+            }
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
-        }
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
     ) {
         CreatePersonaScreen(
             viewModel = hiltViewModel(),
@@ -54,8 +66,14 @@ fun NavGraphBuilder.personasScreen(
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-        }
+            when (targetState.destination.route) {
+                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA -> null
+                else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            }
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
     ) {
         PersonasScreen(
             viewModel = hiltViewModel(),

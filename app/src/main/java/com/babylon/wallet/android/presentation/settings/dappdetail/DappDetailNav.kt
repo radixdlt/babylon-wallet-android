@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -16,6 +14,8 @@ import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
+
+const val ROUTE_DAPP_DETAIL = "settings_dapp_detail/{$ARG_DAPP_ADDRESS}"
 
 internal class DappDetailScreenArgs(val dappDefinitionAddress: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -33,24 +33,18 @@ fun NavGraphBuilder.dappDetailScreen(
     onEditPersona: (OnNetwork.Persona) -> Unit
 ) {
     composable(
-        route = "settings_dapp_detail/{$ARG_DAPP_ADDRESS}",
-        arguments = listOf(
-            navArgument(ARG_DAPP_ADDRESS) {
-                type = NavType.StringType
-            }
-        ),
+        route = ROUTE_DAPP_DETAIL,
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
         exitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         },
-        popEnterTransition = {
-            EnterTransition.None
-        },
-        popExitTransition = {
-            ExitTransition.None
-        }
+        arguments = listOf(
+            navArgument(ARG_DAPP_ADDRESS) {
+                type = NavType.StringType
+            }
+        )
     ) {
         DappDetailScreen(
             viewModel = hiltViewModel(),

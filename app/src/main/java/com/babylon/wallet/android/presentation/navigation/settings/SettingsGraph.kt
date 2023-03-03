@@ -5,7 +5,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.navigation
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
@@ -19,7 +18,9 @@ import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScr
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.navigation
 
+@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController,
 ) {

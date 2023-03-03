@@ -156,9 +156,6 @@ private fun DappDetailContent(
         }
     }
     Box(modifier = modifier) {
-        AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {
-            FullscreenCircularProgressContent()
-        }
         AnimatedVisibility(modifier = Modifier.fillMaxSize(), visible = !loading, enter = fadeIn(), exit = fadeOut()) {
             DefaultModalSheetLayout(
                 modifier = Modifier.fillMaxSize(),
@@ -218,6 +215,9 @@ private fun DappDetailContent(
                     )
                 }
             )
+        }
+        if (loading) {
+            FullscreenCircularProgressContent()
         }
         RadixSnackbarHost(hostState = snackState, modifier = Modifier.align(Alignment.BottomCenter))
         if (showDeleteDappPrompt) {

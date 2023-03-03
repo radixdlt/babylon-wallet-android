@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -152,21 +149,7 @@ private fun PersonaEditContent(
             addButtonEnabled = addButtonEnabled
         )
     }) {
-        AnimatedVisibility(
-            visible = persona == null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            FullscreenCircularProgressContent()
-        }
-        AnimatedVisibility(
-            visible = persona != null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            requireNotNull(persona)
+        persona?.let { persona ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -211,6 +194,9 @@ private fun PersonaEditContent(
                     )
                 }
             }
+        }
+        if (persona == null) {
+            FullscreenCircularProgressContent()
         }
     }
 }
