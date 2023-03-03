@@ -33,7 +33,7 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? {
             return when (this) {
-                Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateway
+                Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
                 LinkedConnector -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
