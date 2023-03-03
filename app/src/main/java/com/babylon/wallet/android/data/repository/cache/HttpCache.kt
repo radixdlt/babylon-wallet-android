@@ -38,7 +38,7 @@ data class CacheParameters(
      * * If [TimeoutDuration.NO_CACHE] is received, then the cache should be overridden,
      *   since there is no point in checking the cache.
      * * If [null] is received then the content has no timeout information, meaning that
-     *   if it exists in the cache, it will always return that valie
+     *   if it exists in the cache, it will always return that value
      */
     val timeoutDuration: Duration? = null
 ) {
