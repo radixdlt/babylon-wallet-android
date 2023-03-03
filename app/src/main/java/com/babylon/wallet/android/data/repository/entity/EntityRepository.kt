@@ -12,6 +12,9 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungible
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewRequest
 import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
 import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRequest
+import com.babylon.wallet.android.data.repository.cache.CacheParameters
+import com.babylon.wallet.android.data.repository.cache.HttpCache
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
@@ -21,7 +24,7 @@ import javax.inject.Inject
 // TODO translate from network models to domain models
 interface EntityRepository {
     suspend fun entityDetails(address: String): Result<EntityDetailsResponse>
-    suspend fun getAccountResources(address: String): Result<AccountResourcesSlim>
+    suspend fun getAccountResources(address: String, isRefreshing: Boolean): Result<AccountResourcesSlim>
     suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse>
 
     suspend fun entityMetadata(
@@ -44,7 +47,8 @@ interface EntityRepository {
 }
 
 class EntityRepositoryImpl @Inject constructor(
-    private val gatewayApi: GatewayApi
+    private val gatewayApi: GatewayApi,
+    private val cache: HttpCache
 ) : EntityRepository {
 
     override suspend fun entityDetails(address: String): Result<EntityDetailsResponse> {
@@ -55,8 +59,13 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getAccountResources(address: String): Result<AccountResourcesSlim> {
+    override suspend fun getAccountResources(address: String, isRefreshing: Boolean): Result<AccountResourcesSlim> {
         return gatewayApi.entityResources(EntityResourcesRequest(address)).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                override = isRefreshing,
+                timeoutDuration = TimeoutDuration.FIVE_MINUTES
+            ),
             map = { response -> response.toAccountResourceSlim() }
         )
     }

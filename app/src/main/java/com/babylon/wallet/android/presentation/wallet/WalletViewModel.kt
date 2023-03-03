@@ -41,12 +41,12 @@ class WalletViewModel @Inject constructor(
     init {
         viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
             profileDataSource.profile.filterNotNull().collect {
-                loadResourceData()
+                loadResourceData(isRefreshing = false)
             }
         }
     }
 
-    private suspend fun loadResourceData() {
+    private suspend fun loadResourceData(isRefreshing: Boolean) {
         viewModelScope.launch {
             _walletUiState.update { state ->
                 state.copy(
@@ -54,7 +54,7 @@ class WalletViewModel @Inject constructor(
                     isLoading = false
                 )
             }
-            val result = getAccountResourcesUseCase()
+            val result = getAccountResourcesUseCase(isRefreshing = isRefreshing)
             result.onError { error ->
                 _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
             }
@@ -70,7 +70,7 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
             profileDataSource.readProfile()?.let {
-                loadResourceData()
+                loadResourceData(isRefreshing = true)
             }
             _walletUiState.update { it.copy(isRefreshing = false) }
         }

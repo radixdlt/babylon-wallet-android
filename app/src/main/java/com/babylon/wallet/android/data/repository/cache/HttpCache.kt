@@ -14,6 +14,12 @@ import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 
+object TimeoutDuration {
+
+    val FIVE_MINUTES: Duration = Duration.ofMinutes(5L)
+
+}
+
 data class CacheParameters(
     // This is the instance of the cache, injected from the repository
     val httpCache: HttpCache,

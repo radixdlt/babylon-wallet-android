@@ -24,14 +24,15 @@ class GetAccountResourcesUseCase @Inject constructor(
     private val accountRepository: AccountRepository
 ) {
 
-    suspend operator fun invoke(failOnAnyError: Boolean = true): Result<List<AccountResources>> = coroutineScope {
+    suspend operator fun invoke(isRefreshing: Boolean, failOnAnyError: Boolean = true): Result<List<AccountResources>> = coroutineScope {
         val accountResourceList = mutableListOf<AccountResources>()
         val results = accountRepository.getAccounts().map { account ->
             async {
                 getSingleAccountResources(
                     account.address,
                     account.displayName,
-                    account.appearanceID
+                    account.appearanceID,
+                    isRefreshing
                 )
             }
         }.awaitAll()
@@ -49,7 +50,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         }
     }
 
-    suspend operator fun invoke(address: String): Result<AccountResources> {
+    suspend operator fun invoke(address: String, isRefreshing: Boolean): Result<AccountResources> {
         val account = accountRepository.getAccountByAddress(address)
         requireNotNull(account) {
             "account is null"
@@ -57,7 +58,8 @@ class GetAccountResourcesUseCase @Inject constructor(
         return getSingleAccountResources(
             account.address,
             account.displayName,
-            account.appearanceID
+            account.appearanceID,
+            isRefreshing
         )
     }
 
@@ -66,8 +68,9 @@ class GetAccountResourcesUseCase @Inject constructor(
         address: String,
         accountDisplayName: String,
         appearanceId: Int,
+        isRefreshing: Boolean
     ) = coroutineScope {
-        when (val accountResources = entityRepository.getAccountResources(address)) {
+        when (val accountResources = entityRepository.getAccountResources(address, isRefreshing)) {
             is Result.Error -> Result.Error(accountResources.exception)
             is Result.Success -> {
                 val fungibleTokens = mutableListOf<OwnedFungibleToken>()

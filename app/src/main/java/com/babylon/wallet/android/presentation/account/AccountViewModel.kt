@@ -55,7 +55,7 @@ class AccountViewModel @Inject constructor(
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
-        loadAccountData()
+        loadAccountData(isRefreshing = false)
         viewModelScope.launch {
             appEventBus.events.filter { event ->
                 event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
@@ -69,13 +69,13 @@ class AccountViewModel @Inject constructor(
         _accountUiState.update { state ->
             state.copy(isRefreshing = true)
         }
-        loadAccountData()
+        loadAccountData(isRefreshing = true)
     }
 
-    private fun loadAccountData() {
+    private fun loadAccountData(isRefreshing: Boolean) {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                val result = getAccountResourcesUseCase(accountId)
+                val result = getAccountResourcesUseCase(accountId, isRefreshing)
                 result.onError { e ->
                     _accountUiState.update { accountUiState ->
                         accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)

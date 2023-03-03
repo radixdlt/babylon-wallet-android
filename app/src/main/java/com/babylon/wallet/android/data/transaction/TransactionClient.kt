@@ -185,7 +185,7 @@ class TransactionClient @Inject constructor(
     suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
         var selectedAddress: String? = null
         for (address in involvedAddresses) {
-            when (val account = getAccountResourcesUseCase(address)) {
+            when (val account = getAccountResourcesUseCase(address, isRefreshing = true)) {
                 is Result.Error -> null
                 is Result.Success -> {
                     if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
