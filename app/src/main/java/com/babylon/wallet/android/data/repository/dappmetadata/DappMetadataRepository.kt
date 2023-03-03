@@ -3,6 +3,9 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
+import com.babylon.wallet.android.data.repository.cache.CacheParameters
+import com.babylon.wallet.android.data.repository.cache.HttpCache
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -32,6 +35,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
     private val dynamicUrlApi: DynamicUrlApi,
     private val entityRepository: EntityRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val cache: HttpCache
 ) : DappMetadataRepository {
 
     override suspend fun verifyDapp(
@@ -90,6 +94,10 @@ class DappMetadataRepositoryImpl @Inject constructor(
             dynamicUrlApi.wellKnownDappDefinition(
                 "$origin/${BuildConfig.WELL_KNOWN_URL_SUFFIX}"
             ).execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = TimeoutDuration.FIVE_MINUTES
+                ),
                 map = { response ->
                     response.dAppMetadata.map { it.toDomainModel() }
                 },
