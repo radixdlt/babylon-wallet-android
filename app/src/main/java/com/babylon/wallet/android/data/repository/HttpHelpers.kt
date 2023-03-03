@@ -17,7 +17,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
     error: () -> Exception? = { null }
 ): Result<A> {
     return try {
-        val restored = if (cacheParameters != null && !cacheParameters.override) {
+        val restored = if (cacheParameters != null && !cacheParameters.isCacheOverridden) {
             cacheParameters.httpCache.restore(
                 call = this,
                 serializer = serializersModule.serializer(),

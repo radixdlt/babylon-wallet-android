@@ -5,7 +5,8 @@ import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsReq
 import com.babylon.wallet.android.data.gateway.toDomainModel
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
-import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.FIVE_MINUTES
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.NO_CACHE
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
@@ -36,8 +37,7 @@ class NonFungibleRepositoryImpl @Inject constructor(
         return gatewayApi.nonFungibleIds(NonFungibleIdsRequest(address)).execute(
             cacheParameters = CacheParameters(
                 httpCache = httpCache,
-                override = isRefreshing,
-                timeoutDuration = TimeoutDuration.FIVE_MINUTES
+                timeoutDuration = if (isRefreshing) NO_CACHE else FIVE_MINUTES
             ),
             map = { it.toDomainModel() }
         )

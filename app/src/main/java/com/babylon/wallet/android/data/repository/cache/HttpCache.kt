@@ -16,8 +16,11 @@ import javax.inject.Inject
 
 object TimeoutDuration {
 
+    private const val ZERO_SECONDS_TIME = 0L
     private const val ONE_MINUTE_TIME = 1L
     private const val FIVE_MINUTES_TIME = 5L
+
+    val NO_CACHE: Duration = Duration.ofSeconds(ZERO_SECONDS_TIME)
 
     val ONE_MINUTE: Duration = Duration.ofMinutes(ONE_MINUTE_TIME)
 
@@ -25,14 +28,24 @@ object TimeoutDuration {
 }
 
 data class CacheParameters(
-    // This is the instance of the cache, injected from the repository
+    /**
+     * This is the instance of the cache, injected from the repository
+     */
     val httpCache: HttpCache,
-    // This will denote the cache to ignore any value and just perform the request,
-    // like in a pull-to-refresh scenario
-    val override: Boolean = false,
-    // This is the duration that we believe that any duration more than that is considered stale
+    /**
+     * This is the maximum duration that the cache is considered active.
+     * * If the time passed is more than this duration, then the content is considered stale.
+     * * If [TimeoutDuration.NO_CACHE] is received, then the cache should be overridden,
+     *   since there is no point in checking the cache.
+     * * If [null] is received then the content has no timeout information, meaning that
+     *   if it exists in the cache, it will always return that valie
+     */
     val timeoutDuration: Duration? = null
-)
+) {
+
+    val isCacheOverridden: Boolean
+        get() = timeoutDuration?.isZero == true
+}
 
 interface HttpCache {
 

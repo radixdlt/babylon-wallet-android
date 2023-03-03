@@ -15,6 +15,8 @@ import com.babylon.wallet.android.data.gateway.generated.model.EntityResourcesRe
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.FIVE_MINUTES
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.NO_CACHE
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountResourcesSlim
@@ -61,8 +63,7 @@ class EntityRepositoryImpl @Inject constructor(
         return gatewayApi.entityDetails(EntityDetailsRequest(address)).execute(
             cacheParameters = CacheParameters(
                 httpCache = cache,
-                override = isRefreshing,
-                timeoutDuration = TimeoutDuration.ONE_MINUTE
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
             ),
             map = {
                 it
@@ -74,8 +75,7 @@ class EntityRepositoryImpl @Inject constructor(
         return gatewayApi.entityResources(EntityResourcesRequest(address)).execute(
             cacheParameters = CacheParameters(
                 httpCache = cache,
-                override = isRefreshing,
-                timeoutDuration = TimeoutDuration.FIVE_MINUTES
+                timeoutDuration = if (isRefreshing) NO_CACHE else FIVE_MINUTES
             ),
             map = { response -> response.toAccountResourceSlim() }
         )
