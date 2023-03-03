@@ -46,7 +46,7 @@ data class Profile(
     }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 19
+        const val LATEST_PROFILE_VERSION = 18
         fun init(
             gateway: Gateway,
             mnemonic: MnemonicWords,
