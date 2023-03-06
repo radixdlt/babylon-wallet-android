@@ -11,7 +11,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.utils.isValidUrl
+import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -32,7 +32,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
         dAppDefinitionAddress: String
     ): Result<Boolean> {
         return withContext(ioDispatcher) {
-            if (origin.isValidUrl()) {
+            if (origin.isValidHttpsUrl()) {
                 getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
                     when {
                         !gatewayMetadata.isDappDefinition() -> {

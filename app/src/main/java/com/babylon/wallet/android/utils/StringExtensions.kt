@@ -4,6 +4,7 @@ package com.babylon.wallet.android.utils
 
 import android.net.Uri
 import android.util.Patterns
+import android.webkit.URLUtil
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import java.text.DecimalFormat
@@ -56,6 +57,10 @@ fun String.formatDecimalSeparator(): String {
 
 fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
+}
+
+fun String.isValidHttpsUrl(): Boolean {
+    return Patterns.WEB_URL.matcher(this).matches() && URLUtil.isHttpsUrl(this)
 }
 
 fun String.isValidEmail(): Boolean {
