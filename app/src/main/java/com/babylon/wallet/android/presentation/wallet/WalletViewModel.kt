@@ -49,7 +49,10 @@ class WalletViewModel @Inject constructor(
     private suspend fun loadResourceData() {
         viewModelScope.launch {
             _walletUiState.update { state ->
-                state.copy(resources = accountRepository.getAccounts().map { it.toDomainModel() }.toPersistentList())
+                state.copy(
+                    resources = accountRepository.getAccounts().map { it.toDomainModel() }.toPersistentList(),
+                    isLoading = false
+                )
             }
             val result = getAccountResourcesUseCase()
             result.onError { error ->

@@ -14,5 +14,5 @@ object MetadataConstants {
     const val KEY_NFT_IMAGE = "nft_image"
 
     const val SYMBOL_XRD = "XRD"
-    val SPECIAL_METADATA = listOf(KEY_DESCRIPTION, KEY_NAME, KEY_SYMBOL, KEY_IMAGE_URL)
+    val SPECIAL_METADATA = listOf(KEY_DESCRIPTION, KEY_NAME, KEY_SYMBOL, KEY_IMAGE_URL, KEY_ACCOUNT_TYPE)
 }

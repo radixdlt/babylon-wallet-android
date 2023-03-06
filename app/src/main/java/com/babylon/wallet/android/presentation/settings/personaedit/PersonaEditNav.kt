@@ -43,10 +43,7 @@ fun NavGraphBuilder.personaEditScreen(
             }
         },
         popExitTransition = {
-            when (initialState.destination.route) {
-                ROUTE_EDIT_PERSONA -> null
-                else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-            }
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         },
         popEnterTransition = {
             EnterTransition.None

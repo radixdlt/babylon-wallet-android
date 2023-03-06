@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -9,6 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.settings.personaedit.ROUTE_EDIT_PERSONA
 import com.google.accompanist.navigation.animation.composable
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
@@ -38,7 +40,16 @@ fun NavGraphBuilder.dappDetailScreen(
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
         exitTransition = {
+            when (targetState.destination.route) {
+                ROUTE_EDIT_PERSONA -> null
+                else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            }
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+        },
+        popEnterTransition = {
+            EnterTransition.None
         },
         arguments = listOf(
             navArgument(ARG_DAPP_ADDRESS) {

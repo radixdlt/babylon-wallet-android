@@ -10,6 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.settings.dappdetail.ROUTE_DAPP_DETAIL
 import com.babylon.wallet.android.presentation.settings.personaedit.ROUTE_EDIT_PERSONA
 import com.google.accompanist.navigation.animation.composable
 
@@ -41,15 +42,12 @@ fun NavGraphBuilder.personaDetailScreen(
         },
         exitTransition = {
             when (targetState.destination.route) {
-                ROUTE_EDIT_PERSONA -> null
+                ROUTE_EDIT_PERSONA, ROUTE_DAPP_DETAIL -> null
                 else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
             }
         },
         popExitTransition = {
-            when (initialState.destination.route) {
-                ROUTE_EDIT_PERSONA -> null
-                else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-            }
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         },
         popEnterTransition = {
             EnterTransition.None
