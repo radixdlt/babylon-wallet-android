@@ -2,9 +2,6 @@
 
 package com.babylon.wallet.android.presentation.settings.personadetail
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +31,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -79,21 +77,7 @@ private fun PersonaDetailContent(
     onDappClick: (String) -> Unit
 ) {
     Box(modifier = modifier) {
-        AnimatedVisibility(
-            visible = persona == null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            FullscreenCircularProgressContent()
-        }
-        AnimatedVisibility(
-            visible = persona != null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            requireNotNull(persona)
+        persona?.let { persona ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -126,6 +110,9 @@ private fun PersonaDetailContent(
                     )
                 }
             }
+        }
+        if (persona == null) {
+            FullscreenCircularProgressContent()
         }
     }
 }
@@ -218,7 +205,7 @@ fun DappDetailContentPreview() {
         PersonaDetailContent(
             modifier = Modifier.fillMaxSize(),
             onBackClick = {},
-            persona = null,
+            persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
             authorizedDapps = persistentListOf()
         ) {}
