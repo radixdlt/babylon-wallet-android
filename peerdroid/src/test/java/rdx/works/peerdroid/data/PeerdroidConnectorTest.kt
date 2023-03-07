@@ -22,16 +22,16 @@ class PeerdroidConnectorTest {
     private lateinit var subject: PeerdroidConnector
 
     @Test
-    fun `if something fails in WebRTC manager then return an error`() {
-        fakeWebRtcManager = FakeWebRtcManager(testDispatcher, withError = true)
+    fun `add connection`() {
+        fakeWebRtcManager = FakeWebRtcManager(testDispatcher)
         fakeWebSocketClient = FakeWebSocketClient(testDispatcher)
 
         subject = PeerdroidConnectorImpl(fakeWebRtcManager, fakeWebSocketClient, testScope, testDispatcher)
 
         testScope.runTest {
-            val result = subject.createDataChannel(ENCRYPTION_KEY.decodeHex().toByteArray())
+            val result = subject.addConnection(ENCRYPTION_KEY.decodeHex().toByteArray())
 
-            assert(result is Result.Error)
+            assert(result is Result.Success)
         }
     }
 }
