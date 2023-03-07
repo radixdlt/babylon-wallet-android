@@ -4,13 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.ConnectionStateChanged
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
@@ -30,8 +27,6 @@ class SettingsConnectionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var currentConnectionPassword: String = ""
-    private var currentConnectionDisplayName: String = ""
-    private var listenIncomingMessagesJob: Job? = null
 
     private val args = SettingsConnectionScreenArgs(savedStateHandle)
     private val _state: MutableStateFlow<SettingsConnectionUiState> =
@@ -63,9 +58,6 @@ class SettingsConnectionViewModel @Inject constructor(
     }
 
     fun onConnectionClick() {
-        if (listenIncomingMessagesJob?.isActive == true) {
-            listenIncomingMessagesJob?.cancel()
-        }
         if (currentConnectionPassword.isEmpty()) return
 
         viewModelScope.launch {
@@ -76,12 +68,14 @@ class SettingsConnectionViewModel @Inject constructor(
             )
 
             if (encryptionKey != null) {
-                when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
-                    is Result.Success -> { // we have a data channel which is already open!
-                        currentConnectionDisplayName = state.value.editedConnectionDisplayName
-                        waitUntilConnectionIsTerminated()
+                when (peerdroidClient.addConnection(encryptionKey)) {
+                    is Result.Success -> {
+                        saveConnectionPassword(connectionDisplayName = state.value.editedConnectionDisplayName)
                     }
                     is Result.Error -> {
+                        _state.update {
+                            it.copy(isLoading = false)
+                        }
                         Timber.d("Failed to connect to remote peer.")
                     }
                 }
@@ -125,31 +119,11 @@ class SettingsConnectionViewModel @Inject constructor(
         _state.update { it.copy(mode = SettingsConnectionMode.ScanQr) }
     }
 
-    // This function is triggered when the data channel is open
-    // and finishes its job when the channel is closed.
-    // Because that means we successfully established a connection with connector extension
-    // and the connection password has been passed to the dapp.
-    private fun waitUntilConnectionIsTerminated() {
-        listenIncomingMessagesJob = viewModelScope.launch {
-            peerdroidClient
-                .listenForStateEvents()
-                .cancellable()
-                .collect { connectionState ->
-                    if (connectionState == ConnectionStateChanged.CLOSE ||
-                        connectionState == ConnectionStateChanged.CLOSING
-                    ) {
-                        saveConnectionPassword()
-                    }
-                }
-        }
-    }
-
-    private fun saveConnectionPassword() {
+    private fun saveConnectionPassword(connectionDisplayName: String) {
         viewModelScope.launch {
-            listenIncomingMessagesJob?.cancel()
-            peerdroidClient.close()
+            peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
             addP2PClientUseCase(
-                displayName = currentConnectionDisplayName,
+                displayName = connectionDisplayName,
                 connectionPassword = currentConnectionPassword
             )
             _state.update {

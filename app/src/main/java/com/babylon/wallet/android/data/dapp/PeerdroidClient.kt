@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
@@ -21,11 +20,11 @@ import javax.inject.Inject
 
 interface PeerdroidClient {
 
+    suspend fun addConnection(encryptionKey: ByteArray): Result<Unit>
+
     suspend fun connectToRemotePeerWithEncryptionKey(encryptionKey: ByteArray): Result<Unit>
 
     suspend fun sendMessage(message: String): Result<Unit>
-
-    fun listenForStateEvents(): Flow<MessageFromDataChannel.ConnectionStateChanged>
 
     fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
 
@@ -33,8 +32,6 @@ interface PeerdroidClient {
         shouldCloseConnectionToSignalingServer: Boolean = false,
         isDeleteConnectionEvent: Boolean = false
     )
-
-    val isAlreadyOpen: Boolean
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -43,12 +40,11 @@ class PeerdroidClientImpl @Inject constructor(
 
     private var dataChannel: DataChannelWrapper? = null
 
-    override val isAlreadyOpen: Boolean
-        get() = dataChannel?.state == DataChannelEvent.StateChanged.OPEN
+    override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
+        return peerdroidConnector.addConnection(encryptionKey)
+    }
 
-    override suspend fun connectToRemotePeerWithEncryptionKey(
-        encryptionKey: ByteArray,
-    ): Result<Unit> {
+    override suspend fun connectToRemotePeerWithEncryptionKey(encryptionKey: ByteArray): Result<Unit> {
         val result = peerdroidConnector.createDataChannel(
             encryptionKey = encryptionKey
         )
@@ -68,17 +64,6 @@ class PeerdroidClientImpl @Inject constructor(
         return dataChannel
             ?.sendMessage(message)
             ?: Result.Error("data channel is null")
-    }
-
-    override fun listenForStateEvents(): Flow<MessageFromDataChannel.ConnectionStateChanged> {
-        return dataChannel
-            ?.dataChannelEvents
-            ?.cancellable()
-            ?.filterIsInstance<DataChannelEvent.StateChanged>()
-            ?.map { stateChanged ->
-                parseDataChannelState(stateChanged)
-            }
-            ?: emptyFlow()
     }
 
     override fun listenForIncomingRequests(): Flow<MessageFromDataChannel> {
