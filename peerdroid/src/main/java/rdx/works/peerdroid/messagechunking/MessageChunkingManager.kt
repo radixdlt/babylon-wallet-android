@@ -13,7 +13,6 @@ suspend fun splitMessage(messageInByteArray: ByteArray): List<BasePackage> = mes
 
 suspend fun assembleChunks(chunks: List<BasePackage>): ByteArray = chunks.assembleChunks()
 
-@Suppress("ReturnCount")
 fun verifyAssembledMessage(assembledMessage: ByteArray, chunks: List<BasePackage>): Result<String> {
     try {
         val metadataChunk = chunks.filterIsInstance<BasePackage.MetadataPackage>().first()
