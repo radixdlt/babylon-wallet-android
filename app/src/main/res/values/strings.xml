@@ -231,5 +231,8 @@
     <plurals name="number_of_accounts">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>
-    </plurals>>
+    </plurals>
+    <string name="action_copy">Copy %1$s Address</string>
+    <string name="action_open_in_dashboard">View %1$s in Radix Dashboard</string>
+    <string name="no_web_browser_installed">There is no web browser installed in this device</string>
 </resources>
