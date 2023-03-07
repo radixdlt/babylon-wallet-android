@@ -37,7 +37,7 @@ fun CreateAccountConfirmationScreen(
     CreateAccountConfirmationContent(
         modifier = modifier,
         accountName = accountState.accountName,
-        accountId = accountState.accountAddressTruncated,
+        accountId = accountState.accountAddress,
         accountConfirmed = viewModel::accountConfirmed,
         appearanceId = accountState.appearanceId,
         requestSource = viewModel.args.requestSource

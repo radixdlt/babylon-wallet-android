@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
@@ -31,7 +30,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
             }
             accountUiState = accountUiState.copy(
                 accountName = account.displayName,
-                accountAddressTruncated = account.address.truncatedHash(),
+                accountAddress = account.address,
                 appearanceId = account.appearanceID
             )
         }
@@ -51,7 +50,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     data class AccountConfirmationUiState(
         val accountName: String = "",
-        val accountAddressTruncated: String = "",
+        val accountAddress: String = "",
         val appearanceId: Int = 0,
     )
 }
