@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -20,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.utils.truncatedHash
 
 @Composable
 fun CardStack(
@@ -57,14 +55,10 @@ fun CardStack(
                     color = Color.White
                 )
 
-                val addressTruncated = remember(accountAddress) {
-                    accountAddress.truncatedHash()
-                }
-                Text(
-                    text = addressTruncated,
-                    textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body2Regular,
-                    color = Color.White.copy(alpha = 0.8f)
+                ActionableAddress(
+                    address = accountAddress,
+                    textStyle = RadixTheme.typography.body2Regular,
+                    contentColor = Color.White.copy(alpha = 0.8f)
                 )
             }
         }
