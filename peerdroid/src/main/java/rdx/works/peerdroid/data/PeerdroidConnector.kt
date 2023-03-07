@@ -142,40 +142,40 @@ internal class PeerdroidConnectorImpl(
         webRtcManager
             .createPeerConnection(connectionId)
             .onStart { // for debugging
-                Timber.d("⚙️ ⚡ start observing webrtc events NEW")
+                Timber.d("⚙️ 🛠️ start observing webrtc events")
             }
             .onCompletion { // for debugging
-                Timber.d("⚙️ ⚡ end observing webrtc events NEW")
+                Timber.d("⚙️ 🛠️ end observing webrtc events")
             }
             .onEach { event ->
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
-                        Timber.d("⚙️ ⚡ renegotiation needed - NEW")
+                        Timber.d("⚙️ 🛠️ renegotiation needed")
                     }
                     is PeerConnectionEvent.IceGatheringChange -> {
-                        Timber.d("⚙️ ⚡ ice gathering state changed: ${event.state} - NEW")
+                        Timber.d("⚙️ 🛠️ ice gathering state changed: ${event.state}")
                     }
                     is PeerConnectionEvent.IceCandidate -> {
                         sendIceCandidateToRemotePeer(event.data)
                     }
                     is PeerConnectionEvent.SignalingState -> {
-                        Timber.d("⚙️ ⚡ signaling state changed: ${event.message} - NEW")
+                        Timber.d("⚙️ 🛠️ signaling state changed: ${event.message}")
                     }
                     PeerConnectionEvent.Connected -> {
-                        Timber.d("⚙️ ⚡ signaling state changed: peer connection DISCONNECTED - NEW")
+                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection connected 🟢")
                     }
                     PeerConnectionEvent.Disconnected -> {
-                        Timber.d("⚙️ ⚡ signaling state changed: peer connection CONNECTED - NEW")
+                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection disconnected 🔴")
                         addConnectionDeferred.complete(Result.Success(Unit))
                     }
                     PeerConnectionEvent.Failed -> {
-                        Timber.d("⚙️ ⚡ signaling state changed: peer connection FAILED - NEW")
+                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection failed ❌")
                         addConnectionDeferred.complete(Result.Error(message = "peer connection failed"))
                     }
                 }
             }
             .catch { exception ->
-                Timber.e("⚙️ ⚡ an exception occurred: ${exception.localizedMessage} NEW")
+                Timber.e("⚙️ 🛠️ an exception occurred: ${exception.localizedMessage}")
                 addConnectionDeferred.complete(Result.Error(message = exception.localizedMessage))
             }
             .completeWhenDisconnected()
@@ -207,6 +207,7 @@ internal class PeerdroidConnectorImpl(
                         Timber.d("⚙️ ⚡ signaling state changed: ${event.message}")
                     }
                     PeerConnectionEvent.Connected -> {
+                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection connected 🟢")
                         dataChannelDeferred.complete(
                             Result.Success(
                                 data = DataChannelWrapper(webRtcDataChannel = webRtcManager.getDataChannel())
@@ -214,10 +215,10 @@ internal class PeerdroidConnectorImpl(
                         )
                     }
                     PeerConnectionEvent.Disconnected -> {
-                        Timber.d("⚙️ ⚡ signaling state changed: peer connection disconnected")
+                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection disconnected 🔴")
                     }
                     PeerConnectionEvent.Failed -> {
-                        Timber.d("⚙️ ⚡ signaling state changed: peer connection FAILED - NEW")
+                        Timber.d("⚙️ ⚡ signaling state changed: peer connection failed ❌")
                         dataChannelDeferred.complete(Result.Error(message = "peer connection failed"))
                     }
                 }
