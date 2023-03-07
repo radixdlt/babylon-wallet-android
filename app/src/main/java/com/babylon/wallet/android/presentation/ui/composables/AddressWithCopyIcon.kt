@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,9 +27,12 @@ fun AddressWithCopyIcon(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
     ) {
+        val addressTruncated = remember(address) {
+            address.truncatedHash()
+        }
         Text(
             modifier = Modifier.weight(1f, false),
-            text = address.truncatedHash(),
+            text = addressTruncated,
             color = contentColor,
             style = RadixTheme.typography.body2HighImportance,
             maxLines = 1
