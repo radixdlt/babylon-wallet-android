@@ -44,7 +44,8 @@ fun ActionableAddress(
     modifier: Modifier = Modifier,
     address: String,
     textStyle: TextStyle = LocalTextStyle.current,
-    contentColor: Color = Color.Unspecified
+    textColor: Color = Color.Unspecified,
+    iconColor: Color = textColor
 ) {
     val addressWithType = resolveAddressWithType(address = address)
     val actions = resolveActions(addressWithType = addressWithType)
@@ -61,7 +62,7 @@ fun ActionableAddress(
         ) {
             Text(
                 text = addressWithType.truncated,
-                color = contentColor,
+                color = textColor,
                 maxLines = 1,
                 style = textStyle
             )
@@ -70,7 +71,7 @@ fun ActionableAddress(
                 modifier = Modifier.size(14.dp),
                 painter = painterResource(id = actions.primary.icon),
                 contentDescription = actions.primary.name,
-                tint = contentColor,
+                tint = iconColor,
             )
         }
 

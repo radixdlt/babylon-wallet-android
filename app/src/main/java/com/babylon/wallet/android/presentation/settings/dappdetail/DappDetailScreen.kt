@@ -394,7 +394,7 @@ private fun DappDefinitionAddressRow(
         ActionableAddress(
             address = dappDefinitionAddress,
             textStyle = RadixTheme.typography.body1Regular,
-            contentColor = RadixTheme.colors.gray1
+            textColor = RadixTheme.colors.gray1
         )
     }
 }
@@ -629,7 +629,7 @@ private fun PersonaSharedAccountCard(
         ActionableAddress(
             address = account.address,
             textStyle = RadixTheme.typography.body2HighImportance,
-            contentColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )
     }
 }

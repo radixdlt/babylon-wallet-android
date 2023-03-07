@@ -436,7 +436,7 @@ private fun AccountSummaryContent(
         ActionableAddress(
             address = accountAddress,
             textStyle = RadixTheme.typography.body2HighImportance,
-            contentColor = RadixTheme.colors.white
+            textColor = RadixTheme.colors.white
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         walletFiatBalance?.let { value ->

@@ -127,7 +127,8 @@ private fun ResourceAddressRow(
         ActionableAddress(
             address = address,
             textStyle = RadixTheme.typography.body1Regular,
-            contentColor = RadixTheme.colors.gray1
+            textColor = RadixTheme.colors.gray1,
+            iconColor = RadixTheme.colors.gray2
         )
     }
 }

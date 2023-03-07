@@ -58,7 +58,7 @@ fun CardStack(
                 ActionableAddress(
                     address = accountAddress,
                     textStyle = RadixTheme.typography.body2Regular,
-                    contentColor = Color.White.copy(alpha = 0.8f)
+                    textColor = Color.White.copy(alpha = 0.8f)
                 )
             }
         }

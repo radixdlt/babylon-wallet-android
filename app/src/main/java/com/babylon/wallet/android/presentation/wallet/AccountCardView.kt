@@ -58,7 +58,7 @@ fun AccountCardView(
             ActionableAddress(
                 address = address,
                 textStyle = RadixTheme.typography.body2HighImportance,
-                contentColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
             AnimatedVisibility(visible = false) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

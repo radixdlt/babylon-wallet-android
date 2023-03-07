@@ -49,7 +49,7 @@ fun AccountSelectionCard(
             ActionableAddress(
                 address = address,
                 textStyle = RadixTheme.typography.body2Link,
-                contentColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
         }
         Spacer(modifier = Modifier.weight(0.1f))
