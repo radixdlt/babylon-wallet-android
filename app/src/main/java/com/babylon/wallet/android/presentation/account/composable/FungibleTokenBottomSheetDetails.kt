@@ -15,6 +15,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +34,7 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.truncatedHash
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -100,7 +102,6 @@ fun FungibleTokenBottomSheetDetails(
             }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                shortenedAddress = token.shortenedAddress(),
                 address = token.address,
                 onCopyAccountAddress = onCopyAccountAddress
             )
@@ -112,7 +113,6 @@ fun FungibleTokenBottomSheetDetails(
 @Composable
 private fun ResourceAddressRow(
     modifier: Modifier,
-    shortenedAddress: String,
     address: String,
     onCopyAccountAddress: (String) -> Unit
 ) {
@@ -121,6 +121,9 @@ private fun ResourceAddressRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
+        val shortenedAddress = remember(address) {
+            address.truncatedHash()
+        }
         AssetMetadataRow(
             modifier = Modifier.weight(1f),
             key = stringResource(id = R.string.resource_address),
