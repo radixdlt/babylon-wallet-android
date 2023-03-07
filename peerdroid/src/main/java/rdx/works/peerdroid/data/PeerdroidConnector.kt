@@ -298,7 +298,7 @@ internal class PeerdroidConnectorImpl(
                     sessionDescriptionValue = sessionDescriptionValue
                 )
                 // first set the local session description
-                val isSet = setLocalDescriptionAndObserveDataChannelState(
+                val isSet = setLocalDescription(
                     localSessionDescription = localSessionDescription
                 )
                 if (isSet) {
@@ -319,7 +319,7 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-    private suspend fun setLocalDescriptionAndObserveDataChannelState(
+    private suspend fun setLocalDescription(
         localSessionDescription: SessionDescriptionWrapper
     ): Boolean {
         Timber.d("⚙️ set local session description in local WebRTC")

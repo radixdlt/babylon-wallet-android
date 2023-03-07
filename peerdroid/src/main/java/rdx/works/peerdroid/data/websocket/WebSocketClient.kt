@@ -98,7 +98,7 @@ internal class WebSocketClientImpl(
         }
     }
 
-    // not used at the moment
+    // not used at the moment, but in the future when the wallet will send the offer
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
         val offerJson = json.encodeToString(offerPayload)
         val encryptedOffer = offerJson.toByteArray().encrypt(
@@ -247,7 +247,7 @@ internal class WebSocketClientImpl(
         )
     }
 
-    // not used at the moment
+    // not used at the moment, but in the future when the wallet will send the offer
     private fun decryptAndParseAnswerPayload(
         answerPayload: RpcMessage.Answer
     ): SignalingServerMessage.RemoteData.Answer {
