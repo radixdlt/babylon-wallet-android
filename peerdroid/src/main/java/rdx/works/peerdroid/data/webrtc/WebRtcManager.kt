@@ -145,14 +145,15 @@ internal class WebRtcManagerImpl @Inject constructor(
     ): Result<Unit> = peerConnection.setSuspendingRemoteDescription(sessionDescription = sessionDescription)
 
     override suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
-        val isIceCandidateAdded = peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
-
-        return if (isIceCandidateAdded) {
-            Timber.d("🔌 added successfully ice candidate")
-            Result.Success(Unit)
-        } else {
-            Timber.e("🔌 failed to add ice candidate")
-            Result.Error("failed to add ice candidate")
+        return when (val result = peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)) {
+            is Result.Success -> {
+                Timber.d("🔌 added successfully ice candidate")
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.e("🔌 failed to add ice candidate with error: ${result.message}")
+                Result.Error("failed to add ice candidate")
+            }
         }
     }
 
