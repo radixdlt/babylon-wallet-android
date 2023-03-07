@@ -8,20 +8,13 @@ import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -33,10 +26,8 @@ import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
-import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
-import rdx.works.peerdroid.data.websocket.model.SignalingServerResponse
-import rdx.works.peerdroid.di.ApplicationScope
-import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.peerdroid.data.websocket.model.SignalingServerDto
+import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
@@ -51,9 +42,11 @@ internal interface WebSocketClient {
 
     suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload)
 
+    suspend fun sendAnswerMessage(answerPayload: RpcMessage.AnswerPayload)
+
     suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data)
 
-    fun observeMessages(): Flow<SignalingServerIncomingMessage>
+    fun observeMessages(): Flow<SignalingServerMessage>
 
     suspend fun closeSession()
 }
@@ -64,9 +57,7 @@ internal interface WebSocketClient {
 // between the mobile wallet and the browser extension.
 internal class WebSocketClientImpl(
     private val client: HttpClient,
-    private val json: Json,
-    @ApplicationScope private val applicationScope: CoroutineScope,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    private val json: Json
 ) : WebSocketClient {
 
     // represents a web socket session between two peers
@@ -75,14 +66,13 @@ internal class WebSocketClientImpl(
     private lateinit var connectionId: String
     private lateinit var encryptionKey: ByteArray
 
-    private lateinit var sessionDeferred: CompletableDeferred<Result<Unit>>
+    private var remoteClientId = ""
 
     override suspend fun initSession(
         connectionId: String,
         encryptionKey: ByteArray
     ): Result<Unit> {
-        sessionDeferred = CompletableDeferred()
-        try {
+        return try {
             this.connectionId = connectionId
             this.encryptionKey = encryptionKey
 
@@ -93,84 +83,67 @@ internal class WebSocketClientImpl(
                 url("$BASE_URL$connectionId?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
-                Timber.d("successfully connected to signaling server")
-                Timber.d("waiting remote peer to connect to signaling server")
-                waitUntilRemotePeerIsConnected()
+                Timber.d("🛰 successfully connected to signaling server")
+                Result.Success(Unit)
             } else {
-                Timber.e("failed to connect to signaling server")
-                sessionDeferred.complete(Result.Error("Couldn't establish a connection."))
+                Timber.e("🛰 failed to connect to signaling server")
+                Result.Error("Couldn't establish a connection.")
             }
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("connection exception: ${exception.localizedMessage}")
-            sessionDeferred.complete(Result.Error(exception.localizedMessage ?: "Unknown error"))
+            Timber.e("🛰 connection exception: ${exception.localizedMessage}")
+            Result.Error(exception.localizedMessage ?: "Unknown error")
         }
-
-        return sessionDeferred.await()
     }
 
-    private fun waitUntilRemotePeerIsConnected() {
-        socket?.incoming
-            ?.receiveAsFlow()
-            ?.onStart { // for debugging
-                Timber.d("start observing remote peer connection until is connected")
-            }
-            ?.onCompletion { // for debugging
-                Timber.d("end observing remote peer connection until is connected")
-            }
-            ?.filterIsInstance<Frame.Text>()
-            ?.mapNotNull { frameText ->
-                val responseJsonString = frameText.readText()
-                decodeAndParseResponseFromJson(responseJsonString)
-            }
-            ?.takeWhile { signalingServerIncomingMessage ->
-                sessionDeferred.complete(Result.Success(Unit))
-                signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientJustConnected &&
-                    signalingServerIncomingMessage != SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
-            }
-            ?.flowOn(ioDispatcher)
-            ?.cancellable()
-            ?.launchIn(applicationScope)
-    }
-
+    // not used at the moment
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
         val offerJson = json.encodeToString(offerPayload)
         val encryptedOffer = offerJson.toByteArray().encrypt(
             withEncryptionKey = encryptionKey
         )
-
-        val rpcMessage = RpcMessage(
-            method = RpcMessage.RpcMethod.OFFER.value,
-            source = RpcMessage.ClientSource.MOBILE_WALLET.value,
-            connectionId = connectionId,
+        val rpcMessage = RpcMessage.Offer(
+            targetClientId = "todo",
             encryptedPayload = encryptedOffer.toHexString()
         )
-
         val message = json.encodeToString(rpcMessage)
-        Timber.d("=> sending offer with requestId: ${rpcMessage.requestId}")
+        Timber.d("🛰 sending offer with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
 
-    override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
+    override suspend fun sendAnswerMessage(answerPayload: RpcMessage.AnswerPayload) {
+        val answerJson = json.encodeToString(answerPayload)
+        val encryptedAnswer = answerJson.toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
+        )
+        val rpcMessage: RpcMessage = RpcMessage.Answer(
+            targetClientId = remoteClientId,
+            encryptedPayload = encryptedAnswer.toHexString()
+        )
+        val message = json.encodeToString(rpcMessage)
+        Timber.d("🛰 sending answer to remoteClient: $remoteClientId")
+        sendMessage(message)
+    }
+
+    override suspend fun sendIceCandidateMessage(
+        iceCandidateData: PeerConnectionEvent.IceCandidate.Data
+    ) {
         val iceCandidatePayload = iceCandidateData.toJsonPayload()
         val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
             withEncryptionKey = encryptionKey
         )
-        val rpcMessage = RpcMessage(
-            method = RpcMessage.RpcMethod.ICE_CANDIDATE.value,
-            source = RpcMessage.ClientSource.MOBILE_WALLET.value,
-            connectionId = connectionId,
+        val rpcMessage: RpcMessage = RpcMessage.IceCandidate(
+            targetClientId = remoteClientId,
             encryptedPayload = encryptedIceCandidate.toHexString()
         )
-
         val message = json.encodeToString(rpcMessage)
-        Timber.d("=> sending ice candidate with requestId: ${rpcMessage.requestId}")
+        Timber.d("\uD83D\uDEF0 sending ice candidate to remoteClient: $remoteClientId")
         sendMessage(message)
     }
 
-    override fun observeMessages(): Flow<SignalingServerIncomingMessage> {
+    override fun observeMessages(): Flow<SignalingServerMessage> {
         return try {
             socket?.incoming // web socket channel
                 ?.receiveAsFlow()
@@ -180,10 +153,16 @@ internal class WebSocketClientImpl(
                     val responseJsonString = frameText.readText()
                     decodeAndParseResponseFromJson(responseJsonString)
                 }
-                ?: flowOf(SignalingServerIncomingMessage.UnknownError)
+                ?.map { signalingServerMessage ->
+                    if (signalingServerMessage is SignalingServerMessage.RemoteInfo.ClientConnected) {
+                        remoteClientId = signalingServerMessage.remoteClientId
+                    }
+                    signalingServerMessage
+                }
+                ?: flowOf(SignalingServerMessage.Error.Unknown)
         } catch (exception: Exception) {
-            Timber.e("incoming message exception: ${exception.localizedMessage}")
-            flowOf(SignalingServerIncomingMessage.UnknownError)
+            Timber.e("🛰 incoming message exception: ${exception.localizedMessage}")
+            flowOf(SignalingServerMessage.Error.Unknown)
         }
     }
 
@@ -198,110 +177,101 @@ internal class WebSocketClientImpl(
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("failed to send message: ${exception.localizedMessage}")
+            Timber.e("🛰 failed to send message: ${exception.localizedMessage}")
         }
     }
 
-    private fun decodeAndParseResponseFromJson(responseJsonString: String): SignalingServerIncomingMessage {
-        val responseJson = json.decodeFromString<SignalingServerResponse>(responseJsonString)
-        // based on the info of the response return the corresponding SignalingServerIncomingMessage data model
-        // if info is remoteData then encapsulate the encrypted payload in the SignalingServerIncomingMessage data model
-        return when (SignalingServerResponse.Info.from(responseJson.info)) {
-            SignalingServerResponse.Info.CONFIRMATION -> SignalingServerIncomingMessage.Confirmation(
-                requestId = responseJson.requestId.orEmpty()
-            )
-
-            SignalingServerResponse.Info.DATA_FROM_BROWSER_EXTENSION -> parseRemoteDataFromResponse(
-                responseJson
-            )
-
-            SignalingServerResponse.Info.REMOTE_CLIENT_DISCONNECTED ->
-                SignalingServerIncomingMessage.RemoteClientDisconnected
-
-            SignalingServerResponse.Info.REMOTE_CLIENT_IS_ALREADY_CONNECTED ->
-                SignalingServerIncomingMessage.RemoteClientIsAlreadyConnected
-
-            SignalingServerResponse.Info.REMOTE_CLIENT_JUST_CONNECTED ->
-                SignalingServerIncomingMessage.RemoteClientJustConnected
-
-            SignalingServerResponse.Info.MISSING_REMOTE_CLIENT_ERROR ->
-                SignalingServerIncomingMessage.MissingRemoteClientError(
-                    requestId = responseJson.requestId.orEmpty()
+    private fun decodeAndParseResponseFromJson(responseJsonString: String): SignalingServerMessage {
+        return when (val messageJson = json.decodeFromString<SignalingServerDto>(responseJsonString)) {
+            is SignalingServerDto.RemoteClientDisconnected -> {
+                SignalingServerMessage.RemoteInfo.ClientDisconnected(remoteClientId = messageJson.remoteClientId)
+            }
+            is SignalingServerDto.RemoteClientIsAlreadyConnected -> {
+                SignalingServerMessage.RemoteInfo.ClientConnected(remoteClientId = messageJson.remoteClientId)
+            }
+            is SignalingServerDto.RemoteClientJustConnected -> {
+                SignalingServerMessage.RemoteInfo.ClientConnected(remoteClientId = messageJson.remoteClientId)
+            }
+            is SignalingServerDto.MissingRemoteClientError -> {
+                SignalingServerMessage.RemoteInfo.MissingClient(requestId = messageJson.requestId)
+            }
+            is SignalingServerDto.Confirmation -> {
+                SignalingServerMessage.Confirmation(requestId = messageJson.requestId)
+            }
+            is SignalingServerDto.RemoteData -> {
+                parseRemoteDataFromResponse(messageJson)
+            }
+            is SignalingServerDto.InvalidMessageError -> {
+                SignalingServerMessage.Error.InvalidMessage(
+                    errorMessage = messageJson.error
                 )
-
-            SignalingServerResponse.Info.INVALID_MESSAGE_ERROR -> SignalingServerIncomingMessage.InvalidMessageError(
-                errorMessage = responseJson.error ?: "unknown error"
-            )
-
-            SignalingServerResponse.Info.VALIDATION_ERROR -> SignalingServerIncomingMessage.ValidationError
+            }
+            is SignalingServerDto.ValidationError -> {
+                Timber.e("\uD83D\uDEF0 validation error in signaling server message: ${messageJson.error}")
+                SignalingServerMessage.Error.Validation
+            }
         }
     }
 
-    @Suppress("ReturnCount")
     private fun parseRemoteDataFromResponse(
-        responseJson: SignalingServerResponse
-    ): SignalingServerIncomingMessage {
-        // check if the request id and payload is not null, otherwise return an UnknownMessage
-        if (responseJson.requestId != null && responseJson.data != null) {
-            // check if client's connection id is equal to extension's connection id, and if not return an error
-            if (connectionId != responseJson.data.connectionId) {
-                return SignalingServerIncomingMessage.RemoteConnectionIdNotMatchedError
+        remoteData: SignalingServerDto.RemoteData
+    ): SignalingServerMessage {
+        // Check whether the method is "answer" or "iceCandidate" and build the
+        // corresponding SignalingServerMessage data model.
+        return when (remoteData.data) {
+            is RpcMessage.Offer -> {
+                decryptAndParseOfferPayload(remoteData.data)
             }
-            // check if remote's source is "extension", and if not return an error
-            if (responseJson.data.source != RpcMessage.ClientSource.BROWSER_EXTENSION.value) {
-                return SignalingServerIncomingMessage.RemoteClientSourceError
+            is RpcMessage.Answer -> {
+                decryptAndParseAnswerPayload(remoteData.data)
             }
-            // Check whether the method is "answer" or "iceCandidate" and build the
-            // corresponding SignalingServerIncomingMessage data model.
-            // We do not handle the "offer" because the wallet initiates the WebRTC communication,
-            // therefore in case an "offer" is received we return a UnknownMessage.
-            return when (RpcMessage.RpcMethod.from(responseJson.data.method)) {
-                RpcMessage.RpcMethod.ANSWER -> {
-                    decryptAndParseAnswerPayload(responseJson)
-                }
-                RpcMessage.RpcMethod.ICE_CANDIDATE -> {
-                    decryptAndParseIceCandidatePayload(responseJson)
-                }
-                RpcMessage.RpcMethod.OFFER -> {
-                    SignalingServerIncomingMessage.UnknownMessage
-                }
+            is RpcMessage.IceCandidate -> {
+                decryptAndParseIceCandidatePayload(remoteData.data)
             }
-        } else {
-            return SignalingServerIncomingMessage.UnknownMessage
         }
     }
 
-    @Suppress("UseRequire")
-    private fun decryptAndParseAnswerPayload(
-        responseJson: SignalingServerResponse
-    ): SignalingServerIncomingMessage.BrowserExtensionAnswer {
-        if (responseJson.data == null || responseJson.requestId.isNullOrEmpty()) {
-            // should never reach this point!
-            throw IllegalArgumentException("rpc message is null in answer payload")
-        }
-
-        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+    private fun decryptAndParseOfferPayload(
+        offerPayload: RpcMessage.Offer
+    ): SignalingServerMessage.RemoteData.Offer {
+        val message = decryptData(
+            input = offerPayload.encryptedPayload.decodeHex().toByteArray(),
+            encryptionKey = encryptionKey
         )
-        val answer =
-            json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
+        val offer = json.decodeFromString<RpcMessage.OfferPayload>(String(message, StandardCharsets.UTF_8))
 
-        return SignalingServerIncomingMessage.BrowserExtensionAnswer(
-            requestId = responseJson.requestId,
+        return SignalingServerMessage.RemoteData.Offer(
+            targetClientId = offerPayload.targetClientId,
+            requestId = offerPayload.requestId,
+            sdp = offer.sdp
+        )
+    }
+
+    // not used at the moment
+    private fun decryptAndParseAnswerPayload(
+        answerPayload: RpcMessage.Answer
+    ): SignalingServerMessage.RemoteData.Answer {
+        val message = decryptData(
+            input = answerPayload.encryptedPayload.decodeHex().toByteArray(),
+            encryptionKey = encryptionKey
+        )
+        val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
+
+        return SignalingServerMessage.RemoteData.Answer(
+            targetClientId = "todo",
+            requestId = answerPayload.requestId,
             sdp = answer.sdp
         )
     }
 
-    @Suppress("UseRequire")
     private fun decryptAndParseIceCandidatePayload(
-        responseJson: SignalingServerResponse
-    ): SignalingServerIncomingMessage.BrowserExtensionIceCandidate {
-        if (responseJson.data == null || responseJson.requestId.isNullOrEmpty()) {
-            // should never reach this point!
-            throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
-        }
-
-        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
+        iceCandidatePayload: RpcMessage.IceCandidate
+    ): SignalingServerMessage.RemoteData.IceCandidate {
+//        val message = decryptData(
+//            input = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray(),
+//            encryptionKey = encryptionKey
+//        )
+        val message = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
         )
         val iceCandidateString = json.decodeFromString<RpcMessage.IceCandidatePayload>(
@@ -314,15 +284,16 @@ internal class WebSocketClientImpl(
             candidate = iceCandidateString.candidate
         )
 
-        return SignalingServerIncomingMessage.BrowserExtensionIceCandidate(
-            requestId = responseJson.requestId,
+        return SignalingServerMessage.RemoteData.IceCandidate(
+            targetClientId = remoteClientId,
+            requestId = iceCandidatePayload.requestId,
             remoteIceCandidate = remoteIceCandidate
         )
     }
 
     companion object {
         // TODO same url for production?
-//        private const val BASE_URL = "wss://signaling-server-dev.rdx-works-main.extratools.works/"
-        private const val BASE_URL = "wss://signaling-server-betanet.radixdlt.com/"
+        private const val BASE_URL = "wss://signaling-server-dev.rdx-works-main.extratools.works/"
+//        private const val BASE_URL = "wss://signaling-server-betanet.radixdlt.com/"
     }
 }
