@@ -6,15 +6,22 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalTextStyle
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,33 +48,61 @@ fun ActionableAddress(
 ) {
     val addressWithType = resolveAddressWithType(address = address)
     val actions = resolveActions(addressWithType = addressWithType)
+    var isDropdownMenuExpanded by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = modifier.combinedClickable(
-            onClick = {
-                actions.primary.onAction()
-            },
-            onLongClick = {
+    Box {
+        Row(
+            modifier = modifier.combinedClickable(
+                onClick = { actions.primary.onAction() },
+                onLongClick = { isDropdownMenuExpanded = true }
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+        ) {
+            Text(
+                text = addressWithType.truncated,
+                color = contentColor,
+                maxLines = 1,
+                style = textStyle
+            )
 
+            Icon(
+                modifier = Modifier.size(14.dp),
+                painter = painterResource(id = actions.primary.icon),
+                contentDescription = actions.primary.name,
+                tint = contentColor,
+            )
+        }
+
+        DropdownMenu(
+            modifier = Modifier.background(RadixTheme.colors.defaultBackground),
+            expanded = isDropdownMenuExpanded,
+            onDismissRequest = { isDropdownMenuExpanded = false }
+        ) {
+            actions.all.forEach {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = it.name,
+                            style = RadixTheme.typography.body1Regular,
+                            color = RadixTheme.colors.defaultText
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(id = it.icon),
+                            contentDescription = it.name,
+                            tint = RadixTheme.colors.defaultText
+                        )
+                    },
+                    onClick = {
+                        isDropdownMenuExpanded = false
+                        it.onAction()
+                    }
+                )
             }
-        ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
-    ) {
-
-        Text(
-            text = addressWithType.truncated,
-            color = contentColor,
-            maxLines = 1,
-            style = textStyle
-        )
-
-        Icon(
-            modifier = Modifier.size(14.dp),
-            painter = painterResource(id = actions.primary.icon),
-            contentDescription = actions.primary.name,
-            tint = contentColor,
-        )
+        }
     }
 }
 
@@ -90,7 +125,7 @@ private fun resolveActions(
     val copyAction = ActionableAddressAction(
         name = stringResource(
             id = R.string.action_copy,
-            addressWithType.type.previewName()
+            addressWithType.type.localisedName()
         ),
         icon = R.drawable.ic_copy
     ) {
@@ -101,7 +136,7 @@ private fun resolveActions(
     val openExternalAction = ActionableAddressAction(
         name = stringResource(
             id = R.string.action_open_in_dashboard,
-            addressWithType.type.previewName()
+            addressWithType.type.localisedName()
         ),
         icon = R.drawable.ic_external_link
     ) {
@@ -164,10 +199,6 @@ private enum class AddressType(
     TRANSACTION(AddressHRP.TRANSACTION),
     COMPONENT(AddressHRP.COMPONENT);
 
-    fun previewName() = name.replaceFirstChar {
-        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-    }
-
     companion object {
 
         fun from(address: String): AddressType = AddressType.values().find {
@@ -177,10 +208,25 @@ private enum class AddressType(
     }
 }
 
+@Composable
+private fun AddressType.localisedName(): String = when (this) {
+    AddressType.PACKAGE -> stringResource(id = R.string.address_package)
+    AddressType.RESOURCE -> stringResource(id = R.string.address_resource)
+    AddressType.ACCOUNT -> stringResource(id = R.string.address_account)
+    AddressType.TRANSACTION -> stringResource(id = R.string.address_transaction)
+    AddressType.COMPONENT -> stringResource(id = R.string.address_component)
+}.replaceFirstChar {
+    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+}
+
 private data class ActionableAddressActions(
     val primary: ActionableAddressAction,
     val secondary: ActionableAddressAction
-)
+) {
+
+    val all = listOf(primary, secondary)
+
+}
 
 private data class ActionableAddressAction(
     val name: String,
