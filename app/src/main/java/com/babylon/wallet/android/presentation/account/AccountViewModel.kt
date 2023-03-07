@@ -21,7 +21,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.decodeUtf8
-import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -48,8 +47,7 @@ class AccountViewModel @Inject constructor(
     private val _accountUiState = MutableStateFlow(
         AccountUiState(
             accountAddressFull = accountId,
-            accountName = accountName.decodeUtf8(),
-            accountAddressShortened = accountId.truncatedHash()
+            accountName = accountName.decodeUtf8()
         )
     )
     val accountUiState = _accountUiState.asStateFlow()
@@ -142,7 +140,6 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
     val accountName: String = "",
-    val accountAddressShortened: String = "",
     val accountAddressFull: String = "",
     val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,

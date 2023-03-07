@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.decodeUtf8
-import com.babylon.wallet.android.utils.truncatedHash
 import io.mockk.every
 import io.mockk.mockkStatic
 import kotlinx.coroutines.CoroutineScope
@@ -88,7 +87,6 @@ class AccountViewModelTest {
         // then
         with(event.last()) {
             assert(!this.isLoading)
-            assert(accountAddressShortened == sampleData.address.truncatedHash())
             assert(xrdToken != null)
             assert(sampleData.fungibleTokens.size == 3)
         }
