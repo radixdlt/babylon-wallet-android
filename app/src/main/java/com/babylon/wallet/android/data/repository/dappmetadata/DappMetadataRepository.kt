@@ -11,6 +11,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -31,35 +32,43 @@ class DappMetadataRepositoryImpl @Inject constructor(
         dAppDefinitionAddress: String
     ): Result<Boolean> {
         return withContext(ioDispatcher) {
-            getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
-                when {
-                    !gatewayMetadata.isDappDefinition() -> {
+            if (origin.isValidHttpsUrl()) {
+                getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
+                    when {
+                        !gatewayMetadata.isDappDefinition() -> {
+                            Result.Error(
+                                TransactionApprovalException(
+                                    DappRequestFailure.DappVerificationFailure.WrongAccountType
+                                )
+                            )
+                        }
+                        gatewayMetadata.getRelatedDomainName() != origin -> {
+                            Result.Error(
+                                TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                            )
+                        }
+                        else -> {
+                            wellKnownFileMetadata(origin)
+                        }
+                    }
+                }.map { wellKnownFileDappsMetadata ->
+                    val isWellKnown = wellKnownFileDappsMetadata.any {
+                        it.dAppDefinitionAddress == dAppDefinitionAddress
+                    }
+                    if (isWellKnown) {
+                        Result.Success(true)
+                    } else {
                         Result.Error(
-                            TransactionApprovalException(DappRequestFailure.DappVerificationFailure.WrongAccountType)
+                            TransactionApprovalException(
+                                DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress
+                            )
                         )
                     }
-                    gatewayMetadata.getRelatedDomainName() != origin -> {
-                        Result.Error(
-                            TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
-                        )
-                    }
-                    else -> {
-                        wellKnownFileMetadata(origin)
-                    }
                 }
-            }.map { wellKnownFileDappsMetadata ->
-                val isWellKnown = wellKnownFileDappsMetadata.any {
-                    it.dAppDefinitionAddress == dAppDefinitionAddress
-                }
-                if (isWellKnown) {
-                    Result.Success(true)
-                } else {
-                    Result.Error(
-                        TransactionApprovalException(
-                            DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress
-                        )
-                    )
-                }
+            } else {
+                Result.Error(
+                    TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                )
             }
         }
     }
