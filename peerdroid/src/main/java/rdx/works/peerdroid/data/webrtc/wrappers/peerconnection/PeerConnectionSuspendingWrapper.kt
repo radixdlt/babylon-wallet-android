@@ -93,13 +93,11 @@ internal suspend fun PeerConnection.createSuspendingAnswer(
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.e("🔌 createAnswer, onCreateFailure $p0")
-            continuation.resume(Result.Error("failed to create answer: $p0"))
+            continuation.resume(Result.Error(message = p0))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.e("🔌 createAnswer, onSetFailure: $p0")
-            continuation.resume(Result.Error(""))
+            continuation.resume(Result.Error(message = p0))
         }
     }
     createAnswer(observer, mediaConstraints)
@@ -129,13 +127,11 @@ internal suspend fun PeerConnection.setSuspendingLocalDescription(
         }
 
         override fun onCreateFailure(p0: String?) {
-            Timber.e("🔌 failed to create local session description: $p0")
-            continuation.resume(Result.Error("on create failure"))
+            continuation.resume(Result.Error(message = p0))
         }
 
         override fun onSetFailure(p0: String?) {
-            Timber.e("🔌 failed to set local session description: $p0")
-            continuation.resume(Result.Error("on set failure"))
+            continuation.resume(Result.Error(message = p0))
         }
     }
 
@@ -167,12 +163,12 @@ internal suspend fun PeerConnection.setSuspendingRemoteDescription(
 
         override fun onCreateFailure(p0: String?) {
             Timber.e("🔌 failed to create remote session description: $p0")
-            continuation.resume(Result.Error("on create failure"))
+            continuation.resume(Result.Error(message = p0))
         }
 
         override fun onSetFailure(p0: String?) {
             Timber.e("🔌 failed to set remote session description: $p0")
-            continuation.resume(Result.Error("on set failure"))
+            continuation.resume(Result.Error(message = p0))
         }
     }
 
@@ -187,15 +183,15 @@ internal suspend fun PeerConnection.setSuspendingRemoteDescription(
  */
 internal suspend fun PeerConnection.addSuspendingIceCandidate(
     remoteIceCandidate: RemoteIceCandidate
-): Boolean = suspendCoroutine { continuation ->
+): Result<Unit> = suspendCoroutine { continuation ->
 
     val observer = object : AddIceObserver {
         override fun onAddSuccess() {
-            continuation.resume(true)
+            continuation.resume(Result.Success(Unit))
         }
 
         override fun onAddFailure(p0: String?) {
-            continuation.resume(false)
+            continuation.resume(Result.Error(message = p0))
         }
     }
 
