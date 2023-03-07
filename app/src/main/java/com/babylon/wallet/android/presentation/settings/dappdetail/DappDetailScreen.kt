@@ -349,7 +349,10 @@ private fun DappDetails(
                                 onPersonaClick(persona)
                             }
                             .fillMaxWidth()
-                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+                            .background(
+                                RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
                             .padding(
                                 horizontal = dimensions.paddingLarge,
                                 vertical = dimensions.paddingDefault
@@ -395,10 +398,13 @@ private fun DappDefinitionAddressRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
+        val addressTruncated = remember(dappDefinitionAddress) {
+            dappDefinitionAddress.truncatedHash()
+        }
         AssetMetadataRow(
             modifier = Modifier.weight(1f),
             key = stringResource(id = R.string.dapp_definition),
-            value = dappDefinitionAddress.truncatedHash()
+            value = addressTruncated
         )
 
         IconButton(
