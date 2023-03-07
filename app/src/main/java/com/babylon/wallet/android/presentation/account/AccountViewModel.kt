@@ -36,7 +36,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
-    private val clipboardManager: ClipboardManager,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -105,11 +104,6 @@ class AccountViewModel @Inject constructor(
                 Timber.d("arg account id is empty")
             }
         }
-    }
-
-    fun onCopyAccountAddress(hash: String) {
-        val clipData = ClipData.newPlainText("accountHash", hash)
-        clipboardManager.setPrimaryClip(clipData)
     }
 
     fun onFungibleTokenClick(token: TokenUiModel) {

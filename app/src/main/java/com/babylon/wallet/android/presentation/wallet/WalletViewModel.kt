@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
@@ -15,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.encodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -25,11 +24,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
-import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val clipboardManager: ClipboardManager,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileDataSource: ProfileDataSource,
     private val accountRepository: AccountRepository
@@ -74,11 +71,6 @@ class WalletViewModel @Inject constructor(
             }
             _walletUiState.update { it.copy(isRefreshing = false) }
         }
-    }
-
-    fun onCopyAccountAddress(address: String) {
-        val clipData = ClipData.newPlainText("accountAddress", address)
-        clipboardManager.setPrimaryClip(clipData)
     }
 
     fun onMessageShown() {

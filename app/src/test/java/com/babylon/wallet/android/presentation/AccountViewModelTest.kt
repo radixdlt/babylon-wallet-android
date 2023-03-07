@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation
 
-import android.content.ClipboardManager
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
@@ -40,8 +39,6 @@ class AccountViewModelTest {
 
     private val requestAccountsUseCase = Mockito.mock(GetAccountResourcesUseCase::class.java)
 
-    private val clipboardManager = Mockito.mock(ClipboardManager::class.java)
-
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
 
@@ -62,7 +59,7 @@ class AccountViewModelTest {
     fun `when viewmodel init, verify loading displayed before loading account ui`() = runTest {
         // given
         val event = mutableListOf<AccountUiState>()
-        vm = AccountViewModel(requestAccountsUseCase, clipboardManager, appEventBus, savedStateHandle)
+        vm = AccountViewModel(requestAccountsUseCase, appEventBus, savedStateHandle)
         vm.accountUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -77,7 +74,7 @@ class AccountViewModelTest {
     fun `when viewmodel init, verify accountUi loaded after loading`() = runTest {
         // given
         val event = mutableListOf<AccountUiState>()
-        vm = AccountViewModel(requestAccountsUseCase, clipboardManager, appEventBus, savedStateHandle)
+        vm = AccountViewModel(requestAccountsUseCase, appEventBus, savedStateHandle)
         vm.accountUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

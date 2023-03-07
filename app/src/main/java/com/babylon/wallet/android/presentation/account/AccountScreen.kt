@@ -63,7 +63,7 @@ import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
-import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddress
 import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
@@ -304,7 +304,6 @@ fun AccountContentWithScrollableHeader(
     onAccountPreferenceClick: () -> Unit,
     accountAddress: String,
     walletFiatBalance: String?,
-    onCopyAccountAddress: (String) -> Unit,
     onTransferClick: () -> Unit,
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
@@ -346,7 +345,6 @@ fun AccountContentWithScrollableHeader(
                         modifier = Modifier.fillMaxWidth(),
                         accountAddress = accountAddress,
                         walletFiatBalance = walletFiatBalance,
-                        onCopyAccountAddressClick = onCopyAccountAddress,
                         onTransferClick = onTransferClick
                     )
                 }
@@ -403,7 +401,6 @@ private fun AccountContent(
             modifier = Modifier.fillMaxWidth(),
             accountAddress = accountAddress,
             walletFiatBalance = walletFiatBalance,
-            onCopyAccountAddressClick = {},
             onTransferClick = onTransferClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -430,16 +427,15 @@ private fun AccountSummaryContent(
     modifier: Modifier,
     accountAddress: String,
     walletFiatBalance: String?,
-    onCopyAccountAddressClick: (String) -> Unit,
     onTransferClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AccountAddressView(
+        ActionableAddress(
             address = accountAddress,
-            onCopyAccountAddressClick = onCopyAccountAddressClick,
+            textStyle = RadixTheme.typography.body2HighImportance,
             contentColor = RadixTheme.colors.white
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -485,7 +481,9 @@ fun AssetsContent(
         val scope = rememberCoroutineScope()
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         TabRow(
-            modifier = Modifier.height(50.dp).width(200.dp),
+            modifier = Modifier
+                .height(50.dp)
+                .width(200.dp),
             selectedTabIndex = pagerState.currentPage,
             divider = {}, /* Disable the built-in divider */
             indicator = { tabPositions ->
