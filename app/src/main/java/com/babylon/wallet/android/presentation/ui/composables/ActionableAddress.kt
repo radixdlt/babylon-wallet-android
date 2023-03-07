@@ -10,6 +10,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,8 +36,8 @@ import java.util.Locale
 fun ActionableAddress(
     modifier: Modifier = Modifier,
     address: String,
-    textStyle: TextStyle,
-    contentColor: Color
+    textStyle: TextStyle = LocalTextStyle.current,
+    contentColor: Color = Color.Unspecified
 ) {
     val addressWithType = resolveAddressWithType(address = address)
     val actions = resolveActions(addressWithType = addressWithType)
@@ -55,7 +56,6 @@ fun ActionableAddress(
     ) {
 
         Text(
-            modifier = Modifier.weight(1f, false),
             text = addressWithType.truncated,
             color = contentColor,
             maxLines = 1,
@@ -65,7 +65,7 @@ fun ActionableAddress(
         Icon(
             modifier = Modifier.size(14.dp),
             painter = painterResource(id = actions.primary.icon),
-            contentDescription = null,
+            contentDescription = actions.primary.name,
             tint = contentColor,
         )
     }
@@ -143,14 +143,14 @@ private data class AddressWithType(
     fun toDashboardUri(): Uri {
         val suffix = when {
             isNft -> "nft/$address"
-            else -> "${type.name}/$address"
+            else -> "${type.prefix}/$address"
         }
 
         return Uri.parse("$DASHBOARD_BASE_URL/$suffix")
     }
 
     companion object {
-        private const val DASHBOARD_BASE_URL = "https://betanet-dashboard.radixdlt.com/"
+        private const val DASHBOARD_BASE_URL = "https://betanet-dashboard.radixdlt.com"
     }
 
 }
