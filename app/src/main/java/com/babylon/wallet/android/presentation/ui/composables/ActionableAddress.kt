@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalTextStyle
@@ -91,7 +92,7 @@ fun ActionableAddress(
                     },
                     leadingIcon = {
                         Icon(
-                            modifier = Modifier.size(18.dp),
+                            modifier = Modifier.size(20.dp),
                             painter = painterResource(id = it.icon),
                             contentDescription = it.name,
                             tint = RadixTheme.colors.defaultText
@@ -100,7 +101,11 @@ fun ActionableAddress(
                     onClick = {
                         isDropdownMenuExpanded = false
                         it.onAction()
-                    }
+                    },
+                    contentPadding = PaddingValues(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingXSmall
+                    )
                 )
             }
         }
