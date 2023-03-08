@@ -52,7 +52,7 @@ fun WalletApp(
         }
         AppNavigationState.Init -> {
             // TODO this doesn't seem to escalate well and as documentation suggests
-            //  we should better have fixed start destination and, in our case the Wallet,
+            //  we should better have fixed start destination, in our case the Wallet,
             //  and let the Wallet screen to decide where and when to navigate.
         }
     }
