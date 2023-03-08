@@ -99,7 +99,7 @@ internal class PeerdroidConnectorImpl(
             )
             when (result) {
                 is Result.Success -> {
-                    observePeerConnectionUntilEstablished(connectionId)
+                    observePeerConnectionUntilEstablished()
                     listenForIncomingMessagesFromSignalingServer()
                 }
                 is Result.Error -> {
@@ -124,7 +124,7 @@ internal class PeerdroidConnectorImpl(
             )
             when (result) {
                 is Result.Success -> {
-                    observePeerConnectionEvents(connectionId)
+                    observePeerConnectionEvents()
                     listenForIncomingMessagesFromSignalingServer()
                 }
                 is Result.Error -> {
@@ -138,9 +138,9 @@ internal class PeerdroidConnectorImpl(
 
     // a peer connection executed its lifecycle:
     // created -> connecting -> connected -> disconnected
-    private fun observePeerConnectionUntilEstablished(connectionId: String) {
+    private fun observePeerConnectionUntilEstablished() {
         webRtcManager
-            .createPeerConnection(connectionId)
+            .createPeerConnection()
             .onStart { // for debugging
                 Timber.d("⚙️ 🛠️ start observing webrtc events")
             }
@@ -183,9 +183,9 @@ internal class PeerdroidConnectorImpl(
             .launchIn(applicationScope)
     }
 
-    private fun observePeerConnectionEvents(connectionId: String) {
+    private fun observePeerConnectionEvents() {
         observePeerConnectionJob = webRtcManager
-            .createPeerConnection(connectionId)
+            .createPeerConnection()
             .onStart { // for debugging
                 Timber.d("⚙️ ⚡ start observing webrtc events")
             }

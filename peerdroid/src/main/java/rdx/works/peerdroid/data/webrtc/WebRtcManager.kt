@@ -36,7 +36,7 @@ private const val TURN_SERVER_PASSWORD = "password"
 
 internal interface WebRtcManager {
 
-    fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent>
+    fun createPeerConnection(): Flow<PeerConnectionEvent>
 
     suspend fun createOffer(): Result<SessionDescriptionValue>
 
@@ -109,13 +109,13 @@ internal class WebRtcManagerImpl @Inject constructor(
         Timber.d("🔌 initialize WebRTC manager")
     }
 
-    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> =
+    override fun createPeerConnection(): Flow<PeerConnectionEvent> =
         peerConnectionFactory.createPeerConnectionFlow(
             rtcConfiguration = rtcConfiguration,
             initializePeerConnection = { peerConnection ->
                 initializePeerConnection(peerConnection)
             },
-            createRtcDataChannel = { createRtcDataChannel(connectionId) }
+            createRtcDataChannel = { createRtcDataChannel() }
         )
 
     private fun initializePeerConnection(peerConnection: PeerConnection?) {
@@ -125,8 +125,8 @@ internal class WebRtcManagerImpl @Inject constructor(
         } ?: Timber.e("🔌 failed to create a peer connection")
     }
 
-    private fun createRtcDataChannel(connectionId: String) {
-        dataChannel = peerConnection.createDataChannel(connectionId, dataChannelInit)
+    private fun createRtcDataChannel() {
+        dataChannel = peerConnection.createDataChannel("", dataChannelInit)
         Timber.d("🔌 created a RTC data channel")
     }
 
