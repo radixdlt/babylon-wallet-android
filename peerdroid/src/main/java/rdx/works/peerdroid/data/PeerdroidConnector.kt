@@ -103,7 +103,7 @@ internal class PeerdroidConnectorImpl(
                     listenForIncomingMessagesFromSignalingServer()
                 }
                 is Result.Error -> {
-                    dataChannelDeferred.complete(Result.Error("failed to establish websocket client"))
+                    addConnectionDeferred.complete(Result.Error("failed to establish websocket client"))
                 }
             }
         }
