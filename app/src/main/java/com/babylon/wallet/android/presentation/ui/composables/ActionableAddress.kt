@@ -36,8 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.AddressType
-import com.babylon.wallet.android.presentation.model.AddressWithType
+import com.babylon.wallet.android.presentation.model.Address
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -50,7 +49,7 @@ fun ActionableAddress(
     iconColor: Color = textColor
 ) {
     val addressWithType = resolveAddressWithType(address = address)
-    val actions = resolveActions(addressWithType = addressWithType)
+    val actions = resolveActions(address = addressWithType)
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
 
     Box {
@@ -116,12 +115,12 @@ fun ActionableAddress(
 @Composable
 private fun resolveAddressWithType(
     address: String
-): AddressWithType = remember(address) { AddressWithType.from(address) }
+): Address = remember(address) { Address.from(address) }
 
 @Suppress("SwallowedException")
 @Composable
 private fun resolveActions(
-    addressWithType: AddressWithType
+    address: Address
 ): ActionableAddressActions {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
@@ -129,11 +128,11 @@ private fun resolveActions(
     val copyAction = ActionableAddressAction(
         name = stringResource(
             id = R.string.action_copy,
-            addressWithType.type.localisedName()
+            address.type.localisedName()
         ),
         icon = R.drawable.ic_copy
     ) {
-        clipboardManager.setText(AnnotatedString(addressWithType.address))
+        clipboardManager.setText(AnnotatedString(address.address))
 
         // From Android 13, the system handles the copy confirmation
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
@@ -144,12 +143,12 @@ private fun resolveActions(
     val openExternalAction = ActionableAddressAction(
         name = stringResource(
             id = R.string.action_open_in_dashboard,
-            addressWithType.type.localisedName()
+            address.type.localisedName()
         ),
         icon = R.drawable.ic_external_link
     ) {
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = addressWithType.toDashboardUrl().toUri()
+            data = address.toDashboardUrl().toUri()
         }
 
         try {
@@ -159,8 +158,8 @@ private fun resolveActions(
         }
     }
 
-    return remember(addressWithType) {
-        if (addressWithType.type == AddressType.ACCOUNT) {
+    return remember(address) {
+        if (address.type == Address.Type.ACCOUNT) {
             ActionableAddressActions(
                 primary = copyAction,
                 secondary = openExternalAction
@@ -175,12 +174,12 @@ private fun resolveActions(
 }
 
 @Composable
-private fun AddressType.localisedName(): String = when (this) {
-    AddressType.PACKAGE -> stringResource(id = R.string.address_package)
-    AddressType.RESOURCE -> stringResource(id = R.string.address_resource)
-    AddressType.ACCOUNT -> stringResource(id = R.string.address_account)
-    AddressType.TRANSACTION -> stringResource(id = R.string.address_transaction)
-    AddressType.COMPONENT -> stringResource(id = R.string.address_component)
+private fun Address.Type.localisedName(): String = when (this) {
+    Address.Type.PACKAGE -> stringResource(id = R.string.address_package)
+    Address.Type.RESOURCE -> stringResource(id = R.string.address_resource)
+    Address.Type.ACCOUNT -> stringResource(id = R.string.address_account)
+    Address.Type.TRANSACTION -> stringResource(id = R.string.address_transaction)
+    Address.Type.COMPONENT -> stringResource(id = R.string.address_component)
 }.replaceFirstChar {
     if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }

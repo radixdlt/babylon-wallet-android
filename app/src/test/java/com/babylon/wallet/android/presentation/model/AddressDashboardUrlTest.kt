@@ -13,7 +13,7 @@ internal class AddressDashboardUrlTest(
 
     @Test
     fun `convert of address to dashboard url`() {
-        assertEquals(url, AddressWithType.from(address).toDashboardUrl())
+        assertEquals(url, Address.from(address).toDashboardUrl())
     }
 
 

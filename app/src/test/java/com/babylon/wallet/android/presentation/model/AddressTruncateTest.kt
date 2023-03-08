@@ -13,7 +13,7 @@ internal class AddressTruncateTest(
 
     @Test
     fun `convert of address to dashboard url`() {
-        assertEquals(truncated, AddressWithType.from(address).truncated)
+        assertEquals(truncated, Address.from(address).truncated)
     }
 
 

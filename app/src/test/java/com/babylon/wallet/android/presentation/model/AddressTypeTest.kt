@@ -8,12 +8,12 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 internal class AddressTypeTest(
     private val address: String,
-    private val type: AddressType
+    private val type: Address.Type
 ) {
 
     @Test
     fun `convert of address to type`() {
-        assertEquals(type, AddressType.from(address))
+        assertEquals(type, Address.Type.from(address))
     }
 
 
@@ -22,13 +22,13 @@ internal class AddressTypeTest(
         @Parameterized.Parameters(name = "\"{0}\" => {1}")
         fun data() : Collection<Array<Any>> {
             return listOf(
-                arrayOf(RESOURCE_ADDRESS, AddressType.RESOURCE),
-                arrayOf(RESOURCE_NFT_ADDRESS, AddressType.RESOURCE),
-                arrayOf(ACCOUNT_ADDRESS, AddressType.ACCOUNT),
-                arrayOf(PACKAGE_ADDRESS, AddressType.PACKAGE),
-                arrayOf(TRANSACTION_ADDRESS, AddressType.TRANSACTION),
-                arrayOf(COMPONENT_ADDRESS, AddressType.COMPONENT),
-                arrayOf(UNKNOWN_ADDRESS, AddressType.TRANSACTION)
+                arrayOf(RESOURCE_ADDRESS, Address.Type.RESOURCE),
+                arrayOf(RESOURCE_NFT_ADDRESS, Address.Type.RESOURCE),
+                arrayOf(ACCOUNT_ADDRESS, Address.Type.ACCOUNT),
+                arrayOf(PACKAGE_ADDRESS, Address.Type.PACKAGE),
+                arrayOf(TRANSACTION_ADDRESS, Address.Type.TRANSACTION),
+                arrayOf(COMPONENT_ADDRESS, Address.Type.COMPONENT),
+                arrayOf(UNKNOWN_ADDRESS, Address.Type.TRANSACTION)
             )
         }
 
