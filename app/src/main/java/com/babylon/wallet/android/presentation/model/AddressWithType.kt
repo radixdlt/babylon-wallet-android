@@ -30,7 +30,6 @@ data class AddressWithType(
             type = AddressType.from(address)
         )
     }
-
 }
 
 enum class AddressType(
@@ -47,6 +46,5 @@ enum class AddressType(
         fun from(address: String): AddressType = AddressType.values().find {
             address.startsWith(it.prefix)
         } ?: TRANSACTION
-
     }
 }

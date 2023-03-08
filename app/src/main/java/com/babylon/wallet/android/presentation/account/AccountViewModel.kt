@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

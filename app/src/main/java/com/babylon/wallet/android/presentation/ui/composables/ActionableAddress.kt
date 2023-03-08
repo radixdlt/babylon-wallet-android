@@ -118,6 +118,7 @@ private fun resolveAddressWithType(
     address: String
 ): AddressWithType = remember(address) { AddressWithType.from(address) }
 
+@Suppress("SwallowedException")
 @Composable
 private fun resolveActions(
     addressWithType: AddressWithType
@@ -190,7 +191,6 @@ private data class ActionableAddressActions(
 ) {
 
     val all = listOf(primary, secondary)
-
 }
 
 private data class ActionableAddressAction(
