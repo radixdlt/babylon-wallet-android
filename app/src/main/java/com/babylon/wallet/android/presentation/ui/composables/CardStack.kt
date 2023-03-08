@@ -55,7 +55,7 @@ fun CardStack(
                     color = Color.White
                 )
 
-                ActionableAddress(
+                ActionableAddressView(
                     address = accountAddress,
                     textStyle = RadixTheme.typography.body2Regular,
                     textColor = Color.White.copy(alpha = 0.8f)

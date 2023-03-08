@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 
 @Composable
 fun AccountSelectionCard(
@@ -46,7 +46,7 @@ fun AccountSelectionCard(
                 color = Color.White
             )
 
-            ActionableAddress(
+            ActionableAddressView(
                 address = address,
                 textStyle = RadixTheme.typography.body2Link,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)

@@ -41,7 +41,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ActionableAddress(
+fun ActionableAddressView(
     modifier: Modifier = Modifier,
     address: String,
     textStyle: TextStyle = LocalTextStyle.current,

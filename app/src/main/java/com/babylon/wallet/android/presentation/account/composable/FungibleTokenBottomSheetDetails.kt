@@ -29,7 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -124,7 +124,7 @@ private fun ResourceAddressRow(
             color = RadixTheme.colors.gray2
         )
 
-        ActionableAddress(
+        ActionableAddressView(
             address = address,
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1,

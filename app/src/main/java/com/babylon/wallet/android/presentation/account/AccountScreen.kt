@@ -63,7 +63,7 @@ import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
@@ -433,7 +433,7 @@ private fun AccountSummaryContent(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ActionableAddress(
+        ActionableAddressView(
             address = accountAddress,
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white

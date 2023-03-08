@@ -20,7 +20,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
 import java.math.BigDecimal
 
@@ -55,7 +55,7 @@ fun AccountCardView(
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            ActionableAddress(
+            ActionableAddressView(
                 address = address,
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)

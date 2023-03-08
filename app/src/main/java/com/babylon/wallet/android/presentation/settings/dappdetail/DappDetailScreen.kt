@@ -63,7 +63,7 @@ import com.babylon.wallet.android.presentation.account.composable.AssetMetadataR
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.toDisplayResource
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -391,7 +391,7 @@ private fun DappDefinitionAddressRow(
             color = RadixTheme.colors.gray2
         )
 
-        ActionableAddress(
+        ActionableAddressView(
             address = dappDefinitionAddress,
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1
@@ -626,7 +626,7 @@ private fun PersonaSharedAccountCard(
             color = RadixTheme.colors.white
         )
 
-        ActionableAddress(
+        ActionableAddressView(
             address = account.address,
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
