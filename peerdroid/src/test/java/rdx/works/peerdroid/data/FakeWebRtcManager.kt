@@ -18,7 +18,7 @@ internal class FakeWebRtcManager @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : WebRtcManager {
 
-    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> {
+    override fun createPeerConnection(): Flow<PeerConnectionEvent> {
         return flow {
             emit(PeerConnectionEvent.RenegotiationNeeded)
             delay(100)
