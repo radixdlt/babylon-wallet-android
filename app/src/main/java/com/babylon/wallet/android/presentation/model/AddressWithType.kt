@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.model
 
-import com.babylon.wallet.android.domain.model.AddressHRP
 import com.babylon.wallet.android.utils.truncatedHash
 
 data class AddressWithType(
@@ -35,13 +34,20 @@ data class AddressWithType(
 enum class AddressType(
     val prefix: String
 ) {
-    PACKAGE(AddressHRP.PACKAGE),
-    RESOURCE(AddressHRP.RESOURCE),
-    ACCOUNT(AddressHRP.ACCOUNT),
-    TRANSACTION(AddressHRP.TRANSACTION),
-    COMPONENT(AddressHRP.COMPONENT);
+    PACKAGE(HRP.PACKAGE),
+    RESOURCE(HRP.RESOURCE),
+    ACCOUNT(HRP.ACCOUNT),
+    TRANSACTION(HRP.TRANSACTION),
+    COMPONENT(HRP.COMPONENT);
 
     companion object {
+        private object HRP {
+            const val ACCOUNT = "account"
+            const val RESOURCE = "resource"
+            const val PACKAGE = "package"
+            const val COMPONENT = "component"
+            const val TRANSACTION = "transaction"
+        }
 
         fun from(address: String): AddressType = AddressType.values().find {
             address.startsWith(it.prefix)

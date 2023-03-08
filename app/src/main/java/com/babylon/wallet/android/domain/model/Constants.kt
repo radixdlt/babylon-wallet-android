@@ -4,14 +4,6 @@ object AppConstants {
     const val VM_STOP_TIMEOUT_MS = 5000L
 }
 
-object AddressHRP {
-    const val ACCOUNT = "account"
-    const val RESOURCE = "resource"
-    const val PACKAGE = "package"
-    const val COMPONENT = "component"
-    const val TRANSACTION = "transaction"
-}
-
 object MetadataConstants {
     const val KEY_SYMBOL = "symbol"
     const val KEY_DESCRIPTION = "description"
