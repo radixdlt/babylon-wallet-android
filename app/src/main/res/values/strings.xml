@@ -232,6 +232,7 @@
         <item quantity="other">%d accounts</item>
     </plurals>
     <string name="action_copy">Copy %1$s Address</string>
+    <string name="copied_to_clipboard">Copied to clipboard.</string>
     <string name="action_open_in_dashboard">View %1$s in Radix Dashboard</string>
     <string name="address_package">package</string>
     <string name="address_resource">resource</string>

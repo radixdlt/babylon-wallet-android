@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -128,6 +129,8 @@ private fun resolveActions(
     addressWithType: AddressWithType
 ): ActionableAddressActions {
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
     val copyAction = ActionableAddressAction(
         name = stringResource(
             id = R.string.action_copy,
@@ -136,9 +139,13 @@ private fun resolveActions(
         icon = R.drawable.ic_copy
     ) {
         clipboardManager.setText(AnnotatedString(addressWithType.address))
+
+        // From Android 13, the system handles the copy confirmation
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+            Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
+        }
     }
 
-    val context = LocalContext.current
     val openExternalAction = ActionableAddressAction(
         name = stringResource(
             id = R.string.action_open_in_dashboard,
