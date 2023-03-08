@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -34,10 +33,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.AddressHRP
-import com.babylon.wallet.android.utils.truncatedHash
+import com.babylon.wallet.android.presentation.model.AddressType
+import com.babylon.wallet.android.presentation.model.AddressWithType
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -116,13 +116,7 @@ fun ActionableAddress(
 @Composable
 private fun resolveAddressWithType(
     address: String
-): AddressWithType = remember(address) {
-    AddressWithType(
-        address = address,
-        truncated = address.truncatedHash(),
-        type = AddressType.from(address)
-    )
-}
+): AddressWithType = remember(address) { AddressWithType.from(address) }
 
 @Composable
 private fun resolveActions(
@@ -154,7 +148,7 @@ private fun resolveActions(
         icon = R.drawable.ic_external_link
     ) {
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = addressWithType.toDashboardUri()
+            data = addressWithType.toDashboardUrl().toUri()
         }
 
         try {
@@ -176,48 +170,6 @@ private fun resolveActions(
                 secondary = copyAction
             )
         }
-    }
-}
-
-private data class AddressWithType(
-    val address: String,
-    val truncated: String,
-    val type: AddressType
-) {
-
-    private val isNft: Boolean
-        get() = type == AddressType.RESOURCE && address.split(":").size > 1
-
-    fun toDashboardUri(): Uri {
-        val suffix = when {
-            isNft -> "nft/$address"
-            else -> "${type.prefix}/$address"
-        }
-
-        return Uri.parse("$DASHBOARD_BASE_URL/$suffix")
-    }
-
-    companion object {
-        private const val DASHBOARD_BASE_URL = "https://betanet-dashboard.radixdlt.com"
-    }
-
-}
-
-private enum class AddressType(
-    val prefix: String
-) {
-    PACKAGE(AddressHRP.PACKAGE),
-    RESOURCE(AddressHRP.RESOURCE),
-    ACCOUNT(AddressHRP.ACCOUNT),
-    TRANSACTION(AddressHRP.TRANSACTION),
-    COMPONENT(AddressHRP.COMPONENT);
-
-    companion object {
-
-        fun from(address: String): AddressType = AddressType.values().find {
-            address.startsWith(it.prefix)
-        } ?: TRANSACTION
-
     }
 }
 
