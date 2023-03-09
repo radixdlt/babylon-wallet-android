@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
+import com.babylon.wallet.android.utils.prependHttpsPrefixIfNotPresent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -55,9 +56,11 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onNewUrlChanged(newUrl: String) {
         _state.update { state ->
-            val urlAlreadyAdded = state.gatewayList.any { it.gateway.url == newUrl }
+            val urlWithHttpsAppended = newUrl.prependHttpsPrefixIfNotPresent()
+            val urlAlreadyAdded =
+                state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == urlWithHttpsAppended }
             state.copy(
-                newUrlValid = !urlAlreadyAdded && newUrl.isValidUrl(),
+                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || urlWithHttpsAppended.isValidUrl()),
                 newUrl = newUrl,
                 gatewayAddFailure = if (urlAlreadyAdded) GatewayAddFailure.AlreadyExist else null
             )
@@ -72,10 +75,11 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onAddGateway() {
         viewModelScope.launch {
+            val newUrl = state.value.newUrl.prependHttpsPrefixIfNotPresent()
             _state.update { state -> state.copy(addingGateway = true) }
-            val newGatewayInfo = networkInfoRepository.getNetworkInfo(state.value.newUrl)
+            val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
-                profileDataSource.addGateway(Gateway(state.value.newUrl, Network.forName(networkName)))
+                profileDataSource.addGateway(Gateway(newUrl, Network.forName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }

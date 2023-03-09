@@ -247,7 +247,7 @@ private fun AddGatewaySheet(
                 contentDescription = null
             )
         }
-        Spacer(modifier = Modifier.weight(0.4f))
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -280,7 +280,7 @@ private fun AddGatewaySheet(
                 else -> null
             }
         )
-        Spacer(modifier = Modifier.weight(0.6f))
+        Spacer(modifier = Modifier.height(40.dp))
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.add_gateway),
