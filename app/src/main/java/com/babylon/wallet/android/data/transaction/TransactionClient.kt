@@ -82,11 +82,16 @@ class TransactionClient @Inject constructor(
             is Result.Success -> manifestConversionResult.data
         }
         val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
-        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
-            TransactionApprovalException(
-                DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
+        val accountAddressToLockFee = selectAccountAddressToLockFee(
+            addressesInvolved
+        ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
+        if (accountAddressToLockFee == null) {
+            return Result.Error(
+                TransactionApprovalException(
+                    DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
+                )
             )
-        )
+        }
         return Result.Success(
             addLockFeeInstructionToManifest(
                 manifest = jsonTransactionManifest,
@@ -115,12 +120,16 @@ class TransactionClient @Inject constructor(
         val manifestWithTransactionFee = if (hasLockFeeInstruction) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee =
-                selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
+            val accountAddressToLockFee = selectAccountAddressToLockFee(
+                addressesInvolved
+            ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
+            if (accountAddressToLockFee == null) {
+                return Result.Error(
                     TransactionApprovalException(
                         DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                     )
                 )
+            }
             addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
@@ -198,6 +207,10 @@ class TransactionClient @Inject constructor(
             }
         }
         return selectedAddress
+    }
+
+    private suspend fun getAddressesOfThisWallet(): List<String> {
+        return accountRepository.getAccounts().map { it.address }
     }
 
     private suspend fun buildTransactionHeader(
