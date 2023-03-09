@@ -39,7 +39,8 @@ class ProfileTest {
         val profile = Profile.init(
             gateway = gateway,
             mnemonic = mnemonic,
-            firstAccountDisplayName = "First"
+            firstAccountDisplayName = "First",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
 
         Assert.assertEquals(profile.onNetwork.count(), 1)
@@ -125,7 +126,8 @@ class ProfileTest {
         var profile = Profile.init(
             gateway = gateway,
             mnemonic = mnemonic,
-            firstAccountDisplayName = "First"
+            firstAccountDisplayName = "First",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
 
         val secondAccount = createNewVirtualAccount(
@@ -742,5 +744,8 @@ class ProfileTest {
 
         // Profile id
         Assert.assertEquals(profile.id, currentProfile.id)
+
+        // Device name
+        Assert.assertEquals(profile.creatingDevice, currentProfile.creatingDevice)
     }
 }

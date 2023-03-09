@@ -12,6 +12,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.extensions.compressedPublicKey
+import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -25,6 +26,7 @@ import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.AccountDerivationPath
+import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.model.NetworkId
@@ -35,6 +37,7 @@ import rdx.works.profile.domain.GetMnemonicUseCase
 class GenerateProfileUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private val fakeDeviceInfoRepository = FakeDeviceInfoRepository()
     private val testScope = TestScope(testDispatcher)
 
     @Test
@@ -48,6 +51,7 @@ class GenerateProfileUseCaseTest {
 
             val profile = Profile(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 appPreferences = AppPreferences(
                     display = Display.default,
                     Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
@@ -106,7 +110,12 @@ class GenerateProfileUseCaseTest {
             whenever(profileDataSource.readProfile()).thenReturn(profile)
 
             // when
-            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
+            val generateProfileUseCase = GenerateProfileUseCase(
+                getMnemonicUseCase = getMnemonicUseCase,
+                profileDataSource = profileDataSource,
+                deviceInfoRepository = fakeDeviceInfoRepository,
+                defaultDispatcher = testDispatcher
+            )
 
             // then
             Assert.assertEquals(generateProfileUseCase("main"), profile)
@@ -129,7 +138,12 @@ class GenerateProfileUseCaseTest {
             )
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
+            val generateProfileUseCase = GenerateProfileUseCase(
+                getMnemonicUseCase = getMnemonicUseCase,
+                profileDataSource = profileDataSource,
+                deviceInfoRepository = fakeDeviceInfoRepository,
+                defaultDispatcher = testDispatcher
+            )
 
             whenever(profileDataSource.readProfile()).thenReturn(null)
 
@@ -162,7 +176,12 @@ class GenerateProfileUseCaseTest {
             val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, gateway.network.networkId())
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
+            val generateProfileUseCase = GenerateProfileUseCase(
+                getMnemonicUseCase = getMnemonicUseCase,
+                profileDataSource = profileDataSource,
+                deviceInfoRepository = fakeDeviceInfoRepository,
+                defaultDispatcher = testDispatcher
+            )
 
             whenever(profileDataSource.readProfile()).thenReturn(null)
 
@@ -198,5 +217,14 @@ class GenerateProfileUseCaseTest {
                     networkId = networkId
                 ).path()
             ).hashToFactorId()
+    }
+
+    private class FakeDeviceInfoRepository: DeviceInfoRepository {
+        override fun getDeviceInfo(): DeviceInfo = DeviceInfo(
+            name = "Galaxy A53 5G",
+            manufacturer = "samsung",
+            model = "SM-A536B"
+        )
+
     }
 }

@@ -1,11 +1,11 @@
-package com.babylon.wallet.android.utils
+package rdx.works.profile.data.model
 
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import java.util.Locale
 
-class Device private constructor(
+data class DeviceInfo(
     val name: String,
     val manufacturer: String,
     val model: String
@@ -21,7 +21,7 @@ class Device private constructor(
         }
 
     val displayName: String
-        get()= if (name.isBlank()) {
+        get() = if (name.isBlank()) {
             commercialName
         } else {
             "$name ($commercialName)"
@@ -29,12 +29,13 @@ class Device private constructor(
 
     companion object {
 
-        fun factory(context: Context) = Device(
-            name = Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME) ?: "",
+        fun factory(context: Context) = DeviceInfo(
+            name = Settings.Global.getString(
+                context.contentResolver,
+                Settings.Global.DEVICE_NAME
+            ).orEmpty(),
             manufacturer = Build.MANUFACTURER,
             model = Build.MODEL
         )
-
     }
-
 }

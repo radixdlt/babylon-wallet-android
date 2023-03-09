@@ -30,6 +30,7 @@ class AddP2PClientUseCaseTest {
 
         val initialProfile = Profile(
             id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
             appPreferences = AppPreferences(
                 display = Display.default,
                 gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),

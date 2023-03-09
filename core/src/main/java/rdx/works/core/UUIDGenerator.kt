@@ -4,6 +4,5 @@ import java.util.UUID
 
 object UUIDGenerator {
 
-    fun uuid() = UUID.randomUUID()
-
+    fun uuid(): UUID = UUID.randomUUID()
 }
