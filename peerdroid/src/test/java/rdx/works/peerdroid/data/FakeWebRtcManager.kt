@@ -15,11 +15,10 @@ import rdx.works.peerdroid.helpers.Result
 import javax.inject.Inject
 
 internal class FakeWebRtcManager @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val withError: Boolean = false
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : WebRtcManager {
 
-    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> {
+    override fun createPeerConnection(): Flow<PeerConnectionEvent> {
         return flow {
             emit(PeerConnectionEvent.RenegotiationNeeded)
             delay(100)
@@ -38,19 +37,24 @@ internal class FakeWebRtcManager @Inject constructor(
                     )
                 )
             )
+            delay(100)
+            emit(
+                PeerConnectionEvent.Connected
+            )
+            delay(100)
+            emit(
+                PeerConnectionEvent.Disconnected
+            )
         }.flowOn(ioDispatcher)
     }
 
     override suspend fun createOffer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> {
-        if (withError) {
-            throw (Exception("some exception in WebRtcManager"))
-        }
         println("create offer")
         return Result.Success(SessionDescriptionWrapper.SessionDescriptionValue("local session description"))
     }
 
     override suspend fun createAnswer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> {
-        println("create offer")
+        println("create answer")
         return Result.Success(SessionDescriptionWrapper.SessionDescriptionValue("local session description"))
     }
 

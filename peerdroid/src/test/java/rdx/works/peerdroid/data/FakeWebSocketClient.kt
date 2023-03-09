@@ -9,14 +9,13 @@ import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
-import rdx.works.peerdroid.data.websocket.model.SignalingServerIncomingMessage
+import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.helpers.Result
 import javax.inject.Inject
 
 internal class FakeWebSocketClient @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val withError: Boolean = false
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : WebSocketClient {
 
     override suspend fun initSession(
@@ -28,25 +27,26 @@ internal class FakeWebSocketClient @Inject constructor(
     }
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
-        if (withError) {
-            throw (Exception("some exception in WebSocketClient"))
-        }
         println("send new offer")
+    }
+
+    override suspend fun sendAnswerMessage(answerPayload: RpcMessage.AnswerPayload) {
+        println("send new answer")
     }
 
     override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
         println("send new ice candidate")
     }
 
-    override fun observeMessages(): Flow<SignalingServerIncomingMessage> {
+    override fun observeMessages(): Flow<SignalingServerMessage> {
         return flow {
-            emit(SignalingServerIncomingMessage.Confirmation("offer request id"))
             delay(100)
-            emit(SignalingServerIncomingMessage.BrowserExtensionAnswer("answer request id", "sdp"))
-            delay(100)
+            emit(SignalingServerMessage.RemoteData.Offer("offer request id", "requestId", "sdp"))
+            delay(200)
             emit(
-                SignalingServerIncomingMessage.BrowserExtensionIceCandidate(
-                    "ice candidates request id",
+                SignalingServerMessage.RemoteData.IceCandidate(
+                    targetClientId = "targetClientId",
+                    requestId = "ice candidates request id",
                     RemoteIceCandidate(
                         sdpMid = "sdpMid",
                         sdpMLineIndex = 1,

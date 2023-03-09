@@ -1,12 +1,14 @@
 package rdx.works.peerdroid.data.websocket.model
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
-import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
+import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import java.util.UUID
 
 /**
@@ -18,45 +20,50 @@ import java.util.UUID
  *
  * This data class is not used for the notification messages
  * originating from the Signaling Server itself.
- * These are encapsulated in the [SignalingServerResponse].
+ * These are encapsulated in the [SignalingServerMessage].
  *
  *
  * @param method               describes the RPC method, offer, answer, or ice candidate
- * @param source               the sender of the message, either wallet or extension
+ * @param targetClientId       used by the Signalling Server to determine to which dapp to route the RpcMessage
  * @param encryptedPayload     contains the payload of the RPC method, an offer or an ice candidate
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-internal data class RpcMessage(
-    @SerialName("requestId")
-    val requestId: String = UUID.randomUUID().toString(),
-    @SerialName("method")
-    val method: String,
-    @SerialName("source")
-    val source: String,
-    @SerialName("connectionId")
-    val connectionId: String,
-    @SerialName("encryptedPayload")
-    val encryptedPayload: String,
-) {
+@JsonClassDiscriminator("method")
+internal sealed class RpcMessage {
 
-    enum class RpcMethod(val value: String) {
-        OFFER("offer"),
-        ANSWER("answer"),
-        ICE_CANDIDATE("iceCandidate");
+    @Serializable
+    @SerialName("offer")
+    data class Offer(
+        @SerialName("requestId")
+        val requestId: String = UUID.randomUUID().toString(),
+        @SerialName("targetClientId")
+        val targetClientId: String,
+        @SerialName("encryptedPayload")
+        val encryptedPayload: String
+    ) : RpcMessage()
 
-        companion object {
-            fun from(value: String): RpcMethod = requireNotNull(
-                values().find { rpcMethod -> rpcMethod.value == value }
-            ) {
-                "No RpcMethod with value $value"
-            }
-        }
-    }
+    @Serializable
+    @SerialName("answer")
+    data class Answer(
+        @SerialName("requestId")
+        val requestId: String = UUID.randomUUID().toString(),
+        @SerialName("targetClientId")
+        val targetClientId: String,
+        @SerialName("encryptedPayload")
+        val encryptedPayload: String
+    ) : RpcMessage()
 
-    enum class ClientSource(val value: String) {
-        BROWSER_EXTENSION("extension"),
-        MOBILE_WALLET("wallet")
-    }
+    @Serializable
+    @SerialName("iceCandidate")
+    data class IceCandidate(
+        @SerialName("requestId")
+        val requestId: String = UUID.randomUUID().toString(),
+        @SerialName("targetClientId")
+        val targetClientId: String,
+        @SerialName("encryptedPayload")
+        val encryptedPayload: String
+    ) : RpcMessage()
 
     @Serializable
     data class OfferPayload(
@@ -65,7 +72,7 @@ internal data class RpcMessage(
     ) {
 
         companion object {
-            fun SessionDescriptionValue.toPayload() = OfferPayload(
+            fun SessionDescriptionWrapper.SessionDescriptionValue.toOfferPayload() = OfferPayload(
                 sdp = sdp
             )
         }
@@ -75,7 +82,14 @@ internal data class RpcMessage(
     data class AnswerPayload(
         @SerialName("sdp")
         val sdp: String
-    )
+    ) {
+
+        companion object {
+            fun SessionDescriptionWrapper.SessionDescriptionValue.toAnswerPayload() = AnswerPayload(
+                sdp = sdp
+            )
+        }
+    }
 
     @Serializable
     data class IceCandidatePayload(
