@@ -13,11 +13,13 @@ internal data class ProfileSnapshot(
      */
     @SerialName("id")
     private val id: String,
+
     /**
      * The name of the device from which this snapshot was saved from.
      */
     @SerialName("creatingDevice")
     private val creatingDevice: String,
+
     /**
      * Settings for this profile in the app, contains default security configs as well as display settings.
      */

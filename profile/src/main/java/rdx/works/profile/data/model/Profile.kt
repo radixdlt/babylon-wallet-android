@@ -16,6 +16,7 @@ data class Profile(
      * semantically the same, based on the ID.
      */
     val id: String,
+
     /**
      * A description of the device the Profile was first generated on,
      * typically the wallet app reads a human provided device name
@@ -28,6 +29,7 @@ data class Profile(
      * device name followed by the device's manufacturer and the device's factory model.
      */
     val creatingDevice: String,
+
     /**
      * Settings for this profile in the app, contains default security configs as well as display settings.
      */
