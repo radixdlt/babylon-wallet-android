@@ -6,7 +6,7 @@ import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
 import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.derivation.model.NetworkId
@@ -14,7 +14,7 @@ import rdx.works.profile.derivation.model.NetworkId
 fun Profile.createOrUpdatePersonaOnNetwork(
     persona: OnNetwork.Persona
 ): Profile {
-    val networkId = appPreferences.networkAndGateway.network.networkId()
+    val networkId = appPreferences.gateways.current().network.networkId()
     val newOnNetwork = onNetwork.map { network ->
         if (network.networkID == networkId.value) {
             val personaExist = network.personas.any { it.address == persona.address }
@@ -86,11 +86,26 @@ fun Profile.addAccountOnNetwork(
     )
 }
 
-fun Profile.setNetworkAndGateway(
-    networkAndGateway: NetworkAndGateway
+fun Profile.changeGateway(
+    gateway: Gateway
 ): Profile {
-    val appPreferences = appPreferences.copy(networkAndGateway = networkAndGateway)
+    val gateways = appPreferences.gateways.changeCurrent(gateway)
+    val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
+}
+
+fun Profile.addGateway(
+    gateway: Gateway
+): Profile {
+    val updatedGateways = appPreferences.gateways.add(gateway)
+    return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
+}
+
+fun Profile.deleteGateway(
+    gateway: Gateway
+): Profile {
+    val updatedGateways = appPreferences.gateways.delete(gateway)
+    return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
 }
 
 fun Profile.addP2PClient(
@@ -103,7 +118,7 @@ fun Profile.addP2PClient(
 
     val newAppPreferences = AppPreferences(
         display = appPreferences.display,
-        networkAndGateway = appPreferences.networkAndGateway,
+        gateways = appPreferences.gateways,
         p2pClients = updatedP2PClients.toList()
     )
 
@@ -122,7 +137,7 @@ fun Profile.deleteP2PClient(connectionPassword: String): Profile {
 
     val newAppPreferences = AppPreferences(
         display = appPreferences.display,
-        networkAndGateway = appPreferences.networkAndGateway,
+        gateways = appPreferences.gateways,
         p2pClients = updatedP2PClients.toList()
     )
 

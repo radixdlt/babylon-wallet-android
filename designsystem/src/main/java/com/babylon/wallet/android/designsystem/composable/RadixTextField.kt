@@ -108,8 +108,8 @@ fun RadixTextField(
             ) {
                 Icon(
                     modifier = Modifier.size(14.dp),
-                    painter = painterResource(id = R.drawable.ic_warning_error),
-                    contentDescription = "",
+                    painter = painterResource(id = R.drawable.ic_info_outline),
+                    contentDescription = null,
                     tint = RadixTheme.colors.red1
                 )
                 Text(text = error, style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)

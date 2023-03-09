@@ -14,7 +14,8 @@ import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -53,7 +54,7 @@ class CreatePersonaUseCaseTest {
             val profile = Profile(
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    NetworkAndGateway.hammunet,
+                    Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
                     p2pClients = listOf(
                         P2PClient.init(
                             connectionPassword = "My password",

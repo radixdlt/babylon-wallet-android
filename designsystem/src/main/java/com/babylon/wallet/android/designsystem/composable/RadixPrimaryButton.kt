@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -29,7 +30,8 @@ fun RadixPrimaryButton(
     text: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    icon: (@Composable () -> Unit)? = null
+    icon: (@Composable () -> Unit)? = null,
+    isLoading: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -51,8 +53,16 @@ fun RadixPrimaryButton(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            icon?.invoke()
-            Text(text = text, style = RadixTheme.typography.button)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = RadixTheme.colors.white,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                icon?.invoke()
+                Text(text = text, style = RadixTheme.typography.button)
+            }
         }
     }
 }

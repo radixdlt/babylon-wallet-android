@@ -54,5 +54,11 @@ data class Network(
         fun allKnownNetworks(): List<Network> {
             return listOf(adapanet, hammunet, nebunet, mardunet, enkinet, gilganet)
         }
+
+        fun forName(name: String): Network {
+            return allKnownNetworks().first { network ->
+                network.name == name
+            }
+        }
     }
 }

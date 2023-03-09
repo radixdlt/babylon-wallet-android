@@ -15,7 +15,8 @@ import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -48,7 +49,7 @@ class GenerateProfileUseCaseTest {
             val profile = Profile(
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    NetworkAndGateway.hammunet,
+                    Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
                     p2pClients = listOf(
                         P2PClient.init(
                             connectionPassword = "My password",
@@ -123,7 +124,7 @@ class GenerateProfileUseCaseTest {
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
             val expectedFactorInstanceId = generateInstanceId(
                 mnemonicPhrase,
-                NetworkAndGateway.nebunet.network.networkId()
+                Gateway.nebunet.network.networkId()
             )
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
@@ -154,10 +155,10 @@ class GenerateProfileUseCaseTest {
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking { invoke() } doReturn mnemonicPhrase
             }
-            val networkAndGateway = NetworkAndGateway.nebunet
+            val gateway = Gateway.nebunet
 
             val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
-            val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, networkAndGateway.network.networkId())
+            val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, gateway.network.networkId())
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)

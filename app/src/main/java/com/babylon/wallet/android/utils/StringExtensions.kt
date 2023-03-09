@@ -74,3 +74,11 @@ fun String.encodeUtf8(): String {
 fun String.decodeUtf8(): String {
     return Uri.decode(this).orEmpty()
 }
+
+fun String.prependHttpsPrefixIfNotPresent(): String {
+    return if (this.startsWith("https://")) {
+        this
+    } else {
+        "https://$this"
+    }
+}

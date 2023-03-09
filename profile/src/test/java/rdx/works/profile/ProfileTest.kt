@@ -11,7 +11,7 @@ import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
@@ -31,9 +31,9 @@ class ProfileTest {
                 "humble limb repeat video sudden possible story mask neutral prize goose mandate"
         )
 
-        val networkAndGateway = NetworkAndGateway.nebunet
+        val gateway = Gateway.nebunet
         val profile = Profile.init(
-            networkAndGateway = networkAndGateway,
+            gateway = gateway,
             mnemonic = mnemonic,
             firstAccountDisplayName = "First"
         )
@@ -109,10 +109,10 @@ class ProfileTest {
                     "sudden possible story mask neutral prize goose mandate"
         )
 
-        val networkAndGateway = NetworkAndGateway.nebunet
-        val networkId = networkAndGateway.network.networkId()
+        val gateway = Gateway.nebunet
+        val networkId = gateway.network.networkId()
         var profile = Profile.init(
-            networkAndGateway = networkAndGateway,
+            gateway = gateway,
             mnemonic = mnemonic,
             firstAccountDisplayName = "First"
         )
@@ -245,7 +245,7 @@ class ProfileTest {
         )
 
         // Network and gateway
-        Assert.assertEquals(profile.appPreferences.networkAndGateway, currentProfile.appPreferences.networkAndGateway)
+        Assert.assertEquals(profile.appPreferences.gateways, currentProfile.appPreferences.gateways)
 
         // Display
         Assert.assertEquals(

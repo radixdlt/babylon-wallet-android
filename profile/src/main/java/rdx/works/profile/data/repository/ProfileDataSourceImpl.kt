@@ -11,11 +11,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.data.extensions.setNetworkAndGateway
+import rdx.works.profile.data.extensions.addGateway
+import rdx.works.profile.data.extensions.changeGateway
+import rdx.works.profile.data.extensions.deleteGateway
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
@@ -28,7 +31,7 @@ interface ProfileDataSource {
 
     val p2pClient: Flow<P2PClient?>
 
-    val networkAndGateway: Flow<NetworkAndGateway>
+    val gateways: Flow<Gateways>
 
     suspend fun readProfile(): Profile?
 
@@ -41,15 +44,13 @@ interface ProfileDataSource {
 
     suspend fun getCurrentNetworkBaseUrl(): String
 
-    suspend fun hasAccountOnNetwork(
-        newUrl: String,
-        networkName: String
-    ): Boolean
+    suspend fun hasAccountForGateway(gateway: Gateway): Boolean
 
-    suspend fun setNetworkAndGateway(
-        newUrl: String,
-        networkName: String
-    )
+    suspend fun changeGateway(gateway: Gateway)
+
+    suspend fun addGateway(gateway: Gateway)
+
+    suspend fun deleteGateway(gateway: Gateway)
 
     val isProfileCompatible: Flow<Boolean>
 }
@@ -74,10 +75,10 @@ class ProfileDataSourceImpl @Inject constructor(
         profile?.appPreferences?.p2pClients?.firstOrNull()
     }.distinctUntilChanged()
 
-    override val networkAndGateway = profile
+    override val gateways = profile
         .filterNotNull()
         .map { profile ->
-            profile.appPreferences.networkAndGateway
+            profile.appPreferences.gateways
         }
 
     override suspend fun readProfile(): Profile? {
@@ -105,61 +106,56 @@ class ProfileDataSourceImpl @Inject constructor(
 
     override suspend fun getCurrentNetwork(): Network = readProfile()
         ?.appPreferences
-        ?.networkAndGateway?.network
-        ?: NetworkAndGateway.nebunet.network
+        ?.gateways?.current()?.network
+        ?: Gateway.nebunet.network
 
     override suspend fun getCurrentNetworkId(): NetworkId {
-        return getNetworkAndGateway().network.networkId()
+        return getGateway().network.networkId()
     }
 
     override suspend fun getCurrentNetworkBaseUrl(): String {
-        return getNetworkAndGateway().gatewayAPIEndpointURL
+        return getGateway().url
     }
 
-    override suspend fun hasAccountOnNetwork(
-        newUrl: String,
-        networkName: String
-    ): Boolean {
+    override suspend fun hasAccountForGateway(gateway: Gateway): Boolean {
         val knownNetwork = Network
             .allKnownNetworks()
             .firstOrNull { network ->
-                network.name == networkName
+                network.name == gateway.network.name
             } ?: return false
-
-        val newNetworkAndGateway = NetworkAndGateway(
-            gatewayAPIEndpointURL = newUrl,
-            network = knownNetwork
-        )
 
         return readProfile()?.let { profile ->
             profile.onNetwork.any { perNetwork ->
-                perNetwork.networkID == newNetworkAndGateway.network.id
+                perNetwork.networkID == knownNetwork.id
             }
         } ?: false
     }
 
-    override suspend fun setNetworkAndGateway(
-        newUrl: String,
-        networkName: String
-    ) {
+    override suspend fun changeGateway(gateway: Gateway) {
         readProfile()?.let { profile ->
-            val updatedProfile = profile.setNetworkAndGateway(
-                NetworkAndGateway(
-                    gatewayAPIEndpointURL = newUrl,
-                    network = Network.allKnownNetworks()
-                        .first { network ->
-                            network.name == networkName
-                        }
-                )
-            )
+            val updatedProfile = profile.changeGateway(gateway)
             saveProfile(updatedProfile)
         }
     }
 
-    private suspend fun getNetworkAndGateway(): NetworkAndGateway {
+    override suspend fun addGateway(gateway: Gateway) {
+        readProfile()?.let { profile ->
+            val updatedProfile = profile.addGateway(gateway)
+            saveProfile(updatedProfile)
+        }
+    }
+
+    override suspend fun deleteGateway(gateway: Gateway) {
+        readProfile()?.let { profile ->
+            val updatedProfile = profile.deleteGateway(gateway)
+            saveProfile(updatedProfile)
+        }
+    }
+
+    private suspend fun getGateway(): Gateway {
         return readProfile()
             ?.appPreferences
-            ?.networkAndGateway
-            ?: NetworkAndGateway.nebunet
+            ?.gateways?.current()
+            ?: Gateway.nebunet
     }
 }

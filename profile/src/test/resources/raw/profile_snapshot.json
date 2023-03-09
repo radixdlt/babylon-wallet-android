@@ -3,12 +3,17 @@
     "display" : {
       "fiatCurrencyPriceTarget" : "usd"
     },
-    "networkAndGateway" : {
-      "gatewayAPIEndpointURL" : "https://betanet.radixdlt.com",
-      "network" : {
-        "id" : 11,
-        "name" : "nebunet"
-      }
+    "gateways" : {
+      "current" : "https://betanet.radixdlt.com",
+      "saved" : [
+        {
+          "network" : {
+            "id" : 11,
+            "name" : "nebunet"
+          },
+          "url" : "https://betanet.radixdlt.com"
+        }
+      ]
     },
     "p2pClients" : [
       {
@@ -255,5 +260,5 @@
       ]
     }
   ],
-  "version" : 17
+  "version" : 18
 }

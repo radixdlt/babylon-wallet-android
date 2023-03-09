@@ -4,9 +4,9 @@ import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.extensions.addAccountOnNetwork
-import rdx.works.profile.data.extensions.setNetworkAndGateway
+import rdx.works.profile.data.extensions.changeGateway
+import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -31,16 +31,16 @@ class CreateAccountUseCase @Inject constructor(
                 "Profile does not exist"
             }
 
-            var networkAndGateway: NetworkAndGateway? = null
+            var gateway: Gateway? = null
             if (networkUrl != null && networkName != null) {
-                networkAndGateway = NetworkAndGateway(
-                    gatewayAPIEndpointURL = networkUrl,
+                gateway = Gateway(
+                    url = networkUrl,
                     network = Network.allKnownNetworks().first { network ->
                         network.name == networkName
                     }
                 )
             }
-            val networkID = networkAndGateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
+            val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
 
             // Construct new account
             val newAccount = createNewVirtualAccount(
@@ -62,8 +62,8 @@ class CreateAccountUseCase @Inject constructor(
                 newAccount,
                 networkID = networkID
             )
-            if (switchNetwork && networkAndGateway != null) {
-                updatedProfile = updatedProfile.setNetworkAndGateway(networkAndGateway)
+            if (switchNetwork && gateway != null) {
+                updatedProfile = updatedProfile.changeGateway(gateway)
             }
             // Save updated profile
             profileDataSource.saveProfile(updatedProfile)
