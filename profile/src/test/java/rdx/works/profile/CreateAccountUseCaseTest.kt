@@ -40,6 +40,7 @@ class CreateAccountUseCaseTest {
             // given
             val accountName = "First account"
             val profile = Profile(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 appPreferences = AppPreferences(
                     display = Display.default,
                     Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),

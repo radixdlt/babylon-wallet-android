@@ -1,10 +1,15 @@
 package rdx.works.profile
 
 import com.radixdlt.bip39.model.MnemonicWords
+import io.mockk.every
+import io.mockk.mockkObject
+import java.io.File
+import java.util.UUID
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Test
+import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
@@ -20,7 +25,6 @@ import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
-import java.io.File
 
 class ProfileTest {
 
@@ -96,6 +100,8 @@ class ProfileTest {
         )
 
         Assert.assertEquals(updatedProfile.appPreferences.p2pClients.count(), 1)
+
+        Assert.assertTrue(profile.id.isNotBlank())
     }
 
     @Test
@@ -111,6 +117,11 @@ class ProfileTest {
 
         val gateway = Gateway.nebunet
         val networkId = gateway.network.networkId()
+
+        // Need to mock the generation of the id, so to test it against the stored vector
+        println(UUIDGenerator.uuid())
+        mockkObject(UUIDGenerator)
+        every { UUIDGenerator.uuid() } returns UUID.fromString("9958f568-8c9b-476a-beeb-017d1f843266")
         var profile = Profile.init(
             gateway = gateway,
             mnemonic = mnemonic,
@@ -728,5 +739,8 @@ class ProfileTest {
 
         // Profile version
         Assert.assertEquals(profile.version, currentProfile.version)
+
+        // Profile id
+        Assert.assertEquals(profile.id, currentProfile.id)
     }
 }
