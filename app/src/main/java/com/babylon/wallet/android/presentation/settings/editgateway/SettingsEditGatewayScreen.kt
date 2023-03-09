@@ -131,7 +131,7 @@ private fun SettingsEditGatewayContent(
     DefaultModalSheetLayout(
         modifier = modifier,
         sheetState = bottomSheetState,
-        heightFraction = 0.45f,
+        wrapContent = true,
         enableImePadding = true,
         sheetContent = {
             AddGatewaySheet(

@@ -110,11 +110,11 @@ class ProfileDataSourceImpl @Inject constructor(
         ?: Gateway.nebunet.network
 
     override suspend fun getCurrentNetworkId(): NetworkId {
-        return getNetworkAndGateway().network.networkId()
+        return getGateway().network.networkId()
     }
 
     override suspend fun getCurrentNetworkBaseUrl(): String {
-        return getNetworkAndGateway().url
+        return getGateway().url
     }
 
     override suspend fun hasAccountForGateway(gateway: Gateway): Boolean {
@@ -152,7 +152,7 @@ class ProfileDataSourceImpl @Inject constructor(
         }
     }
 
-    private suspend fun getNetworkAndGateway(): Gateway {
+    private suspend fun getGateway(): Gateway {
         return readProfile()
             ?.appPreferences
             ?.gateways?.current()
