@@ -7,8 +7,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.cache.CacheClient
 import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
-import com.babylon.wallet.android.data.repository.time.CurrentTime
-import com.babylon.wallet.android.data.repository.time.CurrentTimeImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,7 +46,4 @@ object ApplicationModule {
     ): CacheClient {
         return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
     }
-
-    @Provides
-    fun provideCurrentTime(): CurrentTime = CurrentTimeImpl()
 }

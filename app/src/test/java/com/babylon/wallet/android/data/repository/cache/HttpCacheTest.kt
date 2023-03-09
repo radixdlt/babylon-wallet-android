@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.data.repository.cache
 
-import com.babylon.wallet.android.data.repository.time.CurrentTime
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -19,8 +19,7 @@ import retrofit2.Call
 internal class HttpCacheTest {
 
     private val memoryCacheClient = MemoryCacheClient()
-    private val mockCurrentTime = mockk<CurrentTime>()
-    private val testedClass = HttpCacheImpl(memoryCacheClient, mockCurrentTime)
+    private val testedClass = HttpCacheImpl(memoryCacheClient)
 
     @Test
     fun `when a new call, the cache calculates the correct key and timestamp for the cached value`() {
@@ -28,7 +27,8 @@ internal class HttpCacheTest {
         val now = Instant.now()
         val method = "GET"
         val url = "https://fake.com/fakeGet"
-        every { mockCurrentTime.now() } returns now
+        mockkStatic(Instant::class)
+        every { Instant.now() } returns now
         val mockApiCall = mockApiCall(method = method, url = url)
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
         val key = arrayOf(method, url, "").contentToString().sha256().toHexString()
@@ -48,10 +48,11 @@ internal class HttpCacheTest {
 
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(2, ChronoUnit.MINUTES)
-        every { mockCurrentTime.now() } returns firstRequestTime
+        mockkStatic(Instant::class)
+        every { Instant.now() } returns firstRequestTime
         testedClass.store(mockApiCall, value, mockSerializer)
 
-        every { mockCurrentTime.now() } returns nowTime
+        every { Instant.now() } returns nowTime
         val cachedValue = testedClass.restore(mockApiCall, mockSerializer, timeoutDuration = Duration.of(5, ChronoUnit.MINUTES))
 
         assertEquals(value, cachedValue)
@@ -65,10 +66,11 @@ internal class HttpCacheTest {
 
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(10, ChronoUnit.MINUTES)
-        every { mockCurrentTime.now() } returns firstRequestTime
+        mockkStatic(Instant::class)
+        every { Instant.now() } returns firstRequestTime
         testedClass.store(mockApiCall, value, mockSerializer)
 
-        every { mockCurrentTime.now() } returns nowTime
+        every { Instant.now() } returns nowTime
         val cachedValue = testedClass.restore(mockApiCall, mockSerializer, timeoutDuration = Duration.of(5, ChronoUnit.MINUTES))
 
         assertNull(cachedValue)
