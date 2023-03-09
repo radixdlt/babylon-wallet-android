@@ -80,7 +80,8 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             val result = dappMetadataRepository.getDappMetadata(
-                accountsRequest.metadata.dAppDefinitionAddress
+                defitnionAddress = accountsRequest.metadata.dAppDefinitionAddress,
+                needMostRecentData = false
             )
             result.onValue {
                 state = state.copy(dappMetadata = it, showProgress = false)

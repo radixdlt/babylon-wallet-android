@@ -3,8 +3,11 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
+import com.babylon.wallet.android.data.repository.cache.CacheParameters
+import com.babylon.wallet.android.data.repository.cache.HttpCache
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.data.repository.performHttpRequest
+import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
@@ -17,14 +20,22 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface DappMetadataRepository {
-    suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean>
-    suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata>
+    suspend fun verifyDapp(
+        origin: String,
+        dAppDefinitionAddress: String
+    ): Result<Boolean>
+
+    suspend fun getDappMetadata(
+        defitnionAddress: String,
+        needMostRecentData: Boolean
+    ): Result<DappMetadata>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
     private val dynamicUrlApi: DynamicUrlApi,
     private val entityRepository: EntityRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val cache: HttpCache
 ) : DappMetadataRepository {
 
     override suspend fun verifyDapp(
@@ -33,7 +44,10 @@ class DappMetadataRepositoryImpl @Inject constructor(
     ): Result<Boolean> {
         return withContext(ioDispatcher) {
             if (origin.isValidHttpsUrl()) {
-                getDappMetadata(dAppDefinitionAddress).map { gatewayMetadata ->
+                getDappMetadata(
+                    defitnionAddress = dAppDefinitionAddress,
+                    needMostRecentData = false
+                ).map { gatewayMetadata ->
                     when {
                         !gatewayMetadata.isDappDefinition() -> {
                             Result.Error(
@@ -77,12 +91,13 @@ class DappMetadataRepositoryImpl @Inject constructor(
         origin: String
     ): Result<List<DappMetadata>> {
         return withContext(ioDispatcher) {
-            performHttpRequest(
-                call = {
-                    dynamicUrlApi.wellKnownDappDefinition(
-                        "$origin/${BuildConfig.WELL_KNOWN_URL_SUFFIX}"
-                    )
-                },
+            dynamicUrlApi.wellKnownDappDefinition(
+                "$origin/${BuildConfig.WELL_KNOWN_URL_SUFFIX}"
+            ).execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = TimeoutDuration.FIVE_MINUTES
+                ),
                 map = { response ->
                     response.dAppMetadata.map { it.toDomainModel() }
                 },
@@ -93,9 +108,17 @@ class DappMetadataRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getDappMetadata(defitnionAddress: String): Result<DappMetadata> {
+    override suspend fun getDappMetadata(
+        defitnionAddress: String,
+        needMostRecentData: Boolean
+    ): Result<DappMetadata> {
         return withContext(ioDispatcher) {
-            when (val result = entityRepository.entityDetails(defitnionAddress)) {
+            when (
+                val result = entityRepository.entityDetails(
+                    address = defitnionAddress,
+                    isRefreshing = needMostRecentData
+                )
+            ) {
                 is Result.Error -> Result.Error(result.exception)
                 is Result.Success -> Result.Success(
                     DappMetadata(

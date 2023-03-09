@@ -134,6 +134,8 @@ sonarqube {
 }
 
 dependencies {
+    implementation project(path: ':core')
+
     implementation libs.androidxCore
     implementation libs.lifecycleRuntimeKtx
     implementation libs.lifecycleViewmodelKtx

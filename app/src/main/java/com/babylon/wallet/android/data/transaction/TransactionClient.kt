@@ -5,6 +5,7 @@ package com.babylon.wallet.android.data.transaction
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
+import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -35,6 +36,7 @@ class TransactionClient @Inject constructor(
     private val profileDataSource: ProfileDataSource,
     private val accountRepository: AccountRepository,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val cache: HttpCache
 ) {
 
     private val engine = RadixEngineToolkit
@@ -185,7 +187,7 @@ class TransactionClient @Inject constructor(
     suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
         var selectedAddress: String? = null
         for (address in involvedAddresses) {
-            when (val account = getAccountResourcesUseCase(address)) {
+            when (val account = getAccountResourcesUseCase(address, isRefreshing = true)) {
                 is Result.Error -> null
                 is Result.Success -> {
                     if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
@@ -340,6 +342,10 @@ class TransactionClient @Inject constructor(
                 )
             }
             is Result.Success -> {
+                // Invalidate all cached information stored, since a transaction may mutate
+                // some resource information
+                cache.invalidate()
+
                 if (submitResult.data.duplicate) {
                     Result.Error(
                         TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(txID))

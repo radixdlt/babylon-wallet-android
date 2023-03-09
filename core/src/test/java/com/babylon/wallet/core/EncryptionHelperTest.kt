@@ -2,8 +2,8 @@ package com.babylon.wallet.core
 
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.core.decryptData
-import rdx.works.core.encryptData
+import rdx.works.core.decrypt
+import rdx.works.core.encrypt
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
 
@@ -24,9 +24,8 @@ class EncryptionHelperTest {
 
         val encryptionKeyByteArray = encryptionKeyData.array()
 
-        val actualDecryptedMessage = decryptData(
-            input = encryptedMessageInHex.decodeHex(),
-            encryptionKey = encryptionKeyByteArray
+        val actualDecryptedMessage = encryptedMessageInHex.decodeHex().decrypt(
+            withEncryptionKey = encryptionKeyByteArray
         )
 
         Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage, UTF_8))
@@ -37,14 +36,12 @@ class EncryptionHelperTest {
         val encryptionKeyData = getEncryptionKeyData()
         val encryptionKeyByteArray = encryptionKeyData.array()
 
-        val encryptedMessage1 = encryptData(
-            input = expectedDecryptedMessage.toByteArray(),
-            encryptionKey = encryptionKeyByteArray
+        val encryptedMessage1 = expectedDecryptedMessage.toByteArray().encrypt(
+            withEncryptionKey = encryptionKeyByteArray
         )
 
-        val encryptedMessage2 = encryptData(
-            input = expectedDecryptedMessage.toByteArray(),
-            encryptionKey = encryptionKeyByteArray
+        val encryptedMessage2 = expectedDecryptedMessage.toByteArray().encrypt(
+            withEncryptionKey = encryptionKeyByteArray
         )
 
         Assert.assertNotEquals(encryptedMessage1, encryptedMessage2)

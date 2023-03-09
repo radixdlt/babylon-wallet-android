@@ -27,8 +27,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
-import rdx.works.core.decryptData
-import rdx.works.core.encryptData
+import rdx.works.core.decrypt
+import rdx.works.core.encrypt
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -137,9 +137,8 @@ internal class WebSocketClientImpl(
 
     override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
         val offerJson = json.encodeToString(offerPayload)
-        val encryptedOffer = encryptData(
-            input = offerJson.toByteArray(),
-            encryptionKey = encryptionKey
+        val encryptedOffer = offerJson.toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
         )
 
         val rpcMessage = RpcMessage(
@@ -156,9 +155,8 @@ internal class WebSocketClientImpl(
 
     override suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
         val iceCandidatePayload = iceCandidateData.toJsonPayload()
-        val encryptedIceCandidate = encryptData(
-            input = iceCandidatePayload.toString().toByteArray(),
-            encryptionKey = encryptionKey
+        val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
         )
         val rpcMessage = RpcMessage(
             method = RpcMessage.RpcMethod.ICE_CANDIDATE.value,
@@ -213,7 +211,9 @@ internal class WebSocketClientImpl(
                 requestId = responseJson.requestId.orEmpty()
             )
 
-            SignalingServerResponse.Info.DATA_FROM_BROWSER_EXTENSION -> parseRemoteDataFromResponse(responseJson)
+            SignalingServerResponse.Info.DATA_FROM_BROWSER_EXTENSION -> parseRemoteDataFromResponse(
+                responseJson
+            )
 
             SignalingServerResponse.Info.REMOTE_CLIENT_DISCONNECTED ->
                 SignalingServerIncomingMessage.RemoteClientDisconnected
@@ -280,11 +280,11 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in answer payload")
         }
 
-        val message = decryptData(
-            input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
+        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
+            withEncryptionKey = encryptionKey
         )
-        val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
+        val answer =
+            json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
         return SignalingServerIncomingMessage.BrowserExtensionAnswer(
             requestId = responseJson.requestId,
@@ -301,9 +301,8 @@ internal class WebSocketClientImpl(
             throw IllegalArgumentException("rpc message is null in remote ice candidate payload")
         }
 
-        val message = decryptData(
-            input = responseJson.data.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
+        val message = responseJson.data.encryptedPayload.decodeHex().toByteArray().decrypt(
+            withEncryptionKey = encryptionKey
         )
         val iceCandidateString = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)

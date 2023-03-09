@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
@@ -30,18 +31,33 @@ internal class TransactionClientTest {
     private val profileDataSource = mockk<ProfileDataSource>()
     private val accountRepository = mockk<AccountRepository>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
+    private val cache = mockk<HttpCache>()
 
     private lateinit var transactionClient: TransactionClient
 
     @Before
     fun setUp() {
         transactionClient = TransactionClient(
-            transactionRepository, profileDataSource, accountRepository, getAccountResourceUseCase
+            transactionRepository,
+            profileDataSource,
+            accountRepository,
+            getAccountResourceUseCase,
+            cache
         )
-        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab") } returns Result.Success(
+        coEvery {
+            getAccountResourceUseCase(
+                address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab",
+                isRefreshing = true
+            )
+        } returns Result.Success(
             SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab")
         )
-        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej") } returns Result.Success(
+        coEvery {
+            getAccountResourceUseCase(
+                address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej",
+                isRefreshing = true
+            )
+        } returns Result.Success(
             SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
         )
         coEvery { profileDataSource.getCurrentNetworkId() } returns Network.nebunet.networkId()

@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
-import com.babylon.wallet.android.data.repository.performHttpRequest
+import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
 
@@ -27,14 +27,7 @@ interface TransactionRepository {
 class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : TransactionRepository {
 
     override suspend fun getLedgerEpoch(): Result<Long> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.transactionConstruction()
-            },
-            map = {
-                it.ledgerState.epoch
-            }
-        )
+        return gatewayApi.transactionConstruction().execute(map = { it.ledgerState.epoch })
     }
 
     override suspend fun getRecentTransactions(
@@ -42,35 +35,17 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
         page: String?,
         limit: Int?
     ): Result<TransactionRecentResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.transactionRecent(TransactionRecentRequest(cursor = page, limit = limit))
-            },
-            map = {
-                it
-            }
-        )
+        return gatewayApi.transactionRecent(TransactionRecentRequest(cursor = page, limit = limit))
+            .execute(map = { it })
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
-            },
-            map = {
-                it
-            }
-        )
+        return gatewayApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
+            .execute(map = { it })
     }
 
-    override suspend fun getTransactionStatus(intentHashHex: String?): Result<TransactionStatusResponse> {
-        return performHttpRequest(
-            call = {
-                gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = intentHashHex))
-            },
-            map = {
-                it
-            }
-        )
+    override suspend fun getTransactionStatus(identifier: String?): Result<TransactionStatusResponse> {
+        return gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = identifier))
+            .execute(map = { it })
     }
 }

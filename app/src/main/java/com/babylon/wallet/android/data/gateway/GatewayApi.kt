@@ -29,6 +29,7 @@ import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.model.TransactionSubmitResponse
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -36,59 +37,59 @@ import retrofit2.http.POST
 interface GatewayApi {
 
     @POST("entity/details")
-    suspend fun entityDetails(@Body entityDetailsRequest: EntityDetailsRequest): Response<EntityDetailsResponse>
+    fun entityDetails(@Body entityDetailsRequest: EntityDetailsRequest): Call<EntityDetailsResponse>
 
     @POST("entity/fungibles")
     suspend fun entityFungibles(@Body entityFungiblesRequest: EntityFungiblesRequest): Response<EntityFungiblesResponse>
 
     @POST("entity/metadata")
-    suspend fun entityMetadata(@Body entityMetadataRequest: EntityMetadataRequest): Response<EntityMetadataResponse>
+    fun entityMetadata(@Body entityMetadataRequest: EntityMetadataRequest): Call<EntityMetadataResponse>
 
     @POST("entity/non-fungible/ids")
     suspend fun entityNonFungibleIds(
         @Body entityNonFungibleIdsRequest: EntityNonFungibleIdsRequest
-    ): Response<EntityNonFungibleIdsResponse>
+    ): Call<EntityNonFungibleIdsResponse>
 
     @POST("entity/non-fungibles")
-    suspend fun entityNonFungibles(
+    fun entityNonFungibles(
         @Body entityNonFungiblesRequest: EntityNonFungiblesRequest
-    ): Response<EntityNonFungiblesResponse>
+    ): Call<EntityNonFungiblesResponse>
 
     @POST("non-fungible/data")
-    suspend fun nonFungibleData(@Body nonFungibleDataRequest: NonFungibleDataRequest): Response<NonFungibleDataResponse>
+    fun nonFungibleData(@Body nonFungibleDataRequest: NonFungibleDataRequest): Call<NonFungibleDataResponse>
 
     @POST("non-fungible/ids")
-    suspend fun nonFungibleIds(@Body nonFungibleIdsRequest: NonFungibleIdsRequest): Response<NonFungibleIdsResponse>
+    fun nonFungibleIds(@Body nonFungibleIdsRequest: NonFungibleIdsRequest): Call<NonFungibleIdsResponse>
 
     @POST("entity/overview")
-    suspend fun entityOverview(@Body entityOverviewRequest: EntityOverviewRequest): Response<EntityOverviewResponse>
+    fun entityOverview(@Body entityOverviewRequest: EntityOverviewRequest): Call<EntityOverviewResponse>
 
     @POST("entity/resources")
-    suspend fun entityResources(@Body entityResourcesRequest: EntityResourcesRequest): Response<EntityResourcesResponse>
+    fun entityResources(@Body entityResourcesRequest: EntityResourcesRequest): Call<EntityResourcesResponse>
 
     @POST("transaction/committed-details")
-    suspend fun transactionCommittedDetails(
+    fun transactionCommittedDetails(
         @Body transactionCommittedDetailsRequest: TransactionCommittedDetailsRequest
-    ): Response<TransactionCommittedDetailsResponse>
+    ): Call<TransactionCommittedDetailsResponse>
 
     @POST("transaction/construction")
-    suspend fun transactionConstruction(): Response<TransactionConstructionResponse>
+    fun transactionConstruction(): Call<TransactionConstructionResponse>
 
     @POST("transaction/recent")
-    suspend fun transactionRecent(
+    fun transactionRecent(
         @Body recentTransactionsRequest: TransactionRecentRequest
-    ): Response<TransactionRecentResponse>
+    ): Call<TransactionRecentResponse>
 
     @POST("transaction/submit")
-    suspend fun submitTransaction(
+    fun submitTransaction(
         @Body transactionSubmitRequest: TransactionSubmitRequest
-    ): Response<TransactionSubmitResponse>
+    ): Call<TransactionSubmitResponse>
 
     @POST("transaction/status")
-    suspend fun transactionStatus(
+    fun transactionStatus(
         @Body transactionStatusRequest: TransactionStatusRequest
-    ): Response<TransactionStatusResponse>
+    ): Call<TransactionStatusResponse>
 
     @POST("transaction/preview")
-    suspend fun transactionPreview(@Body body: Any): Response<Any>
+    fun transactionPreview(@Body body: Any): Call<Any>
 }
