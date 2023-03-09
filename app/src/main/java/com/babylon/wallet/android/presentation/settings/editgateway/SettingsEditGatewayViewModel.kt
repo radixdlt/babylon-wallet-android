@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.editgateway
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
@@ -46,7 +47,11 @@ class SettingsEditGatewayViewModel @Inject constructor(
                     state.copy(
                         currentGateway = current,
                         gatewayList = gateways.saved.toPersistentList().map {
-                            GatewayWrapper(it, it.url == current.url)
+                            GatewayWrapper(
+                                gateway = it,
+                                selected = it.url == current.url,
+                                default = BuildConfig.GATEWAY_API_URL == it.url
+                            )
                         }.toPersistentList()
                     )
                 }
@@ -67,9 +72,13 @@ class SettingsEditGatewayViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteGateway(gateway: Gateway) {
+    fun onDeleteGateway(gateway: GatewayWrapper) {
         viewModelScope.launch {
-            profileDataSource.deleteGateway(gateway)
+            if (gateway.selected) {
+                val defaultGateway = state.value.gatewayList.first { it.default }
+                switchGateway(defaultGateway.gateway)
+            }
+            profileDataSource.deleteGateway(gateway.gateway)
         }
     }
 
@@ -98,16 +107,20 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onGatewayClick(gateway: Gateway) {
         viewModelScope.launch {
-            if (gateway.url == state.value.currentGateway?.url) return@launch
-            if (profileDataSource.hasAccountForGateway(gateway)) {
-                profileDataSource.changeGateway(gateway)
-                _state.update { state ->
-                    state.copy(addingGateway = false)
-                }
-            } else {
-                val urlEncoded = gateway.url.encodeUtf8()
-                sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
+            switchGateway(gateway)
+        }
+    }
+
+    private suspend fun switchGateway(gateway: Gateway) {
+        if (gateway.url == state.value.currentGateway?.url) return
+        if (profileDataSource.hasAccountForGateway(gateway)) {
+            profileDataSource.changeGateway(gateway)
+            _state.update { state ->
+                state.copy(addingGateway = false)
             }
+        } else {
+            val urlEncoded = gateway.url.encodeUtf8()
+            sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
         }
     }
 }
@@ -131,4 +144,4 @@ internal enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding
 }
 
-data class GatewayWrapper(val gateway: Gateway, val selected: Boolean)
+data class GatewayWrapper(val gateway: Gateway, val selected: Boolean, val default: Boolean)

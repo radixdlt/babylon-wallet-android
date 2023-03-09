@@ -98,7 +98,7 @@ private fun SettingsEditGatewayContent(
     newUrlValid: Boolean,
     modifier: Modifier = Modifier,
     gatewayList: PersistentList<GatewayWrapper>,
-    onDeleteGateway: (Gateway) -> Unit,
+    onDeleteGateway: (GatewayWrapper) -> Unit,
     addingGateway: Boolean,
     gatewayAddFailure: GatewayAddFailure?,
     onGatewayClick: (Gateway) -> Unit,
@@ -296,10 +296,10 @@ private fun AddGatewaySheet(
 @Composable
 private fun GatewayCard(
     gateway: GatewayWrapper,
-    onDeleteGateway: (Gateway) -> Unit,
+    onDeleteGateway: (GatewayWrapper) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var gatewayToDelete by remember { mutableStateOf<Gateway?>(null) }
+    var gatewayToDelete by remember { mutableStateOf<GatewayWrapper?>(null) }
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -330,9 +330,9 @@ private fun GatewayCard(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        if (!gateway.selected) {
+        if (!gateway.default) {
             IconButton(onClick = {
-                gatewayToDelete = gateway.gateway
+                gatewayToDelete = gateway
             }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
