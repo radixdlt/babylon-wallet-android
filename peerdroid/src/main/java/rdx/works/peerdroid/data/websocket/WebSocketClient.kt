@@ -234,9 +234,8 @@ internal class WebSocketClientImpl(
     private fun decryptAndParseOfferPayload(
         offerPayload: RpcMessage.Offer
     ): SignalingServerMessage.RemoteData.Offer {
-        val message = decryptData(
-            input = offerPayload.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
+        val message = offerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
+            withEncryptionKey = encryptionKey
         )
         val offer = json.decodeFromString<RpcMessage.OfferPayload>(String(message, StandardCharsets.UTF_8))
 
@@ -251,9 +250,8 @@ internal class WebSocketClientImpl(
     private fun decryptAndParseAnswerPayload(
         answerPayload: RpcMessage.Answer
     ): SignalingServerMessage.RemoteData.Answer {
-        val message = decryptData(
-            input = answerPayload.encryptedPayload.decodeHex().toByteArray(),
-            encryptionKey = encryptionKey
+        val message = answerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
+            withEncryptionKey = encryptionKey
         )
         val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
