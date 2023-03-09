@@ -29,10 +29,6 @@ data class Gateways(
         return saved.first { it.url == currentGatewayUrl }
     }
 
-    fun other(): List<Gateway> {
-        return saved.filter { it.url == currentGatewayUrl }
-    }
-
     fun changeCurrent(gateway: Gateway): Gateways {
         require(saved.contains(gateway))
         return copy(currentGatewayUrl = gateway.url)

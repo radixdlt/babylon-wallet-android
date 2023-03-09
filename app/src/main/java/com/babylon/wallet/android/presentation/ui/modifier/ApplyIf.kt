@@ -9,6 +9,6 @@ fun Modifier.applyIf(
     return if (condition) {
         return then(modifier)
     } else {
-        modifier
+        this
     }
 }
