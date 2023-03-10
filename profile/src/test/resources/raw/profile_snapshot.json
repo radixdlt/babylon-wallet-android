@@ -18,9 +18,7 @@
     "p2pClients" : [
       {
         "connectionPassword" : "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
-        "displayName" : "Brave browser on Mac Studio",
-        "firstEstablishedOn" : "2023-02-06T15:28:09Z",
-        "lastUsedOn" : "2023-02-06T15:28:09Z"
+        "displayName" : "Brave browser on Mac Studio"
       }
     ]
   },
@@ -262,6 +260,6 @@
   ],
   "id": "9958f568-8c9b-476a-beeb-017d1f843266",
   "creatingDevice": "Galaxy A53 5G (Samsung SM-A536B)",
-  "version" : 20
+  "version" : 19
 }
 
