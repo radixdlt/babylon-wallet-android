@@ -57,13 +57,21 @@ data class Gateway(
         get() = url == nebunet.url
 
     companion object {
+        val nebunet = Gateway(
+            url = "https://betanet.radixdlt.com",
+            network = Network.nebunet
+        )
         val hammunet = Gateway(
             url = "https://hammunet-gateway.radixdlt.com",
             network = Network.hammunet
         )
-        val nebunet = Gateway(
-            url = "https://betanet.radixdlt.com",
-            network = Network.nebunet
+        val enkinet = Gateway(
+            url = "https://enkinet-gateway.radixdlt.com",
+            network = Network.enkinet
+        )
+        val mardunet = Gateway(
+            url = "https://mardunet-gateway.radixdlt.com",
+            network = Network.mardunet
         )
     }
 }
