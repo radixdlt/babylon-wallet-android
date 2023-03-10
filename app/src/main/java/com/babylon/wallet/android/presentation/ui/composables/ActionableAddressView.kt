@@ -48,7 +48,7 @@ fun ActionableAddressView(
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val addressWithType = resolveAddressWithType(address = address)
+    val addressWithType = resolveAddress(address = address)
     val actions = resolveActions(address = addressWithType)
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
 
@@ -113,7 +113,7 @@ fun ActionableAddressView(
 }
 
 @Composable
-private fun resolveAddressWithType(
+private fun resolveAddress(
     address: String
 ): Address = remember(address) { Address.from(address) }
 
