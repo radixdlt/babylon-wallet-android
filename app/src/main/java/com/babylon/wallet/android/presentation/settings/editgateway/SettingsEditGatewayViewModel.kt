@@ -48,8 +48,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
                         gatewayList = gateways.saved.toPersistentList().map {
                             GatewayWrapper(
                                 gateway = it,
-                                selected = it.url == current.url,
-                                default = it.isDefault
+                                selected = it.url == current.url
                             )
                         }.toPersistentList()
                     )
@@ -74,7 +73,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
     fun onDeleteGateway(gateway: GatewayWrapper) {
         viewModelScope.launch {
             if (gateway.selected) {
-                val defaultGateway = state.value.gatewayList.first { it.default }
+                val defaultGateway = state.value.gatewayList.first { it.gateway.isDefault }
                 switchGateway(defaultGateway.gateway)
             }
             profileDataSource.deleteGateway(gateway.gateway)
@@ -143,4 +142,4 @@ internal enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding
 }
 
-data class GatewayWrapper(val gateway: Gateway, val selected: Boolean, val default: Boolean)
+data class GatewayWrapper(val gateway: Gateway, val selected: Boolean)
