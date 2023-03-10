@@ -19,17 +19,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,10 +43,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,7 +63,7 @@ import com.babylon.wallet.android.presentation.account.composable.AssetMetadataR
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.toDisplayResource
-import com.babylon.wallet.android.presentation.ui.composables.AddressWithCopyIcon
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -78,11 +73,11 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.OnNetwork
+import java.util.Locale
 
 @Composable
 fun DappDetailScreen(
@@ -140,7 +135,6 @@ private fun DappDetailContent(
     loading: Boolean
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
-    val addressCopyMessage = stringResource(id = R.string.address_copied)
     val snackState = remember { SnackbarHostState() }
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -206,11 +200,6 @@ private fun DappDetailContent(
                         },
                         onDeleteDapp = {
                             showDeleteDappPrompt = true
-                        },
-                        onAddressCopied = {
-                            scope.launch {
-                                snackState.showSnackbar(message = addressCopyMessage)
-                            }
                         }
                     )
                 }
@@ -255,8 +244,7 @@ private fun DappDetails(
     dappMetadata: DappMetadata?,
     personaList: ImmutableList<OnNetwork.Persona>,
     onPersonaClick: (OnNetwork.Persona) -> Unit,
-    onDeleteDapp: () -> Unit,
-    onAddressCopied: () -> Unit
+    onDeleteDapp: () -> Unit
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
@@ -302,7 +290,6 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                     DappDefinitionAddressRow(
                         dappDefinitionAddress = dappDefinitionAddress,
-                        onAddressCopied = onAddressCopied,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingDefault)
@@ -349,7 +336,10 @@ private fun DappDetails(
                                 onPersonaClick(persona)
                             }
                             .fillMaxWidth()
-                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+                            .background(
+                                RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
                             .padding(
                                 horizontal = dimensions.paddingLarge,
                                 vertical = dimensions.paddingDefault
@@ -386,34 +376,26 @@ private fun DappDetails(
 @Composable
 private fun DappDefinitionAddressRow(
     dappDefinitionAddress: String,
-    onAddressCopied: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val clipboard = LocalClipboardManager.current
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        AssetMetadataRow(
-            modifier = Modifier.weight(1f),
-            key = stringResource(id = R.string.dapp_definition),
-            value = dappDefinitionAddress.truncatedHash()
+        Text(
+            text = stringResource(id = R.string.dapp_definition).replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            },
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray2
         )
 
-        IconButton(
-            modifier = Modifier.size(14.dp),
-            onClick = {
-                clipboard.setText(AnnotatedString(dappDefinitionAddress))
-                onAddressCopied()
-            },
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
-                tint = RadixTheme.colors.gray2,
-                contentDescription = null
-            )
-        }
+        ActionableAddressView(
+            address = dappDefinitionAddress,
+            textStyle = RadixTheme.typography.body1Regular,
+            textColor = RadixTheme.colors.gray1
+        )
     }
 }
 
@@ -637,19 +619,17 @@ private fun PersonaSharedAccountCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val clipboardManager = LocalClipboardManager.current
         Text(
             text = account.displayName.orEmpty(),
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.white
         )
-        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
-        AddressWithCopyIcon(
-            modifier = Modifier.throttleClickable {
-                clipboardManager.setText(AnnotatedString(account.address))
-            },
-            address = account.address
+
+        ActionableAddressView(
+            address = account.address,
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )
     }
 }
@@ -662,11 +642,11 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             dappName = "Dapp",
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappMetadata = DappMetadata("", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
+            dappMetadata = DappMetadata("account_tdx_abcd", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
             onPersonaClick = {},
             selectedPersona = SampleDataProvider().samplePersona(),
             selectedPersonaSharedAccounts = persistentListOf(
-                AccountItemUiModel("address1", "Account1", 0)
+                AccountItemUiModel("account_tdx_efgh", "Account1", 0)
             ),
             onDisconnectPersona = {},
             personaDetailsClosed = {},
@@ -685,7 +665,7 @@ fun PersonaDetailsSheetPreview() {
         PersonaDetailsSheet(
             persona = SampleDataProvider().samplePersona(),
             sharedPersonaAccounts = persistentListOf(
-                AccountItemUiModel("address1", "Account1", 0)
+                AccountItemUiModel("account_tdx_efgh", "Account1", 0)
             ),
             onCloseClick = {},
             dappName = "dApp",

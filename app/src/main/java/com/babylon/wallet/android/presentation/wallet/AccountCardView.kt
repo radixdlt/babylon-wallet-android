@@ -20,9 +20,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.presentation.ui.composables.AddressWithCopyIcon
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import java.math.BigDecimal
 
 @Suppress("UnstableCollections")
@@ -30,7 +29,6 @@ import java.math.BigDecimal
 fun AccountCardView(
     address: String,
     accountName: String,
-    onCopyClick: () -> Unit,
     assets: List<OwnedFungibleToken>, // at the moment we pass only the tokens
     modifier: Modifier = Modifier,
 ) {
@@ -57,11 +55,10 @@ fun AccountCardView(
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            AddressWithCopyIcon(
+            ActionableAddressView(
                 address = address,
-                modifier = Modifier.throttleClickable {
-                    onCopyClick()
-                }
+                textStyle = RadixTheme.typography.body2HighImportance,
+                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
             AnimatedVisibility(visible = false) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -80,7 +77,6 @@ fun AccountCardPreview() {
         AccountCardView(
             address = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
             accountName = "My main account",
-            onCopyClick = {},
             assets = listOf(
                 OwnedFungibleToken(
                     AccountAddress("123"),

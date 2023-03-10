@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
@@ -31,15 +29,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import java.util.Locale
 
 @Composable
 fun FungibleTokenBottomSheetDetails(
     token: TokenUiModel,
     onCloseClick: () -> Unit,
-    onCopyAccountAddress: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -100,9 +99,7 @@ fun FungibleTokenBottomSheetDetails(
             }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                shortenedAddress = token.shortenedAddress(),
-                address = token.address,
-                onCopyAccountAddress = onCopyAccountAddress
+                address = token.address
             )
             Spacer(modifier = Modifier.height(100.dp))
         }
@@ -112,32 +109,27 @@ fun FungibleTokenBottomSheetDetails(
 @Composable
 private fun ResourceAddressRow(
     modifier: Modifier,
-    shortenedAddress: String,
-    address: String,
-    onCopyAccountAddress: (String) -> Unit
+    address: String
 ) {
     Row(
-        modifier = modifier,
+        modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        AssetMetadataRow(
-            modifier = Modifier.weight(1f),
-            key = stringResource(id = R.string.resource_address),
-            value = shortenedAddress
-        )
-        IconButton(
-            modifier = Modifier.size(14.dp),
-            onClick = {
-                onCopyAccountAddress(address)
+        Text(
+            text = stringResource(id = R.string.resource_address).replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
             },
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = null
-            )
-        }
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray2
+        )
+
+        ActionableAddressView(
+            address = address,
+            textStyle = RadixTheme.typography.body1Regular,
+            textColor = RadixTheme.colors.gray1,
+            iconColor = RadixTheme.colors.gray2
+        )
     }
 }
 
@@ -165,8 +157,7 @@ fun FungibleTokenBottomSheetDetailsPreview() {
     RadixWalletTheme {
         FungibleTokenBottomSheetDetails(
             token = SampleDataProvider().sampleFungibleTokens().first().toTokenUiModel(),
-            onCloseClick = {},
-            onCopyAccountAddress = {}
+            onCloseClick = {}
         )
     }
 }

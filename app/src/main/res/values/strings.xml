@@ -165,7 +165,6 @@
     <string name="forget_this_dapp">Forget this dApp</string>
     <string name="edit_persona">Edit Persona</string>
     <string name="persona_label">Persona Label</string>
-    <string name="address_copied">Address copied!</string>
     <string name="disconnect_dapp_prompt">This dApp will no longer have any authorization to see any of your persona data or accounts. You will need to choose a persona to login with if you connect to this dApp again.</string>
     <string name="disconnect_persona_prompt">This dApp will no longer have authorization to see data associated with this persona, unless you choose to login with it again in the future.</string>
 
@@ -231,5 +230,14 @@
     <plurals name="number_of_accounts">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>
-    </plurals>>
+    </plurals>
+    <string name="action_copy">Copy %1$s Address</string>
+    <string name="copied_to_clipboard">Copied to clipboard.</string>
+    <string name="action_open_in_dashboard">View %1$s in Radix Dashboard</string>
+    <string name="address_package">package</string>
+    <string name="address_resource">resource</string>
+    <string name="address_account">account</string>
+    <string name="address_transaction">transaction</string>
+    <string name="address_component">component</string>
+    <string name="no_web_browser_installed">There is no web browser installed in this device</string>
 </resources>

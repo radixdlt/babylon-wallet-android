@@ -63,7 +63,7 @@ import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
-import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
@@ -103,7 +103,6 @@ fun AccountScreen(
         xrdToken = state.xrdToken,
         fungibleTokens = state.fungibleTokens,
         nonFungibleTokens = state.nonFungibleTokens,
-        onCopyAccountAddress = viewModel::onCopyAccountAddress,
         gradientIndex = state.gradientIndex,
         onHistoryClick = {},
         onTransferClick = {},
@@ -129,7 +128,6 @@ private fun AccountScreenContent(
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
     nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    onCopyAccountAddress: (String) -> Unit,
     gradientIndex: Int,
     onHistoryClick: () -> Unit,
     onTransferClick: () -> Unit,
@@ -176,7 +174,7 @@ private fun AccountScreenContent(
                                 scope.launch {
                                     bottomSheetState.hide()
                                 }
-                            }, onCopyAccountAddress, modifier = Modifier.fillMaxSize())
+                            }, modifier = Modifier.fillMaxSize())
                         }
                         null -> {}
                     }
@@ -231,7 +229,6 @@ private fun AccountScreenContent(
                         refreshTriggerDistance = 100.dp,
                         content = {
                             AccountContent(
-                                onCopyAccountAddressClick = onCopyAccountAddress,
                                 accountAddress = accountAddress,
                                 xrdToken = xrdToken,
                                 fungibleTokens = fungibleTokens,
@@ -307,7 +304,6 @@ fun AccountContentWithScrollableHeader(
     onAccountPreferenceClick: () -> Unit,
     accountAddress: String,
     walletFiatBalance: String?,
-    onCopyAccountAddress: (String) -> Unit,
     onTransferClick: () -> Unit,
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
@@ -349,7 +345,6 @@ fun AccountContentWithScrollableHeader(
                         modifier = Modifier.fillMaxWidth(),
                         accountAddress = accountAddress,
                         walletFiatBalance = walletFiatBalance,
-                        onCopyAccountAddressClick = onCopyAccountAddress,
                         onTransferClick = onTransferClick
                     )
                 }
@@ -387,7 +382,6 @@ fun AccountContentWithScrollableHeader(
 @ExperimentalPagerApi
 @Composable
 private fun AccountContent(
-    onCopyAccountAddressClick: (String) -> Unit,
     accountAddress: String,
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
@@ -407,7 +401,6 @@ private fun AccountContent(
             modifier = Modifier.fillMaxWidth(),
             accountAddress = accountAddress,
             walletFiatBalance = walletFiatBalance,
-            onCopyAccountAddressClick = onCopyAccountAddressClick,
             onTransferClick = onTransferClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -434,17 +427,16 @@ private fun AccountSummaryContent(
     modifier: Modifier,
     accountAddress: String,
     walletFiatBalance: String?,
-    onCopyAccountAddressClick: (String) -> Unit,
     onTransferClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AccountAddressView(
+        ActionableAddressView(
             address = accountAddress,
-            onCopyAccountAddressClick = onCopyAccountAddressClick,
-            contentColor = RadixTheme.colors.white
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         walletFiatBalance?.let { value ->
@@ -489,7 +481,9 @@ fun AssetsContent(
         val scope = rememberCoroutineScope()
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         TabRow(
-            modifier = Modifier.height(50.dp).width(200.dp),
+            modifier = Modifier
+                .height(50.dp)
+                .width(200.dp),
             selectedTabIndex = pagerState.currentPage,
             divider = {}, /* Disable the built-in divider */
             indicator = { tabPositions ->
@@ -580,7 +574,6 @@ fun AccountContentPreview() {
                 xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
                 fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
-                onCopyAccountAddress = {},
                 gradientIndex = 0,
                 onHistoryClick = {},
                 onTransferClick = {},
@@ -611,7 +604,6 @@ fun AccountContentDarkPreview() {
                 xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
                 fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
-                onCopyAccountAddress = {},
                 gradientIndex = 0,
                 onHistoryClick = {},
                 onTransferClick = {},
@@ -634,8 +626,7 @@ fun FungibleTokenDetailsDarkPreview() {
             FungibleTokenBottomSheetDetails(
                 modifier = Modifier.fillMaxSize(),
                 token = sampleFungibleTokens().first().toTokenUiModel(),
-                onCloseClick = {},
-                onCopyAccountAddress = {}
+                onCloseClick = {}
             )
         }
     }
