@@ -54,6 +54,9 @@ data class Gateway(
     val network: Network
 ) {
 
+    val isDefault: Boolean
+        get() = url == nebunet.url
+
     companion object {
         val hammunet = Gateway(
             url = "https://hammunet-gateway.radixdlt.com",
