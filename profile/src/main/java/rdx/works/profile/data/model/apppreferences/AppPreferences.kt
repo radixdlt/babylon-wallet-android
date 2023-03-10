@@ -71,6 +71,11 @@ data class Gateway(
 
 @Serializable
 data class P2PClient(
+    /**
+     * The most important property of this struct, this password,
+     * is used to be able to reestablish the P2P connection and also acts as the seed
+     * for the [id].
+     */
     @SerialName("connectionPassword")
     val connectionPassword: String,
 
@@ -78,26 +83,19 @@ data class P2PClient(
      * Client name, e.g. "Chrome on Macbook" or "My work Android"
      */
     @SerialName("displayName")
-    val displayName: String,
-
-    @SerialName("firstEstablishedOn")
-    val firstEstablishedOn: String,
-
-    @SerialName("lastUsedOn")
-    val lastUsedOn: String
+    val displayName: String
 ) {
+
+    val id: String
+        get() = connectionPassword
+
     companion object {
         fun init(
             connectionPassword: String,
             displayName: String
-        ): P2PClient {
-            val now = Instant.now().toString()
-            return P2PClient(
-                connectionPassword = connectionPassword,
-                displayName = displayName,
-                firstEstablishedOn = now,
-                lastUsedOn = now
-            )
-        }
+        ): P2PClient = P2PClient(
+            connectionPassword = connectionPassword,
+            displayName = displayName
+        )
     }
 }
