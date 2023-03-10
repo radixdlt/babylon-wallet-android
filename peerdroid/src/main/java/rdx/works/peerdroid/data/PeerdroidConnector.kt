@@ -207,7 +207,7 @@ internal class PeerdroidConnectorImpl(
                         Timber.d("⚙️ ⚡ signaling state changed: ${event.message}")
                     }
                     PeerConnectionEvent.Connected -> {
-                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection connected 🟢")
+                        Timber.d("⚙️ ⚡ signaling state changed: peer connection connected 🟢")
                         dataChannelDeferred.complete(
                             Result.Success(
                                 data = DataChannelWrapper(webRtcDataChannel = webRtcManager.getDataChannel())
@@ -215,7 +215,7 @@ internal class PeerdroidConnectorImpl(
                         )
                     }
                     PeerConnectionEvent.Disconnected -> {
-                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection disconnected 🔴")
+                        Timber.d("⚙️ ⚡ signaling state changed: peer connection disconnected 🔴")
                     }
                     PeerConnectionEvent.Failed -> {
                         Timber.d("⚙️ ⚡ signaling state changed: peer connection failed ❌")
@@ -250,14 +250,14 @@ internal class PeerdroidConnectorImpl(
                         createAndSendAnswer()
                     }
                     is SignalingServerMessage.RemoteData.Answer -> {
-                        Timber.d("⚙️ 📩 remote client answer received")
+                        Timber.d("⚙️ 📩 remote client answer received with requestId: ${incomingMessage.requestId}")
                     }
                     is SignalingServerMessage.RemoteData.IceCandidate -> {
-                        Timber.d("⚙️ 📩 received ice candidate from remote client")
+                        Timber.d("⚙️ 📩 received ice candidate from remote client with requestId: ${incomingMessage.requestId}")
                         addRemoteIceCandidateInWebRtc(incomingMessage)
                     }
                     is SignalingServerMessage.Confirmation -> {
-                        Timber.d("⚙️ 📩 confirmation received")
+                        Timber.d("⚙️ 📩 confirmation received for requestId: ${incomingMessage.requestId}")
                     }
                     is SignalingServerMessage.Error.InvalidMessage -> {
                         Timber.d("⚙️ 📩 invalid message error: ${incomingMessage.errorMessage}")
