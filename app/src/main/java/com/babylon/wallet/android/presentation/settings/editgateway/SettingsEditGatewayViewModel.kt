@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.editgateway
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
@@ -50,7 +49,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
                             GatewayWrapper(
                                 gateway = it,
                                 selected = it.url == current.url,
-                                default = BuildConfig.GATEWAY_API_URL == it.url
+                                default = it.isDefault
                             )
                         }.toPersistentList()
                     )
