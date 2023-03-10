@@ -127,4 +127,12 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
     }
 
+    override suspend fun resetPersonaPermissions(
+        dAppDefinitionAddress: String,
+        personaAddress: String,
+        personaData: Boolean,
+        accounts: Boolean
+    ) {
+    }
+
 }

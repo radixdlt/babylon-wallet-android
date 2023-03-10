@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.data.dapp.model.ResetRequestItem
 import rdx.works.profile.data.model.pernetwork.OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
 
 sealed interface MessageFromDataChannel {
@@ -14,7 +15,8 @@ sealed interface MessageFromDataChannel {
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaRequestItem: PersonaRequestItem? = null,
-            val ongoingPersonaRequestItem: PersonaRequestItem? = null
+            val ongoingPersonaRequestItem: PersonaRequestItem? = null,
+            val resetRequestItem: ResetRequestItem? = null
         ) : IncomingRequest(requestId, requestMetadata) {
 
             fun isUsePersonaWithOngoingAccountsOnly(): Boolean {
@@ -65,6 +67,11 @@ sealed interface MessageFromDataChannel {
         data class PersonaRequestItem(
             val fields: List<String>,
             val isOngoing: Boolean
+        )
+
+        data class ResetRequestItem(
+            val accounts: Boolean,
+            val personaData: Boolean
         )
     }
 

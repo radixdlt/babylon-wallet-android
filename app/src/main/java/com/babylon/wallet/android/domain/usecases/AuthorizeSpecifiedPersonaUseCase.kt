@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.dapp.account.toUiModel
 import com.babylon.wallet.android.utils.toISO8601String
 import kotlinx.coroutines.coroutineScope
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
@@ -40,6 +41,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                         it.identityAddress == authRequest.personaAddress
                     }
                 if (authorizedDapp != null && authorizedPersonaSimple != null) {
+                    handleResetRequestItem(request, authorizedDapp)
                     val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
                         authorizedDapp.dAppDefinitionAddress,
                         authorizedPersonaSimple.identityAddress,
@@ -83,4 +85,21 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             }
             operationResult
         }
+
+    private suspend fun handleResetRequestItem(
+        request: IncomingRequest.AuthorizedRequest,
+        authorizedDapp: OnNetwork.AuthorizedDapp
+    ) {
+        if (request.isUsePersonaAuth()) {
+            val auth = request.authRequest as IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
+            request.resetRequestItem?.let { reset ->
+                dAppConnectionRepository.resetPersonaPermissions(
+                    dAppDefinitionAddress = authorizedDapp.dAppDefinitionAddress,
+                    personaAddress = auth.personaAddress,
+                    personaData = reset.personaData,
+                    accounts = reset.accounts
+                )
+            }
+        }
+    }
 }

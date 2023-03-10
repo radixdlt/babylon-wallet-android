@@ -98,7 +98,27 @@ class DAppLoginViewModel @Inject constructor(
             result.onError { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
+            authorizedDapp?.let { dapp ->
+                handleResetRequestItem(authorizedRequest, dapp)
+            }
             setInitialDappLoginRoute()
+        }
+    }
+
+    private suspend fun handleResetRequestItem(
+        request: AuthorizedRequest,
+        authorizedDapp: OnNetwork.AuthorizedDapp
+    ) {
+        if (request.isUsePersonaAuth()) {
+            val auth = request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
+            request.resetRequestItem?.let { reset ->
+                dAppConnectionRepository.resetPersonaPermissions(
+                    dAppDefinitionAddress = authorizedDapp.dAppDefinitionAddress,
+                    personaAddress = auth.personaAddress,
+                    personaData = reset.personaData,
+                    accounts = reset.accounts
+                )
+            }
         }
     }
 

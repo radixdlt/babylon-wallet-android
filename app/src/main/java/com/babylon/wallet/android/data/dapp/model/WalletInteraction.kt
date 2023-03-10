@@ -60,7 +60,9 @@ data class WalletAuthorizedRequestItems(
     @SerialName("oneTimePersonaData")
     val oneTimePersonaData: OneTimePersonaDataRequestItem? = null,
     @SerialName("ongoingPersonaData")
-    val ongoingPersonaData: OngoingPersonaDataRequestItem? = null
+    val ongoingPersonaData: OngoingPersonaDataRequestItem? = null,
+    @SerialName("reset")
+    val reset: ResetRequestItem? = null
 ) : WalletInteractionItems()
 
 private val walletRequestSerializersModule = SerializersModule {
@@ -148,5 +150,6 @@ private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
         ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(),
         oneTimePersonaRequestItem = oneTimePersonaData?.toDomainModel(),
         ongoingPersonaRequestItem = ongoingPersonaData?.toDomainModel(),
+        resetRequestItem = reset?.toDomainModel()
     )
 }
