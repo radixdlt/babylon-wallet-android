@@ -9,6 +9,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.IncompatibleProfileContent
+import com.babylon.wallet.android.presentation.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
@@ -100,7 +102,7 @@ fun NavigationHost(
             )
         }
         createAccountScreen(
-            startDestination,
+            startDestination = startDestination,
             onBackClick = {
                 navController.navigateUp()
             },
@@ -193,6 +195,13 @@ fun NavigationHost(
                 onContinueClick = {
                     navController.navigateUp()
                 }
+            )
+        }
+        composable(
+            route = ROUTE_INCOMPATIBLE_PROFILE
+        ) {
+            IncompatibleProfileContent(
+                viewModel = hiltViewModel()
             )
         }
     }

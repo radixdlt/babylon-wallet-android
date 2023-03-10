@@ -50,10 +50,10 @@ class MainViewModel @Inject constructor(
         MainUiState(
             loading = false,
             initialAppState = when {
-                !profileCompatible -> InitialAppState.IncompatibleProfile
-                showOnboarding -> InitialAppState.Onboarding
-                profileSnapshot != null -> InitialAppState.Dashboard
-                else -> InitialAppState.CreateAccount
+                !profileCompatible -> AppNavigationState.IncompatibleProfile
+                showOnboarding -> AppNavigationState.Onboarding
+                profileSnapshot != null -> AppNavigationState.Wallet
+                else -> AppNavigationState.CreateAccount
             }
         )
     }.onStart {
@@ -190,12 +190,13 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val loading: Boolean = true,
-    val initialAppState: InitialAppState = InitialAppState.Dashboard
+    val initialAppState: AppNavigationState = AppNavigationState.Init
 )
 
-sealed interface InitialAppState {
-    object Onboarding : InitialAppState
-    object Dashboard : InitialAppState
-    object CreateAccount : InitialAppState
-    object IncompatibleProfile : InitialAppState
+sealed interface AppNavigationState {
+    object Onboarding : AppNavigationState
+    object Wallet : AppNavigationState
+    object CreateAccount : AppNavigationState
+    object IncompatibleProfile : AppNavigationState
+    object Init : AppNavigationState
 }

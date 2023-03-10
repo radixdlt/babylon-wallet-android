@@ -33,14 +33,13 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+
         setContent {
             RadixWalletTheme {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 DevelopmentPreviewWrapper {
                     WalletApp(
-                        initialAppState = state.initialAppState,
-                        onDeleteProfile = { viewModel.deleteProfile() },
-                        onDeleteProfileDeclined = { finish() },
+                        appNavigationState = state.initialAppState,
                         oneOffEvent = viewModel.oneOffEvent
                     )
                 }
