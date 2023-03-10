@@ -2,7 +2,6 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.Instant
 
 @Serializable
 data class AppPreferences(

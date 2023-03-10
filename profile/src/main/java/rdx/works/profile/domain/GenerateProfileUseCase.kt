@@ -4,8 +4,8 @@ import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
