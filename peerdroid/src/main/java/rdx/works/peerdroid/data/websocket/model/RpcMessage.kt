@@ -32,11 +32,13 @@ import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 @JsonClassDiscriminator("method")
 internal sealed class RpcMessage {
 
+    abstract val requestId: String
+
     @Serializable
     @SerialName("offer")
     data class Offer(
         @SerialName("requestId")
-        val requestId: String = UUIDGenerator.uuid().toString(),
+        override val requestId: String = UUIDGenerator.uuid().toString(),
         @SerialName("targetClientId")
         val targetClientId: String,
         @SerialName("encryptedPayload")
@@ -47,7 +49,7 @@ internal sealed class RpcMessage {
     @SerialName("answer")
     data class Answer(
         @SerialName("requestId")
-        val requestId: String = UUIDGenerator.uuid().toString(),
+        override val requestId: String = UUIDGenerator.uuid().toString(),
         @SerialName("targetClientId")
         val targetClientId: String,
         @SerialName("encryptedPayload")
@@ -58,7 +60,7 @@ internal sealed class RpcMessage {
     @SerialName("iceCandidate")
     data class IceCandidate(
         @SerialName("requestId")
-        val requestId: String = UUIDGenerator.uuid().toString(),
+        override val requestId: String = UUIDGenerator.uuid().toString(),
         @SerialName("targetClientId")
         val targetClientId: String,
         @SerialName("encryptedPayload")

@@ -123,7 +123,7 @@ internal class WebSocketClientImpl(
             encryptedPayload = encryptedAnswer.toHexString()
         )
         val message = json.encodeToString(rpcMessage)
-        Timber.d("🛰 sending answer to remoteClient: $remoteClientId")
+        Timber.d("🛰 sending answer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
 
@@ -139,7 +139,7 @@ internal class WebSocketClientImpl(
             encryptedPayload = encryptedIceCandidate.toHexString()
         )
         val message = json.encodeToString(rpcMessage)
-        Timber.d("\uD83D\uDEF0 sending ice candidate to remoteClient: $remoteClientId")
+        Timber.d("🛰 sending ice candidate to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
         sendMessage(message)
     }
 
@@ -207,7 +207,7 @@ internal class WebSocketClientImpl(
                 )
             }
             is SignalingServerDto.ValidationError -> {
-                Timber.e("\uD83D\uDEF0 validation error in signaling server message: ${messageJson.error}")
+                Timber.e("🛰 validation error in signaling server message: ${messageJson.error}")
                 SignalingServerMessage.Error.Validation
             }
         }
@@ -265,10 +265,6 @@ internal class WebSocketClientImpl(
     private fun decryptAndParseIceCandidatePayload(
         iceCandidatePayload: RpcMessage.IceCandidate
     ): SignalingServerMessage.RemoteData.IceCandidate {
-//        val message = decryptData(
-//            input = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray(),
-//            encryptionKey = encryptionKey
-//        )
         val message = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
         )
