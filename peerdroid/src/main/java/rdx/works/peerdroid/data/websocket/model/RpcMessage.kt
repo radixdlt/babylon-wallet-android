@@ -7,9 +7,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import rdx.works.core.UUIDGenerator
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
-import java.util.UUID
 
 /**
  * Before mobile wallet clients can communicate directly with the browser extensions over WebRTC
@@ -36,7 +36,7 @@ internal sealed class RpcMessage {
     @SerialName("offer")
     data class Offer(
         @SerialName("requestId")
-        val requestId: String = UUID.randomUUID().toString(),
+        val requestId: String = UUIDGenerator.uuid().toString(),
         @SerialName("targetClientId")
         val targetClientId: String,
         @SerialName("encryptedPayload")
@@ -47,7 +47,7 @@ internal sealed class RpcMessage {
     @SerialName("answer")
     data class Answer(
         @SerialName("requestId")
-        val requestId: String = UUID.randomUUID().toString(),
+        val requestId: String = UUIDGenerator.uuid().toString(),
         @SerialName("targetClientId")
         val targetClientId: String,
         @SerialName("encryptedPayload")
@@ -58,7 +58,7 @@ internal sealed class RpcMessage {
     @SerialName("iceCandidate")
     data class IceCandidate(
         @SerialName("requestId")
-        val requestId: String = UUID.randomUUID().toString(),
+        val requestId: String = UUIDGenerator.uuid().toString(),
         @SerialName("targetClientId")
         val targetClientId: String,
         @SerialName("encryptedPayload")
