@@ -43,7 +43,10 @@ interface PeerdroidConnector {
      * It requires an existing connection in the wallet settings.
      *
      */
-    suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper>
+    suspend fun createDataChannel(
+        encryptionKey: ByteArray,
+        isRestart: Boolean
+    ): Result<DataChannelWrapper>
 
     suspend fun close(shouldCloseConnectionToSignalingServer: Boolean = false)
 }
@@ -93,13 +96,17 @@ internal class PeerdroidConnectorImpl(
         val connectionId = encryptionKey.sha256().toHexString()
 
         withContext(ioDispatcher) {
+            // Leave this method here because WebRTC takes too long to initialize its components
+            // and to create the peer connection and initialize the data channel.
+            // So by the time the web socket is open and listening the peer connection will be ready to negotiate.
+            observePeerConnectionUntilEstablished()
+            // and now establish the web socket
             val result = webSocketClient.initSession(
                 connectionId = connectionId,
                 encryptionKey = encryptionKey
             )
             when (result) {
                 is Result.Success -> {
-                    observePeerConnectionUntilEstablished()
                     listenForIncomingMessagesFromSignalingServer()
                 }
                 is Result.Error -> {
@@ -111,24 +118,31 @@ internal class PeerdroidConnectorImpl(
         return addConnectionDeferred.await()
     }
 
-    override suspend fun createDataChannel(encryptionKey: ByteArray): Result<DataChannelWrapper> {
+    override suspend fun createDataChannel(
+        encryptionKey: ByteArray,
+        isRestart: Boolean
+    ): Result<DataChannelWrapper> {
         Timber.d("⚙️ initialize data channel")
         dataChannelDeferred = CompletableDeferred()
         // get connection id from encryption key
         val connectionId = encryptionKey.sha256().toHexString()
 
-        withContext(ioDispatcher) {
-            val result = webSocketClient.initSession(
-                connectionId = connectionId,
-                encryptionKey = encryptionKey
-            )
-            when (result) {
-                is Result.Success -> {
-                    observePeerConnectionEvents()
-                    listenForIncomingMessagesFromSignalingServer()
-                }
-                is Result.Error -> {
-                    dataChannelDeferred.complete(Result.Error("failed to establish websocket client"))
+        if (isRestart) {
+            observePeerConnectionEvents()
+        } else {
+            observePeerConnectionEvents()
+            withContext(ioDispatcher) {
+                val result = webSocketClient.initSession(
+                    connectionId = connectionId,
+                    encryptionKey = encryptionKey
+                )
+                when (result) {
+                    is Result.Success -> {
+                        listenForIncomingMessagesFromSignalingServer()
+                    }
+                    is Result.Error -> {
+                        dataChannelDeferred.complete(Result.Error("failed to establish websocket client"))
+                    }
                 }
             }
         }
