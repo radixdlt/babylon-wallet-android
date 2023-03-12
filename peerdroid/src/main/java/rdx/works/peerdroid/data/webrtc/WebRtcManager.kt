@@ -62,8 +62,7 @@ internal interface WebRtcManager {
  * 7. add remote ice candidates => return data channel
  *
  */
-@Singleton
-internal class WebRtcManagerImpl @Inject constructor(
+internal class WebRtcManagerImpl constructor(
     private val peerConnectionFactory: PeerConnectionFactory
 ) : WebRtcManager {
     private lateinit var peerConnection: PeerConnection
