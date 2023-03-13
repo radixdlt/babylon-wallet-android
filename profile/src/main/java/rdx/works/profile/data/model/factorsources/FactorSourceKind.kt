@@ -1,5 +1,9 @@
 package rdx.works.profile.data.model.factorsources
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class FactorSourceKind {
     /**
      * A user owned unencrypted mnemonic (and BIP39 passphrase) stored on device,
@@ -11,6 +15,7 @@ enum class FactorSourceKind {
      * * On device
      * * Hierarchical deterministic (Mnemonic)
      */
+    @SerialName("device")
     DEVICE,
 
     /**
@@ -23,6 +28,7 @@ enum class FactorSourceKind {
      * * Hierarchical deterministic (Mnemonic)
      * * Encrypted by Security Questions
      */
+    @SerialName("securityQuestions")
     SECURITY_QUESTIONS,
 
     /**
@@ -36,6 +42,7 @@ enum class FactorSourceKind {
      * * Hardware (requires Browser Connector Extension to communicate with wallet)
      * * Hierarchical deterministic
      */
+    @SerialName("ledgerHQHardwareWallet")
     LEDGER_HQ_HARDWARE_WALLET,
 
     /**
@@ -47,6 +54,7 @@ enum class FactorSourceKind {
      * * Off device
      * * Hardware (directly readable by wallet)
      */
+    @SerialName("yubiKey")
     YUBIKEY,
 
     /**
@@ -56,6 +64,7 @@ enum class FactorSourceKind {
      * * Mine
      * * Off Device
      */
+    @SerialName("offDeviceSingleKey")
     OFF_DEVICE_SINGLE_KEY,
 
     /**
@@ -66,6 +75,7 @@ enum class FactorSourceKind {
      * * Off Device
      * * Hierarchical deterministic
      */
+    @SerialName("offDeviceMnemonic")
     OFF_DEVICE_MNEMONIC,
 
     /**
@@ -77,6 +87,7 @@ enum class FactorSourceKind {
      * * Off Device
      * * Hierarchical deterministic
      */
+    @SerialName("offDeviceInputKeyMaterialForMnemonic")
     OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC,
 
     /**
@@ -87,6 +98,7 @@ enum class FactorSourceKind {
      * * *NOT* mine
      * * Off Device
      */
+    @SerialName("trustedContact")
     TRUSTED_CONTACT,
 
     /**
@@ -97,6 +109,7 @@ enum class FactorSourceKind {
      * * *Not* mine
      * * Off Device
      */
+    @SerialName("trustedEnterprise")
     TRUSTED_ENTERPRISE;
 
     val isHierarchicalDeterministic: Boolean

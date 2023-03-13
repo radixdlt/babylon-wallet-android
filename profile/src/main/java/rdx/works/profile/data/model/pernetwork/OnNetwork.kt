@@ -459,4 +459,14 @@ data class OnNetwork(
             )
         }.toSet()
     }
+
+    @Serializable
+    data class NextDerivationIndices(
+        @SerialName("networkID")
+        val networkId: Int,
+        @SerialName("forAccount")
+        val forAccount: Int,
+        @SerialName("forIdentity")
+        val forIdentity: Int
+    )
 }
