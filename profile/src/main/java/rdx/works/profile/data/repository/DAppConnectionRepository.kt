@@ -192,11 +192,7 @@ fun Profile.createOrUpdateAuthorizedDapp(
         }
     }
 
-    return this.copy(
-        appPreferences = appPreferences,
-        factorSources = factorSources,
-        onNetwork = updatedOnNetwork,
-    )
+    return copy(onNetwork = updatedOnNetwork)
 }
 
 private fun Profile.deleteAuthorizedDapp(
@@ -217,11 +213,7 @@ private fun Profile.deleteAuthorizedDapp(
         }
     }
 
-    return this.copy(
-        appPreferences = appPreferences,
-        factorSources = factorSources,
-        onNetwork = updatedOnNetwork,
-    )
+    return copy(onNetwork = updatedOnNetwork)
 }
 
 fun OnNetwork.AuthorizedDapp.updateAuthorizedDappPersonas(

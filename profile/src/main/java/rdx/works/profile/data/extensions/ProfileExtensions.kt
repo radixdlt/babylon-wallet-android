@@ -45,7 +45,6 @@ fun Profile.createOrUpdatePersonaOnNetwork(
     }
     return this.copy(
         appPreferences = appPreferences,
-        factorSources = factorSources,
         onNetwork = newOnNetwork,
     )
 }
@@ -81,7 +80,6 @@ fun Profile.addAccountOnNetwork(
 
     return this.copy(
         appPreferences = appPreferences,
-        factorSources = factorSources,
         onNetwork = newOnNetworks,
     )
 }
@@ -124,7 +122,6 @@ fun Profile.addP2PClient(
 
     return this.copy(
         appPreferences = newAppPreferences,
-        factorSources = factorSources,
         onNetwork = onNetwork,
     )
 }
@@ -143,7 +140,6 @@ fun Profile.deleteP2PClient(connectionPassword: String): Profile {
 
     return this.copy(
         appPreferences = newAppPreferences,
-        factorSources = factorSources,
         onNetwork = onNetwork,
     )
 }
