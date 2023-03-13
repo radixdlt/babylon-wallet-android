@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
-import com.babylon.wallet.android.presentation.settings.addconnection.settingsConnectionScreen
+import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDappsScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
@@ -29,7 +29,7 @@ fun NavGraphBuilder.settingsNavGraph(
         route = Screen.SettingsDestination.route
     ) {
         settingsAll(navController)
-        settingsConnectionScreen(onBackClick = {
+        settingsConnectorScreen(onBackClick = {
             navController.popBackStack()
         })
         appSettingsScreen(
@@ -70,7 +70,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             onSettingClick = { item ->
                 when (item) {
                     SettingsItem.TopLevelSettings.Connection -> {
-                        navController.settingsConnectionScreen(scanQr = true)
+                        navController.settingsConnectorScreen(scanQr = true)
                     }
                     SettingsItem.TopLevelSettings.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
@@ -79,7 +79,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.personaScreen()
                     }
                     SettingsItem.TopLevelSettings.LinkedConnector -> {
-                        navController.settingsConnectionScreen()
+                        navController.settingsConnectorScreen()
                     }
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
                         navController.authorizedDappsScreen()

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.addconnection
+package com.babylon.wallet.android.presentation.settings.connector
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
@@ -14,22 +14,22 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_SCAN_QR = "arg_request_source"
 
-internal class SettingsConnectionScreenArgs(val scanQr: Boolean) {
+internal class SettingsConnectorScreenArgs(val scanQr: Boolean) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_SCAN_QR]) as Boolean
     )
 }
 
-fun NavController.settingsConnectionScreen(scanQr: Boolean = false) {
-    navigate("settings_add_connection_route/$scanQr")
+fun NavController.settingsConnectorScreen(scanQr: Boolean = false) {
+    navigate("settings_add_connector_route/$scanQr")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.settingsConnectionScreen(
+fun NavGraphBuilder.settingsConnectorScreen(
     onBackClick: () -> Unit
 ) {
     composable(
-        route = "settings_add_connection_route/{$ARG_SCAN_QR}",
+        route = "settings_add_connector_route/{$ARG_SCAN_QR}",
         arguments = listOf(
             navArgument(ARG_SCAN_QR) { type = NavType.BoolType },
         ),
@@ -40,7 +40,7 @@ fun NavGraphBuilder.settingsConnectionScreen(
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        SettingsConnectionScreen(
+        SettingsConnectorScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick
         )
