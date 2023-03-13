@@ -118,7 +118,7 @@ data class FactorSource(
         @SerialName("device")
         data class Device(
             @SerialName("nextDerivationIndicesPerNetwork")
-            val nextDerivationIndicesPerNetwork: LinkedHashSet<OnNetwork.NextDerivationIndices>
+            val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices>
         ): Storage()
     }
 }
