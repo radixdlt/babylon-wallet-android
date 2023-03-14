@@ -44,15 +44,14 @@ class MainViewModel @Inject constructor(
 
     val state = combine(
         preferencesManager.showOnboarding,
-        profileDataSource.profile,
-        profileDataSource.isProfileCompatible
-    ) { showOnboarding, profileSnapshot, profileCompatible ->
+        profileDataSource.profileState
+    ) { showOnboarding, profileState ->
         MainUiState(
             loading = false,
             initialAppState = when {
-                !profileCompatible -> AppNavigationState.IncompatibleProfile
+                profileState.isFailure -> AppNavigationState.IncompatibleProfile
                 showOnboarding -> AppNavigationState.Onboarding
-                profileSnapshot != null -> AppNavigationState.Wallet
+                profileState.getOrNull() != null -> AppNavigationState.Wallet
                 else -> AppNavigationState.CreateAccount
             }
         )
