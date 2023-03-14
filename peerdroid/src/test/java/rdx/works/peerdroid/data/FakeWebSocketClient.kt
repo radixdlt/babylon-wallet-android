@@ -41,10 +41,18 @@ internal class FakeWebSocketClient @Inject constructor(
     override fun observeMessages(): Flow<SignalingServerMessage> {
         return flow {
             delay(100)
-            emit(SignalingServerMessage.RemoteData.Offer("offer request id", "requestId", "sdp"))
+            emit(
+                SignalingServerMessage.RemoteData.Offer(
+                    remoteClientId = "remoteClientId",
+                    targetClientId = "offer request id",
+                    requestId = "requestId",
+                    sdp = "sdp"
+                )
+            )
             delay(200)
             emit(
                 SignalingServerMessage.RemoteData.IceCandidate(
+                    remoteClientId = "remoteClientId",
                     targetClientId = "targetClientId",
                     requestId = "ice candidates request id",
                     RemoteIceCandidate(

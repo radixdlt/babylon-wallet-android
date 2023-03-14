@@ -22,7 +22,10 @@ interface PeerdroidClient {
 
     suspend fun addConnection(encryptionKey: ByteArray): Result<Unit>
 
-    suspend fun connectToRemotePeerWithEncryptionKey(encryptionKey: ByteArray): Result<Unit>
+    suspend fun connectToRemotePeerWithEncryptionKey(
+        encryptionKey: ByteArray,
+        isRestart: Boolean = false
+    ): Result<Unit>
 
     suspend fun sendMessage(message: String): Result<Unit>
 
@@ -44,9 +47,13 @@ class PeerdroidClientImpl @Inject constructor(
         return peerdroidConnector.addConnection(encryptionKey)
     }
 
-    override suspend fun connectToRemotePeerWithEncryptionKey(encryptionKey: ByteArray): Result<Unit> {
+    override suspend fun connectToRemotePeerWithEncryptionKey(
+        encryptionKey: ByteArray,
+        isRestart: Boolean
+    ): Result<Unit> {
         val result = peerdroidConnector.createDataChannel(
-            encryptionKey = encryptionKey
+            encryptionKey = encryptionKey,
+            isRestart = isRestart
         )
         return when (result) {
             is Result.Success -> {
