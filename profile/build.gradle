@@ -55,6 +55,7 @@ dependencies {
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
     testImplementation libs.coroutinesTest
+    testImplementation libs.mockk
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
 }

@@ -5,6 +5,7 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAccountAddress
 import rdx.works.profile.data.extensions.deriveIdentityAddress
@@ -307,7 +308,7 @@ data class OnNetwork(
 
             companion object {
                 fun init(
-                    id: String = UUID.randomUUID().toString(),
+                    id: String = UUIDGenerator.uuid().toString(),
                     kind: Kind,
                     value: String
                 ): Field {

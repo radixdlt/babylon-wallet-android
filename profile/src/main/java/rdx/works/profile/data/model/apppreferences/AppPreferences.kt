@@ -2,7 +2,6 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.Instant
 
 @Serializable
 data class AppPreferences(
@@ -58,19 +57,32 @@ data class Gateway(
         get() = url == nebunet.url
 
     companion object {
+        val nebunet = Gateway(
+            url = "https://betanet.radixdlt.com",
+            network = Network.nebunet
+        )
         val hammunet = Gateway(
             url = "https://hammunet-gateway.radixdlt.com",
             network = Network.hammunet
         )
-        val nebunet = Gateway(
-            url = "https://betanet.radixdlt.com",
-            network = Network.nebunet
+        val enkinet = Gateway(
+            url = "https://enkinet-gateway.radixdlt.com",
+            network = Network.enkinet
+        )
+        val mardunet = Gateway(
+            url = "https://mardunet-gateway.radixdlt.com",
+            network = Network.mardunet
         )
     }
 }
 
 @Serializable
 data class P2PClient(
+    /**
+     * The most important property of this struct, this password,
+     * is used to be able to reestablish the P2P connection and also acts as the seed
+     * for the [id].
+     */
     @SerialName("connectionPassword")
     val connectionPassword: String,
 
@@ -78,26 +90,19 @@ data class P2PClient(
      * Client name, e.g. "Chrome on Macbook" or "My work Android"
      */
     @SerialName("displayName")
-    val displayName: String,
-
-    @SerialName("firstEstablishedOn")
-    val firstEstablishedOn: String,
-
-    @SerialName("lastUsedOn")
-    val lastUsedOn: String
+    val displayName: String
 ) {
+
+    val id: String
+        get() = connectionPassword
+
     companion object {
         fun init(
             connectionPassword: String,
             displayName: String
-        ): P2PClient {
-            val now = Instant.now().toString()
-            return P2PClient(
-                connectionPassword = connectionPassword,
-                displayName = displayName,
-                firstEstablishedOn = now,
-                lastUsedOn = now
-            )
-        }
+        ): P2PClient = P2PClient(
+            connectionPassword = connectionPassword,
+            displayName = displayName
+        )
     }
 }

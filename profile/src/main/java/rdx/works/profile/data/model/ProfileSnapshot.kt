@@ -9,6 +9,18 @@ import rdx.works.profile.data.model.pernetwork.OnNetwork
 @Serializable
 internal data class ProfileSnapshot(
     /**
+     * Locally generated identifier, based on the [Profile]'s id which is based upon.
+     */
+    @SerialName("id")
+    private val id: String,
+
+    /**
+     * The name of the device from which this snapshot was saved from.
+     */
+    @SerialName("creatingDevice")
+    private val creatingDevice: String,
+
+    /**
      * Settings for this profile in the app, contains default security configs as well as display settings.
      */
     @SerialName("appPreferences")
@@ -36,6 +48,8 @@ internal data class ProfileSnapshot(
 
     fun toProfile(): Profile {
         return Profile(
+            id = id,
+            creatingDevice = creatingDevice,
             appPreferences = appPreferences,
             factorSources = factorSources,
             onNetwork = onNetwork,
