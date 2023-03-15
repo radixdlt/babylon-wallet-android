@@ -125,7 +125,7 @@ data class FactorSource(
         @SerialName("device")
         data class Device(
             @SerialName("nextDerivationIndicesPerNetwork")
-            val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices> = listOf()
+            val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices>
         ): Storage()
     }
 
@@ -165,7 +165,7 @@ data class FactorSource(
             ),
             hint = hint,
             parameters = if (olympiaCompatible) olympiaBackwardsCompatible else babylon,
-            storage = Storage.Device(),
+            storage = Storage.Device(nextDerivationIndicesPerNetwork = listOf()),
             addedOn = Instant.now(),
             lastUsedOn = Instant.now()
         )

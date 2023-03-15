@@ -5,7 +5,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
-import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
