@@ -28,19 +28,17 @@ class CreatePersonaUseCase @Inject constructor(
             }
 
             val networkID = profile.appPreferences.gateways.current().network.networkId()
+            // TODO(ABW-1023)
+            val factorSource = profile.factorSources.first()
             // Construct new persona
             val newPersona = createNewPersona(
                 displayName = displayName,
                 fields = fields,
                 entityIndex = profile.onNetwork.personasPerNetworkCount(networkID),
                 mnemonicWords = MnemonicWords(
-                    phrase = generateMnemonicUseCase(
-                        mnemonicKey = profile.factorSources
-                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                            .first().factorSourceID
-                    )
+                    phrase = generateMnemonicUseCase(mnemonicKey = factorSource.id)
                 ),
-                factorSources = profile.factorSources,
+                factorSource = factorSource,
                 networkId = networkID
             )
 

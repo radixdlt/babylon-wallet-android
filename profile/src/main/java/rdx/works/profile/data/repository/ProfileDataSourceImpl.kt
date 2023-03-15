@@ -24,6 +24,7 @@ import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
+import kotlinx.coroutines.flow.onStart
 
 interface ProfileDataSource {
 

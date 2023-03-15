@@ -41,6 +41,14 @@ data class Gateways(
     fun delete(gateway: Gateway): Gateways {
         return copy(saved = saved.filter { it.url != gateway.url })
     }
+
+    companion object {
+
+        fun fromCurrent(current: Gateway) = Gateways(
+            currentGatewayUrl = current.url,
+            saved = listOf(current)
+        )
+    }
 }
 
 @Serializable
@@ -57,6 +65,9 @@ data class Gateway(
         get() = url == nebunet.url
 
     companion object {
+        val default: Gateway
+            get() = nebunet
+
         val nebunet = Gateway(
             url = "https://betanet.radixdlt.com",
             network = Network.nebunet

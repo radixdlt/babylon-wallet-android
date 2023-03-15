@@ -2,6 +2,7 @@ package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,11 +10,11 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAccountAddress
 import rdx.works.profile.data.extensions.deriveIdentityAddress
-import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
 import java.util.*
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Serializable
 data class OnNetwork(
@@ -68,14 +69,6 @@ data class OnNetwork(
         val appearanceID: Int,
 
         /**
-         * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
-         * the public keys of the factors of the different roles, if the factor source kind of said factor
-         * instance supports Hierarchical Deterministic derivation.
-         */
-        @SerialName("derivationPath")
-        val derivationPath: String,
-
-        /**
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
@@ -100,8 +93,22 @@ data class OnNetwork(
          * Security of this account
          */
         @SerialName("securityState")
-        val securityState: SecurityState.Unsecured
+        val securityState: SecurityState
     ) {
+
+        // TODO(ABW-1023)
+        /**
+         * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
+         * the public keys of the factors of the different roles, if the factor source kind of said factor
+         * instance supports Hierarchical Deterministic derivation.
+         */
+        val derivationPath: String?
+            get() = (securityState as? SecurityState.Unsecured)
+                ?.unsecuredEntityControl
+                ?.genesisFactorInstance
+                ?.derivationPath
+                ?.path
+
         enum class AppearanceIdGradient {
             Gradient1,
             Gradient2,
@@ -123,7 +130,7 @@ data class OnNetwork(
              */
             fun initial(
                 mnemonic: MnemonicWords,
-                factorSources: FactorSources,
+                factorSource: FactorSource,
                 networkId: NetworkId,
                 displayName: String
             ): Account {
@@ -131,7 +138,7 @@ data class OnNetwork(
                     displayName = displayName,
                     entityIndex = 0,
                     mnemonic = mnemonic,
-                    factorSources = factorSources,
+                    factorSource = factorSource,
                     networkId = networkId
                 )
             }
@@ -140,7 +147,7 @@ data class OnNetwork(
                 displayName: String,
                 entityIndex: Int,
                 mnemonic: MnemonicWords,
-                factorSources: FactorSources,
+                factorSource: FactorSource,
                 networkId: NetworkId
             ): Account {
                 val derivationPath = AccountDerivationPath(
@@ -150,27 +157,24 @@ data class OnNetwork(
 
                 val compressedPublicKey = mnemonic.compressedPublicKey(
                     derivationPath = derivationPath
-                )
-                val publicKey = PublicKey.EddsaEd25519(
-                    compressedPublicKey.removeLeadingZero()
-                )
+                ).removeLeadingZero()
+
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = publicKey
+                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
                 )
 
-                val unsecuredSecurityState = SecurityState.Unsecured.unsecuredSecurityState(
+                val unsecuredSecurityState = SecurityState.unsecured(
                     compressedPublicKey = compressedPublicKey,
                     derivationPath = DerivationPath.accountDerivationPath(
                         derivationPath = derivationPath
                     ),
-                    factorSources = factorSources
+                    factorSourceId = factorSource.id
                 )
 
                 return Account(
                     address = address,
                     appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
-                    derivationPath = derivationPath,
                     displayName = displayName,
                     index = entityIndex,
                     networkID = networkId.value,
@@ -190,14 +194,6 @@ data class OnNetwork(
          */
         @SerialName("address")
         val address: String,
-
-        /**
-         * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
-         * the public keys of the factors of the different roles, if the factor source kind of said factor
-         * instance supports Hierarchical Deterministic derivation.
-         */
-        @SerialName("derivationPath")
-        val derivationPath: String,
 
         /**
          * An optional displayName or label, used by presentation layer only.
@@ -227,7 +223,7 @@ data class OnNetwork(
          * Security of this persona
          */
         @SerialName("securityState")
-        val securityState: SecurityState.Unsecured
+        val securityState: SecurityState
     ) {
 
         companion object {
@@ -237,7 +233,7 @@ data class OnNetwork(
                 fields: List<Field>,
                 entityIndex: Int,
                 mnemonicWords: MnemonicWords,
-                factorSources: FactorSources,
+                factorSource: FactorSource,
                 networkId: NetworkId
             ): Persona {
                 val derivationPath = IdentityDerivationPath(
@@ -247,26 +243,23 @@ data class OnNetwork(
 
                 val compressedPublicKey = mnemonicWords.compressedPublicKey(
                     derivationPath = derivationPath
-                )
-                val publicKey = PublicKey.EddsaEd25519(
-                    compressedPublicKey.removeLeadingZero()
-                )
+                ).removeLeadingZero()
+
                 val address = deriveIdentityAddress(
                     networkID = networkId,
-                    publicKey = publicKey
+                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
                 )
 
-                val unsecuredSecurityState = SecurityState.Unsecured.unsecuredSecurityState(
+                val unsecuredSecurityState = SecurityState.unsecured(
                     compressedPublicKey = compressedPublicKey,
                     derivationPath = DerivationPath.identityDerivationPath(
                         derivationPath = derivationPath
                     ),
-                    factorSources = factorSources
+                    factorSourceId = factorSource.id
                 )
 
                 return Persona(
                     address = address,
-                    derivationPath = derivationPath,
                     displayName = displayName,
                     fields = fields,
                     index = entityIndex,

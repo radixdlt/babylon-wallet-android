@@ -1,16 +1,23 @@
 package rdx.works.profile.data.model.factorsources
 
+import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.crypto.ec.EllipticCurveType
 import java.time.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
+import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.BIP_44_OLYMPIA
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.CAP_26
+import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.babylon
+import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.olympiaBackwardsCompatible
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.serialisers.InstantSerializer
+import rdx.works.profile.data.utils.hashToFactorId
+import rdx.works.profile.derivation.CustomHDDerivationPath
 
 /**
  * A FactorSource is the source of FactorInstance(s)
@@ -118,7 +125,62 @@ data class FactorSource(
         @SerialName("device")
         data class Device(
             @SerialName("nextDerivationIndicesPerNetwork")
-            val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices>
+            val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices> = listOf()
         ): Storage()
+    }
+
+    companion object {
+        fun babylon(
+            mnemonic: MnemonicWords,
+            bip39Passphrase: String = "",
+            hint: String = "babylon",
+        ) = device(
+            mnemonic = mnemonic,
+            bip39Passphrase = bip39Passphrase,
+            hint = hint,
+            olympiaCompatible = false
+        )
+
+        fun olympia(
+            mnemonic: MnemonicWords,
+            bip39Passphrase: String = "",
+            hint: String = "olympia",
+        ) = device(
+            mnemonic = mnemonic,
+            bip39Passphrase = bip39Passphrase,
+            hint = hint,
+            olympiaCompatible = true
+        )
+
+        fun device(
+            mnemonic: MnemonicWords,
+            hint: String,
+            bip39Passphrase: String = "",
+            olympiaCompatible: Boolean
+        ) = FactorSource(
+            kind = FactorSourceKind.DEVICE,
+            id = factorSourceId(
+                mnemonic = mnemonic,
+                bip39Passphrase = bip39Passphrase
+            ),
+            hint = hint,
+            parameters = if (olympiaCompatible) olympiaBackwardsCompatible else babylon,
+            storage = Storage.Device(),
+            addedOn = Instant.now(),
+            lastUsedOn = Instant.now()
+        )
+
+        fun factorSourceId(
+            mnemonic: MnemonicWords,
+            ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
+            derivationPath: String = CustomHDDerivationPath.getId.path,
+            bip39Passphrase: String = ""
+        ): String {
+            return mnemonic.compressedPublicKey(
+                ellipticCurveType = ellipticCurveType,
+                derivationPath = derivationPath,
+                bip39Passphrase = bip39Passphrase
+            ).hashToFactorId()
+        }
     }
 }

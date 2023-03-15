@@ -17,10 +17,8 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -37,6 +35,7 @@ class CreatePersonaUseCaseTest {
     fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() {
         // given
         val personaName = "First persona"
+        val phrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
         val personaFields = listOf(
             OnNetwork.Persona.Field(
                 id = "ID213",
@@ -64,37 +63,21 @@ class CreatePersonaUseCaseTest {
                         )
                     )
                 ),
-                factorSources = FactorSources(
-                    curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = listOf(
-                        FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource(
-                            creationDate = "Date",
-                            factorSourceID = "XXX111222333",
-                            label = "Label"
-                        )
-                    ),
-                    secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
-                ),
+                factorSources = factorSources(fromPhrase = phrase),
                 onNetwork = listOf(
                     OnNetwork(
                         accounts = listOf(
                             OnNetwork.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
-                                derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
                                 index = 0,
                                 networkID = 999,
                                 securityState = SecurityState.Unsecured(
-                                    discriminator = "dsics",
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
-                                            derivationPath = DerivationPath("few", "disc"),
-                                            factorInstanceID = "IDIDDIIDD",
-                                            factorSourceReference = FactorSourceReference(
-                                                factorSourceID = "f32f3",
-                                                factorSourceKind = "kind"
-                                            ),
-                                            initializationDate = "Date1",
+                                            derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
+                                            factorSourceId = "IDIDDIIDD",
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )
                                     )
@@ -111,10 +94,8 @@ class CreatePersonaUseCaseTest {
 
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking {
-                    invoke(
-                        profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID
-                    )
-                } doReturn "noodle question hungry sail type offer grocery clay nation hello mixture forum"
+                    invoke(profile.factorSources.first().id)
+                } doReturn phrase
             }
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)

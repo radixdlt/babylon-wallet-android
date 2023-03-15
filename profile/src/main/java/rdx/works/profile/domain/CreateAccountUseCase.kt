@@ -41,19 +41,16 @@ class CreateAccountUseCase @Inject constructor(
                 )
             }
             val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
-
+            // TODO(ABW-1023)
+            val factorSource = profile.factorSources.first()
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
                 entityIndex = profile.onNetwork.accountsPerNetworkCount(networkID),
                 mnemonic = MnemonicWords(
-                    phrase = generateMnemonicUseCase(
-                        mnemonicKey = profile.factorSources
-                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                            .first().factorSourceID
-                    )
+                    phrase = generateMnemonicUseCase(mnemonicKey = factorSource.id)
                 ),
-                factorSources = profile.factorSources,
+                factorSource = factorSource,
                 networkId = networkID
             )
 

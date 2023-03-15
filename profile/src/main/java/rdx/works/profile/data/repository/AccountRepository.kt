@@ -60,22 +60,20 @@ class AccountRepositoryImpl @Inject constructor(
     ): List<AccountSigner> {
         val profile = profileDataSource.readProfile()
         val accounts = getSignerAccountsForAddresses(profile, addresses, networkId)
-        val factorSourceId = profile?.notaryFactorSource()?.factorSourceID
+        val factorSourceId = profile?.notaryFactorSource()?.id
         assert(factorSourceId != null)
         val mnemonic = getMnemonicUseCase(factorSourceId)
         assert(mnemonic.isNotEmpty())
         val mnemonicWords = MnemonicWords(mnemonic)
-        val signers = mutableListOf<AccountSigner>()
-        accounts.forEach { account ->
-            val privateKey = mnemonicWords.signerPrivateKey(derivationPath = account.derivationPath)
-            signers.add(
+        return accounts
+            .filter { it.derivationPath != null }
+            .map { it to it.derivationPath!! }
+            .map { pair ->
                 AccountSigner(
-                    account = account,
-                    privateKey = privateKey
+                    account = pair.first,
+                    privateKey = mnemonicWords.signerPrivateKey(derivationPath = pair.second)
                 )
-            )
-        }
-        return signers.toList()
+            }
     }
 
     private suspend fun getSignerAccountsForAddresses(

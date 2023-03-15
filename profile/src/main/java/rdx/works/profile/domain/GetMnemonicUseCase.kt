@@ -5,10 +5,10 @@ import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 class GetMnemonicUseCase @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
@@ -47,10 +47,8 @@ class GetMnemonicUseCase @Inject constructor(
                     wordList = WORDLIST_ENGLISH
                 )
 
-                val key = factorSourceId(
-                    mnemonic = MnemonicWords(
-                        phrase = mnemonic
-                    )
+                val key = FactorSource.factorSourceId(
+                    mnemonic = MnemonicWords(phrase = mnemonic)
                 )
                 saveMnemonic(
                     key = key,

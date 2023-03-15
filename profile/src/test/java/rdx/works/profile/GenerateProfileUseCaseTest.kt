@@ -19,10 +19,8 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.AccountDerivationPath
@@ -44,9 +42,10 @@ class GenerateProfileUseCaseTest {
     fun `given profile already exists, when generate profile called, return existing profile`() {
         testScope.runTest {
             // given
+            val mnemonicPhrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
-                onBlocking { invoke() } doReturn "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+                onBlocking { invoke() } doReturn mnemonicPhrase
             }
 
             val profile = Profile(
@@ -62,37 +61,21 @@ class GenerateProfileUseCaseTest {
                         )
                     )
                 ),
-                factorSources = FactorSources(
-                    curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = listOf(
-                        FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource(
-                            creationDate = "Date",
-                            factorSourceID = "XXX111222333",
-                            label = "Label"
-                        )
-                    ),
-                    secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
-                ),
+                factorSources = factorSources(fromPhrase = mnemonicPhrase),
                 onNetwork = listOf(
                     OnNetwork(
                         accounts = listOf(
                             OnNetwork.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
-                                derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
                                 index = 0,
                                 networkID = 999,
                                 securityState = SecurityState.Unsecured(
-                                    discriminator = "dsics",
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
-                                            derivationPath = DerivationPath("few", "disc"),
-                                            factorInstanceID = "IDIDDIIDD",
-                                            factorSourceReference = FactorSourceReference(
-                                                factorSourceID = "f32f3",
-                                                factorSourceKind = "kind"
-                                            ),
-                                            initializationDate = "Date1",
+                                            derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
+                                            factorSourceId = "IDIDDIIDD",
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )
                                     )
@@ -131,12 +114,7 @@ class GenerateProfileUseCaseTest {
                 onBlocking { invoke() } doReturn mnemonicPhrase
             }
 
-            val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
-            val expectedFactorInstanceId = generateInstanceId(
-                mnemonicPhrase,
-                Gateway.nebunet.network.networkId()
-            )
-
+            val expectedFactorSourceId = factorSourceId(mnemonicPhrase)
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
                 getMnemonicUseCase = getMnemonicUseCase,
@@ -150,15 +128,16 @@ class GenerateProfileUseCaseTest {
             val profile = generateProfileUseCase("main")
 
             Assert.assertEquals(
-                profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                    .first().factorSourceID,
-                expectedFactorSourceId
+                "Factor Source ID",
+                expectedFactorSourceId,
+                profile.factorSources.first().id
             )
 
             Assert.assertEquals(
-                profile.onNetwork.first().accounts.first().securityState.unsecuredEntityControl
-                    .genesisFactorInstance.factorInstanceID,
-                expectedFactorInstanceId
+                "Account's Factor Source ID",
+                expectedFactorSourceId,
+                (profile.onNetwork.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
+                    .genesisFactorInstance.factorSourceId
             )
         }
     }
@@ -170,11 +149,8 @@ class GenerateProfileUseCaseTest {
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking { invoke() } doReturn mnemonicPhrase
             }
-            val gateway = Gateway.nebunet
 
-            val expectedFactorSourceId = generateFactorSourceId(mnemonicPhrase)
-            val expectedFactorInstanceId = generateInstanceId(mnemonicPhrase, gateway.network.networkId())
-
+            val expectedFactorSourceId = factorSourceId(mnemonicPhrase)
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
                 getMnemonicUseCase = getMnemonicUseCase,
@@ -188,25 +164,18 @@ class GenerateProfileUseCaseTest {
             val profile = generateProfileUseCase("main")
 
             Assert.assertEquals(
-                profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                    .first().factorSourceID,
-                expectedFactorSourceId
+                "Factor Source ID",
+                expectedFactorSourceId,
+                profile.factorSources.first().id
             )
 
             Assert.assertEquals(
-                profile.onNetwork.first().accounts.first().securityState.unsecuredEntityControl
-                    .genesisFactorInstance.factorInstanceID,
-                expectedFactorInstanceId
+                "Account's Factor Source ID",
+                expectedFactorSourceId,
+                (profile.onNetwork.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
+                    .genesisFactorInstance.factorSourceId
             )
         }
-    }
-
-    private fun generateFactorSourceId(mnemonicPhrase: String): String {
-        val mnemonicWords = MnemonicWords(mnemonicPhrase)
-        return FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource.deviceFactorSource(
-            mnemonicWords,
-            label = "main"
-        ).factorSourceID
     }
 
     private fun generateInstanceId(mnemonicPhrase: String, networkId: NetworkId): String {

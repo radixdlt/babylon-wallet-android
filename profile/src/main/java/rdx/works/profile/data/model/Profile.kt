@@ -6,7 +6,7 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 data class Profile(
@@ -39,7 +39,7 @@ data class Profile(
      * The known sources of factors, used for authorization such as spending funds.
      * Always contains at least one DeviceFactorSource.
      */
-    val factorSources: FactorSources,
+    val factorSources: List<FactorSource>,
 
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
@@ -63,62 +63,50 @@ data class Profile(
         )
     }
 
-    fun notaryFactorSource():
-        FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
-        return factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first()
-    }
+    // TODO(ABW-1023)
+    fun notaryFactorSource() = factorSources.firstOrNull()
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 19
+        const val LATEST_PROFILE_VERSION = 20
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
-            gateway: Gateway,
             mnemonic: MnemonicWords,
             firstAccountDisplayName: String,
             creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER
         ): Profile {
-            val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource =
-                FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource
-                    .deviceFactorSource(
-                        mnemonic = mnemonic,
-                        label = firstAccountDisplayName
-                    )
+            val gateway = Gateway.default
 
-            val network = gateway.network
-
-            val factorSources = FactorSources(
-                curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = listOf(
-                    curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource
-                ),
-                secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = listOf()
+            val factorSource = FactorSource.babylon(
+                mnemonic = mnemonic,
+                hint = creatingDevice
             )
 
             val initialAccount = OnNetwork.Account.initial(
                 mnemonic = mnemonic,
-                factorSources = factorSources,
-                networkId = network.networkId(),
+                factorSource = factorSource,
+                networkId = gateway.network.networkId(),
                 displayName = firstAccountDisplayName
             )
 
             val mainNetwork = OnNetwork(
                 accounts = listOf(initialAccount),
                 authorizedDapps = listOf(),
-                networkID = network.id,
+                networkID = gateway.network.id,
                 personas = listOf()
             )
 
             val appPreferences = AppPreferences(
                 display = Display.default,
-                gateways = Gateways(gateway.url, listOf(gateway)),
-                p2pClients = emptyList()
+                gateways = Gateways.fromCurrent(current = gateway),
+                p2pClients = listOf()
             )
 
             return Profile(
                 id = UUIDGenerator.uuid().toString(),
                 creatingDevice = creatingDevice,
                 appPreferences = appPreferences,
-                factorSources = factorSources,
+                factorSources = listOf(factorSource),
                 onNetwork = listOf(mainNetwork),
                 version = LATEST_PROFILE_VERSION
             )

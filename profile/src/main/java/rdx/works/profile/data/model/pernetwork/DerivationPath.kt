@@ -2,26 +2,25 @@ package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme.CAP_26
 
 @Serializable
 data class DerivationPath(
-    @SerialName("derivationPath")
-    val derivationPath: String,
+    @SerialName("path")
+    val path: String,
 
-    @SerialName("discriminator")
-    val discriminator: String
+    @SerialName("scheme")
+    val scheme: DerivationPathScheme
 ) {
     companion object {
-
-        private const val accountDiscriminator = "accountPath"
-        private const val identityDiscriminator = "identityPath"
 
         fun accountDerivationPath(
             derivationPath: String
         ): DerivationPath {
             return DerivationPath(
-                derivationPath = derivationPath,
-                discriminator = accountDiscriminator
+                path = derivationPath,
+                scheme = CAP_26
             )
         }
 
@@ -29,8 +28,8 @@ data class DerivationPath(
             derivationPath: String
         ): DerivationPath {
             return DerivationPath(
-                derivationPath = derivationPath,
-                discriminator = identityDiscriminator
+                path = derivationPath,
+                scheme = CAP_26
             )
         }
     }

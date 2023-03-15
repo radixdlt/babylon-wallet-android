@@ -24,10 +24,7 @@ class GenerateProfileUseCase @Inject constructor(
             return withContext(defaultDispatcher) {
                 val mnemonic = getMnemonicUseCase()
 
-                val gateway = Gateway.nebunet
-
                 val profile = Profile.init(
-                    gateway = gateway,
                     mnemonic = MnemonicWords(phrase = mnemonic),
                     firstAccountDisplayName = accountDisplayName,
                     creatingDevice = deviceInfoRepository.getDeviceInfo().displayName

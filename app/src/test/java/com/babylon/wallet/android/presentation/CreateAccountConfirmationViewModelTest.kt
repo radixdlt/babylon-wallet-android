@@ -41,21 +41,14 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
             OnNetwork.Account(
                 address = accountId,
                 appearanceID = 123,
-                derivationPath = "m/1'/1'/1'/1'/1'/1'",
                 displayName = accountName,
                 index = 0,
                 networkID = 10,
                 securityState = SecurityState.Unsecured(
-                    discriminator = "dsics",
                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                         genesisFactorInstance = FactorInstance(
-                            derivationPath = DerivationPath("few", "disc"),
-                            factorInstanceID = "IDIDDIIDD",
-                            factorSourceReference = FactorSourceReference(
-                                factorSourceID = "f32f3",
-                                factorSourceKind = "kind"
-                            ),
-                            initializationDate = "Date1",
+                            derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
+                            factorSourceId = "IDIDDIIDD",
                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                         )
                     )
