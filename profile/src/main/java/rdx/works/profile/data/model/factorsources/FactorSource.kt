@@ -18,6 +18,7 @@ import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.CustomHDDerivationPath
+import rdx.works.profile.derivation.model.NetworkId
 
 /**
  * A FactorSource is the source of FactorInstance(s)
@@ -88,6 +89,22 @@ data class FactorSource(
     val storage: Storage?
 ) {
 
+    fun getNextAccountDerivationIndex(forNetworkId: NetworkId): Int {
+        val deviceStorage = storage as? Storage.Device ?: throw WasNotDeviceFactorSource()
+
+        return deviceStorage.nextDerivationIndicesPerNetwork.find {
+            it.networkId == forNetworkId.value
+        }?.forAccount ?: 0
+    }
+
+    fun getNextIdentityDerivationIndex(forNetworkId: NetworkId): Int {
+        val deviceStorage = storage as? Storage.Device ?: throw WasNotDeviceFactorSource()
+
+        return deviceStorage.nextDerivationIndicesPerNetwork.find {
+            it.networkId == forNetworkId.value
+        }?.forIdentity ?: 0
+    }
+
     @Serializable
     data class Parameters(
         @SerialName("supportedCurves")
@@ -126,7 +143,56 @@ data class FactorSource(
         data class Device(
             @SerialName("nextDerivationIndicesPerNetwork")
             val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices>
-        ): Storage()
+        ): Storage() {
+
+            fun incrementAccount(forNetworkId: NetworkId): Device {
+                val indicesForNetwork = nextDerivationIndicesPerNetwork.find {
+                    it.networkId == forNetworkId.value
+                }
+
+                val mutatedList = if (indicesForNetwork == null) {
+                    listOf(OnNetwork.NextDerivationIndices(
+                        networkId = forNetworkId.value,
+                        forAccount = 1,
+                        forIdentity = 0
+                    ))
+                } else {
+                    nextDerivationIndicesPerNetwork.map {
+                        if (it.networkId == forNetworkId.value) {
+                            it.copy(forAccount = it.forAccount + 1)
+                        } else {
+                            it
+                        }
+                    }
+                }
+
+                return copy(nextDerivationIndicesPerNetwork = mutatedList)
+            }
+
+            fun incrementIdentity(forNetworkId: NetworkId): Device {
+                val indicesForNetwork = nextDerivationIndicesPerNetwork.find {
+                    it.networkId == forNetworkId.value
+                }
+
+                val mutatedList = if (indicesForNetwork == null) {
+                    listOf(OnNetwork.NextDerivationIndices(
+                        networkId = forNetworkId.value,
+                        forAccount = 0,
+                        forIdentity = 1
+                    ))
+                } else {
+                    nextDerivationIndicesPerNetwork.map {
+                        if (it.networkId == forNetworkId.value) {
+                            it.copy(forIdentity = it.forIdentity + 1)
+                        } else {
+                            it
+                        }
+                    }
+                }
+
+                return copy(nextDerivationIndicesPerNetwork = mutatedList)
+            }
+        }
     }
 
     companion object {
@@ -184,3 +250,5 @@ data class FactorSource(
         }
     }
 }
+
+class WasNotDeviceFactorSource: RuntimeException()

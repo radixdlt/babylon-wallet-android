@@ -2,6 +2,7 @@ package rdx.works.profile.data.model
 
 import com.radixdlt.bip39.model.MnemonicWords
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
@@ -109,6 +110,9 @@ data class Profile(
                 factorSources = listOf(factorSource),
                 onNetwork = listOf(mainNetwork),
                 version = LATEST_PROFILE_VERSION
+            ).incrementFactorSourceNextAccountIndex(
+                forNetwork = gateway.network.networkId(),
+                factorSourceId = factorSource.id
             )
         }
     }

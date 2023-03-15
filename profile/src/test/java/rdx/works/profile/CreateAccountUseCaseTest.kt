@@ -38,12 +38,13 @@ class CreateAccountUseCaseTest {
             // given
             val phrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
             val accountName = "First account"
+            val network = Gateway.hammunet
             val profile = Profile(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
+                    Gateways(network.url, listOf(network)),
                     p2pClients = listOf(
                         P2PClient.init(
                             connectionPassword = "My password",
@@ -60,7 +61,7 @@ class CreateAccountUseCaseTest {
                                 appearanceID = 123,
                                 displayName = "my account",
                                 index = 0,
-                                networkID = 999,
+                                networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
@@ -73,7 +74,7 @@ class CreateAccountUseCaseTest {
                             )
                         ),
                         authorizedDapps = emptyList(),
-                        networkID = 999,
+                        networkID = network.network.networkId().value,
                         personas = emptyList()
                     )
                 ),
@@ -101,8 +102,9 @@ class CreateAccountUseCaseTest {
             )
 
             val updatedProfile = profile.addAccountOnNetwork(
-                account,
-                networkID = NetworkId.Hammunet
+                account = account,
+                factorSourceId = profile.factorSources.first().id,
+                networkID = network.network.networkId()
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)

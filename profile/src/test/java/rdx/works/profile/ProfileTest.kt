@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockkObject
 import java.io.File
 import java.util.UUID
+import kotlin.math.exp
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
@@ -13,7 +14,8 @@ import org.junit.Test
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
-import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
+import rdx.works.profile.data.extensions.createPersona
+import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Network
@@ -25,8 +27,6 @@ import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.creat
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
-import rdx.works.profile.data.utils.accountsPerNetworkCount
-import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.derivation.model.NetworkId
 
 class ProfileTest {
@@ -55,15 +55,16 @@ class ProfileTest {
         val factorSource = FactorSource.babylon(mnemonic = mnemonic)
         val firstAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityIndex = profile.onNetwork.accountsPerNetworkCount(networkId),
+            entityIndex = factorSource.getNextAccountDerivationIndex(networkId),
             mnemonic = mnemonic,
             factorSource = factorSource,
             networkId = networkId
         )
 
         var updatedProfile = profile.addAccountOnNetwork(
-            firstAccount,
-            networkID = NetworkId.Nebunet
+            account = firstAccount,
+            factorSourceId = factorSource.id,
+            networkID = networkId
         )
 
         assertEquals(updatedProfile.onNetwork.first().accounts.count(), 2)
@@ -82,14 +83,16 @@ class ProfileTest {
                     value = "Anderson"
                 )
             ),
-            entityIndex = profile.onNetwork.personasPerNetworkCount(networkId),
+            entityIndex = factorSource.getNextIdentityDerivationIndex(networkId),
             mnemonicWords = mnemonic,
             factorSource = factorSource,
             networkId = networkId
         )
 
-        updatedProfile = updatedProfile.createOrUpdatePersonaOnNetwork(
-            firstPersona
+        updatedProfile = updatedProfile.createPersona(
+            persona = firstPersona,
+            factorSourceId = factorSource.id,
+            networkId = networkId
         )
 
         assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
@@ -125,6 +128,8 @@ class ProfileTest {
         println(UUIDGenerator.uuid())
         mockkObject(UUIDGenerator)
         every { UUIDGenerator.uuid() } returns UUID.fromString("9958f568-8c9b-476a-beeb-017d1f843266")
+
+
         var expected = Profile.init(
             mnemonic = mnemonic,
             firstAccountDisplayName = "First",
@@ -133,25 +138,27 @@ class ProfileTest {
 
         val secondAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityIndex = expected.onNetwork.accountsPerNetworkCount(networkId),
+            entityIndex = expected.factorSources.first().getNextAccountDerivationIndex(networkId),
             mnemonic = mnemonic,
             factorSource = expected.factorSources.first(),
             networkId = networkId
         )
         expected = expected.addAccountOnNetwork(
             account = secondAccount,
+            factorSourceId = expected.factorSources.first().id,
             networkID = networkId
         )
 
         val thirdAccount = createNewVirtualAccount(
             displayName = "Third",
-            entityIndex = expected.onNetwork.accountsPerNetworkCount(networkId),
+            entityIndex = expected.factorSources.first().getNextAccountDerivationIndex(networkId),
             mnemonic = mnemonic,
             factorSource = expected.factorSources.first(),
             networkId = networkId
         )
         expected = expected.addAccountOnNetwork(
             account = thirdAccount,
+            factorSourceId = expected.factorSources.first().id,
             networkID = networkId
         )
 
@@ -169,13 +176,15 @@ class ProfileTest {
                     value = "Incognitoson"
                 )
             ),
-            entityIndex = expected.onNetwork.personasPerNetworkCount(networkId),
+            entityIndex = expected.factorSources.first().getNextIdentityDerivationIndex(networkId),
             mnemonicWords = mnemonic,
             factorSource = expected.factorSources.first(),
             networkId = networkId
         )
-        expected = expected.createOrUpdatePersonaOnNetwork(
-            persona = firstPersona
+        expected = expected.createPersona(
+            persona = firstPersona,
+            factorSourceId = expected.factorSources.first().id,
+            networkId = networkId
         )
 
         val secondPersona = createNewPersona(
@@ -192,13 +201,15 @@ class ProfileTest {
                     value = "Publicson"
                 )
             ),
-            entityIndex = expected.onNetwork.personasPerNetworkCount(networkId),
+            entityIndex = expected.factorSources.first().getNextIdentityDerivationIndex(networkId),
             mnemonicWords = mnemonic,
             factorSource = expected.factorSources.first(),
             networkId = networkId
         )
-        expected = expected.createOrUpdatePersonaOnNetwork(
-            persona = secondPersona
+        expected = expected.createPersona(
+            persona = secondPersona,
+            factorSourceId = expected.factorSources.first().id,
+            networkId = networkId
         )
 
         val p2pClient = P2PClient.init(
@@ -440,34 +451,33 @@ class ProfileTest {
         )
 
         repeat(3) { accountIndex ->
-            val visibleIndex = accountIndex + 1
             assertEquals(
-                "The accounts[$visibleIndex] addresses are the same",
+                "The accounts[$accountIndex] addresses are the same",
                 expected.onNetwork.first().accounts[accountIndex].address,
                 actual.onNetwork.first().accounts[accountIndex].address
             )
 
             assertEquals(
-                "The accounts[$visibleIndex] display name are the same",
+                "The accounts[$accountIndex] display name are the same",
                 expected.onNetwork.first().accounts[accountIndex].displayName,
                 actual.onNetwork.first().accounts[accountIndex].displayName
             )
 
             assertEquals(
-                "The accounts[$visibleIndex] derivation path are the same",
+                "The accounts[$accountIndex] derivation path are the same",
                 expected.onNetwork.first().accounts[accountIndex].derivationPath,
                 actual.onNetwork.first().accounts[accountIndex].derivationPath
             )
 
             assertEquals(
-                "The accounts[$visibleIndex] index are the same",
+                "The accounts[$accountIndex] index are the same",
                 expected.onNetwork.first().accounts[accountIndex].index,
                 actual.onNetwork.first().accounts[accountIndex].index
             )
 
             // Security State
             assertEquals(
-                "The accounts[$visibleIndex] derivation path are the same",
+                "The accounts[$accountIndex] derivation path are the same",
                 (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath,
                 (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
@@ -475,7 +485,7 @@ class ProfileTest {
             )
 
             assertEquals(
-                "The accounts[$visibleIndex] public key are the same",
+                "The accounts[$accountIndex] public key are the same",
                 (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey,
                 (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
@@ -483,7 +493,7 @@ class ProfileTest {
             )
 
             assertEquals(
-                "The accounts[$visibleIndex] factor source ids are the same",
+                "The accounts[$accountIndex] factor source ids are the same",
                 (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
                 (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
@@ -498,50 +508,48 @@ class ProfileTest {
         )
 
         repeat(2) { personaIndex ->
-            val visibleIndex = personaIndex + 1
-
             assertEquals(
-                "The persona[$visibleIndex] index is the same",
+                "The persona[$personaIndex] index is the same",
                 expected.onNetwork.first().personas[personaIndex].index,
                 actual.onNetwork.first().personas[personaIndex].index
             )
 
             assertEquals(
-                "The persona[$visibleIndex] address is the same",
+                "The persona[$personaIndex] address is the same",
                 expected.onNetwork.first().personas[personaIndex].address,
                 actual.onNetwork.first().personas[personaIndex].address
             )
 
             assertEquals(
-                "The persona[$visibleIndex] display name is the same",
+                "The persona[$personaIndex] display name is the same",
                 expected.onNetwork.first().personas[personaIndex].displayName,
                 actual.onNetwork.first().personas[personaIndex].displayName
             )
 
             assertEquals(
-                "The persona[$visibleIndex] first field kind is the same",
+                "The persona[$personaIndex] first field kind is the same",
                 expected.onNetwork.first().personas[personaIndex].fields[0].kind,
                 actual.onNetwork.first().personas[personaIndex].fields[0].kind
             )
             assertEquals(
-                "The persona[$visibleIndex] first field value is the same",
+                "The persona[$personaIndex] first field value is the same",
                 expected.onNetwork.first().personas[personaIndex].fields[0].value,
                 actual.onNetwork.first().personas[personaIndex].fields[0].value
             )
 
             assertEquals(
-                "The persona[$visibleIndex] second field kind is the same",
+                "The persona[$personaIndex] second field kind is the same",
                 expected.onNetwork.first().personas[personaIndex].fields[1].kind,
                 actual.onNetwork.first().personas[personaIndex].fields[1].kind
             )
             assertEquals(
-                "The persona[$visibleIndex] second field value is the same",
+                "The persona[$personaIndex] second field value is the same",
                 expected.onNetwork.first().personas[personaIndex].fields[1].value,
                 actual.onNetwork.first().personas[personaIndex].fields[1].value
             )
 
             assertEquals(
-                "The persona[$visibleIndex] factor source id is the same",
+                "The persona[$personaIndex] factor source id is the same",
                 (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
                 (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
@@ -549,7 +557,7 @@ class ProfileTest {
             )
 
             assertEquals(
-                "The persona[$visibleIndex] derivation path is the same",
+                "The persona[$personaIndex] derivation path is the same",
                 (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath,
                 (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
@@ -557,7 +565,7 @@ class ProfileTest {
             )
 
             assertEquals(
-                "The persona[$visibleIndex] public key is the same",
+                "The persona[$personaIndex] public key is the same",
                 (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey,
                 (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)

@@ -1,15 +1,14 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.bip39.model.MnemonicWords
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
+import rdx.works.profile.data.extensions.createPersona
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
@@ -30,11 +29,15 @@ class CreatePersonaUseCase @Inject constructor(
             val networkID = profile.appPreferences.gateways.current().network.networkId()
             // TODO(ABW-1023)
             val factorSource = profile.factorSources.first()
+
+            // Get the next index to derive the new persona based in this factor source
+            val entityIndex = factorSource.getNextIdentityDerivationIndex(forNetworkId = networkID)
+
             // Construct new persona
             val newPersona = createNewPersona(
                 displayName = displayName,
                 fields = fields,
-                entityIndex = profile.onNetwork.personasPerNetworkCount(networkID),
+                entityIndex = entityIndex,
                 mnemonicWords = MnemonicWords(
                     phrase = generateMnemonicUseCase(mnemonicKey = factorSource.id)
                 ),
@@ -43,7 +46,11 @@ class CreatePersonaUseCase @Inject constructor(
             )
 
             // Add persona to the profile
-            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(newPersona)
+            val updatedProfile = profile.createPersona(
+                persona = newPersona,
+                factorSourceId = factorSource.id,
+                networkId = networkID
+            )
 
             // Save updated profile
             profileDataSource.saveProfile(updatedProfile)

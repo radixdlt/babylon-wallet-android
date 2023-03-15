@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.bip39.model.MnemonicWords
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.extensions.addAccountOnNetwork
@@ -10,9 +11,7 @@ import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
@@ -41,12 +40,17 @@ class CreateAccountUseCase @Inject constructor(
                 )
             }
             val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
+
             // TODO(ABW-1023)
             val factorSource = profile.factorSources.first()
+
+            // Get the next index to derive the new account based in this factor source
+            val entityIndex = factorSource.getNextAccountDerivationIndex(forNetworkId = networkID)
+
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
-                entityIndex = profile.onNetwork.accountsPerNetworkCount(networkID),
+                entityIndex = entityIndex,
                 mnemonic = MnemonicWords(
                     phrase = generateMnemonicUseCase(mnemonicKey = factorSource.id)
                 ),
@@ -56,9 +60,11 @@ class CreateAccountUseCase @Inject constructor(
 
             // Add account to the profile
             var updatedProfile = profile.addAccountOnNetwork(
-                newAccount,
+                account = newAccount,
+                factorSourceId = factorSource.id,
                 networkID = networkID
             )
+
             if (switchNetwork && gateway != null) {
                 updatedProfile = updatedProfile.changeGateway(gateway)
             }

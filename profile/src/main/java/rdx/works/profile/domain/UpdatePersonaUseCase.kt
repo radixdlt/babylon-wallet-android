@@ -1,12 +1,12 @@
 package rdx.works.profile.domain
 
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
+import rdx.works.profile.data.extensions.updatePersona
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import javax.inject.Inject
 
 class UpdatePersonaUseCase @Inject constructor(
     private val profileDataSource: ProfileDataSource,
@@ -21,7 +21,7 @@ class UpdatePersonaUseCase @Inject constructor(
             checkNotNull(profile) {
                 "Profile does not exist"
             }
-            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(updatedPersona)
+            val updatedProfile = profile.updatePersona(updatedPersona)
             profileDataSource.saveProfile(updatedProfile)
         }
     }

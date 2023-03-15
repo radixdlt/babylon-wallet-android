@@ -10,7 +10,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
+import rdx.works.profile.data.extensions.createPersona
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -48,14 +48,14 @@ class CreatePersonaUseCaseTest {
                 value = "Jacobs"
             )
         )
-
+        val network = Gateway.hammunet
         testScope.runTest {
             val profile = Profile(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
+                    gateways = Gateways(network.url, listOf(network)),
                     p2pClients = listOf(
                         P2PClient.init(
                             connectionPassword = "My password",
@@ -72,7 +72,7 @@ class CreatePersonaUseCaseTest {
                                 appearanceID = 123,
                                 displayName = "my account",
                                 index = 0,
-                                networkID = 999,
+                                networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
@@ -85,7 +85,7 @@ class CreatePersonaUseCaseTest {
                             )
                         ),
                         authorizedDapps = emptyList(),
-                        networkID = 999,
+                        networkID = network.network.networkId().value,
                         personas = emptyList()
                     )
                 ),
@@ -108,8 +108,10 @@ class CreatePersonaUseCaseTest {
                 fields = personaFields
             )
 
-            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(
-                newPersona
+            val updatedProfile = profile.createPersona(
+                persona = newPersona,
+                factorSourceId = profile.factorSources.first().id,
+                networkId = network.network.networkId()
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)
