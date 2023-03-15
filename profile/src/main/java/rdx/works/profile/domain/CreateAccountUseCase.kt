@@ -41,8 +41,7 @@ class CreateAccountUseCase @Inject constructor(
             }
             val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
 
-            // TODO(ABW-1023)
-            val factorSource = profile.factorSources.first()
+            val factorSource = profile.babylonDeviceFactorSource
 
             // Get the next index to derive the new account based in this factor source
             val entityIndex = factorSource.getNextAccountDerivationIndex(forNetworkId = networkID)

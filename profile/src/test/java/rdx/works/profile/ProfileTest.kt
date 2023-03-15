@@ -48,6 +48,11 @@ class ProfileTest {
         assertEquals(profile.onNetwork.first().networkID, Network.nebunet.id)
         assertEquals(profile.onNetwork.first().accounts.count(), 1)
         assertEquals(profile.onNetwork.first().personas.count(), 0)
+        assertEquals(
+            "Next derivation index for second account",
+            profile.factorSources.first().getNextAccountDerivationIndex(Network.nebunet.networkId()),
+            1
+        )
 
         println("Profile generated $profile")
 
@@ -68,6 +73,11 @@ class ProfileTest {
         )
 
         assertEquals(updatedProfile.onNetwork.first().accounts.count(), 2)
+        assertEquals(
+            "Next derivation index for third account",
+            updatedProfile.factorSources.first().getNextAccountDerivationIndex(Network.nebunet.networkId()),
+            2
+        )
 
         val firstPersona = createNewPersona(
             displayName = "First",
@@ -96,6 +106,11 @@ class ProfileTest {
         )
 
         assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
+        assertEquals(
+            "Next derivation index for second persona",
+            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(Network.nebunet.networkId()),
+            1
+        )
 
         val p2pClient = P2PClient.init(
             connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
@@ -138,27 +153,27 @@ class ProfileTest {
 
         val secondAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityIndex = expected.factorSources.first().getNextAccountDerivationIndex(networkId),
+            entityIndex = expected.babylonDeviceFactorSource.getNextAccountDerivationIndex(networkId),
             mnemonic = mnemonic,
-            factorSource = expected.factorSources.first(),
+            factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
         expected = expected.addAccountOnNetwork(
             account = secondAccount,
-            factorSourceId = expected.factorSources.first().id,
+            factorSourceId = expected.babylonDeviceFactorSource.id,
             networkID = networkId
         )
 
         val thirdAccount = createNewVirtualAccount(
             displayName = "Third",
-            entityIndex = expected.factorSources.first().getNextAccountDerivationIndex(networkId),
+            entityIndex = expected.babylonDeviceFactorSource.getNextAccountDerivationIndex(networkId),
             mnemonic = mnemonic,
-            factorSource = expected.factorSources.first(),
+            factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
         expected = expected.addAccountOnNetwork(
             account = thirdAccount,
-            factorSourceId = expected.factorSources.first().id,
+            factorSourceId = expected.babylonDeviceFactorSource.id,
             networkID = networkId
         )
 
@@ -176,14 +191,14 @@ class ProfileTest {
                     value = "Incognitoson"
                 )
             ),
-            entityIndex = expected.factorSources.first().getNextIdentityDerivationIndex(networkId),
+            entityIndex = expected.babylonDeviceFactorSource.getNextIdentityDerivationIndex(networkId),
             mnemonicWords = mnemonic,
-            factorSource = expected.factorSources.first(),
+            factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
         expected = expected.createPersona(
             persona = firstPersona,
-            factorSourceId = expected.factorSources.first().id,
+            factorSourceId = expected.babylonDeviceFactorSource.id,
             networkId = networkId
         )
 
@@ -201,14 +216,14 @@ class ProfileTest {
                     value = "Publicson"
                 )
             ),
-            entityIndex = expected.factorSources.first().getNextIdentityDerivationIndex(networkId),
+            entityIndex = expected.babylonDeviceFactorSource.getNextIdentityDerivationIndex(networkId),
             mnemonicWords = mnemonic,
-            factorSource = expected.factorSources.first(),
+            factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
         expected = expected.createPersona(
             persona = secondPersona,
-            factorSourceId = expected.factorSources.first().id,
+            factorSourceId = expected.babylonDeviceFactorSource.id,
             networkId = networkId
         )
 
@@ -311,6 +326,18 @@ class ProfileTest {
             "The id of the first factor source is the same",
             expected.factorSources.first().id,
             actual.factorSources.first().id
+        )
+
+        assertEquals(
+            "The next id for creating an account in this factor source",
+            expected.factorSources.first().getNextAccountDerivationIndex(networkId),
+            actual.factorSources.first().getNextAccountDerivationIndex(networkId)
+        )
+
+        assertEquals(
+            "The next id for creating an identity in this factor source",
+            expected.factorSources.first().getNextIdentityDerivationIndex(networkId),
+            actual.factorSources.first().getNextIdentityDerivationIndex(networkId)
         )
 
         // Per Network count

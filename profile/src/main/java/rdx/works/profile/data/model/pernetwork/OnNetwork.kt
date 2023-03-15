@@ -96,7 +96,6 @@ data class OnNetwork(
         val securityState: SecurityState
     ) {
 
-        // TODO(ABW-1023)
         /**
          * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
          * the public keys of the factors of the different roles, if the factor source kind of said factor

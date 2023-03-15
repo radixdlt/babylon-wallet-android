@@ -83,7 +83,7 @@ class CreateAccountUseCaseTest {
 
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking {
-                    invoke(profile.factorSources.first().id)
+                    invoke(profile.babylonDeviceFactorSource.id)
                 } doReturn phrase
             }
 
@@ -103,7 +103,7 @@ class CreateAccountUseCaseTest {
 
             val updatedProfile = profile.addAccountOnNetwork(
                 account = account,
-                factorSourceId = profile.factorSources.first().id,
+                factorSourceId = profile.babylonDeviceFactorSource.id,
                 networkID = network.network.networkId()
             )
 

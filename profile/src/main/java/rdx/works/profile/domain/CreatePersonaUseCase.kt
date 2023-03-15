@@ -27,8 +27,8 @@ class CreatePersonaUseCase @Inject constructor(
             }
 
             val networkID = profile.appPreferences.gateways.current().network.networkId()
-            // TODO(ABW-1023)
-            val factorSource = profile.factorSources.first()
+
+            val factorSource = profile.babylonDeviceFactorSource
 
             // Get the next index to derive the new persona based in this factor source
             val entityIndex = factorSource.getNextIdentityDerivationIndex(forNetworkId = networkID)

@@ -3,11 +3,14 @@ package rdx.works.profile.data.model
 import com.radixdlt.bip39.model.MnemonicWords
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
+import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 data class Profile(
@@ -66,6 +69,18 @@ data class Profile(
 
     // TODO(ABW-1023)
     fun notaryFactorSource() = factorSources.firstOrNull()
+
+    /**
+     * Temporarily the only factor source that the user can use to create accounts/personas.
+     * When new UI is added that allows the user to import other factor sources
+     * (like an Olympia device factor source), we will need to revisit this.
+     *
+     * NOTE that this factor source will always be used when creating the first account.
+     */
+    val babylonDeviceFactorSource: FactorSource
+        get() = factorSources.first {
+            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(CURVE_25519)
+        }
 
     companion object {
         const val LATEST_PROFILE_VERSION = 20
