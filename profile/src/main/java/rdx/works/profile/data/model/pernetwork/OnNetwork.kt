@@ -2,19 +2,18 @@ package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.models.crypto.PublicKey
+import java.util.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAccountAddress
 import rdx.works.profile.data.extensions.deriveIdentityAddress
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
-import java.util.*
-import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Serializable
 data class OnNetwork(
@@ -95,18 +94,6 @@ data class OnNetwork(
         @SerialName("securityState")
         val securityState: SecurityState
     ) {
-
-        /**
-         * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
-         * the public keys of the factors of the different roles, if the factor source kind of said factor
-         * instance supports Hierarchical Deterministic derivation.
-         */
-        val derivationPath: String?
-            get() = (securityState as? SecurityState.Unsecured)
-                ?.unsecuredEntityControl
-                ?.genesisFactorInstance
-                ?.derivationPath
-                ?.path
 
         enum class AppearanceIdGradient {
             Gradient1,

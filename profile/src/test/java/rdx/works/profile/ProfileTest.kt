@@ -491,12 +491,6 @@ class ProfileTest {
             )
 
             assertEquals(
-                "The accounts[$accountIndex] derivation path are the same",
-                expected.onNetwork.first().accounts[accountIndex].derivationPath,
-                actual.onNetwork.first().accounts[accountIndex].derivationPath
-            )
-
-            assertEquals(
                 "The accounts[$accountIndex] index are the same",
                 expected.onNetwork.first().accounts[accountIndex].index,
                 actual.onNetwork.first().accounts[accountIndex].index

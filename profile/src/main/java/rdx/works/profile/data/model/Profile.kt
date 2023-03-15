@@ -1,7 +1,9 @@
 package rdx.works.profile.data.model
 
 import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.crypto.getCompressedPublicKey
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.extensions.deriveExtendedKey
 import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -11,7 +13,10 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
+import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.utils.hashToFactorId
 
 data class Profile(
     /**
@@ -67,8 +72,63 @@ data class Profile(
         )
     }
 
-    // TODO(ABW-1023)
-    fun notaryFactorSource() = factorSources.firstOrNull()
+    /**
+     * Returns the account signers, currently only for accounts that their factor instances derive
+     * from [FactorSourceKind.DEVICE] factor sources. Note that those instances also have
+     * a non-null derivation path.
+     */
+    inline fun getAccountSigners(
+        addresses: List<String>,
+        networkId: Int,
+        getMnemonic: (FactorSource) -> String
+    ): List<AccountSigner> {
+        val network = onNetwork.firstOrNull { network ->
+            network.networkID == networkId
+        } ?: return emptyList()
+
+        val accounts = if (addresses.isEmpty()) {
+            listOf(network.accounts.first())
+        } else {
+            addresses.mapNotNull { address ->
+                network.accounts.find { it.address == address }
+            }
+        }
+
+        return accounts.map { account ->
+            when (val securityState = account.securityState) {
+                is SecurityState.Unsecured -> {
+                    val factorInstance = securityState.unsecuredEntityControl.genesisFactorInstance
+
+                    val factorSource = factorSources.find {
+                        it.id == factorInstance.factorSourceId
+                    }!!.also {
+                        assert(it.kind == FactorSourceKind.DEVICE) {
+                            "No FactorSource with DEVICE kind was found, but the account requested for a non-DEVICE factor source"
+                        }
+                        assert(it.parameters.supportedCurves.contains(factorInstance.publicKey.curve)) {
+                            "The curve ${factorInstance.publicKey.curve} is not supported by the selected FactorSource"
+                        }
+                    }
+
+                    val mnemonic = getMnemonic(factorSource)
+                    val mnemonicWords = MnemonicWords(mnemonic)
+                    val extendedKey = mnemonicWords.deriveExtendedKey(
+                        factorInstance = factorInstance,
+                        bip39Passphrase = "" // TODO this passphrase will be saved with the mnemonic
+                    )
+
+                    assert(extendedKey.keyPair.getCompressedPublicKey().hashToFactorId() == factorInstance.publicKey.compressedData) {
+                        "FactorSource's public key does not match with the derived public key"
+                    }
+
+                    AccountSigner(
+                        account = account,
+                        privateKey = extendedKey.keyPair.privateKey
+                    )
+                }
+            }
+        }
+    }
 
     /**
      * Temporarily the only factor source that the user can use to create accounts/personas.
