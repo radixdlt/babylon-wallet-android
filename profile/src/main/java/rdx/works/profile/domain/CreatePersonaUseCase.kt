@@ -29,14 +29,10 @@ class CreatePersonaUseCase @Inject constructor(
 
             val factorSource = profile.babylonDeviceFactorSource
 
-            // Get the next index to derive the new persona based in this factor source
-            val entityIndex = factorSource.getNextIdentityDerivationIndex(forNetworkId = networkID)
-
             // Construct new persona
             val newPersona = createNewPersona(
                 displayName = displayName,
                 fields = fields,
-                entityIndex = entityIndex,
                 mnemonicWithPassphrase = generateMnemonicUseCase(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID

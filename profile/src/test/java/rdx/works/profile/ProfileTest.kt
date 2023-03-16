@@ -59,7 +59,6 @@ class ProfileTest {
         val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
         val firstAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityIndex = factorSource.getNextAccountDerivationIndex(networkId),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
             networkId = networkId
@@ -92,7 +91,6 @@ class ProfileTest {
                     value = "Anderson"
                 )
             ),
-            entityIndex = factorSource.getNextIdentityDerivationIndex(networkId),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
             networkId = networkId
@@ -153,7 +151,6 @@ class ProfileTest {
 
         val secondAccount = createNewVirtualAccount(
             displayName = "Second",
-            entityIndex = expected.babylonDeviceFactorSource.getNextAccountDerivationIndex(networkId),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
@@ -166,7 +163,6 @@ class ProfileTest {
 
         val thirdAccount = createNewVirtualAccount(
             displayName = "Third",
-            entityIndex = expected.babylonDeviceFactorSource.getNextAccountDerivationIndex(networkId),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
@@ -191,7 +187,6 @@ class ProfileTest {
                     value = "Incognitoson"
                 )
             ),
-            entityIndex = expected.babylonDeviceFactorSource.getNextIdentityDerivationIndex(networkId),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
@@ -216,7 +211,6 @@ class ProfileTest {
                     value = "Publicson"
                 )
             ),
-            entityIndex = expected.babylonDeviceFactorSource.getNextIdentityDerivationIndex(networkId),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId

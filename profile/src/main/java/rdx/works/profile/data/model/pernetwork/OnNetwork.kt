@@ -114,7 +114,6 @@ data class OnNetwork(
             ): Account {
                 return createNewVirtualAccount(
                     displayName = displayName,
-                    entityIndex = 0,
                     mnemonicWithPassphrase = mnemonicWithPassphrase,
                     factorSource = factorSource,
                     networkId = networkId
@@ -123,13 +122,13 @@ data class OnNetwork(
 
             fun createNewVirtualAccount(
                 displayName: String,
-                entityIndex: Int,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: FactorSource,
                 networkId: NetworkId
             ): Account {
+                val index = factorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
                 val derivationPath = AccountDerivationPath(
-                    entityIndex = entityIndex,
+                    entityIndex = index,
                     networkId = networkId
                 ).path()
 
@@ -152,7 +151,7 @@ data class OnNetwork(
 
                 return Account(
                     address = address,
-                    appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
+                    appearanceID = index % Account.AppearanceIdGradient.values().count(),
                     displayName = displayName,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState
@@ -200,13 +199,14 @@ data class OnNetwork(
             fun createNewPersona(
                 displayName: String,
                 fields: List<Field>,
-                entityIndex: Int,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: FactorSource,
                 networkId: NetworkId
             ): Persona {
+                val index = factorSource.getNextIdentityDerivationIndex(forNetworkId = networkId)
+
                 val derivationPath = IdentityDerivationPath(
-                    entityIndex = entityIndex,
+                    entityIndex = index,
                     networkId = networkId
                 ).path()
 

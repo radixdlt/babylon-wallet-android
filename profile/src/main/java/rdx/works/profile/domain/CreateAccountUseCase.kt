@@ -42,13 +42,9 @@ class CreateAccountUseCase @Inject constructor(
 
             val factorSource = profile.babylonDeviceFactorSource
 
-            // Get the next index to derive the new account based in this factor source
-            val entityIndex = factorSource.getNextAccountDerivationIndex(forNetworkId = networkID)
-
             // Construct new account
             val newAccount = createNewVirtualAccount(
                 displayName = displayName,
-                entityIndex = entityIndex,
                 mnemonicWithPassphrase = generateMnemonicUseCase(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
