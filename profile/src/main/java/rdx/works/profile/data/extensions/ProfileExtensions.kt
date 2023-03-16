@@ -36,7 +36,7 @@ fun Profile.updatePersona(
 
 fun Profile.createPersona(
     persona: OnNetwork.Persona,
-    factorSourceId: String,
+    factorSourceId: FactorSource.ID,
     networkId: NetworkId
 ): Profile {
     val personaExists = onNetwork.find {
@@ -70,7 +70,7 @@ fun Profile.createPersona(
 
 fun Profile.addAccountOnNetwork(
     account: OnNetwork.Account,
-    factorSourceId: String,
+    factorSourceId: FactorSource.ID,
     networkID: NetworkId
 ): Profile {
     val networkExist = onNetwork.any { networkID.value == it.networkID }
@@ -108,7 +108,7 @@ fun Profile.addAccountOnNetwork(
 
 fun Profile.incrementFactorSourceNextAccountIndex(
     forNetwork: NetworkId,
-    factorSourceId: String
+    factorSourceId: FactorSource.ID
 ): Profile {
     return copy(
         factorSources = factorSources.map { factorSource ->

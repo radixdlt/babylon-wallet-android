@@ -83,7 +83,7 @@ class CreatePersonaUseCaseTest {
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
                                             derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
-                                            factorSourceId = "IDIDDIIDD",
+                                            factorSourceId = FactorSource.ID("IDIDDIIDD"),
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )
                                     )

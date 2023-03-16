@@ -17,6 +17,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.OnNetwork
@@ -40,7 +41,7 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
             unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                 genesisFactorInstance = FactorInstance(
                     derivationPath = DerivationPath.identityDerivationPath("few"),
-                    factorSourceId = "IDIDDIIDD",
+                    factorSourceId = FactorSource.ID("IDIDDIIDD"),
                     publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                 )
             )

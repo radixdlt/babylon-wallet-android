@@ -40,7 +40,7 @@ class SampleDataProvider {
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
                         derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
-                        factorSourceId = "IDIDDIIDD",
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -70,7 +70,7 @@ class SampleDataProvider {
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
                         derivationPath = DerivationPath.identityDerivationPath("few"),
-                        factorSourceId = "IDIDDIIDD",
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.mockdata
 
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.*
 
 val account1 = OnNetwork.Account(
@@ -11,7 +12,7 @@ val account1 = OnNetwork.Account(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             genesisFactorInstance = FactorInstance(
                 derivationPath = DerivationPath.accountDerivationPath("derivationPath1"),
-                factorSourceId = "IDIDDIIDD",
+                factorSourceId = FactorSource.ID("IDIDDIIDD"),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
         )
@@ -27,7 +28,7 @@ val account2 = OnNetwork.Account(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             genesisFactorInstance = FactorInstance(
                 derivationPath = DerivationPath.accountDerivationPath("derivationPath2"),
-                factorSourceId = "IDIDDIIDD",
+                factorSourceId = FactorSource.ID("IDIDDIIDD"),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
         )

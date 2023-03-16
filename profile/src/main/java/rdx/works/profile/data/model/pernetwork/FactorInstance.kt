@@ -2,6 +2,7 @@ package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 
@@ -11,7 +12,7 @@ data class FactorInstance(
     val derivationPath: DerivationPath?,
 
     @SerialName("factorSourceID")
-    val factorSourceId: String,
+    val factorSourceId: FactorSource.ID,
 
     @SerialName("publicKey")
     val publicKey: PublicKey

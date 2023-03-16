@@ -21,8 +21,8 @@ class GetMnemonicUseCase @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     @Suppress("SwallowedException")
-    private suspend fun readMnemonic(key: String): MnemonicWithPassphrase? {
-        val serialised = encryptedPreferencesManager.readMnemonic(key).orEmpty()
+    private suspend fun readMnemonic(key: FactorSource.ID): MnemonicWithPassphrase? {
+        val serialised = encryptedPreferencesManager.readMnemonic(key.value).orEmpty()
         return try {
             Json.decodeFromString(serialised)
         } catch (exception: Exception) {
@@ -34,11 +34,11 @@ class GetMnemonicUseCase @Inject constructor(
      * We save mnemonic under specific key which will be factorSourceId
      */
     private suspend fun saveMnemonic(
-        key: String,
+        key: FactorSource.ID,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) {
         val serialised = Json.encodeToString(mnemonicWithPassphrase)
-        encryptedPreferencesManager.putString("mnemonic$key", serialised)
+        encryptedPreferencesManager.putString("mnemonic${key.value}", serialised)
     }
 
     /**
@@ -53,7 +53,7 @@ class GetMnemonicUseCase @Inject constructor(
      * 3. We passed a key and the mnemonic exists:
      *    We deserialize it properly and just return that back.
      */
-    suspend operator fun invoke(mnemonicKey: String? = null): MnemonicWithPassphrase {
+    suspend operator fun invoke(mnemonicKey: FactorSource.ID? = null): MnemonicWithPassphrase {
         return mnemonicKey?.let { readMnemonic(key = it) } ?: withContext(defaultDispatcher) {
             val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
 

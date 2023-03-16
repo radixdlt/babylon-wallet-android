@@ -5,6 +5,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
@@ -35,7 +36,7 @@ sealed class SecurityState {
         fun unsecured(
             compressedPublicKey: ByteArray,
             derivationPath: DerivationPath,
-            factorSourceId: String
+            factorSourceId: FactorSource.ID
         ): Unsecured = Unsecured(
             unsecuredEntityControl = UnsecuredEntityControl(
                 genesisFactorInstance = FactorInstance(

@@ -35,7 +35,7 @@ data class FactorSource(
      * Canonical identifier which uniquely identifies this factor source.
      */
     @SerialName("id")
-    val id: String,
+    val id: ID,
 
     /**
      * A user facing hint about this FactorSource which is displayed
@@ -104,6 +104,12 @@ data class FactorSource(
             it.networkId == forNetworkId.value
         }?.forIdentity ?: 0
     }
+
+    @JvmInline
+    @Serializable
+    value class ID(
+        val value: String
+    )
 
     @Serializable
     data class Parameters(
@@ -232,11 +238,13 @@ data class FactorSource(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
             derivationPath: String = CustomHDDerivationPath.getId.path,
-        ): String {
-            return mnemonicWithPassphrase.compressedPublicKey(
-                ellipticCurveType = ellipticCurveType,
-                derivationPath = derivationPath
-            ).hashToFactorId()
+        ): ID {
+            return ID(
+                mnemonicWithPassphrase.compressedPublicKey(
+                    ellipticCurveType = ellipticCurveType,
+                    derivationPath = derivationPath
+                ).hashToFactorId()
+            )
         }
     }
 }

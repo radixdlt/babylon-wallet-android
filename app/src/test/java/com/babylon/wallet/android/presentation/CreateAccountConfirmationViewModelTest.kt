@@ -20,6 +20,7 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.*
 import rdx.works.profile.data.repository.AccountRepository
 
@@ -47,7 +48,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                         genesisFactorInstance = FactorInstance(
                             derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
-                            factorSourceId = "IDIDDIIDD",
+                            factorSourceId = FactorSource.ID("IDIDDIIDD"),
                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                         )
                     )
