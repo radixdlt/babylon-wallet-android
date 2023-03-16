@@ -10,7 +10,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.addAccountOnNetwork
+import rdx.works.profile.data.extensions.addAccount
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -105,10 +105,10 @@ class CreateAccountUseCaseTest {
                 displayName = accountName
             )
 
-            val updatedProfile = profile.addAccountOnNetwork(
+            val updatedProfile = profile.addAccount(
                 account = account,
-                factorSourceId = profile.babylonDeviceFactorSource.id,
-                networkID = network.network.networkId()
+                withFactorSourceId = profile.babylonDeviceFactorSource.id,
+                onNetwork = network.network.networkId()
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)

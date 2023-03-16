@@ -2,7 +2,7 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.addAccountOnNetwork
+import rdx.works.profile.data.extensions.addAccount
 import rdx.works.profile.data.extensions.changeGateway
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Network
@@ -51,10 +51,10 @@ class CreateAccountUseCase @Inject constructor(
             )
 
             // Add account to the profile
-            var updatedProfile = profile.addAccountOnNetwork(
+            var updatedProfile = profile.addAccount(
                 account = newAccount,
-                factorSourceId = factorSource.id,
-                networkID = networkID
+                withFactorSourceId = factorSource.id,
+                onNetwork = networkID
             )
 
             if (switchNetwork && gateway != null) {

@@ -10,7 +10,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.createPersona
+import rdx.works.profile.data.extensions.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -114,10 +114,10 @@ class CreatePersonaUseCaseTest {
                 fields = personaFields
             )
 
-            val updatedProfile = profile.createPersona(
+            val updatedProfile = profile.addPersona(
                 persona = newPersona,
-                factorSourceId = profile.babylonDeviceFactorSource.id,
-                networkId = network.network.networkId()
+                withFactorSourceId = profile.babylonDeviceFactorSource.id,
+                onNetwork = network.network.networkId()
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)

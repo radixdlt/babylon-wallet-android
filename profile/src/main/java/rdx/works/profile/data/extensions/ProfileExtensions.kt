@@ -34,13 +34,13 @@ fun Profile.updatePersona(
     )
 }
 
-fun Profile.createPersona(
+fun Profile.addPersona(
     persona: OnNetwork.Persona,
-    factorSourceId: FactorSource.ID,
-    networkId: NetworkId
+    withFactorSourceId: FactorSource.ID,
+    onNetwork: NetworkId
 ): Profile {
-    val personaExists = onNetwork.find {
-        it.networkID == networkId.value
+    val personaExists = this.onNetwork.find {
+        it.networkID == onNetwork.value
     }?.personas?.any { it.address == persona.address } ?: false
 
     if (personaExists) {
@@ -48,35 +48,35 @@ fun Profile.createPersona(
     }
 
     return copy(
-        onNetwork = onNetwork.mapWhen(
-            predicate = { it.networkID == networkId.value },
+        onNetwork = this.onNetwork.mapWhen(
+            predicate = { it.networkID == onNetwork.value },
             mutation = { network ->
                 network.copy(personas = network.personas + persona)
             }
         ),
         factorSources = factorSources.mapWhen(
-            predicate = { it.id == factorSourceId },
+            predicate = { it.id == withFactorSourceId },
             mutation = { factorSource ->
                 val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
                     ?: throw WasNotDeviceFactorSource()
 
                 factorSource.copy(
-                    storage = deviceStorage.incrementIdentity(forNetworkId = networkId)
+                    storage = deviceStorage.incrementIdentity(forNetworkId = onNetwork)
                 )
             }
         )
     )
 }
 
-fun Profile.addAccountOnNetwork(
+fun Profile.addAccount(
     account: OnNetwork.Account,
-    factorSourceId: FactorSource.ID,
-    networkID: NetworkId
+    withFactorSourceId: FactorSource.ID,
+    onNetwork: NetworkId
 ): Profile {
-    val networkExist = onNetwork.any { networkID.value == it.networkID }
+    val networkExist = this.onNetwork.any { onNetwork.value == it.networkID }
     val newOnNetworks = if (networkExist) {
-        onNetwork.map { network ->
-            if (network.networkID == networkID.value) {
+        this.onNetwork.map { network ->
+            if (network.networkID == onNetwork.value) {
                 val updatedAccounts = network.accounts.toMutableList()
                 updatedAccounts.add(account)
                 OnNetwork(
@@ -90,10 +90,10 @@ fun Profile.addAccountOnNetwork(
             }
         }
     } else {
-        onNetwork + OnNetwork(
+        this.onNetwork + OnNetwork(
             accounts = listOf(account),
             authorizedDapps = listOf(),
-            networkID = networkID.value,
+            networkID = onNetwork.value,
             personas = listOf()
         )
     }
@@ -101,8 +101,8 @@ fun Profile.addAccountOnNetwork(
     return copy(
         onNetwork = newOnNetworks,
     ).incrementFactorSourceNextAccountIndex(
-        forNetwork = networkID,
-        factorSourceId = factorSourceId
+        forNetwork = onNetwork,
+        factorSourceId = withFactorSourceId
     )
 }
 

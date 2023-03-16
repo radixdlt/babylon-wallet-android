@@ -2,7 +2,7 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.createPersona
+import rdx.works.profile.data.extensions.addPersona
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -39,10 +39,10 @@ class CreatePersonaUseCase @Inject constructor(
             )
 
             // Add persona to the profile
-            val updatedProfile = profile.createPersona(
+            val updatedProfile = profile.addPersona(
                 persona = newPersona,
-                factorSourceId = factorSource.id,
-                networkId = networkID
+                withFactorSourceId = factorSource.id,
+                onNetwork = networkID
             )
 
             // Save updated profile

@@ -10,9 +10,9 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.addAccountOnNetwork
+import rdx.works.profile.data.extensions.addAccount
 import rdx.works.profile.data.extensions.addP2PClient
-import rdx.works.profile.data.extensions.createPersona
+import rdx.works.profile.data.extensions.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -64,10 +64,10 @@ class ProfileTest {
             networkId = networkId
         )
 
-        var updatedProfile = profile.addAccountOnNetwork(
+        var updatedProfile = profile.addAccount(
             account = firstAccount,
-            factorSourceId = factorSource.id,
-            networkID = networkId
+            withFactorSourceId = factorSource.id,
+            onNetwork = networkId
         )
 
         assertEquals(updatedProfile.onNetwork.first().accounts.count(), 2)
@@ -96,10 +96,10 @@ class ProfileTest {
             networkId = networkId
         )
 
-        updatedProfile = updatedProfile.createPersona(
+        updatedProfile = updatedProfile.addPersona(
             persona = firstPersona,
-            factorSourceId = factorSource.id,
-            networkId = networkId
+            withFactorSourceId = factorSource.id,
+            onNetwork = networkId
         )
 
         assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
@@ -155,10 +155,10 @@ class ProfileTest {
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
-        expected = expected.addAccountOnNetwork(
+        expected = expected.addAccount(
             account = secondAccount,
-            factorSourceId = expected.babylonDeviceFactorSource.id,
-            networkID = networkId
+            withFactorSourceId = expected.babylonDeviceFactorSource.id,
+            onNetwork = networkId
         )
 
         val thirdAccount = init(
@@ -167,10 +167,10 @@ class ProfileTest {
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
-        expected = expected.addAccountOnNetwork(
+        expected = expected.addAccount(
             account = thirdAccount,
-            factorSourceId = expected.babylonDeviceFactorSource.id,
-            networkID = networkId
+            withFactorSourceId = expected.babylonDeviceFactorSource.id,
+            onNetwork = networkId
         )
 
         val firstPersona = init(
@@ -191,10 +191,10 @@ class ProfileTest {
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
-        expected = expected.createPersona(
+        expected = expected.addPersona(
             persona = firstPersona,
-            factorSourceId = expected.babylonDeviceFactorSource.id,
-            networkId = networkId
+            withFactorSourceId = expected.babylonDeviceFactorSource.id,
+            onNetwork = networkId
         )
 
         val secondPersona = init(
@@ -215,10 +215,10 @@ class ProfileTest {
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
-        expected = expected.createPersona(
+        expected = expected.addPersona(
             persona = secondPersona,
-            factorSourceId = expected.babylonDeviceFactorSource.id,
-            networkId = networkId
+            withFactorSourceId = expected.babylonDeviceFactorSource.id,
+            onNetwork = networkId
         )
 
         val p2pClient = P2PClient.init(
