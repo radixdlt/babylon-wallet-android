@@ -1,6 +1,5 @@
 package rdx.works.profile.data.repository
 
-import android.util.Log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -66,7 +65,6 @@ class ProfileDataSourceImpl @Inject constructor(
     override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
         .map { profileContent ->
             profileContent?.let { profile ->
-                Log.d("Profile", profile)
                 Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
             }
         }.catch { _ ->
