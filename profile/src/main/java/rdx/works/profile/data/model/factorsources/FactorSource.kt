@@ -151,11 +151,11 @@ data class FactorSource(
                 }
 
                 val mutatedList = if (indicesForNetwork == null) {
-                    listOf(OnNetwork.NextDerivationIndices(
+                    nextDerivationIndicesPerNetwork + OnNetwork.NextDerivationIndices(
                         networkId = forNetworkId.value,
                         forAccount = 1,
                         forIdentity = 0
-                    ))
+                    )
                 } else {
                     nextDerivationIndicesPerNetwork.map {
                         if (it.networkId == forNetworkId.value) {
@@ -175,11 +175,11 @@ data class FactorSource(
                 }
 
                 val mutatedList = if (indicesForNetwork == null) {
-                    listOf(OnNetwork.NextDerivationIndices(
+                    nextDerivationIndicesPerNetwork + OnNetwork.NextDerivationIndices(
                         networkId = forNetworkId.value,
                         forAccount = 0,
                         forIdentity = 1
-                    ))
+                    )
                 } else {
                     nextDerivationIndicesPerNetwork.map {
                         if (it.networkId == forNetworkId.value) {
