@@ -74,14 +74,6 @@ data class OnNetwork(
         val displayName: String,
 
         /**
-         * The index of this account, in the list of accounts for a certain network. This means that
-         * profile on network `mainnet` will have an account with `accountIndex = 0`, but so can an
-         * account on network `testnet` too! However, their `address`es will differ!
-         */
-        @SerialName("index")
-        val index: Int,
-
-        /**
          * The ID of the network that has been used to generate the accounts, to which personas
          * have been added and dApps connected.
          */
@@ -162,7 +154,6 @@ data class OnNetwork(
                     address = address,
                     appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
                     displayName = displayName,
-                    index = entityIndex,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState
                 )
@@ -189,14 +180,6 @@ data class OnNetwork(
 
         @SerialName("fields")
         val fields: List<Field>,
-
-        /**
-         * The index of this persona, in the list of personas for a certain network. This means that
-         * profile on network `mainnet` will have a persona with `accountIndex = 0`, but so can person
-         * on network `testnet` too! However, their `address`es will differ!
-         */
-        @SerialName("index")
-        val index: Int,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
@@ -248,7 +231,6 @@ data class OnNetwork(
                     address = address,
                     displayName = displayName,
                     fields = fields,
-                    index = entityIndex,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState
                 )

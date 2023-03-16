@@ -35,7 +35,6 @@ class SampleDataProvider {
             address = address,
             appearanceID = 123,
             displayName = "my account",
-            index = 0,
             networkID = 999,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
@@ -62,7 +61,6 @@ class SampleDataProvider {
         return OnNetwork.Persona(
             address = personaAddress,
             displayName = personaName,
-            index = 0,
             networkID = 11,
             fields = listOf(
                 OnNetwork.Persona.Field("1", OnNetwork.Persona.Field.Kind.Email, "test@test.pl"),

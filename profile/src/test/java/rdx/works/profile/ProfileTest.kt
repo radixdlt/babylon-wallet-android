@@ -125,7 +125,7 @@ class ProfileTest {
     }
 
     @Test
-    fun `test again profile json vector`() {
+    fun `test against profile json vector`() {
         val profileTestVector = File("src/test/resources/raw/profile_snapshot.json").readText()
 
         val actual = Json.decodeFromString<ProfileSnapshot>(profileTestVector).toProfile()
@@ -490,12 +490,6 @@ class ProfileTest {
                 actual.onNetwork.first().accounts[accountIndex].displayName
             )
 
-            assertEquals(
-                "The accounts[$accountIndex] index are the same",
-                expected.onNetwork.first().accounts[accountIndex].index,
-                actual.onNetwork.first().accounts[accountIndex].index
-            )
-
             // Security State
             assertEquals(
                 "The accounts[$accountIndex] derivation path are the same",
@@ -529,12 +523,6 @@ class ProfileTest {
         )
 
         repeat(2) { personaIndex ->
-            assertEquals(
-                "The persona[$personaIndex] index is the same",
-                expected.onNetwork.first().personas[personaIndex].index,
-                actual.onNetwork.first().personas[personaIndex].index
-            )
-
             assertEquals(
                 "The persona[$personaIndex] address is the same",
                 expected.onNetwork.first().personas[personaIndex].address,

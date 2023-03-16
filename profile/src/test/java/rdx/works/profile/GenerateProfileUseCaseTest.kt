@@ -71,7 +71,6 @@ class GenerateProfileUseCaseTest {
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",
-                                index = 0,
                                 networkID = 999,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(

@@ -65,7 +65,6 @@ class CreateAccountUseCaseTest {
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",
-                                index = 0,
                                 networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(

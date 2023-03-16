@@ -34,7 +34,6 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     private val persona =  OnNetwork.Persona(
         address = personaId,
         displayName = personaName,
-        index = 0,
         networkID = 10,
         fields = emptyList(),
         securityState = SecurityState.Unsecured(

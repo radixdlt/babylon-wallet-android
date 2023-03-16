@@ -56,7 +56,6 @@
           "address": "account_tdx_b_1pq53vs3xmykn9xx7a80ewt228fszw2cp440u6f69lpyqkrh82f",
           "appearanceID": 0,
           "displayName": "First",
-          "index": 0,
           "networkID": 11,
           "securityState": {
             "discriminator": "unsecured",
@@ -79,7 +78,6 @@
           "address": "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu",
           "appearanceID": 1,
           "displayName": "Second",
-          "index": 1,
           "networkID": 11,
           "securityState": {
             "discriminator": "unsecured",
@@ -102,7 +100,6 @@
           "address": "account_tdx_b_1pr2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54tshau0z6",
           "appearanceID": 2,
           "displayName": "Third",
-          "index": 2,
           "networkID": 11,
           "securityState": {
             "discriminator": "unsecured",
@@ -183,7 +180,6 @@
               "value": "Incognitoson"
             }
           ],
-          "index": 0,
           "networkID": 11,
           "securityState": {
             "discriminator": "unsecured",
@@ -217,7 +213,6 @@
               "value": "Publicson"
             }
           ],
-          "index": 1,
           "networkID": 11,
           "securityState": {
             "discriminator": "unsecured",
@@ -241,5 +236,5 @@
   ],
   "id": "9958f568-8c9b-476a-beeb-017d1f843266",
   "creatingDevice": "Galaxy A53 5G (Samsung SM-A536B)",
-  "version": 20
+  "version": 21
 }

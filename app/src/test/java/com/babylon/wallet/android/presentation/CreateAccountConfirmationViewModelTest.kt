@@ -42,7 +42,6 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
                 address = accountId,
                 appearanceID = 123,
                 displayName = accountName,
-                index = 0,
                 networkID = 10,
                 securityState = SecurityState.Unsecured(
                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
