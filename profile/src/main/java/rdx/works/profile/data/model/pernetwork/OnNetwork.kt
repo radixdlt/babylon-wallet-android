@@ -103,24 +103,7 @@ data class OnNetwork(
         }
 
         companion object {
-            /**
-             * Creates initial account upon new profile creation
-             */
-            fun initial(
-                mnemonicWithPassphrase: MnemonicWithPassphrase,
-                factorSource: FactorSource,
-                networkId: NetworkId,
-                displayName: String
-            ): Account {
-                return createNewVirtualAccount(
-                    displayName = displayName,
-                    mnemonicWithPassphrase = mnemonicWithPassphrase,
-                    factorSource = factorSource,
-                    networkId = networkId
-                )
-            }
-
-            fun createNewVirtualAccount(
+            fun init(
                 displayName: String,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: FactorSource,
@@ -196,7 +179,7 @@ data class OnNetwork(
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
-            fun createNewPersona(
+            fun init(
                 displayName: String,
                 fields: List<Field>,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,

@@ -96,7 +96,7 @@ class CreateAccountUseCaseTest {
             whenever(profileDataSource.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
 
             val createAccountUseCase = CreateAccountUseCase(
-                generateMnemonicUseCase = getMnemonicUseCase,
+                getMnemonicUseCase = getMnemonicUseCase,
                 profileDataSource = profileDataSource,
                 testDispatcher
             )

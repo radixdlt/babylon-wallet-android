@@ -7,13 +7,13 @@ import rdx.works.profile.data.extensions.changeGateway
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
+import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
-    private val generateMnemonicUseCase: GetMnemonicUseCase,
+    private val getMnemonicUseCase: GetMnemonicUseCase,
     private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -43,9 +43,9 @@ class CreateAccountUseCase @Inject constructor(
             val factorSource = profile.babylonDeviceFactorSource
 
             // Construct new account
-            val newAccount = createNewVirtualAccount(
+            val newAccount = init(
                 displayName = displayName,
-                mnemonicWithPassphrase = generateMnemonicUseCase(mnemonicKey = factorSource.id),
+                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
             )

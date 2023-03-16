@@ -4,13 +4,13 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.extensions.createPersona
 import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
+import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
-    private val generateMnemonicUseCase: GetMnemonicUseCase,
+    private val getMnemonicUseCase: GetMnemonicUseCase,
     private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -30,10 +30,10 @@ class CreatePersonaUseCase @Inject constructor(
             val factorSource = profile.babylonDeviceFactorSource
 
             // Construct new persona
-            val newPersona = createNewPersona(
+            val newPersona = init(
                 displayName = displayName,
                 fields = fields,
-                mnemonicWithPassphrase = generateMnemonicUseCase(mnemonicKey = factorSource.id),
+                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
             )

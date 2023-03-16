@@ -170,7 +170,7 @@ data class Profile(
                 hint = creatingDevice
             )
 
-            val initialAccount = OnNetwork.Account.initial(
+            val initialAccount = OnNetwork.Account.init(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 factorSource = factorSource,
                 networkId = gateway.network.networkId(),

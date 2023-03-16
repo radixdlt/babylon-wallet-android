@@ -21,8 +21,8 @@ import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
+import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
+import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.derivation.model.NetworkId
@@ -57,7 +57,7 @@ class ProfileTest {
 
         val networkId = NetworkId.Nebunet
         val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
-        val firstAccount = createNewVirtualAccount(
+        val firstAccount = init(
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
@@ -77,7 +77,7 @@ class ProfileTest {
             2
         )
 
-        val firstPersona = createNewPersona(
+        val firstPersona = init(
             displayName = "First",
             fields = listOf(
                 OnNetwork.Persona.Field.init(
@@ -149,7 +149,7 @@ class ProfileTest {
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
 
-        val secondAccount = createNewVirtualAccount(
+        val secondAccount = init(
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
@@ -161,7 +161,7 @@ class ProfileTest {
             networkID = networkId
         )
 
-        val thirdAccount = createNewVirtualAccount(
+        val thirdAccount = init(
             displayName = "Third",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
@@ -173,7 +173,7 @@ class ProfileTest {
             networkID = networkId
         )
 
-        val firstPersona = createNewPersona(
+        val firstPersona = init(
             displayName = "Mrs Incognito",
             fields = listOf(
                 OnNetwork.Persona.Field.init(
@@ -197,7 +197,7 @@ class ProfileTest {
             networkId = networkId
         )
 
-        val secondPersona = createNewPersona(
+        val secondPersona = init(
             displayName = "Mrs Public",
             fields = listOf(
                 OnNetwork.Persona.Field.init(
