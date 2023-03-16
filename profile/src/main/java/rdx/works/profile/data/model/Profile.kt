@@ -2,6 +2,8 @@ package rdx.works.profile.data.model
 
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.crypto.getCompressedPublicKey
+import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.hex.extensions.toHexString
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.deriveExtendedKey
 import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
@@ -117,7 +119,7 @@ data class Profile(
                         bip39Passphrase = "" // TODO this passphrase will be saved with the mnemonic
                     )
 
-                    assert(extendedKey.keyPair.getCompressedPublicKey().hashToFactorId() == factorInstance.publicKey.compressedData) {
+                    assert(extendedKey.keyPair.getCompressedPublicKey().removeLeadingZero().toHexString() == factorInstance.publicKey.compressedData) {
                         "FactorSource's public key does not match with the derived public key"
                     }
 
