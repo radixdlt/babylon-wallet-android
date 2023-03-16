@@ -1,19 +1,19 @@
 package rdx.works.profile.data.model.pernetwork
 
-import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import java.util.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAccountAddress
 import rdx.works.profile.data.extensions.deriveIdentityAddress
+import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
+import java.util.*
 
 @Serializable
 data class OnNetwork(
@@ -115,7 +115,7 @@ data class OnNetwork(
              * Creates initial account upon new profile creation
              */
             fun initial(
-                mnemonic: MnemonicWords,
+                mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: FactorSource,
                 networkId: NetworkId,
                 displayName: String
@@ -123,7 +123,7 @@ data class OnNetwork(
                 return createNewVirtualAccount(
                     displayName = displayName,
                     entityIndex = 0,
-                    mnemonic = mnemonic,
+                    mnemonicWithPassphrase = mnemonicWithPassphrase,
                     factorSource = factorSource,
                     networkId = networkId
                 )
@@ -132,7 +132,7 @@ data class OnNetwork(
             fun createNewVirtualAccount(
                 displayName: String,
                 entityIndex: Int,
-                mnemonic: MnemonicWords,
+                mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: FactorSource,
                 networkId: NetworkId
             ): Account {
@@ -141,7 +141,7 @@ data class OnNetwork(
                     networkId = networkId
                 ).path()
 
-                val compressedPublicKey = mnemonic.compressedPublicKey(
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
                     derivationPath = derivationPath
                 ).removeLeadingZero()
 
@@ -218,7 +218,7 @@ data class OnNetwork(
                 displayName: String,
                 fields: List<Field>,
                 entityIndex: Int,
-                mnemonicWords: MnemonicWords,
+                mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: FactorSource,
                 networkId: NetworkId
             ): Persona {
@@ -227,7 +227,7 @@ data class OnNetwork(
                     networkId = networkId
                 ).path()
 
-                val compressedPublicKey = mnemonicWords.compressedPublicKey(
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
                     derivationPath = derivationPath
                 ).removeLeadingZero()
 

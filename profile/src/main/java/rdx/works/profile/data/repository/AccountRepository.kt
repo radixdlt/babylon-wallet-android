@@ -1,12 +1,11 @@
 package rdx.works.profile.data.repository
 
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.domain.GetMnemonicUseCase
+import javax.inject.Inject
 
 interface AccountRepository {
 

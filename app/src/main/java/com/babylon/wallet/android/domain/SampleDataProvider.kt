@@ -12,11 +12,10 @@ import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
-import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Value
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import java.math.BigDecimal
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -27,6 +26,7 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import java.math.BigDecimal
 
 class SampleDataProvider {
 
@@ -101,16 +101,17 @@ class SampleDataProvider {
                 p2pClients = emptyList()
             ),
             factorSources = listOf(
-                FactorSource.babylon(mnemonic = sampleMnemonic())
+                FactorSource.babylon(
+                    mnemonicWithPassphrase = MnemonicWithPassphrase(
+                        mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+                        bip39Passphrase = ""
+                    )
+                )
             ),
             onNetwork = emptyList(),
             version = 1
         )
     }
-
-    fun sampleMnemonic() = MnemonicWords(
-        "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote"
-    )
 
     fun sampleFungibleTokens(ownerAddress: String = randomAddress()): List<OwnedFungibleToken> {
         val result = mutableListOf<OwnedFungibleToken>()

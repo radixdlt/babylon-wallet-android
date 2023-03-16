@@ -1,11 +1,9 @@
 package rdx.works.profile.data.model
 
-import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.deriveExtendedKey
 import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -18,7 +16,6 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.utils.hashToFactorId
 
 data class Profile(
     /**
@@ -79,10 +76,11 @@ data class Profile(
      * from [FactorSourceKind.DEVICE] factor sources. Note that those instances also have
      * a non-null derivation path.
      */
+    @Suppress("UnsafeCallOnNullableType")
     inline fun getAccountSigners(
         addresses: List<String>,
         networkId: Int,
-        getMnemonic: (FactorSource) -> String
+        getMnemonic: (FactorSource) -> MnemonicWithPassphrase
     ): List<AccountSigner> {
         val network = onNetwork.firstOrNull { network ->
             network.networkID == networkId
@@ -112,14 +110,17 @@ data class Profile(
                         }
                     }
 
-                    val mnemonic = getMnemonic(factorSource)
-                    val mnemonicWords = MnemonicWords(mnemonic)
-                    val extendedKey = mnemonicWords.deriveExtendedKey(
-                        factorInstance = factorInstance,
-                        bip39Passphrase = "" // TODO this passphrase will be saved with the mnemonic
+                    val mnemonicWithPassphrase = getMnemonic(factorSource)
+                    val extendedKey = mnemonicWithPassphrase.deriveExtendedKey(
+                        factorInstance = factorInstance
                     )
 
-                    assert(extendedKey.keyPair.getCompressedPublicKey().removeLeadingZero().toHexString() == factorInstance.publicKey.compressedData) {
+                    assert(
+                        extendedKey.keyPair
+                            .getCompressedPublicKey()
+                            .removeLeadingZero()
+                            .toHexString() == factorInstance.publicKey.compressedData
+                    ) {
                         "FactorSource's public key does not match with the derived public key"
                     }
 
@@ -145,23 +146,23 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 20
+        const val LATEST_PROFILE_VERSION = 21
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
-            mnemonic: MnemonicWords,
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
             firstAccountDisplayName: String,
             creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER
         ): Profile {
             val gateway = Gateway.default
 
             val factorSource = FactorSource.babylon(
-                mnemonic = mnemonic,
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
                 hint = creatingDevice
             )
 
             val initialAccount = OnNetwork.Account.initial(
-                mnemonic = mnemonic,
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
                 factorSource = factorSource,
                 networkId = gateway.network.networkId(),
                 displayName = firstAccountDisplayName

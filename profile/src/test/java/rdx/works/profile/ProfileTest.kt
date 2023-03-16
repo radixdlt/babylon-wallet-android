@@ -1,11 +1,9 @@
 package rdx.works.profile
 
-import com.radixdlt.bip39.model.MnemonicWords
 import io.mockk.every
 import io.mockk.mockkObject
 import java.io.File
 import java.util.UUID
-import kotlin.math.exp
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
@@ -15,11 +13,11 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.addAccountOnNetwork
 import rdx.works.profile.data.extensions.addP2PClient
 import rdx.works.profile.data.extensions.createPersona
-import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PClient
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
@@ -33,13 +31,14 @@ class ProfileTest {
 
     @Test
     fun `test profile generation`() {
-        val mnemonic = MnemonicWords(
-            "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+        val mnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+            bip39Passphrase = ""
         )
 
         val profile = Profile.init(
-            mnemonic = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             firstAccountDisplayName = "First",
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
@@ -57,11 +56,11 @@ class ProfileTest {
         println("Profile generated $profile")
 
         val networkId = NetworkId.Nebunet
-        val factorSource = FactorSource.babylon(mnemonic = mnemonic)
+        val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
         val firstAccount = createNewVirtualAccount(
             displayName = "Second",
             entityIndex = factorSource.getNextAccountDerivationIndex(networkId),
-            mnemonic = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
             networkId = networkId
         )
@@ -94,7 +93,7 @@ class ProfileTest {
                 )
             ),
             entityIndex = factorSource.getNextIdentityDerivationIndex(networkId),
-            mnemonicWords = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
             networkId = networkId
         )
@@ -131,9 +130,10 @@ class ProfileTest {
 
         val actual = Json.decodeFromString<ProfileSnapshot>(profileTestVector).toProfile()
 
-        val mnemonic = MnemonicWords(
-            "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
-                    "sudden possible story mask neutral prize goose mandate"
+        val mnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
+                "sudden possible story mask neutral prize goose mandate",
+            bip39Passphrase = ""
         )
 
         val gateway = Gateway.nebunet
@@ -146,7 +146,7 @@ class ProfileTest {
 
 
         var expected = Profile.init(
-            mnemonic = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             firstAccountDisplayName = "First",
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
@@ -154,7 +154,7 @@ class ProfileTest {
         val secondAccount = createNewVirtualAccount(
             displayName = "Second",
             entityIndex = expected.babylonDeviceFactorSource.getNextAccountDerivationIndex(networkId),
-            mnemonic = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
@@ -167,7 +167,7 @@ class ProfileTest {
         val thirdAccount = createNewVirtualAccount(
             displayName = "Third",
             entityIndex = expected.babylonDeviceFactorSource.getNextAccountDerivationIndex(networkId),
-            mnemonic = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
@@ -192,7 +192,7 @@ class ProfileTest {
                 )
             ),
             entityIndex = expected.babylonDeviceFactorSource.getNextIdentityDerivationIndex(networkId),
-            mnemonicWords = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
@@ -217,7 +217,7 @@ class ProfileTest {
                 )
             ),
             entityIndex = expected.babylonDeviceFactorSource.getNextIdentityDerivationIndex(networkId),
-            mnemonicWords = mnemonic,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )

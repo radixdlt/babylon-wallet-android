@@ -11,12 +11,14 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.extensions.createPersona
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.OnNetwork
@@ -35,7 +37,10 @@ class CreatePersonaUseCaseTest {
     fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() {
         // given
         val personaName = "First persona"
-        val phrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
+        val mnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+            bip39Passphrase = ""
+        )
         val personaFields = listOf(
             OnNetwork.Persona.Field(
                 id = "ID213",
@@ -63,7 +68,9 @@ class CreatePersonaUseCaseTest {
                         )
                     )
                 ),
-                factorSources = factorSources(fromPhrase = phrase),
+                factorSources = listOf(
+                    FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                ),
                 onNetwork = listOf(
                     OnNetwork(
                         accounts = listOf(
@@ -95,7 +102,7 @@ class CreatePersonaUseCaseTest {
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking {
                     invoke(profile.babylonDeviceFactorSource.id)
-                } doReturn phrase
+                } doReturn mnemonicWithPassphrase
             }
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)

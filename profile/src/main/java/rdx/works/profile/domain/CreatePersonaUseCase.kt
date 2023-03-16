@@ -1,7 +1,5 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.bip39.model.MnemonicWords
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.extensions.createPersona
@@ -9,6 +7,7 @@ import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
+import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
     private val generateMnemonicUseCase: GetMnemonicUseCase,
@@ -38,9 +37,7 @@ class CreatePersonaUseCase @Inject constructor(
                 displayName = displayName,
                 fields = fields,
                 entityIndex = entityIndex,
-                mnemonicWords = MnemonicWords(
-                    phrase = generateMnemonicUseCase(mnemonicKey = factorSource.id)
-                ),
+                mnemonicWithPassphrase = generateMnemonicUseCase(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
             )

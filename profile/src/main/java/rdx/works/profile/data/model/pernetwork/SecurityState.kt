@@ -47,6 +47,5 @@ sealed class SecurityState {
                 )
             )
         )
-
     }
 }

@@ -1,13 +1,12 @@
 package rdx.works.profile.data.model.factorsources
 
-import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.crypto.ec.EllipticCurveType
-import java.time.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
-import rdx.works.profile.data.extensions.compressedPublicKey
+import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.BIP_44_OLYMPIA
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.CAP_26
 import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.babylon
@@ -19,6 +18,7 @@ import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.CustomHDDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
+import java.time.Instant
 
 /**
  * A FactorSource is the source of FactorInstance(s)
@@ -143,7 +143,7 @@ data class FactorSource(
         data class Device(
             @SerialName("nextDerivationIndicesPerNetwork")
             val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices>
-        ): Storage() {
+        ) : Storage() {
 
             fun incrementAccount(forNetworkId: NetworkId): Device {
                 val indicesForNetwork = nextDerivationIndicesPerNetwork.find {
@@ -197,38 +197,30 @@ data class FactorSource(
 
     companion object {
         fun babylon(
-            mnemonic: MnemonicWords,
-            bip39Passphrase: String = "",
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
             hint: String = "babylon",
         ) = device(
-            mnemonic = mnemonic,
-            bip39Passphrase = bip39Passphrase,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             hint = hint,
             olympiaCompatible = false
         )
 
         fun olympia(
-            mnemonic: MnemonicWords,
-            bip39Passphrase: String = "",
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
             hint: String = "olympia",
         ) = device(
-            mnemonic = mnemonic,
-            bip39Passphrase = bip39Passphrase,
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
             hint = hint,
             olympiaCompatible = true
         )
 
         fun device(
-            mnemonic: MnemonicWords,
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
             hint: String,
-            bip39Passphrase: String = "",
             olympiaCompatible: Boolean
         ) = FactorSource(
             kind = FactorSourceKind.DEVICE,
-            id = factorSourceId(
-                mnemonic = mnemonic,
-                bip39Passphrase = bip39Passphrase
-            ),
+            id = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase),
             hint = hint,
             parameters = if (olympiaCompatible) olympiaBackwardsCompatible else babylon,
             storage = Storage.Device(nextDerivationIndicesPerNetwork = listOf()),
@@ -237,18 +229,16 @@ data class FactorSource(
         )
 
         fun factorSourceId(
-            mnemonic: MnemonicWords,
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
             ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
             derivationPath: String = CustomHDDerivationPath.getId.path,
-            bip39Passphrase: String = ""
         ): String {
-            return mnemonic.compressedPublicKey(
+            return mnemonicWithPassphrase.compressedPublicKey(
                 ellipticCurveType = ellipticCurveType,
-                derivationPath = derivationPath,
-                bip39Passphrase = bip39Passphrase
+                derivationPath = derivationPath
             ).hashToFactorId()
         }
     }
 }
 
-class WasNotDeviceFactorSource: RuntimeException()
+class WasNotDeviceFactorSource : RuntimeException()

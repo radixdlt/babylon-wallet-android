@@ -1,6 +1,5 @@
 package rdx.works.profile
 
-import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -11,23 +10,21 @@ import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.model.DeviceInfo
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.data.utils.hashToFactorId
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
@@ -42,10 +39,13 @@ class GenerateProfileUseCaseTest {
     fun `given profile already exists, when generate profile called, return existing profile`() {
         testScope.runTest {
             // given
-            val mnemonicPhrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+            val mnemonicWithPassphrase = MnemonicWithPassphrase(
+                mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                bip39Passphrase = ""
+            )
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
-                onBlocking { invoke() } doReturn mnemonicPhrase
+                onBlocking { invoke() } doReturn mnemonicWithPassphrase
             }
 
             val profile = Profile(
@@ -61,7 +61,9 @@ class GenerateProfileUseCaseTest {
                         )
                     )
                 ),
-                factorSources = factorSources(fromPhrase = mnemonicPhrase),
+                factorSources = listOf(
+                    FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                ),
                 onNetwork = listOf(
                     OnNetwork(
                         accounts = listOf(
@@ -108,13 +110,16 @@ class GenerateProfileUseCaseTest {
     @Test
     fun `given profile does not exist, when generating one, verify correct data generated from mnemonic`() {
         testScope.runTest {
-            val mnemonicPhrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+            val mnemonicWithPassphrase = MnemonicWithPassphrase(
+                mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                bip39Passphrase = ""
+            )
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
-                onBlocking { invoke() } doReturn mnemonicPhrase
+                onBlocking { invoke() } doReturn mnemonicWithPassphrase
             }
 
-            val expectedFactorSourceId = factorSourceId(mnemonicPhrase)
+            val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase)
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
                 getMnemonicUseCase = getMnemonicUseCase,
@@ -145,12 +150,15 @@ class GenerateProfileUseCaseTest {
     @Test
     fun `given profile does not exist, when generating one, verify correct data generated from other mnemonic`() {
         testScope.runTest {
-            val mnemonicPhrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
+            val mnemonicWithPassphrase = MnemonicWithPassphrase(
+                mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+                bip39Passphrase = ""
+            )
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
-                onBlocking { invoke() } doReturn mnemonicPhrase
+                onBlocking { invoke() } doReturn mnemonicWithPassphrase
             }
 
-            val expectedFactorSourceId = factorSourceId(mnemonicPhrase)
+            val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
                 getMnemonicUseCase = getMnemonicUseCase,
@@ -176,16 +184,6 @@ class GenerateProfileUseCaseTest {
                     .genesisFactorInstance.factorSourceId
             )
         }
-    }
-
-    private fun generateInstanceId(mnemonicPhrase: String, networkId: NetworkId): String {
-        return MnemonicWords(mnemonicPhrase)
-            .compressedPublicKey(
-                derivationPath = AccountDerivationPath(
-                    entityIndex = 0,
-                    networkId = networkId
-                ).path()
-            ).hashToFactorId()
     }
 
     private class FakeDeviceInfoRepository: DeviceInfoRepository {
