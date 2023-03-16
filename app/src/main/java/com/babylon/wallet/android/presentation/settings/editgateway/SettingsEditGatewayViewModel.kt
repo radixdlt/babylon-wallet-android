@@ -46,7 +46,10 @@ class SettingsEditGatewayViewModel @Inject constructor(
                     state.copy(
                         currentGateway = current,
                         gatewayList = gateways.saved.toPersistentList().map {
-                            GatewayWrapper(it, it.url == current.url)
+                            GatewayWrapper(
+                                gateway = it,
+                                selected = it.url == current.url
+                            )
                         }.toPersistentList()
                     )
                 }
@@ -67,9 +70,13 @@ class SettingsEditGatewayViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteGateway(gateway: Gateway) {
+    fun onDeleteGateway(gateway: GatewayWrapper) {
         viewModelScope.launch {
-            profileDataSource.deleteGateway(gateway)
+            if (gateway.selected) {
+                val defaultGateway = state.value.gatewayList.first { it.gateway.isDefault }
+                switchGateway(defaultGateway.gateway)
+            }
+            profileDataSource.deleteGateway(gateway.gateway)
         }
     }
 
@@ -98,16 +105,20 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onGatewayClick(gateway: Gateway) {
         viewModelScope.launch {
-            if (gateway.url == state.value.currentGateway?.url) return@launch
-            if (profileDataSource.hasAccountForGateway(gateway)) {
-                profileDataSource.changeGateway(gateway)
-                _state.update { state ->
-                    state.copy(addingGateway = false)
-                }
-            } else {
-                val urlEncoded = gateway.url.encodeUtf8()
-                sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
+            switchGateway(gateway)
+        }
+    }
+
+    private suspend fun switchGateway(gateway: Gateway) {
+        if (gateway.url == state.value.currentGateway?.url) return
+        if (profileDataSource.hasAccountForGateway(gateway)) {
+            profileDataSource.changeGateway(gateway)
+            _state.update { state ->
+                state.copy(addingGateway = false)
             }
+        } else {
+            val urlEncoded = gateway.url.encodeUtf8()
+            sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
         }
     }
 }

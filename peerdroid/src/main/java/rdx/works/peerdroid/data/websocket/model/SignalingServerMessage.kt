@@ -25,19 +25,24 @@ internal sealed interface SignalingServerMessage {
         ) : RemoteInfo
     }
 
+    // At the moment this data class is used to map only the INCOMING messages from the Signaling Server.
     sealed interface RemoteData : SignalingServerMessage {
+
+        val remoteClientId: String
 
         // when the incoming message is an offer from browser extension
         // then return the request id and the remote session description
         data class Offer(
+            override val remoteClientId: String,
             val targetClientId: String,
             val requestId: String,
-            val sdp: String
+            val sdp: String,
         ) : RemoteData
 
         // when the incoming message is an answer from browser extension
         // then return the request id and the remote session description
         data class Answer(
+            override val remoteClientId: String,
             val targetClientId: String,
             val requestId: String,
             val sdp: String
@@ -46,6 +51,7 @@ internal sealed interface SignalingServerMessage {
         // when the incoming message is an ice candidate from browser extension
         // then return the request id and the remote ice candidate
         data class IceCandidate(
+            override val remoteClientId: String,
             val targetClientId: String,
             val requestId: String,
             val remoteIceCandidate: RemoteIceCandidate

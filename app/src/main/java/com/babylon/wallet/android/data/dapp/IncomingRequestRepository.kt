@@ -9,6 +9,7 @@ import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 interface IncomingRequestRepository {
+
     val currentRequestToHandle: Flow<IncomingRequest>
 
     suspend fun add(incomingRequest: IncomingRequest)
@@ -20,6 +21,8 @@ interface IncomingRequestRepository {
     fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest
 
     fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest
+
+    fun removeAll()
 
     fun getAmountOfRequests(): Int
 }
@@ -73,6 +76,10 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         }
 
         return (listOfIncomingRequests[requestId] as IncomingRequest.AuthorizedRequest)
+    }
+
+    override fun removeAll() {
+        listOfIncomingRequests.clear()
     }
 
     override fun getAmountOfRequests() = listOfIncomingRequests.size

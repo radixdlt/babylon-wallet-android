@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalPermissionsApi::class)
 
-package com.babylon.wallet.android.presentation.settings.addconnection
+package com.babylon.wallet.android.presentation.settings.connector
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
@@ -42,7 +42,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.addconnection.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -53,28 +53,28 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
 @Composable
-fun SettingsConnectionScreen(
-    viewModel: SettingsConnectionViewModel,
+fun SettingsConnectorScreen(
+    viewModel: SettingsConnectorViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    SettingsAddConnectionContent(
+    SettingsLinkConnectorContent(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
-        connectionName = state.connectionName,
-        onConnectionClick = viewModel::onConnectionClick,
+        connectorName = state.connectorName,
+        onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
         isLoading = state.isLoading,
         onBackClick = onBackClick,
-        connectionDisplayName = state.editedConnectionDisplayName,
+        connectorDisplayName = state.editedConnectorDisplayName,
         buttonEnabled = state.buttonEnabled,
-        onConnectionDisplayNameChanged = viewModel::onConnectionDisplayNameChanged,
-        onDeleteConnectionClick = viewModel::onDeleteConnectionClick,
+        onConnectorDisplayNameChanged = viewModel::onConnectorDisplayNameChanged,
+        onDeleteConnectorClick = viewModel::onDeleteConnectorClick,
         onConnectionPasswordDecoded = viewModel::onConnectionPasswordDecoded,
         settingsMode = state.mode,
-        onAddConnection = viewModel::addConnection,
+        onLinkConnector = viewModel::linkConnector,
         cancelQrScan = viewModel::cancelQrScan,
         triggerCameraPermissionPrompt = state.triggerCameraPermissionPrompt
     )
@@ -82,38 +82,43 @@ fun SettingsConnectionScreen(
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun SettingsAddConnectionContent(
-    connectionName: String?,
-    onConnectionClick: () -> Unit,
+private fun SettingsLinkConnectorContent(
+    connectorName: String?,
+    onLinkNewConnectorClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    connectionDisplayName: String,
+    connectorDisplayName: String,
     buttonEnabled: Boolean,
-    onConnectionDisplayNameChanged: (String) -> Unit,
+    onConnectorDisplayNameChanged: (String) -> Unit,
     onConnectionPasswordDecoded: (String) -> Unit,
-    onDeleteConnectionClick: () -> Unit,
-    settingsMode: SettingsConnectionMode,
-    onAddConnection: () -> Unit,
+    onDeleteConnectorClick: () -> Unit,
+    settingsMode: SettingsConnectorMode,
+    onLinkConnector: () -> Unit,
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
 ) {
-    var showDeleteConnectionPrompt by remember { mutableStateOf(false) }
+    var showDeleteConnectorPrompt by remember { mutableStateOf(false) }
+
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
-        snapshotFlow { triggerCameraPermissionPrompt }.distinctUntilChanged().filter { it }.collect {
-            cameraPermissionState.launchPermissionRequest()
-        }
+        snapshotFlow { triggerCameraPermissionPrompt }
+            .distinctUntilChanged()
+            .filter { it }
+            .collect {
+                cameraPermissionState.launchPermissionRequest()
+            }
     }
+
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = if (settingsMode == SettingsConnectionMode.ShowDetails) {
+            title = if (settingsMode == SettingsConnectorMode.ShowDetails) {
                 stringResource(R.string.linked_connector)
             } else {
                 stringResource(R.string.link_to_connector)
             },
             onBackClick = {
-                if (settingsMode == SettingsConnectionMode.ScanQr) {
+                if (settingsMode == SettingsConnectorMode.ScanQr) {
                     cancelQrScan()
                 } else {
                     onBackClick()
@@ -124,25 +129,25 @@ private fun SettingsAddConnectionContent(
         Divider(color = RadixTheme.colors.gray5)
         Box(modifier = Modifier.fillMaxSize()) {
             when (settingsMode) {
-                SettingsConnectionMode.AddConnection -> {
-                    ConnectionNameInput(
-                        onConnectionClick = onConnectionClick,
-                        connectionDisplayName = connectionDisplayName,
+                SettingsConnectorMode.LinkConnector -> {
+                    ConnectorNameInput(
+                        onLinkNewConnectorClick = onLinkNewConnectorClick,
+                        connectorDisplayName = connectorDisplayName,
                         buttonEnabled = buttonEnabled,
-                        onConnectionDisplayNameChanged = onConnectionDisplayNameChanged,
+                        onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
                     )
                 }
-                SettingsConnectionMode.ShowDetails -> {
-                    ActiveConnectionDetails(
-                        connectionName = connectionName,
-                        onAddConnection = onAddConnection,
+                SettingsConnectorMode.ShowDetails -> {
+                    ActiveConnectorDetails(
+                        connectorName = connectorName,
+                        onLinkConnector = onLinkConnector,
                         cameraPermissionState = cameraPermissionState,
-                        onDeleteConnectionClick = { showDeleteConnectionPrompt = true },
+                        onDeleteConnectorClick = { showDeleteConnectorPrompt = true },
                         isLoading = isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                SettingsConnectionMode.ScanQr -> {
+                SettingsConnectorMode.ScanQr -> {
                     if (cameraPermissionState.status.isGranted) {
                         CameraPreview(
                             modifier = Modifier.fillMaxWidth()
@@ -156,17 +161,17 @@ private fun SettingsAddConnectionContent(
             if (isLoading) {
                 FullscreenCircularProgressContent()
             }
-            if (showDeleteConnectionPrompt) {
+            if (showDeleteConnectorPrompt) {
                 BasicPromptAlertDialog(
                     finish = {
                         if (it) {
-                            onDeleteConnectionClick()
+                            onDeleteConnectorClick()
                         }
-                        showDeleteConnectionPrompt = false
+                        showDeleteConnectorPrompt = false
                     },
                     title = {
                         Text(
-                            text = stringResource(id = R.string.remove_connection),
+                            text = stringResource(id = R.string.remove_connector),
                             style = RadixTheme.typography.body2Header,
                             color = RadixTheme.colors.gray1
                         )
@@ -186,11 +191,11 @@ private fun SettingsAddConnectionContent(
 }
 
 @Composable
-private fun ActiveConnectionDetails(
-    connectionName: String?,
-    onAddConnection: () -> Unit,
+private fun ActiveConnectorDetails(
+    connectorName: String?,
+    onLinkConnector: () -> Unit,
     cameraPermissionState: PermissionState,
-    onDeleteConnectionClick: () -> Unit,
+    onDeleteConnectorClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -202,7 +207,7 @@ private fun ActiveConnectionDetails(
             color = RadixTheme.colors.gray2
         )
         Divider(color = RadixTheme.colors.gray5)
-        AnimatedVisibility(visible = connectionName == null && !isLoading) {
+        AnimatedVisibility(visible = connectorName == null && !isLoading) {
             Column {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixSecondaryButton(
@@ -211,7 +216,7 @@ private fun ActiveConnectionDetails(
                         .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                     text = stringResource(id = R.string.link_new_connector),
                     onClick = {
-                        onAddConnection()
+                        onLinkConnector()
                         cameraPermissionState.launchPermissionRequest()
                     },
                     icon = {
@@ -225,20 +230,20 @@ private fun ActiveConnectionDetails(
                 )
             }
         }
-        connectionName?.let { connectionName ->
-            ShowConnectionContent(
-                connectionName = connectionName,
-                onDeleteConnectionClick = onDeleteConnectionClick
+        connectorName?.let { name ->
+            ShowConnectorContent(
+                connectorName = name,
+                onDeleteConnectorClick = onDeleteConnectorClick
             )
         }
     }
 }
 
 @Composable
-private fun ShowConnectionContent(
-    connectionName: String,
+private fun ShowConnectorContent(
+    connectorName: String,
     modifier: Modifier = Modifier,
-    onDeleteConnectionClick: () -> Unit,
+    onDeleteConnectorClick: () -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -250,11 +255,11 @@ private fun ShowConnectionContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = connectionName,
+                text = connectorName,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            IconButton(onClick = onDeleteConnectionClick) {
+            IconButton(onClick = onDeleteConnectorClick) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete_24),
                     contentDescription = null,
@@ -267,20 +272,20 @@ private fun ShowConnectionContent(
 }
 
 @Composable
-private fun ConnectionNameInput(
+private fun ConnectorNameInput(
     modifier: Modifier = Modifier,
-    onConnectionClick: () -> Unit,
-    connectionDisplayName: String,
+    onLinkNewConnectorClick: () -> Unit,
+    connectorDisplayName: String,
     buttonEnabled: Boolean,
-    onConnectionDisplayNameChanged: (String) -> Unit,
+    onConnectorDisplayNameChanged: (String) -> Unit,
 ) {
     Column(modifier = modifier) {
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            onValueChanged = onConnectionDisplayNameChanged,
-            value = connectionDisplayName,
+            onValueChanged = onConnectorDisplayNameChanged,
+            value = connectorDisplayName,
             hint = stringResource(R.string.name_of_connector),
             optionalHint = stringResource(id = R.string.hint_name_this_connector),
             singleLine = true
@@ -292,7 +297,7 @@ private fun ConnectionNameInput(
                 .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.save_link),
-            onClick = onConnectionClick,
+            onClick = onLinkNewConnectorClick,
             enabled = buttonEnabled
         )
     }
@@ -301,20 +306,20 @@ private fun ConnectionNameInput(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
+fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
     RadixWalletTheme {
-        SettingsAddConnectionContent(
-            connectionName = "",
-            onConnectionClick = {},
+        SettingsLinkConnectorContent(
+            connectorName = "",
+            onLinkNewConnectorClick = {},
             isLoading = false,
             onBackClick = {},
-            connectionDisplayName = "",
+            connectorDisplayName = "",
             buttonEnabled = false,
-            onConnectionDisplayNameChanged = {},
+            onConnectorDisplayNameChanged = {},
             onConnectionPasswordDecoded = {},
-            onDeleteConnectionClick = {},
-            settingsMode = SettingsConnectionMode.ShowDetails,
-            onAddConnection = {},
+            onDeleteConnectorClick = {},
+            settingsMode = SettingsConnectorMode.ShowDetails,
+            onLinkConnector = {},
             cancelQrScan = {},
             triggerCameraPermissionPrompt = false
         )
@@ -324,20 +329,20 @@ fun SettingsScreenAddConnectionWithoutActiveConnectionPreview() {
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun SettingsScreenAddConnectionWithActiveConnectionPreview() {
+fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
     RadixWalletTheme {
-        SettingsAddConnectionContent(
-            connectionName = "my cool connection",
-            onConnectionClick = {},
+        SettingsLinkConnectorContent(
+            connectorName = "my cool connection",
+            onLinkNewConnectorClick = {},
             isLoading = false,
             onBackClick = {},
-            connectionDisplayName = "",
+            connectorDisplayName = "",
             buttonEnabled = true,
-            onConnectionDisplayNameChanged = {},
+            onConnectorDisplayNameChanged = {},
             onConnectionPasswordDecoded = {},
-            onDeleteConnectionClick = {},
-            settingsMode = SettingsConnectionMode.ShowDetails,
-            onAddConnection = {},
+            onDeleteConnectorClick = {},
+            settingsMode = SettingsConnectorMode.ShowDetails,
+            onLinkConnector = {},
             cancelQrScan = {},
             triggerCameraPermissionPrompt = false
         )

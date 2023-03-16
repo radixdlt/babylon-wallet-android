@@ -54,11 +54,11 @@ fun CardStack(
                     style = RadixTheme.typography.body2Regular,
                     color = Color.White
                 )
-                Text(
-                    text = accountAddress,
-                    textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body2Regular,
-                    color = Color.White.copy(alpha = 0.8f)
+
+                ActionableAddressView(
+                    address = accountAddress,
+                    textStyle = RadixTheme.typography.body2Regular,
+                    textColor = Color.White.copy(alpha = 0.8f)
                 )
             }
         }

@@ -2,9 +2,10 @@ package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import java.util.UUID
+import rdx.works.core.UUIDGenerator
 
 val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-    requestId = UUID.randomUUID().toString(),
+    requestId = UUIDGenerator.uuid().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
@@ -14,7 +15,7 @@ val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRe
     )
 )
 val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-    requestId = UUID.randomUUID().toString(),
+    requestId = UUIDGenerator.uuid().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
@@ -25,7 +26,7 @@ val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.Unauthorize
 )
 
 val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-    requestId = UUID.randomUUID().toString(),
+    requestId = UUIDGenerator.uuid().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,

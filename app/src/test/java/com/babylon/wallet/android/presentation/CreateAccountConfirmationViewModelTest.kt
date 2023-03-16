@@ -7,7 +7,6 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfir
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -86,7 +85,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         Assert.assertEquals(
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
                 accountName = accountName,
-                accountAddressTruncated = accountId.truncatedHash(),
+                accountAddress = accountId,
                 appearanceId = 123
             ),
             viewModel.accountUiState
@@ -113,7 +112,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         Assert.assertEquals(
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
                 accountName = accountName,
-                accountAddressTruncated = accountId.truncatedHash(),
+                accountAddress = accountId,
                 appearanceId = 123
             ),
             viewModel.accountUiState

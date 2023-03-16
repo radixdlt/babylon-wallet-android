@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.TruncatedAddressText
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 
 @Composable
 fun AccountSelectionCard(
@@ -38,21 +38,18 @@ fun AccountSelectionCard(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Row {
-                Text(
-                    modifier = Modifier.weight(1f, false),
-                    text = accountName,
-                    textAlign = TextAlign.Start,
-                    maxLines = 2,
-                    style = RadixTheme.typography.body2Header,
-                    color = Color.White
-                )
-            }
-            TruncatedAddressText(
-                text = address,
-                maxLines = 1,
-                style = RadixTheme.typography.body2Link,
-                color = RadixTheme.colors.white.copy(alpha = 0.8f)
+            Text(
+                text = accountName,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                style = RadixTheme.typography.body2Header,
+                color = Color.White
+            )
+
+            ActionableAddressView(
+                address = address,
+                textStyle = RadixTheme.typography.body2Link,
+                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
         }
         Spacer(modifier = Modifier.weight(0.1f))

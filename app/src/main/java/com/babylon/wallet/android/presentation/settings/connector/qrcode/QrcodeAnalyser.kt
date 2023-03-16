@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.addconnection.qrcode
+package com.babylon.wallet.android.presentation.settings.connector.qrcode
 
 import android.annotation.SuppressLint
 import androidx.camera.core.ImageAnalysis

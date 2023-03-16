@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.addconnection
+package com.babylon.wallet.android.presentation.settings.connector
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -18,7 +18,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsConnectionViewModel @Inject constructor(
+class SettingsConnectorViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     profileDataSource: ProfileDataSource,
     private val addP2PClientUseCase: AddP2PClientUseCase,
@@ -28,14 +28,14 @@ class SettingsConnectionViewModel @Inject constructor(
 
     private var currentConnectionPassword: String = ""
 
-    private val args = SettingsConnectionScreenArgs(savedStateHandle)
-    private val _state: MutableStateFlow<SettingsConnectionUiState> =
+    private val args = SettingsConnectorScreenArgs(savedStateHandle)
+    private val _state: MutableStateFlow<SettingsConnectorUiState> =
         MutableStateFlow(
-            SettingsConnectionUiState(
+            SettingsConnectorUiState(
                 mode = if (args.scanQr) {
-                    SettingsConnectionMode.ScanQr
+                    SettingsConnectorMode.ScanQr
                 } else {
-                    SettingsConnectionMode.ShowDetails
+                    SettingsConnectorMode.ShowDetails
                 },
                 triggerCameraPermissionPrompt = args.scanQr
             )
@@ -45,19 +45,19 @@ class SettingsConnectionViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             profileDataSource.p2pClient.collect { p2pClient ->
-                if (p2pClient != null) { // if we already have an active connection
+                if (p2pClient != null) { // if we already have an active connector
                     // we need a reference of the connectionPassword
-                    // so we can pass it in the onDeleteConnectionClick
+                    // so we can pass it in the onDeleteConnectorClick
                     currentConnectionPassword = p2pClient.connectionPassword
                 }
                 _state.update {
-                    it.copy(isLoading = false, connectionName = p2pClient?.displayName)
+                    it.copy(isLoading = false, connectorName = p2pClient?.displayName)
                 }
             }
         }
     }
 
-    fun onConnectionClick() {
+    fun onLinkNewConnectorClick() {
         if (currentConnectionPassword.isEmpty()) return
 
         viewModelScope.launch {
@@ -70,7 +70,7 @@ class SettingsConnectionViewModel @Inject constructor(
             if (encryptionKey != null) {
                 when (peerdroidClient.addConnection(encryptionKey)) {
                     is Result.Success -> {
-                        saveConnectionPassword(connectionDisplayName = state.value.editedConnectionDisplayName)
+                        saveConnectionPassword(connectorDisplayName = state.value.editedConnectorDisplayName)
                     }
                     is Result.Error -> {
                         _state.update {
@@ -85,52 +85,52 @@ class SettingsConnectionViewModel @Inject constructor(
         }
     }
 
-    fun onConnectionDisplayNameChanged(name: String) {
+    fun onConnectorDisplayNameChanged(name: String) {
         val displayNameChanged = name.trim()
         _state.update {
             it.copy(
-                editedConnectionDisplayName = displayNameChanged,
+                editedConnectorDisplayName = displayNameChanged,
                 buttonEnabled = displayNameChanged.isNotEmpty()
             )
         }
     }
 
-    fun onDeleteConnectionClick() {
+    fun onDeleteConnectorClick() {
         viewModelScope.launch {
             deleteP2PClientUseCase(currentConnectionPassword)
             peerdroidClient.close(
                 shouldCloseConnectionToSignalingServer = true,
                 isDeleteConnectionEvent = true
             )
-            _state.update { it.copy(connectionName = null) }
+            _state.update { it.copy(connectorName = null) }
         }
     }
 
     fun onConnectionPasswordDecoded(connectionPassword: String) {
-        _state.update { it.copy(mode = SettingsConnectionMode.AddConnection) }
+        _state.update { it.copy(mode = SettingsConnectorMode.LinkConnector) }
         currentConnectionPassword = connectionPassword
     }
 
     fun cancelQrScan() {
-        _state.update { it.copy(mode = SettingsConnectionMode.ShowDetails) }
+        _state.update { it.copy(mode = SettingsConnectorMode.ShowDetails) }
     }
 
-    fun addConnection() {
-        _state.update { it.copy(mode = SettingsConnectionMode.ScanQr) }
+    fun linkConnector() {
+        _state.update { it.copy(mode = SettingsConnectorMode.ScanQr) }
     }
 
-    private fun saveConnectionPassword(connectionDisplayName: String) {
+    private fun saveConnectionPassword(connectorDisplayName: String) {
         viewModelScope.launch {
             peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
             addP2PClientUseCase(
-                displayName = connectionDisplayName,
+                displayName = connectorDisplayName,
                 connectionPassword = currentConnectionPassword
             )
             _state.update {
                 it.copy(
                     isLoading = false,
-                    mode = SettingsConnectionMode.ShowDetails,
-                    editedConnectionDisplayName = "",
+                    mode = SettingsConnectorMode.ShowDetails,
+                    editedConnectorDisplayName = "",
                     buttonEnabled = false
                 )
             }
@@ -138,16 +138,16 @@ class SettingsConnectionViewModel @Inject constructor(
     }
 }
 
-data class SettingsConnectionUiState(
+data class SettingsConnectorUiState(
     val isLoading: Boolean = true,
-    val connectionName: String? = null,
-    val editedConnectionDisplayName: String = "",
+    val connectorName: String? = null,
+    val editedConnectorDisplayName: String = "",
     val buttonEnabled: Boolean = false,
     val isScanningQr: Boolean = false,
-    val mode: SettingsConnectionMode = SettingsConnectionMode.ShowDetails,
+    val mode: SettingsConnectorMode = SettingsConnectorMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,
 )
 
-enum class SettingsConnectionMode {
-    AddConnection, ShowDetails, ScanQr
+enum class SettingsConnectorMode {
+    LinkConnector, ShowDetails, ScanQr
 }

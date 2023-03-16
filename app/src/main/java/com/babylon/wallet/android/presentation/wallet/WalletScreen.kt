@@ -63,7 +63,6 @@ fun WalletScreen(
         onAccountCreationClick = onAccountCreationClick,
         isRefreshing = state.isRefreshing,
         onRefresh = viewModel::refresh,
-        onCopyAccountAddressClick = viewModel::onCopyAccountAddress,
         modifier = modifier,
         isLoading = state.isLoading,
         accounts = state.resources,
@@ -87,7 +86,6 @@ private fun WalletScreenContent(
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    onCopyAccountAddressClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     accounts: ImmutableList<AccountResources>,
@@ -124,7 +122,6 @@ private fun WalletScreenContent(
                 val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
                 Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
                     WalletAccountList(
-                        onCopyAccountAddressClick = onCopyAccountAddressClick,
                         onAccountClick = onAccountClick,
                         onAccountCreationClick = onAccountCreationClick,
                         accounts = accounts,
@@ -147,7 +144,6 @@ private fun WalletScreenContent(
 @Suppress("UnstableCollections")
 @Composable
 private fun WalletAccountList(
-    onCopyAccountAddressClick: (String) -> Unit,
     onAccountClick: (accountId: String, accountName: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
@@ -170,7 +166,6 @@ private fun WalletAccountList(
             AccountCardView(
                 address = account.address,
                 accountName = account.displayName,
-                onCopyClick = { onCopyAccountAddressClick(account.address) },
                 assets = account.fungibleTokens,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -208,7 +203,6 @@ fun WalletContentPreview() {
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },
-                onCopyAccountAddressClick = {},
                 modifier = Modifier.fillMaxSize(),
                 isLoading = false,
                 accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),

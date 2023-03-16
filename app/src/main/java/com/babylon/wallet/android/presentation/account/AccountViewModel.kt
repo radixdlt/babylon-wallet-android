@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -21,7 +19,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.decodeUtf8
-import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -37,7 +34,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
-    private val clipboardManager: ClipboardManager,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -48,8 +44,7 @@ class AccountViewModel @Inject constructor(
     private val _accountUiState = MutableStateFlow(
         AccountUiState(
             accountAddressFull = accountId,
-            accountName = accountName.decodeUtf8(),
-            accountAddressShortened = accountId.truncatedHash()
+            accountName = accountName.decodeUtf8()
         )
     )
     val accountUiState = _accountUiState.asStateFlow()
@@ -109,11 +104,6 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onCopyAccountAddress(hash: String) {
-        val clipData = ClipData.newPlainText("accountHash", hash)
-        clipboardManager.setPrimaryClip(clipData)
-    }
-
     fun onFungibleTokenClick(token: TokenUiModel) {
         _accountUiState.update { accountUiState ->
             accountUiState.copy(assetDetails = token)
@@ -142,7 +132,6 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
     val accountName: String = "",
-    val accountAddressShortened: String = "",
     val accountAddressFull: String = "",
     val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,
