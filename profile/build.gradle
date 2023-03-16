@@ -49,6 +49,9 @@ dependencies {
     // Datastore
     implementation libs.datastorePreferences
 
+    //Timber
+    implementation libs.timber
+
     implementation libs.slip10
     implementation libs.ket
 

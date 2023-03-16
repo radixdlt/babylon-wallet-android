@@ -105,6 +105,8 @@ data class FactorSource(
         }?.forIdentity ?: 0
     }
 
+    fun supportsCurve(curve: Slip10Curve) = parameters.supportedCurves.contains(curve)
+
     @JvmInline
     @Serializable
     value class ID(

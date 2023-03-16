@@ -16,6 +16,7 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import timber.log.Timber
 
 data class Profile(
     /**
@@ -76,7 +77,6 @@ data class Profile(
      * from [FactorSourceKind.DEVICE] factor sources. Note that those instances also have
      * a non-null derivation path.
      */
-    @Suppress("UnsafeCallOnNullableType")
     inline fun getAccountSigners(
         addresses: List<String>,
         networkId: Int,
@@ -101,13 +101,21 @@ data class Profile(
 
                     val factorSource = factorSources.find {
                         it.id == factorInstance.factorSourceId
-                    }!!.also {
-                        assert(it.kind == FactorSourceKind.DEVICE) {
-                            "No FactorSource with DEVICE kind was found, but the account requested for a non-DEVICE factor source"
-                        }
-                        assert(it.parameters.supportedCurves.contains(factorInstance.publicKey.curve)) {
-                            "The curve ${factorInstance.publicKey.curve} is not supported by the selected FactorSource"
-                        }
+                    }
+
+                    if (factorSource == null) {
+                        Timber.w("No FactorSource found with id ${factorInstance.factorSourceId}")
+                        return@map null
+                    }
+
+                    if (factorSource.kind != FactorSourceKind.DEVICE) {
+                        Timber.w("No FactorSource with DEVICE kind was found, but the account requested for a non-DEVICE factor source")
+                        return@map null
+                    }
+
+                    if (!factorSource.supportsCurve(factorInstance.publicKey.curve)) {
+                        Timber.w("The curve ${factorInstance.publicKey.curve} is not supported by the selected FactorSource")
+                        return@map null
                     }
 
                     val mnemonicWithPassphrase = getMnemonic(factorSource)
@@ -115,13 +123,14 @@ data class Profile(
                         factorInstance = factorInstance
                     )
 
-                    assert(
+                    if (
                         extendedKey.keyPair
                             .getCompressedPublicKey()
                             .removeLeadingZero()
-                            .toHexString() == factorInstance.publicKey.compressedData
+                            .toHexString() != factorInstance.publicKey.compressedData
                     ) {
-                        "FactorSource's public key does not match with the derived public key"
+                        Timber.w("FactorSource's public key does not match with the derived public key")
+                        return@map null
                     }
 
                     AccountSigner(
@@ -130,7 +139,7 @@ data class Profile(
                     )
                 }
             }
-        }
+        }.filterNotNull()
     }
 
     /**
