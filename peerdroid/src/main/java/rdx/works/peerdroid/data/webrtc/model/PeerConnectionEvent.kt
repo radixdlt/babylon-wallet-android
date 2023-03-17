@@ -34,9 +34,13 @@ internal sealed interface PeerConnectionEvent {
 
     object Connected : PeerConnectionEvent
 
-    object Disconnected : PeerConnectionEvent
+    data class Disconnected(
+        val remoteClientId: String
+    ) : PeerConnectionEvent
 
-    object Failed : PeerConnectionEvent
+    data class Failed(
+        val remoteClientId: String
+    ) : PeerConnectionEvent
 }
 
 /**

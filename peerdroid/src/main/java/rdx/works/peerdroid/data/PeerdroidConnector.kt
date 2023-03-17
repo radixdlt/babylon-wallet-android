@@ -230,10 +230,10 @@ internal class PeerdroidConnectorImpl(
                             )
                         )
                     }
-                    PeerConnectionEvent.Disconnected -> {
+                    is PeerConnectionEvent.Disconnected -> {
                         Timber.d("⚙️ ⚡ signaling state changed: peer connection disconnected 🔴")
                     }
-                    PeerConnectionEvent.Failed -> {
+                    is PeerConnectionEvent.Failed -> {
                         Timber.d("⚙️ ⚡ signaling state changed: peer connection failed ❌")
                         dataChannelDeferred.complete(Result.Error(message = "peer connection failed"))
                     }
