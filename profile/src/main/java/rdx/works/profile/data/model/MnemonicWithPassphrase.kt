@@ -4,12 +4,12 @@ import com.radixdlt.bip39.generateMnemonic
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.toSeed
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
-import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.slip10.model.ExtendedKey
 import com.radixdlt.slip10.toKey
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.profile.data.model.factorsources.toEllipticCurveType
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 
 @Serializable
@@ -33,13 +33,13 @@ fun MnemonicWithPassphrase.Companion.generate(
 )
 
 fun MnemonicWithPassphrase.compressedPublicKey(
-    ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
+    curve: Slip10Curve = Slip10Curve.CURVE_25519,
     derivationPath: String,
 ): ByteArray {
     val words = MnemonicWords(mnemonic)
     val seed = words.toSeed(passphrase = bip39Passphrase)
 
-    val derivedKey = seed.toKey(derivationPath, ellipticCurveType)
+    val derivedKey = seed.toKey(derivationPath, curve.toEllipticCurveType())
 
     return derivedKey.keyPair.getCompressedPublicKey()
 }
@@ -51,10 +51,8 @@ fun MnemonicWithPassphrase.deriveExtendedKey(
     val mnemonic = MnemonicWords(phrase = mnemonic)
     val seed = mnemonic.toSeed(passphrase = bip39Passphrase)
 
-    val ellipticCurveType = when (factorInstance.publicKey.curve) {
-        Slip10Curve.CURVE_25519 -> EllipticCurveType.Ed25519
-        Slip10Curve.SECP_256K1 -> EllipticCurveType.Secp256k1
-    }
-
-    return seed.toKey(factorInstance.derivationPath!!.path, ellipticCurveType)
+    return seed.toKey(
+        factorInstance.derivationPath!!.path,
+        factorInstance.publicKey.curve.toEllipticCurveType()
+    )
 }

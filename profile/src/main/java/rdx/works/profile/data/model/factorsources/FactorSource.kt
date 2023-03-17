@@ -1,6 +1,5 @@
 package rdx.works.profile.data.model.factorsources
 
-import com.radixdlt.crypto.ec.EllipticCurveType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -238,12 +237,12 @@ data class FactorSource(
 
         fun factorSourceId(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            ellipticCurveType: EllipticCurveType = EllipticCurveType.Ed25519,
+            curve: Slip10Curve = CURVE_25519,
             derivationPath: String = CustomHDDerivationPath.getId.path,
         ): ID {
             return ID(
                 mnemonicWithPassphrase.compressedPublicKey(
-                    ellipticCurveType = ellipticCurveType,
+                    curve = curve,
                     derivationPath = derivationPath
                 ).hashToFactorId()
             )
