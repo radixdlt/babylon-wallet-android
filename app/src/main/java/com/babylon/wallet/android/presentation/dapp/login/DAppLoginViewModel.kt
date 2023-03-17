@@ -98,9 +98,6 @@ class DAppLoginViewModel @Inject constructor(
             result.onError { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            authorizedDapp?.let { dapp ->
-                handleResetRequestItem(authorizedRequest, dapp)
-            }
             setInitialDappLoginRoute()
         }
     }
@@ -123,24 +120,34 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRoute() {
-        when (authorizedRequest.authRequest) {
-            is AuthorizedRequest.AuthRequest.LoginRequest -> {
-                _state.update { it.copy(initialDappLoginRoute = InitialDappLoginRoute.SelectPersona(args.requestId)) }
+        val isLoginRequest = authorizedRequest.authRequest is AuthorizedRequest.AuthRequest.LoginRequest
+        val usePersonaRequest = authorizedRequest.authRequest is AuthorizedRequest.AuthRequest.UsePersonaRequest
+        val resetPersonaData = authorizedRequest.resetRequestItem?.personaData == true
+        val resetAccounts = authorizedRequest.resetRequestItem?.accounts == true
+        val showSelectPersona = isLoginRequest || resetPersonaData
+
+        if (showSelectPersona) {
+            _state.update { it.copy(initialDappLoginRoute = InitialDappLoginRoute.SelectPersona(args.requestId)) }
+        } else if (usePersonaRequest) {
+            val dapp = authorizedDapp
+            if (dapp != null) {
+                setInitialDappLoginRouteForUsePersonaRequest(
+                    dapp,
+                    authorizedRequest.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest,
+                    resetAccounts
+                )
+            } else {
+                onRejectLogin()
             }
-            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
-                val dapp = authorizedDapp
-                if (dapp != null) {
-                    setInitialDappLoginRouteForUsePersonaRequest(dapp, authorizedRequest.authRequest)
-                } else {
-                    onRejectLogin()
-                }
-            }
+        } else {
+            onRejectLogin()
         }
     }
 
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
         dapp: OnNetwork.AuthorizedDapp,
-        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
+        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest,
+        resetAccounts: Boolean
     ) {
         val hasAuthorizedPersona = dapp.hasAuthorizedPersona(
             authRequest.personaAddress
@@ -150,9 +157,11 @@ class DAppLoginViewModel @Inject constructor(
             onSelectPersona(persona)
             val ongoingAccountsRequestItem = authorizedRequest.ongoingAccountsRequestItem
             val oneTimeAccountsRequestItem = authorizedRequest.oneTimeAccountsRequestItem
-            if (ongoingAccountsRequestItem != null && !requestedPermissionAlreadyGranted(
-                    authRequest.personaAddress,
-                    ongoingAccountsRequestItem
+            if (ongoingAccountsRequestItem != null && (
+                !requestedPermissionAlreadyGranted(
+                        authRequest.personaAddress,
+                        ongoingAccountsRequestItem
+                    ) || resetAccounts
                 )
             ) {
                 _state.update {
@@ -373,6 +382,9 @@ class DAppLoginViewModel @Inject constructor(
                         )
                     )
                 } else {
+                    authorizedDapp?.let { dapp ->
+                        handleResetRequestItem(authorizedRequest, dapp)
+                    }
                     sendRequestResponse()
                 }
             }
