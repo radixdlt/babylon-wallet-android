@@ -47,7 +47,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath.identityDerivationPath("m/1'/1'/1'/1'/1'/1'"),
+                        derivationPath = DerivationPath.forIdentity("m/1'/1'/1'/1'/1'/1'"),
                         factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )

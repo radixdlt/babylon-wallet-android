@@ -69,7 +69,7 @@ class CreateAccountUseCaseTest {
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
-                                            derivationPath = DerivationPath.accountDerivationPath("m/1'/1'/1'/1'/1'/1'"),
+                                            derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
                                             factorSourceId = FactorSource.ID("IDIDDIIDD"),
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )

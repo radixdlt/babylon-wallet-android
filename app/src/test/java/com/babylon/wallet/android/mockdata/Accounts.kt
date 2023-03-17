@@ -11,7 +11,7 @@ val account1 = OnNetwork.Account(
     securityState = SecurityState.Unsecured(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             genesisFactorInstance = FactorInstance(
-                derivationPath = DerivationPath.accountDerivationPath("derivationPath1"),
+                derivationPath = DerivationPath.forAccount("derivationPath1"),
                 factorSourceId = FactorSource.ID("IDIDDIIDD"),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
@@ -27,7 +27,7 @@ val account2 = OnNetwork.Account(
     securityState = SecurityState.Unsecured(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             genesisFactorInstance = FactorInstance(
-                derivationPath = DerivationPath.accountDerivationPath("derivationPath2"),
+                derivationPath = DerivationPath.forAccount("derivationPath2"),
                 factorSourceId = FactorSource.ID("IDIDDIIDD"),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )

@@ -126,7 +126,7 @@ data class OnNetwork(
 
                 val unsecuredSecurityState = SecurityState.unsecured(
                     compressedPublicKey = compressedPublicKey,
-                    derivationPath = DerivationPath.accountDerivationPath(
+                    derivationPath = DerivationPath.forAccount(
                         derivationPath = derivationPath
                     ),
                     factorSourceId = factorSource.id
@@ -204,7 +204,7 @@ data class OnNetwork(
 
                 val unsecuredSecurityState = SecurityState.unsecured(
                     compressedPublicKey = compressedPublicKey,
-                    derivationPath = DerivationPath.identityDerivationPath(
+                    derivationPath = DerivationPath.forIdentity(
                         derivationPath = derivationPath
                     ),
                     factorSourceId = factorSource.id

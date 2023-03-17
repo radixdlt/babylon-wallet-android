@@ -15,7 +15,7 @@ data class DerivationPath(
 ) {
     companion object {
 
-        fun accountDerivationPath(
+        fun forAccount(
             derivationPath: String
         ): DerivationPath {
             return DerivationPath(
@@ -24,7 +24,7 @@ data class DerivationPath(
             )
         }
 
-        fun identityDerivationPath(
+        fun forIdentity(
             derivationPath: String
         ): DerivationPath {
             return DerivationPath(
