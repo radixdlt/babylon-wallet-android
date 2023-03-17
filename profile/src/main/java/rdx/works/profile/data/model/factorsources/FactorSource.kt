@@ -221,7 +221,7 @@ data class FactorSource(
             olympiaCompatible = true
         )
 
-        fun device(
+        private fun device(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             hint: String,
             olympiaCompatible: Boolean
