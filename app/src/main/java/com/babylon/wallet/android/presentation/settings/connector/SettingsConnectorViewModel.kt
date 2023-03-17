@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.peerdroid.data.PeerdroidLink
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.AddP2PLinkUseCase
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsConnectorViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
+    private val peerdroidLink: PeerdroidLink,
     profileDataSource: ProfileDataSource,
     private val addP2PLinkUseCase: AddP2PLinkUseCase,
     private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
@@ -68,7 +70,7 @@ class SettingsConnectorViewModel @Inject constructor(
             )
 
             if (encryptionKey != null) {
-                when (peerdroidClient.addConnection(encryptionKey)) {
+                when (peerdroidLink.addConnection(encryptionKey)) {
                     is Result.Success -> {
                         saveConnectionPassword(connectorDisplayName = state.value.editedConnectorDisplayName)
                     }
@@ -121,7 +123,6 @@ class SettingsConnectorViewModel @Inject constructor(
 
     private fun saveConnectionPassword(connectorDisplayName: String) {
         viewModelScope.launch {
-            peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
             addP2PLinkUseCase(
                 displayName = connectorDisplayName,
                 connectionPassword = currentConnectionPassword

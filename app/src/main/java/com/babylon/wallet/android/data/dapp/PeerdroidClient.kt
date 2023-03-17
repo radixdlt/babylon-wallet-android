@@ -20,8 +20,6 @@ import javax.inject.Inject
 
 interface PeerdroidClient {
 
-    suspend fun addConnection(encryptionKey: ByteArray): Result<Unit>
-
     suspend fun connectToRemotePeerWithEncryptionKey(
         encryptionKey: ByteArray,
         isRestart: Boolean = false
@@ -42,10 +40,6 @@ class PeerdroidClientImpl @Inject constructor(
 ) : PeerdroidClient {
 
     private var dataChannel: DataChannelWrapper? = null
-
-    override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
-        return peerdroidConnector.addConnection(encryptionKey)
-    }
 
     override suspend fun connectToRemotePeerWithEncryptionKey(
         encryptionKey: ByteArray,
