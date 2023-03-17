@@ -43,7 +43,7 @@ internal class FakeWebRtcManager @Inject constructor(
             )
             delay(100)
             emit(
-                PeerConnectionEvent.Disconnected
+                PeerConnectionEvent.Disconnected("")
             )
         }.flowOn(ioDispatcher)
     }
