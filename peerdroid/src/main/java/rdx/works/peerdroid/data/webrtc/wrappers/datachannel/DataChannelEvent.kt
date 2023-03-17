@@ -41,8 +41,6 @@ sealed interface DataChannelEvent {
         UNKNOWN
     }
 
-    object BufferedAmountChange : DataChannelEvent
-
     // when something unexpected happens ...
     data class UnknownError(
         val message: String? = null

@@ -20,7 +20,6 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
 
         override fun onBufferedAmountChange(p0: Long) {
             Timber.d("onBufferedAmountChange")
-            trySend(DataChannelEvent.BufferedAmountChange)
         }
 
         override fun onStateChange() {
