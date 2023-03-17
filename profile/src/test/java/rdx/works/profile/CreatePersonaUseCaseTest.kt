@@ -17,7 +17,7 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -61,8 +61,8 @@ class CreatePersonaUseCaseTest {
                 appPreferences = AppPreferences(
                     display = Display.default,
                     gateways = Gateways(network.url, listOf(network)),
-                    p2pClients = listOf(
-                        P2PClient.init(
+                    p2pLinks = listOf(
+                        P2PLink.init(
                             connectionPassword = "My password",
                             displayName = "Browser name test"
                         )

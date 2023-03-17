@@ -96,7 +96,7 @@ class SampleDataProvider {
             appPreferences = AppPreferences(
                 display = Display.default,
                 gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
-                p2pClients = emptyList()
+                p2pLinks = emptyList()
             ),
             factorSources = listOf(
                 FactorSource.babylon(

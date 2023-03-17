@@ -155,7 +155,7 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 21
+        const val LATEST_PROFILE_VERSION = 22
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
@@ -187,7 +187,7 @@ data class Profile(
             val appPreferences = AppPreferences(
                 display = Display.default,
                 gateways = Gateways.fromCurrent(current = gateway),
-                p2pClients = listOf()
+                p2pLinks = listOf()
             )
 
             return Profile(

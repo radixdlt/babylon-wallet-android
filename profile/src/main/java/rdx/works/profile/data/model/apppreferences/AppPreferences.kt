@@ -11,8 +11,8 @@ data class AppPreferences(
     @SerialName("gateways")
     val gateways: Gateways,
 
-    @SerialName("p2pClients")
-    val p2pClients: List<P2PClient>
+    @SerialName("p2pLinks")
+    val p2pLinks: List<P2PLink>
 )
 
 @Serializable
@@ -88,7 +88,7 @@ data class Gateway(
 }
 
 @Serializable
-data class P2PClient(
+data class P2PLink(
     /**
      * The most important property of this struct, this password,
      * is used to be able to reestablish the P2P connection and also acts as the seed
@@ -111,7 +111,7 @@ data class P2PClient(
         fun init(
             connectionPassword: String,
             displayName: String
-        ): P2PClient = P2PClient(
+        ): P2PLink = P2PLink(
             connectionPassword = connectionPassword,
             displayName = displayName
         )

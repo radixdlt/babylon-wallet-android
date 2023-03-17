@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.AddP2PClientUseCase
-import rdx.works.profile.domain.DeleteP2PClientUseCase
+import rdx.works.profile.domain.AddP2PLinkUseCase
+import rdx.works.profile.domain.DeleteP2PLinkUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -21,8 +21,8 @@ import javax.inject.Inject
 class SettingsConnectorViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     profileDataSource: ProfileDataSource,
-    private val addP2PClientUseCase: AddP2PClientUseCase,
-    private val deleteP2PClientUseCase: DeleteP2PClientUseCase,
+    private val addP2PLinkUseCase: AddP2PLinkUseCase,
+    private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -44,14 +44,14 @@ class SettingsConnectorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileDataSource.p2pClient.collect { p2pClient ->
-                if (p2pClient != null) { // if we already have an active connector
+            profileDataSource.p2pLink.collect { p2pLink ->
+                if (p2pLink != null) { // if we already have an active connector
                     // we need a reference of the connectionPassword
                     // so we can pass it in the onDeleteConnectorClick
-                    currentConnectionPassword = p2pClient.connectionPassword
+                    currentConnectionPassword = p2pLink.connectionPassword
                 }
                 _state.update {
-                    it.copy(isLoading = false, connectorName = p2pClient?.displayName)
+                    it.copy(isLoading = false, connectorName = p2pLink?.displayName)
                 }
             }
         }
@@ -97,7 +97,7 @@ class SettingsConnectorViewModel @Inject constructor(
 
     fun onDeleteConnectorClick() {
         viewModelScope.launch {
-            deleteP2PClientUseCase(currentConnectionPassword)
+            deleteP2PLinkUseCase(currentConnectionPassword)
             peerdroidClient.close(
                 shouldCloseConnectionToSignalingServer = true,
                 isDeleteConnectionEvent = true
@@ -122,7 +122,7 @@ class SettingsConnectorViewModel @Inject constructor(
     private fun saveConnectionPassword(connectorDisplayName: String) {
         viewModelScope.launch {
             peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
-            addP2PClientUseCase(
+            addP2PLinkUseCase(
                 displayName = connectorDisplayName,
                 connectionPassword = currentConnectionPassword
             )

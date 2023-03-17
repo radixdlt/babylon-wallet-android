@@ -32,8 +32,8 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state = profileDataSource.p2pClient.map { p2pClient ->
-        val updatedSettings = if (p2pClient == null) {
+    val state = profileDataSource.p2pLink.map { p2pLink ->
+        val updatedSettings = if (p2pLink == null) {
             defaultSettings.toMutableList().apply {
                 if (!contains(SettingsItem.TopLevelSettings.Connection)) {
                     add(0, SettingsItem.TopLevelSettings.Connection)

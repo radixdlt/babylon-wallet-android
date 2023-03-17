@@ -11,14 +11,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.extensions.addAccount
-import rdx.works.profile.data.extensions.addP2PClient
+import rdx.works.profile.data.extensions.addP2PLink
 import rdx.works.profile.data.extensions.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
@@ -109,15 +109,15 @@ class ProfileTest {
             1
         )
 
-        val p2pClient = P2PClient.init(
+        val p2pLink = P2PLink.init(
             connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
             displayName = "Brave browser on Mac Studio"
         )
-        updatedProfile = updatedProfile.addP2PClient(
-            p2pClient = p2pClient
+        updatedProfile = updatedProfile.addP2PLink(
+            p2pLink = p2pLink
         )
 
-        assertEquals(updatedProfile.appPreferences.p2pClients.count(), 1)
+        assertEquals(updatedProfile.appPreferences.p2pLinks.count(), 1)
 
         Assert.assertTrue(profile.id.isNotBlank())
     }
@@ -221,13 +221,13 @@ class ProfileTest {
             onNetwork = networkId
         )
 
-        val p2pClient = P2PClient.init(
+        val p2pLink = P2PLink.init(
             connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
             displayName = "Brave browser on Mac Studio"
         )
 
-        expected = expected.addP2PClient(
-            p2pClient = p2pClient
+        expected = expected.addP2PLink(
+            p2pLink = p2pLink
         )
 
         val authorizedDapp = OnNetwork.AuthorizedDapp(
@@ -295,18 +295,18 @@ class ProfileTest {
         // P2P clients
         assertEquals(
             "P2P clients count is the same",
-            expected.appPreferences.p2pClients.count(),
-            actual.appPreferences.p2pClients.count()
+            expected.appPreferences.p2pLinks.count(),
+            actual.appPreferences.p2pLinks.count()
         )
         assertEquals(
             "Connection password is the same for the first p2p client",
-            expected.appPreferences.p2pClients.first().connectionPassword,
-            actual.appPreferences.p2pClients.first().connectionPassword
+            expected.appPreferences.p2pLinks.first().connectionPassword,
+            actual.appPreferences.p2pLinks.first().connectionPassword
         )
         assertEquals(
             "The display name is the same for the first p2p client",
-            expected.appPreferences.p2pClients.first().displayName,
-            actual.appPreferences.p2pClients.first().displayName
+            expected.appPreferences.p2pLinks.first().displayName,
+            actual.appPreferences.p2pLinks.first().displayName
         )
 
         // Factor Sources
