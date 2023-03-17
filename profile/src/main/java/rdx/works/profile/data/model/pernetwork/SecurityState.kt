@@ -1,52 +1,23 @@
 package rdx.works.profile.data.model.pernetwork
 
-import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.factorsources.FactorSources
-import rdx.works.profile.data.utils.hashToFactorId
-import java.time.Instant
+import kotlinx.serialization.json.JsonClassDiscriminator
+import rdx.works.profile.data.model.factorsources.FactorSource
 
+@Serializable
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator(discriminator = "discriminator")
 sealed class SecurityState {
 
     @Serializable
+    @SerialName("unsecured")
     data class Unsecured(
-        @SerialName("discriminator")
-        val discriminator: String,
-
         @SerialName("unsecuredEntityControl")
         val unsecuredEntityControl: UnsecuredEntityControl
-    ) : SecurityState() {
-        companion object {
-            /**
-             * A non-"securitfied" Security state used for entity (Account/Persona). Protected with single
-             * factor instance until securified, and thus protected with an "AccessControl".
-             */
-            fun unsecuredSecurityState(
-                compressedPublicKey: ByteArray,
-                derivationPath: DerivationPath,
-                factorSources: FactorSources
-            ): Unsecured {
-                return Unsecured(
-                    discriminator = "unsecured",
-                    unsecuredEntityControl = UnsecuredEntityControl(
-                        genesisFactorInstance = FactorInstance(
-                            derivationPath = derivationPath,
-                            factorInstanceID = compressedPublicKey.hashToFactorId(),
-                            factorSourceReference = FactorSourceReference.curve25519FactorSourceReference(
-                                factorSource = factorSources
-                            ),
-                            initializationDate = Instant.now().toString(),
-                            publicKey = FactorInstance.PublicKey.curve25519PublicKey(
-                                compressedPublicKey = compressedPublicKey.removeLeadingZero().toHexString()
-                            )
-                        )
-                    )
-                )
-            }
-        }
-    }
+    ) : SecurityState()
 
     /**
      * Basic security control of an unsecured entity. When said entity
@@ -59,4 +30,23 @@ sealed class SecurityState {
         @SerialName("genesisFactorInstance")
         val genesisFactorInstance: FactorInstance
     )
+
+    companion object {
+
+        fun unsecured(
+            compressedPublicKey: ByteArray,
+            derivationPath: DerivationPath,
+            factorSourceId: FactorSource.ID
+        ): Unsecured = Unsecured(
+            unsecuredEntityControl = UnsecuredEntityControl(
+                genesisFactorInstance = FactorInstance(
+                    derivationPath = derivationPath,
+                    factorSourceId = factorSourceId,
+                    publicKey = FactorInstance.PublicKey.curve25519PublicKey(
+                        compressedPublicKey = compressedPublicKey.toHexString()
+                    )
+                )
+            )
+        )
+    }
 }

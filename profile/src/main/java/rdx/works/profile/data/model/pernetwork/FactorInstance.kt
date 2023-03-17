@@ -2,20 +2,17 @@ package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 
 @Serializable
 data class FactorInstance(
     @SerialName("derivationPath")
-    val derivationPath: DerivationPath,
+    val derivationPath: DerivationPath?,
 
-    @SerialName("factorInstanceID")
-    val factorInstanceID: String,
-
-    @SerialName("factorSourceReference")
-    val factorSourceReference: FactorSourceReference,
-
-    @SerialName("initializationDate")
-    val initializationDate: String,
+    @SerialName("factorSourceID")
+    val factorSourceId: FactorSource.ID,
 
     @SerialName("publicKey")
     val publicKey: PublicKey
@@ -26,16 +23,15 @@ data class FactorInstance(
         val compressedData: String,
 
         @SerialName("curve")
-        val curve: String
+        val curve: Slip10Curve
     ) {
         companion object {
-            private const val curve25519 = "curve25519"
             fun curve25519PublicKey(
                 compressedPublicKey: String
             ): PublicKey {
                 return PublicKey(
                     compressedData = compressedPublicKey,
-                    curve = curve25519
+                    curve = CURVE_25519
                 )
             }
         }

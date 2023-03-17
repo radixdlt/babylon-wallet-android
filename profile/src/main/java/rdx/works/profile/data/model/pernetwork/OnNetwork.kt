@@ -1,15 +1,15 @@
 package rdx.works.profile.data.model.pernetwork
 
-import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.compressedPublicKey
 import rdx.works.profile.data.extensions.deriveAccountAddress
 import rdx.works.profile.data.extensions.deriveIdentityAddress
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.IdentityDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
@@ -68,26 +68,10 @@ data class OnNetwork(
         val appearanceID: Int,
 
         /**
-         * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
-         * the public keys of the factors of the different roles, if the factor source kind of said factor
-         * instance supports Hierarchical Deterministic derivation.
-         */
-        @SerialName("derivationPath")
-        val derivationPath: String,
-
-        /**
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
         val displayName: String,
-
-        /**
-         * The index of this account, in the list of accounts for a certain network. This means that
-         * profile on network `mainnet` will have an account with `accountIndex = 0`, but so can an
-         * account on network `testnet` too! However, their `address`es will differ!
-         */
-        @SerialName("index")
-        val index: Int,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
@@ -100,8 +84,9 @@ data class OnNetwork(
          * Security of this account
          */
         @SerialName("securityState")
-        val securityState: SecurityState.Unsecured
+        val securityState: SecurityState
     ) {
+
         enum class AppearanceIdGradient {
             Gradient1,
             Gradient2,
@@ -118,61 +103,39 @@ data class OnNetwork(
         }
 
         companion object {
-            /**
-             * Creates initial account upon new profile creation
-             */
-            fun initial(
-                mnemonic: MnemonicWords,
-                factorSources: FactorSources,
-                networkId: NetworkId,
-                displayName: String
-            ): Account {
-                return createNewVirtualAccount(
-                    displayName = displayName,
-                    entityIndex = 0,
-                    mnemonic = mnemonic,
-                    factorSources = factorSources,
-                    networkId = networkId
-                )
-            }
-
-            fun createNewVirtualAccount(
+            fun init(
                 displayName: String,
-                entityIndex: Int,
-                mnemonic: MnemonicWords,
-                factorSources: FactorSources,
+                mnemonicWithPassphrase: MnemonicWithPassphrase,
+                factorSource: FactorSource,
                 networkId: NetworkId
             ): Account {
+                val index = factorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
                 val derivationPath = AccountDerivationPath(
-                    entityIndex = entityIndex,
+                    entityIndex = index,
                     networkId = networkId
                 ).path()
 
-                val compressedPublicKey = mnemonic.compressedPublicKey(
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
                     derivationPath = derivationPath
-                )
-                val publicKey = PublicKey.EddsaEd25519(
-                    compressedPublicKey.removeLeadingZero()
-                )
+                ).removeLeadingZero()
+
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = publicKey
+                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
                 )
 
-                val unsecuredSecurityState = SecurityState.Unsecured.unsecuredSecurityState(
+                val unsecuredSecurityState = SecurityState.unsecured(
                     compressedPublicKey = compressedPublicKey,
-                    derivationPath = DerivationPath.accountDerivationPath(
+                    derivationPath = DerivationPath.forAccount(
                         derivationPath = derivationPath
                     ),
-                    factorSources = factorSources
+                    factorSourceId = factorSource.id
                 )
 
                 return Account(
                     address = address,
-                    appearanceID = entityIndex % Account.AppearanceIdGradient.values().count(),
-                    derivationPath = derivationPath,
+                    appearanceID = index % Account.AppearanceIdGradient.values().count(),
                     displayName = displayName,
-                    index = entityIndex,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState
                 )
@@ -192,14 +155,6 @@ data class OnNetwork(
         val address: String,
 
         /**
-         * The SLIP10 compatible Hierarchical Deterministic derivation path which is used to derive
-         * the public keys of the factors of the different roles, if the factor source kind of said factor
-         * instance supports Hierarchical Deterministic derivation.
-         */
-        @SerialName("derivationPath")
-        val derivationPath: String,
-
-        /**
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
@@ -207,14 +162,6 @@ data class OnNetwork(
 
         @SerialName("fields")
         val fields: List<Field>,
-
-        /**
-         * The index of this persona, in the list of personas for a certain network. This means that
-         * profile on network `mainnet` will have a persona with `accountIndex = 0`, but so can person
-         * on network `testnet` too! However, their `address`es will differ!
-         */
-        @SerialName("index")
-        val index: Int,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
@@ -227,49 +174,46 @@ data class OnNetwork(
          * Security of this persona
          */
         @SerialName("securityState")
-        val securityState: SecurityState.Unsecured
+        val securityState: SecurityState
     ) {
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
-            fun createNewPersona(
+            fun init(
                 displayName: String,
                 fields: List<Field>,
-                entityIndex: Int,
-                mnemonicWords: MnemonicWords,
-                factorSources: FactorSources,
+                mnemonicWithPassphrase: MnemonicWithPassphrase,
+                factorSource: FactorSource,
                 networkId: NetworkId
             ): Persona {
+                val index = factorSource.getNextIdentityDerivationIndex(forNetworkId = networkId)
+
                 val derivationPath = IdentityDerivationPath(
-                    entityIndex = entityIndex,
+                    entityIndex = index,
                     networkId = networkId
                 ).path()
 
-                val compressedPublicKey = mnemonicWords.compressedPublicKey(
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
                     derivationPath = derivationPath
-                )
-                val publicKey = PublicKey.EddsaEd25519(
-                    compressedPublicKey.removeLeadingZero()
-                )
+                ).removeLeadingZero()
+
                 val address = deriveIdentityAddress(
                     networkID = networkId,
-                    publicKey = publicKey
+                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
                 )
 
-                val unsecuredSecurityState = SecurityState.Unsecured.unsecuredSecurityState(
+                val unsecuredSecurityState = SecurityState.unsecured(
                     compressedPublicKey = compressedPublicKey,
-                    derivationPath = DerivationPath.identityDerivationPath(
+                    derivationPath = DerivationPath.forIdentity(
                         derivationPath = derivationPath
                     ),
-                    factorSources = factorSources
+                    factorSourceId = factorSource.id
                 )
 
                 return Persona(
                     address = address,
-                    derivationPath = derivationPath,
                     displayName = displayName,
                     fields = fields,
-                    index = entityIndex,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState
                 )
@@ -459,4 +403,14 @@ data class OnNetwork(
             )
         }.toSet()
     }
+
+    @Serializable
+    data class NextDerivationIndices(
+        @SerialName("networkID")
+        val networkId: Int,
+        @SerialName("forAccount")
+        val forAccount: Int,
+        @SerialName("forIdentity")
+        val forIdentity: Int
+    )
 }

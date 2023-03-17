@@ -1,18 +1,16 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.createOrUpdatePersonaOnNetwork
+import rdx.works.profile.data.extensions.addPersona
 import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.createNewPersona
+import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.data.utils.personasPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
-    private val generateMnemonicUseCase: GetMnemonicUseCase,
+    private val getMnemonicUseCase: GetMnemonicUseCase,
     private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -28,24 +26,24 @@ class CreatePersonaUseCase @Inject constructor(
             }
 
             val networkID = profile.appPreferences.gateways.current().network.networkId()
+
+            val factorSource = profile.babylonDeviceFactorSource
+
             // Construct new persona
-            val newPersona = createNewPersona(
+            val newPersona = init(
                 displayName = displayName,
                 fields = fields,
-                entityIndex = profile.onNetwork.personasPerNetworkCount(networkID),
-                mnemonicWords = MnemonicWords(
-                    phrase = generateMnemonicUseCase(
-                        mnemonicKey = profile.factorSources
-                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                            .first().factorSourceID
-                    )
-                ),
-                factorSources = profile.factorSources,
+                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
+                factorSource = factorSource,
                 networkId = networkID
             )
 
             // Add persona to the profile
-            val updatedProfile = profile.createOrUpdatePersonaOnNetwork(newPersona)
+            val updatedProfile = profile.addPersona(
+                persona = newPersona,
+                withFactorSourceId = factorSource.id,
+                onNetwork = networkID
+            )
 
             // Save updated profile
             profileDataSource.saveProfile(updatedProfile)

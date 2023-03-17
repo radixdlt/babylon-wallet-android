@@ -1,13 +1,22 @@
 package rdx.works.profile.data.model
 
-import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.crypto.getCompressedPublicKey
+import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.hex.extensions.toHexString
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
+import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
+import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.SecurityState
+import timber.log.Timber
 
 data class Profile(
     /**
@@ -39,7 +48,7 @@ data class Profile(
      * The known sources of factors, used for authorization such as spending funds.
      * Always contains at least one DeviceFactorSource.
      */
-    val factorSources: FactorSources,
+    val factorSources: List<FactorSource>,
 
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
@@ -63,64 +72,134 @@ data class Profile(
         )
     }
 
-    fun notaryFactorSource():
-        FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource {
-        return factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first()
+    /**
+     * Returns the account signers, currently only for accounts that their factor instances derive
+     * from [FactorSourceKind.DEVICE] factor sources. Note that those instances also have
+     * a non-null derivation path.
+     */
+    inline fun getAccountSigners(
+        addresses: List<String>,
+        networkId: Int,
+        getMnemonic: (FactorSource) -> MnemonicWithPassphrase
+    ): List<AccountSigner> {
+        val network = onNetwork.firstOrNull { network ->
+            network.networkID == networkId
+        } ?: return emptyList()
+
+        val accounts = if (addresses.isEmpty()) {
+            listOf(network.accounts.first())
+        } else {
+            addresses.mapNotNull { address ->
+                network.accounts.find { it.address == address }
+            }
+        }
+
+        return accounts.map { account ->
+            when (val securityState = account.securityState) {
+                is SecurityState.Unsecured -> {
+                    val factorInstance = securityState.unsecuredEntityControl.genesisFactorInstance
+
+                    val factorSource = factorSources.find {
+                        it.id == factorInstance.factorSourceId
+                    }
+
+                    if (factorSource == null) {
+                        Timber.w("No FactorSource found with id ${factorInstance.factorSourceId}")
+                        return@map null
+                    }
+
+                    if (factorSource.kind != FactorSourceKind.DEVICE) {
+                        Timber.w("No FactorSource with DEVICE kind was found, but the account requested for a non-DEVICE factor source")
+                        return@map null
+                    }
+
+                    if (!factorSource.supportsCurve(factorInstance.publicKey.curve)) {
+                        Timber.w("The curve ${factorInstance.publicKey.curve} is not supported by the selected FactorSource")
+                        return@map null
+                    }
+
+                    val mnemonicWithPassphrase = getMnemonic(factorSource)
+                    val extendedKey = mnemonicWithPassphrase.deriveExtendedKey(
+                        factorInstance = factorInstance
+                    )
+
+                    if (
+                        extendedKey.keyPair
+                            .getCompressedPublicKey()
+                            .removeLeadingZero()
+                            .toHexString() != factorInstance.publicKey.compressedData
+                    ) {
+                        Timber.w("FactorSource's public key does not match with the derived public key")
+                        return@map null
+                    }
+
+                    AccountSigner(
+                        account = account,
+                        privateKey = extendedKey.keyPair.privateKey
+                    )
+                }
+            }
+        }.filterNotNull()
     }
 
+    /**
+     * Temporarily the only factor source that the user can use to create accounts/personas.
+     * When new UI is added that allows the user to import other factor sources
+     * (like an Olympia device factor source), we will need to revisit this.
+     *
+     * NOTE that this factor source will always be used when creating the first account.
+     */
+    val babylonDeviceFactorSource: FactorSource
+        get() = factorSources.first {
+            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(CURVE_25519)
+        }
+
     companion object {
-        const val LATEST_PROFILE_VERSION = 19
+        const val LATEST_PROFILE_VERSION = 21
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
-            gateway: Gateway,
-            mnemonic: MnemonicWords,
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
             firstAccountDisplayName: String,
             creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER
         ): Profile {
-            val curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource =
-                FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource
-                    .deviceFactorSource(
-                        mnemonic = mnemonic,
-                        label = firstAccountDisplayName
-                    )
+            val gateway = Gateway.default
 
-            val network = gateway.network
-
-            val factorSources = FactorSources(
-                curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = listOf(
-                    curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource
-                ),
-                secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = listOf()
+            val factorSource = FactorSource.babylon(
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
+                hint = creatingDevice
             )
 
-            val initialAccount = OnNetwork.Account.initial(
-                mnemonic = mnemonic,
-                factorSources = factorSources,
-                networkId = network.networkId(),
+            val initialAccount = OnNetwork.Account.init(
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
+                factorSource = factorSource,
+                networkId = gateway.network.networkId(),
                 displayName = firstAccountDisplayName
             )
 
             val mainNetwork = OnNetwork(
                 accounts = listOf(initialAccount),
                 authorizedDapps = listOf(),
-                networkID = network.id,
+                networkID = gateway.network.id,
                 personas = listOf()
             )
 
             val appPreferences = AppPreferences(
                 display = Display.default,
-                gateways = Gateways(gateway.url, listOf(gateway)),
-                p2pClients = emptyList()
+                gateways = Gateways.fromCurrent(current = gateway),
+                p2pClients = listOf()
             )
 
             return Profile(
                 id = UUIDGenerator.uuid().toString(),
                 creatingDevice = creatingDevice,
                 appPreferences = appPreferences,
-                factorSources = factorSources,
+                factorSources = listOf(factorSource),
                 onNetwork = listOf(mainNetwork),
                 version = LATEST_PROFILE_VERSION
+            ).incrementFactorSourceNextAccountIndex(
+                forNetwork = gateway.network.networkId(),
+                factorSourceId = factorSource.id
             )
         }
     }
