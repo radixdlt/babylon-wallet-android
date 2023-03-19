@@ -77,10 +77,18 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
                     }
                 }
                 PackageMessageDto.PackageType.MESSAGE_CONFIRMATION -> {
-                    trySend(DataChannelEvent.IncomingMessage.ConfirmationNotification)
+                    trySend(
+                        DataChannelEvent.IncomingMessage.ConfirmationNotification(
+                            messageId = packageMessageDto.messageId
+                        )
+                    )
                 }
                 PackageMessageDto.PackageType.MESSAGE_ERROR -> {
-                    trySend(DataChannelEvent.IncomingMessage.ErrorNotification)
+                    trySend(
+                        DataChannelEvent.IncomingMessage.ErrorNotification(
+                            messageId = packageMessageDto.messageId
+                        )
+                    )
                 }
             }
         }
