@@ -326,7 +326,7 @@ class DAppLoginViewModel @Inject constructor(
                 args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
-            sendEvent(DAppLoginEvent.RejectLogin)
+            topLevelOneOffEventHandler.sendEvent(DAppLoginEvent.RejectLogin)
         }
     }
 
