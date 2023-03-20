@@ -163,14 +163,16 @@ class ProfileDataSourceImpl @Inject constructor(
     }
 
     override suspend fun updateDeveloperMode(isEnabled: Boolean) {
-        readProfile()?.let { profile ->
-            val updatedProfile = profile.updateDeveloperMode(isEnabled)
-            saveProfile(updatedProfile)
+        withContext(ioDispatcher) {
+            readProfile()?.let { profile ->
+                val updatedProfile = profile.updateDeveloperMode(isEnabled)
+                saveProfile(updatedProfile)
+            }
         }
     }
 
-    override suspend fun isInDeveloperMode(): Boolean {
-        return readProfile()?.appPreferences?.security?.isDeveloperModeEnabled ?: false
+    override suspend fun isInDeveloperMode(): Boolean = withContext(ioDispatcher) {
+        readProfile()?.appPreferences?.security?.isDeveloperModeEnabled ?: false
     }
 
     private suspend fun getGateway(): Gateway {
