@@ -23,11 +23,15 @@ sealed interface DataChannelEvent {
 
         // a confirmation notification from the other peer to confirm that
         // it received and correctly assembled the message
-        object ConfirmationNotification : IncomingMessage
+        data class ConfirmationNotification(
+            val messageId: String
+        ) : IncomingMessage
 
         // an error notification from the other peer to warn that
         // it received but failed to assemble the message
-        object ErrorNotification : IncomingMessage
+        data class ErrorNotification(
+            val messageId: String
+        ) : IncomingMessage
 
         object MessageHashMismatch : IncomingMessage
     }
@@ -40,8 +44,6 @@ sealed interface DataChannelEvent {
         DELETE_CONNECTION,
         UNKNOWN
     }
-
-    object BufferedAmountChange : DataChannelEvent
 
     // when something unexpected happens ...
     data class UnknownError(

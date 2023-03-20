@@ -11,7 +11,7 @@ import kotlin.test.Test
 const val ENCRYPTION_KEY = "acc9ff51f550e1f4e7cc746b46e4686ebcc17fdcf2d42d9e96ebb2dbbb04aa60"
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class PeerdroidConnectorTest {
+class PeerdroidLinkTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
@@ -19,14 +19,14 @@ class PeerdroidConnectorTest {
     private lateinit var fakeWebSocketClient: FakeWebSocketClient
     private lateinit var fakeWebRtcManager: FakeWebRtcManager
 
-    private lateinit var subject: PeerdroidConnector
+    private lateinit var subject: PeerdroidLink
 
     @Test
     fun `add connection`() {
         fakeWebRtcManager = FakeWebRtcManager(testDispatcher)
         fakeWebSocketClient = FakeWebSocketClient(testDispatcher)
 
-        subject = PeerdroidConnectorImpl(fakeWebRtcManager, fakeWebSocketClient, testScope, testDispatcher)
+        subject = PeerdroidLinkImpl(fakeWebRtcManager, fakeWebSocketClient, testScope, testDispatcher)
 
         testScope.runTest {
             val result = subject.addConnection(ENCRYPTION_KEY.decodeHex().toByteArray())

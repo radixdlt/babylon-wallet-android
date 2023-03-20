@@ -28,7 +28,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object PeerdroidModule {
 
     @Provides
     @Singleton
@@ -93,7 +93,6 @@ object AppModule {
     }
 
     @Provides
-    @Singleton
     internal fun provideWebRtcManager(
         peerConnectionFactory: PeerConnectionFactory
     ): WebRtcManager = WebRtcManagerImpl(

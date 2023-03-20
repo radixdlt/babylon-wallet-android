@@ -18,7 +18,6 @@ import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
-import rdx.works.peerdroid.data.webrtc.model.completeWhenDisconnected
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.AnswerPayload.Companion.toAnswerPayload
@@ -31,12 +30,6 @@ import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 
 interface PeerdroidConnector {
-
-    /**
-     * Call this function to add a connection in the wallet settings.
-     *
-     */
-    suspend fun addConnection(encryptionKey: ByteArray): Result<Unit>
 
     /**
      * Call this function to get a WebRTC data channel.
@@ -80,43 +73,10 @@ internal class PeerdroidConnectorImpl(
     private var observeWebSocketJob: Job? = null
     private var sendIceCandidatesJob: Job? = null
 
-    // This CompletableDeferred will return a result when a peer connection
-    // has been first connected and then disconnected.
-    private lateinit var addConnectionDeferred: CompletableDeferred<Result<Unit>>
-
     // This CompletableDeferred will return the data channel.
     // if the whole flow is complete (step 10) and no errors occurred will return in a Result.Success
     // if any error occurred during the flow will return a Result.Error along with an error message.
     private lateinit var dataChannelDeferred: CompletableDeferred<Result<DataChannelWrapper>>
-
-    override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
-        Timber.d("⚙️ add new connection")
-        addConnectionDeferred = CompletableDeferred()
-        // get connection id from encryption key
-        val connectionId = encryptionKey.sha256().toHexString()
-
-        withContext(ioDispatcher) {
-            // Leave this method here because WebRTC takes too long to initialize its components
-            // and to create the peer connection and initialize the data channel.
-            // So by the time the web socket is open and listening the peer connection will be ready to negotiate.
-            observePeerConnectionUntilEstablished()
-            // and now establish the web socket
-            val result = webSocketClient.initSession(
-                connectionId = connectionId,
-                encryptionKey = encryptionKey
-            )
-            when (result) {
-                is Result.Success -> {
-                    listenForIncomingMessagesFromSignalingServer()
-                }
-                is Result.Error -> {
-                    addConnectionDeferred.complete(Result.Error("failed to establish websocket client"))
-                }
-            }
-        }
-
-        return addConnectionDeferred.await()
-    }
 
     override suspend fun createDataChannel(
         encryptionKey: ByteArray,
@@ -148,54 +108,6 @@ internal class PeerdroidConnectorImpl(
         }
 
         return dataChannelDeferred.await()
-    }
-
-    // a peer connection executed its lifecycle:
-    // created -> connecting -> connected -> disconnected
-    private fun observePeerConnectionUntilEstablished() {
-        webRtcManager
-            .createPeerConnection()
-            .onStart { // for debugging
-                Timber.d("⚙️ 🛠️ start observing webrtc events")
-            }
-            .onCompletion { // for debugging
-                Timber.d("⚙️ 🛠️ end observing webrtc events")
-            }
-            .onEach { event ->
-                when (event) {
-                    PeerConnectionEvent.RenegotiationNeeded -> {
-                        Timber.d("⚙️ 🛠️ renegotiation needed 🆗")
-                    }
-                    is PeerConnectionEvent.IceGatheringChange -> {
-                        Timber.d("⚙️ 🛠️ ice gathering state changed: ${event.state}")
-                    }
-                    is PeerConnectionEvent.IceCandidate -> {
-                        Timber.d("⚙️ 🛠️ ice candidate generated")
-                        sendIceCandidateToRemoteClient(event.data)
-                    }
-                    is PeerConnectionEvent.SignalingState -> {
-                        Timber.d("⚙️ 🛠️ signaling state changed: ${event.message}")
-                    }
-                    PeerConnectionEvent.Connected -> {
-                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection connected 🟢")
-                    }
-                    PeerConnectionEvent.Disconnected -> {
-                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection disconnected 🔴")
-                        addConnectionDeferred.complete(Result.Success(Unit))
-                    }
-                    PeerConnectionEvent.Failed -> {
-                        Timber.d("⚙️ 🛠️ signaling state changed: peer connection failed ❌")
-                        addConnectionDeferred.complete(Result.Error(message = "peer connection failed"))
-                    }
-                }
-            }
-            .catch { exception ->
-                Timber.e("⚙️ 🛠️ an exception occurred: ${exception.localizedMessage}")
-                addConnectionDeferred.complete(Result.Error(message = exception.localizedMessage))
-            }
-            .completeWhenDisconnected()
-            .flowOn(ioDispatcher)
-            .launchIn(applicationScope)
     }
 
     private fun observePeerConnectionEvents() {
@@ -230,10 +142,10 @@ internal class PeerdroidConnectorImpl(
                             )
                         )
                     }
-                    PeerConnectionEvent.Disconnected -> {
+                    is PeerConnectionEvent.Disconnected -> {
                         Timber.d("⚙️ ⚡ signaling state changed: peer connection disconnected 🔴")
                     }
-                    PeerConnectionEvent.Failed -> {
+                    is PeerConnectionEvent.Failed -> {
                         Timber.d("⚙️ ⚡ signaling state changed: peer connection failed ❌")
                         dataChannelDeferred.complete(Result.Error(message = "peer connection failed"))
                     }
@@ -324,7 +236,6 @@ internal class PeerdroidConnectorImpl(
                         answerPayload = sessionDescriptionValue.toAnswerPayload()
                     )
                 } else {
-                    Timber.e("⚙️ failed to set local description")
                     dataChannelDeferred.complete(Result.Error("data channel couldn't initialize"))
                 }
             }

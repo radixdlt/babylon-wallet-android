@@ -70,7 +70,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
         override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
             super.onIceConnectionChange(p0)
             if (p0 == PeerConnection.IceConnectionState.DISCONNECTED) {
-                trySend(PeerConnectionEvent.Disconnected)
+                trySend(PeerConnectionEvent.Disconnected(""))
             }
             Timber.d("🔌 ice connection changed: $p0")
         }
@@ -82,9 +82,9 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                 trySend(PeerConnectionEvent.Connected)
             } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
-                trySend(PeerConnectionEvent.Disconnected)
+                trySend(PeerConnectionEvent.Disconnected(""))
             } else if (newState == PeerConnection.PeerConnectionState.FAILED) {
-                trySend(PeerConnectionEvent.Failed)
+                trySend(PeerConnectionEvent.Failed(""))
             }
             Timber.d("🔌 peer connection changed: $newState")
         }
