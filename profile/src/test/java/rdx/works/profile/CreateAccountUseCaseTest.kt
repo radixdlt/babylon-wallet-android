@@ -18,6 +18,7 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -49,7 +50,8 @@ class CreateAccountUseCaseTest {
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    Gateways(network.url, listOf(network)),
+                    security = Security.default,
+                    gateways = Gateways(network.url, listOf(network)),
                     p2pLinks = listOf(
                         P2PLink.init(
                             connectionPassword = "My password",

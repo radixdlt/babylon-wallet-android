@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import rdx.works.profile.data.extensions.addGateway
 import rdx.works.profile.data.extensions.changeGateway
 import rdx.works.profile.data.extensions.deleteGateway
+import rdx.works.profile.data.extensions.updateDeveloperMode
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
@@ -52,6 +53,12 @@ interface ProfileDataSource {
     suspend fun addGateway(gateway: Gateway)
 
     suspend fun deleteGateway(gateway: Gateway)
+
+    suspend fun updateDeveloperMode(isEnabled: Boolean)
+
+    suspend fun isInDeveloperMode(): Boolean
+
+    val isProfileCompatible: Flow<Boolean>
 }
 
 class ProfileDataSourceImpl @Inject constructor(
@@ -153,6 +160,17 @@ class ProfileDataSourceImpl @Inject constructor(
             val updatedProfile = profile.deleteGateway(gateway)
             saveProfile(updatedProfile)
         }
+    }
+
+    override suspend fun updateDeveloperMode(isEnabled: Boolean) {
+        readProfile()?.let { profile ->
+            val updatedProfile = profile.updateDeveloperMode(isEnabled)
+            saveProfile(updatedProfile)
+        }
+    }
+
+    override suspend fun isInDeveloperMode(): Boolean {
+        return readProfile()?.appPreferences?.security?.isDeveloperModeEnabled ?: false
     }
 
     private suspend fun getGateway(): Gateway {

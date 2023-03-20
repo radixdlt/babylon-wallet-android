@@ -158,6 +158,7 @@ fun Profile.addP2PLink(
 
     val newAppPreferences = AppPreferences(
         display = appPreferences.display,
+        security = appPreferences.security,
         gateways = appPreferences.gateways,
         p2pLinks = updatedP2PLinks.toList()
     )
@@ -176,6 +177,7 @@ fun Profile.deleteP2PLink(connectionPassword: String): Profile {
 
     val newAppPreferences = AppPreferences(
         display = appPreferences.display,
+        security = appPreferences.security,
         gateways = appPreferences.gateways,
         p2pLinks = updatedP2PLinks.toList()
     )
@@ -185,6 +187,14 @@ fun Profile.deleteP2PLink(connectionPassword: String): Profile {
         onNetwork = onNetwork,
     )
 }
+
+fun Profile.updateDeveloperMode(isEnabled: Boolean): Profile = copy(
+    appPreferences = appPreferences.copy(
+        security = appPreferences.security.copy(
+            isDeveloperModeEnabled = isEnabled
+        )
+    )
+)
 
 fun deriveAccountAddress(
     networkID: NetworkId,

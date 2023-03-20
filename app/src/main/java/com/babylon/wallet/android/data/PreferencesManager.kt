@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -29,24 +28,6 @@ class PreferencesManager @Inject constructor(
         .map { preferences ->
             preferences[SHOW_ONBOARDING] ?: false
         }
-
-    val developerMode: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[DEVELOPER_MODE] ?: false
-        }
-
-    suspend fun isInDeveloperMode(): Boolean {
-        return dataStore.data
-            .map { preferences ->
-                preferences[DEVELOPER_MODE] ?: false
-            }.firstOrNull() == true
-    }
-
-    suspend fun setDeveloperMode(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[DEVELOPER_MODE] = enabled
-        }
-    }
 
     fun getLastUsedEpochFlow(address: String): Flow<Long?> {
         return dataStore.data
@@ -74,7 +55,6 @@ class PreferencesManager @Inject constructor(
 
     companion object {
         private val SHOW_ONBOARDING = booleanPreferencesKey("show_onboarding")
-        private val DEVELOPER_MODE = booleanPreferencesKey("developer_mode")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
     }
 }

@@ -292,6 +292,13 @@ class ProfileTest {
             actual.appPreferences.display.fiatCurrencyPriceTarget
         )
 
+        // Security
+        assertEquals(
+            "Developer mode is the same",
+            expected.appPreferences.security.isDeveloperModeEnabled,
+            actual.appPreferences.security.isDeveloperModeEnabled
+        )
+
         // P2P clients
         assertEquals(
             "P2P clients count is the same",
