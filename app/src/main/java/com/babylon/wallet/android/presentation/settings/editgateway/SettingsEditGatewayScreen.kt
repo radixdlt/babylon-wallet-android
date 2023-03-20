@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -196,10 +196,7 @@ private fun SettingsEditGatewayContent(
                                 onGatewayClick(gateway.gateway)
                             }
                             .fillMaxWidth()
-                            .padding(
-                                horizontal = RadixTheme.dimensions.paddingXLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            )
+                            .padding(RadixTheme.dimensions.paddingDefault)
                     )
                     Divider(
                         color = RadixTheme.colors.gray5,
@@ -237,8 +234,8 @@ private fun AddGatewaySheet(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center
+        modifier = modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
     ) {
         IconButton(onClick = onClose) {
             Icon(
@@ -251,7 +248,7 @@ private fun AddGatewaySheet(
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.add_new_gateway),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
@@ -335,7 +332,9 @@ private fun GatewayCard(
                 gatewayToDelete = gateway
             }) {
                 Icon(
-                    imageVector = Icons.Filled.Delete,
+                    painter = painterResource(
+                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline
+                    ),
                     tint = RadixTheme.colors.gray1,
                     contentDescription = null
                 )
