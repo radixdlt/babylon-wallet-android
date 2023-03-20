@@ -58,8 +58,6 @@ interface ProfileDataSource {
     suspend fun updateDeveloperMode(isEnabled: Boolean)
 
     suspend fun isInDeveloperMode(): Boolean
-
-    val isProfileCompatible: Flow<Boolean>
 }
 
 @Suppress("TooManyFunctions")
