@@ -20,10 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
-import rdx.works.profile.data.model.apppreferences.Radix
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
@@ -86,7 +85,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
             _state.update { state -> state.copy(addingGateway = true) }
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
-                profileDataSource.addGateway(Gateway(newUrl, Radix.Network.forName(networkName)))
+                profileDataSource.addGateway(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }
@@ -103,13 +102,13 @@ class SettingsEditGatewayViewModel @Inject constructor(
         }
     }
 
-    fun onGatewayClick(gateway: Gateway) {
+    fun onGatewayClick(gateway: Radix.Gateway) {
         viewModelScope.launch {
             switchGateway(gateway)
         }
     }
 
-    private suspend fun switchGateway(gateway: Gateway) {
+    private suspend fun switchGateway(gateway: Radix.Gateway) {
         if (gateway.url == state.value.currentGateway?.url) return
         if (profileDataSource.hasAccountForGateway(gateway)) {
             profileDataSource.changeGateway(gateway)
@@ -130,7 +129,7 @@ internal sealed interface SettingsEditGatewayEvent : OneOffEvent {
 }
 
 internal data class SettingsUiState(
-    val currentGateway: Gateway? = null,
+    val currentGateway: Radix.Gateway? = null,
     val gatewayList: PersistentList<GatewayWrapper> = persistentListOf(),
     val newUrl: String = "",
     val newUrlValid: Boolean = false,
@@ -142,4 +141,4 @@ internal enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding
 }
 
-data class GatewayWrapper(val gateway: Gateway, val selected: Boolean)
+data class GatewayWrapper(val gateway: Radix.Gateway, val selected: Boolean)

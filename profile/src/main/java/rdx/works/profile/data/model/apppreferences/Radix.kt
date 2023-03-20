@@ -65,4 +65,39 @@ object Radix {
         }
     }
 
+    @Serializable
+    data class Gateway(
+
+        @SerialName("url")
+        val url: String,
+
+        @SerialName("network")
+        val network: Radix.Network
+    ) {
+
+        val isDefault: Boolean
+            get() = url == nebunet.url
+
+        companion object {
+            val default: Gateway
+                get() = nebunet
+
+            val nebunet = Gateway(
+                url = "https://betanet.radixdlt.com",
+                network = Radix.Network.nebunet
+            )
+            val hammunet = Gateway(
+                url = "https://hammunet-gateway.radixdlt.com",
+                network = Radix.Network.hammunet
+            )
+            val enkinet = Gateway(
+                url = "https://enkinet-gateway.radixdlt.com",
+                network = Radix.Network.enkinet
+            )
+            val mardunet = Gateway(
+                url = "https://mardunet-gateway.radixdlt.com",
+                network = Radix.Network.mardunet
+            )
+        }
+    }
 }

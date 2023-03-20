@@ -7,8 +7,8 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -164,7 +164,7 @@ data class Profile(
             firstAccountDisplayName: String,
             creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER
         ): Profile {
-            val gateway = Gateway.default
+            val gateway = Radix.Gateway.default
 
             val factorSource = FactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,

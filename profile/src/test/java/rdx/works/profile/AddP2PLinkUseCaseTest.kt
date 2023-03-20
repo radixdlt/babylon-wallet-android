@@ -8,12 +8,12 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.AddP2PLinkUseCase
 import kotlin.test.Ignore
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 
 class AddP2PLinkUseCaseTest {
@@ -34,7 +34,7 @@ class AddP2PLinkUseCaseTest {
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
-                gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
+                gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(),

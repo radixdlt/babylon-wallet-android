@@ -20,7 +20,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 
@@ -62,7 +61,7 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `adding network triggers network save`() = runTest {
-        val sampleUrl = Gateway.nebunet.url
+        val sampleUrl = Radix.Gateway.nebunet.url
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
@@ -75,11 +74,11 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `network switch calls for create account`() = runTest {
-        val sampleUrl = Gateway.nebunet.url
-        val gateway = Gateway(sampleUrl, Radix.Network.nebunet)
+        val sampleUrl = Radix.Gateway.nebunet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.nebunet)
         vm.onNewUrlChanged(sampleUrl)
         coEvery { profileDataSource.hasAccountForGateway(gateway) } returns false
-        vm.onGatewayClick(Gateway(sampleUrl, Radix.Network.nebunet))
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.nebunet))
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
@@ -89,21 +88,21 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `network switch calls changes gateway when ther eare accounts present`() = runTest {
-        val sampleUrl = Gateway.nebunet.url
-        val gateway = Gateway(sampleUrl, Radix.Network.nebunet)
+        val sampleUrl = Radix.Gateway.nebunet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.nebunet)
         vm.onNewUrlChanged(sampleUrl)
         coEvery { profileDataSource.hasAccountForGateway(gateway) } returns true
-        vm.onGatewayClick(Gateway(sampleUrl, Radix.Network.nebunet))
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.nebunet))
         advanceUntilIdle()
         coVerify(exactly = 1) { profileDataSource.changeGateway(gateway) }
     }
 
     @Test
     fun `trying to switch to current network is no op`() = runTest {
-        val sampleUrl = Gateway.hammunet.url
-        val gateway = Gateway(sampleUrl, Radix.Network.nebunet)
+        val sampleUrl = Radix.Gateway.hammunet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.nebunet)
         vm.onNewUrlChanged(sampleUrl)
-        vm.onGatewayClick(Gateway(sampleUrl, Radix.Network.nebunet))
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.nebunet))
         advanceUntilIdle()
         coVerify(exactly = 0) { profileDataSource.changeGateway(gateway) }
         assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.AlreadyExist)
@@ -112,7 +111,7 @@ class SettingsEditGatewayViewModelTest {
     @Test
     fun `network info error triggers ui error`() = runTest {
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Error()
-        val sampleUrl = Gateway.nebunet.url
+        val sampleUrl = Radix.Gateway.nebunet.url
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()

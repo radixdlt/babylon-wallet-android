@@ -14,7 +14,6 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
@@ -134,7 +133,7 @@ class ProfileTest {
             bip39Passphrase = ""
         )
 
-        val gateway = Gateway.nebunet
+        val gateway = Radix.Gateway.nebunet
         val networkId = gateway.network.networkId()
 
         // Need to mock the generation of the id, so to test it against the stored vector
