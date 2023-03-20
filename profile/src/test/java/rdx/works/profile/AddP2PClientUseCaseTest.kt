@@ -11,7 +11,6 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.factorsources.FactorSources
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.AddP2PClientUseCase
 import kotlin.test.Ignore
@@ -29,15 +28,14 @@ class AddP2PClientUseCaseTest {
         )
 
         val initialProfile = Profile(
+            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
             appPreferences = AppPreferences(
                 display = Display.default,
                 gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
                 p2pClients = emptyList()
             ),
-            factorSources = FactorSources(
-                curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
-                secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
-            ),
+            factorSources = listOf(),
             onNetwork = emptyList(),
             version = 1
         )

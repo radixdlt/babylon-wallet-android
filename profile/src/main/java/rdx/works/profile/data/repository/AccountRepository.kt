@@ -1,10 +1,7 @@
 package rdx.works.profile.data.repository
 
-import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import rdx.works.profile.data.extensions.signerPrivateKey
-import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.domain.GetMnemonicUseCase
@@ -58,46 +55,15 @@ class AccountRepositoryImpl @Inject constructor(
         networkId: Int,
         addresses: List<String>
     ): List<AccountSigner> {
-        val profile = profileDataSource.readProfile()
-        val accounts = getSignerAccountsForAddresses(profile, addresses, networkId)
-        val factorSourceId = profile?.notaryFactorSource()?.factorSourceID
-        assert(factorSourceId != null)
-        val mnemonic = getMnemonicUseCase(factorSourceId)
-        assert(mnemonic.isNotEmpty())
-        val mnemonicWords = MnemonicWords(mnemonic)
-        val signers = mutableListOf<AccountSigner>()
-        accounts.forEach { account ->
-            val privateKey = mnemonicWords.signerPrivateKey(derivationPath = account.derivationPath)
-            signers.add(
-                AccountSigner(
-                    account = account,
-                    privateKey = privateKey
-                )
-            )
-        }
-        return signers.toList()
-    }
+        val profile = profileDataSource.readProfile() ?: return emptyList()
 
-    private suspend fun getSignerAccountsForAddresses(
-        profile: Profile?,
-        addresses: List<String>,
-        networkId: Int,
-    ): List<OnNetwork.Account> {
-        val accounts = if (addresses.isNotEmpty()) {
-            addresses.mapNotNull { address ->
-                getAccountByAddress(address)
+        return profile.getAccountSigners(
+            addresses = addresses,
+            networkId = networkId,
+            getMnemonic = { factorInstance ->
+                getMnemonicUseCase(factorInstance.id)
             }
-        } else {
-            listOfNotNull(
-                profile?.onNetwork
-                    ?.firstOrNull { perNetwork ->
-                        perNetwork.networkID == networkId
-                    }
-                    ?.accounts
-                    ?.first()
-            )
-        }
-        return accounts
+        )
     }
 
     private suspend fun getPerNetwork(): OnNetwork? {

@@ -2,7 +2,6 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -26,6 +25,8 @@ import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
 interface ProfileDataSource {
+
+    val profileState: Flow<Result<Profile?>>
 
     val profile: Flow<Profile?>
 
@@ -51,8 +52,6 @@ interface ProfileDataSource {
     suspend fun addGateway(gateway: Gateway)
 
     suspend fun deleteGateway(gateway: Gateway)
-
-    val isProfileCompatible: Flow<Boolean>
 }
 
 class ProfileDataSourceImpl @Inject constructor(
@@ -62,13 +61,25 @@ class ProfileDataSourceImpl @Inject constructor(
 ) : ProfileDataSource {
 
     @Suppress("SwallowedException")
-    override val profile: Flow<Profile?> = encryptedPreferencesManager.encryptedProfile
-        .map { profileContent ->
-            profileContent?.let { profile ->
-                Json.decodeFromString<ProfileSnapshot>(profile).toProfile()
+    override val profileState: Flow<Result<Profile?>> =
+        encryptedPreferencesManager.encryptedProfile
+            .map { profileContent ->
+                profileContent?.let { profile ->
+                    val profileVersion = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(profile)
+                    val profileIncompatible = profileVersion.version < Profile.LATEST_PROFILE_VERSION
+                    if (profileIncompatible) {
+                        Result.failure(Exception("Profile incompatible, migration needed"))
+                    } else {
+                        Result.success(Json.decodeFromString<ProfileSnapshot>(profile).toProfile())
+                    }
+                } ?: run {
+                    Result.success(null)
+                }
             }
-        }.catch { _ ->
-            emit(null)
+
+    override val profile: Flow<Profile?> =
+        profileState.map {
+            it.getOrNull()
         }
 
     override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
@@ -84,14 +95,6 @@ class ProfileDataSourceImpl @Inject constructor(
     override suspend fun readProfile(): Profile? {
         return profile.firstOrNull()
     }
-
-    override val isProfileCompatible: Flow<Boolean> =
-        encryptedPreferencesManager.encryptedProfile.map { profileContent ->
-            profileContent?.let {
-                val profileVersion = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(it)
-                profileVersion.version >= Profile.LATEST_PROFILE_VERSION
-            } ?: true
-        }
 
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {

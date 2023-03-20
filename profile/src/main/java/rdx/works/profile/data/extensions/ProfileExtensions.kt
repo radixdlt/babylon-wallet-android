@@ -4,60 +4,79 @@ import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
 import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.derivation.model.NetworkId
 
-fun Profile.createOrUpdatePersonaOnNetwork(
+fun Profile.updatePersona(
     persona: OnNetwork.Persona
 ): Profile {
     val networkId = appPreferences.gateways.current().network.networkId()
-    val newOnNetwork = onNetwork.map { network ->
-        if (network.networkID == networkId.value) {
-            val personaExist = network.personas.any { it.address == persona.address }
-            if (personaExist) {
-                OnNetwork(
-                    accounts = network.accounts,
-                    authorizedDapps = network.authorizedDapps,
-                    networkID = network.networkID,
-                    personas = network.personas.map {
-                        if (it.address == persona.address) {
-                            persona
-                        } else {
-                            it
-                        }
-                    }
-                )
-            } else {
-                OnNetwork(
-                    accounts = network.accounts,
-                    authorizedDapps = network.authorizedDapps,
-                    networkID = network.networkID,
-                    personas = network.personas + persona
+
+    return copy(
+        onNetwork = onNetwork.mapWhen(
+            predicate = { it.networkID == networkId.value },
+            mutation = { network ->
+                network.copy(
+                    personas = network.personas.mapWhen(
+                        predicate = { it.address == persona.address },
+                        mutation = { persona }
+                    )
                 )
             }
-        } else {
-            network
-        }
-    }
-    return this.copy(
-        appPreferences = appPreferences,
-        factorSources = factorSources,
-        onNetwork = newOnNetwork,
+        )
     )
 }
 
-fun Profile.addAccountOnNetwork(
-    account: OnNetwork.Account,
-    networkID: NetworkId
+fun Profile.addPersona(
+    persona: OnNetwork.Persona,
+    withFactorSourceId: FactorSource.ID,
+    onNetwork: NetworkId
 ): Profile {
-    val networkExist = onNetwork.any { networkID.value == it.networkID }
+    val personaExists = this.onNetwork.find {
+        it.networkID == onNetwork.value
+    }?.personas?.any { it.address == persona.address } ?: false
+
+    if (personaExists) {
+        return this
+    }
+
+    return copy(
+        onNetwork = this.onNetwork.mapWhen(
+            predicate = { it.networkID == onNetwork.value },
+            mutation = { network ->
+                network.copy(personas = network.personas + persona)
+            }
+        ),
+        factorSources = factorSources.mapWhen(
+            predicate = { it.id == withFactorSourceId },
+            mutation = { factorSource ->
+                val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
+                    ?: throw WasNotDeviceFactorSource()
+
+                factorSource.copy(
+                    storage = deviceStorage.incrementIdentity(forNetworkId = onNetwork)
+                )
+            }
+        )
+    )
+}
+
+fun Profile.addAccount(
+    account: OnNetwork.Account,
+    withFactorSourceId: FactorSource.ID,
+    onNetwork: NetworkId
+): Profile {
+    val networkExist = this.onNetwork.any { onNetwork.value == it.networkID }
     val newOnNetworks = if (networkExist) {
-        onNetwork.map { network ->
-            if (network.networkID == networkID.value) {
+        this.onNetwork.map { network ->
+            if (network.networkID == onNetwork.value) {
                 val updatedAccounts = network.accounts.toMutableList()
                 updatedAccounts.add(account)
                 OnNetwork(
@@ -71,18 +90,39 @@ fun Profile.addAccountOnNetwork(
             }
         }
     } else {
-        onNetwork + OnNetwork(
+        this.onNetwork + OnNetwork(
             accounts = listOf(account),
             authorizedDapps = listOf(),
-            networkID = networkID.value,
+            networkID = onNetwork.value,
             personas = listOf()
         )
     }
 
-    return this.copy(
-        appPreferences = appPreferences,
-        factorSources = factorSources,
+    return copy(
         onNetwork = newOnNetworks,
+    ).incrementFactorSourceNextAccountIndex(
+        forNetwork = onNetwork,
+        factorSourceId = withFactorSourceId
+    )
+}
+
+fun Profile.incrementFactorSourceNextAccountIndex(
+    forNetwork: NetworkId,
+    factorSourceId: FactorSource.ID
+): Profile {
+    return copy(
+        factorSources = factorSources.map { factorSource ->
+            if (factorSource.id == factorSourceId) {
+                val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
+                    ?: throw WasNotDeviceFactorSource()
+
+                factorSource.copy(
+                    storage = deviceStorage.incrementAccount(forNetworkId = forNetwork)
+                )
+            } else {
+                factorSource
+            }
+        }
     )
 }
 
@@ -124,7 +164,6 @@ fun Profile.addP2PClient(
 
     return this.copy(
         appPreferences = newAppPreferences,
-        factorSources = factorSources,
         onNetwork = onNetwork,
     )
 }
@@ -143,7 +182,6 @@ fun Profile.deleteP2PClient(connectionPassword: String): Profile {
 
     return this.copy(
         appPreferences = newAppPreferences,
-        factorSources = factorSources,
         onNetwork = onNetwork,
     )
 }

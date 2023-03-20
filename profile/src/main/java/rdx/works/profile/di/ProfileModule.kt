@@ -8,6 +8,8 @@ import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.AccountRepositoryImpl
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.DAppConnectionRepositoryImpl
+import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.DeviceInfoRepositoryImpl
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.PersonaRepositoryImpl
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -38,4 +40,9 @@ interface ProfileModule {
     fun bindDAppConnectionRepository(
         dAppConnectionRepositoryImpl: DAppConnectionRepositoryImpl
     ): DAppConnectionRepository
+
+    @Binds
+    fun bindDeviceInfoRepository(
+        deviceInfoRepositoryImpl: DeviceInfoRepositoryImpl
+    ): DeviceInfoRepository
 }

@@ -93,11 +93,12 @@ class GetFreeXrdUseCase @Inject constructor(
                 when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
                     is Result.Error -> false
                     is Result.Success -> {
-                        if (currentEpoch.data < lastUsedEpoch) {
-                            false
-                        } else {
-                            val threshold = 1
-                            currentEpoch.data - lastUsedEpoch >= threshold
+                        when {
+                            currentEpoch.data < lastUsedEpoch -> true // edge case ledger was reset - allow
+                            else -> {
+                                val threshold = 1
+                                currentEpoch.data - lastUsedEpoch >= threshold
+                            }
                         }
                     }
                 }

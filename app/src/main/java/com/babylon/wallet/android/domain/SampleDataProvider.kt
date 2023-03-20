@@ -15,15 +15,15 @@ import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Value
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import java.math.BigDecimal
@@ -34,21 +34,13 @@ class SampleDataProvider {
         return OnNetwork.Account(
             address = address,
             appearanceID = 123,
-            derivationPath = "m/1'/1'/1'/1'/1'/1'",
             displayName = "my account",
-            index = 0,
             networkID = 999,
             securityState = SecurityState.Unsecured(
-                discriminator = "dsics",
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath("few", "disc"),
-                        factorInstanceID = "IDIDDIIDD",
-                        factorSourceReference = FactorSourceReference(
-                            factorSourceID = "f32f3",
-                            factorSourceKind = "kind"
-                        ),
-                        initializationDate = "Date1",
+                        derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -68,25 +60,17 @@ class SampleDataProvider {
     fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): OnNetwork.Persona {
         return OnNetwork.Persona(
             address = personaAddress,
-            derivationPath = "m/1'/1'/1'/1'/1'/1'",
             displayName = personaName,
-            index = 0,
             networkID = 11,
             fields = listOf(
                 OnNetwork.Persona.Field("1", OnNetwork.Persona.Field.Kind.Email, "test@test.pl"),
                 OnNetwork.Persona.Field("2", OnNetwork.Persona.Field.Kind.FirstName, "John")
             ),
             securityState = SecurityState.Unsecured(
-                discriminator = "dsics",
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath("few", "disc"),
-                        factorInstanceID = "IDIDDIIDD",
-                        factorSourceReference = FactorSourceReference(
-                            factorSourceID = "f32f3",
-                            factorSourceKind = "kind"
-                        ),
-                        initializationDate = "Date1",
+                        derivationPath = DerivationPath.forIdentity("few"),
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -107,14 +91,20 @@ class SampleDataProvider {
 
     fun sampleProfile(): Profile {
         return Profile(
+            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
             appPreferences = AppPreferences(
                 display = Display.default,
                 gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
                 p2pClients = emptyList()
             ),
-            factorSources = FactorSources(
-                curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
-                secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
+            factorSources = listOf(
+                FactorSource.babylon(
+                    mnemonicWithPassphrase = MnemonicWithPassphrase(
+                        mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+                        bip39Passphrase = ""
+                    )
+                )
             ),
             onNetwork = emptyList(),
             version = 1

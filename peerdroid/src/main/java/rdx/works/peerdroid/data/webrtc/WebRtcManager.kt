@@ -17,8 +17,6 @@ import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingLoca
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingRemoteDescription
 import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 private val STUN_SERVERS_LIST = listOf(
     "stun:stun.l.google.com:19302",
@@ -62,8 +60,7 @@ internal interface WebRtcManager {
  * 7. add remote ice candidates => return data channel
  *
  */
-@Singleton
-internal class WebRtcManagerImpl @Inject constructor(
+internal class WebRtcManagerImpl constructor(
     private val peerConnectionFactory: PeerConnectionFactory
 ) : WebRtcManager {
     private lateinit var peerConnection: PeerConnection

@@ -44,22 +44,24 @@ class MainViewModel @Inject constructor(
 
     val state = combine(
         preferencesManager.showOnboarding,
-        profileDataSource.profile,
-        profileDataSource.isProfileCompatible
-    ) { showOnboarding, profileSnapshot, profileCompatible ->
+        profileDataSource.profileState
+    ) { showOnboarding, profileState ->
         MainUiState(
             loading = false,
             initialAppState = when {
-                !profileCompatible -> AppNavigationState.IncompatibleProfile
+                profileState.isFailure -> AppNavigationState.IncompatibleProfile
                 showOnboarding -> AppNavigationState.Onboarding
-                profileSnapshot != null -> AppNavigationState.Wallet
+                profileState.getOrNull() != null -> AppNavigationState.Wallet
                 else -> AppNavigationState.CreateAccount
             }
         )
     }.onStart {
         // this will also ensure that it won't execute when the viewmodel is initialized the first time
         if (currentConnectionPassword.isNotBlank()) {
-            connectToDapp(currentConnectionPassword)
+            openDataChannelWithDapp(
+                connectionPassword = currentConnectionPassword,
+                isRestart = false
+            )
         }
     }.onCompletion {
         terminatePeerdroid()
@@ -71,7 +73,8 @@ class MainViewModel @Inject constructor(
 
     private var currentConnectionPassword: String = ""
     private var incomingRequestsJob: Job? = null
-    private var handlingRequestsJob: Job? = null
+    private var handlingCurrentRequestJob: Job? = null
+    private var processingRequestJob: Job? = null
 
     init {
         profileDataSource.p2pClient
@@ -79,19 +82,29 @@ class MainViewModel @Inject constructor(
                 if (p2pClient != null) {
                     Timber.d("found connection password")
                     currentConnectionPassword = p2pClient.connectionPassword
-                    connectToDapp(currentConnectionPassword)
+                    openDataChannelWithDapp(
+                        connectionPassword = currentConnectionPassword,
+                        isRestart = false
+                    )
                 }
             }
             .launchIn(viewModelScope)
     }
 
-    private fun connectToDapp(connectionPassword: String) {
+    private fun openDataChannelWithDapp(
+        connectionPassword: String,
+        isRestart: Boolean
+    ) {
         val encryptionKey = parseEncryptionKeyFromConnectionPassword(
             connectionPassword = connectionPassword
         )
         if (encryptionKey != null) {
             viewModelScope.launch {
-                when (peerdroidClient.connectToRemotePeerWithEncryptionKey(encryptionKey)) {
+                val result = peerdroidClient.connectToRemotePeerWithEncryptionKey(
+                    encryptionKey = encryptionKey,
+                    isRestart = isRestart
+                )
+                when (result) {
                     is Result.Success -> {
                         Timber.d("connected to dapp")
                         listenForIncomingDappRequests()
@@ -105,7 +118,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun listenForIncomingDappRequests() {
-        handlingRequestsJob = viewModelScope.launch {
+        handlingCurrentRequestJob = viewModelScope.launch {
             incomingRequestRepository.currentRequestToHandle.collect { request ->
                 delay(REQUEST_HANDLING_DELAY)
                 sendEvent(MainEvent.IncomingRequestEvent(request))
@@ -119,7 +132,7 @@ class MainViewModel @Inject constructor(
                 .collect { message ->
                     if (message is ConnectionStateChanged) {
                         if (message == ConnectionStateChanged.CLOSING || message == ConnectionStateChanged.CLOSE) {
-                            restartConnectionToDapp()
+                            restartDataChannelWithDapp()
                         }
                         // This message will be received
                         // when the user deletes the connection from connection settings screen.
@@ -129,14 +142,14 @@ class MainViewModel @Inject constructor(
                             terminatePeerdroid()
                         }
                     } else if (message is IncomingRequest) {
-                        handleIncomingRequest(message)
+                        processIncomingRequest(message)
                     }
                 }
         }
     }
 
-    private fun handleIncomingRequest(request: IncomingRequest) {
-        viewModelScope.launch {
+    private fun processIncomingRequest(request: IncomingRequest) {
+        processingRequestJob = viewModelScope.launch {
             val verificationResult = verifyDappUseCase(request)
             verificationResult.onValue { verified ->
                 if (verified) {
@@ -153,19 +166,24 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun restartConnectionToDapp() {
+    private fun restartDataChannelWithDapp() {
         viewModelScope.launch {
             incomingRequestsJob?.cancel()
-            handlingRequestsJob?.cancel()
+            handlingCurrentRequestJob?.cancel()
+            incomingRequestRepository.removeAll()
             peerdroidClient.close()
-            connectToDapp(currentConnectionPassword)
+            openDataChannelWithDapp(
+                connectionPassword = currentConnectionPassword,
+                isRestart = true
+            )
         }
     }
 
     private fun terminatePeerdroid() {
         viewModelScope.launch {
             incomingRequestsJob?.cancel()
-            handlingRequestsJob?.cancel()
+            handlingCurrentRequestJob?.cancel()
+            processingRequestJob?.cancel()
             peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
         }
     }

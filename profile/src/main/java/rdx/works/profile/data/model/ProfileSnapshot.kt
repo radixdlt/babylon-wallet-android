@@ -3,11 +3,23 @@ package rdx.works.profile.data.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.apppreferences.AppPreferences
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @Serializable
 internal data class ProfileSnapshot(
+    /**
+     * Locally generated identifier, based on the [Profile]'s id which is based upon.
+     */
+    @SerialName("id")
+    private val id: String,
+
+    /**
+     * The name of the device from which this snapshot was saved from.
+     */
+    @SerialName("creatingDevice")
+    private val creatingDevice: String,
+
     /**
      * Settings for this profile in the app, contains default security configs as well as display settings.
      */
@@ -19,7 +31,7 @@ internal data class ProfileSnapshot(
      * Always contains at least one DeviceFactorSource.
      */
     @SerialName("factorSources")
-    private val factorSources: FactorSources,
+    private val factorSources: List<FactorSource>,
 
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
@@ -36,6 +48,8 @@ internal data class ProfileSnapshot(
 
     fun toProfile(): Profile {
         return Profile(
+            id = id,
+            creatingDevice = creatingDevice,
             appPreferences = appPreferences,
             factorSources = factorSources,
             onNetwork = onNetwork,
