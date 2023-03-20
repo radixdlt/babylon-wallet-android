@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.settings.SettingsItem.AppSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -47,18 +50,18 @@ class AppSettingsViewModel @Inject constructor(
             settings = uiState.settings.mapWhen(
                 predicate = { it is S },
                 mutation = { mutation(it as S) }
-            ).toSet()
+            ).toPersistentSet()
         )
     }
 }
 
 data class SettingsUiState(
-    val settings: Set<AppSettings>
+    val settings: ImmutableSet<AppSettings>
 ) {
 
     companion object {
         val default = SettingsUiState(
-            settings = setOf(AppSettings.DeveloperMode(false))
+            settings = persistentSetOf(AppSettings.DeveloperMode(false))
         )
     }
 }

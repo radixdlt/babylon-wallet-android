@@ -2,6 +2,7 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.Profile
 
 @Serializable
 data class Gateways(
@@ -73,4 +74,26 @@ data class Gateway(
             network = Network.mardunet
         )
     }
+}
+
+fun Profile.changeGateway(
+    gateway: Gateway
+): Profile {
+    val gateways = appPreferences.gateways.changeCurrent(gateway)
+    val appPreferences = appPreferences.copy(gateways = gateways)
+    return copy(appPreferences = appPreferences)
+}
+
+fun Profile.addGateway(
+    gateway: Gateway
+): Profile {
+    val updatedGateways = appPreferences.gateways.add(gateway)
+    return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
+}
+
+fun Profile.deleteGateway(
+    gateway: Gateway
+): Profile {
+    val updatedGateways = appPreferences.gateways.delete(gateway)
+    return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
 }

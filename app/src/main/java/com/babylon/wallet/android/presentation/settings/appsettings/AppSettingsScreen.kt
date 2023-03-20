@@ -21,6 +21,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
 fun AppSettingsScreen(
@@ -43,7 +45,7 @@ fun AppSettingsScreen(
 @Composable
 private fun AppSettingsContent(
     onBackClick: () -> Unit,
-    appSettings: Set<SettingsItem.AppSettings>,
+    appSettings: ImmutableSet<SettingsItem.AppSettings>,
     modifier: Modifier = Modifier,
     onDeveloperModeToggled: (Boolean) -> Unit
 ) {
@@ -90,7 +92,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         AppSettingsContent(
             onBackClick = {},
-            appSettings = setOf(
+            appSettings = persistentSetOf(
                 SettingsItem.AppSettings.DeveloperMode(false),
             ),
             onDeveloperModeToggled = {}

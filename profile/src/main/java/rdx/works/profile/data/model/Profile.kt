@@ -4,7 +4,6 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -17,6 +16,7 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.incrementFactorSourceNextAccountIndex
 import timber.log.Timber
 
 data class Profile(
