@@ -38,7 +38,7 @@ class AddP2PLinkUseCaseTest {
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(),
-            onNetwork = emptyList(),
+            networks = emptyList(),
             version = 1
         )
         whenever(profileDataSource.readProfile()).thenReturn(initialProfile)
@@ -56,7 +56,7 @@ class AddP2PLinkUseCaseTest {
                 p2pLinks = listOf(expectedP2PLink)
             ),
             factorSources = initialProfile.factorSources,
-            onNetwork = initialProfile.onNetwork,
+            networks = initialProfile.networks,
             version = initialProfile.version
         )
         verify(profileDataSource).saveProfile(updatedProfile)

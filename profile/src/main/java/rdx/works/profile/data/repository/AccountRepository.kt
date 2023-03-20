@@ -29,7 +29,7 @@ class AccountRepositoryImpl @Inject constructor(
     override val accounts: Flow<List<OnNetwork.Account>> = profileDataSource.profile
         .map { profile ->
             profile
-                ?.onNetwork
+                ?.networks
                 ?.firstOrNull { perNetwork ->
                     perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
                 }
@@ -68,7 +68,7 @@ class AccountRepositoryImpl @Inject constructor(
 
     private suspend fun getPerNetwork(): OnNetwork? {
         return profileDataSource.readProfile()
-            ?.onNetwork
+            ?.networks
             ?.firstOrNull { perNetwork ->
                 perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
             }

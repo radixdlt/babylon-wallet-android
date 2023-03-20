@@ -52,7 +52,7 @@ fun Profile.addP2PLink(
 
     return this.copy(
         appPreferences = newAppPreferences,
-        onNetwork = onNetwork,
+        networks = networks,
     )
 }
 
@@ -71,6 +71,6 @@ fun Profile.deleteP2PLink(connectionPassword: String): Profile {
 
     return this.copy(
         appPreferences = newAppPreferences,
-        onNetwork = onNetwork,
+        networks = networks,
     )
 }

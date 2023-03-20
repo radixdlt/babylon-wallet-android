@@ -108,7 +108,7 @@ class SampleDataProvider {
                     )
                 )
             ),
-            onNetwork = emptyList(),
+            networks = emptyList(),
             version = 1
         )
     }

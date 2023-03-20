@@ -19,7 +19,7 @@ class PersonaRepositoryImpl @Inject constructor(
 ) : PersonaRepository {
 
     override val personas: Flow<List<OnNetwork.Persona>> = profileDataSource.profile.map { profile ->
-        profile?.onNetwork?.firstOrNull { perNetwork ->
+        profile?.networks?.firstOrNull { perNetwork ->
             perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
         }?.personas.orEmpty()
     }
@@ -40,7 +40,7 @@ class PersonaRepositoryImpl @Inject constructor(
 
     private suspend fun getPerNetwork(): OnNetwork? {
         return profileDataSource.readProfile()
-            ?.onNetwork
+            ?.networks
             ?.firstOrNull { perNetwork ->
                 perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
             }

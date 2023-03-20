@@ -66,7 +66,7 @@ class GenerateProfileUseCaseTest {
                 factorSources = listOf(
                     FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
-                onNetwork = listOf(
+                networks = listOf(
                     OnNetwork(
                         accounts = listOf(
                             OnNetwork.Account(
@@ -142,7 +142,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Account's Factor Source ID",
                 expectedFactorSourceId,
-                (profile.onNetwork.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
+                (profile.networks.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
                     .genesisFactorInstance.factorSourceId
             )
         }
@@ -181,7 +181,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Account's Factor Source ID",
                 expectedFactorSourceId,
-                (profile.onNetwork.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
+                (profile.networks.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
                     .genesisFactorInstance.factorSourceId
             )
         }

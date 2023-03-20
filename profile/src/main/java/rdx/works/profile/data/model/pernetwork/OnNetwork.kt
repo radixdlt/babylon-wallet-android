@@ -444,9 +444,9 @@ fun Profile.addAccount(
     withFactorSourceId: FactorSource.ID,
     onNetwork: NetworkId
 ): Profile {
-    val networkExist = this.onNetwork.any { onNetwork.value == it.networkID }
+    val networkExist = this.networks.any { onNetwork.value == it.networkID }
     val newOnNetworks = if (networkExist) {
-        this.onNetwork.map { network ->
+        this.networks.map { network ->
             if (network.networkID == onNetwork.value) {
                 val updatedAccounts = network.accounts.toMutableList()
                 updatedAccounts.add(account)
@@ -461,7 +461,7 @@ fun Profile.addAccount(
             }
         }
     } else {
-        this.onNetwork + OnNetwork(
+        this.networks + OnNetwork(
             accounts = listOf(account),
             authorizedDapps = listOf(),
             networkID = onNetwork.value,
@@ -470,7 +470,7 @@ fun Profile.addAccount(
     }
 
     return copy(
-        onNetwork = newOnNetworks,
+        networks = newOnNetworks,
     ).incrementFactorSourceNextAccountIndex(
         forNetwork = onNetwork,
         factorSourceId = withFactorSourceId
@@ -503,7 +503,7 @@ fun Profile.updatePersona(
     val networkId = appPreferences.gateways.current().network.networkId()
 
     return copy(
-        onNetwork = onNetwork.mapWhen(
+        networks = networks.mapWhen(
             predicate = { it.networkID == networkId.value },
             mutation = { network ->
                 network.copy(
@@ -522,7 +522,7 @@ fun Profile.addPersona(
     withFactorSourceId: FactorSource.ID,
     onNetwork: NetworkId
 ): Profile {
-    val personaExists = this.onNetwork.find {
+    val personaExists = this.networks.find {
         it.networkID == onNetwork.value
     }?.personas?.any { it.address == persona.address } ?: false
 
@@ -531,7 +531,7 @@ fun Profile.addPersona(
     }
 
     return copy(
-        onNetwork = this.onNetwork.mapWhen(
+        networks = this.networks.mapWhen(
             predicate = { it.networkID == onNetwork.value },
             mutation = { network ->
                 network.copy(personas = network.personas + persona)

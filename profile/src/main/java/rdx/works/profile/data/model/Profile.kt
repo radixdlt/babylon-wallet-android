@@ -54,7 +54,7 @@ data class Profile(
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
      */
-    val onNetwork: List<OnNetwork>,
+    val networks: List<OnNetwork>,
 
     /**
      * A version of the Profile Snapshot data format used for compatibility checks.
@@ -68,7 +68,7 @@ data class Profile(
             creatingDevice = creatingDevice,
             appPreferences = appPreferences,
             factorSources = factorSources,
-            onNetwork = onNetwork,
+            networks = networks,
             version = version
         )
     }
@@ -83,7 +83,7 @@ data class Profile(
         networkId: Int,
         getMnemonic: (FactorSource) -> MnemonicWithPassphrase
     ): List<AccountSigner> {
-        val network = onNetwork.firstOrNull { network ->
+        val network = networks.firstOrNull { network ->
             network.networkID == networkId
         } ?: return emptyList()
 
@@ -156,7 +156,7 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 23
+        const val LATEST_PROFILE_VERSION = 24
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
@@ -197,7 +197,7 @@ data class Profile(
                 creatingDevice = creatingDevice,
                 appPreferences = appPreferences,
                 factorSources = listOf(factorSource),
-                onNetwork = listOf(mainNetwork),
+                networks = listOf(mainNetwork),
                 version = LATEST_PROFILE_VERSION
             ).incrementFactorSourceNextAccountIndex(
                 forNetwork = gateway.network.networkId(),

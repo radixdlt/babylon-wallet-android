@@ -135,7 +135,7 @@ class ProfileDataSourceImpl @Inject constructor(
             } ?: return false
 
         return readProfile()?.let { profile ->
-            profile.onNetwork.any { perNetwork ->
+            profile.networks.any { perNetwork ->
                 perNetwork.networkID == knownNetwork.id
             }
         } ?: false

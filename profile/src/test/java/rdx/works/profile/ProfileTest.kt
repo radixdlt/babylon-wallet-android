@@ -43,10 +43,10 @@ class ProfileTest {
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
 
-        assertEquals(profile.onNetwork.count(), 1)
-        assertEquals(profile.onNetwork.first().networkID, Network.nebunet.id)
-        assertEquals(profile.onNetwork.first().accounts.count(), 1)
-        assertEquals(profile.onNetwork.first().personas.count(), 0)
+        assertEquals(profile.networks.count(), 1)
+        assertEquals(profile.networks.first().networkID, Network.nebunet.id)
+        assertEquals(profile.networks.first().accounts.count(), 1)
+        assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
             "Next derivation index for second account",
             profile.factorSources.first().getNextAccountDerivationIndex(Network.nebunet.networkId()),
@@ -70,7 +70,7 @@ class ProfileTest {
             onNetwork = networkId
         )
 
-        assertEquals(updatedProfile.onNetwork.first().accounts.count(), 2)
+        assertEquals(updatedProfile.networks.first().accounts.count(), 2)
         assertEquals(
             "Next derivation index for third account",
             updatedProfile.factorSources.first().getNextAccountDerivationIndex(Network.nebunet.networkId()),
@@ -102,7 +102,7 @@ class ProfileTest {
             onNetwork = networkId
         )
 
-        assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
+        assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
             updatedProfile.factorSources.first().getNextIdentityDerivationIndex(Network.nebunet.networkId()),
@@ -344,129 +344,129 @@ class ProfileTest {
         // Per Network count
         assertEquals(
             "The networks count is the same",
-            expected.onNetwork.count(),
-            actual.onNetwork.count()
+            expected.networks.count(),
+            actual.networks.count()
         )
 
         // Network ID
         assertEquals(
             "The first network id is the same",
-            expected.onNetwork.first().networkID,
-            actual.onNetwork.first().networkID
+            expected.networks.first().networkID,
+            actual.networks.first().networkID
         )
 
         // Connected Dapp
         assertEquals(
             "Authorised dApps count is the same",
-            expected.onNetwork.first().authorizedDapps.count(),
-            actual.onNetwork.first().authorizedDapps.count()
+            expected.networks.first().authorizedDapps.count(),
+            actual.networks.first().authorizedDapps.count()
         )
 
         assertEquals(
             "The first dApps' network id is the same",
-            expected.onNetwork.first().authorizedDapps.first().networkID,
-            actual.onNetwork.first().authorizedDapps.first().networkID
+            expected.networks.first().authorizedDapps.first().networkID,
+            actual.networks.first().authorizedDapps.first().networkID
         )
 
         assertEquals(
             "The first dApps' display name is the same",
-            expected.onNetwork.first().authorizedDapps.first().displayName,
-            actual.onNetwork.first().authorizedDapps.first().displayName
+            expected.networks.first().authorizedDapps.first().displayName,
+            actual.networks.first().authorizedDapps.first().displayName
         )
 
         assertEquals(
             "The first dApps' definition address is the same",
-            expected.onNetwork.first().authorizedDapps.first().dAppDefinitionAddress,
-            actual.onNetwork.first().authorizedDapps.first().dAppDefinitionAddress
+            expected.networks.first().authorizedDapps.first().dAppDefinitionAddress,
+            actual.networks.first().authorizedDapps.first().dAppDefinitionAddress
         )
 
         assertEquals(
             "The first dApps' references to authorised personals size is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.size,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.size
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.size,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona identity address is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona field ids is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts requests is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.request,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.request
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address count is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address first element is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0),
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address second element is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1),
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona identity address is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).identityAddress,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).identityAddress
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona field ids is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).fieldIDs,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).fieldIDs
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona identity address is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona shared accounts reference by address are the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona first shared account reference by address is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0),
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 
@@ -474,111 +474,111 @@ class ProfileTest {
         // Accounts
         assertEquals(
             "The accounts' count is the same",
-            expected.onNetwork.first().accounts.count(),
-            actual.onNetwork.first().accounts.count()
+            expected.networks.first().accounts.count(),
+            actual.networks.first().accounts.count()
         )
 
         repeat(3) { accountIndex ->
             assertEquals(
                 "The accounts[$accountIndex] addresses are the same",
-                expected.onNetwork.first().accounts[accountIndex].address,
-                actual.onNetwork.first().accounts[accountIndex].address
+                expected.networks.first().accounts[accountIndex].address,
+                actual.networks.first().accounts[accountIndex].address
             )
 
             assertEquals(
                 "The accounts[$accountIndex] display name are the same",
-                expected.onNetwork.first().accounts[accountIndex].displayName,
-                actual.onNetwork.first().accounts[accountIndex].displayName
+                expected.networks.first().accounts[accountIndex].displayName,
+                actual.networks.first().accounts[accountIndex].displayName
             )
 
             // Security State
             assertEquals(
                 "The accounts[$accountIndex] derivation path are the same",
-                (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath,
-                (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath
             )
 
             assertEquals(
                 "The accounts[$accountIndex] public key are the same",
-                (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey,
-                (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey
             )
 
             assertEquals(
                 "The accounts[$accountIndex] factor source ids are the same",
-                (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
-                (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId
             )
         }
 
         // Personas
         assertEquals(
-            expected.onNetwork.first().personas.count(),
-            actual.onNetwork.first().personas.count()
+            expected.networks.first().personas.count(),
+            actual.networks.first().personas.count()
         )
 
         repeat(2) { personaIndex ->
             assertEquals(
                 "The persona[$personaIndex] address is the same",
-                expected.onNetwork.first().personas[personaIndex].address,
-                actual.onNetwork.first().personas[personaIndex].address
+                expected.networks.first().personas[personaIndex].address,
+                actual.networks.first().personas[personaIndex].address
             )
 
             assertEquals(
                 "The persona[$personaIndex] display name is the same",
-                expected.onNetwork.first().personas[personaIndex].displayName,
-                actual.onNetwork.first().personas[personaIndex].displayName
+                expected.networks.first().personas[personaIndex].displayName,
+                actual.networks.first().personas[personaIndex].displayName
             )
 
             assertEquals(
                 "The persona[$personaIndex] first field kind is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[0].kind,
-                actual.onNetwork.first().personas[personaIndex].fields[0].kind
+                expected.networks.first().personas[personaIndex].fields[0].kind,
+                actual.networks.first().personas[personaIndex].fields[0].kind
             )
             assertEquals(
                 "The persona[$personaIndex] first field value is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[0].value,
-                actual.onNetwork.first().personas[personaIndex].fields[0].value
+                expected.networks.first().personas[personaIndex].fields[0].value,
+                actual.networks.first().personas[personaIndex].fields[0].value
             )
 
             assertEquals(
                 "The persona[$personaIndex] second field kind is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[1].kind,
-                actual.onNetwork.first().personas[personaIndex].fields[1].kind
+                expected.networks.first().personas[personaIndex].fields[1].kind,
+                actual.networks.first().personas[personaIndex].fields[1].kind
             )
             assertEquals(
                 "The persona[$personaIndex] second field value is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[1].value,
-                actual.onNetwork.first().personas[personaIndex].fields[1].value
+                expected.networks.first().personas[personaIndex].fields[1].value,
+                actual.networks.first().personas[personaIndex].fields[1].value
             )
 
             assertEquals(
                 "The persona[$personaIndex] factor source id is the same",
-                (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
-                (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId
             )
 
             assertEquals(
                 "The persona[$personaIndex] derivation path is the same",
-                (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath,
-                (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath
             )
 
             assertEquals(
                 "The persona[$personaIndex] public key is the same",
-                (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey,
-                (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey
             )
         }

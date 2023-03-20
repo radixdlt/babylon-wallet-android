@@ -174,13 +174,13 @@ private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: String): OnNetwork.
 
 private fun Profile.getAuthorizedDapps(): List<OnNetwork.AuthorizedDapp> {
     val networkId = appPreferences.gateways.current().network.networkId().value
-    return onNetwork.firstOrNull { it.networkID == networkId }?.authorizedDapps.orEmpty()
+    return networks.firstOrNull { it.networkID == networkId }?.authorizedDapps.orEmpty()
 }
 
 fun Profile.createOrUpdateAuthorizedDapp(
     unverifiedAuthorizedDapp: OnNetwork.AuthorizedDapp
 ): Profile {
-    val updatedOnNetwork = onNetwork.map { network ->
+    val updatedOnNetwork = networks.map { network ->
         if (network.networkID == unverifiedAuthorizedDapp.networkID) {
             // Check if this dapp exists in the profile and if NOT, throw exception
             val existingDapp = network.authorizedDapps.find { dAppInProfile ->
@@ -211,13 +211,13 @@ fun Profile.createOrUpdateAuthorizedDapp(
         }
     }
 
-    return copy(onNetwork = updatedOnNetwork)
+    return copy(networks = updatedOnNetwork)
 }
 
 private fun Profile.deleteAuthorizedDapp(
     dapp: OnNetwork.AuthorizedDapp
 ): Profile {
-    val updatedOnNetwork = onNetwork.map { network ->
+    val updatedOnNetwork = networks.map { network ->
         if (network.networkID == dapp.networkID) {
             network.copy(
                 accounts = network.accounts,
@@ -232,7 +232,7 @@ private fun Profile.deleteAuthorizedDapp(
         }
     }
 
-    return copy(onNetwork = updatedOnNetwork)
+    return copy(networks = updatedOnNetwork)
 }
 
 fun OnNetwork.AuthorizedDapp.updateAuthorizedDappPersonas(

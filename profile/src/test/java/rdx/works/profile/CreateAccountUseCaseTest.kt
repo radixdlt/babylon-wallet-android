@@ -60,7 +60,7 @@ class CreateAccountUseCaseTest {
                     )
                 ),
                 factorSources = listOf(FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
-                onNetwork = listOf(
+                networks = listOf(
                     OnNetwork(
                         accounts = listOf(
                             OnNetwork.Account(
