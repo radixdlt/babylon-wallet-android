@@ -85,7 +85,7 @@
     <string name="development_use_only">Development use only. Not usable on Radix mainnet.</string>
     <string name="go_to_account_list">Go to Account List</string>
     <string name="go_to_choose_accounts">Go to Choose Accounts</string>
-    <string name="go_to_settings">Go to Settings</string>
+    <string name="go_to_gateways">Go to Gateways</string>
     <string name="tx_fail_header">Failed to build transaction header</string>
     <string name="tx_fail_manifest">Failed to convert transaction manifest</string>
     <string name="tx_fail_poll_status">Failed to poll transaction status</string>
@@ -209,7 +209,7 @@
     <string name="enter_a_gateway_url">Enter a Gateway URL</string>
     <string name="enter_full_url">Enter full URL</string>
     <string name="add_gateway">Add Gateway</string>
-    <string name="adding_gateway_failed">Adding new Gateway failed</string>
+    <string name="adding_gateway_failed">There was an error in establishing a connection</string>
     <string name="already_exist">This url is already added.</string>
     <plurals name="one_time_at_least_request">
         <item quantity="one">%s is making a one-time request for at least %d account.</item>

@@ -103,7 +103,7 @@ fun CreateAccountConfirmationContent(
                     CreateAccountRequestSource.AccountsList -> R.string.go_to_account_list
                     CreateAccountRequestSource.ChooseAccount -> R.string.go_to_choose_accounts
                     CreateAccountRequestSource.FirstTime -> R.string.go_to_home
-                    CreateAccountRequestSource.Settings -> R.string.go_to_settings
+                    CreateAccountRequestSource.Gateways -> R.string.go_to_gateways
                 }
             ),
             onClick = accountConfirmed

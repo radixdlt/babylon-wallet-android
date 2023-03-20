@@ -26,13 +26,15 @@ class AppSettingsViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch { readSettings() }
+        readSettings()
     }
 
-    private suspend fun readSettings() {
-        val isInDeveloperMode = isInDeveloperModeUseCase()
-        _state.updateSetting<AppSettings.DeveloperMode> {
-            AppSettings.DeveloperMode(isInDeveloperMode)
+    private fun readSettings() {
+        viewModelScope.launch {
+            val isInDeveloperMode = isInDeveloperModeUseCase()
+            _state.updateSetting<AppSettings.DeveloperMode> {
+                AppSettings.DeveloperMode(isInDeveloperMode)
+            }
         }
     }
 

@@ -53,6 +53,18 @@ data class Gateway(
     val isDefault: Boolean
         get() = url == nebunet.url
 
+    fun displayName(): String {
+        return if (network.id == Network.nebunet.networkId().value) {
+            "Radix Betanet Gateway"
+        } else {
+            url
+        }
+    }
+
+    fun displayDescription(): String {
+        return network.displayDescription
+    }
+
     companion object {
         val default: Gateway
             get() = nebunet

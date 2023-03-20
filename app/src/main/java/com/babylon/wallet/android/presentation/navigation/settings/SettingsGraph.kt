@@ -111,7 +111,12 @@ private fun NavGraphBuilder.settingsGatewayEdit(navController: NavController) {
                 navController.popBackStack()
             },
             onCreateProfile = { url, networkName ->
-                navController.createAccountScreen(CreateAccountRequestSource.Settings, url, networkName, true)
+                navController.createAccountScreen(
+                    CreateAccountRequestSource.Gateways,
+                    url,
+                    networkName,
+                    true
+                )
             }
         )
     }
