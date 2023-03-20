@@ -4,18 +4,19 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.incrementFactorSourceNextAccountIndex
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.incrementFactorSourceNextAccountIndex
 import timber.log.Timber
 
 data class Profile(
@@ -155,7 +156,7 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 22
+        const val LATEST_PROFILE_VERSION = 23
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
@@ -186,6 +187,7 @@ data class Profile(
 
             val appPreferences = AppPreferences(
                 display = Display.default,
+                security = Security.default,
                 gateways = Gateways.fromCurrent(current = gateway),
                 p2pLinks = listOf()
             )

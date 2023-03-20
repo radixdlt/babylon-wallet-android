@@ -308,7 +308,7 @@ private fun GatewayCard(
         if (gateway.selected) {
             Icon(
                 modifier = Modifier.width(24.dp),
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_check),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
                 contentDescription = null
             )
         } else {

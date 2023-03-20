@@ -1,6 +1,6 @@
 package rdx.works.profile.domain
 
-import rdx.works.profile.data.extensions.deleteP2PLink
+import rdx.works.profile.data.model.apppreferences.deleteP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 

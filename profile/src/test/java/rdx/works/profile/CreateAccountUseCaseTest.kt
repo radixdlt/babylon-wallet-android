@@ -10,7 +10,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.addAccount
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -18,11 +17,13 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreateAccountUseCase
@@ -49,7 +50,8 @@ class CreateAccountUseCaseTest {
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    Gateways(network.url, listOf(network)),
+                    security = Security.default,
+                    gateways = Gateways(network.url, listOf(network)),
                     p2pLinks = listOf(
                         P2PLink.init(
                             connectionPassword = "My password",

@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
-import rdx.works.profile.data.extensions.addP2PLink
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 

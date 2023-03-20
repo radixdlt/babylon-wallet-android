@@ -4,19 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -24,8 +21,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
 fun AppSettingsScreen(
@@ -48,12 +45,12 @@ fun AppSettingsScreen(
 @Composable
 private fun AppSettingsContent(
     onBackClick: () -> Unit,
-    appSettings: ImmutableList<SettingsItem.AppSettings>,
+    appSettings: ImmutableSet<SettingsItem.AppSettings>,
     modifier: Modifier = Modifier,
     onDeveloperModeToggled: (Boolean) -> Unit
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
@@ -63,25 +60,14 @@ private fun AppSettingsContent(
         )
         Divider(color = RadixTheme.colors.gray5)
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            item {
-                Text(
-                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(R.string.customize_the_app_appearance),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Divider(color = RadixTheme.colors.gray5)
-            }
-            appSettings.forEach { settingsItem ->
-                when (settingsItem) {
-                    is SettingsItem.AppSettings.DeveloperMode -> {
-                        item {
+            appSettings.forEachIndexed { index, settingsItem ->
+                item {
+                    when (settingsItem) {
+                        is SettingsItem.AppSettings.DeveloperMode -> {
                             SwitchSettingsItem(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(50.dp)
-                                    .background(RadixTheme.colors.defaultBackground)
-                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    .padding(all = RadixTheme.dimensions.paddingDefault),
                                 titleRes = settingsItem.descriptionRes(),
                                 subtitleRes = settingsItem.subtitleRes(),
                                 icon = settingsItem.getIcon(),
@@ -89,6 +75,10 @@ private fun AppSettingsContent(
                                 onCheckedChange = onDeveloperModeToggled
                             )
                         }
+                    }
+
+                    if (index < appSettings.count() - 1) {
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 }
             }
@@ -102,7 +92,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         AppSettingsContent(
             onBackClick = {},
-            appSettings = persistentListOf(
+            appSettings = persistentSetOf(
                 SettingsItem.AppSettings.DeveloperMode(false),
             ),
             onDeveloperModeToggled = {}

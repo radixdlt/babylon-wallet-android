@@ -14,6 +14,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.AddP2PLinkUseCase
 import kotlin.test.Ignore
+import rdx.works.profile.data.model.apppreferences.Security
 
 class AddP2PLinkUseCaseTest {
 
@@ -32,6 +33,7 @@ class AddP2PLinkUseCaseTest {
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
             appPreferences = AppPreferences(
                 display = Display.default,
+                security = Security.default,
                 gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
                 p2pLinks = emptyList()
             ),
@@ -49,6 +51,7 @@ class AddP2PLinkUseCaseTest {
         val updatedProfile = initialProfile.copy(
             appPreferences = AppPreferences(
                 display = initialProfile.appPreferences.display,
+                security = initialProfile.appPreferences.security,
                 gateways = initialProfile.appPreferences.gateways,
                 p2pLinks = listOf(expectedP2PLink)
             ),

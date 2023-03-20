@@ -10,20 +10,20 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.extensions.addAccount
-import rdx.works.profile.data.extensions.addP2PLink
-import rdx.works.profile.data.extensions.addPersona
+import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -290,6 +290,13 @@ class ProfileTest {
             "Fiat currency is the same",
             expected.appPreferences.display.fiatCurrencyPriceTarget,
             actual.appPreferences.display.fiatCurrencyPriceTarget
+        )
+
+        // Security
+        assertEquals(
+            "Developer mode is the same",
+            expected.appPreferences.security.isDeveloperModeEnabled,
+            actual.appPreferences.security.isDeveloperModeEnabled
         )
 
         // P2P clients

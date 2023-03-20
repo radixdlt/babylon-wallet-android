@@ -10,20 +10,22 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.data.extensions.addGateway
-import rdx.works.profile.data.extensions.changeGateway
-import rdx.works.profile.data.extensions.deleteGateway
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.addGateway
+import rdx.works.profile.data.model.apppreferences.changeGateway
+import rdx.works.profile.data.model.apppreferences.deleteGateway
+import rdx.works.profile.data.model.apppreferences.updateDeveloperMode
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 interface ProfileDataSource {
 
     val profileState: Flow<Result<Profile?>>
@@ -52,8 +54,13 @@ interface ProfileDataSource {
     suspend fun addGateway(gateway: Gateway)
 
     suspend fun deleteGateway(gateway: Gateway)
+
+    suspend fun updateDeveloperMode(isEnabled: Boolean)
+
+    suspend fun isInDeveloperMode(): Boolean
 }
 
+@Suppress("TooManyFunctions")
 class ProfileDataSourceImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val relaxedJson: Json,
@@ -153,6 +160,19 @@ class ProfileDataSourceImpl @Inject constructor(
             val updatedProfile = profile.deleteGateway(gateway)
             saveProfile(updatedProfile)
         }
+    }
+
+    override suspend fun updateDeveloperMode(isEnabled: Boolean) {
+        withContext(ioDispatcher) {
+            readProfile()?.let { profile ->
+                val updatedProfile = profile.updateDeveloperMode(isEnabled)
+                saveProfile(updatedProfile)
+            }
+        }
+    }
+
+    override suspend fun isInDeveloperMode(): Boolean = withContext(ioDispatcher) {
+        readProfile()?.appPreferences?.security?.isDeveloperModeEnabled ?: false
     }
 
     private suspend fun getGateway(): Gateway {

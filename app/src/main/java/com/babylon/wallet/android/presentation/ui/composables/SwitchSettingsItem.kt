@@ -6,14 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
@@ -47,15 +46,7 @@ fun SwitchSettingsItem(
                 )
             }
         }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = RadixTheme.colors.gray1,
-                uncheckedThumbColor = RadixTheme.colors.gray2,
-                uncheckedTrackColor = RadixTheme.colors.gray3,
-                checkedTrackColor = RadixTheme.colors.gray1.copy(alpha = 0.6f)
-            )
-        )
+
+        RadixSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
