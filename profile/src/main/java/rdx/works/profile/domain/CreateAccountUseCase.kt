@@ -3,7 +3,6 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Gateway
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
@@ -11,6 +10,7 @@ import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
+import rdx.works.profile.data.model.apppreferences.Radix
 
 class CreateAccountUseCase @Inject constructor(
     private val getMnemonicUseCase: GetMnemonicUseCase,
@@ -33,7 +33,7 @@ class CreateAccountUseCase @Inject constructor(
             if (networkUrl != null && networkName != null) {
                 gateway = Gateway(
                     url = networkUrl,
-                    network = Network.allKnownNetworks().first { network ->
+                    network = Radix.Network.allKnownNetworks().first { network ->
                         network.name == networkName
                     }
                 )

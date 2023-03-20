@@ -21,9 +21,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Gateway
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
+import rdx.works.profile.data.model.apppreferences.Radix
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
@@ -86,7 +86,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
             _state.update { state -> state.copy(addingGateway = true) }
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
-                profileDataSource.addGateway(Gateway(newUrl, Network.forName(networkName)))
+                profileDataSource.addGateway(Gateway(newUrl, Radix.Network.forName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }

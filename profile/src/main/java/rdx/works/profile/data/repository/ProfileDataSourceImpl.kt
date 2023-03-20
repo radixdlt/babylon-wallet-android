@@ -14,7 +14,6 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.addGateway
 import rdx.works.profile.data.model.apppreferences.changeGateway
@@ -24,6 +23,7 @@ import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
+import rdx.works.profile.data.model.apppreferences.Radix
 
 @Suppress("TooManyFunctions")
 interface ProfileDataSource {
@@ -42,7 +42,7 @@ interface ProfileDataSource {
 
     suspend fun clear()
 
-    suspend fun getCurrentNetwork(): Network
+    suspend fun getCurrentNetwork(): Radix.Network
     suspend fun getCurrentNetworkId(): NetworkId
 
     suspend fun getCurrentNetworkBaseUrl(): String
@@ -114,7 +114,7 @@ class ProfileDataSourceImpl @Inject constructor(
         encryptedPreferencesManager.clear()
     }
 
-    override suspend fun getCurrentNetwork(): Network = readProfile()
+    override suspend fun getCurrentNetwork(): Radix.Network = readProfile()
         ?.appPreferences
         ?.gateways?.current()?.network
         ?: Gateway.nebunet.network
@@ -128,7 +128,7 @@ class ProfileDataSourceImpl @Inject constructor(
     }
 
     override suspend fun hasAccountForGateway(gateway: Gateway): Boolean {
-        val knownNetwork = Network
+        val knownNetwork = Radix.Network
             .allKnownNetworks()
             .firstOrNull { network ->
                 network.name == gateway.network.name

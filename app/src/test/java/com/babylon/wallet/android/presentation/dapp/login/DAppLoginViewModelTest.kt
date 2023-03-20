@@ -24,7 +24,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Network
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 
@@ -102,7 +102,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         super.setUp()
         val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { profileDataSource.getCurrentNetwork() } returns Network.nebunet
+        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)
         }

@@ -15,8 +15,8 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
@@ -44,12 +44,12 @@ class ProfileTest {
         )
 
         assertEquals(profile.networks.count(), 1)
-        assertEquals(profile.networks.first().networkID, Network.nebunet.id)
+        assertEquals(profile.networks.first().networkID, Radix.Network.nebunet.id)
         assertEquals(profile.networks.first().accounts.count(), 1)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
             "Next derivation index for second account",
-            profile.factorSources.first().getNextAccountDerivationIndex(Network.nebunet.networkId()),
+            profile.factorSources.first().getNextAccountDerivationIndex(Radix.Network.nebunet.networkId()),
             1
         )
 
@@ -73,7 +73,7 @@ class ProfileTest {
         assertEquals(updatedProfile.networks.first().accounts.count(), 2)
         assertEquals(
             "Next derivation index for third account",
-            updatedProfile.factorSources.first().getNextAccountDerivationIndex(Network.nebunet.networkId()),
+            updatedProfile.factorSources.first().getNextAccountDerivationIndex(Radix.Network.nebunet.networkId()),
             2
         )
 
@@ -105,7 +105,7 @@ class ProfileTest {
         assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
-            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(Network.nebunet.networkId()),
+            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(Radix.Network.nebunet.networkId()),
             1
         )
 
