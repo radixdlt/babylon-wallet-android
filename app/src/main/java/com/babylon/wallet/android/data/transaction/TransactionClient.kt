@@ -179,16 +179,10 @@ class TransactionClient @Inject constructor(
                         )
                     )
                 }
-                val submitResult = submitNotarizedTransaction(
+                return submitNotarizedTransaction(
                     txID.toHexString(),
                     CompileNotarizedTransactionResponse(compiledNotarizedTransaction)
                 )
-                return when (submitResult) {
-                    is Result.Error -> submitResult
-                    is Result.Success -> {
-                        submitResult
-                    }
-                }
             }
         }
     }
@@ -364,14 +358,14 @@ class TransactionClient @Inject constructor(
                         TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(txID))
                     )
                 } else {
-                    pollTransactionStatus(txID)
+                    Result.Success(txID)
                 }
             }
         }
     }
 
     @Suppress("MagicNumber")
-    private suspend fun pollTransactionStatus(txID: String): Result<String> {
+    suspend fun pollTransactionStatus(txID: String): Result<String> {
         var transactionStatus = TransactionStatus.pending
         var tryCount = 0
         var errorCount = 0

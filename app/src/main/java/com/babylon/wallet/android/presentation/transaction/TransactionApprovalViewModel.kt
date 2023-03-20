@@ -114,11 +114,29 @@ class TransactionApprovalViewModel @Inject constructor(
                     state.manifestData?.let { manifest ->
                         val result = transactionClient.signAndSubmitTransaction(manifest)
                         result.onValue { txId ->
-                            state = state.copy(isSigning = false, approved = true)
+                            // Send confirmation to the dApp that tx was submitted before status polling
                             dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
-                            approvalJob = null
-                            appEventBus.sendEvent(AppEvent.ApprovedTransaction)
-                            sendEvent(TransactionApprovalEvent.NavigateBack)
+
+                            val transactionStatus = transactionClient.pollTransactionStatus(txId)
+                            transactionStatus.onValue {
+                                state = state.copy(isSigning = false, approved = true)
+                                approvalJob = null
+                                appEventBus.sendEvent(AppEvent.ApprovedTransaction)
+                                sendEvent(TransactionApprovalEvent.NavigateBack)
+                            }
+                            transactionStatus.onError {
+                                state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
+                                val exception = it as? TransactionApprovalException
+                                if (exception != null) {
+                                    dAppMessenger.sendWalletInteractionResponseFailure(
+                                        args.requestId,
+                                        error = exception.failure.toWalletErrorType(),
+                                        message = exception.failure.getDappMessage()
+                                    )
+                                    approvalJob = null
+                                    sendEvent(TransactionApprovalEvent.NavigateBack)
+                                }
+                            }
                         }
                         result.onError {
                             state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))

@@ -57,6 +57,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
+        coEvery { transactionClient.pollTransactionStatus(any()) } returns Result.Success("")
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 sampleRequestId,
