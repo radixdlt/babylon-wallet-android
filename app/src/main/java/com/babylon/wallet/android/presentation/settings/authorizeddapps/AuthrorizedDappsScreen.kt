@@ -32,7 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun AuthorizedDappsScreen(
@@ -56,7 +56,7 @@ fun AuthorizedDappsScreen(
 @Composable
 private fun AuthorizedDappsContent(
     onBackClick: () -> Unit,
-    dapps: ImmutableList<OnNetwork.AuthorizedDapp>,
+    dapps: ImmutableList<Network.AuthorizedDapp>,
     onDappClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {

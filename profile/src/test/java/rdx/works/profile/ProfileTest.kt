@@ -18,9 +18,9 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
@@ -79,14 +79,14 @@ class ProfileTest {
         val firstPersona = init(
             displayName = "First",
             fields = listOf(
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = OnNetwork.Persona.Field.Kind.FirstName,
+                    kind = Network.Persona.Field.Kind.FirstName,
                     value = "Alice"
                 ),
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = OnNetwork.Persona.Field.Kind.LastName,
+                    kind = Network.Persona.Field.Kind.LastName,
                     value = "Anderson"
                 )
             ),
@@ -175,14 +175,14 @@ class ProfileTest {
         val firstPersona = init(
             displayName = "Mrs Incognito",
             fields = listOf(
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = OnNetwork.Persona.Field.Kind.FirstName,
+                    kind = Network.Persona.Field.Kind.FirstName,
                     value = "Jane"
                 ),
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = OnNetwork.Persona.Field.Kind.LastName,
+                    kind = Network.Persona.Field.Kind.LastName,
                     value = "Incognitoson"
                 )
             ),
@@ -199,14 +199,14 @@ class ProfileTest {
         val secondPersona = init(
             displayName = "Mrs Public",
             fields = listOf(
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-                    kind = OnNetwork.Persona.Field.Kind.FirstName,
+                    kind = Network.Persona.Field.Kind.FirstName,
                     value = "Maria"
                 ),
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "AC37E346-32EF-4670-9097-1AC27B20D394",
-                    kind = OnNetwork.Persona.Field.Kind.LastName,
+                    kind = Network.Persona.Field.Kind.LastName,
                     value = "Publicson"
                 )
             ),
@@ -229,43 +229,43 @@ class ProfileTest {
             p2pLink = p2pLink
         )
 
-        val authorizedDapp = OnNetwork.AuthorizedDapp(
+        val authorizedDapp = Network.AuthorizedDapp(
             networkID = networkId.value,
             dAppDefinitionAddress = "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
-                OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
+                Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = "identity_tdx_b_1pwvt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpsedwrfm",
                     fieldIDs = listOf(
                         "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
                         "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
                     ),
                     sharedAccounts =
-                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu",
                             "account_tdx_b_1pr2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54tshau0z6"
                         ),
-                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
                             2
                         )
                     ),
                     lastUsedOn = "some date"
                 ),
-                OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
+                Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = "identity_tdx_b_1p0vtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkshkxgen",
                     fieldIDs = listOf(
                         "FAD199A5-D6A8-425D-8807-C1561C2425C8",
                         "AC37E346-32EF-4670-9097-1AC27B20D394"
                     ),
                     sharedAccounts =
-                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu"
                         ),
-                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                             1
                         )
                     ),

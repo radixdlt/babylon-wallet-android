@@ -25,14 +25,14 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import java.math.BigDecimal
 
 class SampleDataProvider {
 
-    fun sampleAccount(address: String = "fj3489fj348f"): OnNetwork.Account {
-        return OnNetwork.Account(
+    fun sampleAccount(address: String = "fj3489fj348f"): Network.Account {
+        return Network.Account(
             address = address,
             appearanceID = 123,
             displayName = "my account",
@@ -58,14 +58,14 @@ class SampleDataProvider {
         return sb.toString()
     }
 
-    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): OnNetwork.Persona {
-        return OnNetwork.Persona(
+    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): Network.Persona {
+        return Network.Persona(
             address = personaAddress,
             displayName = personaName,
             networkID = 11,
             fields = listOf(
-                OnNetwork.Persona.Field("1", OnNetwork.Persona.Field.Kind.Email, "test@test.pl"),
-                OnNetwork.Persona.Field("2", OnNetwork.Persona.Field.Kind.FirstName, "John")
+                Network.Persona.Field("1", Network.Persona.Field.Kind.Email, "test@test.pl"),
+                Network.Persona.Field("2", Network.Persona.Field.Kind.FirstName, "John")
             ),
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(

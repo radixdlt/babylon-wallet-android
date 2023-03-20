@@ -22,7 +22,7 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.CreatePersonaUseCase
@@ -43,14 +43,14 @@ class CreatePersonaUseCaseTest {
             bip39Passphrase = ""
         )
         val personaFields = listOf(
-            OnNetwork.Persona.Field(
+            Network.Persona.Field(
                 id = "ID213",
-                kind = OnNetwork.Persona.Field.Kind.FirstName,
+                kind = Network.Persona.Field.Kind.FirstName,
                 value = "Emily"
             ),
-            OnNetwork.Persona.Field(
+            Network.Persona.Field(
                 id = "ID0921",
-                kind = OnNetwork.Persona.Field.Kind.LastName,
+                kind = Network.Persona.Field.Kind.LastName,
                 value = "Jacobs"
             )
         )
@@ -74,9 +74,9 @@ class CreatePersonaUseCaseTest {
                     FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
                 networks = listOf(
-                    OnNetwork(
+                    Network(
                         accounts = listOf(
-                            OnNetwork.Account(
+                            Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",

@@ -22,7 +22,7 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -67,9 +67,9 @@ class GenerateProfileUseCaseTest {
                     FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
                 networks = listOf(
-                    OnNetwork(
+                    Network(
                         accounts = listOf(
-                            OnNetwork.Account(
+                            Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",

@@ -4,8 +4,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -21,7 +21,7 @@ class CreateAccountUseCase @Inject constructor(
         networkUrl: String? = null,
         networkName: String? = null,
         switchNetwork: Boolean = false
-    ): OnNetwork.Account {
+    ): Network.Account {
         return withContext(defaultDispatcher) {
             val profile = profileDataSource.readProfile()
             checkNotNull(profile) {

@@ -12,7 +12,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Compan
 import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.olympiaBackwardsCompatible
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.derivation.CustomHDDerivationPath
@@ -149,7 +149,7 @@ data class FactorSource(
         @SerialName("device")
         data class Device(
             @SerialName("nextDerivationIndicesPerNetwork")
-            val nextDerivationIndicesPerNetwork: List<OnNetwork.NextDerivationIndices>
+            val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>
         ) : Storage() {
 
             fun incrementAccount(forNetworkId: NetworkId): Device {
@@ -158,7 +158,7 @@ data class FactorSource(
                 }
 
                 val mutatedList = if (indicesForNetwork == null) {
-                    nextDerivationIndicesPerNetwork + OnNetwork.NextDerivationIndices(
+                    nextDerivationIndicesPerNetwork + Network.NextDerivationIndices(
                         networkId = forNetworkId.value,
                         forAccount = 1,
                         forIdentity = 0
@@ -182,7 +182,7 @@ data class FactorSource(
                 }
 
                 val mutatedList = if (indicesForNetwork == null) {
-                    nextDerivationIndicesPerNetwork + OnNetwork.NextDerivationIndices(
+                    nextDerivationIndicesPerNetwork + Network.NextDerivationIndices(
                         networkId = forNetworkId.value,
                         forAccount = 0,
                         forIdentity = 1

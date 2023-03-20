@@ -3,17 +3,17 @@ package rdx.works.profile.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetMnemonicUseCase
 import javax.inject.Inject
 
 interface AccountRepository {
 
-    val accounts: Flow<List<OnNetwork.Account>>
+    val accounts: Flow<List<Network.Account>>
 
-    suspend fun getAccounts(): List<OnNetwork.Account>
+    suspend fun getAccounts(): List<Network.Account>
 
-    suspend fun getAccountByAddress(address: String): OnNetwork.Account?
+    suspend fun getAccountByAddress(address: String): Network.Account?
 
     suspend fun getSignersForAddresses(
         networkId: Int,
@@ -26,7 +26,7 @@ class AccountRepositoryImpl @Inject constructor(
     private val getMnemonicUseCase: GetMnemonicUseCase
 ) : AccountRepository {
 
-    override val accounts: Flow<List<OnNetwork.Account>> = profileDataSource.profile
+    override val accounts: Flow<List<Network.Account>> = profileDataSource.profile
         .map { profile ->
             profile
                 ?.networks
@@ -37,12 +37,12 @@ class AccountRepositoryImpl @Inject constructor(
             perNetwork?.accounts.orEmpty()
         }
 
-    override suspend fun getAccounts(): List<OnNetwork.Account> {
+    override suspend fun getAccounts(): List<Network.Account> {
         val perNetwork = getPerNetwork()
         return perNetwork?.accounts.orEmpty()
     }
 
-    override suspend fun getAccountByAddress(address: String): OnNetwork.Account? {
+    override suspend fun getAccountByAddress(address: String): Network.Account? {
         val perNetwork = getPerNetwork()
         return perNetwork
             ?.accounts
@@ -66,7 +66,7 @@ class AccountRepositoryImpl @Inject constructor(
         )
     }
 
-    private suspend fun getPerNetwork(): OnNetwork? {
+    private suspend fun getPerNetwork(): Network? {
         return profileDataSource.readProfile()
             ?.networks
             ?.firstOrNull { perNetwork ->

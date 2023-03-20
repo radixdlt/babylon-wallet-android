@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Serializable
 internal data class ProfileSnapshot(
@@ -37,7 +37,7 @@ internal data class ProfileSnapshot(
      * A list of accounts, personas and connected dApps.
      */
     @SerialName("networks")
-    private val networks: List<OnNetwork>,
+    private val networks: List<Network>,
 
     /**
      * Incrementing from 1

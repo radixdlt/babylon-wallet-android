@@ -20,7 +20,7 @@ import rdx.works.profile.derivation.model.NetworkId
 import java.util.*
 
 @Serializable
-data class OnNetwork(
+data class Network(
     /**
      * The ID of the network that has been used to generate the accounts, to which personas
      * have been added and dApps connected.
@@ -440,17 +440,17 @@ data class OnNetwork(
 }
 
 fun Profile.addAccount(
-    account: OnNetwork.Account,
+    account: Network.Account,
     withFactorSourceId: FactorSource.ID,
     onNetwork: NetworkId
 ): Profile {
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
-    val newOnNetworks = if (networkExist) {
+    val newNetworks = if (networkExist) {
         this.networks.map { network ->
             if (network.networkID == onNetwork.value) {
                 val updatedAccounts = network.accounts.toMutableList()
                 updatedAccounts.add(account)
-                OnNetwork(
+                Network(
                     accounts = updatedAccounts.toList(),
                     authorizedDapps = network.authorizedDapps,
                     networkID = network.networkID,
@@ -461,7 +461,7 @@ fun Profile.addAccount(
             }
         }
     } else {
-        this.networks + OnNetwork(
+        this.networks + Network(
             accounts = listOf(account),
             authorizedDapps = listOf(),
             networkID = onNetwork.value,
@@ -470,7 +470,7 @@ fun Profile.addAccount(
     }
 
     return copy(
-        networks = newOnNetworks,
+        networks = newNetworks,
     ).incrementFactorSourceNextAccountIndex(
         forNetwork = onNetwork,
         factorSourceId = withFactorSourceId
@@ -498,7 +498,7 @@ fun Profile.incrementFactorSourceNextAccountIndex(
 }
 
 fun Profile.updatePersona(
-    persona: OnNetwork.Persona
+    persona: Network.Persona
 ): Profile {
     val networkId = appPreferences.gateways.current().network.networkId()
 
@@ -518,7 +518,7 @@ fun Profile.updatePersona(
 }
 
 fun Profile.addPersona(
-    persona: OnNetwork.Persona,
+    persona: Network.Persona,
     withFactorSourceId: FactorSource.ID,
     onNetwork: NetworkId
 ): Profile {

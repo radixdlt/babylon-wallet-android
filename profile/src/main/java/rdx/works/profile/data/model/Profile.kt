@@ -14,7 +14,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.incrementFactorSourceNextAccountIndex
 import timber.log.Timber
@@ -54,7 +54,7 @@ data class Profile(
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
      */
-    val networks: List<OnNetwork>,
+    val networks: List<Network>,
 
     /**
      * A version of the Profile Snapshot data format used for compatibility checks.
@@ -171,14 +171,14 @@ data class Profile(
                 hint = creatingDevice
             )
 
-            val initialAccount = OnNetwork.Account.init(
+            val initialAccount = Network.Account.init(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 factorSource = factorSource,
                 networkId = gateway.network.networkId(),
                 displayName = firstAccountDisplayName
             )
 
-            val mainNetwork = OnNetwork(
+            val mainNetwork = Network(
                 accounts = listOf(initialAccount),
                 authorizedDapps = listOf(),
                 networkID = gateway.network.id,
