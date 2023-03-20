@@ -40,43 +40,45 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                         it.identityAddress == authRequest.personaAddress
                     }
                 if (authorizedDapp != null && authorizedPersonaSimple != null) {
-                    val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                        authorizedDapp.dAppDefinitionAddress,
-                        authorizedPersonaSimple.identityAddress,
-                        ongoingRequest.numberOfAccounts,
-                        ongoingRequest.quantifier.toProfileShareAccountsQuantifier()
-                    )
-                    if (potentialOngoingAddresses.isNotEmpty()) {
-                        val selectedAccounts = potentialOngoingAddresses
-                            .mapNotNull {
-                                accountRepository.getAccountByAddress(it)?.toUiModel(true)
-                            }
-                        val updatedDapp = authorizedDapp.updateAuthorizedDappPersonas(
-                            authorizedDapp.referencesToAuthorizedPersonas.map { ref ->
-                                if (ref.identityAddress == authorizedPersonaSimple.identityAddress) {
-                                    ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
-                                } else {
-                                    ref
+                    if (request.resetRequestItem?.personaData != true && request.resetRequestItem?.accounts != true) {
+                        val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+                            authorizedDapp.dAppDefinitionAddress,
+                            authorizedPersonaSimple.identityAddress,
+                            ongoingRequest.numberOfAccounts,
+                            ongoingRequest.quantifier.toProfileShareAccountsQuantifier()
+                        )
+                        if (potentialOngoingAddresses.isNotEmpty()) {
+                            val selectedAccounts = potentialOngoingAddresses
+                                .mapNotNull {
+                                    accountRepository.getAccountByAddress(it)?.toUiModel(true)
                                 }
+                            val updatedDapp = authorizedDapp.updateAuthorizedDappPersonas(
+                                authorizedDapp.referencesToAuthorizedPersonas.map { ref ->
+                                    if (ref.identityAddress == authorizedPersonaSimple.identityAddress) {
+                                        ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                                    } else {
+                                        ref
+                                    }
+                                }
+                            )
+                            val persona = checkNotNull(
+                                personaRepository.getPersonaByAddress(authorizedPersonaSimple.identityAddress)
+                            )
+                            val result = dAppMessenger.sendWalletInteractionSuccessResponse(
+                                interactionId = request.requestId,
+                                persona = persona,
+                                usePersona = request.isUsePersonaAuth(),
+                                ongoingAccounts = selectedAccounts
+                            )
+                            dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
+                            when (result) {
+                                is Result.Success -> {
+                                    operationResult = Result.Success(
+                                        authorizedDapp.displayName
+                                    )
+                                }
+                                else -> {}
                             }
-                        )
-                        val persona = checkNotNull(
-                            personaRepository.getPersonaByAddress(authorizedPersonaSimple.identityAddress)
-                        )
-                        val result = dAppMessenger.sendWalletInteractionSuccessResponse(
-                            interactionId = request.requestId,
-                            persona = persona,
-                            usePersona = request.isUsePersonaAuth(),
-                            ongoingAccounts = selectedAccounts
-                        )
-                        dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
-                        when (result) {
-                            is Result.Success -> {
-                                operationResult = Result.Success(
-                                    authorizedDapp.displayName
-                                )
-                            }
-                            else -> {}
                         }
                     }
                 }

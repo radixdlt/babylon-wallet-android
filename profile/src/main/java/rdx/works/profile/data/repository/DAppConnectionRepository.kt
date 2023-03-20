@@ -40,6 +40,12 @@ interface DAppConnectionRepository {
 
     fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<OnNetwork.AuthorizedDapp?>
     suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String)
+    suspend fun resetPersonaPermissions(
+        dAppDefinitionAddress: String,
+        personaAddress: String,
+        personaData: Boolean,
+        accounts: Boolean
+    )
 }
 
 class DAppConnectionRepositoryImpl @Inject constructor(
@@ -140,6 +146,19 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun resetPersonaPermissions(
+        dAppDefinitionAddress: String,
+        personaAddress: String,
+        personaData: Boolean,
+        accounts: Boolean
+    ) {
+        if (personaData) {
+            // TODO implement when we have personaDataOngoing and personaDataOneTime requests
+        } else if (accounts) {
+            deletePersonaForDapp(dAppDefinitionAddress, personaAddress)
+        }
+    }
+
     override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.AuthorizedDapp>> {
         return getAuthorizedDapps().map { authorizedDapps ->
             authorizedDapps.filter { dapp ->
@@ -219,7 +238,8 @@ private fun Profile.deleteAuthorizedDapp(
 fun OnNetwork.AuthorizedDapp.updateAuthorizedDappPersonas(
     authorizedDAppPersonas: List<OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple>
 ): OnNetwork.AuthorizedDapp {
-    val updatedAuthPersonas = (authorizedDAppPersonas + referencesToAuthorizedPersonas).distinctBy { it.identityAddress }
+    val updatedAuthPersonas =
+        (authorizedDAppPersonas + referencesToAuthorizedPersonas).distinctBy { it.identityAddress }
     return copy(
         networkID = networkID,
         dAppDefinitionAddress = dAppDefinitionAddress,
