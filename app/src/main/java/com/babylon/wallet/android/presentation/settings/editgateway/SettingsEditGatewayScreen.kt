@@ -313,14 +313,14 @@ private fun GatewayCard(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = gateway.gateway.network.displayName(),
+                text = gateway.gateway.displayName(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = gateway.gateway.url,
+                text = gateway.gateway.displayDescription(),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,
