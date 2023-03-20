@@ -72,7 +72,7 @@ object Radix {
         val url: String,
 
         @SerialName("network")
-        val network: Radix.Network
+        val network: Network
     ) {
 
         val isDefault: Boolean
@@ -84,19 +84,19 @@ object Radix {
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
-                network = Radix.Network.nebunet
+                network = Network.nebunet
             )
             val hammunet = Gateway(
                 url = "https://hammunet-gateway.radixdlt.com",
-                network = Radix.Network.hammunet
+                network = Network.hammunet
             )
             val enkinet = Gateway(
                 url = "https://enkinet-gateway.radixdlt.com",
-                network = Radix.Network.enkinet
+                network = Network.enkinet
             )
             val mardunet = Gateway(
                 url = "https://mardunet-gateway.radixdlt.com",
-                network = Radix.Network.mardunet
+                network = Network.mardunet
             )
         }
     }
