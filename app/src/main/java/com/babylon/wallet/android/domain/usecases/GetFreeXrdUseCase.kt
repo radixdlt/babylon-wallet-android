@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.onValue
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.Value
@@ -40,8 +41,11 @@ class GetFreeXrdUseCase @Inject constructor(
                 is Result.Error -> epochResult
                 is Result.Success -> {
                     val submitResult = transactionClient.signAndSubmitTransaction(manifest, true)
-                    if (submitResult is Result.Success) {
-                        preferencesManager.updateEpoch(address, epochResult.data)
+                    submitResult.onValue { txId ->
+                        val transactionStatus = transactionClient.pollTransactionStatus(txId)
+                        transactionStatus.onValue {
+                            preferencesManager.updateEpoch(address, epochResult.data)
+                        }
                     }
                     submitResult
                 }
