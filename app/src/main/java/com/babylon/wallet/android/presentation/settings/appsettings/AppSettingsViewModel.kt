@@ -29,6 +29,8 @@ class AppSettingsViewModel @Inject constructor(
         viewModelScope.launch { readSettings() }
     }
 
+    @Suppress("RedundantSuspendModifier")
+    // TODO verify why detekt complains
     private suspend fun readSettings() {
         val isInDeveloperMode = isInDeveloperModeUseCase()
         _state.updateSetting<AppSettings.DeveloperMode> {
