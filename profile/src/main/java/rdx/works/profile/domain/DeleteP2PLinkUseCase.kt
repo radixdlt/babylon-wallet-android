@@ -1,10 +1,10 @@
 package rdx.works.profile.domain
 
-import rdx.works.profile.data.extensions.deleteP2PClient
+import rdx.works.profile.data.extensions.deleteP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
-class DeleteP2PClientUseCase @Inject constructor(
+class DeleteP2PLinkUseCase @Inject constructor(
     private val profileDataSource: ProfileDataSource
 ) {
 
@@ -14,7 +14,7 @@ class DeleteP2PClientUseCase @Inject constructor(
             "Profile does not exist"
         }
 
-        val updatedProfile = profile.deleteP2PClient(
+        val updatedProfile = profile.deleteP2PLink(
             connectionPassword = connectionPassword
         )
         // Save updated profile

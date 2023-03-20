@@ -10,19 +10,19 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.AddP2PClientUseCase
+import rdx.works.profile.domain.AddP2PLinkUseCase
 import kotlin.test.Ignore
 
-class AddP2PClientUseCaseTest {
+class AddP2PLinkUseCaseTest {
 
-    @Ignore("P2PClient data class or this unit test needs refactor")
+    @Ignore("P2PLink data class or this unit test needs refactor")
     @Test
     fun `given profile exists, when adding p2p client, verify it is added properly`() = runBlocking {
         val profileDataSource = mock(ProfileDataSource::class.java)
-        val addP2PClientUseCase = AddP2PClientUseCase(profileDataSource)
-        val expectedP2pClient = P2PClient.init(
+        val addP2PLinkUseCase = AddP2PLinkUseCase(profileDataSource)
+        val expectedP2PLink = P2PLink.init(
             connectionPassword = "pass1234",
             displayName = "Mac browser"
         )
@@ -33,7 +33,7 @@ class AddP2PClientUseCaseTest {
             appPreferences = AppPreferences(
                 display = Display.default,
                 gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
-                p2pClients = emptyList()
+                p2pLinks = emptyList()
             ),
             factorSources = listOf(),
             onNetwork = emptyList(),
@@ -41,7 +41,7 @@ class AddP2PClientUseCaseTest {
         )
         whenever(profileDataSource.readProfile()).thenReturn(initialProfile)
 
-        addP2PClientUseCase(
+        addP2PLinkUseCase(
             displayName = "Mac browser",
             connectionPassword = "pass1234"
         )
@@ -50,7 +50,7 @@ class AddP2PClientUseCaseTest {
             appPreferences = AppPreferences(
                 display = initialProfile.appPreferences.display,
                 gateways = initialProfile.appPreferences.gateways,
-                p2pClients = listOf(expectedP2pClient)
+                p2pLinks = listOf(expectedP2PLink)
             ),
             factorSources = initialProfile.factorSources,
             onNetwork = initialProfile.onNetwork,
@@ -60,13 +60,13 @@ class AddP2PClientUseCaseTest {
     }
 
     @Test(expected = IllegalStateException::class)
-    fun `when profile does not exist, verify exception thrown when adding p2pclient`(): Unit = runBlocking {
+    fun `when profile does not exist, verify exception thrown when adding p2pLink`(): Unit = runBlocking {
         val profileDataSource = mock(ProfileDataSource::class.java)
-        val addP2PClientUseCase = AddP2PClientUseCase(profileDataSource)
+        val addP2PLinkUseCase = AddP2PLinkUseCase(profileDataSource)
 
         whenever(profileDataSource.readProfile()).thenReturn(null)
 
-        addP2PClientUseCase(
+        addP2PLinkUseCase(
             displayName = "Mac browser",
             connectionPassword = "pass1234"
         )

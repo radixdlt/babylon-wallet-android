@@ -8,7 +8,7 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Gateway
-import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.OnNetwork
@@ -148,18 +148,18 @@ fun Profile.deleteGateway(
     return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
 }
 
-fun Profile.addP2PClient(
-    p2pClient: P2PClient
+fun Profile.addP2PLink(
+    p2pLink: P2PLink
 ): Profile {
-    val updatedP2PClients = appPreferences.p2pClients.toMutableList()
-    updatedP2PClients.add(
-        p2pClient
+    val updatedP2PLinks = appPreferences.p2pLinks.toMutableList()
+    updatedP2PLinks.add(
+        p2pLink
     )
 
     val newAppPreferences = AppPreferences(
         display = appPreferences.display,
         gateways = appPreferences.gateways,
-        p2pClients = updatedP2PClients.toList()
+        p2pLinks = updatedP2PLinks.toList()
     )
 
     return this.copy(
@@ -168,16 +168,16 @@ fun Profile.addP2PClient(
     )
 }
 
-fun Profile.deleteP2PClient(connectionPassword: String): Profile {
-    val updatedP2PClients = appPreferences.p2pClients.toMutableList()
-    updatedP2PClients.removeIf { p2pClient ->
-        p2pClient.connectionPassword == connectionPassword
+fun Profile.deleteP2PLink(connectionPassword: String): Profile {
+    val updatedP2PLinks = appPreferences.p2pLinks.toMutableList()
+    updatedP2PLinks.removeIf { p2pLink ->
+        p2pLink.connectionPassword == connectionPassword
     }
 
     val newAppPreferences = AppPreferences(
         display = appPreferences.display,
         gateways = appPreferences.gateways,
-        p2pClients = updatedP2PClients.toList()
+        p2pLinks = updatedP2PLinks.toList()
     )
 
     return this.copy(

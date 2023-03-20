@@ -15,7 +15,7 @@
         }
       ]
     },
-    "p2pClients": [
+    "p2pLinks": [
       {
         "connectionPassword": "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
         "displayName": "Brave browser on Mac Studio"
@@ -236,5 +236,5 @@
   ],
   "id": "9958f568-8c9b-476a-beeb-017d1f843266",
   "creatingDevice": "Galaxy A53 5G (Samsung SM-A536B)",
-  "version": 21
+  "version": 22
 }

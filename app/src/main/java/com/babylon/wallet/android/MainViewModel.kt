@@ -77,11 +77,11 @@ class MainViewModel @Inject constructor(
     private var processingRequestJob: Job? = null
 
     init {
-        profileDataSource.p2pClient
-            .map { p2pClient ->
-                if (p2pClient != null) {
+        profileDataSource.p2pLink
+            .map { p2pLink ->
+                if (p2pLink != null) {
                     Timber.d("found connection password")
-                    currentConnectionPassword = p2pClient.connectionPassword
+                    currentConnectionPassword = p2pLink.connectionPassword
                     openDataChannelWithDapp(
                         connectionPassword = currentConnectionPassword,
                         isRestart = false

@@ -18,7 +18,7 @@ import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.P2PClient
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -30,7 +30,7 @@ interface ProfileDataSource {
 
     val profile: Flow<Profile?>
 
-    val p2pClient: Flow<P2PClient?>
+    val p2pLink: Flow<P2PLink?>
 
     val gateways: Flow<Gateways>
 
@@ -82,8 +82,8 @@ class ProfileDataSourceImpl @Inject constructor(
             it.getOrNull()
         }
 
-    override val p2pClient: Flow<P2PClient?> = profile.map { profile ->
-        profile?.appPreferences?.p2pClients?.firstOrNull()
+    override val p2pLink: Flow<P2PLink?> = profile.map { profile ->
+        profile?.appPreferences?.p2pLinks?.firstOrNull()
     }.distinctUntilChanged()
 
     override val gateways = profile
