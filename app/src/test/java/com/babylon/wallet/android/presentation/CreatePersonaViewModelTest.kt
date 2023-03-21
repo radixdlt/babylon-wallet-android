@@ -63,14 +63,9 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(
-            CreatePersonaViewModel.CreatePersonaUiState(
-                loading = false,
-                personaName = "",
-                isDeviceSecure = true
-            ),
-            viewModel.state
-        )
+        Assert.assertEquals(viewModel.state.loading, false)
+        Assert.assertEquals(viewModel.state.personaDisplayName, "")
+        Assert.assertEquals(viewModel.state.isDeviceSecure, true)
     }
 
     @Test
@@ -80,7 +75,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             val event = mutableListOf<CreatePersonaEvent>()
             val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
 
-            viewModel.onPersonaNameChange(personaName)
+            viewModel.onDisplayNameChanged(personaName)
 
             // when
             viewModel.onPersonaCreateClick()
@@ -88,15 +83,9 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             advanceUntilIdle()
 
             // then
-            Assert.assertEquals(
-                CreatePersonaViewModel.CreatePersonaUiState(
-                    loading = true,
-                    personaName = personaName,
-                    buttonEnabled = true,
-                    isDeviceSecure = true
-                ),
-                viewModel.state
-            )
+            Assert.assertEquals(viewModel.state.loading, true)
+            Assert.assertEquals(viewModel.state.personaDisplayName, personaName)
+            Assert.assertEquals(viewModel.state.isDeviceSecure, true)
 
             advanceUntilIdle()
 

@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,16 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,25 +28,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusState
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -62,7 +47,8 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
+import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaPropertyInput
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -96,9 +82,9 @@ fun PersonaEditScreen(
         onAddFields = viewModel::onAddFields,
         onSelectionChanged = viewModel::onSelectionChanged,
         onDeleteField = viewModel::onDeleteField,
-        onValueChanged = viewModel::onValueChanged,
+        onValueChanged = viewModel::onFieldValueChanged,
         onDisplayNameChanged = viewModel::onDisplayNameChanged,
-        addButtonEnabled = state.addButtonEnabled,
+        addButtonEnabled = state.addFieldButtonEnabled,
         personaDisplayName = state.personaDisplayName,
         saveButtonEnabled = state.saveButtonEnabled
     )
@@ -146,7 +132,7 @@ private fun PersonaEditContent(
             },
             onSelectionChanged = onSelectionChanged,
             modifier = Modifier.fillMaxSize(),
-            addButtonEnabled = addButtonEnabled
+            anyFieldSelected = addButtonEnabled
         )
     }) {
         persona?.let { persona ->
@@ -198,99 +184,6 @@ private fun PersonaEditContent(
         if (persona == null) {
             FullscreenCircularProgressContent()
         }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun AddFieldSheet(
-    onBackClick: () -> Unit,
-    fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
-    onAddFields: () -> Unit,
-    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    addButtonEnabled: Boolean
-) {
-    Column(modifier = modifier) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.add_a_field),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        LazyColumn(
-            contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            item {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(R.string.select_from_the_following),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-            }
-            items(fieldsToAdd, key = { it.kind }) { field ->
-                SelectableFieldItem(
-                    onSelectionChanged = onSelectionChanged,
-                    field = field,
-                    modifier = Modifier
-                        .animateItemPlacement()
-                        .throttleClickable {
-                            onSelectionChanged(field.kind, !field.selected)
-                        }
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault)
-                )
-            }
-        }
-        Divider(color = RadixTheme.colors.gray5)
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensions.paddingDefault),
-            enabled = addButtonEnabled,
-            text = stringResource(id = R.string.add),
-            onClick = onAddFields,
-        )
-    }
-}
-
-@Composable
-private fun SelectableFieldItem(
-    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
-    field: PersonaFieldKindWrapper,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            text = stringResource(id = field.kind.toDisplayResource()),
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Checkbox(
-            checked = field.selected,
-            colors = CheckboxDefaults.colors(
-                checkedColor = RadixTheme.colors.gray1,
-                uncheckedColor = RadixTheme.colors.gray3,
-                checkmarkColor = Color.White
-            ),
-            onCheckedChange = {
-                onSelectionChanged(field.kind, it)
-            }
-        )
     }
 }
 
@@ -375,38 +268,6 @@ private fun PersonaDetailList(
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
     }
-}
-
-@Composable
-fun PersonaPropertyInput(
-    modifier: Modifier,
-    label: String,
-    value: String,
-    onValueChanged: (String) -> Unit,
-    onDeleteField: () -> Unit,
-    onFocusChanged: ((FocusState) -> Unit)? = null
-) {
-    val focusManager = LocalFocusManager.current
-    RadixTextField(
-        modifier = modifier,
-        onValueChanged = onValueChanged,
-        value = value,
-        leftLabel = label,
-        iconToTheRight = {
-            IconButton(onClick = onDeleteField) {
-                Icon(
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = null,
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
-                )
-            }
-        },
-        onFocusChanged = onFocusChanged,
-        keyboardActions = KeyboardActions(onNext = {
-            focusManager.moveFocus(FocusDirection.Next)
-        }),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-    )
 }
 
 @Preview(showBackground = true)

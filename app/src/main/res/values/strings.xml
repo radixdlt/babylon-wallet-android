@@ -111,7 +111,6 @@
     <string name="hint_name_this_connector">Name this Connector, e.g. \"Chrome on Macbook Pro\"</string>
     <string name="no_funds_to_approve_transaction">No funds to approve transaction</string>
     <string name="settings_personas">Personas</string>
-    <string name="persona_creation_text">What would you like to call your persona?</string>
     <string name="hint_persona_name">e.g. My Main Persona</string>
     <string name="create_persona">Create Persona</string>
     <string name="your_persona_has_been_created">Your Persona has been created.</string>
@@ -178,7 +177,7 @@
     <string name="personas">Personas</string>
     <string name="what_is_persona">What is a Persona</string>
     <string name="here_are_the_dapps_you_have">Here are the dApps you have logged into with this persona.</string>
-    <string name="add_a_field">Add a field</string>
+    <string name="add_a_field">Add a Field</string>
     <string name="select_from_the_following">Select from the following fields to add them to this persona.</string>
     <string name="edit_avatar">Edit Avatar</string>
     <string name="add">Add</string>
@@ -240,4 +239,10 @@
     <string name="address_transaction">transaction</string>
     <string name="address_component">component</string>
     <string name="no_web_browser_installed">There is no web browser installed in this device</string>
+    <string name="learn_about_personas">Learn about Personas</string>
+    <string name="a_persona_is_an_identity">A Persona is an identity that you own and control. You can have as many as you like.</string>
+    <string name="you_will_choose_personas">You will choose Personas to login to dApps, and dApps may request access to personal information associated with that Persona.</string>
+    <string name="this_will_be_shared_with_dapps">This will be shared with dApps you login to</string>
+    <string name="some_dapps_may_request">Some dApps may request personal information, like name or email address, that can be added to your Persona. Add some of this data now if you like.</string>
+    <string name="save_and_continue">Save and Continue</string>
 </resources>

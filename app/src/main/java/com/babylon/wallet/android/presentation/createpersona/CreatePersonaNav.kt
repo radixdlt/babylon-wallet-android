@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.google.accompanist.navigation.animation.composable
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
+const val ROUTE_PERSONA_INFO = "persona_info_route"
 const val ROUTE_PERSONAS = "personas_route"
 
 fun NavController.createPersonaScreen() {
@@ -19,6 +20,38 @@ fun NavController.createPersonaScreen() {
 
 fun NavController.personaScreen() {
     navigate(ROUTE_PERSONAS)
+}
+
+fun NavController.personaInfoScreen() {
+    navigate(ROUTE_PERSONA_INFO)
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+fun NavGraphBuilder.personaInfoScreen(
+    onBackClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    composable(
+        route = ROUTE_PERSONA_INFO,
+        arguments = listOf(),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            null
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+    ) {
+        CreatePersonaInfoScreen(
+            onBackClick = onBackClick,
+            onContinueClick = onContinueClick
+        )
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

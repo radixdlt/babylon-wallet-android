@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSONA
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
+import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.dapp.account.ROUTE_CHOOSE_ACCOUNTS
 import com.babylon.wallet.android.presentation.dapp.account.chooseAccounts
 import com.babylon.wallet.android.presentation.dapp.login.DAppLoginViewModel
@@ -55,6 +56,10 @@ fun DappLoginNavigationHost(
             onDisplayPermission = { event ->
                 navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             }
+        )
+        personaInfoScreen(
+            onBackClick = { navController.navigateUp() },
+            onContinueClick = { navController.createPersonaScreen() }
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() },

@@ -5,12 +5,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.PersonaEditLogic
+import com.babylon.wallet.android.presentation.common.PersonaEditLogicImpl
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 import rdx.works.profile.domain.CreatePersonaUseCase
 import javax.inject.Inject
 
@@ -18,7 +24,9 @@ import javax.inject.Inject
 class CreatePersonaViewModel @Inject constructor(
     private val createPersonaUseCase: CreatePersonaUseCase,
     deviceSecurityHelper: DeviceSecurityHelper,
-) : ViewModel(), OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl() {
+) : ViewModel(),
+    OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
+    PersonaEditLogic by PersonaEditLogicImpl() {
 
     var state by mutableStateOf(
         CreatePersonaUiState(
@@ -27,11 +35,19 @@ class CreatePersonaViewModel @Inject constructor(
     )
         private set
 
-    fun onPersonaNameChange(personaName: String) {
-        state = state.copy(
-            personaName = personaName.take(PERSONA_NAME_MAX_LENGTH),
-            buttonEnabled = personaName.trim().isNotEmpty()
-        )
+    init {
+        viewModelScope.launch {
+            personaEditState.collect { s ->
+                state = state.copy(
+                    anyFieldSelected = s.areThereFieldsSelected,
+                    personaDisplayName = s.personaDisplayName.orEmpty(),
+                    continueButtonEnabled = s.inputValid,
+                    currentFields = s.currentFields,
+                    fieldsToAdd = s.fieldsToAdd
+                )
+            }
+        }
+        setPersona(null)
     }
 
     fun onPersonaCreateClick() {
@@ -39,9 +55,12 @@ class CreatePersonaViewModel @Inject constructor(
             loading = true
         )
         viewModelScope.launch {
+            val fields = state.currentFields.map {
+                OnNetwork.Persona.Field.init(kind = it.kind, value = it.value.trim())
+            }
             val persona = createPersonaUseCase(
-                displayName = state.personaName,
-                fields = emptyList()
+                displayName = state.personaDisplayName,
+                fields = fields
             )
 
             val personaId = persona.address
@@ -60,14 +79,13 @@ class CreatePersonaViewModel @Inject constructor(
 
     data class CreatePersonaUiState(
         val loading: Boolean = false,
-        val personaName: String = "",
-        val buttonEnabled: Boolean = false,
+        val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
+        val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
+        val personaDisplayName: String = "",
+        val continueButtonEnabled: Boolean = false,
+        val anyFieldSelected: Boolean = false,
         val isDeviceSecure: Boolean = false
     )
-
-    companion object {
-        private const val PERSONA_NAME_MAX_LENGTH = 20
-    }
 }
 
 internal sealed interface CreatePersonaEvent : OneOffEvent {
