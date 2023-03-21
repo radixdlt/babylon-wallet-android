@@ -43,7 +43,7 @@ fun RadixCenteredTopAppBar(
                         contentDescription = "navigate back"
                     )
                 }
-                BackIconType.Close -> {
+                BackIconType.Close -> IconButton(onClick = onBackClick) {
                     Icon(
                         painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                         tint = contentColor,
