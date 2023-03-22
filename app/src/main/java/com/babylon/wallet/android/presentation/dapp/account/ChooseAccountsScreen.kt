@@ -44,7 +44,14 @@ fun ChooseAccountsScreen(
 
     val state = viewModel.state
     val sharedState by sharedViewModel.state.collectAsState()
-    BackHandler(enabled = !state.showBackButton) {}
+    BackHandler {
+        if (state.showBackButton) {
+            onBackClick()
+        } else {
+            sharedViewModel.onRejectLogin()
+        }
+    }
+
     ChooseAccountContent(
         onBackClick = {
             if (state.showBackButton) {
