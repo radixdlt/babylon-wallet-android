@@ -37,7 +37,7 @@ data class EntityDetailsResponseAllOf (
     val metadata: EntityMetadataCollection,
 
     @SerialName(value = "details")
-    val details: EntityDetailsResponseDetails
+    val details: EntityDetailsResponseDetails? = null
 
 )
 

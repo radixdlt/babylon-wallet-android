@@ -23,7 +23,8 @@ import kotlinx.serialization.SerialName
  * Entity metadata key-value pair.
  *
  * @param key Entity metadata key.
- * @param `value` Entity metadata value.
+ * @param `value` 
+ * @param lastUpdatedAtStateVersion TBD
  */
 @Serializable
 
@@ -33,9 +34,12 @@ data class EntityMetadataItem (
     @SerialName(value = "key")
     val key: kotlin.String,
 
-    /* Entity metadata value. */
     @SerialName(value = "value")
-    val `value`: kotlin.String
+    val `value`: EntityMetadataItemValue,
+
+    /* TBD */
+    @SerialName(value = "last_updated_at_state_version")
+    val lastUpdatedAtStateVersion: kotlin.Long
 
 )
 

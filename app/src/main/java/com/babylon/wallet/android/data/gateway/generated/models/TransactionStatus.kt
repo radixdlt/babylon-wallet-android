@@ -27,20 +27,20 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class TransactionStatus(val value: kotlin.String) {
 
-    @SerialName(value = "unknown")
-    unknown("unknown"),
+    @SerialName(value = "Unknown")
+    unknown("Unknown"),
 
-    @SerialName(value = "committed_success")
-    committedSuccess("committed_success"),
+    @SerialName(value = "CommittedSuccess")
+    committedSuccess("CommittedSuccess"),
 
-    @SerialName(value = "committed_failure")
-    committedFailure("committed_failure"),
+    @SerialName(value = "CommittedFailure")
+    committedFailure("CommittedFailure"),
 
-    @SerialName(value = "pending")
-    pending("pending"),
+    @SerialName(value = "Pending")
+    pending("Pending"),
 
-    @SerialName(value = "rejected")
-    rejected("rejected");
+    @SerialName(value = "Rejected")
+    rejected("Rejected");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use

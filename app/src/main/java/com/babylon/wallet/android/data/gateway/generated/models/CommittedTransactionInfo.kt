@@ -16,8 +16,8 @@ import kotlinx.serialization.Contextual
  *
  * @param stateVersion 
  * @param transactionStatus 
- * @param payloadHashHex 
- * @param intentHashHex 
+ * @param payloadHashHex Hex-encoded SHA-256 hash.
+ * @param intentHashHex Hex-encoded SHA-256 hash.
  * @param feePaid 
  * @param confirmedAt 
  * @param errorMessage 
@@ -34,11 +34,11 @@ data class CommittedTransactionInfo (
 
     /* Hex-encoded SHA-256 hash. */
     @SerialName(value = "payload_hash_hex")
-    val payloadHashHex: kotlin.String,
+    val payloadHashHex: kotlin.String? = null,
 
     /* Hex-encoded SHA-256 hash. */
     @SerialName(value = "intent_hash_hex")
-    val intentHashHex: kotlin.String,
+    val intentHashHex: kotlin.String? = null,
 
     @SerialName(value = "fee_paid")
     val feePaid: TokenAmount? = null,
