@@ -27,13 +27,13 @@ rm -rf temp_generated
 $GEN_TOOL generate -i "$API_SPEC" \
 -g kotlin \
 -o "$OUTPUTDIR" \
---additional-properties=serializationLibrary=kotlinx_serialization,library=jvm-retrofit2,packageName=com.babylon.wallet.android.data.gateway.generated.models,useCoroutines=true
+--additional-properties=serializationLibrary=kotlinx_serialization,library=jvm-retrofit2,packageName=com.babylon.wallet.android.data.gateway.generated,useCoroutines=true
 
 echo "✨ Generation of models done, Removing some files we don't need."
 cd "$OUTPUTDIR"
 cd ..
-cp $OUTPUTDIR/src/main/kotlin/com/babylon/wallet/android/data/gateway/generated/model/models/*.kt $DESTINATION/models
-cp $OUTPUTDIR/src/main/kotlin/com/babylon/wallet/android/data/gateway/generated/model/infrastructure/*.kt $DESTINATION/infrastructure
-cp $OUTPUTDIR/src/main/kotlin/com/babylon/wallet/android/data/gateway/generated/model/apis/*.kt $DESTINATION
+cp $OUTPUTDIR/src/main/kotlin/com/babylon/wallet/android/data/gateway/generated/models/*.kt $DESTINATION/models
+cp $OUTPUTDIR/src/main/kotlin/com/babylon/wallet/android/data/gateway/generated/infrastructure/*.kt $DESTINATION/infrastructure
+cp $OUTPUTDIR/src/main/kotlin/com/babylon/wallet/android/data/gateway/generated/apis/*.kt $DESTINATION
 
 rm -rf temp_generated
