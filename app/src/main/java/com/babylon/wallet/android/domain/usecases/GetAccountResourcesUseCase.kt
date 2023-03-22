@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.EntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.toFungibleToken
 import com.babylon.wallet.android.data.gateway.toNonFungibleToken
 import com.babylon.wallet.android.data.repository.entity.EntityRepository

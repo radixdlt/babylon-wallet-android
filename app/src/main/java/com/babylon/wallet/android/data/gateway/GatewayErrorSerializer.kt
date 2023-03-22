@@ -1,13 +1,13 @@
 package com.babylon.wallet.android.data.gateway
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNotFoundError
-import com.babylon.wallet.android.data.gateway.generated.model.GatewayError
-import com.babylon.wallet.android.data.gateway.generated.model.InternalServerError
-import com.babylon.wallet.android.data.gateway.generated.model.InvalidEntityError
-import com.babylon.wallet.android.data.gateway.generated.model.InvalidRequestError
-import com.babylon.wallet.android.data.gateway.generated.model.InvalidTransactionError
-import com.babylon.wallet.android.data.gateway.generated.model.NotSyncedUpError
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionNotFoundError
+import com.babylon.wallet.android.data.gateway.generated.models.EntityNotFoundError
+import com.babylon.wallet.android.data.gateway.generated.models.GatewayError
+import com.babylon.wallet.android.data.gateway.generated.models.InternalServerError
+import com.babylon.wallet.android.data.gateway.generated.models.InvalidEntityError
+import com.babylon.wallet.android.data.gateway.generated.models.InvalidRequestError
+import com.babylon.wallet.android.data.gateway.generated.models.InvalidTransactionError
+import com.babylon.wallet.android.data.gateway.generated.models.NotSyncedUpError
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionNotFoundError
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement

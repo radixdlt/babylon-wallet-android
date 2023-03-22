@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.gateway
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 
 fun TransactionStatus.isComplete(): Boolean {
     return listOf(

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.repository.nonfungible
 
 import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleIdsRequest
 import com.babylon.wallet.android.data.gateway.toDomainModel
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
