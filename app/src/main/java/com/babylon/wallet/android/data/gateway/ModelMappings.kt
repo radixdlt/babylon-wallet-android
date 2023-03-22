@@ -17,12 +17,13 @@ import java.math.BigDecimal
 fun EntityDetailsResponse.toFungibleToken(): FungibleToken {
     return FungibleToken(
         address = address,
-        totalSupply = BigDecimal(details.totalSupply),
-        totalMinted = BigDecimal(details.totalMinted),
-        totalBurnt = BigDecimal(details.totalBurnt),
-        metadata = metadata.items.associate { entityMetadataItem ->
-            entityMetadataItem.key to entityMetadataItem.value
-        }
+        totalSupply = BigDecimal(details?.totalSupply ?: "0.0"), // TODO 1181
+        totalMinted = BigDecimal(details?.totalMinted ?: "0.0"),
+        totalBurnt = BigDecimal(details?.totalBurnt ?: "0.0"),
+        metadata = mapOf()
+//        metadata.items.associate { entityMetadataItem ->
+//            entityMetadataItem.key to entityMetadataItem.value
+//        }
     )
 }
 
@@ -30,8 +31,8 @@ fun FungibleResourcesCollection.toSimpleFungibleTokens(ownerAddress: String): Li
     return items.map { fungibleResourceItem ->
         SimpleOwnedFungibleToken(
             owner = AccountAddress(ownerAddress),
-            amount = BigDecimal(fungibleResourceItem.amount.value),
-            address = fungibleResourceItem.address
+            amount = BigDecimal.ZERO,//BigDecimal(fungibleResourceItem.amount.value),
+            address = ""//fungibleResourceItem.address
         )
     }
 }
@@ -56,9 +57,10 @@ fun EntityDetailsResponse.toNonFungibleToken(
 
 fun EntityMetadataCollection.toNonFungibleMetadataContainer(): NonFungibleMetadataContainer {
     return NonFungibleMetadataContainer(
-        metadata = items.associate { entityMetadataItem ->
-            entityMetadataItem.key to entityMetadataItem.value
-        },
+        metadata = mapOf(),
+//        items.associate { entityMetadataItem ->
+//            entityMetadataItem.key to entityMetadataItem.value
+//        },
         nextCursor = nextCursor,
         previousCursor = previousCursor
     )
@@ -68,8 +70,8 @@ fun NonFungibleResourcesCollection.toSimpleNonFungibleTokens(ownerAddress: Strin
     return items.map { nftResource ->
         SimpleOwnedNonFungibleToken(
             owner = AccountAddress(ownerAddress),
-            amount = BigDecimal(nftResource.amount),
-            tokenResourceAddress = nftResource.address
+            amount = BigDecimal.ZERO,//BigDecimal(nftResource.amount),
+            tokenResourceAddress = ""//nftResource.address
         )
     }
 }

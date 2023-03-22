@@ -18,7 +18,7 @@ interface TransactionRepository {
 
     suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse>
 
-    suspend fun getTransactionStatus(identifier: String?): Result<TransactionStatusResponse>
+    suspend fun getTransactionStatus(identifier: String): Result<TransactionStatusResponse>
 
     suspend fun getLedgerEpoch(): Result<Long>
 }
@@ -44,7 +44,7 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
             .execute(map = { it })
     }
 
-    override suspend fun getTransactionStatus(identifier: String?): Result<TransactionStatusResponse> {
+    override suspend fun getTransactionStatus(identifier: String): Result<TransactionStatusResponse> {
         return gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = identifier))
             .execute(map = { it })
     }

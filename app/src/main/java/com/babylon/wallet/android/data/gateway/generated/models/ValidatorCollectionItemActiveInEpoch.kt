@@ -21,22 +21,23 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param stake 
+ * @param stake String-encoded decimal representing the amount of a related fungible resource.
+ * @param stakePercentage 
  * @param key 
- * @param metadata 
  */
 @Serializable
 
 data class ValidatorCollectionItemActiveInEpoch (
 
+    /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "stake")
-    val stake: ValidatorCollectionItemActiveInEpochStake,
+    val stake: kotlin.String,
+
+    @SerialName(value = "stake_percentage")
+    val stakePercentage: kotlin.Double,
 
     @SerialName(value = "key")
-    val key: PublicKey,
-
-    @SerialName(value = "metadata")
-    val metadata: EntityMetadataCollection? = null
+    val key: PublicKey
 
 )
 

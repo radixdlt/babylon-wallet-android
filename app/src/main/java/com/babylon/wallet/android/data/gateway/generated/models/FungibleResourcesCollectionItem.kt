@@ -17,23 +17,22 @@ package com.babylon.wallet.android.data.gateway.generated.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address.
- * @param amount 
+ * @param aggregationLevel 
+ * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
  */
 @Serializable
+abstract class FungibleResourcesCollectionItem {
+    @Contextual
+    @SerialName(value = "aggregation_level")
+    abstract val aggregationLevel: ResourceAggregationLevel
 
-data class FungibleResourcesCollectionItem (
-
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address. */
-    @SerialName(value = "address")
-    val address: kotlin.String,
-
-    @SerialName(value = "amount")
-    val amount: TokenAmount
-
-)
+    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
+    @SerialName(value = "resource_address")
+    abstract val resourceAddress: kotlin.String
+}
 

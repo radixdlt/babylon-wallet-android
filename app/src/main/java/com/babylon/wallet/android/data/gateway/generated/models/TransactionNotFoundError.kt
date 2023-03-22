@@ -19,10 +19,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
 /**
- *
+ * 
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
- * @param transactionNotFound
+ * @param intentHashHex Hex-encoded SHA-256 hash.
  */
 @Serializable
 
@@ -32,8 +32,9 @@ data class TransactionNotFoundError(
     @SerialName(value = "type")
     override val type: kotlin.String,
 
-    @SerialName(value = "transaction_not_found")
-    val transactionNotFound: TransactionCommittedDetailsRequestIdentifier
+    /* Hex-encoded SHA-256 hash. */
+    @SerialName(value = "intent_hash_hex")
+    val intentHashHex: kotlin.String
 
 ) : GatewayError()
 
