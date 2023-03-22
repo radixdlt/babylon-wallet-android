@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.gateway.generated.converter
+package com.babylon.wallet.android.data.gateway.generated.infrastructure
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
