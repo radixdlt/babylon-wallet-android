@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.data.gateway
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataCollection
-import com.babylon.wallet.android.data.gateway.generated.model.FungibleResourcesCollection
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.models.EntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleIdsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
