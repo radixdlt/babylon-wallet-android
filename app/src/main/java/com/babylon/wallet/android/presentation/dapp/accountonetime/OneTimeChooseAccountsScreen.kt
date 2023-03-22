@@ -37,7 +37,7 @@ fun OneTimeChooseAccountsScreen(
             }
         }
     }
-    BackHandler(true) {}
+    BackHandler { viewModel.onRejectRequest() }
     val state = viewModel.state
     ChooseAccountContent(
         onBackClick = viewModel::onRejectRequest,
