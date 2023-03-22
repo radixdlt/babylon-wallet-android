@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 /**
  * The ledger state against which the response was generated. Can be used to detect if the Network Gateway is returning up-to-date information. 
  *
- * @param network The name of the network against which the request is made.
+ * @param network The logical name of the network
  * @param stateVersion The state version of the ledger. Each transaction increments the state version by 1.
  * @param proposerRoundTimestamp The proposer round timestamp of the consensus round when this transaction was committed to ledger. This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set. If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated information, or the network has stalled. 
  * @param epoch The epoch number of the ledger at this state version.
@@ -32,7 +32,7 @@ import kotlinx.serialization.SerialName
 
 data class LedgerState (
 
-    /* The name of the network against which the request is made. */
+    /* The logical name of the network */
     @SerialName(value = "network")
     val network: kotlin.String,
 

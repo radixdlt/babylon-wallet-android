@@ -22,22 +22,22 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: string,number,bytes,uuid
+ * Values: string,integer,bytes,uuid
  */
 @Serializable
 enum class NonFungibleIdType(val value: kotlin.String) {
 
-    @SerialName(value = "string")
-    string("string"),
+    @SerialName(value = "String")
+    string("String"),
 
-    @SerialName(value = "number")
-    number("number"),
+    @SerialName(value = "Integer")
+    integer("Integer"),
 
-    @SerialName(value = "bytes")
-    bytes("bytes"),
+    @SerialName(value = "Bytes")
+    bytes("Bytes"),
 
-    @SerialName(value = "uuid")
-    uuid("uuid");
+    @SerialName(value = "Uuid")
+    uuid("Uuid");
 
     /**
      * Override toString() to avoid using the enum variable name as the value, and instead use

@@ -30,7 +30,7 @@ data class TransactionStatusRequest (
 
     /* Hex-encoded SHA-256 hash. */
     @SerialName(value = "intent_hash_hex")
-    val intentHashHex: kotlin.String? = null // TODO this must not be null so update the client/repository
+    val intentHashHex: kotlin.String
 
 )
 

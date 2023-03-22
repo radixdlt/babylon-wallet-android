@@ -21,15 +21,16 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param transactionIdentifier 
+ * @param intentHashHex Hex-encoded SHA-256 hash.
  * @param atLedgerState 
  */
 @Serializable
 
 data class TransactionCommittedDetailsRequest (
 
-    @SerialName(value = "transaction_identifier")
-    val transactionIdentifier: TransactionCommittedDetailsRequestIdentifier,
+    /* Hex-encoded SHA-256 hash. */
+    @SerialName(value = "intent_hash_hex")
+    val intentHashHex: kotlin.String,
 
     @SerialName(value = "at_ledger_state")
     val atLedgerState: LedgerStateSelector? = null

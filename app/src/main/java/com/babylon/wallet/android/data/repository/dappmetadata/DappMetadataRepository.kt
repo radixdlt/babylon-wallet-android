@@ -123,7 +123,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 is Result.Success -> Result.Success(
                     DappMetadata(
                         defitnionAddress,
-                        result.data.metadata.items.associate { it.key to it.value }
+                        result.data.metadata.items.associate { it.key to it.value.asString.toString() } // TODO 1181
                     )
                 )
             }
