@@ -2,7 +2,7 @@
 
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.cache.HttpCache
