@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.gateway.generated.converter
+package com.babylon.wallet.android.data.gateway.generated.infrastructure
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -8,17 +8,18 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
-import java.math.BigInteger
+import java.util.UUID
 
 @OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = BigInteger::class)
-object BigIntegerAdapter : KSerializer<BigInteger> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BigInteger", PrimitiveKind.STRING)
-    override fun deserialize(decoder: Decoder): BigInteger {
-        return BigInteger(decoder.decodeString())
+@Serializer(forClass = UUID::class)
+object UUIDAdapter : KSerializer<UUID> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: UUID) {
+        encoder.encodeString(value.toString())
     }
 
-    override fun serialize(encoder: Encoder, value: BigInteger) {
-        encoder.encodeString(value.toString())
+    override fun deserialize(decoder: Decoder): UUID {
+        return UUID.fromString(decoder.decodeString())
     }
 }
