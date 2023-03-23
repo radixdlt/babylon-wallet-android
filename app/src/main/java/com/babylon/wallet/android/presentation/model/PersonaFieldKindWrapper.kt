@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.presentation.model
 
 import rdx.works.profile.data.model.pernetwork.Network
 

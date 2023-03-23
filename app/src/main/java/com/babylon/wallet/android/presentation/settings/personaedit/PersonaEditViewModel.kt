@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl

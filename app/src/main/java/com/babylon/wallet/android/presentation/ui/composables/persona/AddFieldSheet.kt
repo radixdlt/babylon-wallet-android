@@ -26,7 +26,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable

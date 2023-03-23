@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.common
 
-import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.utils.isValidEmail
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
