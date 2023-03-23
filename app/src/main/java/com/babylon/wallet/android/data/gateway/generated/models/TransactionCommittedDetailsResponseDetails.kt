@@ -36,8 +36,8 @@ data class TransactionCommittedDetailsResponseDetails (
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
-    @Contextual @SerialName(value = "receipt")
-    val receipt: kotlin.Any,
+//    @Contextual @SerialName(value = "receipt")
+//    val receipt: kotlin.Any,
 
     @SerialName(value = "referenced_global_entities")
     val referencedGlobalEntities: kotlin.collections.List<kotlin.String>,
