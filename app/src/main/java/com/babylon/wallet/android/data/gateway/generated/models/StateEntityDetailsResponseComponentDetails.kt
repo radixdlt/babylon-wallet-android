@@ -37,7 +37,7 @@ data class StateEntityDetailsResponseComponentDetails (
 
     /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
     @SerialName(value = "package_address")
-    val packageAddress: kotlin.String,
+    val packageAddress: kotlin.String? = null,
 
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
