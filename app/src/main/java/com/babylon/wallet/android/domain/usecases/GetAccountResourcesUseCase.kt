@@ -57,10 +57,14 @@ class GetAccountResourcesUseCase @Inject constructor(
         }.flatten()
 
         // Query those resources all at once
-        val allResources = entityRepository.stateEntityDetails(
-            addresses = allResourceAddresses,
-            isRefreshing = isRefreshing
-        ).value()?.items ?: emptyList()
+        val allResources = if (allResourceAddresses.isNotEmpty()) {
+            entityRepository.stateEntityDetails(
+                addresses = allResourceAddresses,
+                isRefreshing = isRefreshing
+            ).value()?.items ?: emptyList()
+        } else {
+            emptyList()
+        }
 
         // For every Account stored in the profile, map it to AccountResources
         profileAccounts.mapNotNull { profileAccount ->
