@@ -45,7 +45,7 @@ internal class TransactionClientTest {
             cache
         )
         coEvery {
-            getAccountResourceUseCase(
+            getAccountResourceUseCase.getSingleAccount(
                 address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab",
                 isRefreshing = true
             )
@@ -53,7 +53,7 @@ internal class TransactionClientTest {
             SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab")
         )
         coEvery {
-            getAccountResourceUseCase(
+            getAccountResourceUseCase.getSingleAccount(
                 address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej",
                 isRefreshing = true
             )

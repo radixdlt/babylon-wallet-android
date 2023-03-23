@@ -84,9 +84,6 @@ fun AccountCardPreview() {
                     "1234",
                     FungibleToken(
                         "1234",
-                        totalSupply = BigDecimal.valueOf(10000000000),
-                        totalMinted = BigDecimal.valueOf(1000000),
-                        totalBurnt = BigDecimal.valueOf(100),
                         metadata = mapOf("symbol" to "XRD")
                     )
                 )

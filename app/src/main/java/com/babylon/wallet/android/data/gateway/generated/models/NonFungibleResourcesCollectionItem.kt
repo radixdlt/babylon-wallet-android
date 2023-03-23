@@ -19,6 +19,7 @@ package com.babylon.wallet.android.data.gateway.generated.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import java.math.BigDecimal
 
 /**
  * 
@@ -38,4 +39,12 @@ abstract class NonFungibleResourcesCollectionItem {
     @SerialName(value = "resource_address")
     abstract val resourceAddress: kotlin.String
 }
+
+val NonFungibleResourcesCollectionItem.amount: Long
+    get() = when (this) {
+        is NonFungibleResourcesCollectionItemGloballyAggregated -> amount
+        is NonFungibleResourcesCollectionItemVaultAggregated ->
+            vaults.items.sumOf { item -> item.totalCount }
+        else -> 0L
+    }
 

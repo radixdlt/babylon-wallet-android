@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.gateway
+package com.babylon.wallet.android.data.gateway.generated.serialisers
 
 import com.babylon.wallet.android.data.gateway.generated.models.EntityNotFoundError
 import com.babylon.wallet.android.data.gateway.generated.models.GatewayError

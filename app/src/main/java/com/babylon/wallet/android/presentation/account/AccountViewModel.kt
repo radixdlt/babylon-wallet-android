@@ -70,7 +70,7 @@ class AccountViewModel @Inject constructor(
     private fun loadAccountData(isRefreshing: Boolean) {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                val result = getAccountResourcesUseCase(accountId, isRefreshing)
+                val result = getAccountResourcesUseCase.getSingleAccount(accountId, isRefreshing)
                 result.onError { e ->
                     _accountUiState.update { accountUiState ->
                         accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
