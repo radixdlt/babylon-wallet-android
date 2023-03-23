@@ -120,9 +120,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
             ).map { response ->
                 DappMetadata(
                     dAppDefinitionAddress = defitnionAddress,
-                    metadata = response.items.first().metadata.items.associate {
-                        it.key to it.value.asString.toString() // TODO 1181
-                    }
+                    metadata = response.items.first().metadata.asMetadataStringMap()
                 )
             }
         }
