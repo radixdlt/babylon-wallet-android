@@ -44,7 +44,6 @@ object Radix {
                 displayDescription = "Enkinet (Test Network)"
             )
 
-
             fun allKnownNetworks(): List<Network> {
                 return listOf(hammunet, nebunet, mardunet, enkinet)
             }
