@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 
+import com.babylon.wallet.android.data.gateway.generated.serialisers.NonFungibleResourcesCollectionItemSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -27,11 +28,9 @@ import java.math.BigDecimal
  * @param aggregationLevel 
  * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
  */
-@Serializable
-
+@Serializable(with = NonFungibleResourcesCollectionItemSerializer::class)
 abstract class NonFungibleResourcesCollectionItem {
 
-    @Contextual
     @SerialName(value = "aggregation_level")
     abstract val aggregationLevel: ResourceAggregationLevel
 
