@@ -16,8 +16,8 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Entity metadata key-value pair.

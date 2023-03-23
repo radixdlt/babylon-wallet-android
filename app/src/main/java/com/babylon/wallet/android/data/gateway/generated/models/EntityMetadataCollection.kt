@@ -45,5 +45,13 @@ data class EntityMetadataCollection (
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 
-)
+) {
 
+    // TODO 1181
+    fun asMetadataStringMap() = items.associate { metadataItem ->
+        metadataItem.key to metadataItem.value.asString
+    }.mapNotNull { (key, value) ->
+        value?.let { key to it }
+    }.toMap()
+
+}

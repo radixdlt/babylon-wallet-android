@@ -51,5 +51,15 @@ data class StateEntityDetailsResponseItem (
     @SerialName(value = "details")
     val details: StateEntityDetailsResponseItemDetails? = null
 
-)
+) {
+
+    val fungibleResourceAddresses: List<String>
+        get() = fungibleResources?.items?.map { it.resourceAddress } ?: emptyList()
+
+    val nonFungibleResourceAddresses: List<String>
+        get() = nonFungibleResources?.items?.map { it.resourceAddress } ?: emptyList()
+
+    val allResourceAddresses: List<String>
+        get() = fungibleResourceAddresses + nonFungibleResourceAddresses
+}
 

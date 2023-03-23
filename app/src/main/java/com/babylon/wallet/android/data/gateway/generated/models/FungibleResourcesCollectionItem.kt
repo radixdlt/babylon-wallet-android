@@ -18,11 +18,12 @@ package com.babylon.wallet.android.data.gateway.generated.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import java.math.BigDecimal
 
 /**
- * 
  *
- * @param aggregationLevel 
+ *
+ * @param aggregationLevel
  * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
  */
 @Serializable
@@ -35,4 +36,12 @@ abstract class FungibleResourcesCollectionItem {
     @SerialName(value = "resource_address")
     abstract val resourceAddress: kotlin.String
 }
+
+val FungibleResourcesCollectionItem.amountDecimal: BigDecimal
+    get() = when (this) {
+        is FungibleResourcesCollectionItemGloballyAggregated -> BigDecimal(amount)
+        is FungibleResourcesCollectionItemVaultAggregated ->
+            vaults.items.sumOf { item -> BigDecimal(item.amount) }
+        else -> BigDecimal.ZERO
+    }
 

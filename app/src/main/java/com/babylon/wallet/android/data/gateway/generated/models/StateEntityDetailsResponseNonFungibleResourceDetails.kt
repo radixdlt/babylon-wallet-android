@@ -15,9 +15,9 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -31,7 +31,7 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityDetailsResponseNonFungibleResourceDetails (
 
-    @Contextual @SerialName(value = "type")
+    @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     @Contextual @SerialName(value = "access_rules_chain")
