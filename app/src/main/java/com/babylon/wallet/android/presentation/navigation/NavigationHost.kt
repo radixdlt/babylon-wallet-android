@@ -21,6 +21,7 @@ import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSONA
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
+import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
@@ -126,6 +127,10 @@ fun NavigationHost(
             onContinueClick = { personaId ->
                 navController.createPersonaConfirmationScreen(personaId = personaId)
             }
+        )
+        personaInfoScreen(
+            onBackClick = { navController.navigateUp() },
+            onContinueClick = { navController.createPersonaScreen() }
         )
         personasScreen(
             onBackClick = { navController.navigateUp() },

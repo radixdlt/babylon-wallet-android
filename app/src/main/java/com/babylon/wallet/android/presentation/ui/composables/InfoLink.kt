@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +25,6 @@ fun InfoLink(text: String, modifier: Modifier = Modifier) {
             tint = RadixTheme.colors.blue1
         )
         Text(
-            modifier = Modifier.fillMaxWidth(),
             text = text,
             style = RadixTheme.typography.body1StandaloneLink,
             color = RadixTheme.colors.blue1
