@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.domain.UpdatePersonaUseCase
 import javax.inject.Inject
@@ -56,7 +56,7 @@ class PersonaEditViewModel @Inject constructor(
         viewModelScope.launch {
             state.value.persona?.let { persona ->
                 val fields = state.value.currentFields.map {
-                    OnNetwork.Persona.Field.init(kind = it.kind, value = it.value.trim())
+                    Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
                 }
                 val updatedPersona =
                     persona.copy(displayName = state.value.personaDisplayName?.trim().orEmpty(), fields = fields)
@@ -66,7 +66,7 @@ class PersonaEditViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteField(kind: OnNetwork.Persona.Field.Kind) {
+    fun onDeleteField(kind: Network.Persona.Field.Kind) {
         _state.update { s ->
             val updatedFields = s.currentFields.filter {
                 it.kind != kind
@@ -79,7 +79,7 @@ class PersonaEditViewModel @Inject constructor(
         validateInput()
     }
 
-    fun onValueChanged(kind: OnNetwork.Persona.Field.Kind, value: String) {
+    fun onValueChanged(kind: Network.Persona.Field.Kind, value: String) {
         _state.update { s ->
             s.copy(
                 currentFields = s.currentFields.map {
@@ -99,7 +99,7 @@ class PersonaEditViewModel @Inject constructor(
         validateInput()
     }
 
-    fun onSelectionChanged(kind: OnNetwork.Persona.Field.Kind, selected: Boolean) {
+    fun onSelectionChanged(kind: Network.Persona.Field.Kind, selected: Boolean) {
         _state.update { s ->
             val updated = s.fieldsToAdd.map {
                 if (it.kind == kind) {
@@ -131,11 +131,11 @@ class PersonaEditViewModel @Inject constructor(
     private fun validateInput() {
         val validatedFields = state.value.currentFields.map {
             when (it.kind) {
-                OnNetwork.Persona.Field.Kind.FirstName,
-                OnNetwork.Persona.Field.Kind.LastName,
-                OnNetwork.Persona.Field.Kind.PersonalIdentificationNumber,
-                OnNetwork.Persona.Field.Kind.ZipCode -> it.copy(valid = it.value.trim().isNotEmpty())
-                OnNetwork.Persona.Field.Kind.Email -> it.copy(valid = it.value.trim().isValidEmail())
+                Network.Persona.Field.Kind.FirstName,
+                Network.Persona.Field.Kind.LastName,
+                Network.Persona.Field.Kind.PersonalIdentificationNumber,
+                Network.Persona.Field.Kind.ZipCode -> it.copy(valid = it.value.trim().isNotEmpty())
+                Network.Persona.Field.Kind.Email -> it.copy(valid = it.value.trim().isValidEmail())
             }
         }
         _state.update { state ->
@@ -148,10 +148,10 @@ class PersonaEditViewModel @Inject constructor(
     }
 
     private fun getFieldsToAdd(
-        existingFields: Set<OnNetwork.Persona.Field.Kind>
+        existingFields: Set<Network.Persona.Field.Kind>
     ): PersistentList<PersonaFieldKindWrapper> {
         return (
-            OnNetwork.Persona.Field.Kind.values()
+            Network.Persona.Field.Kind.values()
                 .toSet() - existingFields
             ).sortedBy { it.ordinal }.map { PersonaFieldKindWrapper(kind = it) }.toPersistentList()
     }
@@ -162,14 +162,14 @@ sealed interface PersonaEditEvent : OneOffEvent {
 }
 
 data class PersonaFieldKindWrapper(
-    val kind: OnNetwork.Persona.Field.Kind,
+    val kind: Network.Persona.Field.Kind,
     val selected: Boolean = false,
     val value: String = "",
     val valid: Boolean? = null
 )
 
 data class PersonaEditUiState(
-    val persona: OnNetwork.Persona? = null,
+    val persona: Network.Persona? = null,
     val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
     val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
     val personaDisplayName: String? = null,

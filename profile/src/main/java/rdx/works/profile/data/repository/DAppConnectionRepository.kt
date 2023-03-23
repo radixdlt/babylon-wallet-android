@@ -3,42 +3,42 @@ package rdx.works.profile.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
 interface DAppConnectionRepository {
 
-    suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): OnNetwork.AuthorizedDapp?
-    fun getAuthorizedDapps(): Flow<List<OnNetwork.AuthorizedDapp>>
+    suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp?
+    fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>>
 
-    suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: OnNetwork.AuthorizedDapp)
+    suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp)
 
     suspend fun getDAppConnectedPersona(
         dAppDefinitionAddress: String,
         personaAddress: String
-    ): OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple?
+    ): Network.AuthorizedDapp.AuthorizedPersonaSimple?
 
     suspend fun dAppAuthorizedPersonaAccountAddresses(
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
+        quantifier: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String>
 
     suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        sharedAccounts: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
-    ): OnNetwork.AuthorizedDapp
+        sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+    ): Network.AuthorizedDapp
 
     suspend fun deletePersonaForDapp(
         dAppDefinitionAddress: String,
         personaAddress: String
     )
 
-    fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.AuthorizedDapp>>
+    fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>>
 
-    fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<OnNetwork.AuthorizedDapp?>
+    fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?>
     suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String)
     suspend fun resetPersonaPermissions(
         dAppDefinitionAddress: String,
@@ -52,21 +52,21 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     private val profileDataSource: ProfileDataSource
 ) : DAppConnectionRepository {
 
-    override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<OnNetwork.AuthorizedDapp?> {
+    override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
         return profileDataSource.profile.map {
             it?.getAuthorizedDapp(dAppDefinitionAddress)
         }
     }
 
-    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): OnNetwork.AuthorizedDapp? {
+    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
         return profileDataSource.readProfile()?.getAuthorizedDapp(dAppDefinitionAddress)
     }
 
-    override fun getAuthorizedDapps(): Flow<List<OnNetwork.AuthorizedDapp>> {
+    override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
         return profileDataSource.profile.map { profile -> profile?.getAuthorizedDapps().orEmpty() }
     }
 
-    override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: OnNetwork.AuthorizedDapp) {
+    override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
         val profile = profileDataSource.readProfile()
 
         requireNotNull(profile)
@@ -90,7 +90,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     override suspend fun getDAppConnectedPersona(
         dAppDefinitionAddress: String,
         personaAddress: String
-    ): OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple? {
+    ): Network.AuthorizedDapp.AuthorizedPersonaSimple? {
         return getAuthorizedDapp(dAppDefinitionAddress)?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }
@@ -100,7 +100,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
+        quantifier: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String> {
         val sharedAccounts = getAuthorizedDapp(
             dAppDefinitionAddress
@@ -117,8 +117,8 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        sharedAccounts: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
-    ): OnNetwork.AuthorizedDapp {
+        sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+    ): Network.AuthorizedDapp {
         val dapp = getAuthorizedDapp(dAppDefinitionAddress)
         val persona = dapp?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
@@ -159,7 +159,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.AuthorizedDapp>> {
+    override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>> {
         return getAuthorizedDapps().map { authorizedDapps ->
             authorizedDapps.filter { dapp ->
                 dapp.referencesToAuthorizedPersonas.any { it.identityAddress == personaAddress }
@@ -168,19 +168,19 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 }
 
-private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: String): OnNetwork.AuthorizedDapp? {
+private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
     return getAuthorizedDapps().firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
 }
 
-private fun Profile.getAuthorizedDapps(): List<OnNetwork.AuthorizedDapp> {
+private fun Profile.getAuthorizedDapps(): List<Network.AuthorizedDapp> {
     val networkId = appPreferences.gateways.current().network.networkId().value
-    return onNetwork.firstOrNull { it.networkID == networkId }?.authorizedDapps.orEmpty()
+    return networks.firstOrNull { it.networkID == networkId }?.authorizedDapps.orEmpty()
 }
 
 fun Profile.createOrUpdateAuthorizedDapp(
-    unverifiedAuthorizedDapp: OnNetwork.AuthorizedDapp
+    unverifiedAuthorizedDapp: Network.AuthorizedDapp
 ): Profile {
-    val updatedOnNetwork = onNetwork.map { network ->
+    val updatedOnNetwork = networks.map { network ->
         if (network.networkID == unverifiedAuthorizedDapp.networkID) {
             // Check if this dapp exists in the profile and if NOT, throw exception
             val existingDapp = network.authorizedDapps.find { dAppInProfile ->
@@ -211,13 +211,13 @@ fun Profile.createOrUpdateAuthorizedDapp(
         }
     }
 
-    return copy(onNetwork = updatedOnNetwork)
+    return copy(networks = updatedOnNetwork)
 }
 
 private fun Profile.deleteAuthorizedDapp(
-    dapp: OnNetwork.AuthorizedDapp
+    dapp: Network.AuthorizedDapp
 ): Profile {
-    val updatedOnNetwork = onNetwork.map { network ->
+    val updatedOnNetwork = networks.map { network ->
         if (network.networkID == dapp.networkID) {
             network.copy(
                 accounts = network.accounts,
@@ -232,12 +232,12 @@ private fun Profile.deleteAuthorizedDapp(
         }
     }
 
-    return copy(onNetwork = updatedOnNetwork)
+    return copy(networks = updatedOnNetwork)
 }
 
-fun OnNetwork.AuthorizedDapp.updateAuthorizedDappPersonas(
-    authorizedDAppPersonas: List<OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple>
-): OnNetwork.AuthorizedDapp {
+fun Network.AuthorizedDapp.updateAuthorizedDappPersonas(
+    authorizedDAppPersonas: List<Network.AuthorizedDapp.AuthorizedPersonaSimple>
+): Network.AuthorizedDapp {
     val updatedAuthPersonas =
         (authorizedDAppPersonas + referencesToAuthorizedPersonas).distinctBy { it.identityAddress }
     return copy(
@@ -248,10 +248,10 @@ fun OnNetwork.AuthorizedDapp.updateAuthorizedDappPersonas(
     )
 }
 
-fun OnNetwork.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
-    persona: OnNetwork.Persona,
+fun Network.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
+    persona: Network.Persona,
     lastUsed: String
-): OnNetwork.AuthorizedDapp {
+): Network.AuthorizedDapp {
     val existing = getExistingAuthorizedPersona(persona.address)
     val updatedAuthPersonas = if (existing != null) {
         referencesToAuthorizedPersonas.toMutableList().apply {
@@ -264,14 +264,14 @@ fun OnNetwork.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
     } else {
         (
             listOf(
-                OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
+                Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = persona.address,
                     fieldIDs = emptyList(),
                     lastUsedOn = lastUsed,
-                    sharedAccounts = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         emptyList(),
-                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
                             0
                         )
                     )
@@ -288,16 +288,16 @@ fun OnNetwork.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
     )
 }
 
-fun OnNetwork.AuthorizedDapp.getExistingAuthorizedPersona(
+fun Network.AuthorizedDapp.getExistingAuthorizedPersona(
     personaAddress: String
-): OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple? {
+): Network.AuthorizedDapp.AuthorizedPersonaSimple? {
     return referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == personaAddress }
 }
 
-fun OnNetwork.AuthorizedDapp.updateDappAuthorizedPersonaSharedAccounts(
+fun Network.AuthorizedDapp.updateDappAuthorizedPersonaSharedAccounts(
     personaAddress: String,
-    sharedAccounts: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
-): OnNetwork.AuthorizedDapp {
+    sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+): Network.AuthorizedDapp {
     val persona = referencesToAuthorizedPersonas.firstOrNull {
         it.identityAddress == personaAddress
     }
@@ -309,7 +309,7 @@ fun OnNetwork.AuthorizedDapp.updateDappAuthorizedPersonaSharedAccounts(
     )
 }
 
-private fun OnNetwork.validateAuthorizedPersonas(authorizedDapp: OnNetwork.AuthorizedDapp): OnNetwork.AuthorizedDapp {
+private fun Network.validateAuthorizedPersonas(authorizedDapp: Network.AuthorizedDapp): Network.AuthorizedDapp {
     require(networkID == authorizedDapp.networkID)
 
 // Validate that all Personas are known and that every Field.ID is known for each Persona.

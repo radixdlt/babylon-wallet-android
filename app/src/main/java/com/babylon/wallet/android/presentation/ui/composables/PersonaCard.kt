@@ -24,10 +24,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.selectpersona.PersonaUiModel
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
-fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (OnNetwork.Persona) -> Unit) {
+fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (Network.Persona) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     Column(modifier) {
         Row(

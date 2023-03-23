@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Serializable
 internal data class ProfileSnapshot(
@@ -34,10 +34,10 @@ internal data class ProfileSnapshot(
     private val factorSources: List<FactorSource>,
 
     /**
-     * Effectively **per network**: a list of accounts, personas and connected dApps.
+     * A list of accounts, personas and connected dApps.
      */
-    @SerialName("perNetwork")
-    private val onNetwork: List<OnNetwork>,
+    @SerialName("networks")
+    private val networks: List<Network>,
 
     /**
      * Incrementing from 1
@@ -52,7 +52,7 @@ internal data class ProfileSnapshot(
             creatingDevice = creatingDevice,
             appPreferences = appPreferences,
             factorSources = factorSources,
-            onNetwork = onNetwork,
+            networks = networks,
             version = version
         )
     }

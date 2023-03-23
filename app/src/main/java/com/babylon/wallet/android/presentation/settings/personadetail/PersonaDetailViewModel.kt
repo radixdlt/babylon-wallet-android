@@ -14,7 +14,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
 import javax.inject.Inject
@@ -42,6 +42,6 @@ class PersonaDetailViewModel @Inject constructor(
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
-    val authorizedDapps: ImmutableList<OnNetwork.AuthorizedDapp> = persistentListOf(),
-    val persona: OnNetwork.Persona? = null
+    val authorizedDapps: ImmutableList<Network.AuthorizedDapp> = persistentListOf(),
+    val persona: Network.Persona? = null
 )

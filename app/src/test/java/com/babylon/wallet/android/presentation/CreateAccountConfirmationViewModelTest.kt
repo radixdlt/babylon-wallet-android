@@ -39,7 +39,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
         whenever(accountRepository.getAccountByAddress(any())).thenReturn(
-            OnNetwork.Account(
+            Network.Account(
                 address = accountId,
                 appearanceID = 123,
                 displayName = accountName,

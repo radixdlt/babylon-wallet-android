@@ -12,7 +12,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.settings.personaedit.ROUTE_EDIT_PERSONA
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
@@ -32,7 +32,7 @@ fun NavController.dappDetailScreen(dappDefinitionAddress: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dappDetailScreen(
     onBackClick: () -> Unit,
-    onEditPersona: (OnNetwork.Persona) -> Unit
+    onEditPersona: (Network.Persona) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_DETAIL,

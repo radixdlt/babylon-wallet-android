@@ -2,7 +2,7 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.updatePersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -14,7 +14,7 @@ class UpdatePersonaUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        updatedPersona: OnNetwork.Persona,
+        updatedPersona: Network.Persona,
     ) {
         return withContext(defaultDispatcher) {
             val profile = profileDataSource.readProfile()

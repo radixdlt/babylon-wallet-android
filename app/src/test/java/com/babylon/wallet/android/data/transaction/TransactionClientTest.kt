@@ -18,7 +18,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Network
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 
@@ -60,7 +60,7 @@ internal class TransactionClientTest {
         } returns Result.Success(
             SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
         )
-        coEvery { profileDataSource.getCurrentNetworkId() } returns Network.nebunet.networkId()
+        coEvery { profileDataSource.getCurrentNetworkId() } returns Radix.Network.nebunet.networkId()
 
     }
 

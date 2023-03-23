@@ -19,7 +19,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -49,7 +49,7 @@ interface DappMessenger {
 
     suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
-        persona: OnNetwork.Persona,
+        persona: Network.Persona,
         usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel> = emptyList(),
         ongoingAccounts: List<AccountItemUiModel> = emptyList()
@@ -127,7 +127,7 @@ class DappMessengerImpl @Inject constructor(
 
     override suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
-        persona: OnNetwork.Persona,
+        persona: Network.Persona,
         usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel>,
         ongoingAccounts: List<AccountItemUiModel>

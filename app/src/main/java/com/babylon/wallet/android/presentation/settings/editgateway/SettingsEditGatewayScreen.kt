@@ -58,7 +58,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.apppreferences.Gateway
+import rdx.works.profile.data.model.apppreferences.Radix
 
 @Composable
 fun SettingsEditGatewayScreen(
@@ -101,7 +101,7 @@ private fun SettingsEditGatewayContent(
     onDeleteGateway: (GatewayWrapper) -> Unit,
     addingGateway: Boolean,
     gatewayAddFailure: GatewayAddFailure?,
-    onGatewayClick: (Gateway) -> Unit,
+    onGatewayClick: (Radix.Gateway) -> Unit,
     onCreateProfile: (String, String) -> Unit,
     oneOffEvent: Flow<SettingsEditGatewayEvent>
 ) {

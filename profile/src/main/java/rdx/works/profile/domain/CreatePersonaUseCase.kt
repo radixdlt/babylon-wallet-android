@@ -2,8 +2,8 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -17,8 +17,8 @@ class CreatePersonaUseCase @Inject constructor(
 
     suspend operator fun invoke(
         displayName: String,
-        fields: List<OnNetwork.Persona.Field>
-    ): OnNetwork.Persona {
+        fields: List<Network.Persona.Field>
+    ): Network.Persona {
         return withContext(defaultDispatcher) {
             val profile = profileDataSource.readProfile()
             checkNotNull(profile) {

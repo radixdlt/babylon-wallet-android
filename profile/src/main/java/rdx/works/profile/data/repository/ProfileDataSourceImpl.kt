@@ -12,10 +12,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addGateway
 import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.apppreferences.deleteGateway
@@ -42,18 +41,18 @@ interface ProfileDataSource {
 
     suspend fun clear()
 
-    suspend fun getCurrentNetwork(): Network
+    suspend fun getCurrentNetwork(): Radix.Network
     suspend fun getCurrentNetworkId(): NetworkId
 
     suspend fun getCurrentNetworkBaseUrl(): String
 
-    suspend fun hasAccountForGateway(gateway: Gateway): Boolean
+    suspend fun hasAccountForGateway(gateway: Radix.Gateway): Boolean
 
-    suspend fun changeGateway(gateway: Gateway)
+    suspend fun changeGateway(gateway: Radix.Gateway)
 
-    suspend fun addGateway(gateway: Gateway)
+    suspend fun addGateway(gateway: Radix.Gateway)
 
-    suspend fun deleteGateway(gateway: Gateway)
+    suspend fun deleteGateway(gateway: Radix.Gateway)
 
     suspend fun updateDeveloperMode(isEnabled: Boolean)
 
@@ -114,10 +113,10 @@ class ProfileDataSourceImpl @Inject constructor(
         encryptedPreferencesManager.clear()
     }
 
-    override suspend fun getCurrentNetwork(): Network = readProfile()
+    override suspend fun getCurrentNetwork(): Radix.Network = readProfile()
         ?.appPreferences
         ?.gateways?.current()?.network
-        ?: Gateway.nebunet.network
+        ?: Radix.Gateway.nebunet.network
 
     override suspend fun getCurrentNetworkId(): NetworkId {
         return getGateway().network.networkId()
@@ -127,35 +126,35 @@ class ProfileDataSourceImpl @Inject constructor(
         return getGateway().url
     }
 
-    override suspend fun hasAccountForGateway(gateway: Gateway): Boolean {
-        val knownNetwork = Network
+    override suspend fun hasAccountForGateway(gateway: Radix.Gateway): Boolean {
+        val knownNetwork = Radix.Network
             .allKnownNetworks()
             .firstOrNull { network ->
                 network.name == gateway.network.name
             } ?: return false
 
         return readProfile()?.let { profile ->
-            profile.onNetwork.any { perNetwork ->
+            profile.networks.any { perNetwork ->
                 perNetwork.networkID == knownNetwork.id
             }
         } ?: false
     }
 
-    override suspend fun changeGateway(gateway: Gateway) {
+    override suspend fun changeGateway(gateway: Radix.Gateway) {
         readProfile()?.let { profile ->
             val updatedProfile = profile.changeGateway(gateway)
             saveProfile(updatedProfile)
         }
     }
 
-    override suspend fun addGateway(gateway: Gateway) {
+    override suspend fun addGateway(gateway: Radix.Gateway) {
         readProfile()?.let { profile ->
             val updatedProfile = profile.addGateway(gateway)
             saveProfile(updatedProfile)
         }
     }
 
-    override suspend fun deleteGateway(gateway: Gateway) {
+    override suspend fun deleteGateway(gateway: Radix.Gateway) {
         readProfile()?.let { profile ->
             val updatedProfile = profile.deleteGateway(gateway)
             saveProfile(updatedProfile)
@@ -175,10 +174,10 @@ class ProfileDataSourceImpl @Inject constructor(
         readProfile()?.appPreferences?.security?.isDeveloperModeEnabled ?: false
     }
 
-    private suspend fun getGateway(): Gateway {
+    private suspend fun getGateway(): Radix.Gateway {
         return readProfile()
             ?.appPreferences
             ?.gateways?.current()
-            ?: Gateway.nebunet
+            ?: Radix.Gateway.nebunet
     }
 }

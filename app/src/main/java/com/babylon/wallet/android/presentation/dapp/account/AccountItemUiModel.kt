@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.account
 
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 data class AccountItemUiModel(
     val address: String,
@@ -9,7 +9,7 @@ data class AccountItemUiModel(
     val isSelected: Boolean = false
 )
 
-fun OnNetwork.Account.toUiModel(isSelected: Boolean = false) = AccountItemUiModel(
+fun Network.Account.toUiModel(isSelected: Boolean = false) = AccountItemUiModel(
     address = address,
     displayName = displayName,
     appearanceID = appearanceID,

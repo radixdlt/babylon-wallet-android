@@ -3,7 +3,7 @@ package com.babylon.wallet.android.mockdata
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.*
 
-val account1 = OnNetwork.Account(
+val account1 = Network.Account(
     address = "address1",
     appearanceID = 1,
     displayName = "displayName1",
@@ -19,7 +19,7 @@ val account1 = OnNetwork.Account(
     )
 )
 
-val account2 = OnNetwork.Account(
+val account2 = Network.Account(
     address = "address2",
     appearanceID = 2,
     displayName = "displayName2",

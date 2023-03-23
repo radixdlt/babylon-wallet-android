@@ -76,7 +76,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import java.util.Locale
 
 @Composable
@@ -84,7 +84,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (OnNetwork.Persona) -> Unit,
+    onEditPersona: (Network.Persona) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -122,15 +122,15 @@ private fun DappDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     dappName: String,
-    personaList: ImmutableList<OnNetwork.Persona>,
+    personaList: ImmutableList<Network.Persona>,
     dappMetadata: DappMetadata?,
-    onPersonaClick: (OnNetwork.Persona) -> Unit,
-    selectedPersona: OnNetwork.Persona?,
+    onPersonaClick: (Network.Persona) -> Unit,
+    selectedPersona: Network.Persona?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
-    onDisconnectPersona: (OnNetwork.Persona) -> Unit,
+    onDisconnectPersona: (Network.Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
     onDeleteDapp: () -> Unit,
-    onEditPersona: (OnNetwork.Persona) -> Unit,
+    onEditPersona: (Network.Persona) -> Unit,
     onEditAccountSharing: () -> Unit,
     loading: Boolean
 ) {
@@ -242,8 +242,8 @@ private fun DappDetails(
     dappName: String,
     onBackClick: () -> Unit,
     dappMetadata: DappMetadata?,
-    personaList: ImmutableList<OnNetwork.Persona>,
-    onPersonaClick: (OnNetwork.Persona) -> Unit,
+    personaList: ImmutableList<Network.Persona>,
+    onPersonaClick: (Network.Persona) -> Unit,
     onDeleteDapp: () -> Unit
 ) {
     Column(modifier = modifier) {
@@ -401,16 +401,16 @@ private fun DappDefinitionAddressRow(
 
 @Composable
 private fun PersonaDetailsSheet(
-    persona: OnNetwork.Persona,
+    persona: Network.Persona,
     sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     dappName: String,
-    onDisconnectPersona: (OnNetwork.Persona) -> Unit,
-    onEditPersona: (OnNetwork.Persona) -> Unit,
+    onDisconnectPersona: (Network.Persona) -> Unit,
+    onEditPersona: (Network.Persona) -> Unit,
     onEditAccountSharing: () -> Unit
 ) {
-    var personaToDisconnect by remember { mutableStateOf<OnNetwork.Persona?>(null) }
+    var personaToDisconnect by remember { mutableStateOf<Network.Persona?>(null) }
     Box(modifier = modifier) {
         Column(Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
@@ -463,11 +463,11 @@ private fun PersonaDetailsSheet(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
-    persona: OnNetwork.Persona,
-    onEditPersona: (OnNetwork.Persona) -> Unit,
+    persona: Network.Persona,
+    onEditPersona: (Network.Persona) -> Unit,
     sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
     dappName: String,
-    onDisconnectPersona: (OnNetwork.Persona) -> Unit,
+    onDisconnectPersona: (Network.Persona) -> Unit,
     onEditAccountSharing: () -> Unit
 ) {
     LazyColumn(

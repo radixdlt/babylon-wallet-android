@@ -15,14 +15,14 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -55,7 +55,7 @@ class GenerateProfileUseCaseTest {
                 appPreferences = AppPreferences(
                     display = Display.default,
                     security = Security.default,
-                    gateways = Gateways(Gateway.hammunet.url, listOf(Gateway.hammunet)),
+                    gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
                     p2pLinks = listOf(
                         P2PLink.init(
                             connectionPassword = "My password",
@@ -66,10 +66,10 @@ class GenerateProfileUseCaseTest {
                 factorSources = listOf(
                     FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
-                onNetwork = listOf(
-                    OnNetwork(
+                networks = listOf(
+                    Network(
                         accounts = listOf(
-                            OnNetwork.Account(
+                            Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",
@@ -142,7 +142,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Account's Factor Source ID",
                 expectedFactorSourceId,
-                (profile.onNetwork.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
+                (profile.networks.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
                     .genesisFactorInstance.factorSourceId
             )
         }
@@ -181,7 +181,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Account's Factor Source ID",
                 expectedFactorSourceId,
-                (profile.onNetwork.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
+                (profile.networks.first().accounts.first().securityState as SecurityState.Unsecured).unsecuredEntityControl
                     .genesisFactorInstance.factorSourceId
             )
         }

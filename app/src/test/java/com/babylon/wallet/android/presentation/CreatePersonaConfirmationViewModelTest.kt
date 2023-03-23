@@ -20,7 +20,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.PersonaRepository
 
@@ -32,7 +32,7 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     private val personaId = "fj3489fj348f"
     private val personaName = "My first persona"
 
-    private val persona =  OnNetwork.Persona(
+    private val persona =  Network.Persona(
         address = personaId,
         displayName = personaName,
         networkID = 10,

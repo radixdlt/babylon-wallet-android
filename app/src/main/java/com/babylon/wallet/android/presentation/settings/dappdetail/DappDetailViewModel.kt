@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
@@ -35,7 +35,7 @@ class DappDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
-    private lateinit var authorizedDapp: OnNetwork.AuthorizedDapp
+    private lateinit var authorizedDapp: Network.AuthorizedDapp
     private val args = DappDetailScreenArgs(savedStateHandle)
 
     private val _state: MutableStateFlow<DappDetailUiState> =
@@ -88,7 +88,7 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    fun onPersonaClick(persona: OnNetwork.Persona) {
+    fun onPersonaClick(persona: Network.Persona) {
         viewModelScope.launch {
             val personaSimple =
                 authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
@@ -107,7 +107,7 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    fun onDisconnectPersona(persona: OnNetwork.Persona) {
+    fun onDisconnectPersona(persona: Network.Persona) {
         viewModelScope.launch {
             dAppConnectionRepository.deletePersonaForDapp(args.dappDefinitionAddress, persona.address)
         }
@@ -128,9 +128,9 @@ sealed interface DappDetailEvent : OneOffEvent {
 
 data class DappDetailUiState(
     val loading: Boolean = true,
-    val dapp: OnNetwork.AuthorizedDapp? = null,
+    val dapp: Network.AuthorizedDapp? = null,
     val dappMetadata: DappMetadata? = null,
-    val personas: ImmutableList<OnNetwork.Persona> = persistentListOf(),
-    val selectedPersona: OnNetwork.Persona? = null,
+    val personas: ImmutableList<Network.Persona> = persistentListOf(),
+    val selectedPersona: Network.Persona? = null,
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
 )

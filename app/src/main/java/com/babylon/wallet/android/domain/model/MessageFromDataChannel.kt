@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.ResetRequestItem
-import rdx.works.profile.data.model.pernetwork.OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
 
 sealed interface MessageFromDataChannel {
 

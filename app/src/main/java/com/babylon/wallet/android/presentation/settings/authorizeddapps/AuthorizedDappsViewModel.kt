@@ -9,7 +9,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import javax.inject.Inject
 
@@ -30,5 +30,5 @@ class AuthorizedDappsViewModel @Inject constructor(
 }
 
 data class AuthorizedDappsUiState(
-    val dapps: ImmutableList<OnNetwork.AuthorizedDapp> = persistentListOf()
+    val dapps: ImmutableList<Network.AuthorizedDapp> = persistentListOf()
 )

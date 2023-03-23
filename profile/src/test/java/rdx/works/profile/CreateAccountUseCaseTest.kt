@@ -14,14 +14,14 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -44,7 +44,7 @@ class CreateAccountUseCaseTest {
                 bip39Passphrase = ""
             )
             val accountName = "First account"
-            val network = Gateway.hammunet
+            val network = Radix.Gateway.hammunet
             val profile = Profile(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
@@ -60,10 +60,10 @@ class CreateAccountUseCaseTest {
                     )
                 ),
                 factorSources = listOf(FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
-                onNetwork = listOf(
-                    OnNetwork(
+                networks = listOf(
+                    Network(
                         accounts = listOf(
-                            OnNetwork.Account(
+                            Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",
