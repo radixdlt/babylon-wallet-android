@@ -48,7 +48,7 @@ class AccountViewModelTest {
     fun setUp() = runTest {
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
-        whenever(requestAccountsUseCase(address = any(), isRefreshing = any()))
+        whenever(requestAccountsUseCase.getSingleAccount(address = any(), isRefreshing = any()))
             .thenReturn(Result.Success(sampleData))
         whenever(appEventBus.events).thenReturn(MutableSharedFlow<AppEvent>().asSharedFlow())
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")

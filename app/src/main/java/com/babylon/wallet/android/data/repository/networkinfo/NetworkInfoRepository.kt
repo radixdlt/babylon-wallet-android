@@ -18,7 +18,7 @@ class NetworkInfoRepositoryImpl @Inject constructor(
 ) : NetworkInfoRepository {
 
     override suspend fun getNetworkInfo(networkUrl: String): Result<String> {
-        return dynamicUrlApi.gatewayInfo("$networkUrl/gateway/information")
+        return dynamicUrlApi.gatewayInfo("$networkUrl/gateway/information") // TODO 1181
             .execute(
                 cacheParameters = CacheParameters(
                     httpCache = cache,

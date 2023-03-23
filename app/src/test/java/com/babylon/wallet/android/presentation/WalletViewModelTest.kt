@@ -82,7 +82,7 @@ class WalletViewModelTest {
 
         // when
         val viewModel = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
-        whenever(requestAccountsUseCase(isRefreshing = false)).thenReturn(Result.Success(listOf(sampleData)))
+        whenever(requestAccountsUseCase.getAccountsFromProfile(isRefreshing = false)).thenReturn(Result.Success(listOf(sampleData)))
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

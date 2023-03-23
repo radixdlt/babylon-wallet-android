@@ -125,9 +125,6 @@ class SampleDataProvider {
                         tokenAddress,
                         FungibleToken(
                             tokenAddress,
-                            totalSupply = BigDecimal.valueOf(10000000000),
-                            totalMinted = BigDecimal.valueOf(1000000),
-                            totalBurnt = BigDecimal.valueOf(100),
                             metadata = mapOf("symbol" to "XRD")
                         )
                     )
@@ -181,7 +178,7 @@ class SampleDataProvider {
                 address = "owner address",
                 label = "NBA"
             ),
-            amount = BigDecimal(1.007),
+            amount = 10L,
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
@@ -202,7 +199,7 @@ class SampleDataProvider {
                 address = "owner address",
                 label = "Space"
             ),
-            amount = BigDecimal(1.007),
+            amount = 10L,
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",

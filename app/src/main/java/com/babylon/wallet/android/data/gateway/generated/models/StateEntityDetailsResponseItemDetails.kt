@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+import com.babylon.wallet.android.data.gateway.generated.serialisers.StateEntityDetailsResponseItemDetailsSerializer
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -26,11 +27,10 @@ import kotlinx.serialization.Contextual
  *
  * @param type 
  */
-@Serializable
-
+@Serializable(with = StateEntityDetailsResponseItemDetailsSerializer::class)
 abstract class StateEntityDetailsResponseItemDetails {
 
-    @Contextual @SerialName(value = "type")
+    @SerialName(value = "type")
     abstract val type: StateEntityDetailsResponseItemDetailsType
 }
 

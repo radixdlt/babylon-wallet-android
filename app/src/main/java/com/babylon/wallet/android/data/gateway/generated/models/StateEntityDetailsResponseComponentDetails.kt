@@ -15,9 +15,9 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -30,10 +30,9 @@ import kotlinx.serialization.Contextual
  * @param royaltyAggregator 
  */
 @Serializable
-
 data class StateEntityDetailsResponseComponentDetails (
 
-    @Contextual @SerialName(value = "type")
+    @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */

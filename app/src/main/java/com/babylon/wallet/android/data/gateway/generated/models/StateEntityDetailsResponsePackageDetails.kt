@@ -15,9 +15,8 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -30,7 +29,7 @@ import kotlinx.serialization.SerialName
 
 data class StateEntityDetailsResponsePackageDetails (
 
-    @Contextual @SerialName(value = "type")
+    @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     /* Hex-encoded binary blob. */
