@@ -13,9 +13,8 @@ import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
-import java.math.BigDecimal
 import javax.inject.Inject
 
 class GetAccountResourcesUseCase @Inject constructor(
@@ -43,7 +42,7 @@ class GetAccountResourcesUseCase @Inject constructor(
     }
 
     private suspend fun getAccounts(
-        profileAccounts: List<OnNetwork.Account>,
+        profileAccounts: List<Network.Account>,
         isRefreshing: Boolean
     ): Result<List<AccountResources>> = entityRepository.stateEntityDetails(
         addresses = profileAccounts.map { it.address },
@@ -80,34 +79,35 @@ class GetAccountResourcesUseCase @Inject constructor(
 
         // For every Account stored in the profile, map it to AccountResources
         profileAccounts.mapNotNull { profileAccount ->
-            val accountOnNetwork = accounts.find {
+            val accountOnGateWay = accounts.find {
                 it.address == profileAccount.address
             } ?: return@mapNotNull null
 
-            val accountFungibleResourceAddresses = accountOnNetwork.fungibleResourceAddresses
-            val accountNonFungibleResourceAddresses = accountOnNetwork.nonFungibleResourceAddresses
+            val fungibleTokens = accountOnGateWay.fungibleResources?.items?.map {
+                val tokenResource = allResources.find { resource ->
+                    resource.address == it.resourceAddress
+                }?.toFungibleToken() ?: error("Resource ${it.resourceAddress} not found")
 
-            val fungibleTokens = allResources.filter {
-                it.address in accountFungibleResourceAddresses
-            }.map {
                 OwnedFungibleToken(
-                    owner = AccountAddress(accountOnNetwork.address),
-                    amount = it.fungibleResources?.items?.firstOrNull()?.amountDecimal ?: BigDecimal.ZERO, // TODO 1181
-                    address = it.address,
-                    token = it.toFungibleToken()
+                    owner = AccountAddress(accountOnGateWay.address),
+                    amount = it.amountDecimal,
+                    address = it.resourceAddress,
+                    token = tokenResource
                 )
-            }
+            } ?: emptyList()
 
-            val nonFungibleTokens = allResources.filter {
-                it.address in accountNonFungibleResourceAddresses
-            }.map {
+            val nonFungibleTokens = accountOnGateWay.nonFungibleResources?.items?.map {
+                val tokenResource = allResources.find { resource ->
+                    resource.address == it.resourceAddress
+                }?.toNonFungibleToken(nonFungiblesWithIds[it.resourceAddress]) ?: error("Resource ${it.resourceAddress} not found")
+
                 OwnedNonFungibleToken(
-                    owner = AccountAddress(accountOnNetwork.address),
-                    amount = it.nonFungibleResources?.items?.firstOrNull()?.amount ?: 0L, // TODO 1181
-                    tokenResourceAddress = it.address, // TODO 1181
-                    token = it.toNonFungibleToken(nonFungiblesWithIds[it.address]) // TODO 1181
+                    owner = AccountAddress(accountOnGateWay.address),
+                    amount = it.amount,
+                    tokenResourceAddress = it.resourceAddress,
+                    token = tokenResource
                 )
-            }
+            } ?: emptyList()
 
             AccountResources(
                 address = profileAccount.address,
