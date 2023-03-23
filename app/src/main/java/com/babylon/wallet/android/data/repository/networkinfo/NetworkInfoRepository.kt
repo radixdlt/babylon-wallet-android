@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.repository.networkinfo
 
-import com.babylon.wallet.android.data.gateway.DynamicUrlApi
+import com.babylon.wallet.android.data.gateway.apis.StatusApi
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
@@ -13,12 +13,12 @@ interface NetworkInfoRepository {
 }
 
 class NetworkInfoRepositoryImpl @Inject constructor(
-    private val dynamicUrlApi: DynamicUrlApi,
+    private val statusApi: StatusApi,
     private val cache: HttpCache
 ) : NetworkInfoRepository {
 
     override suspend fun getNetworkInfo(networkUrl: String): Result<String> {
-        return dynamicUrlApi.gatewayStatus(DynamicUrlApi.gatewayStatusUrl(networkUrl)) // TODO 1181
+        return statusApi.gatewayStatus(StatusApi.gatewayStatusUrl(networkUrl)) // TODO 1181
             .execute(
                 cacheParameters = CacheParameters(
                     httpCache = cache,

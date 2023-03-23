@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.repository.nonfungible
 
-import com.babylon.wallet.android.data.gateway.GatewayApi
+import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -22,7 +22,7 @@ interface NonFungibleRepository {
 }
 
 class NonFungibleRepositoryImpl @Inject constructor(
-    private val gatewayApi: GatewayApi,
+    private val stateApi: StateApi,
     private val httpCache: HttpCache
 ) : NonFungibleRepository {
 
@@ -32,7 +32,7 @@ class NonFungibleRepositoryImpl @Inject constructor(
         limit: Int?,
         isRefreshing: Boolean
     ): Result<NonFungibleTokenIdContainer> {
-        return gatewayApi.stateNonFungibleIds(StateNonFungibleIdsRequest(address)).execute(
+        return stateApi.nonFungibleIds(StateNonFungibleIdsRequest(address)).execute(
             cacheParameters = CacheParameters(
                 httpCache = httpCache,
                 timeoutDuration = if (isRefreshing) NO_CACHE else FIVE_MINUTES

@@ -1,12 +1,7 @@
 package com.babylon.wallet.android.data.repository.transaction
 
-import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecentRequest
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecentResponse
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatusRequest
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatusResponse
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitRequest
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
+import com.babylon.wallet.android.data.gateway.apis.TransactionApi
+import com.babylon.wallet.android.data.gateway.generated.models.*
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
@@ -24,10 +19,10 @@ interface TransactionRepository {
 }
 
 // TODO translate from network models to domain models
-class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: GatewayApi) : TransactionRepository {
+class TransactionRepositoryImpl @Inject constructor(private val transactionApi: TransactionApi) : TransactionRepository {
 
     override suspend fun getLedgerEpoch(): Result<Long> {
-        return gatewayApi.transactionConstruction().execute(map = { it.ledgerState.epoch })
+        return transactionApi.transactionConstruction().execute(map = { it.ledgerState.epoch })
     }
 
     override suspend fun getRecentTransactions(
@@ -35,17 +30,17 @@ class TransactionRepositoryImpl @Inject constructor(private val gatewayApi: Gate
         page: String?,
         limit: Int?
     ): Result<TransactionRecentResponse> {
-        return gatewayApi.transactionRecent(TransactionRecentRequest(cursor = page, limit = limit))
+        return transactionApi.transactionRecent(TransactionRecentRequest(cursor = page, limit = limit))
             .execute(map = { it })
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {
-        return gatewayApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
+        return transactionApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
             .execute(map = { it })
     }
 
     override suspend fun getTransactionStatus(identifier: String): Result<TransactionStatusResponse> {
-        return gatewayApi.transactionStatus(TransactionStatusRequest(intentHashHex = identifier))
+        return transactionApi.transactionStatus(TransactionStatusRequest(intentHashHex = identifier))
             .execute(map = { it })
     }
 }
