@@ -66,7 +66,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonaEditScreen(
@@ -109,15 +109,15 @@ fun PersonaEditScreen(
 private fun PersonaEditContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    persona: OnNetwork.Persona?,
+    persona: Network.Persona?,
     onSave: () -> Unit,
     onEditAvatar: () -> Unit,
     editedFields: ImmutableList<PersonaFieldKindWrapper>,
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (OnNetwork.Persona.Field.Kind, Boolean) -> Unit,
-    onDeleteField: (OnNetwork.Persona.Field.Kind) -> Unit,
-    onValueChanged: (OnNetwork.Persona.Field.Kind, String) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
+    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     addButtonEnabled: Boolean,
     personaDisplayName: String?,
@@ -207,7 +207,7 @@ private fun AddFieldSheet(
     onBackClick: () -> Unit,
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (OnNetwork.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     addButtonEnabled: Boolean
 ) {
@@ -264,7 +264,7 @@ private fun AddFieldSheet(
 
 @Composable
 private fun SelectableFieldItem(
-    onSelectionChanged: (OnNetwork.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     field: PersonaFieldKindWrapper,
     modifier: Modifier = Modifier
 ) {
@@ -300,8 +300,8 @@ private fun PersonaDetailList(
     onEditAvatar: () -> Unit,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldKindWrapper>,
-    onDeleteField: (OnNetwork.Persona.Field.Kind) -> Unit,
-    onValueChanged: (OnNetwork.Persona.Field.Kind, String) -> Unit,
+    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
+    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     personaDisplayName: String?,
     addButtonEnabled: Boolean

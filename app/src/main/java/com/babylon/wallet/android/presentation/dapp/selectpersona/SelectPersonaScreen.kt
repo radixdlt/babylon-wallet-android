@@ -52,7 +52,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun SelectPersonaScreen(
@@ -104,7 +104,7 @@ fun SelectPersonaScreen(
 private fun SelectPersonaContent(
     onCancelClick: () -> Unit,
     onLoginClick: () -> Unit,
-    onSelectPersona: (OnNetwork.Persona) -> Unit,
+    onSelectPersona: (Network.Persona) -> Unit,
     dappMetadata: DappMetadata?,
     firstTimeLogin: Boolean,
     continueButtonEnabled: Boolean,

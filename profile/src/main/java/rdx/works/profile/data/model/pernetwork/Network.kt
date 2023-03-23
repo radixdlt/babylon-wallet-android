@@ -20,7 +20,7 @@ import rdx.works.profile.derivation.model.NetworkId
 import java.util.*
 
 @Serializable
-data class OnNetwork(
+data class Network(
     /**
      * The ID of the network that has been used to generate the accounts, to which personas
      * have been added and dApps connected.
@@ -440,17 +440,17 @@ data class OnNetwork(
 }
 
 fun Profile.addAccount(
-    account: OnNetwork.Account,
+    account: Network.Account,
     withFactorSourceId: FactorSource.ID,
     onNetwork: NetworkId
 ): Profile {
-    val networkExist = this.onNetwork.any { onNetwork.value == it.networkID }
-    val newOnNetworks = if (networkExist) {
-        this.onNetwork.map { network ->
+    val networkExist = this.networks.any { onNetwork.value == it.networkID }
+    val newNetworks = if (networkExist) {
+        this.networks.map { network ->
             if (network.networkID == onNetwork.value) {
                 val updatedAccounts = network.accounts.toMutableList()
                 updatedAccounts.add(account)
-                OnNetwork(
+                Network(
                     accounts = updatedAccounts.toList(),
                     authorizedDapps = network.authorizedDapps,
                     networkID = network.networkID,
@@ -461,7 +461,7 @@ fun Profile.addAccount(
             }
         }
     } else {
-        this.onNetwork + OnNetwork(
+        this.networks + Network(
             accounts = listOf(account),
             authorizedDapps = listOf(),
             networkID = onNetwork.value,
@@ -470,7 +470,7 @@ fun Profile.addAccount(
     }
 
     return copy(
-        onNetwork = newOnNetworks,
+        networks = newNetworks,
     ).incrementFactorSourceNextAccountIndex(
         forNetwork = onNetwork,
         factorSourceId = withFactorSourceId
@@ -498,12 +498,12 @@ fun Profile.incrementFactorSourceNextAccountIndex(
 }
 
 fun Profile.updatePersona(
-    persona: OnNetwork.Persona
+    persona: Network.Persona
 ): Profile {
     val networkId = appPreferences.gateways.current().network.networkId()
 
     return copy(
-        onNetwork = onNetwork.mapWhen(
+        networks = networks.mapWhen(
             predicate = { it.networkID == networkId.value },
             mutation = { network ->
                 network.copy(
@@ -518,11 +518,11 @@ fun Profile.updatePersona(
 }
 
 fun Profile.addPersona(
-    persona: OnNetwork.Persona,
+    persona: Network.Persona,
     withFactorSourceId: FactorSource.ID,
     onNetwork: NetworkId
 ): Profile {
-    val personaExists = this.onNetwork.find {
+    val personaExists = this.networks.find {
         it.networkID == onNetwork.value
     }?.personas?.any { it.address == persona.address } ?: false
 
@@ -531,7 +531,7 @@ fun Profile.addPersona(
     }
 
     return copy(
-        onNetwork = this.onNetwork.mapWhen(
+        networks = this.networks.mapWhen(
             predicate = { it.networkID == onNetwork.value },
             mutation = { network ->
                 network.copy(personas = network.personas + persona)

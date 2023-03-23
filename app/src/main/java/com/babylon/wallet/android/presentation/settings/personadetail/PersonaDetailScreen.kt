@@ -43,7 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButto
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonaDetailScreen(
@@ -71,9 +71,9 @@ fun PersonaDetailScreen(
 private fun PersonaDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    persona: OnNetwork.Persona?,
+    persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
-    authorizedDapps: ImmutableList<OnNetwork.AuthorizedDapp>,
+    authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
     onDappClick: (String) -> Unit
 ) {
     Box(modifier = modifier) {
@@ -120,8 +120,8 @@ private fun PersonaDetailContent(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
-    persona: OnNetwork.Persona,
-    authorizedDapps: ImmutableList<OnNetwork.AuthorizedDapp>,
+    persona: Network.Persona,
+    authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
     onDappClick: (String) -> Unit
 ) {
     LazyColumn(

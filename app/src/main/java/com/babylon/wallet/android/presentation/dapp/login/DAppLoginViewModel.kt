@@ -33,8 +33,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
@@ -69,8 +69,8 @@ class DAppLoginViewModel @Inject constructor(
     private val _state = MutableStateFlow(DAppLoginUiState())
     val state = _state.asStateFlow()
 
-    private var authorizedDapp: OnNetwork.AuthorizedDapp? = null
-    private var editedDapp: OnNetwork.AuthorizedDapp? = null
+    private var authorizedDapp: Network.AuthorizedDapp? = null
+    private var editedDapp: Network.AuthorizedDapp? = null
 
     private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppLoginEvent>()
     val topLevelOneOffEvent by topLevelOneOffEventHandler
@@ -104,7 +104,7 @@ class DAppLoginViewModel @Inject constructor(
 
     private suspend fun handleResetRequestItem(
         request: AuthorizedRequest,
-        authorizedDapp: OnNetwork.AuthorizedDapp
+        authorizedDapp: Network.AuthorizedDapp
     ) {
         if (request.isUsePersonaAuth()) {
             val auth = request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
@@ -145,7 +145,7 @@ class DAppLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
-        dapp: OnNetwork.AuthorizedDapp,
+        dapp: Network.AuthorizedDapp,
         authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest,
         resetAccounts: Boolean
     ) {
@@ -287,13 +287,13 @@ class DAppLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona: OnNetwork.Persona) {
+    private suspend fun updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona: Network.Persona) {
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
             val dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
             mutex.withLock {
-                editedDapp = OnNetwork.AuthorizedDapp(
+                editedDapp = Network.AuthorizedDapp(
                     authorizedRequest.metadata.networkId,
                     authorizedRequest.metadata.dAppDefinitionAddress,
                     dAppName,
@@ -330,7 +330,7 @@ class DAppLoginViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(persona: OnNetwork.Persona) {
+    fun onSelectPersona(persona: Network.Persona) {
         _state.update { it.copy(selectedPersona = persona.toUiModel()) }
     }
 

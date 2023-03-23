@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
 data class AccountResources(
@@ -27,7 +27,7 @@ data class AccountResources(
     }
 }
 
-fun OnNetwork.Account.toDomainModel(): AccountResources {
+fun Network.Account.toDomainModel(): AccountResources {
     return AccountResources(
         address = this.address,
         displayName = displayName,

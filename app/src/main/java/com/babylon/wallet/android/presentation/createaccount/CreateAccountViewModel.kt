@@ -62,7 +62,7 @@ class CreateAccountViewModel @Inject constructor(
                 val profile = generateProfileUseCase(
                     accountDisplayName = accountName,
                 )
-                profile.onNetwork.first().accounts.first()
+                profile.networks.first().accounts.first()
             }
             val accountId = account.address
 

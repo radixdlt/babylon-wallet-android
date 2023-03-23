@@ -29,7 +29,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonasScreen(
@@ -55,7 +55,7 @@ fun PersonasScreen(
 
 @Composable
 fun PersonasContent(
-    personas: ImmutableList<OnNetwork.Persona>,
+    personas: ImmutableList<Network.Persona>,
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,

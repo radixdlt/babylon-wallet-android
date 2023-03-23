@@ -22,7 +22,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.domain.UpdatePersonaUseCase
 
@@ -67,7 +67,7 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
                 val item = expectMostRecentItem()
                 assert(item.persona?.address == "1")
                 assert(item.currentFields.size == 2)
-                assert(item.fieldsToAdd.size == OnNetwork.Persona.Field.Kind.values().size - 2)
+                assert(item.fieldsToAdd.size == Network.Persona.Field.Kind.values().size - 2)
             }
         }
     }
@@ -79,7 +79,7 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
             advanceUntilIdle()
             vm.onSave()
             advanceUntilIdle()
-            val persona = slot<OnNetwork.Persona>()
+            val persona = slot<Network.Persona>()
             coVerify(exactly = 1) { updatePersonaUseCase(capture(persona)) }
             assert(persona.captured.fields.size == 2)
         }
@@ -90,17 +90,17 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onDeleteField(OnNetwork.Persona.Field.Kind.Email)
+            vm.onDeleteField(Network.Persona.Field.Kind.Email)
             advanceUntilIdle()
             vm.onSave()
             advanceUntilIdle()
-            val persona = slot<OnNetwork.Persona>()
+            val persona = slot<Network.Persona>()
             coVerify(exactly = 1) { updatePersonaUseCase(capture(persona)) }
             assert(persona.captured.fields.size == 1)
             vm.state.test {
                 val item = expectMostRecentItem()
                 assert(item.currentFields.size == 1)
-                assert(item.fieldsToAdd.size == OnNetwork.Persona.Field.Kind.values().size - 1)
+                assert(item.fieldsToAdd.size == Network.Persona.Field.Kind.values().size - 1)
             }
 
         }
@@ -111,14 +111,14 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.Email, "jakub@jakub.pl")
+            vm.onValueChanged(Network.Persona.Field.Kind.Email, "jakub@jakub.pl")
             advanceUntilIdle()
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.FirstName, "jakub")
+            vm.onValueChanged(Network.Persona.Field.Kind.FirstName, "jakub")
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()
-                assert(item.currentFields.firstOrNull { it.kind == OnNetwork.Persona.Field.Kind.Email }?.value == "jakub@jakub.pl")
-                assert(item.currentFields.firstOrNull { it.kind == OnNetwork.Persona.Field.Kind.FirstName }?.value == "jakub")
+                assert(item.currentFields.firstOrNull { it.kind == Network.Persona.Field.Kind.Email }?.value == "jakub@jakub.pl")
+                assert(item.currentFields.firstOrNull { it.kind == Network.Persona.Field.Kind.FirstName }?.value == "jakub")
             }
         }
     }
@@ -128,12 +128,12 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onSelectionChanged(OnNetwork.Persona.Field.Kind.LastName, true)
+            vm.onSelectionChanged(Network.Persona.Field.Kind.LastName, true)
             vm.state.test {
                 val item = expectMostRecentItem()
                 assert(item.addButtonEnabled)
             }
-            vm.onSelectionChanged(OnNetwork.Persona.Field.Kind.LastName, false)
+            vm.onSelectionChanged(Network.Persona.Field.Kind.LastName, false)
             vm.state.test {
                 val item = expectMostRecentItem()
                 assert(!item.addButtonEnabled)
@@ -146,7 +146,7 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onSelectionChanged(OnNetwork.Persona.Field.Kind.LastName, true)
+            vm.onSelectionChanged(Network.Persona.Field.Kind.LastName, true)
             vm.onAddFields()
             advanceUntilIdle()
             vm.state.test {
@@ -161,17 +161,17 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onSelectionChanged(OnNetwork.Persona.Field.Kind.LastName, true)
-            vm.onSelectionChanged(OnNetwork.Persona.Field.Kind.PersonalIdentificationNumber, true)
-            vm.onSelectionChanged(OnNetwork.Persona.Field.Kind.ZipCode, true)
+            vm.onSelectionChanged(Network.Persona.Field.Kind.LastName, true)
+            vm.onSelectionChanged(Network.Persona.Field.Kind.PersonalIdentificationNumber, true)
+            vm.onSelectionChanged(Network.Persona.Field.Kind.ZipCode, true)
             vm.onAddFields()
             advanceUntilIdle()
             vm.onDisplayNameChanged("jakub")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.FirstName, "66666")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.LastName, "66666")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.Email, "jakub@jakub.pl")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.PersonalIdentificationNumber, "66666")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.ZipCode, "66666")
+            vm.onValueChanged(Network.Persona.Field.Kind.FirstName, "66666")
+            vm.onValueChanged(Network.Persona.Field.Kind.LastName, "66666")
+            vm.onValueChanged(Network.Persona.Field.Kind.Email, "jakub@jakub.pl")
+            vm.onValueChanged(Network.Persona.Field.Kind.PersonalIdentificationNumber, "66666")
+            vm.onValueChanged(Network.Persona.Field.Kind.ZipCode, "66666")
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()
@@ -185,11 +185,11 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
                 assert(!item.saveButtonEnabled)
             }
             every { any<String>().isValidEmail() } returns false
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.FirstName, "")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.LastName, "")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.Email, "jakubjakub.pl")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.PersonalIdentificationNumber, "")
-            vm.onValueChanged(OnNetwork.Persona.Field.Kind.ZipCode, "")
+            vm.onValueChanged(Network.Persona.Field.Kind.FirstName, "")
+            vm.onValueChanged(Network.Persona.Field.Kind.LastName, "")
+            vm.onValueChanged(Network.Persona.Field.Kind.Email, "jakubjakub.pl")
+            vm.onValueChanged(Network.Persona.Field.Kind.PersonalIdentificationNumber, "")
+            vm.onValueChanged(Network.Persona.Field.Kind.ZipCode, "")
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()

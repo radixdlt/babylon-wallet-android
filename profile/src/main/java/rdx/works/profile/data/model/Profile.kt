@@ -7,14 +7,14 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.incrementFactorSourceNextAccountIndex
 import timber.log.Timber
@@ -54,7 +54,7 @@ data class Profile(
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
      */
-    val onNetwork: List<OnNetwork>,
+    val networks: List<Network>,
 
     /**
      * A version of the Profile Snapshot data format used for compatibility checks.
@@ -68,7 +68,7 @@ data class Profile(
             creatingDevice = creatingDevice,
             appPreferences = appPreferences,
             factorSources = factorSources,
-            onNetwork = onNetwork,
+            networks = networks,
             version = version
         )
     }
@@ -83,7 +83,7 @@ data class Profile(
         networkId: Int,
         getMnemonic: (FactorSource) -> MnemonicWithPassphrase
     ): List<AccountSigner> {
-        val network = onNetwork.firstOrNull { network ->
+        val network = networks.firstOrNull { network ->
             network.networkID == networkId
         } ?: return emptyList()
 
@@ -156,7 +156,7 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 23
+        const val LATEST_PROFILE_VERSION = 24
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
@@ -164,21 +164,21 @@ data class Profile(
             firstAccountDisplayName: String,
             creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER
         ): Profile {
-            val gateway = Gateway.default
+            val gateway = Radix.Gateway.default
 
             val factorSource = FactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 hint = creatingDevice
             )
 
-            val initialAccount = OnNetwork.Account.init(
+            val initialAccount = Network.Account.init(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 factorSource = factorSource,
                 networkId = gateway.network.networkId(),
                 displayName = firstAccountDisplayName
             )
 
-            val mainNetwork = OnNetwork(
+            val mainNetwork = Network(
                 accounts = listOf(initialAccount),
                 authorizedDapps = listOf(),
                 networkID = gateway.network.id,
@@ -197,7 +197,7 @@ data class Profile(
                 creatingDevice = creatingDevice,
                 appPreferences = appPreferences,
                 factorSources = listOf(factorSource),
-                onNetwork = listOf(mainNetwork),
+                networks = listOf(mainNetwork),
                 version = LATEST_PROFILE_VERSION
             ).incrementFactorSourceNextAccountIndex(
                 forNetwork = gateway.network.networkId(),

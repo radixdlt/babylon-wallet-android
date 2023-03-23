@@ -3,7 +3,7 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.domain.SampleDataProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 
 class DAppConnectionRepositoryFake : DAppConnectionRepository {
@@ -14,22 +14,22 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         NoDapp, PredefinedDapp, SavedDapp
     }
 
-    private var authorizedDApp: OnNetwork.AuthorizedDapp? = null
+    private var authorizedDApp: Network.AuthorizedDapp? = null
 
-    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): OnNetwork.AuthorizedDapp? {
+    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
         return when (state) {
             InitialState.NoDapp -> null
             InitialState.PredefinedDapp -> {
-                authorizedDApp = OnNetwork.AuthorizedDapp(
+                authorizedDApp = Network.AuthorizedDapp(
                     11, dAppDefinitionAddress, "dApp", listOf(
-                        OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
+                        Network.AuthorizedDapp.AuthorizedPersonaSimple(
                             identityAddress = "address1",
                             fieldIDs = emptyList(),
                             lastUsedOn = "2023-01-31T10:28:14Z",
-                            sharedAccounts = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                            sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                 listOf(SampleDataProvider().randomAddress()),
-                                OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                                     1
                                 )
                             )
@@ -42,36 +42,36 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         }
     }
 
-    override fun getAuthorizedDapps(): Flow<List<OnNetwork.AuthorizedDapp>> {
+    override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
         return flow {
             emit(
                 listOf(
-                    OnNetwork.AuthorizedDapp(
+                    Network.AuthorizedDapp(
                         11, "address1", "dApp 1", listOf(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
                                 fieldIDs = emptyList(),
                                 lastUsedOn = "2023-01-31T10:28:14Z",
-                                sharedAccounts = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                     listOf(),
-                                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                        OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                                         1
                                     )
                                 )
                             )
                         )
                     ),
-                    OnNetwork.AuthorizedDapp(
+                    Network.AuthorizedDapp(
                         11, "address2", "dApp 2", listOf(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
                                 fieldIDs = emptyList(),
                                 lastUsedOn = "2023-01-31T10:28:14Z",
-                                sharedAccounts = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                     listOf(),
-                                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                        OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                                         1
                                     )
                                 )
@@ -83,14 +83,14 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         }
     }
 
-    override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: OnNetwork.AuthorizedDapp) {
+    override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
         this.authorizedDApp = authorizedDApp
     }
 
     override suspend fun getDAppConnectedPersona(
         dAppDefinitionAddress: String,
         personaAddress: String
-    ): OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple? {
+    ): Network.AuthorizedDapp.AuthorizedPersonaSimple? {
         return null
     }
 
@@ -98,7 +98,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
+        quantifier: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
     ): List<String> {
         return emptyList()
     }
@@ -106,19 +106,19 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        sharedAccounts: OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
-    ): OnNetwork.AuthorizedDapp {
+        sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+    ): Network.AuthorizedDapp {
         return checkNotNull(authorizedDApp)
     }
 
     override suspend fun deletePersonaForDapp(dAppDefinitionAddress: String, personaAddress: String) {
     }
 
-    override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<OnNetwork.AuthorizedDapp>> {
+    override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>> {
         return getAuthorizedDapps()
     }
 
-    override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<OnNetwork.AuthorizedDapp?> {
+    override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
         return flow {
             emit(getAuthorizedDapp(dAppDefinitionAddress))
         }

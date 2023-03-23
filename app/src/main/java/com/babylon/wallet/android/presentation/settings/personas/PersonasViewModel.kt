@@ -10,7 +10,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.PersonaRepository
 import javax.inject.Inject
 
@@ -31,6 +31,6 @@ class PersonasViewModel @Inject constructor(
     }
 
     data class PersonasUiState(
-        val personas: ImmutableList<OnNetwork.Persona> = persistentListOf()
+        val personas: ImmutableList<Network.Persona> = persistentListOf()
     )
 }

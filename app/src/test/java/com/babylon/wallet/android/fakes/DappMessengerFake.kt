@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 class DappMessengerFake : DappMessenger {
 
@@ -32,7 +32,7 @@ class DappMessengerFake : DappMessenger {
 
     override suspend fun sendWalletInteractionSuccessResponse(
         interactionId: String,
-        persona: OnNetwork.Persona,
+        persona: Network.Persona,
         usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel>,
         ongoingAccounts: List<AccountItemUiModel>

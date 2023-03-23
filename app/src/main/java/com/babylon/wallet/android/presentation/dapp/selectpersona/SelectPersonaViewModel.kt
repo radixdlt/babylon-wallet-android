@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
 import java.time.format.DateTimeFormatter
@@ -43,7 +43,7 @@ class SelectPersonaViewModel @Inject constructor(
     private val _state = MutableStateFlow(SelectPersonaUiState())
     val state = _state.asStateFlow()
 
-    private var authorizedDapp: OnNetwork.AuthorizedDapp? = null
+    private var authorizedDapp: Network.AuthorizedDapp? = null
 
     init {
         viewModelScope.launch {
@@ -128,7 +128,7 @@ class SelectPersonaViewModel @Inject constructor(
 }
 
 sealed interface DAppSelectPersonaEvent : OneOffEvent {
-    data class PersonaSelected(val persona: OnNetwork.Persona) : DAppSelectPersonaEvent
+    data class PersonaSelected(val persona: Network.Persona) : DAppSelectPersonaEvent
 }
 
 data class SelectPersonaUiState(
