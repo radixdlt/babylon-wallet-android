@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
-interface PersonaEditLogic {
+interface PersonaEditable {
 
     val personaEditState: StateFlow<PersonaEditLogicState>
 
@@ -25,7 +25,7 @@ interface PersonaEditLogic {
     fun validateInput()
 }
 
-class PersonaEditLogicImpl : PersonaEditLogic {
+class PersonaEditableImpl : PersonaEditable {
 
     private val _state: MutableStateFlow<PersonaEditLogicState> = MutableStateFlow(PersonaEditLogicState())
 

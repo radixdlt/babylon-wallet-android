@@ -11,24 +11,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
-import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -102,7 +105,7 @@ private fun SelectableFieldItem(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        androidx.compose.material3.Text(
+        Text(
             modifier = Modifier.weight(1f),
             text = stringResource(id = field.kind.toDisplayResource()),
             style = RadixTheme.typography.body1HighImportance,
@@ -120,6 +123,20 @@ private fun SelectableFieldItem(
             onCheckedChange = {
                 onSelectionChanged(field.kind, it)
             }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CreateAccountContentPreview() {
+    RadixWalletTheme {
+        AddFieldSheet(
+            onBackClick = {},
+            onAddFields = {},
+            onSelectionChanged = { _, _ -> },
+            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(OnNetwork.Persona.Field.Kind.FirstName)),
+            anyFieldSelected = false
         )
     }
 }

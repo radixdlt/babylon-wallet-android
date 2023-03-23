@@ -290,7 +290,6 @@ private fun CreatePersonaContentList(
         }
         items(currentFields, key = { it.kind }) { field ->
             PersonaPropertyInput(
-                modifier = Modifier.fillMaxWidth().animateItemPlacement(),
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {
@@ -298,7 +297,8 @@ private fun CreatePersonaContentList(
                 },
                 onDeleteField = {
                     onDeleteField(field.kind)
-                }
+                },
+                modifier = Modifier.fillMaxWidth().animateItemPlacement()
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }

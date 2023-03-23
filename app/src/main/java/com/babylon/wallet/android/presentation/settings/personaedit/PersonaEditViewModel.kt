@@ -7,8 +7,8 @@ import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.common.PersonaEditLogic
-import com.babylon.wallet.android.presentation.common.PersonaEditLogicImpl
+import com.babylon.wallet.android.presentation.common.PersonaEditable
+import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -28,7 +28,7 @@ class PersonaEditViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
     OneOffEventHandler<PersonaEditEvent> by OneOffEventHandlerImpl(),
-    PersonaEditLogic by PersonaEditLogicImpl() {
+    PersonaEditable by PersonaEditableImpl() {
 
     private val args = PersonaEditScreenArgs(savedStateHandle)
 

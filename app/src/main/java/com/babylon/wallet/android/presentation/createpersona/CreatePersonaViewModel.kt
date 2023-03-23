@@ -9,8 +9,8 @@ import com.babylon.wallet.android.domain.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.common.PersonaEditLogic
-import com.babylon.wallet.android.presentation.common.PersonaEditLogicImpl
+import com.babylon.wallet.android.presentation.common.PersonaEditable
+import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -26,7 +26,7 @@ class CreatePersonaViewModel @Inject constructor(
     deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
-    PersonaEditLogic by PersonaEditLogicImpl() {
+    PersonaEditable by PersonaEditableImpl() {
 
     var state by mutableStateOf(
         CreatePersonaUiState(

@@ -11,17 +11,19 @@ import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun PersonaPropertyInput(
-    modifier: Modifier,
     label: String,
     value: String,
     onValueChanged: (String) -> Unit,
     onDeleteField: () -> Unit,
-    onFocusChanged: ((FocusState) -> Unit)? = null
+    onFocusChanged: ((FocusState) -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
     RadixTextField(
@@ -44,4 +46,18 @@ fun PersonaPropertyInput(
         }),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PersonaPropertyInputPreview() {
+    RadixWalletTheme {
+        PersonaPropertyInput(
+            label = "Test label",
+            value = "Value",
+            onValueChanged = {},
+            onDeleteField = {},
+            onFocusChanged = {}
+        )
+    }
 }
