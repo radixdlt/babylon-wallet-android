@@ -37,11 +37,11 @@ data class EntityDetailsResponseFungibleResourceDetails (
     @Contextual @SerialName(value = "discriminator")
     val discriminator: EntityDetailsResponseDetailsType,
 
-    @Contextual @SerialName(value = "access_rules_chain")
-    val accessRulesChain: kotlin.Any,
+//    @Contextual @SerialName(value = "access_rules_chain")
+//    val accessRulesChain: kotlin.Any,
 
-    @Contextual @SerialName(value = "vault_access_rules_chain")
-    val vaultAccessRulesChain: kotlin.Any,
+//    @Contextual @SerialName(value = "vault_access_rules_chain")
+//    val vaultAccessRulesChain: kotlin.Any,
 
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int,

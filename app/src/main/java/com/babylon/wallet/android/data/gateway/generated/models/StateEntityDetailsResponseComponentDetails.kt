@@ -42,11 +42,11 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
-    @Contextual @SerialName(value = "access_rules_chain")
-    val accessRulesChain: kotlin.Any,
+//    @Contextual @SerialName(value = "access_rules_chain")
+//    val accessRulesChain: kotlin.Any,
 
-    @Contextual @SerialName(value = "state")
-    val state: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "state")
+//    val state: kotlin.Any? = null,
 
     @SerialName(value = "royalty_aggregator")
     val royaltyAggregator: FungibleResourcesCollectionItemGloballyAggregated? = null

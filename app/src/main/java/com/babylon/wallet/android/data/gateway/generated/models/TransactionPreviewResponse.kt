@@ -30,11 +30,11 @@ import kotlinx.serialization.Contextual
 
 data class TransactionPreviewResponse (
 
-    @Contextual @SerialName(value = "receipt")
-    val receipt: kotlin.Any,
+//    @Contextual @SerialName(value = "receipt")
+//    val receipt: kotlin.Any,
 
-    @SerialName(value = "resource_changes")
-    val resourceChanges: kotlin.collections.List<@Contextual kotlin.Any>,
+//    @SerialName(value = "resource_changes")
+//    val resourceChanges: kotlin.collections.List<@Contextual kotlin.Any>,
 
     @SerialName(value = "logs")
     val logs: kotlin.collections.List<TransactionPreviewResponseLogsInner>
