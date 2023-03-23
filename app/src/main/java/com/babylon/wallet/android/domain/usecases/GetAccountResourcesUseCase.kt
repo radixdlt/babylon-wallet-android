@@ -92,7 +92,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             }.map {
                 OwnedFungibleToken(
                     owner = AccountAddress(accountOnNetwork.address),
-                    amount = it.fungibleResources?.items?.first()?.amountDecimal ?: BigDecimal.ZERO, // TODO 1181
+                    amount = it.fungibleResources?.items?.firstOrNull()?.amountDecimal ?: BigDecimal.ZERO, // TODO 1181
                     address = it.address,
                     token = it.toFungibleToken()
                 )
@@ -103,7 +103,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             }.map {
                 OwnedNonFungibleToken(
                     owner = AccountAddress(accountOnNetwork.address),
-                    amount = it.nonFungibleResources?.items?.first()?.amount ?: 0L, // TODO 1181
+                    amount = it.nonFungibleResources?.items?.firstOrNull()?.amount ?: 0L, // TODO 1181
                     tokenResourceAddress = it.address, // TODO 1181
                     token = it.toNonFungibleToken(nonFungiblesWithIds[it.address]) // TODO 1181
                 )
