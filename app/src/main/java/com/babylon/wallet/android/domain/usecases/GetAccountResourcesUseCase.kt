@@ -66,6 +66,18 @@ class GetAccountResourcesUseCase @Inject constructor(
             emptyList()
         }
 
+        // Query non fungible ids only for non fungible resources contained in all accounts
+        // and associate them with the resource address
+        val nonFungiblesWithIds = accounts
+            .map { it.nonFungibleResourceAddresses }
+            .flatten()
+            .associateWith { address ->
+                nonFungibleRepository.nonFungibleIds(
+                    address = address,
+                    isRefreshing = isRefreshing
+                ).value()
+            }
+
         // For every Account stored in the profile, map it to AccountResources
         profileAccounts.mapNotNull { profileAccount ->
             val accountOnNetwork = accounts.find {
@@ -93,14 +105,14 @@ class GetAccountResourcesUseCase @Inject constructor(
                     owner = AccountAddress(accountOnNetwork.address),
                     amount = it.nonFungibleResources?.items?.first()?.amount ?: 0L, // TODO 1181
                     tokenResourceAddress = it.address, // TODO 1181
-                    token = it.toNonFungibleToken()
+                    token = it.toNonFungibleToken(nonFungiblesWithIds[it.address]) // TODO 1181
                 )
             }
 
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
-                currencySymbol = "$",
+                currencySymbol = "$", // TODO replace when endpoint ready
                 value = "100",
                 appearanceID = profileAccount.appearanceID,
                 fungibleTokens = fungibleTokens,
@@ -109,111 +121,3 @@ class GetAccountResourcesUseCase @Inject constructor(
         }
     }
 }
-
-//    @Suppress("LongMethod")
-//    private suspend fun getSingleAccountResources(
-//        address: String,
-//        accountDisplayName: String,
-//        appearanceId: Int,
-//        isRefreshing: Boolean
-//    ) = coroutineScope {
-//        when (val accountResources = entityRepository.getAccountResources(address, isRefreshing)) {
-//            is Result.Error -> Result.Error(accountResources.exception)
-//            is Result.Success -> {
-//                val fungibleTokens = mutableListOf<OwnedFungibleToken>()
-//                val nonFungibleTokens = mutableListOf<OwnedNonFungibleToken>()
-//
-//                accountResources.data.let { resources ->
-//                    val fungibleTokensDeferred = resources.simpleFungibleTokens.map { fungibleToken ->
-//                        async {
-//                            entityRepository.entityDetails(
-//                                address = fungibleToken.address,
-//                                isRefreshing = isRefreshing
-//                            )
-//                        }
-//                    }
-//
-//                    val nonFungibleTokensDeferred = mutableListOf<Deferred<Result<EntityDetailsResponse>>>()
-//                    val nonFungibleTokensIdsDeferred = mutableListOf<Deferred<Result<NonFungibleTokenIdContainer>>>()
-//
-//                    resources.simpleNonFungibleTokens
-//                        .map { nonFungibleToken ->
-//                            nonFungibleTokensDeferred.add(
-//                                async {
-//                                    entityRepository.entityDetails(
-//                                        address = nonFungibleToken.tokenResourceAddress,
-//                                        isRefreshing = isRefreshing
-//                                    )
-//                                }
-//                            )
-//                            nonFungibleTokensIdsDeferred.add(
-//                                async {
-//                                    nonFungibleRepository.nonFungibleIds(
-//                                        address = nonFungibleToken.tokenResourceAddress,
-//                                        isRefreshing = isRefreshing
-//                                    )
-//                                }
-//                            )
-//                        }
-//
-//                    // Run all requests simultaneously
-//                    val accountResourcesJobs = AccountResourcesJobs(
-//                        fungibleTokens = fungibleTokensDeferred.awaitAll(),
-//                        nonFungibleTokens = nonFungibleTokensDeferred.awaitAll(),
-//                        nonFungibleTokensIds = nonFungibleTokensIdsDeferred.awaitAll()
-//                    )
-//
-//                    accountResourcesJobs.fungibleTokens.forEachIndexed { index, result ->
-//                        val fungibleToken = accountResources.data.simpleFungibleTokens[index]
-//                        result.onValue { entityDetailsResponse ->
-//                            fungibleTokens.add(
-//                                OwnedFungibleToken(
-//                                    fungibleToken.owner,
-//                                    fungibleToken.amount,
-//                                    fungibleToken.address,
-//                                    entityDetailsResponse.toFungibleToken()
-//                                )
-//                            )
-//                        }
-//                    }
-//
-//                    accountResourcesJobs.nonFungibleTokens.forEachIndexed { index, result ->
-//                        val nonFungibleToken = accountResources.data.simpleNonFungibleTokens[index]
-//                        val nonFungibleId = accountResourcesJobs.nonFungibleTokensIds[index]
-//
-//                        result.onValue { entityDetailsResponse ->
-//                            nonFungibleId.onValue { nonFungibleTokenIdContainer ->
-//                                nonFungibleTokens.add(
-//                                    OwnedNonFungibleToken(
-//                                        nonFungibleToken.owner,
-//                                        nonFungibleToken.amount,
-//                                        nonFungibleToken.tokenResourceAddress,
-//                                        entityDetailsResponse.toNonFungibleToken(nonFungibleTokenIdContainer)
-//                                    )
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                Result.Success(
-//                    data = AccountResources(
-//                        address = address,
-//                        displayName = accountDisplayName,
-//                        currencySymbol = "$", // TODO replace when endpoint ready
-//                        value = "100",
-//                        fungibleTokens = fungibleTokens,
-//                        nonFungibleTokens = nonFungibleTokens,
-//                        appearanceID = appearanceId
-//                    )
-//                )
-//            }
-//        }
-//    }
-//}
-//
-//data class AccountResourcesJobs(
-//    val fungibleTokens: List<Result<EntityDetailsResponse>>,
-//    val nonFungibleTokens: List<Result<EntityDetailsResponse>>,
-//    val nonFungibleTokensIds: List<Result<NonFungibleTokenIdContainer>>,
-//)
