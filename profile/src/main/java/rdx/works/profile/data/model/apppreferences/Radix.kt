@@ -12,49 +12,41 @@ object Radix {
         val id: Int,
 
         @SerialName("name")
-        val name: String
-    ) {
+        val name: String,
 
-        fun displayName(): String {
-            return if (id == nebunet.networkId().value) {
-                "betanet"
-            } else {
-                name
-            }
-        }
+        @SerialName("displayDescription")
+        val displayDescription: String
+    ) {
 
         fun networkId(): NetworkId {
             return NetworkId.values().find { it.value == id } ?: throw IllegalArgumentException("Network ID not valid")
         }
 
         companion object {
-            val adapanet = Network(
-                id = NetworkId.Adapanet.value,
-                name = "adapanet"
-            )
             val hammunet = Network(
                 id = NetworkId.Hammunet.value,
-                name = "hammunet"
+                name = "hammunet",
+                displayDescription = "Hammunet (Test Network)"
             )
             val nebunet = Network(
                 id = NetworkId.Nebunet.value,
-                name = "nebunet"
+                name = "nebunet",
+                displayDescription = "Radix Public Network"
             )
             val mardunet = Network(
                 id = NetworkId.Mardunet.value,
-                name = "mardunet"
+                name = "mardunet",
+                displayDescription = "Mardunet (Test Network)"
             )
             val enkinet = Network(
                 id = NetworkId.Enkinet.value,
-                name = "enkinet"
-            )
-            val gilganet = Network(
-                id = NetworkId.Gilganet.value,
-                name = "gilganet"
+                name = "enkinet",
+                displayDescription = "Enkinet (Test Network)"
             )
 
+
             fun allKnownNetworks(): List<Network> {
-                return listOf(adapanet, hammunet, nebunet, mardunet, enkinet, gilganet)
+                return listOf(hammunet, nebunet, mardunet, enkinet)
             }
 
             fun forName(name: String): Network {
@@ -77,6 +69,18 @@ object Radix {
 
         val isDefault: Boolean
             get() = url == nebunet.url
+
+        fun displayName(): String {
+            return if (network.id == Network.nebunet.networkId().value) {
+                "Radix Betanet Gateway"
+            } else {
+                url
+            }
+        }
+
+        fun displayDescription(): String {
+            return network.displayDescription
+        }
 
         companion object {
             val default: Gateway
