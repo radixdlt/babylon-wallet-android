@@ -32,7 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -40,7 +40,7 @@ fun AddFieldSheet(
     onBackClick: () -> Unit,
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (OnNetwork.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     anyFieldSelected: Boolean
 ) {
@@ -97,7 +97,7 @@ fun AddFieldSheet(
 
 @Composable
 private fun SelectableFieldItem(
-    onSelectionChanged: (OnNetwork.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     field: PersonaFieldKindWrapper,
     modifier: Modifier = Modifier
 ) {
@@ -135,7 +135,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(OnNetwork.Persona.Field.Kind.FirstName)),
+            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(Network.Persona.Field.Kind.FirstName)),
             anyFieldSelected = false
         )
     }

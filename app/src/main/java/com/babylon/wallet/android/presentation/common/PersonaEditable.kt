@@ -10,17 +10,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 interface PersonaEditable {
 
     val personaEditState: StateFlow<PersonaEditLogicState>
 
-    fun setPersona(persona: OnNetwork.Persona?)
-    fun onDeleteField(kind: OnNetwork.Persona.Field.Kind)
-    fun onFieldValueChanged(kind: OnNetwork.Persona.Field.Kind, value: String)
+    fun setPersona(persona: Network.Persona?)
+    fun onDeleteField(kind: Network.Persona.Field.Kind)
+    fun onFieldValueChanged(kind: Network.Persona.Field.Kind, value: String)
     fun onDisplayNameChanged(value: String)
-    fun onSelectionChanged(kind: OnNetwork.Persona.Field.Kind, selected: Boolean)
+    fun onSelectionChanged(kind: Network.Persona.Field.Kind, selected: Boolean)
     fun onAddFields()
     fun validateInput()
 }
@@ -32,7 +32,7 @@ class PersonaEditableImpl : PersonaEditable {
     override val personaEditState: StateFlow<PersonaEditLogicState>
         get() = _state.asStateFlow()
 
-    override fun setPersona(persona: OnNetwork.Persona?) {
+    override fun setPersona(persona: Network.Persona?) {
         val existingFields =
             persona?.fields?.map { PersonaFieldKindWrapper(it.kind, value = it.value, valid = true) }.orEmpty().toPersistentList()
         _state.update { state ->
@@ -45,7 +45,7 @@ class PersonaEditableImpl : PersonaEditable {
         }
     }
 
-    override fun onDeleteField(kind: OnNetwork.Persona.Field.Kind) {
+    override fun onDeleteField(kind: Network.Persona.Field.Kind) {
         _state.update { s ->
             val updatedFields = s.currentFields.filter {
                 it.kind != kind
@@ -58,7 +58,7 @@ class PersonaEditableImpl : PersonaEditable {
         validateInput()
     }
 
-    override fun onFieldValueChanged(kind: OnNetwork.Persona.Field.Kind, value: String) {
+    override fun onFieldValueChanged(kind: Network.Persona.Field.Kind, value: String) {
         _state.update { s ->
             s.copy(
                 currentFields = s.currentFields.map {
@@ -78,7 +78,7 @@ class PersonaEditableImpl : PersonaEditable {
         validateInput()
     }
 
-    override fun onSelectionChanged(kind: OnNetwork.Persona.Field.Kind, selected: Boolean) {
+    override fun onSelectionChanged(kind: Network.Persona.Field.Kind, selected: Boolean) {
         _state.update { s ->
             val updated = s.fieldsToAdd.map {
                 if (it.kind == kind) {
@@ -111,11 +111,11 @@ class PersonaEditableImpl : PersonaEditable {
     override fun validateInput() {
         val validatedFields = _state.value.currentFields.map {
             when (it.kind) {
-                OnNetwork.Persona.Field.Kind.FirstName,
-                OnNetwork.Persona.Field.Kind.LastName,
-                OnNetwork.Persona.Field.Kind.PersonalIdentificationNumber,
-                OnNetwork.Persona.Field.Kind.ZipCode -> it.copy(valid = it.value.trim().isNotEmpty())
-                OnNetwork.Persona.Field.Kind.Email -> it.copy(valid = it.value.trim().isValidEmail())
+                Network.Persona.Field.Kind.FirstName,
+                Network.Persona.Field.Kind.LastName,
+                Network.Persona.Field.Kind.PersonalIdentificationNumber,
+                Network.Persona.Field.Kind.ZipCode -> it.copy(valid = it.value.trim().isNotEmpty())
+                Network.Persona.Field.Kind.Email -> it.copy(valid = it.value.trim().isValidEmail())
             }
         }
         _state.update { state ->
@@ -128,10 +128,10 @@ class PersonaEditableImpl : PersonaEditable {
     }
 
     private fun getFieldsToAdd(
-        existingFields: Set<OnNetwork.Persona.Field.Kind>
+        existingFields: Set<Network.Persona.Field.Kind>
     ): PersistentList<PersonaFieldKindWrapper> {
         return (
-            OnNetwork.Persona.Field.Kind.values()
+            Network.Persona.Field.Kind.values()
                 .toSet() - existingFields
             ).sortedBy { it.ordinal }.map { PersonaFieldKindWrapper(kind = it) }.toPersistentList()
     }

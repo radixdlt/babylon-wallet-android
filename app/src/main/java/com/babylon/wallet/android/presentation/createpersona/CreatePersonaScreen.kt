@@ -65,7 +65,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun CreatePersonaScreen(
@@ -123,10 +123,10 @@ fun CreatePersonaContent(
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
     anyFieldSelected: Boolean,
-    onSelectionChanged: (OnNetwork.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     onAddFields: () -> Unit,
-    onDeleteField: (OnNetwork.Persona.Field.Kind) -> Unit,
-    onValueChanged: (OnNetwork.Persona.Field.Kind, String) -> Unit
+    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
+    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
@@ -231,8 +231,8 @@ private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
     personaName: String,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
-    onValueChanged: (OnNetwork.Persona.Field.Kind, String) -> Unit,
-    onDeleteField: (OnNetwork.Persona.Field.Kind) -> Unit,
+    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
+    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,

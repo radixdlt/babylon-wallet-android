@@ -16,7 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.CreatePersonaUseCase
 import javax.inject.Inject
 
@@ -56,7 +56,7 @@ class CreatePersonaViewModel @Inject constructor(
         )
         viewModelScope.launch {
             val fields = state.currentFields.map {
-                OnNetwork.Persona.Field.init(kind = it.kind, value = it.value.trim())
+                Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
             }
             val persona = createPersonaUseCase(
                 displayName = state.personaDisplayName,

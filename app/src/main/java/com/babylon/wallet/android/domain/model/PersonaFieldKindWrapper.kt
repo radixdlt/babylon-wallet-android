@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 data class PersonaFieldKindWrapper(
-    val kind: OnNetwork.Persona.Field.Kind,
+    val kind: Network.Persona.Field.Kind,
     val selected: Boolean = false,
     val value: String = "",
     val valid: Boolean? = null,
