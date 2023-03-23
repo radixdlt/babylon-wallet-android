@@ -4,7 +4,6 @@ package com.babylon.wallet.android.data.gateway
 
 import com.babylon.wallet.android.data.gateway.generated.models.*
 import retrofit2.Call
-import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -13,8 +12,8 @@ interface GatewayApi {
     @POST("state/entity/details")
     fun stateEntityDetails(@Body stateEntityDetailsRequest: StateEntityDetailsRequest): Call<StateEntityDetailsResponse>
 
-    @POST("non-fungible/ids")
-    fun nonFungibleIds(@Body nonFungibleIdsRequest: NonFungibleIdsRequest): Call<NonFungibleIdsResponse>
+    @POST("state/non-fungible/ids")
+    fun stateNonFungibleIds(@Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest): Call<StateNonFungibleIdsResponse>
 
     @POST("transaction/construction")
     fun transactionConstruction(): Call<TransactionConstructionResponse>
