@@ -152,7 +152,7 @@ data class OnNetwork(
                 val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
                 // TODO handle error
                 val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
-                return response.virtualAccountAddress.address.componentAddress
+                return response.virtualAccountAddress.address
             }
         }
     }
@@ -240,7 +240,7 @@ data class OnNetwork(
                 val request = DeriveVirtualIdentityAddressRequest(networkID.value.toUByte(), publicKey)
                 // TODO handle error
                 val response = RadixEngineToolkit.deriveVirtualIdentityAddress(request).getOrThrow()
-                return response.virtualIdentityAddress.address.componentAddress
+                return response.virtualIdentityAddress.address
             }
         }
 

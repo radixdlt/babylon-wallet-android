@@ -15,8 +15,7 @@ import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
-import com.radixdlt.toolkit.models.address.Address
+import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
@@ -312,10 +311,10 @@ class TransactionClient @Inject constructor(
     ): TransactionManifest {
         val instructions = manifest.instructions
         val lockFeeInstruction: Instruction = Instruction.CallMethod(
-            componentAddress = Value.ComponentAddress(addressToLockFee),
-            methodName = Value.String(MethodName.LockFee.stringValue),
+            componentAddress = ManifestAstValue.Address(addressToLockFee),
+            methodName = ManifestAstValue.String(MethodName.LockFee.stringValue),
             arguments = arrayOf(
-                Value.Decimal(
+                ManifestAstValue.Decimal(
                     BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
                 )
             )
@@ -424,23 +423,24 @@ class TransactionClient @Inject constructor(
                     .forEach { instruction ->
                         when (instruction) {
                             is Instruction.CallMethod -> {
-                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
-                                    if (callInstructionFilter(instruction.methodName.value)) {
-                                        addressesNeededToSign.add(accountAddress)
+                                (instruction.componentAddress as? ManifestAstValue.Address)
+                                    ?.executeIfAccountComponent { accountAddress ->
+                                        if (callInstructionFilter(instruction.methodName.value)) {
+                                            addressesNeededToSign.add(accountAddress)
+                                        }
                                     }
-                                }
                             }
                             is Instruction.SetMetadata -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)
+                                (instruction.entityAddress as? ManifestAstValue.Address)
                                     ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
                             }
                             is Instruction.SetMethodAccessRule -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)
+                                (instruction.entityAddress as? ManifestAstValue.Address)
                                     ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
-                                    }
+                                }
                             }
                             is Instruction.SetComponentRoyaltyConfig -> {
                                 instruction.componentAddress.executeIfAccountComponent { accountAddress ->
@@ -471,15 +471,9 @@ class TransactionClient @Inject constructor(
             .contains(instructionName)
     }
 
-    private fun Value.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
-        if (address.componentAddress.startsWith("account")) {
-            action(address.componentAddress)
-        }
-    }
-
-    private fun Address.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
-        if (componentAddress.startsWith("account")) {
-            action(componentAddress)
+    private fun ManifestAstValue.Address.executeIfAccountComponent(action: (String) -> Unit) {
+        if (address.startsWith("account")) {
+            action(address)
         }
     }
 
