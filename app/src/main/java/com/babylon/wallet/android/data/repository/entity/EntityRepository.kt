@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.data.repository.entity
 
-import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.models.*
+import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
@@ -20,7 +22,7 @@ interface EntityRepository {
 }
 
 class EntityRepositoryImpl @Inject constructor(
-    private val gatewayApi: GatewayApi,
+    private val stateApi: StateApi,
     private val cache: HttpCache
 ) : EntityRepository {
 
@@ -28,7 +30,7 @@ class EntityRepositoryImpl @Inject constructor(
         addresses: List<String>,
         isRefreshing: Boolean
     ): Result<StateEntityDetailsResponse> {
-        return gatewayApi.stateEntityDetails(
+        return stateApi.entityDetails(
             StateEntityDetailsRequest(
                 addresses = addresses,
                 aggregationLevel = ResourceAggregationLevel.global

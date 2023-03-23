@@ -1,19 +1,13 @@
 @file:Suppress("TooManyFunctions")
 
-package com.babylon.wallet.android.data.gateway
+package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.*
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-interface GatewayApi {
-
-    @POST("state/entity/details")
-    fun stateEntityDetails(@Body stateEntityDetailsRequest: StateEntityDetailsRequest): Call<StateEntityDetailsResponse>
-
-    @POST("state/non-fungible/ids")
-    fun stateNonFungibleIds(@Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest): Call<StateNonFungibleIdsResponse>
+interface TransactionApi {
 
     @POST("transaction/construction")
     fun transactionConstruction(): Call<TransactionConstructionResponse>
