@@ -82,16 +82,13 @@ class TransactionClient @Inject constructor(
             is Result.Success -> manifestConversionResult.data
         }
         val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
-        val accountAddressToLockFee = selectAccountAddressToLockFee(
-            addressesInvolved
-        ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
-        if (accountAddressToLockFee == null) {
-            return Result.Error(
+        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+            ?: return Result.Error(
                 TransactionApprovalException(
                     DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
                 )
             )
-        }
+
         return Result.Success(
             addLockFeeInstructionToManifest(
                 manifest = jsonTransactionManifest,
@@ -120,16 +117,13 @@ class TransactionClient @Inject constructor(
         val manifestWithTransactionFee = if (hasLockFeeInstruction) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee = selectAccountAddressToLockFee(
-                addressesInvolved
-            ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
-            if (accountAddressToLockFee == null) {
-                return Result.Error(
+            val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+                ?: return Result.Error(
                     TransactionApprovalException(
                         DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                     )
                 )
-            }
+
             addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
@@ -187,25 +181,18 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
-        var selectedAddress: String? = null
-        for (address in involvedAddresses) {
-            when (val account = getAccountResourcesUseCase.getSingleAccount(address, isRefreshing = true)) {
-                is Result.Error -> null
-                is Result.Success -> {
-                    if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
-                        selectedAddress = account.data.address
-                        break
-                    }
-                }
-            }
-        }
-        return selectedAddress
+    suspend fun selectAccountAddressToLockFee(addresses: List<String>): String? {
+        val accountFromInvolvedAddresses = getAccountResourcesUseCase
+            .getAccounts(addresses = addresses, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+
+        return accountFromInvolvedAddresses?.address ?: getAccountResourcesUseCase
+            .getAccountsFromProfile(isRefreshing = true)
+            .value()
+            ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+            ?.address
     }
 
-    private suspend fun getAddressesOfThisWallet(): List<String> {
-        return accountRepository.getAccounts().map { it.address }
-    }
 
     private suspend fun buildTransactionHeader(
         networkId: Int,

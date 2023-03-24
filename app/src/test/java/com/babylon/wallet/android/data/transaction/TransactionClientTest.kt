@@ -45,23 +45,18 @@ internal class TransactionClientTest {
             cache
         )
         coEvery {
-            getAccountResourceUseCase.getSingleAccount(
-                address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab",
+            getAccountResourceUseCase.getAccounts(
+                addresses = listOf(
+                    "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
+                ),
                 isRefreshing = true
             )
         } returns Result.Success(
-            SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab")
-        )
-        coEvery {
-            getAccountResourceUseCase.getSingleAccount(
-                address = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej",
-                isRefreshing = true
+            listOf(
+                SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
             )
-        } returns Result.Success(
-            SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
         )
         coEvery { profileDataSource.getCurrentNetworkId() } returns Radix.Network.nebunet.networkId()
-
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
