@@ -3,7 +3,6 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
-import com.babylon.wallet.android.data.gateway.*
 import com.babylon.wallet.android.data.gateway.apis.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StatusApi
