@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -76,12 +77,21 @@ class DappDetailViewModel @Inject constructor(
                 }
                 _state.update { state ->
                     val selectedPersona = personas.firstOrNull {
-                        it.address == state.selectedPersona?.address
-                    } ?: state.selectedPersona
+                        it.address == state.selectedPersona?.persona?.address
+                    } ?: state.selectedPersona?.persona
+                    val requiredFieldIds =
+                        authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == selectedPersona?.address }?.fieldIDs.orEmpty()
+                    val selectedPersonaRequiredFieldKinds =
+                        selectedPersona?.fields?.filter { requiredFieldIds.contains(it.id) }?.map { it.kind }.orEmpty()
                     state.copy(
                         dapp = authorizedDapp,
                         personas = personas.toPersistentList(),
-                        selectedPersona = selectedPersona
+                        selectedPersona = selectedPersona?.let {
+                            PersonaUiModel(
+                                it,
+                                requiredFieldKinds = selectedPersonaRequiredFieldKinds
+                            )
+                        }
                     )
                 }
             }
@@ -95,8 +105,15 @@ class DappDetailViewModel @Inject constructor(
             val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
                 accountRepository.getAccountByAddress(it)?.toUiModel()
             }.orEmpty()
+            val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
+            val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
+                it.kind
+            }
             _state.update {
-                it.copy(selectedPersona = persona, sharedPersonaAccounts = sharedAccounts.toPersistentList())
+                it.copy(
+                    selectedPersona = PersonaUiModel(persona, requiredFieldKinds = requiredFieldKinds),
+                    sharedPersonaAccounts = sharedAccounts.toPersistentList()
+                )
             }
         }
     }
@@ -131,6 +148,6 @@ data class DappDetailUiState(
     val dapp: Network.AuthorizedDapp? = null,
     val dappMetadata: DappMetadata? = null,
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
-    val selectedPersona: Network.Persona? = null,
+    val selectedPersona: PersonaUiModel? = null,
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
 )

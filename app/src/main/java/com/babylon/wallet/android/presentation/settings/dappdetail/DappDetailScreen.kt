@@ -62,6 +62,7 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -125,7 +126,7 @@ private fun DappDetailContent(
     personaList: ImmutableList<Network.Persona>,
     dappMetadata: DappMetadata?,
     onPersonaClick: (Network.Persona) -> Unit,
-    selectedPersona: Network.Persona?,
+    selectedPersona: PersonaUiModel?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
     onDisconnectPersona: (Network.Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
@@ -401,7 +402,7 @@ private fun DappDefinitionAddressRow(
 
 @Composable
 private fun PersonaDetailsSheet(
-    persona: Network.Persona,
+    persona: PersonaUiModel,
     sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -414,7 +415,7 @@ private fun PersonaDetailsSheet(
     Box(modifier = modifier) {
         Column(Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
-                title = persona.displayName,
+                title = persona.persona.displayName,
                 onBackClick = onCloseClick,
                 contentColor = RadixTheme.colors.gray1
             )
@@ -463,7 +464,7 @@ private fun PersonaDetailsSheet(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
-    persona: Network.Persona,
+    persona: PersonaUiModel,
     onEditPersona: (Network.Persona) -> Unit,
     sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
     dappName: String,
@@ -495,14 +496,14 @@ private fun PersonaDetailList(
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
                 label = stringResource(id = R.string.persona_label),
-                value = persona.displayName
+                value = persona.persona.displayName
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
             Divider(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
-        if (persona.fields.isNotEmpty()) {
+        if (persona.persona.fields.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 Text(
@@ -515,7 +516,7 @@ private fun PersonaDetailList(
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             }
-            items(persona.fields) { field ->
+            items(persona.persona.fields) { field ->
                 PersonaPropertyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -534,7 +535,7 @@ private fun PersonaDetailList(
                     .padding(horizontal = 40.dp),
                 text = stringResource(R.string.edit_persona),
                 onClick = {
-                    onEditPersona(persona)
+                    onEditPersona(persona.persona)
                 }
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -590,7 +591,7 @@ private fun PersonaDetailList(
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
                     onClick = {
-                        onDisconnectPersona(persona)
+                        onDisconnectPersona(persona.persona)
                     },
                     shape = RadixTheme.shapes.roundedRectSmall,
                     colors = ButtonDefaults.buttonColors(
@@ -644,7 +645,7 @@ fun DappDetailContentPreview() {
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
             dappMetadata = DappMetadata("account_tdx_abcd", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
             onPersonaClick = {},
-            selectedPersona = SampleDataProvider().samplePersona(),
+            selectedPersona = PersonaUiModel(SampleDataProvider().samplePersona()),
             selectedPersonaSharedAccounts = persistentListOf(
                 AccountItemUiModel("account_tdx_efgh", "Account1", 0)
             ),
@@ -663,15 +664,14 @@ fun DappDetailContentPreview() {
 fun PersonaDetailsSheetPreview() {
     RadixWalletTheme {
         PersonaDetailsSheet(
-            persona = SampleDataProvider().samplePersona(),
+            persona = PersonaUiModel(SampleDataProvider().samplePersona()),
             sharedPersonaAccounts = persistentListOf(
                 AccountItemUiModel("account_tdx_efgh", "Account1", 0)
             ),
             onCloseClick = {},
             dappName = "dApp",
             onDisconnectPersona = {},
-            onEditPersona = {},
-            onEditAccountSharing = {}
-        )
+            onEditPersona = {}
+        ) {}
     }
 }

@@ -43,7 +43,7 @@
     <string name="create_dapp_login_button_title">+ Create a new dApp Login</string>
     <string name="choose_dapp_accounts_title">Choose At Least One Account</string>
     <string name="choose_dapp_accounts_body">Choose the account(s) you want dashboard to know about.</string>
-    <string name="create_dapp_accounts_button_title">+ Create a new Account</string>
+    <string name="create_dapp_accounts_button_title">+ Create a New Account</string>
     <string name="dapp_successful_title">dApp Connection Successful</string>
     <string name="dapp_successful_body">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
     <string name="dapp_successful_button_title">Go to %s</string>
@@ -155,8 +155,8 @@
     <string name="here_are_all_the_decentralized_apps">Here are all the dApps that you have logged into using this Radix Wallet.</string>
     <string name="here_are_the_personas">Here are the Personas that you have previously used to connect to this dApp.</string>
     <string name="dapp_definition">dApp Definition</string>
-    <string name="first_name">First Name</string>
-    <string name="last_name">Last Name</string>
+    <string name="given_name">Given Name</string>
+    <string name="family_name">Family Name</string>
     <string name="email">Email</string>
     <string name="personal_identification_number">Personal Identification Number</string>
     <string name="zip_code">Zip Code</string>
@@ -247,10 +247,11 @@
     <string name="some_dapps_may_request">Some dApps may request personal information, like name or email address, that can be added to your Persona. Add some of this data now if you like.</string>
     <string name="save_and_continue">Save and Continue</string>
     <string name="personal_data_permission">Personal Data Permission</string>
-    <string name="required_information">Required information: </string>
+    <string name="required_information">Required information:\u0020</string>
     <string name="phone">Phone</string>
     <string name="empty_phone">Empty phone number</string>
     <string name="one_time_data_request">One-Time Data Request</string>
     <string name="just_one_time">just one time</string>
     <string name="choose_data_to_provide">Choose the data to provide</string>
+    <string name="required_by_dapp">Required by dApp</string>
 </resources>

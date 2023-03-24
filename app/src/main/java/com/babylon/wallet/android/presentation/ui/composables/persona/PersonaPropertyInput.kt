@@ -10,7 +10,9 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
@@ -45,6 +47,7 @@ fun PersonaPropertyInput(
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Next)
         }),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        rightLabel = if (required) stringResource(id = R.string.required_by_dapp) else null
     )
 }

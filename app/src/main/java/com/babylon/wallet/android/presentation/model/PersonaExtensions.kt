@@ -7,8 +7,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 @StringRes
 fun Network.Persona.Field.Kind.toDisplayResource(): Int {
     return when (this) {
-        Network.Persona.Field.Kind.GivenName -> R.string.first_name
-        Network.Persona.Field.Kind.FamilyName -> R.string.last_name
+        Network.Persona.Field.Kind.GivenName -> R.string.given_name
+        Network.Persona.Field.Kind.FamilyName -> R.string.family_name
         Network.Persona.Field.Kind.EmailAddress -> R.string.email
         Network.Persona.Field.Kind.PhoneNumber -> R.string.phone
     }

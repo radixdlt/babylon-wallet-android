@@ -299,7 +299,7 @@ private fun CreatePersonaContentList(
                 onDeleteField = {
                     onDeleteField(field.kind)
                 },
-                required = !field.required
+                required = field.required
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }

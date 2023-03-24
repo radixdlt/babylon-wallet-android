@@ -314,7 +314,7 @@ data class Network(
             /**
              * List of "ongoing personaData" (identified by OnNetwork.Persona.Field.ID) user has given Dapp access to.
              */
-            @SerialName("fieldIDs")
+            @SerialName("sharedFieldIDs")
             val fieldIDs: List<String>,
 
             @SerialName("lastUsedOn")

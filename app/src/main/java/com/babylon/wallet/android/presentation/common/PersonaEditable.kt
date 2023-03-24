@@ -109,7 +109,7 @@ class PersonaEditableImpl : PersonaEditable {
                 PersonaFieldKindWrapper(field.kind, value = field.value)
             } + _state.value.fieldsToAdd.filter {
                 it.selected
-            }.map { PersonaFieldKindWrapper(it.kind) }
+            }.map { PersonaFieldKindWrapper(it.kind, required = personaEditState.value.requiredFieldKinds.contains(it.kind)) }
             val fieldsToAdd = getFieldsToAdd(existingFields.map { it.kind }.toSet())
             s.copy(
                 currentFields = existingFields.sortedBy { it.kind.ordinal }.toPersistentList(),
