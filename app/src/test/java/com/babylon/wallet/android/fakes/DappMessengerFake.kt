@@ -3,12 +3,12 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
-import rdx.works.profile.data.model.pernetwork.Network
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import rdx.works.profile.data.model.pernetwork.OnNetwork
 
 class DappMessengerFake : DappMessenger {
 
-    override suspend fun sendAccountsResponse(
+    override suspend fun sendWalletInteractionUnauthorizedSuccessResponse(
         dappId: String,
         requestId: String,
         accounts: List<AccountItemUiModel>
@@ -36,7 +36,7 @@ class DappMessengerFake : DappMessenger {
     override suspend fun sendWalletInteractionSuccessResponse(
         dappId: String,
         interactionId: String,
-        persona: Network.Persona,
+        persona: OnNetwork.Persona,
         usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel>,
         ongoingAccounts: List<AccountItemUiModel>

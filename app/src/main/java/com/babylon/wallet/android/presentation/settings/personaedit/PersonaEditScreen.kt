@@ -242,19 +242,20 @@ private fun PersonaDetailList(
         }
         items(editedFields) { field ->
             PersonaPropertyInput(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingDefault),
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {
                     onValueChanged(field.kind, it)
                 },
+                onFocusChanged = {
+                },
                 onDeleteField = {
                     onDeleteField(field.kind)
                 },
-                onFocusChanged = {
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault)
+                required = field.required
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }

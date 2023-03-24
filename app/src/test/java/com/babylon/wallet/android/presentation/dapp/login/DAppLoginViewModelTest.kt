@@ -13,7 +13,10 @@ import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
-import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppAuthorizedLoginViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +31,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 
-class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
+class DAppLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
@@ -87,8 +90,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         )
     )
 
-    override fun initVM(): DAppLoginViewModel {
-        return DAppLoginViewModel(
+    override fun initVM(): DAppAuthorizedLoginViewModel {
+        return DAppAuthorizedLoginViewModel(
             savedStateHandle,
             dAppMessenger,
             dAppConnectionRepository,
@@ -135,12 +138,12 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
         vm.onLogin()
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppLoginEvent.DisplayPermission)
+            assert(expectMostRecentItem() is DAppUnauthorizedLoginEvent.DisplayPermission)
         }
         vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppLoginEvent.LoginFlowCompleted)
+            assert(expectMostRecentItem() is DAppUnauthorizedLoginEvent.LoginFlowCompleted)
         }
     }
 

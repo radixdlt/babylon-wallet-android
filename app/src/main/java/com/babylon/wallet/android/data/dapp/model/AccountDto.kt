@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

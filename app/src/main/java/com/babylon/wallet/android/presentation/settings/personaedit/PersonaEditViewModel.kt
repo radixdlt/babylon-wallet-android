@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -52,7 +53,7 @@ class PersonaEditViewModel @Inject constructor(
         }
         viewModelScope.launch {
             personaRepository.getPersonaByAddressFlow(args.personaAddress).collect { persona ->
-                setPersona(persona = persona)
+                setPersona(persona = persona, requiredFieldKinds = args.requiredFields.map { it.toKind() })
                 _state.update { state ->
                     state.copy(
                         persona = persona,

@@ -127,6 +127,8 @@
     <string name="select_a_persona">Select a Persona</string>
     <string name="account_permission">Account Permission</string>
     <string name="dapp_is_requesting_ongoing_permission">%s is requesting permission to always be able to view account information when you login with this Persona.</string>
+    <string name="dapp_is_requesting_ongoing_persona_data_permission">%s is requesting permission to always be able to view the following personal data when you login with this Persona.</string>
+    <string name="dapp_is_requesting_onetime_persona_data_permission">%s is requesting that you provide some pieces personal data just one time.</string>
     <string name="always">always</string>
     <string name="dapp_is_requesting_permission">%s is requesting permission to view the following</string>
     <string name="revoke">Revoke</string>
@@ -185,7 +187,6 @@
     <string name="first_name_empty">First name can\'t be empty</string>
     <string name="last_name_empty">Empty last name</string>
     <string name="email_wrong">Wrong email address</string>
-    <string name="personal_identification_number_empty">Empty value</string>
     <string name="zip_code_empty">Empty value</string>
     <string name="edit">Edit</string>
     <string name="app_settings">App Settings</string>
@@ -245,4 +246,11 @@
     <string name="this_will_be_shared_with_dapps">This will be shared with dApps you login to</string>
     <string name="some_dapps_may_request">Some dApps may request personal information, like name or email address, that can be added to your Persona. Add some of this data now if you like.</string>
     <string name="save_and_continue">Save and Continue</string>
+    <string name="personal_data_permission">Personal Data Permission</string>
+    <string name="required_information">Required information: </string>
+    <string name="phone">Phone</string>
+    <string name="empty_phone">Empty phone number</string>
+    <string name="one_time_data_request">One-Time Data Request</string>
+    <string name="just_one_time">just one time</string>
+    <string name="choose_data_to_provide">Choose the data to provide</string>
 </resources>

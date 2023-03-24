@@ -258,20 +258,17 @@ data class Network(
 
             @Serializable
             enum class Kind {
-                @SerialName("firstName")
-                FirstName,
+                @SerialName("givenName")
+                GivenName,
 
-                @SerialName("lastName")
-                LastName,
+                @SerialName("familyName")
+                FamilyName,
 
-                @SerialName("email")
-                Email,
+                @SerialName("emailAddress")
+                EmailAddress,
 
-                @SerialName("personalIdentificationNumber")
-                PersonalIdentificationNumber,
-
-                @SerialName("zipCode")
-                ZipCode
+                @SerialName("phoneNumber")
+                PhoneNumber
             }
 
             companion object {

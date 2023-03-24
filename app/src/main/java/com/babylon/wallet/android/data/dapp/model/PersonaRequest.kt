@@ -7,13 +7,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class OneTimePersonaDataRequestItem(
     @SerialName("fields")
-    val fields: List<String>
+    val fields: List<PersonaDataField>
 )
 
 @Serializable
 data class OngoingPersonaDataRequestItem(
     @SerialName("fields")
-    val fields: List<String>
+    val fields: List<PersonaDataField>
 )
 
 fun OneTimePersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem {

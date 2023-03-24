@@ -10,8 +10,8 @@ import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.account.toUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

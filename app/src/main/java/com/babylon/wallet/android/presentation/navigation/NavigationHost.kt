@@ -23,10 +23,10 @@ import com.babylon.wallet.android.presentation.createpersona.createPersonaConfir
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
-import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
+import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
-import com.babylon.wallet.android.presentation.dapp.login.dAppLogin
 import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
@@ -161,7 +161,16 @@ fun NavigationHost(
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()
         })
-        dAppLogin(
+        dAppLoginAuthorized(
+            navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            showSuccessDialog = {
+                navController.requestSuccess(it)
+            }
+        )
+        dAppLoginUnauthorized(
             navController,
             onBackClick = {
                 navController.popBackStack()
@@ -174,16 +183,6 @@ fun NavigationHost(
         requestSuccess(onBackPress = {
             navController.popBackStack()
         })
-        chooseAccountsOneTime(
-            exitRequestFlow = {
-                navController.popBackStack()
-            },
-            dismissErrorDialog = {
-                navController.popBackStack()
-            }
-        ) {
-            navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
-        }
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
                 navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
