@@ -27,6 +27,10 @@ data class AccountResources(
     }
 }
 
+fun List<AccountResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
+    it.hasXrdWithEnoughBalance(minimumBalance)
+}
+
 fun Network.Account.toDomainModel(): AccountResources {
     return AccountResources(
         address = this.address,
