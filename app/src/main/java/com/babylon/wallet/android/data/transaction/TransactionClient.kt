@@ -194,7 +194,6 @@ class TransactionClient @Inject constructor(
             ?.address
     }
 
-
     private suspend fun buildTransactionHeader(
         networkId: Int,
         notaryAndSigners: NotaryAndSigners,
