@@ -12,11 +12,11 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
-import com.babylon.wallet.android.presentation.dapp.InitialDappLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
+import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppAuthorizedLoginViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -124,7 +124,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>()
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialDappLoginRoute is InitialDappLoginRoute.SelectPersona)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.SelectPersona)
         }
     }
 
@@ -135,15 +135,15 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>()
         advanceUntilIdle()
         vm.onSelectPersona(samplePersona)
         advanceUntilIdle()
-        vm.onLogin()
+        vm.personaSelectionConfirmed()
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppUnauthorizedLoginEvent.DisplayPermission)
+            assert(expectMostRecentItem() is DAppAuthorizedLoginEvent.DisplayPermission)
         }
         vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppUnauthorizedLoginEvent.LoginFlowCompleted)
+            assert(expectMostRecentItem() is DAppAuthorizedLoginEvent.LoginFlowCompleted)
         }
     }
 
@@ -155,7 +155,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>()
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialDappLoginRoute is InitialDappLoginRoute.Permission)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission)
         }
     }
 
@@ -167,7 +167,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>()
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialDappLoginRoute is InitialDappLoginRoute.ChooseAccount)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.ChooseAccount)
         }
     }
 

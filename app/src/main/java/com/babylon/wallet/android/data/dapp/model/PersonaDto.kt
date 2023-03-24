@@ -37,7 +37,7 @@ fun List<PersonaDataField>.encodeToString(): String {
 }
 
 fun String.decodePersonaDataFields(): List<PersonaDataField> {
-    return split(",").map { PersonaDataField.valueOf(it) }
+    return split(",").filter { it.isNotEmpty() }.map { PersonaDataField.valueOf(it) }
 }
 
 fun PersonaDataField.toKind(): Network.Persona.Field.Kind {

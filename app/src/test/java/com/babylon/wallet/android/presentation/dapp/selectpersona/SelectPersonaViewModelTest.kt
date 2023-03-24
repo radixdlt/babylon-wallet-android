@@ -7,8 +7,8 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -19,7 +19,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Network
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 
@@ -61,7 +61,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
         super.setUp()
         val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { profileDataSource.getCurrentNetwork() } returns Network.nebunet
+        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)
         }

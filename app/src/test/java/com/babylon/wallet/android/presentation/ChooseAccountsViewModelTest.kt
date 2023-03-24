@@ -3,16 +3,14 @@ package com.babylon.wallet.android.presentation
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
-import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact
 import com.babylon.wallet.android.mockdata.accountsTwoRequestExact
-import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_REQUEST_ID
-import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsEvent
+import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
+import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
@@ -31,7 +29,6 @@ class ChooseAccountsViewModelTest {
     private val accountRepository = AccountRepositoryFake()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
 
-    private val dAppMessenger = DappMessengerFake()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
@@ -41,10 +38,13 @@ class ChooseAccountsViewModelTest {
         incomingRequestRepository.add(accountsRequestAtLeast)
 
         viewModel = OneTimeChooseAccountsViewModel(
-            savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsRequestAtLeast.requestId)),
-            accountRepository = accountRepository,
-            incomingRequestRepository = incomingRequestRepository,
-            dappMetadataRepository = dappMetadataRepository
+            savedStateHandle = SavedStateHandle(
+                mapOf(
+                    ARG_NUMBER_OF_ACCOUNTS to accountsRequestAtLeast.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                    ARG_EXACT_ACCOUNT_COUNT to true
+                )
+            ),
+            accountRepository = accountRepository
         )
     }
 
@@ -101,10 +101,13 @@ class ChooseAccountsViewModelTest {
             incomingRequestRepository.add(accountsRequestExact)
 
             viewModel = OneTimeChooseAccountsViewModel(
-                savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsRequestExact.requestId)),
-                accountRepository = accountRepository,
-                incomingRequestRepository = incomingRequestRepository,
-                dappMetadataRepository = dappMetadataRepository
+                savedStateHandle = SavedStateHandle(
+                    mapOf(
+                        ARG_NUMBER_OF_ACCOUNTS to accountsRequestExact.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                        ARG_EXACT_ACCOUNT_COUNT to true
+                    )
+                ),
+                accountRepository = accountRepository
             )
 
             viewModel.state
@@ -124,10 +127,13 @@ class ChooseAccountsViewModelTest {
             incomingRequestRepository.add(accountsTwoRequestExact)
 
             viewModel = OneTimeChooseAccountsViewModel(
-                savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsTwoRequestExact.requestId)),
-                accountRepository = accountRepository,
-                incomingRequestRepository = incomingRequestRepository,
-                dappMetadataRepository = dappMetadataRepository
+                savedStateHandle = SavedStateHandle(
+                    mapOf(
+                        ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                        ARG_EXACT_ACCOUNT_COUNT to true
+                    )
+                ),
+                accountRepository = accountRepository
             )
 
             viewModel.state
@@ -145,14 +151,15 @@ class ChooseAccountsViewModelTest {
         runTest {
             // given
             incomingRequestRepository.add(accountsTwoRequestExact)
-
             viewModel = OneTimeChooseAccountsViewModel(
-                savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsTwoRequestExact.requestId)),
-                accountRepository = accountRepository,
-                incomingRequestRepository = incomingRequestRepository,
-                dappMetadataRepository = dappMetadataRepository
+                savedStateHandle = SavedStateHandle(
+                    mapOf(
+                        ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                        ARG_EXACT_ACCOUNT_COUNT to true
+                    )
+                ),
+                accountRepository = accountRepository
             )
-
             viewModel.state
             advanceUntilIdle()
 
@@ -164,11 +171,4 @@ class ChooseAccountsViewModelTest {
             assertTrue(viewModel.state.isContinueButtonEnabled)
         }
 
-    @Test
-    fun `when a account response is sent then navigate to completion screen`() =
-        runTest {
-            viewModel.sendAccountsResponse()
-            advanceUntilIdle()
-            assert(viewModel.oneOffEvent.first() is OneTimeChooseAccountsEvent.NavigateToCompletionScreen)
-        }
 }

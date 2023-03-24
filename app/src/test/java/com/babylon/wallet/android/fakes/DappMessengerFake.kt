@@ -4,14 +4,15 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 
 class DappMessengerFake : DappMessenger {
 
     override suspend fun sendWalletInteractionUnauthorizedSuccessResponse(
         dappId: String,
         requestId: String,
-        accounts: List<AccountItemUiModel>
+        onetimeAccounts: List<AccountItemUiModel>,
+        onetimeDataFields: List<Network.Persona.Field>
     ): Result<Unit> {
         return Result.Success(Unit)
     }
@@ -33,14 +34,16 @@ class DappMessengerFake : DappMessenger {
         return Result.Success(Unit)
     }
 
-    override suspend fun sendWalletInteractionSuccessResponse(
-        dappId: String,
+    override suspend fun sendWalletInteractionAuthorizedSuccessResponse(
         interactionId: String,
-        persona: OnNetwork.Persona,
+        persona: Network.Persona,
         usePersona: Boolean,
         oneTimeAccounts: List<AccountItemUiModel>,
-        ongoingAccounts: List<AccountItemUiModel>
+        ongoingAccounts: List<AccountItemUiModel>,
+        ongoingDataFields: List<Network.Persona.Field>,
+        onetimeDataFields: List<Network.Persona.Field>
     ): Result<Unit> {
         return Result.Success(Unit)
     }
+
 }
