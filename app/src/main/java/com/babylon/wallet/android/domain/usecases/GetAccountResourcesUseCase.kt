@@ -85,8 +85,6 @@ class GetAccountResourcesUseCase @Inject constructor(
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
-                currencySymbol = "$", // TODO replace when endpoint ready
-                value = "100",
                 appearanceID = profileAccount.appearanceID,
                 fungibleTokens = fungibleTokens,
                 nonFungibleTokens = nonFungibleTokens
