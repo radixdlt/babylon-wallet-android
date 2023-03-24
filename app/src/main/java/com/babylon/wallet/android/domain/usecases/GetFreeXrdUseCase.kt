@@ -7,9 +7,11 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
+import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.ManifestAstValue
+import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -53,6 +55,17 @@ class GetFreeXrdUseCase @Inject constructor(
         }
     }
 
+    private fun faucetComponentAddress(
+        networkId: UByte
+    ): ManifestAstValue.Address {
+        val faucetComponentAddress = RadixEngineToolkit.knownEntityAddresses(
+            request = KnownEntityAddressesRequest(
+                networkId = networkId
+            )
+        ).getOrThrow().faucetComponentAddress
+        return ManifestAstValue.Address(faucetComponentAddress.toString())
+    }
+
     private fun buildFaucetManifest(
         networkId: NetworkId,
         address: String,
@@ -61,18 +74,17 @@ class GetFreeXrdUseCase @Inject constructor(
         var manifest = ManifestBuilder()
             .addInstruction(
                 Instruction.CallMethod(
-                    componentAddress = Value.ComponentAddress.faucetComponentAddress(
-                        networkId = networkId.value.toUByte()
-                    ),
-                    methodName = Value.String(MethodName.Free.stringValue)
+                    componentAddress = faucetComponentAddress(networkId.value.toUByte()),
+                    methodName = ManifestAstValue.String(MethodName.Free.stringValue),
+                    arguments = arrayOf()
                 )
             ).addInstruction(
                 Instruction.CallMethod(
-                    componentAddress = Value.ComponentAddress(
+                    componentAddress = ManifestAstValue.Address(
                         address = address
                     ),
-                    methodName = Value.String(MethodName.DepositBatch.stringValue),
-                    arguments = arrayOf(Value.Expression("ENTIRE_WORKTOP"))
+                    methodName = ManifestAstValue.String(MethodName.DepositBatch.stringValue),
+                    arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
                 )
             )
             .build()
@@ -80,9 +92,7 @@ class GetFreeXrdUseCase @Inject constructor(
         if (includeLockFeeInstruction) {
             manifest = transactionClient.addLockFeeInstructionToManifest(
                 manifest = manifest,
-                addressToLockFee = Value.ComponentAddress.faucetComponentAddress(
-                    networkId = networkId.value.toUByte()
-                ).address.componentAddress
+                addressToLockFee = faucetComponentAddress(networkId.value.toUByte()).address
             )
         }
 
