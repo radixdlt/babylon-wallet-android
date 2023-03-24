@@ -8,7 +8,9 @@ import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
@@ -81,16 +83,13 @@ class TransactionClient @Inject constructor(
             is Result.Success -> manifestConversionResult.data
         }
         val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
-        val accountAddressToLockFee = selectAccountAddressToLockFee(
-            addressesInvolved
-        ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
-        if (accountAddressToLockFee == null) {
-            return Result.Error(
+        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+            ?: return Result.Error(
                 TransactionApprovalException(
                     DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
                 )
             )
-        }
+
         return Result.Success(
             addLockFeeInstructionToManifest(
                 manifest = jsonTransactionManifest,
@@ -119,16 +118,13 @@ class TransactionClient @Inject constructor(
         val manifestWithTransactionFee = if (hasLockFeeInstruction) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee = selectAccountAddressToLockFee(
-                addressesInvolved
-            ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
-            if (accountAddressToLockFee == null) {
-                return Result.Error(
+            val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+                ?: return Result.Error(
                     TransactionApprovalException(
                         DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                     )
                 )
-            }
+
             addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
@@ -186,25 +182,18 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
-        var selectedAddress: String? = null
-        for (address in involvedAddresses) {
-            when (val account = getAccountResourcesUseCase.getSingleAccount(address, isRefreshing = true)) {
-                is Result.Error -> null
-                is Result.Success -> {
-                    if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
-                        selectedAddress = account.data.address
-                        break
-                    }
-                }
-            }
-        }
-        return selectedAddress
+    suspend fun selectAccountAddressToLockFee(addresses: List<String>): String? {
+        val accountFromInvolvedAddresses = getAccountResourcesUseCase
+            .getAccounts(addresses = addresses, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+
+        return accountFromInvolvedAddresses?.address ?: getAccountResourcesUseCase
+            .getAccountsFromProfile(isRefreshing = true)
+            .value()
+            ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+            ?.address
     }
 
-    private suspend fun getAddressesOfThisWallet(): List<String> {
-        return accountRepository.getAccounts().map { it.address }
-    }
 
     private suspend fun buildTransactionHeader(
         networkId: Int,
@@ -354,7 +343,11 @@ class TransactionClient @Inject constructor(
 
                 if (submitResult.data.duplicate) {
                     Result.Error(
-                        TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(txID))
+                        TransactionApprovalException(
+                            DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
+                                txID
+                            )
+                        )
                     )
                 } else {
                     Result.Success(txID)
@@ -380,7 +373,11 @@ class TransactionClient @Inject constructor(
             }
             if (tryCount > maxTries) {
                 return Result.Error(
-                    TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(txID))
+                    TransactionApprovalException(
+                        DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(
+                            txID
+                        )
+                    )
                 )
             }
             delay(delayBetweenTriesMs)
@@ -390,7 +387,9 @@ class TransactionClient @Inject constructor(
                 TransactionStatus.committedFailure -> {
                     return Result.Error(
                         TransactionApprovalException(
-                            DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(txID)
+                            DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(
+                                txID
+                            )
                         )
                     )
                 }
@@ -408,7 +407,10 @@ class TransactionClient @Inject constructor(
     }
 
     fun getAddressesNeededToSign(jsonTransactionManifest: TransactionManifest): List<String> {
-        return getAddressesInvolvedInATransaction(jsonTransactionManifest, ::callMethodAuthorizedFilter)
+        return getAddressesInvolvedInATransaction(
+            jsonTransactionManifest,
+            ::callMethodAuthorizedFilter
+        )
     }
 
     @Suppress("NestedBlockDepth")

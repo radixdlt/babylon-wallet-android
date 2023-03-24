@@ -31,34 +31,29 @@ class GetAccountResourcesUseCase @Inject constructor(
      *
      * @param isRefreshing When need to override the cache.
      */
-    suspend fun getAccountsFromProfile(isRefreshing: Boolean) = getAccounts(
-        profileAccounts = accountRepository.getAccounts(),
-        isRefreshing = isRefreshing
-    )
+    suspend fun getAccountsFromProfile(isRefreshing: Boolean) = accountRepository.getAccounts()
+        .resolveDetailsInGateway(isRefreshing = isRefreshing)
 
     /**
-     * Retrieves all data related to this certain address to a saved address in the Profile.
+     * Retrieves all data related to those specific [addresses] that exist in the Profile.
+     */
+    suspend fun getAccounts(addresses: List<String>, isRefreshing: Boolean) = accountRepository
+        .getAccounts()
+        .filter { it.address in addresses }
+        .resolveDetailsInGateway(isRefreshing = isRefreshing)
+
+    /**
+     * Retrieves all data related to this certain address that exists in the Profile.
      *
      * @param isRefreshing When need to override the cache.
      */
-    suspend fun getSingleAccount(address: String, isRefreshing: Boolean): Result<AccountResources> {
-        val profileAccount = accountRepository.getAccountByAddress(address) ?: return Result.Error(
-            IllegalArgumentException("No Account Found with address $address")
-        )
+    suspend fun getAccount(address: String, isRefreshing: Boolean): Result<AccountResources> =
+        getAccounts(addresses = listOf(address), isRefreshing = isRefreshing).map { it.first() }
 
-        return getAccounts(
-            profileAccounts = listOf(profileAccount),
-            isRefreshing = isRefreshing
-        ).map {
-            it.first()
-        }
-    }
-
-    private suspend fun getAccounts(
-        profileAccounts: List<Network.Account>,
+    private suspend fun List<Network.Account>.resolveDetailsInGateway(
         isRefreshing: Boolean
     ): Result<List<AccountResources>> = entityRepository.stateEntityDetails(
-        addresses = profileAccounts.map { it.address },
+        addresses = this.map { it.address },
         isRefreshing = isRefreshing
     ).map { result ->
         val accountsOnGateway = result.items
@@ -76,7 +71,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         val nonFungiblesWithIds = accountsOnGateway.associateWithNonFungibleIds(isRefreshing)
 
         // For every Account stored in the profile, map it to AccountResources
-        profileAccounts.mapNotNull { profileAccount ->
+        this.mapNotNull { profileAccount ->
             val accountOnGateWay = accountsOnGateway.find {
                 it.address == profileAccount.address
             } ?: return@mapNotNull null
@@ -90,8 +85,6 @@ class GetAccountResourcesUseCase @Inject constructor(
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
-                currencySymbol = "$", // TODO replace when endpoint ready
-                value = "100",
                 appearanceID = profileAccount.appearanceID,
                 fungibleTokens = fungibleTokens,
                 nonFungibleTokens = nonFungibleTokens

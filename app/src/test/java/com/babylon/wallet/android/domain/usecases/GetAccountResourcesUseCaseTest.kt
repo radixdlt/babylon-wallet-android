@@ -64,8 +64,6 @@ class GetAccountResourcesUseCaseTest {
                 AccountResources(
                     address = expectedProfileAccountAddress,
                     displayName = expectedProfileAccount.displayName,
-                    currencySymbol = "$",
-                    value = "100",
                     appearanceID = expectedProfileAccount.appearanceID,
                     fungibleTokens = listOf(),
                     nonFungibleTokens = listOf(),
@@ -104,8 +102,6 @@ class GetAccountResourcesUseCaseTest {
                 AccountResources(
                     address = expectedProfileAccountAddress,
                     displayName = expectedProfileAccount.displayName,
-                    currencySymbol = "$",
-                    value = "100",
                     appearanceID = expectedProfileAccount.appearanceID,
                     fungibleTokens = listOf(
                         OwnedFungibleToken(
@@ -159,8 +155,6 @@ class GetAccountResourcesUseCaseTest {
                 AccountResources(
                     address = expectedProfileAccountAddress,
                     displayName = expectedProfileAccount.displayName,
-                    currencySymbol = "$",
-                    value = "100",
                     appearanceID = expectedProfileAccount.appearanceID,
                     fungibleTokens = listOf(),
                     nonFungibleTokens = listOf(
