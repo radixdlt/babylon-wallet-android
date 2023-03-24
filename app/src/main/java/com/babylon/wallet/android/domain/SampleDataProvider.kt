@@ -79,13 +79,14 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountResource(address: String = randomAddress()): AccountResources {
+    fun sampleAccountResource(
+        address: String = randomAddress(),
+        withFungibleTokens: List<OwnedFungibleToken> = sampleFungibleTokens(address)
+    ): AccountResources {
         return AccountResources(
             address = address,
             displayName = "My account",
-            currencySymbol = "$",
-            value = "10",
-            fungibleTokens = sampleFungibleTokens(address),
+            fungibleTokens = withFungibleTokens,
             appearanceID = 1
         )
     }
@@ -113,7 +114,10 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleFungibleTokens(ownerAddress: String = randomAddress()): List<OwnedFungibleToken> {
+    fun sampleFungibleTokens(
+        ownerAddress: String = randomAddress(),
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+    ): List<OwnedFungibleToken> {
         val result = mutableListOf<OwnedFungibleToken>()
         return result.apply {
             repeat(3) {
@@ -121,11 +125,11 @@ class SampleDataProvider {
                 add(
                     OwnedFungibleToken(
                         AccountAddress(ownerAddress),
-                        BigDecimal.valueOf(100000),
+                        amount.first,
                         tokenAddress,
                         FungibleToken(
                             tokenAddress,
-                            metadata = mapOf("symbol" to "XRD")
+                            metadata = mapOf("symbol" to amount.second)
                         )
                     )
                 )

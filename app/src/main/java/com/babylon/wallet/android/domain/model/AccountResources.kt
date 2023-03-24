@@ -5,13 +5,10 @@ import java.math.BigDecimal
 
 data class AccountResources(
     val address: String,
-    val displayName: String = "",
-    val currencySymbol: String = "",
-    val value: String = "",
-    val fungibleTokens: List<OwnedFungibleToken> = emptyList(),
-    val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList(),
+    val displayName: String,
     val appearanceID: Int,
-    val isStub: Boolean = false
+    val fungibleTokens: List<OwnedFungibleToken> = emptyList(),
+    val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList()
 ) {
     fun hasXrdToken(): Boolean {
         return fungibleTokens.any {
@@ -35,7 +32,6 @@ fun Network.Account.toDomainModel(): AccountResources {
     return AccountResources(
         address = this.address,
         displayName = displayName,
-        isStub = true,
         appearanceID = this.appearanceID
     )
 }
