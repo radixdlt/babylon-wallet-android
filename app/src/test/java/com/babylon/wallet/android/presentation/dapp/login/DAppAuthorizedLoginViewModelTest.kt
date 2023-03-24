@@ -31,7 +31,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 
-class DAppLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>() {
+class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
