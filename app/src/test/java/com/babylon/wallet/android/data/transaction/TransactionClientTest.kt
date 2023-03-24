@@ -8,8 +8,7 @@ import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
-import com.radixdlt.toolkit.models.address.Address
+import com.radixdlt.toolkit.models.ManifestAstValue
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,9 +63,9 @@ internal class TransactionClientTest {
     fun `finds address involved & signing for set metadata manifest`() = runTest {
         var manifest = ManifestBuilder().addInstruction(
             Instruction.SetMetadata(
-                entityAddress = Address.ComponentAddress("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"),
-                Value.String("name"),
-                Value.String("RadixDashboard")
+                entityAddress = ManifestAstValue.Address("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"),
+                ManifestAstValue.String("name"),
+                ManifestAstValue.Enum("RadixDashboard")
             )
         ).build()
         val addressesInvolved = transactionClient.getAddressesInvolvedInATransaction(manifest)
