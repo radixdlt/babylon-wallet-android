@@ -53,11 +53,11 @@ data class StateEntityDetailsResponseItem (
 
 ) {
 
-    val fungibleResourceAddresses: List<String>
-        get() = fungibleResources?.items?.map { it.resourceAddress } ?: emptyList()
+    private val fungibleResourceAddresses: List<String>
+        get() = fungibleResources?.items?.map { it.resourceAddress }.orEmpty()
 
     val nonFungibleResourceAddresses: List<String>
-        get() = nonFungibleResources?.items?.map { it.resourceAddress } ?: emptyList()
+        get() = nonFungibleResources?.items?.map { it.resourceAddress }.orEmpty()
 
     val allResourceAddresses: List<String>
         get() = fungibleResourceAddresses + nonFungibleResourceAddresses
