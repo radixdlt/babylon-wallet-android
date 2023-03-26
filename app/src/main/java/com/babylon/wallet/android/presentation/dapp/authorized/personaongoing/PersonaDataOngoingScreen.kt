@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -76,17 +77,24 @@ fun PersonaDataOngoingScreen(
             }
         }
     }
+    BackHandler {
+        if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
+            sharedViewModel.onRejectLogin()
+        } else {
+            onBackClick()
+        }
+    }
     PersonaDataOngoingPermissionContent(
         onContinueClick = sharedViewModel::onGrantedPersonaDataOngoing,
         dappMetadata = sharedState.dappMetadata,
         onBackClick = {
-            if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+            if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
                 sharedViewModel.onRejectLogin()
             } else {
                 onBackClick()
             }
         },
-        isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission,
+        isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData,
         persona = state.persona,
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled

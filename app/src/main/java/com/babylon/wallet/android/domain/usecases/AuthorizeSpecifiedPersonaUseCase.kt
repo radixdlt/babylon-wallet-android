@@ -46,7 +46,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     val selectedPersonaData: List<Network.Persona.Field>
                     when {
                         hasOngoingAccountsRequest -> {
-                            handleOngoingAccountsRequest(
+                            operationResult = handleOngoingAccountsRequest(
                                 request,
                                 authorizedDapp,
                                 authorizedPersonaSimple,

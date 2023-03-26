@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import com.babylon.wallet.android.data.dapp.model.decodePersonaDataFields
+import com.babylon.wallet.android.data.dapp.model.encodeToString
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.google.accompanist.navigation.animation.composable
@@ -55,7 +56,7 @@ fun NavGraphBuilder.personaDataOngoing(
             navArgument(ARG_REQUIRED_FIELDS) {
                 type = NavType.StringType
                 initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.requestedFields.toTypedArray()
+                    defaultValue = initialAuthorizedLoginRoute.requestedFields.encodeToString()
                 }
             }
         )
