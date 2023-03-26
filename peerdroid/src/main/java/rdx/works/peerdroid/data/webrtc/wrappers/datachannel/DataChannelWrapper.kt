@@ -3,9 +3,8 @@ package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -23,9 +22,9 @@ import java.nio.ByteBuffer
 
 @Suppress("InjectDispatcher")
 data class DataChannelWrapper(
+    private val remoteClientId: String,
     private val webRtcDataChannel: DataChannel
 ) {
-    private val deleteConnectionObservable = MutableStateFlow(false)
 
     val state: DataChannelEvent.StateChanged
         get() = when (webRtcDataChannel.state()) {
@@ -43,11 +42,11 @@ data class DataChannelWrapper(
                 if (index == 0) {
                     val metadata = basePackage as BasePackage.MetadataPackage
                     val metadataDto = metadata.toPackageMessageDto()
-                    send(metadataDto)
+                    send(packageMessageDto = metadataDto)
                 } else {
                     val chunk = basePackage as BasePackage.ChunkPackage
                     val chunkDto = chunk.toPackageMessageDto()
-                    send(chunkDto)
+                    send(packageMessageDto = chunkDto)
                 }
             }
             Result.Success(Unit)
@@ -66,28 +65,25 @@ data class DataChannelWrapper(
     val dataChannelEvents: Flow<DataChannelEvent>
         get() = webRtcDataChannel
             .eventFlow()
-            .combine(deleteConnectionObservable) { dataChannelEvent, isDeleteConnectionEvent ->
-                if (isDeleteConnectionEvent) {
-                    DataChannelEvent.StateChanged.DELETE_CONNECTION
-                } else {
-                    if (dataChannelEvent is DataChannelEvent.IncomingMessage.Package) {
-                        val result = assembleAndVerifyMessageFromPackageList(
-                            packageList = dataChannelEvent.messageInListOfPackages
-                        )
-                        when (result) {
-                            is Result.Success -> {
-                                val incomingMessageByteArray = result.data
-                                DataChannelEvent.IncomingMessage.DecodedMessage(
-                                    message = incomingMessageByteArray.decodeToString()
-                                )
-                            }
-                            is Result.Error -> {
-                                DataChannelEvent.IncomingMessage.MessageHashMismatch
-                            }
+            .map { dataChannelEvent ->
+                if (dataChannelEvent is DataChannelEvent.IncomingMessage.Package) {
+                    val result = assembleAndVerifyMessageFromPackageList(
+                        packageList = dataChannelEvent.messageInListOfPackages
+                    )
+                    when (result) {
+                        is Result.Success -> {
+                            val incomingMessageByteArray = result.data
+                            DataChannelEvent.IncomingMessage.DecodedMessage(
+                                remoteClientId = remoteClientId,
+                                message = incomingMessageByteArray.decodeToString()
+                            )
                         }
-                    } else {
-                        dataChannelEvent
+                        is Result.Error -> {
+                            DataChannelEvent.IncomingMessage.MessageHashMismatch
+                        }
                     }
+                } else {
+                    dataChannelEvent
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -104,12 +100,12 @@ data class DataChannelWrapper(
         return when (result) {
             is Result.Error -> {
                 result.data?.let { messageId ->
-                    sendReceiveMessageError(messageId) // inform extension
+                    sendReceiveMessageError(messageId = messageId) // inform extension
                 }
-                Result.Error("data channel failed to initialize")
+                Result.Error("failed to assemble and verify incoming message from data channel")
             }
             is Result.Success -> {
-                sendReceiveMessageConfirmation(result.data) // inform extension
+                sendReceiveMessageConfirmation(messageId = result.data) // inform extension
                 Result.Success(assembledMessageInByteArray)
             }
         }
@@ -121,7 +117,7 @@ data class DataChannelWrapper(
             messageId = messageId,
             packageType = PackageMessageDto.PackageType.MESSAGE_CONFIRMATION.type
         )
-        send(confirmationDto)
+        send(packageMessageDto = confirmationDto)
     }
 
     // once the incoming message is assembled but not verified send an error to the extension
@@ -143,10 +139,7 @@ data class DataChannelWrapper(
         }
     }
 
-    fun close(isDeleteConnectionEvent: Boolean) {
-        if (isDeleteConnectionEvent) {
-            deleteConnectionObservable.value = true
-        }
+    fun close() {
         webRtcDataChannel.close()
     }
 }
