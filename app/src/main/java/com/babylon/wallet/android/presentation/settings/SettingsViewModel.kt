@@ -32,30 +32,31 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state = profileDataSource.p2pLink.map { p2pLink ->
-        val updatedSettings = if (p2pLink == null) {
-            defaultSettings.toMutableList().apply {
-                if (!contains(SettingsItem.TopLevelSettings.Connection)) {
-                    add(0, SettingsItem.TopLevelSettings.Connection)
+    val state = profileDataSource.p2pLinks
+        .map { p2pLinks ->
+            val updatedSettings = if (p2pLinks.isEmpty()) {
+                defaultSettings.toMutableList().apply {
+                    if (!contains(SettingsItem.TopLevelSettings.Connection)) {
+                        add(0, SettingsItem.TopLevelSettings.Connection)
+                    }
                 }
-            }
-        } else {
-            defaultSettings.filter { settingSectionItem ->
-                settingSectionItem != SettingsItem.TopLevelSettings.Connection
-            }
-        }.toPersistentList()
-        SettingsUiState(updatedSettings)
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
-        SettingsUiState(defaultSettings)
-    )
+            } else {
+                defaultSettings.filter { settingSectionItem ->
+                    settingSectionItem != SettingsItem.TopLevelSettings.Connection
+                }
+            }.toPersistentList()
+            SettingsUiState(updatedSettings)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
+            SettingsUiState(defaultSettings)
+        )
 
     fun onDeleteWalletClick() {
         viewModelScope.launch {
             profileDataSource.clear()
             preferencesManager.clear()
-            peerdroidClient.close(shouldCloseConnectionToSignalingServer = true)
+            peerdroidClient.terminate()
         }
     }
 }
