@@ -1,5 +1,10 @@
 package rdx.works.peerdroid.data.websocket
 
+import android.content.Context
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.url
@@ -33,32 +38,22 @@ import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
 
-internal interface WebSocketClient {
+internal class WebSocketClient(applicationContext: Context) {
 
-    suspend fun initSession(
-        connectionId: String,
-        encryptionKey: ByteArray
-    ): Result<Unit>
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface HttpClientEntryPoint {
+        fun provideHttpClient(): HttpClient
+    }
 
-    suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload)
+    private val httpClientEntryPoint: HttpClientEntryPoint = EntryPointAccessors.fromApplication(
+        context = applicationContext,
+        entryPoint = HttpClientEntryPoint::class.java
+    )
 
-    suspend fun sendAnswerMessage(answerPayload: RpcMessage.AnswerPayload)
-
-    suspend fun sendIceCandidateMessage(iceCandidateData: PeerConnectionEvent.IceCandidate.Data)
-
-    fun observeMessages(): Flow<SignalingServerMessage>
-
-    suspend fun closeSession()
-}
-
-@Suppress("TooManyFunctions")
-// WebSocket client to communicate with the signaling server.
-// The signaling server is responsible for exchanging network information which is needed for the WebRTC
-// between the mobile wallet and the browser extension.
-internal class WebSocketClientImpl(
-    private val client: HttpClient,
-    private val json: Json
-) : WebSocketClient {
+    private val json: Json = Json {
+        ignoreUnknownKeys = true
+    }
 
     // represents a web socket session between two peers
     private var socket: WebSocketSession? = null
@@ -66,9 +61,16 @@ internal class WebSocketClientImpl(
     private lateinit var connectionId: String
     private lateinit var encryptionKey: ByteArray
 
-    private var remoteClientId = ""
+    // this is used only for the PeerdroidLink
+    // where we need to add a new link connection
+    // therefore no remote client (dapp) is involved
+    private var connectorExtensionId = ""
 
-    override suspend fun initSession(
+    init {
+        Timber.d("🛰 initialize WebSocketClient")
+    }
+
+    suspend fun initSession(
         connectionId: String,
         encryptionKey: ByteArray
     ): Result<Unit> {
@@ -79,7 +81,7 @@ internal class WebSocketClientImpl(
             // this block has a normal http request builder
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
-            socket = client.webSocketSession {
+            socket = httpClientEntryPoint.provideHttpClient().webSocketSession {
                 url("$BASE_URL$connectionId?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
@@ -87,7 +89,7 @@ internal class WebSocketClientImpl(
                 Result.Success(Unit)
             } else {
                 Timber.e("🛰 failed to connect to signaling server")
-                Result.Error("Couldn't establish a connection.")
+                Result.Error("Couldn't establish a connection")
             }
         } catch (exception: Exception) {
             if (exception is CancellationException) {
@@ -98,52 +100,7 @@ internal class WebSocketClientImpl(
         }
     }
 
-    // not used at the moment, but in the future when the wallet will send the offer
-    override suspend fun sendOfferMessage(offerPayload: RpcMessage.OfferPayload) {
-        val offerJson = json.encodeToString(offerPayload)
-        val encryptedOffer = offerJson.toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
-        )
-        val rpcMessage = RpcMessage.Offer(
-            targetClientId = remoteClientId,
-            encryptedPayload = encryptedOffer.toHexString()
-        )
-        val message = json.encodeToString(rpcMessage)
-        Timber.d("🛰 sending offer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
-        sendMessage(message)
-    }
-
-    override suspend fun sendAnswerMessage(answerPayload: RpcMessage.AnswerPayload) {
-        val answerJson = json.encodeToString(answerPayload)
-        val encryptedAnswer = answerJson.toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
-        )
-        val rpcMessage: RpcMessage = RpcMessage.Answer(
-            targetClientId = remoteClientId,
-            encryptedPayload = encryptedAnswer.toHexString()
-        )
-        val message = json.encodeToString(rpcMessage)
-        Timber.d("🛰 sending answer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
-        sendMessage(message)
-    }
-
-    override suspend fun sendIceCandidateMessage(
-        iceCandidateData: PeerConnectionEvent.IceCandidate.Data
-    ) {
-        val iceCandidatePayload = iceCandidateData.toJsonPayload()
-        val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
-        )
-        val rpcMessage: RpcMessage = RpcMessage.IceCandidate(
-            targetClientId = remoteClientId,
-            encryptedPayload = encryptedIceCandidate.toHexString()
-        )
-        val message = json.encodeToString(rpcMessage)
-        Timber.d("🛰 sending ice candidate to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
-        sendMessage(message)
-    }
-
-    override fun observeMessages(): Flow<SignalingServerMessage> {
+    fun listenForMessages(): Flow<SignalingServerMessage> {
         return try {
             socket?.incoming // web socket channel
                 ?.receiveAsFlow()
@@ -155,7 +112,7 @@ internal class WebSocketClientImpl(
                 }
                 ?.map { signalingServerMessage ->
                     if (signalingServerMessage is SignalingServerMessage.RemoteInfo.ClientConnected) {
-                        remoteClientId = signalingServerMessage.remoteClientId
+                        connectorExtensionId = signalingServerMessage.remoteClientId
                     }
                     signalingServerMessage
                 }
@@ -166,7 +123,59 @@ internal class WebSocketClientImpl(
         }
     }
 
-    override suspend fun closeSession() {
+    // not used at the moment, but in the future when the wallet will send the offer
+    suspend fun sendOfferMessage(
+        remoteClientId: String,
+        offerPayload: RpcMessage.OfferPayload
+    ) {
+        val offerJson = json.encodeToString(offerPayload)
+        val encryptedOffer = offerJson.toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
+        )
+        val rpcMessage = RpcMessage.Offer(
+            targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
+            encryptedPayload = encryptedOffer.toHexString()
+        )
+        val message = json.encodeToString(rpcMessage)
+        Timber.d("🛰 sending offer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
+        sendMessage(message)
+    }
+
+    suspend fun sendAnswerMessage(
+        remoteClientId: String,
+        answerPayload: RpcMessage.AnswerPayload
+    ) {
+        val answerJson = json.encodeToString(answerPayload)
+        val encryptedAnswer = answerJson.toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
+        )
+        val rpcMessage: RpcMessage = RpcMessage.Answer(
+            targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
+            encryptedPayload = encryptedAnswer.toHexString()
+        )
+        val message = json.encodeToString(rpcMessage)
+        Timber.d("🛰 sending answer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
+        sendMessage(message)
+    }
+
+    suspend fun sendIceCandidateMessage(
+        remoteClientId: String,
+        iceCandidateData: PeerConnectionEvent.IceCandidate.Data
+    ) {
+        val iceCandidatePayload = iceCandidateData.toJsonPayload()
+        val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
+            withEncryptionKey = encryptionKey
+        )
+        val rpcMessage: RpcMessage = RpcMessage.IceCandidate(
+            targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
+            encryptedPayload = encryptedIceCandidate.toHexString()
+        )
+        val message = json.encodeToString(rpcMessage)
+        Timber.d("🛰 sending ice candidate to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
+        sendMessage(message)
+    }
+
+    suspend fun closeSession() {
         socket?.close()
     }
 
@@ -199,7 +208,17 @@ internal class WebSocketClientImpl(
                 SignalingServerMessage.Confirmation(requestId = signalingServerDto.requestId)
             }
             is SignalingServerDto.RemoteData -> {
-                parseRemoteDataFromMessage(signalingServerDto)
+                return when (signalingServerDto.data) {
+                    is RpcMessage.Offer -> {
+                        decryptAndParseOfferPayload(signalingServerDto.data, signalingServerDto.remoteClientId)
+                    }
+                    is RpcMessage.Answer -> {
+                        decryptAndParseAnswerPayload(signalingServerDto.data, signalingServerDto.remoteClientId)
+                    }
+                    is RpcMessage.IceCandidate -> {
+                        decryptAndParseIceCandidatePayload(signalingServerDto.data, signalingServerDto.remoteClientId)
+                    }
+                }
             }
             is SignalingServerDto.InvalidMessageError -> {
                 SignalingServerMessage.Error.InvalidMessage(
@@ -209,24 +228,6 @@ internal class WebSocketClientImpl(
             is SignalingServerDto.ValidationError -> {
                 Timber.e("🛰 validation error in signaling server message: ${signalingServerDto.error}")
                 SignalingServerMessage.Error.Validation
-            }
-        }
-    }
-
-    private fun parseRemoteDataFromMessage(
-        remoteData: SignalingServerDto.RemoteData
-    ): SignalingServerMessage {
-        // Check whether the method is "answer" or "iceCandidate" and build the
-        // corresponding SignalingServerMessage data model.
-        return when (remoteData.data) {
-            is RpcMessage.Offer -> {
-                decryptAndParseOfferPayload(remoteData.data, remoteData.remoteClientId)
-            }
-            is RpcMessage.Answer -> {
-                decryptAndParseAnswerPayload(remoteData.data, remoteData.remoteClientId)
-            }
-            is RpcMessage.IceCandidate -> {
-                decryptAndParseIceCandidatePayload(remoteData.data, remoteData.remoteClientId)
             }
         }
     }
