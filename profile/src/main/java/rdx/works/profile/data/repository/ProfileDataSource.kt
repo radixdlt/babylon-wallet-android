@@ -31,7 +31,7 @@ interface ProfileDataSource {
 
     val profile: Flow<Profile?>
 
-    val p2pLink: Flow<P2PLink?>
+    val p2pLinks: Flow<List<P2PLink>>
 
     val gateways: Flow<Gateways>
 
@@ -88,9 +88,11 @@ class ProfileDataSourceImpl @Inject constructor(
             it.getOrNull()
         }
 
-    override val p2pLink: Flow<P2PLink?> = profile.map { profile ->
-        profile?.appPreferences?.p2pLinks?.firstOrNull()
-    }.distinctUntilChanged()
+    override val p2pLinks: Flow<List<P2PLink>> = profile
+        .map { profile ->
+            profile?.appPreferences?.p2pLinks.orEmpty()
+        }
+        .distinctUntilChanged()
 
     override val gateways = profile
         .filterNotNull()
