@@ -10,25 +10,27 @@ sealed interface DataChannelEvent {
     // This express the incoming messages from the other peer
     sealed interface IncomingMessage : DataChannelEvent {
 
-        // an incoming package that can be metadata or chunk
-        // this will later transformed to Message (see below)
+        // an incoming message that can be metadata or chunk
+        // this will later transformed to DecodedMessage (see below)
         data class Package(
             val messageInListOfPackages: List<BasePackage>
         ) : IncomingMessage
 
-        // this data class holds the assembled and decoded message
+        // this data class holds the remote client id (from which dapp comes the message)
+        // and its assembled and decoded message
         data class DecodedMessage(
+            val remoteClientId: String,
             val message: String
         ) : IncomingMessage
 
         // a confirmation notification from the other peer to confirm that
-        // it received and correctly assembled the message
+        // message received and assembled successfully
         data class ConfirmationNotification(
             val messageId: String
         ) : IncomingMessage
 
         // an error notification from the other peer to warn that
-        // it received but failed to assemble the message
+        // message received but failed to assemble it
         data class ErrorNotification(
             val messageId: String
         ) : IncomingMessage
