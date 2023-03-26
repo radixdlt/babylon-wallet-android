@@ -42,7 +42,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     private val samplePersona = SampleDataProvider().samplePersona()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -57,7 +58,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     )
 
     private val usePersonaRequestOngoing = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -71,7 +73,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     )
 
     private val usePersonaRequestOneTime = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -101,6 +104,7 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     override fun setUp() {
         super.setUp()
         val addressSlot = slot<String>()
+        every { savedStateHandle.get<String>(ARG_DAPP_ID) } returns "dappId"
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
         coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {

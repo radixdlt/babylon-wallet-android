@@ -65,6 +65,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                 personaRepository.getPersonaByAddress(authorizedPersonaSimple.identityAddress)
                             )
                             val result = dAppMessenger.sendWalletInteractionSuccessResponse(
+                                dappId = request.dappId,
                                 interactionId = request.requestId,
                                 persona = persona,
                                 usePersona = request.isUsePersonaAuth(),

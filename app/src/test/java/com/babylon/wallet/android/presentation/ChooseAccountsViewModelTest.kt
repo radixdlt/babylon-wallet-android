@@ -8,6 +8,7 @@ import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact
 import com.babylon.wallet.android.mockdata.accountsTwoRequestExact
+import com.babylon.wallet.android.presentation.dapp.accountonetime.ARG_DAPP_ID
 import com.babylon.wallet.android.presentation.dapp.accountonetime.ARG_REQUEST_ID
 import com.babylon.wallet.android.presentation.dapp.accountonetime.OneTimeChooseAccountsEvent
 import com.babylon.wallet.android.presentation.dapp.accountonetime.OneTimeChooseAccountsViewModel
@@ -41,7 +42,12 @@ class ChooseAccountsViewModelTest {
         incomingRequestRepository.add(accountsRequestAtLeast)
 
         viewModel = OneTimeChooseAccountsViewModel(
-            savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsRequestAtLeast.requestId)),
+            savedStateHandle = SavedStateHandle(
+                mapOf(
+                    ARG_DAPP_ID to "dappId",
+                    ARG_REQUEST_ID to accountsRequestAtLeast.requestId
+                )
+            ),
             accountRepository = accountRepository,
             dAppMessenger = dAppMessenger,
             incomingRequestRepository = incomingRequestRepository,
@@ -102,7 +108,12 @@ class ChooseAccountsViewModelTest {
             incomingRequestRepository.add(accountsRequestExact)
 
             viewModel = OneTimeChooseAccountsViewModel(
-                savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsRequestExact.requestId)),
+                savedStateHandle = SavedStateHandle(
+                    mapOf(
+                        ARG_DAPP_ID to "dappId",
+                        ARG_REQUEST_ID to accountsRequestExact.requestId
+                    )
+                ),
                 accountRepository = accountRepository,
                 dAppMessenger = dAppMessenger,
                 incomingRequestRepository = incomingRequestRepository,
@@ -126,7 +137,12 @@ class ChooseAccountsViewModelTest {
             incomingRequestRepository.add(accountsTwoRequestExact)
 
             viewModel = OneTimeChooseAccountsViewModel(
-                savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsTwoRequestExact.requestId)),
+                savedStateHandle = SavedStateHandle(
+                    mapOf(
+                        ARG_DAPP_ID to "dappId",
+                        ARG_REQUEST_ID to accountsTwoRequestExact.requestId
+                    )
+                ),
                 accountRepository = accountRepository,
                 dAppMessenger = dAppMessenger,
                 incomingRequestRepository = incomingRequestRepository,
@@ -150,7 +166,12 @@ class ChooseAccountsViewModelTest {
             incomingRequestRepository.add(accountsTwoRequestExact)
 
             viewModel = OneTimeChooseAccountsViewModel(
-                savedStateHandle = SavedStateHandle(mapOf(ARG_REQUEST_ID to accountsTwoRequestExact.requestId)),
+                savedStateHandle = SavedStateHandle(
+                    mapOf(
+                        ARG_DAPP_ID to "dappId",
+                        ARG_REQUEST_ID to accountsTwoRequestExact.requestId
+                    )
+                ),
                 accountRepository = accountRepository,
                 dAppMessenger = dAppMessenger,
                 incomingRequestRepository = incomingRequestRepository,

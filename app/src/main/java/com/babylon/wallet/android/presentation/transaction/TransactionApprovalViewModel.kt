@@ -89,13 +89,15 @@ class TransactionApprovalViewModel @Inject constructor(
                     error = UiMessage.ErrorMessage(error)
                 )
                 dAppMessenger.sendWalletInteractionResponseFailure(
-                    args.requestId,
+                    dappId = args.dappId,
+                    requestId = args.requestId,
                     error = WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
                 )
             }
         }
     }
 
+    @Suppress("LongMethod")
     fun approveTransaction() {
         approvalJob = appScope.launch {
             state.manifestData?.let { manifestData ->
@@ -103,9 +105,10 @@ class TransactionApprovalViewModel @Inject constructor(
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendWalletInteractionResponseFailure(
-                        args.requestId,
-                        failure.toWalletErrorType(),
-                        failure.getDappMessage()
+                        dappId = args.dappId,
+                        requestId = args.requestId,
+                        error = failure.toWalletErrorType(),
+                        message = failure.getDappMessage()
                     )
                     sendEvent(TransactionApprovalEvent.NavigateBack)
                     approvalJob = null
@@ -115,7 +118,11 @@ class TransactionApprovalViewModel @Inject constructor(
                         val result = transactionClient.signAndSubmitTransaction(manifest)
                         result.onValue { txId ->
                             // Send confirmation to the dApp that tx was submitted before status polling
-                            dAppMessenger.sendTransactionWriteResponseSuccess(args.requestId, txId)
+                            dAppMessenger.sendTransactionWriteResponseSuccess(
+                                dappId = args.dappId,
+                                requestId = args.requestId,
+                                txId = txId
+                            )
 
                             val transactionStatus = transactionClient.pollTransactionStatus(txId)
                             transactionStatus.onValue {
@@ -129,7 +136,8 @@ class TransactionApprovalViewModel @Inject constructor(
                                 val exception = it as? TransactionApprovalException
                                 if (exception != null) {
                                     dAppMessenger.sendWalletInteractionResponseFailure(
-                                        args.requestId,
+                                        dappId = args.dappId,
+                                        requestId = args.requestId,
                                         error = exception.failure.toWalletErrorType(),
                                         message = exception.failure.getDappMessage()
                                     )
@@ -143,7 +151,8 @@ class TransactionApprovalViewModel @Inject constructor(
                             val exception = it as? TransactionApprovalException
                             if (exception != null) {
                                 dAppMessenger.sendWalletInteractionResponseFailure(
-                                    args.requestId,
+                                    dappId = args.dappId,
+                                    requestId = args.requestId,
                                     error = exception.failure.toWalletErrorType(),
                                     message = exception.failure.getDappMessage()
                                 )
@@ -164,7 +173,8 @@ class TransactionApprovalViewModel @Inject constructor(
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
                 dAppMessenger.sendWalletInteractionResponseFailure(
-                    args.requestId,
+                    dappId = args.dappId,
+                    requestId = args.requestId,
                     error = WalletErrorType.RejectedByUser
                 )
                 sendEvent(TransactionApprovalEvent.NavigateBack)
