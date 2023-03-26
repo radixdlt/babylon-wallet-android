@@ -79,8 +79,9 @@ class DappDetailViewModel @Inject constructor(
                     val selectedPersona = personas.firstOrNull {
                         it.address == state.selectedPersona?.persona?.address
                     } ?: state.selectedPersona?.persona
-                    val requiredFieldIds =
-                        authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == selectedPersona?.address }?.fieldIDs.orEmpty()
+                    val requiredFieldIds = authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
+                        it.identityAddress == selectedPersona?.address
+                    }?.fieldIDs.orEmpty()
                     val selectedPersonaRequiredFieldKinds =
                         selectedPersona?.fields?.filter { requiredFieldIds.contains(it.id) }?.map { it.kind }.orEmpty()
                     state.copy(
