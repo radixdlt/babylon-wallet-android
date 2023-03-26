@@ -9,6 +9,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 class DappMessengerFake : DappMessenger {
 
     override suspend fun sendAccountsResponse(
+        dappId: String,
         requestId: String,
         accounts: List<AccountItemUiModel>
     ): Result<Unit> {
@@ -16,6 +17,7 @@ class DappMessengerFake : DappMessenger {
     }
 
     override suspend fun sendWalletInteractionResponseFailure(
+        dappId: String,
         requestId: String,
         error: WalletErrorType,
         message: String?
@@ -24,6 +26,7 @@ class DappMessengerFake : DappMessenger {
     }
 
     override suspend fun sendTransactionWriteResponseSuccess(
+        dappId: String,
         requestId: String,
         txId: String
     ): Result<Unit> {
@@ -31,6 +34,7 @@ class DappMessengerFake : DappMessenger {
     }
 
     override suspend fun sendWalletInteractionSuccessResponse(
+        dappId: String,
         interactionId: String,
         persona: Network.Persona,
         usePersona: Boolean,

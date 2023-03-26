@@ -32,22 +32,27 @@ import javax.inject.Inject
 interface DappMessenger {
 
     suspend fun sendAccountsResponse(
+        dappId: String,
         requestId: String,
         accounts: List<AccountItemUiModel>
     ): Result<Unit>
 
     suspend fun sendWalletInteractionResponseFailure(
+        dappId: String,
         requestId: String,
         error: WalletErrorType,
         message: String? = null
     ): Result<Unit>
 
     suspend fun sendTransactionWriteResponseSuccess(
+        dappId: String,
         requestId: String,
         txId: String
     ): Result<Unit>
 
+    @Suppress("LongParameterList")
     suspend fun sendWalletInteractionSuccessResponse(
+        dappId: String,
         interactionId: String,
         persona: Network.Persona,
         usePersona: Boolean,
@@ -62,6 +67,7 @@ class DappMessengerImpl @Inject constructor(
 ) : DappMessenger {
 
     override suspend fun sendAccountsResponse(
+        dappId: String,
         requestId: String,
         accounts: List<AccountItemUiModel>
     ): Result<Unit> {
@@ -74,7 +80,7 @@ class DappMessengerImpl @Inject constructor(
         )
         val json = Json.encodeToString(walletResponse)
 
-        return when (peerdroidClient.sendMessage(json)) {
+        return when (peerdroidClient.sendMessage(dappId, json)) {
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(requestId)
                 Result.Success(Unit)
@@ -87,6 +93,7 @@ class DappMessengerImpl @Inject constructor(
     }
 
     override suspend fun sendTransactionWriteResponseSuccess(
+        dappId: String,
         requestId: String,
         txId: String
     ): Result<Unit> {
@@ -95,7 +102,7 @@ class DappMessengerImpl @Inject constructor(
             items = WalletTransactionResponseItems(SendTransactionResponseItem(txId))
         )
         val message = Json.encodeToString(response)
-        return when (peerdroidClient.sendMessage(message)) {
+        return when (peerdroidClient.sendMessage(dappId, message)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(requestId)
@@ -105,6 +112,7 @@ class DappMessengerImpl @Inject constructor(
     }
 
     override suspend fun sendWalletInteractionResponseFailure(
+        dappId: String,
         requestId: String,
         error: WalletErrorType,
         message: String?
@@ -116,7 +124,7 @@ class DappMessengerImpl @Inject constructor(
                 message = message
             )
         )
-        return when (peerdroidClient.sendMessage(messageJson)) {
+        return when (peerdroidClient.sendMessage(dappId, messageJson)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(requestId)
@@ -126,6 +134,7 @@ class DappMessengerImpl @Inject constructor(
     }
 
     override suspend fun sendWalletInteractionSuccessResponse(
+        dappId: String,
         interactionId: String,
         persona: Network.Persona,
         usePersona: Boolean,
@@ -176,7 +185,7 @@ class DappMessengerImpl @Inject constructor(
             Timber.d(e)
             ""
         }
-        return when (peerdroidClient.sendMessage(messageJson)) {
+        return when (peerdroidClient.sendMessage(dappId, messageJson)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(interactionId)
