@@ -4,86 +4,83 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import rdx.works.peerdroid.data.PeerdroidConnector
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
+import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent.IncomingMessage
+import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent.StateChanged
+import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.peerdroid.helpers.sha256
+import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 import javax.inject.Inject
 
 interface PeerdroidClient {
 
-    suspend fun connectToRemotePeerWithEncryptionKey(
-        encryptionKey: ByteArray,
-        isRestart: Boolean = false
-    ): Result<Unit>
+    suspend fun connect(encryptionKey: ByteArray): Result<Unit>
 
-    suspend fun sendMessage(message: String): Result<Unit>
+    suspend fun sendMessage(
+        remoteClientId: String,
+        message: String
+    ): Result<Unit>
 
     fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
 
-    suspend fun close(
-        shouldCloseConnectionToSignalingServer: Boolean = false,
-        isDeleteConnectionEvent: Boolean = false
-    )
+    suspend fun deleteLink(connectionPassword: String)
+
+    suspend fun terminate()
 }
 
 class PeerdroidClientImpl @Inject constructor(
-    private val peerdroidConnector: PeerdroidConnector
+    private val peerdroidConnector: PeerdroidConnector,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : PeerdroidClient {
 
-    private var dataChannel: DataChannelWrapper? = null
-
-    override suspend fun connectToRemotePeerWithEncryptionKey(
-        encryptionKey: ByteArray,
-        isRestart: Boolean
-    ): Result<Unit> {
-        val result = peerdroidConnector.createDataChannel(
-            encryptionKey = encryptionKey,
-            isRestart = isRestart
-        )
-        return when (result) {
-            is Result.Success -> {
-                dataChannel = result.data
-                Result.Success(Unit)
-            }
-            is Result.Error -> {
-                Timber.d("data channel failed to initialize")
-                Result.Error("data channel failed to initialize")
-            }
-        }
+    override suspend fun connect(encryptionKey: ByteArray): Result<Unit> {
+        return peerdroidConnector.connectToConnectorExtension(encryptionKey = encryptionKey)
     }
 
-    override suspend fun sendMessage(message: String): Result<Unit> {
-        return dataChannel
-            ?.sendMessage(message)
-            ?: Result.Error("data channel is null")
+    override suspend fun sendMessage(
+        remoteClientId: String,
+        message: String
+    ): Result<Unit> {
+        return peerdroidConnector.sendDataChannelMessageToRemoteClient(
+            remoteClientId = remoteClientId,
+            message = message
+        )
     }
 
     override fun listenForIncomingRequests(): Flow<MessageFromDataChannel> {
-        return dataChannel
-            ?.dataChannelEvents
-            ?.cancellable()
-            ?.map { dataChannelEvent ->
+        return peerdroidConnector.dataChannelMessagesFromRemoteClients
+            .filter { dataChannelEvent ->
+                dataChannelEvent is StateChanged || dataChannelEvent is IncomingMessage.DecodedMessage
+            }
+            .map { dataChannelEvent ->
                 when (dataChannelEvent) {
-                    is DataChannelEvent.StateChanged -> {
+                    is StateChanged -> {
                         parseDataChannelState(dataChannelEvent)
                     }
-                    is DataChannelEvent.IncomingMessage.DecodedMessage -> {
-                        parseIncomingMessage(messageInJsonString = dataChannelEvent.message)
+                    is IncomingMessage.DecodedMessage -> {
+                        parseIncomingMessage(
+                            remoteClientId = dataChannelEvent.remoteClientId,
+                            messageInJsonString = dataChannelEvent.message
+                        )
                     }
-                    else -> { // TODO later we might need to handle other cases here
+                    else -> {
                         MessageFromDataChannel.None
                     }
                 }
-            }?.catch { exception ->
+            }.catch { exception ->
                 Timber.e("caught exception: ${exception.localizedMessage}")
                 if (exception is SerializationException) {
                     emit(MessageFromDataChannel.ParsingError)
@@ -91,45 +88,52 @@ class PeerdroidClientImpl @Inject constructor(
                     throw exception
                 }
             }
-            ?: emptyFlow()
+            .cancellable()
+            .flowOn(ioDispatcher)
     }
 
-    override suspend fun close(
-        shouldCloseConnectionToSignalingServer: Boolean,
-        isDeleteConnectionEvent: Boolean
-    ) {
-        dataChannel?.close(isDeleteConnectionEvent = isDeleteConnectionEvent)
-        dataChannel = null
-        peerdroidConnector.close(shouldCloseConnectionToSignalingServer)
+    override suspend fun deleteLink(connectionPassword: String) {
+        val encryptionKey = parseEncryptionKeyFromConnectionPassword(
+            connectionPassword = connectionPassword
+        )
+        encryptionKey?.let {
+            val connectionIdHolder = ConnectionIdHolder(id = it.sha256().toHexString())
+            peerdroidConnector.deleteConnector(connectionIdHolder)
+        } ?: Timber.e("Failed to close peer connection because connection password is wrong")
     }
 
-    private fun parseDataChannelState(
-        dataChannelEvent: DataChannelEvent.StateChanged
-    ): MessageFromDataChannel.ConnectionStateChanged {
-        return when (dataChannelEvent) {
-            DataChannelEvent.StateChanged.CONNECTING -> {
+    override suspend fun terminate() {
+        peerdroidConnector.terminateConnectionToConnectorExtension()
+    }
+
+    private fun parseDataChannelState(stateChanged: StateChanged): MessageFromDataChannel.ConnectionStateChanged {
+        return when (stateChanged) {
+            StateChanged.CONNECTING -> {
                 MessageFromDataChannel.ConnectionStateChanged.CONNECTING
             }
-            DataChannelEvent.StateChanged.OPEN -> {
+            StateChanged.OPEN -> {
                 MessageFromDataChannel.ConnectionStateChanged.OPEN
             }
-            DataChannelEvent.StateChanged.CLOSING -> {
+            StateChanged.CLOSING -> {
                 MessageFromDataChannel.ConnectionStateChanged.CLOSING
             }
-            DataChannelEvent.StateChanged.CLOSE -> {
+            StateChanged.CLOSE -> {
                 MessageFromDataChannel.ConnectionStateChanged.CLOSE
             }
-            DataChannelEvent.StateChanged.DELETE_CONNECTION -> {
+            StateChanged.DELETE_CONNECTION -> {
                 MessageFromDataChannel.ConnectionStateChanged.DELETE_CONNECTION
             }
-            DataChannelEvent.StateChanged.UNKNOWN -> {
+            StateChanged.UNKNOWN -> {
                 MessageFromDataChannel.ConnectionStateChanged.ERROR
             }
         }
     }
 
-    private fun parseIncomingMessage(messageInJsonString: String): MessageFromDataChannel.IncomingRequest {
+    private fun parseIncomingMessage(
+        remoteClientId: String,
+        messageInJsonString: String
+    ): MessageFromDataChannel.IncomingRequest {
         val request = walletRequestJson.decodeFromString<WalletInteraction>(messageInJsonString)
-        return request.toDomainModel()
+        return request.toDomainModel(dappId = remoteClientId)
     }
 }
