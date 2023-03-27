@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
