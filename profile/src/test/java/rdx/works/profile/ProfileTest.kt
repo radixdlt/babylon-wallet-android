@@ -145,7 +145,8 @@ class ProfileTest {
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             firstAccountDisplayName = "First",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            gateway = gateway
         )
 
         val secondAccount = init(

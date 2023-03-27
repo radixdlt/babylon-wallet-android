@@ -88,7 +88,7 @@ object Radix {
 
         companion object {
             val default: Gateway
-                get() = nebunet
+                get() = kisharnet
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
