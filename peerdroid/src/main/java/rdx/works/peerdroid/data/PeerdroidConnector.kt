@@ -122,19 +122,23 @@ internal class PeerdroidConnectorImpl(
                 webSocketHolder.listenMessagesJob.cancel()
                 webSocketHolder.webSocketClient.closeSession()
             }
-            // close and remove the data channels and peer connection jobs
-            mapOfPeerConnections.values
-                .removeIf { peerConnectionHolder ->
-                    peerConnectionHolder.observePeerConnectionJob.cancel()
-                    peerConnectionHolder.webRtcManager.close()
-                    peerConnectionHolder.connectionIdHolder == connectionIdHolder
-                }
-            // remove and close data channels
-            mapOfDataChannels.values
-                .removeIf { dataChannelHolder ->
-                    dataChannelHolder.dataChannel.close()
-                    dataChannelHolder.connectionIdHolder == connectionIdHolder
-                }
+            // close and remove the peer connections and their jobs for this connection id
+            val peerConnectionsForTermination = mapOfPeerConnections.values.filter { peerConnectionHolder ->
+                peerConnectionHolder.connectionIdHolder == connectionIdHolder
+            }
+            peerConnectionsForTermination.forEach { peerConnectionHolder ->
+                peerConnectionHolder.observePeerConnectionJob.cancel()
+                peerConnectionHolder.webRtcManager.close()
+            }
+            mapOfPeerConnections.values.removeAll(peerConnectionsForTermination.toSet())
+            // close and remove data channels for this connection id
+            val dataChannelsForTermination = mapOfDataChannels.values.filter { dataChannelHolder ->
+                dataChannelHolder.connectionIdHolder == connectionIdHolder
+            }
+            dataChannelsForTermination.forEach { dataChannelHolder ->
+                dataChannelHolder.dataChannel.close()
+            }
+            mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
         }
     }
 
@@ -171,6 +175,9 @@ internal class PeerdroidConnectorImpl(
             .flatMapMerge { dataChannel ->
                 dataChannel.dataChannelEvents
             }
+            .onCompletion {
+                dataChannelObserver.value = null
+            }
     ).flowOn(ioDispatcher)
 
     override suspend fun sendDataChannelMessageToRemoteClient(
@@ -203,6 +210,7 @@ internal class PeerdroidConnectorImpl(
                                 )
                                 peerConnectionReadyForNegotiationDeferred.await()
                                 mapOfPeerConnections[remoteClientHolder] = peerConnectionHolder
+                                Timber.d("⚙️ ⚡ count of peer connections: ${mapOfPeerConnections.size}")
                             }
                         }
                         is RemoteData -> {
@@ -275,6 +283,7 @@ internal class PeerdroidConnectorImpl(
                             connectionIdHolder = connectionIdHolder,
                             dataChannel = dataChannel
                         )
+                        Timber.d("⚙️ count of data channels: ${mapOfDataChannels.size}")
                     }
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("⚙️ ⚡ peer connection disconnected 🔴 for remote client: $remoteClientHolder")
