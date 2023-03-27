@@ -54,17 +54,16 @@ class SettingsConnectorViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            activeConnectors = if (p2pLinks.isNotEmpty()) {
-                                p2pLinks.map { p2pLink ->
+                            activeConnectors = p2pLinks.mapWhen( 
+                                predicate = { it.isNotEmpty() },
+                                mutation = { p2pLink ->
                                     ActiveConnectorUiModel(
                                         id = p2pLink.id,
                                         name = p2pLink.displayName,
                                         connectionPassword = p2pLink.connectionPassword
                                     )
-                                }.toPersistentList()
-                            } else {
-                                persistentListOf()
-                            }
+                                }
+                            ).toPersistentList()
                         )
                     }
                 }
