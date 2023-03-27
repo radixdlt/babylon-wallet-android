@@ -67,10 +67,11 @@ class PeerdroidClientImpl @Inject constructor(
             }
             .map { dataChannelEvent ->
                 when (dataChannelEvent) {
-                    is StateChanged -> {
+                    is StateChanged -> { // TODO no need here
                         parseDataChannelState(dataChannelEvent)
                     }
                     is IncomingMessage.DecodedMessage -> {
+                        Timber.d("📯 data channel for remote client: ${dataChannelEvent.remoteClientId} received message")
                         parseIncomingMessage(
                             remoteClientId = dataChannelEvent.remoteClientId,
                             messageInJsonString = dataChannelEvent.message

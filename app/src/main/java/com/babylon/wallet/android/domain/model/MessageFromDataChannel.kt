@@ -8,8 +8,7 @@ sealed interface MessageFromDataChannel {
         val remoteClientId: String, // from which dapp comes the message
         val id: String, // the id of the request
         val metadata: RequestMetadata
-    ) :
-        MessageFromDataChannel {
+    ) : MessageFromDataChannel {
 
         data class AuthorizedRequest(
             val dappId: String, // from which dapp comes the message

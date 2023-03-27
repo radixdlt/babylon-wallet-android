@@ -185,6 +185,7 @@ internal class PeerdroidConnectorImpl(
         message: String
     ): Result<Unit> {
         return withContext(ioDispatcher) {
+            Timber.d("📯 send message to remote client: $remoteClientId")
             val remoteClientHolder = RemoteClientHolder(id = remoteClientId)
             mapOfDataChannels.getValue(remoteClientHolder).dataChannel.sendMessage(message)
         }
