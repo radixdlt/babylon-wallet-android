@@ -2,30 +2,29 @@ package rdx.works.profile
 
 import io.mockk.every
 import io.mockk.mockkObject
-import java.io.File
-import java.util.UUID
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.Gateway
-import rdx.works.profile.data.model.apppreferences.Network
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.init
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Persona.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.derivation.model.NetworkId
+import java.io.File
+import java.util.UUID
 
 class ProfileTest {
 
@@ -33,7 +32,7 @@ class ProfileTest {
     fun `test profile generation`() {
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
 
@@ -70,7 +69,7 @@ class ProfileTest {
             onNetwork = defaultNetwork.networkId()
         )
 
-        assertEquals(updatedProfile.onNetwork.first().accounts.count(), 2)
+        assertEquals(updatedProfile.networks.first().accounts.count(), 2)
         assertEquals(
             "Next derivation index for third account",
             updatedProfile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
@@ -80,14 +79,14 @@ class ProfileTest {
         val firstPersona = init(
             displayName = "First",
             fields = listOf(
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = OnNetwork.Persona.Field.Kind.GivenName,
+                    kind = Network.Persona.Field.Kind.GivenName,
                     value = "Alice"
                 ),
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = OnNetwork.Persona.Field.Kind.FamilyName,
+                    kind = Network.Persona.Field.Kind.FamilyName,
                     value = "Anderson"
                 )
             ),
@@ -102,7 +101,7 @@ class ProfileTest {
             onNetwork = defaultNetwork.networkId()
         )
 
-        assertEquals(updatedProfile.onNetwork.first().personas.count(), 1)
+        assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
             updatedProfile.factorSources.first().getNextIdentityDerivationIndex(defaultNetwork.networkId()),
@@ -130,11 +129,11 @@ class ProfileTest {
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
-                "sudden possible story mask neutral prize goose mandate",
+                    "sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
 
-        val gateway = Gateway.nebunet
+        val gateway = Radix.Gateway.nebunet
         val networkId = gateway.network.networkId()
 
         // Need to mock the generation of the id, so to test it against the stored vector
@@ -177,14 +176,14 @@ class ProfileTest {
         val firstPersona = init(
             displayName = "Mrs Incognito",
             fields = listOf(
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = OnNetwork.Persona.Field.Kind.GivenName,
+                    kind = Network.Persona.Field.Kind.GivenName,
                     value = "Jane"
                 ),
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = OnNetwork.Persona.Field.Kind.FamilyName,
+                    kind = Network.Persona.Field.Kind.FamilyName,
                     value = "Incognitoson"
                 )
             ),
@@ -201,14 +200,14 @@ class ProfileTest {
         val secondPersona = init(
             displayName = "Mrs Public",
             fields = listOf(
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-                    kind = OnNetwork.Persona.Field.Kind.GivenName,
+                    kind = Network.Persona.Field.Kind.GivenName,
                     value = "Maria"
                 ),
-                OnNetwork.Persona.Field.init(
+                Network.Persona.Field.init(
                     id = "AC37E346-32EF-4670-9097-1AC27B20D394",
-                    kind = OnNetwork.Persona.Field.Kind.FamilyName,
+                    kind = Network.Persona.Field.Kind.FamilyName,
                     value = "Publicson"
                 )
             ),
@@ -231,7 +230,7 @@ class ProfileTest {
             p2pLink = p2pLink
         )
 
-        val authorizedDapp = OnNetwork.AuthorizedDapp(
+        val authorizedDapp = Network.AuthorizedDapp(
             networkID = networkId.value,
             dAppDefinitionAddress = "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
             displayName = "RadiSwap",
@@ -243,13 +242,13 @@ class ProfileTest {
                         "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
                     ),
                     sharedAccounts =
-                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1p93amtza2ys6xrq7saycsrh97pdwm0atuf7xthpxyexsjnczsg",
                             "account_tdx_b_1p8afjm9e5exmj0sxltq4my53rtzm6e4vqskj2znx27qq6xnnxf"
                         ),
-                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
                             2
                         )
                     ),
@@ -262,12 +261,12 @@ class ProfileTest {
                         "AC37E346-32EF-4670-9097-1AC27B20D394"
                     ),
                     sharedAccounts =
-                    OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
                             "account_tdx_b_1p93amtza2ys6xrq7saycsrh97pdwm0atuf7xthpxyexsjnczsg"
                         ),
-                        request = OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            OnNetwork.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                             1
                         )
                     ),
@@ -345,129 +344,129 @@ class ProfileTest {
         // Per Network count
         assertEquals(
             "The networks count is the same",
-            expected.onNetwork.count(),
-            actual.onNetwork.count()
+            expected.networks.count(),
+            actual.networks.count()
         )
 
         // Network ID
         assertEquals(
             "The first network id is the same",
-            expected.onNetwork.first().networkID,
-            actual.onNetwork.first().networkID
+            expected.networks.first().networkID,
+            actual.networks.first().networkID
         )
 
         // Connected Dapp
         assertEquals(
             "Authorised dApps count is the same",
-            expected.onNetwork.first().authorizedDapps.count(),
-            actual.onNetwork.first().authorizedDapps.count()
+            expected.networks.first().authorizedDapps.count(),
+            actual.networks.first().authorizedDapps.count()
         )
 
         assertEquals(
             "The first dApps' network id is the same",
-            expected.onNetwork.first().authorizedDapps.first().networkID,
-            actual.onNetwork.first().authorizedDapps.first().networkID
+            expected.networks.first().authorizedDapps.first().networkID,
+            actual.networks.first().authorizedDapps.first().networkID
         )
 
         assertEquals(
             "The first dApps' display name is the same",
-            expected.onNetwork.first().authorizedDapps.first().displayName,
-            actual.onNetwork.first().authorizedDapps.first().displayName
+            expected.networks.first().authorizedDapps.first().displayName,
+            actual.networks.first().authorizedDapps.first().displayName
         )
 
         assertEquals(
             "The first dApps' definition address is the same",
-            expected.onNetwork.first().authorizedDapps.first().dAppDefinitionAddress,
-            actual.onNetwork.first().authorizedDapps.first().dAppDefinitionAddress
+            expected.networks.first().authorizedDapps.first().dAppDefinitionAddress,
+            actual.networks.first().authorizedDapps.first().dAppDefinitionAddress
         )
 
         assertEquals(
             "The first dApps' references to authorised personals size is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.size,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.size
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.size,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona identity address is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().identityAddress
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona field ids is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts requests is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.request,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.request
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address count is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address first element is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0),
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address second element is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1),
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona identity address is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).identityAddress,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).identityAddress
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona field ids is the same",
-            expected.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).fieldIDs,
-            actual.onNetwork.first().authorizedDapps.first().referencesToAuthorizedPersonas
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
                 .elementAt(1).fieldIDs
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona identity address is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona shared accounts reference by address are the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size,
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona first shared account reference by address is the same",
-            expected.onNetwork.first().authorizedDapps.first()
+            expected.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0),
-            actual.onNetwork.first().authorizedDapps.first()
+            actual.networks.first().authorizedDapps.first()
                 .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0)
         )
 
@@ -475,111 +474,111 @@ class ProfileTest {
         // Accounts
         assertEquals(
             "The accounts' count is the same",
-            expected.onNetwork.first().accounts.count(),
-            actual.onNetwork.first().accounts.count()
+            expected.networks.first().accounts.count(),
+            actual.networks.first().accounts.count()
         )
 
         repeat(3) { accountIndex ->
             assertEquals(
                 "The accounts[$accountIndex] addresses are the same",
-                expected.onNetwork.first().accounts[accountIndex].address,
-                actual.onNetwork.first().accounts[accountIndex].address
+                expected.networks.first().accounts[accountIndex].address,
+                actual.networks.first().accounts[accountIndex].address
             )
 
             assertEquals(
                 "The accounts[$accountIndex] display name are the same",
-                expected.onNetwork.first().accounts[accountIndex].displayName,
-                actual.onNetwork.first().accounts[accountIndex].displayName
+                expected.networks.first().accounts[accountIndex].displayName,
+                actual.networks.first().accounts[accountIndex].displayName
             )
 
             // Security State
             assertEquals(
                 "The accounts[$accountIndex] derivation path are the same",
-                (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath,
-                (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath
             )
 
             assertEquals(
                 "The accounts[$accountIndex] public key are the same",
-                (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey,
-                (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey
             )
 
             assertEquals(
                 "The accounts[$accountIndex] factor source ids are the same",
-                (expected.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
-                (actual.onNetwork.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId
             )
         }
 
         // Personas
         assertEquals(
-            expected.onNetwork.first().personas.count(),
-            actual.onNetwork.first().personas.count()
+            expected.networks.first().personas.count(),
+            actual.networks.first().personas.count()
         )
 
         repeat(2) { personaIndex ->
             assertEquals(
                 "The persona[$personaIndex] address is the same",
-                expected.onNetwork.first().personas[personaIndex].address,
-                actual.onNetwork.first().personas[personaIndex].address
+                expected.networks.first().personas[personaIndex].address,
+                actual.networks.first().personas[personaIndex].address
             )
 
             assertEquals(
                 "The persona[$personaIndex] display name is the same",
-                expected.onNetwork.first().personas[personaIndex].displayName,
-                actual.onNetwork.first().personas[personaIndex].displayName
+                expected.networks.first().personas[personaIndex].displayName,
+                actual.networks.first().personas[personaIndex].displayName
             )
 
             assertEquals(
                 "The persona[$personaIndex] first field kind is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[0].kind,
-                actual.onNetwork.first().personas[personaIndex].fields[0].kind
+                expected.networks.first().personas[personaIndex].fields[0].kind,
+                actual.networks.first().personas[personaIndex].fields[0].kind
             )
             assertEquals(
                 "The persona[$personaIndex] first field value is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[0].value,
-                actual.onNetwork.first().personas[personaIndex].fields[0].value
+                expected.networks.first().personas[personaIndex].fields[0].value,
+                actual.networks.first().personas[personaIndex].fields[0].value
             )
 
             assertEquals(
                 "The persona[$personaIndex] second field kind is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[1].kind,
-                actual.onNetwork.first().personas[personaIndex].fields[1].kind
+                expected.networks.first().personas[personaIndex].fields[1].kind,
+                actual.networks.first().personas[personaIndex].fields[1].kind
             )
             assertEquals(
                 "The persona[$personaIndex] second field value is the same",
-                expected.onNetwork.first().personas[personaIndex].fields[1].value,
-                actual.onNetwork.first().personas[personaIndex].fields[1].value
+                expected.networks.first().personas[personaIndex].fields[1].value,
+                actual.networks.first().personas[personaIndex].fields[1].value
             )
 
             assertEquals(
                 "The persona[$personaIndex] factor source id is the same",
-                (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
-                (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.factorSourceId
             )
 
             assertEquals(
                 "The persona[$personaIndex] derivation path is the same",
-                (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath,
-                (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.derivationPath
             )
 
             assertEquals(
                 "The persona[$personaIndex] public key is the same",
-                (expected.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey,
-                (actual.onNetwork.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.genesisFactorInstance.publicKey
             )
         }

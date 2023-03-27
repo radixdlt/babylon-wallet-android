@@ -2,14 +2,13 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.model.encodeToString
-import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -30,7 +29,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
     private val args = PersonaDataOnetimeArgs(savedStateHandle)
 
     override fun initialState(): PersonaDataOnetimeUiState {
-        return PersonaDataOnetimeUiState(requiredFields = args.requiredFields.map { it.toKind() }.toPersistentList())
+        return PersonaDataOnetimeUiState(requiredFields = args.requiredFields.toList().toPersistentList())
     }
 
     init {

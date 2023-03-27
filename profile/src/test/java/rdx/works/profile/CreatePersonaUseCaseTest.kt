@@ -10,20 +10,20 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateway
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.CreatePersonaUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
@@ -43,18 +43,18 @@ class CreatePersonaUseCaseTest {
             bip39Passphrase = ""
         )
         val personaFields = listOf(
-            OnNetwork.Persona.Field(
+            Network.Persona.Field(
                 id = "ID213",
-                kind = OnNetwork.Persona.Field.Kind.GivenName,
+                kind = Network.Persona.Field.Kind.GivenName,
                 value = "Emily"
             ),
-            OnNetwork.Persona.Field(
+            Network.Persona.Field(
                 id = "ID0921",
-                kind = OnNetwork.Persona.Field.Kind.FamilyName,
+                kind = Network.Persona.Field.Kind.FamilyName,
                 value = "Jacobs"
             )
         )
-        val network = Gateway.hammunet
+        val network = Radix.Gateway.hammunet
         testScope.runTest {
             val profile = Profile(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -73,10 +73,10 @@ class CreatePersonaUseCaseTest {
                 factorSources = listOf(
                     FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
-                onNetwork = listOf(
-                    OnNetwork(
+                networks = listOf(
+                    Network(
                         accounts = listOf(
-                            OnNetwork.Account(
+                            Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.encodeToString
 import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -24,6 +23,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
+import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -160,7 +160,11 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(selectedAccountsOneTime = onetimeAccounts.toPersistentList()) }
             if (request.oneTimePersonaDataRequestItem != null) {
-                sendEvent(DAppUnauthorizedLoginEvent.PersonaDataOnetime(request.oneTimePersonaDataRequestItem.fields.encodeToString()))
+                sendEvent(
+                    DAppUnauthorizedLoginEvent.PersonaDataOnetime(
+                        request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+                    )
+                )
             } else {
                 sendRequestResponse()
             }

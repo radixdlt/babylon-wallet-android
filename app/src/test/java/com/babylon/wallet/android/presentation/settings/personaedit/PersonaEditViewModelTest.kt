@@ -2,10 +2,9 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
-import com.babylon.wallet.android.data.dapp.model.encodeToString
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.isValidEmail
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -44,7 +43,7 @@ internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel
         super.setUp()
         val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(PersonaDataField.GivenName).encodeToString()
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidEmail() } returns true
         coEvery { updatePersonaUseCase(any()) } just Runs

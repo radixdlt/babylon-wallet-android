@@ -87,7 +87,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.selectedPersona == samplePersonas[0])
+            assert(item.selectedPersona?.persona == samplePersonas[0])
             assert(item.sharedPersonaAccounts.size == 1)
         }
     }

@@ -5,6 +5,7 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
@@ -21,6 +22,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -40,7 +42,7 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val dAppMessenger = DappMessengerFake()
-    private val dAppConnectionRepository = DAppConnectionRepositoryFake()
+    private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
     private val samplePersona = SampleDataProvider().samplePersona()
 
@@ -73,6 +75,32 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
             true, false, 1,
             MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
         )
+    )
+
+    private val usePersonaRequestOngoingPlusOngoingData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        "1",
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "",
+            "address"
+        ),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            true, false, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        ),
+        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaDataField.GivenName), true)
+    )
+
+    private val usePersonaRequestOngoingDataOnly = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        "1",
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "",
+            "address"
+        ),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaDataField.GivenName), true)
     )
 
     private val usePersonaRequestOneTime = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
@@ -156,6 +184,19 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
         vm.state.test {
             val item = expectMostRecentItem()
             assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission)
+        }
+    }
+
+    @Test
+    fun `init sets correct state for use persona accounts and data when accounts are already granted`() = runTest {
+        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
+        dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
+        coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(SampleDataProvider().randomAddress())
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData)
         }
     }
 

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaViewModel
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -29,7 +30,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
     private val createPersonaUseCase = mockk<CreatePersonaUseCase>()
 
     private val personaId = "fj3489fj348f"
-    private val personaName = "My first persona"
+    private val personaName = PersonaDisplayNameFieldWrapper("My first persona", valid = true, wasEdited = true)
 
     @Before
     override fun setUp() = runTest {
@@ -41,7 +42,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
 
         coEvery { createPersonaUseCase.invoke(any(), any()) } returns Network.Persona(
             address = personaId,
-            displayName = personaName,
+            displayName = personaName.value,
             networkID = 10,
             fields = emptyList(),
             securityState = SecurityState.Unsecured(
@@ -64,7 +65,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
 
         // then
         Assert.assertEquals(viewModel.state.loading, false)
-        Assert.assertEquals(viewModel.state.personaDisplayName, "")
+        Assert.assertEquals(viewModel.state.personaDisplayName, PersonaDisplayNameFieldWrapper())
         Assert.assertEquals(viewModel.state.isDeviceSecure, true)
     }
 
@@ -75,7 +76,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             val event = mutableListOf<CreatePersonaEvent>()
             val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
 
-            viewModel.onDisplayNameChanged(personaName)
+            viewModel.onDisplayNameChanged(personaName.value)
 
             // when
             viewModel.onPersonaCreateClick()

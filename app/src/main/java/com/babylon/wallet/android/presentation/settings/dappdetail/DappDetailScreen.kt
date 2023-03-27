@@ -85,7 +85,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (Network.Persona) -> Unit,
+    onEditPersona: (String, String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -93,6 +93,9 @@ fun DappDetailScreen(
             when (it) {
                 DappDetailEvent.LastPersonaDeleted -> onBackClick()
                 DappDetailEvent.DappDeleted -> onBackClick()
+                is DappDetailEvent.EditPersona -> {
+                    onEditPersona(it.personaAddress, it.requiredFieldsStringEncoded)
+                }
             }
         }
     }
@@ -111,7 +114,7 @@ fun DappDetailScreen(
         onDisconnectPersona = viewModel::onDisconnectPersona,
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
         onDeleteDapp = viewModel::onDeleteDapp,
-        onEditPersona = onEditPersona,
+        onEditPersona = viewModel::onEditPersona,
         onEditAccountSharing = {},
         loading = state.loading
     )
@@ -131,7 +134,7 @@ private fun DappDetailContent(
     onDisconnectPersona: (Network.Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
     onDeleteDapp: () -> Unit,
-    onEditPersona: (Network.Persona) -> Unit,
+    onEditPersona: () -> Unit,
     onEditAccountSharing: () -> Unit,
     loading: Boolean
 ) {
@@ -408,7 +411,7 @@ private fun PersonaDetailsSheet(
     modifier: Modifier = Modifier,
     dappName: String,
     onDisconnectPersona: (Network.Persona) -> Unit,
-    onEditPersona: (Network.Persona) -> Unit,
+    onEditPersona: () -> Unit,
     onEditAccountSharing: () -> Unit
 ) {
     var personaToDisconnect by remember { mutableStateOf<Network.Persona?>(null) }
@@ -465,7 +468,7 @@ private fun PersonaDetailsSheet(
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: PersonaUiModel,
-    onEditPersona: (Network.Persona) -> Unit,
+    onEditPersona: () -> Unit,
     sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
     dappName: String,
     onDisconnectPersona: (Network.Persona) -> Unit,
@@ -534,9 +537,7 @@ private fun PersonaDetailList(
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),
                 text = stringResource(R.string.edit_persona),
-                onClick = {
-                    onEditPersona(persona.persona)
-                }
+                onClick = onEditPersona
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
         }

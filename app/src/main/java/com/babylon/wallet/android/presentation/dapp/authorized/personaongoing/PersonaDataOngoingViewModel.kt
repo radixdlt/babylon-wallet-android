@@ -2,14 +2,13 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.model.encodeToString
-import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,7 +30,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             personaRepository.getPersonaByAddressFlow(args.personaId).collect { persona ->
-                val uiModel = PersonaUiModel(persona, requiredFieldKinds = args.requiredFields.map { it.toKind() })
+                val uiModel = PersonaUiModel(persona, requiredFieldKinds = args.requiredFields.toList())
                 _state.update {
                     it.copy(
                         persona = uiModel,

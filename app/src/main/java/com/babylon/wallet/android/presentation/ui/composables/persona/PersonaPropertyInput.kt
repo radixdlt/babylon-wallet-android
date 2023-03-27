@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -24,7 +25,9 @@ fun PersonaPropertyInput(
     onValueChanged: (String) -> Unit,
     onDeleteField: () -> Unit,
     onFocusChanged: ((FocusState) -> Unit)? = null,
-    required: Boolean
+    required: Boolean,
+    phoneInput: Boolean = false,
+    error: String? = null
 ) {
     val focusManager = LocalFocusManager.current
     RadixTextField(
@@ -47,7 +50,15 @@ fun PersonaPropertyInput(
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Next)
         }),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        rightLabel = if (required) stringResource(id = R.string.required_by_dapp) else null
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+            keyboardType = if (phoneInput) {
+                KeyboardType.Phone
+            } else {
+                KeyboardOptions.Default.keyboardType
+            }
+        ),
+        rightLabel = if (required) stringResource(id = R.string.required_by_dapp) else null,
+        error = error
     )
 }

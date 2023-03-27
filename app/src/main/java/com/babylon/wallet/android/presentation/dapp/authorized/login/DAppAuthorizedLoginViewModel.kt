@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.encodeToString
 import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -28,6 +27,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
+import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -181,11 +181,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             } else {
                 if (ongoingPersonaDataRequestItem != null) {
-                    _state.update {
-                        it.copy(
+                    _state.update { state ->
+                        state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
                                 authRequest.personaAddress,
-                                ongoingPersonaDataRequestItem.fields
+                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }
                             )
                         )
                     }
@@ -298,7 +298,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             sendEvent(
                 DAppAuthorizedLoginEvent.PersonaDataOngoing(
                     personaAddress,
-                    requestItem.fields.encodeToString()
+                    requestItem.fields.map { it.toKind() }.encodeToString()
                 )
             )
         } else {

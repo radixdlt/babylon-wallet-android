@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
-import com.babylon.wallet.android.data.dapp.model.encodeToString
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.model.encodeToString
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
 import org.junit.Before
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.PersonaRepository
 
 internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOnetimeViewModel>() {
@@ -29,7 +29,7 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(PersonaDataField.GivenName).encodeToString()
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
         coEvery { personaRepository.personas } returns flow {
             emit(listOf(samplePersona))
         }

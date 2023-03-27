@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -137,9 +138,18 @@ class DappDetailViewModel @Inject constructor(
             sendEvent(DappDetailEvent.DappDeleted)
         }
     }
+
+    fun onEditPersona() {
+        viewModelScope.launch {
+            state.value.selectedPersona?.let { persona ->
+                sendEvent(DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldKinds.encodeToString()))
+            }
+        }
+    }
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
+    data class EditPersona(val personaAddress: String, val requiredFieldsStringEncoded: String) : DappDetailEvent
     object LastPersonaDeleted : DappDetailEvent
     object DappDeleted : DappDetailEvent
 }

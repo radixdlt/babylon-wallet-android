@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.utils.encodeUtf8
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.pernetwork.Network
@@ -30,14 +29,6 @@ enum class PersonaDataField {
 
     @SerialName("phoneNumber")
     PhoneNumber
-}
-
-fun List<PersonaDataField>.encodeToString(): String {
-    return map { it.name }.joinToString(",").encodeUtf8()
-}
-
-fun String.decodePersonaDataFields(): List<PersonaDataField> {
-    return split(",").filter { it.isNotEmpty() }.map { PersonaDataField.valueOf(it) }
 }
 
 fun PersonaDataField.toKind(): Network.Persona.Field.Kind {

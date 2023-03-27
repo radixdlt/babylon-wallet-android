@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.model
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.utils.encodeUtf8
 import rdx.works.profile.data.model.pernetwork.Network
 
 @StringRes
@@ -25,6 +26,14 @@ fun Network.Persona.personalInfoFormatted(): String {
                 .joinToString("\n")
         )
     }
+}
+
+fun List<Network.Persona.Field.Kind>.encodeToString(): String {
+    return map { it.name }.joinToString(",").encodeUtf8()
+}
+
+fun String.decodePersonaDataFields(): List<Network.Persona.Field.Kind> {
+    return split(",").filter { it.isNotEmpty() }.map { Network.Persona.Field.Kind.valueOf(it) }
 }
 
 @StringRes
