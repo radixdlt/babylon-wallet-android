@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -46,16 +49,25 @@ class SettingsConnectorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileDataSource.p2pLink.collect { p2pLink ->
-                if (p2pLink != null) { // if we already have an active connector
-                    // we need a reference of the connectionPassword
-                    // so we can pass it in the onDeleteConnectorClick
-                    currentConnectionPassword = p2pLink.connectionPassword
+            profileDataSource.p2pLinks
+                .collect { p2pLinks ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            activeConnectors = if (p2pLinks.isNotEmpty()) {
+                                p2pLinks.map { p2pLink ->
+                                    ActiveConnectorUiModel(
+                                        id = p2pLink.id,
+                                        name = p2pLink.displayName,
+                                        connectionPassword = p2pLink.connectionPassword
+                                    )
+                                }.toPersistentList()
+                            } else {
+                                persistentListOf()
+                            }
+                        )
+                    }
                 }
-                _state.update {
-                    it.copy(isLoading = false, connectorName = p2pLink?.displayName)
-                }
-            }
         }
     }
 
@@ -64,15 +76,16 @@ class SettingsConnectorViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-
             val encryptionKey = parseEncryptionKeyFromConnectionPassword(
                 connectionPassword = currentConnectionPassword
             )
-
             if (encryptionKey != null) {
                 when (peerdroidLink.addConnection(encryptionKey)) {
                     is Result.Success -> {
-                        saveConnectionPassword(connectorDisplayName = state.value.editedConnectorDisplayName)
+                        saveConnectionPassword(
+                            connectionPassword = currentConnectionPassword,
+                            connectorDisplayName = state.value.editedConnectorDisplayName
+                        )
                     }
                     is Result.Error -> {
                         _state.update {
@@ -97,14 +110,10 @@ class SettingsConnectorViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteConnectorClick() {
+    fun onDeleteConnectorClick(connectionPassword: String) {
         viewModelScope.launch {
-            deleteP2PLinkUseCase(currentConnectionPassword)
-            peerdroidClient.close(
-                shouldCloseConnectionToSignalingServer = true,
-                isDeleteConnectionEvent = true
-            )
-            _state.update { it.copy(connectorName = null) }
+            deleteP2PLinkUseCase(connectionPassword)
+            peerdroidClient.deleteLink(connectionPassword)
         }
     }
 
@@ -121,11 +130,14 @@ class SettingsConnectorViewModel @Inject constructor(
         _state.update { it.copy(mode = SettingsConnectorMode.ScanQr) }
     }
 
-    private fun saveConnectionPassword(connectorDisplayName: String) {
+    private fun saveConnectionPassword(
+        connectionPassword: String,
+        connectorDisplayName: String
+    ) {
         viewModelScope.launch {
             addP2PLinkUseCase(
                 displayName = connectorDisplayName,
-                connectionPassword = currentConnectionPassword
+                connectionPassword = connectionPassword
             )
             _state.update {
                 it.copy(
@@ -141,12 +153,18 @@ class SettingsConnectorViewModel @Inject constructor(
 
 data class SettingsConnectorUiState(
     val isLoading: Boolean = true,
-    val connectorName: String? = null,
+    val activeConnectors: ImmutableList<ActiveConnectorUiModel> = persistentListOf(),
     val editedConnectorDisplayName: String = "",
     val buttonEnabled: Boolean = false,
     val isScanningQr: Boolean = false,
     val mode: SettingsConnectorMode = SettingsConnectorMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,
+)
+
+data class ActiveConnectorUiModel(
+    val id: String,
+    val name: String,
+    val connectionPassword: String // needed for deletion
 )
 
 enum class SettingsConnectorMode {

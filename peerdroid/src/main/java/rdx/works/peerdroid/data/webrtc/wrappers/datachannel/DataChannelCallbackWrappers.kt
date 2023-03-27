@@ -16,7 +16,6 @@ import timber.log.Timber
 // Once the WebRTC flow is complete & data channel is open
 // then this will be used to observe the incoming messages & the state changes.
 internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
-
     val callback = object : DataChannel.Observer {
 
         override fun onBufferedAmountChange(p0: Long) {

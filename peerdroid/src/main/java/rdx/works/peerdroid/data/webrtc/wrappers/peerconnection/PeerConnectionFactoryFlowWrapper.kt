@@ -20,7 +20,6 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
     createRtcDataChannel: () -> Unit,
     remoteClientId: String
 ) = callbackFlow {
-
     val observer = object : PeerConnectionObserver() {
 
         override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
