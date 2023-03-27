@@ -56,29 +56,26 @@ class MainViewModel @Inject constructor(
             }
         )
     }.onStart {
-        // this will also ensure that it won't execute when the viewmodel is initialized the first time
-        currentConnectionPasswords.forEach { connectionPassword ->
-            establishLinkConnection(connectionPassword = connectionPassword)
-        }
+        observeForP2PLinks()
     }.onCompletion {
         terminatePeerdroid()
+        observeP2PLinksJob?.cancel()
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
         MainUiState()
     )
 
-    private val currentConnectionPasswords = mutableListOf<String>()
+    private var observeP2PLinksJob: Job? = null
     private var incomingRequestsJob: Job? = null
     private var handlingCurrentRequestJob: Job? = null
     private var processingRequestJob: Job? = null
 
-    init {
-        profileDataSource.p2pLinks
+    private fun observeForP2PLinks() {
+        observeP2PLinksJob = profileDataSource.p2pLinks
             .map { p2pLinks ->
                 Timber.d("found ${p2pLinks.size} links")
                 p2pLinks.forEach { p2PLink ->
-                    currentConnectionPasswords.add(p2PLink.connectionPassword)
                     establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
                 }
                 p2pLinks
@@ -92,8 +89,7 @@ class MainViewModel @Inject constructor(
         )
         if (encryptionKey != null) {
             viewModelScope.launch {
-                val result = peerdroidClient.connect(encryptionKey = encryptionKey)
-                when (result) {
+                when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
                     is Result.Success -> {
                         Timber.d("Link connection established")
                         if (handlingCurrentRequestJob == null) {
