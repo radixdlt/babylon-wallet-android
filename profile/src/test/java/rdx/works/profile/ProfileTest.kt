@@ -42,37 +42,37 @@ class ProfileTest {
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
 
+        val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
-        assertEquals(profile.networks.first().networkID, Radix.Network.nebunet.id)
+        assertEquals(profile.networks.first().networkID, defaultNetwork.id)
         assertEquals(profile.networks.first().accounts.count(), 1)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
             "Next derivation index for second account",
-            profile.factorSources.first().getNextAccountDerivationIndex(Radix.Network.nebunet.networkId()),
+            profile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
             1
         )
 
         println("Profile generated $profile")
 
-        val networkId = NetworkId.Nebunet
         val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
         val firstAccount = init(
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
-            networkId = networkId
+            networkId = defaultNetwork.networkId()
         )
 
         var updatedProfile = profile.addAccount(
             account = firstAccount,
             withFactorSourceId = factorSource.id,
-            onNetwork = networkId
+            onNetwork = defaultNetwork.networkId()
         )
 
         assertEquals(updatedProfile.networks.first().accounts.count(), 2)
         assertEquals(
             "Next derivation index for third account",
-            updatedProfile.factorSources.first().getNextAccountDerivationIndex(Radix.Network.nebunet.networkId()),
+            updatedProfile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
             2
         )
 
@@ -92,19 +92,19 @@ class ProfileTest {
             ),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
-            networkId = networkId
+            networkId = defaultNetwork.networkId()
         )
 
         updatedProfile = updatedProfile.addPersona(
             persona = firstPersona,
             withFactorSourceId = factorSource.id,
-            onNetwork = networkId
+            onNetwork = defaultNetwork.networkId()
         )
 
         assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
-            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(Radix.Network.nebunet.networkId()),
+            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(defaultNetwork.networkId()),
             1
         )
 
