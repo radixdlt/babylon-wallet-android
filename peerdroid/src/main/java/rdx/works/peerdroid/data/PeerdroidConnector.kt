@@ -383,9 +383,9 @@ internal class PeerdroidConnectorImpl(
             }
         }
 
-        val result1 = setRemoteDescriptionFromOffer(offer)
-        val result2 = createAndSendAnswerToRemoteClient(connectionIdHolder, remoteClientHolder)
-        return result1 && result2
+        val remoteDescriptionResult = setRemoteDescriptionFromOffer(offer)
+        val answerToRemoteClientResult = createAndSendAnswerToRemoteClient(connectionIdHolder, remoteClientHolder)
+        return remoteDescriptionResult && answerToRemoteClientResult
     }
 
     private suspend fun setLocalDescription(
