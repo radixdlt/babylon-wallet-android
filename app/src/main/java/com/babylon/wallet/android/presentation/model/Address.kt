@@ -44,7 +44,7 @@ data class Address(
         }
     }
     companion object {
-        private const val DASHBOARD_BASE_URL = "https://betanet-dashboard.radixdlt.com"
+        private const val DASHBOARD_BASE_URL = "https://rcnet-dashboard.radixdlt.com"
 
         fun from(address: String) = Address(
             address = address,
