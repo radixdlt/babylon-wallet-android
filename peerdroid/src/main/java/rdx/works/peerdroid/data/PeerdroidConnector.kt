@@ -202,6 +202,7 @@ internal class PeerdroidConnectorImpl(
                     when (signalingServerMessage) {
                         is RemoteInfo -> {
                             if (signalingServerMessage is RemoteInfo.ClientConnected) {
+                                Timber.d("⚙️ ⬇️  remote client connected with id: ${signalingServerMessage.remoteClientId}")
                                 val peerConnectionReadyForNegotiationDeferred = CompletableDeferred<Unit>()
                                 val remoteClientHolder = RemoteClientHolder(id = signalingServerMessage.remoteClientId)
                                 val peerConnectionHolder = createAndObservePeerConnectionForRemoteClient(
@@ -211,7 +212,7 @@ internal class PeerdroidConnectorImpl(
                                 )
                                 peerConnectionReadyForNegotiationDeferred.await()
                                 mapOfPeerConnections[remoteClientHolder] = peerConnectionHolder
-                                Timber.d("⚙️ ⚡ count of peer connections: ${mapOfPeerConnections.size}")
+                                Timber.d("⚙️ count of peer connections: ${mapOfPeerConnections.size}")
                             }
                         }
                         is RemoteData -> {
@@ -395,11 +396,11 @@ internal class PeerdroidConnectorImpl(
         val webRtcManager = mapOfPeerConnections.getValue(remoteClientHolder).webRtcManager
         return when (val result = webRtcManager.setLocalDescription(localSessionDescription)) {
             is Result.Success -> {
-                Timber.d("⚙️ local description is set for remote client: $remoteClientHolder")
+                Timber.d("⚙️ ⚡ local description is set for remote client: $remoteClientHolder")
                 true
             }
             is Result.Error -> {
-                Timber.e("⚙️ failed to set local description:${result.message} for remote client: $remoteClientHolder")
+                Timber.e("⚙️ ⚡ failed to set local description:${result.message} for remote client: $remoteClientHolder")
                 false
             }
         }
@@ -408,7 +409,7 @@ internal class PeerdroidConnectorImpl(
     private suspend fun addRemoteIceCandidateInWebRtc(iceCandidate: RemoteData.IceCandidate) {
         val remoteIceCandidate = iceCandidate.remoteIceCandidate
         val remoteClientHolder = RemoteClientHolder(id = iceCandidate.remoteClientId)
-        Timber.d("⚙️ set remote ice candidate in local WebRTC for remote client: $remoteClientHolder")
+        Timber.d("⚙️ ⚡ set remote ice candidate in local WebRTC for remote client: $remoteClientHolder")
         val webRtcManager = mapOfPeerConnections.getValue(remoteClientHolder).webRtcManager
         webRtcManager.addRemoteIceCandidate(remoteIceCandidate = remoteIceCandidate)
     }

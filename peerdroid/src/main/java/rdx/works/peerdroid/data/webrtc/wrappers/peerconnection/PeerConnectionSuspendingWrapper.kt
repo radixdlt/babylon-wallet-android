@@ -93,10 +93,12 @@ internal suspend fun PeerConnection.createSuspendingAnswer(
         }
 
         override fun onCreateFailure(p0: String?) {
+            Timber.e("🔌 createAnswer, onCreateFailure $p0")
             continuation.resume(Result.Error(message = p0))
         }
 
         override fun onSetFailure(p0: String?) {
+            Timber.e("🔌 createAnswer, onSetFailure $p0")
             continuation.resume(Result.Error(message = p0))
         }
     }
@@ -127,10 +129,12 @@ internal suspend fun PeerConnection.setSuspendingLocalDescription(
         }
 
         override fun onCreateFailure(p0: String?) {
+            Timber.e("🔌 setLocalDescription, onCreateFailure $p0")
             continuation.resume(Result.Error(message = p0))
         }
 
         override fun onSetFailure(p0: String?) {
+            Timber.e("🔌 setLocalDescription, onSetFailure $p0")
             continuation.resume(Result.Error(message = p0))
         }
     }

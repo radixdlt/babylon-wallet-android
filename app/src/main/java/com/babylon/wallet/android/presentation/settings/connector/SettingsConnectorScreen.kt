@@ -165,6 +165,7 @@ private fun SettingsLinkConnectorContent(
                 FullscreenCircularProgressContent()
             }
             if (connectionPasswordToDelete != null) {
+                @Suppress("UnsafeCallOnNullableType")
                 BasicPromptAlertDialog(
                     finish = {
                         if (it) {
