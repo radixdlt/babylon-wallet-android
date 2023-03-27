@@ -140,6 +140,8 @@ data class DataChannelWrapper(
     }
 
     fun close() {
+        Timber.d("$this close")
         webRtcDataChannel.close()
+        Timber.d("$this state is ${this.state}")
     }
 }
