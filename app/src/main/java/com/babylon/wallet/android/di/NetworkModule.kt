@@ -85,8 +85,17 @@ object NetworkModule {
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
-    fun provideStatusApi(okHttpClient: OkHttpClient, json: Json): StatusApi {
-        val retrofitBuilder = Retrofit.Builder().client(okHttpClient)
+    fun provideStatusApi(json: Json): StatusApi {
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            Timber.d(message)
+        }
+        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
+        val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
+        val retrofitBuilder = Retrofit.Builder().client(httpClient)
             .baseUrl(BuildConfig.GATEWAY_API_URL)
             .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
             .build()
@@ -95,7 +104,7 @@ object NetworkModule {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
-    fun provideGatewayInfoApi(json: Json): DynamicUrlApi {
+    fun provideDynamicUrlApi(json: Json): DynamicUrlApi {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }

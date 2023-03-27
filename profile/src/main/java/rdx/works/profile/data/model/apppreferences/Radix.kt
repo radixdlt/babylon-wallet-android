@@ -67,7 +67,7 @@ object Radix {
     ) {
 
         val isDefault: Boolean
-            get() = url == nebunet.url
+            get() = url == default.url
 
         fun displayName(): String {
             return if (network.id == Network.nebunet.networkId().value) {

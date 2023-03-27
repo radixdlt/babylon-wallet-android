@@ -98,7 +98,7 @@ class SampleDataProvider {
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
-                gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
+                gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(

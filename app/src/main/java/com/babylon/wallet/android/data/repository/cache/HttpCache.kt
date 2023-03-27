@@ -2,12 +2,15 @@ package com.babylon.wallet.android.data.repository.cache
 
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
 import kotlinx.serialization.KSerializer
+import okhttp3.HttpUrl
 import okhttp3.RequestBody
 import okio.Buffer
 import okio.IOException
 import rdx.works.peerdroid.helpers.toHexString
+import rdx.works.profile.data.repository.ProfileDataSource
 import retrofit2.Call
 import timber.log.Timber
+import java.net.URL
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -49,25 +52,26 @@ data class CacheParameters(
 
 interface HttpCache {
 
-    fun <T> store(call: Call<T>, response: T, serializer: KSerializer<T>)
+    suspend fun <T> store(call: Call<T>, response: T, serializer: KSerializer<T>)
 
-    fun <T> restore(call: Call<T>, serializer: KSerializer<T>, timeoutDuration: Duration?): T?
+    suspend fun <T> restore(call: Call<T>, serializer: KSerializer<T>, timeoutDuration: Duration?): T?
 
     fun invalidate()
 }
 
 class HttpCacheImpl @Inject constructor(
+    private val profileDataSource: ProfileDataSource,
     private val cacheClient: CacheClient
 ) : HttpCache {
 
     private val logger = Timber.tag(TAG)
 
-    override fun <T> store(
+    override suspend fun <T> store(
         call: Call<T>,
         response: T,
         serializer: KSerializer<T>
     ) {
-        val key = call.cacheKey()
+        val cacheKeyData = call.cacheKeyData()
         val now = Instant.now().toEpochMilli()
 
         val cachedValue = CachedValue(
@@ -75,18 +79,18 @@ class HttpCacheImpl @Inject constructor(
             timestamp = now
         )
 
-        cacheClient.write(key, cachedValue, serializer)
+        cacheClient.write(cacheKeyData.toKey(), cachedValue, serializer)
     }
 
-    override fun <T> restore(
+    override suspend fun <T> restore(
         call: Call<T>,
         serializer: KSerializer<T>,
         timeoutDuration: Duration?
     ): T? {
-        logger.d("--> [CACHE] ${call.request().method} - ${call.request().url}")
+        val cacheKeyData = call.cacheKeyData()
+        logger.d("--> [CACHE] ${cacheKeyData.method} - ${cacheKeyData.url}")
 
-        val key = call.cacheKey()
-        val cachedValue = cacheClient.read(key, serializer) ?: run {
+        val cachedValue = cacheClient.read(cacheKeyData.toKey(), serializer) ?: run {
             logger.d("<-- [CACHE] ❌ no value")
             return null
         }
@@ -112,22 +116,38 @@ class HttpCacheImpl @Inject constructor(
         cacheClient.invalidate()
     }
 
-    private fun Call<*>.cacheKey(): String {
-        val method = request().method
-        val url = request().url.toString()
-        val body = request().body?.readUtf8().orEmpty()
+    private suspend fun Call<*>.cacheKeyData(): CacheKeyData {
+        val baseUrl = URL(profileDataSource.getCurrentNetworkBaseUrl())
 
-        return arrayOf(method, url, body).contentToString().sha256().toHexString()
+        return CacheKeyData(
+            method = request().method,
+            url = request().url.newBuilder().host(baseUrl.host).scheme(baseUrl.protocol).build(),
+            body = request().body
+        )
     }
 
-    @Suppress("SwallowedException")
-    private fun RequestBody.readUtf8(): String = try {
-        val buffer = Buffer()
+    private data class CacheKeyData(
+        val method: String,
+        val url: HttpUrl,
+        val body: RequestBody?
+    ) {
 
-        this.writeTo(buffer)
-        buffer.readUtf8()
-    } catch (exception: IOException) {
-        ""
+        fun toKey() = arrayOf(
+            method,
+            url.toString(),
+            body?.readUtf8().orEmpty()
+        ).contentToString().sha256().toHexString()
+
+
+        @Suppress("SwallowedException")
+        private fun RequestBody.readUtf8(): String = try {
+            val buffer = Buffer()
+
+            this.writeTo(buffer)
+            buffer.readUtf8()
+        } catch (exception: IOException) {
+            ""
+        }
     }
 
     companion object {
