@@ -24,7 +24,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.sel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -60,6 +59,9 @@ fun DappAuthorizedLoginNavigationHost(
             sharedViewModel = sharedViewModel,
             onDisplayPermission = { event ->
                 navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
+            },
+            onPersonaDataOngoing = {
+                navController.personaDataOngoing(it.personaAddress, it.requiredFieldsEncoded)
             }
         )
         personaInfoScreen(
@@ -190,7 +192,7 @@ sealed interface InitialAuthorizedLoginRoute {
 
     data class OngoingPersonaData(
         val personaAddress: String,
-        val requestedFields: List<Network.Persona.Field.Kind>
+        val requestedFieldsEncoded: String
     ) : InitialAuthorizedLoginRoute
 
     data class ChooseAccount(

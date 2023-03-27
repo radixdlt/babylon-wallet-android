@@ -11,7 +11,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
-import com.babylon.wallet.android.presentation.model.decodePersonaDataFields
+import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
 import com.google.accompanist.navigation.animation.composable
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -20,7 +20,7 @@ internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
 internal class PersonaDataOnetimeArgs(val requiredFields: Array<Network.Persona.Field.Kind>) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataFields().toTypedArray()
+        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataKinds().toTypedArray()
     )
 }
 
@@ -47,7 +47,7 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
             navArgument(ARG_REQUIRED_FIELDS) {
                 type = NavType.SerializableArrayType(PersonaDataField::class.java)
                 initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.requestedFields.toTypedArray()
+                    defaultValue = initialAuthorizedLoginRoute.requestedFieldsEncoded
                 }
             }
         )

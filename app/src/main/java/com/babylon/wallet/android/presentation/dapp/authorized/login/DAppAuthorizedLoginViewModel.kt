@@ -165,11 +165,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
             if (ongoingAccountsRequestItem != null && (
-                !requestedAccountsPermissionAlreadyGranted(
-                        authRequest.personaAddress,
-                        ongoingAccountsRequestItem
-                    ) || resetAccounts
-                )
+                        !requestedAccountsPermissionAlreadyGranted(
+                            authRequest.personaAddress,
+                            ongoingAccountsRequestItem
+                        ) || resetAccounts
+                        )
             ) {
                 _state.update {
                     it.copy(
@@ -185,7 +185,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
                                 authRequest.personaAddress,
-                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }
+                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                             )
                         )
                     }
@@ -231,13 +231,19 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
             updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona)
-            if (request.ongoingAccountsRequestItem != null) {
-                handleOngoingAddressRequestItem(
-                    request.ongoingAccountsRequestItem,
-                    selectedPersona.address
-                )
-            } else if (request.oneTimeAccountsRequestItem != null) {
-                handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
+            when {
+                request.hasOnlyAuthItem() -> {
+                    sendRequestResponse()
+                }
+                request.ongoingAccountsRequestItem != null -> {
+                    handleOngoingAddressRequestItem(
+                        request.ongoingAccountsRequestItem,
+                        selectedPersona.address
+                    )
+                }
+                request.oneTimeAccountsRequestItem != null -> {
+                    handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
+                }
             }
         }
     }

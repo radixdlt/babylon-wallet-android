@@ -30,7 +30,8 @@ fun NavGraphBuilder.selectPersona(
     createNewPersona: () -> Unit,
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.SelectPersona?,
     sharedViewModel: DAppAuthorizedLoginViewModel,
-    onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit
+    onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,
+    onPersonaDataOngoing: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit
 ) {
     composable(
         route = ROUTE_SELECT_PERSONA,
@@ -51,7 +52,8 @@ fun NavGraphBuilder.selectPersona(
             onChooseAccounts = onChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
             createNewPersona = createNewPersona,
-            onDisplayPermission = onDisplayPermission
+            onDisplayPermission = onDisplayPermission,
+            onPersonaDataOngoing = onPersonaDataOngoing
         )
     }
 }

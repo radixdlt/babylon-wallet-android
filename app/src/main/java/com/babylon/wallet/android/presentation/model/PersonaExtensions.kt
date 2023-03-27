@@ -29,10 +29,10 @@ fun Network.Persona.personalInfoFormatted(): String {
 }
 
 fun List<Network.Persona.Field.Kind>.encodeToString(): String {
-    return map { it.name }.joinToString(",").encodeUtf8()
+    return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun String.decodePersonaDataFields(): List<Network.Persona.Field.Kind> {
+fun String.decodePersonaDataKinds(): List<Network.Persona.Field.Kind> {
     return split(",").filter { it.isNotEmpty() }.map { Network.Persona.Field.Kind.valueOf(it) }
 }
 

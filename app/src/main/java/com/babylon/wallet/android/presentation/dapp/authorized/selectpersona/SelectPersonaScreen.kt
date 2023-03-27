@@ -62,7 +62,8 @@ fun SelectPersonaScreen(
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String) -> Unit,
     createNewPersona: () -> Unit,
-    onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit
+    onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,
+    onPersonaDataOngoing: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
@@ -71,7 +72,7 @@ fun SelectPersonaScreen(
                 is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
                 is DAppAuthorizedLoginEvent.DisplayPermission -> onDisplayPermission(event)
-                else -> {}
+                is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaDataOngoing(event)
             }
         }
     }

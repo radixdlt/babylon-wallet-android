@@ -10,7 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.model.decodePersonaDataFields
+import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
 import com.google.accompanist.navigation.animation.composable
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -25,7 +25,7 @@ const val ROUTE_EDIT_PERSONA = "persona_edit/{$ARG_PERSONA_ADDRESS}?$ARG_REQUIRE
 internal class PersonaEditScreenArgs(val personaAddress: String, val requiredFields: Array<Network.Persona.Field.Kind> = emptyArray()) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ADDRESS]) as String,
-        savedStateHandle.get<String>(ARG_REQUIRED_FIELDS)?.decodePersonaDataFields().orEmpty().toTypedArray()
+        savedStateHandle.get<String>(ARG_REQUIRED_FIELDS)?.decodePersonaDataKinds().orEmpty().toTypedArray()
     )
 }
 
