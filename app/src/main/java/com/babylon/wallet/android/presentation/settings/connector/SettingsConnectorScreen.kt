@@ -27,6 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +45,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -98,8 +102,7 @@ private fun SettingsLinkConnectorContent(
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
 ) {
-//    var showDeleteConnectorPrompt by remember { mutableStateOf(false) }
-
+    var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
         snapshotFlow { triggerCameraPermissionPrompt }
@@ -142,7 +145,7 @@ private fun SettingsLinkConnectorContent(
                         activeConnectors = activeConnectors,
                         onLinkConnector = onLinkConnector,
                         cameraPermissionState = cameraPermissionState,
-                        onDeleteConnectorClick = onDeleteConnectorClick, // { showDeleteConnectorPrompt = true },
+                        onDeleteConnectorClick = { connectionPasswordToDelete = it },
                         isLoading = isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -161,13 +164,13 @@ private fun SettingsLinkConnectorContent(
             if (isLoading) {
                 FullscreenCircularProgressContent()
             }
-            /*if (showDeleteConnectorPrompt) {
+            if (connectionPasswordToDelete != null) {
                 BasicPromptAlertDialog(
                     finish = {
                         if (it) {
-                            onDeleteConnectorClick()
+                            onDeleteConnectorClick(connectionPasswordToDelete!!)
                         }
-                        showDeleteConnectorPrompt = false
+                        connectionPasswordToDelete = null
                     },
                     title = {
                         Text(
@@ -185,7 +188,7 @@ private fun SettingsLinkConnectorContent(
                     },
                     confirmText = stringResource(id = R.string.remove)
                 )
-            }*/
+            }
         }
     }
 }

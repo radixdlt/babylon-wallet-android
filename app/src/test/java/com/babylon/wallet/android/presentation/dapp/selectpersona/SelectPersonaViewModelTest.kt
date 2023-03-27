@@ -59,8 +59,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     override fun setUp() {
         super.setUp()
         val addressSlot = slot<String>()
-        every { savedStateHandle.get<String>(com.babylon.wallet.android.presentation.dapp.login.ARG_DAPP_ID) } returns "dappId"
-        every { savedStateHandle.get<String>(com.babylon.wallet.android.presentation.dapp.login.ARG_REQUEST_ID) } returns "1"
+        every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
         coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)
