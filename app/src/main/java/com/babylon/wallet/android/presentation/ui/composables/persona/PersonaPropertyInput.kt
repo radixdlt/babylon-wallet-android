@@ -35,8 +35,8 @@ fun PersonaPropertyInput(
         onValueChanged = onValueChanged,
         value = value,
         leftLabel = label,
-        iconToTheRight = {
-            if (!required) {
+        iconToTheRight = if (!required) {
+            {
                 IconButton(onClick = onDeleteField) {
                     Icon(
                         tint = RadixTheme.colors.gray1,
@@ -45,7 +45,7 @@ fun PersonaPropertyInput(
                     )
                 }
             }
-        },
+        } else null,
         onFocusChanged = onFocusChanged,
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Next)
