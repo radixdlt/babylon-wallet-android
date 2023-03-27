@@ -190,6 +190,7 @@ private fun SettingsLinkConnectorContent(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun ActiveConnectorDetails(
     activeConnectors: ImmutableList<ActiveConnectorUiModel>,
@@ -211,7 +212,7 @@ private fun ActiveConnectorDetails(
             activeConnectors = activeConnectors,
             onDeleteConnectorClick = onDeleteConnectorClick
         )
-        AnimatedVisibility(!isLoading) { // visible = connectorName == null &&
+        AnimatedVisibility(!isLoading) {
             Column {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixSecondaryButton(
