@@ -243,6 +243,7 @@ internal class PeerdroidConnectorImpl(
         return job
     }
 
+    @Suppress("LongMethod")
     private fun createAndObservePeerConnectionForRemoteClient(
         remoteClientHolder: RemoteClientHolder,
         connectionIdHolder: ConnectionIdHolder,
