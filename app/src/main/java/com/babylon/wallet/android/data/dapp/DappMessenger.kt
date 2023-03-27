@@ -87,6 +87,7 @@ class DappMessengerImpl @Inject constructor(
             }
             is rdx.works.peerdroid.helpers.Result.Error -> {
                 Timber.e("failed to send response with accounts")
+                incomingRequestRepository.requestHandled(requestId)
                 Result.Error()
             }
         }
@@ -103,7 +104,10 @@ class DappMessengerImpl @Inject constructor(
         )
         val message = Json.encodeToString(response)
         return when (peerdroidClient.sendMessage(dappId, message)) {
-            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
+            is rdx.works.peerdroid.helpers.Result.Error -> {
+                incomingRequestRepository.requestHandled(requestId)
+                Result.Error()
+            }
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(requestId)
                 Result.Success(Unit)
@@ -125,7 +129,10 @@ class DappMessengerImpl @Inject constructor(
             )
         )
         return when (peerdroidClient.sendMessage(dappId, messageJson)) {
-            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
+            is rdx.works.peerdroid.helpers.Result.Error -> {
+                incomingRequestRepository.requestHandled(requestId)
+                Result.Error()
+            }
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(requestId)
                 Result.Success(Unit)
@@ -186,7 +193,10 @@ class DappMessengerImpl @Inject constructor(
             ""
         }
         return when (peerdroidClient.sendMessage(dappId, messageJson)) {
-            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
+            is rdx.works.peerdroid.helpers.Result.Error -> {
+                incomingRequestRepository.requestHandled(interactionId)
+                Result.Error()
+            }
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(interactionId)
                 Result.Success(Unit)
