@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
@@ -108,7 +107,7 @@ fun DappUnauthorizedLoginNavigationHost(
 
 sealed interface InitialUnauthorizedLoginRoute {
     data class OnetimePersonaData(
-        val requestedFields: List<PersonaDataField>
+        val requestedFieldsEncoded: String
     ) : InitialUnauthorizedLoginRoute
 
     data class ChooseAccount(

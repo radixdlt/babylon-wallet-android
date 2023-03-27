@@ -46,7 +46,7 @@ fun NavGraphBuilder.personaDataOnetimeUnauthorized(
             navArgument(ARG_REQUIRED_FIELDS) {
                 type = NavType.StringType
                 initialDappLoginRoute?.let {
-                    defaultValue = initialDappLoginRoute.requestedFields.toTypedArray()
+                    defaultValue = initialDappLoginRoute.requestedFieldsEncoded
                 }
             }
         )

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -84,17 +85,24 @@ fun PersonaDataOnetimeScreen(
             }
         }
     }
+    BackHandler {
+        if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+            sharedViewModel.onRejectLogin()
+        } else {
+            onBackClick()
+        }
+    }
     PersonaDataOnetimeContent(
         onContinueClick = {},
         dappMetadata = sharedState.dappMetadata,
         onBackClick = {
-            if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+            if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData) {
                 sharedViewModel.onRejectLogin()
             } else {
                 onBackClick()
             }
         },
-        isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission,
+        isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData,
         personas = state.personaListToDisplay,
         missingFields = state.requiredFields,
         onSelectPersona = viewModel::onSelectPersona,

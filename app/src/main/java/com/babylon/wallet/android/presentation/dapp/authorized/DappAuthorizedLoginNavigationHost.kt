@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.chooseAcc
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.permission.ROUTE_DAPP_PERMISSION
 import com.babylon.wallet.android.presentation.dapp.authorized.permission.loginPermission
+import com.babylon.wallet.android.presentation.dapp.authorized.personaonetime.ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED
 import com.babylon.wallet.android.presentation.dapp.authorized.personaonetime.personaDataOnetimeAuthorized
 import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.ROUTE_PERSONA_DATA_ONGOING
 import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.personaDataOngoing
@@ -166,18 +167,17 @@ fun DappAuthorizedLoginNavigationHost(
                 navController.personaEditScreen(it.personaAddress, it.requiredFieldsEncoded)
             },
             sharedViewModel = sharedViewModel,
-            initialAuthorizedLoginRoute = initialAuthorizedLoginRoute as? InitialAuthorizedLoginRoute.OngoingPersonaData,
+            initialAuthorizedLoginRoute = initialAuthorizedLoginRoute as? InitialAuthorizedLoginRoute.OneTimePersonaData,
             onBackClick = {
                 navController.navigateUp()
             },
             onLoginFlowComplete = { dappName ->
                 finishDappLogin()
                 showSuccessDialog(dappName)
-            },
-            onCreatePersona = {
-                navController.createPersonaScreen()
             }
-        )
+        ) {
+            navController.createPersonaScreen()
+        }
     }
 }
 
@@ -195,6 +195,10 @@ sealed interface InitialAuthorizedLoginRoute {
         val requestedFieldsEncoded: String
     ) : InitialAuthorizedLoginRoute
 
+    data class OneTimePersonaData(
+        val requestedFieldsEncoded: String
+    ) : InitialAuthorizedLoginRoute
+
     data class ChooseAccount(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,
@@ -208,6 +212,7 @@ sealed interface InitialAuthorizedLoginRoute {
             is Permission -> ROUTE_DAPP_PERMISSION
             is SelectPersona -> ROUTE_SELECT_PERSONA
             is OngoingPersonaData -> ROUTE_PERSONA_DATA_ONGOING
+            is OneTimePersonaData -> ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED
         }
     }
 }

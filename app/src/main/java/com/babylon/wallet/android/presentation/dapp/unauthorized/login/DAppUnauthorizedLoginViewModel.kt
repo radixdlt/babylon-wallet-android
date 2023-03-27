@@ -96,7 +96,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
-                        request.oneTimePersonaDataRequestItem!!.fields
+                        request.oneTimePersonaDataRequestItem!!.fields.map { it.toKind() }.encodeToString()
                     )
                 )
             }

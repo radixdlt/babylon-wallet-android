@@ -164,6 +164,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
             val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
+            val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
             if (ongoingAccountsRequestItem != null && (
                         !requestedAccountsPermissionAlreadyGranted(
                             authRequest.personaAddress,
@@ -180,24 +181,36 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     )
                 }
             } else {
-                if (ongoingPersonaDataRequestItem != null) {
-                    _state.update { state ->
-                        state.copy(
-                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                                authRequest.personaAddress,
-                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+                when {
+                    ongoingPersonaDataRequestItem != null -> {
+                        _state.update { state ->
+                            state.copy(
+                                initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
+                                    authRequest.personaAddress,
+                                    ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+                                )
                             )
-                        )
+                        }
                     }
-                } else if (oneTimeAccountsRequestItem != null) {
-                    _state.update {
-                        it.copy(
-                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
-                                oneTimeAccountsRequestItem.numberOfAccounts,
-                                isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
-                                oneTime = true
+                    oneTimeAccountsRequestItem != null -> {
+                        _state.update {
+                            it.copy(
+                                initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
+                                    oneTimeAccountsRequestItem.numberOfAccounts,
+                                    isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
+                                    oneTime = true
+                                )
                             )
-                        )
+                        }
+                    }
+                    oneTimePersonaDataRequestItem != null -> {
+                        _state.update {
+                            it.copy(
+                                initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
+                                    oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+                                )
+                            )
+                        }
                     }
                 }
             }

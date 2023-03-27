@@ -36,7 +36,7 @@ fun NavController.personaDataOnetimeAuthorized(requiredFieldsEncoded: String) {
 fun NavGraphBuilder.personaDataOnetimeAuthorized(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     sharedViewModel: DAppAuthorizedLoginViewModel,
-    initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.OngoingPersonaData?,
+    initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.OneTimePersonaData?,
     onBackClick: () -> Unit,
     onLoginFlowComplete: (String) -> Unit,
     onCreatePersona: () -> Unit
