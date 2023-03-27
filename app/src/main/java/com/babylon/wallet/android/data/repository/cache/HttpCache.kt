@@ -138,7 +138,6 @@ class HttpCacheImpl @Inject constructor(
             body?.readUtf8().orEmpty()
         ).contentToString().sha256().toHexString()
 
-
         @Suppress("SwallowedException")
         private fun RequestBody.readUtf8(): String = try {
             val buffer = Buffer()

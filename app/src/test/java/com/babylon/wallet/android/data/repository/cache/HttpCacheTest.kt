@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.data.repository.cache
 
 import com.radixdlt.crypto.hash.sha256.extensions.sha256
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import kotlinx.coroutines.test.runTest
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -14,21 +16,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import rdx.works.peerdroid.helpers.toHexString
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.repository.ProfileDataSource
 import retrofit2.Call
 
 internal class HttpCacheTest {
 
     private val memoryCacheClient = MemoryCacheClient()
-    private val testedClass = HttpCacheImpl(memoryCacheClient)
+    private val profileDataSourceMock = mockk<ProfileDataSource>()
+    private val testedClass = HttpCacheImpl(profileDataSourceMock, memoryCacheClient)
 
     @Test
-    fun `when a new call, the cache calculates the correct key and timestamp for the cached value`() {
+    fun `when a new call, the cache calculates the correct key and timestamp for the cached value`() = runTest {
         val value = FakeResponse()
         val now = Instant.now()
         val method = "GET"
         val url = "https://fake.com/fakeGet"
         mockkStatic(Instant::class)
         every { Instant.now() } returns now
+        coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns url
         val mockApiCall = mockApiCall(method = method, url = url)
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
         val key = arrayOf(method, url, "").contentToString().sha256().toHexString()
@@ -41,11 +47,11 @@ internal class HttpCacheTest {
     }
 
     @Test
-    fun `given a request happened 2 minutes ago, given a new request with the same details and cache tolerance of 5 minutes, the cached value is returned`() {
+    fun `given a request happened 2 minutes ago, given a new request with the same details and cache tolerance of 5 minutes, the cached value is returned`() = runTest {
         val value = FakeResponse()
         val mockApiCall = mockApiCall()
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
-
+        coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns Radix.Gateway.default.url
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(2, ChronoUnit.MINUTES)
         mockkStatic(Instant::class)
@@ -59,11 +65,11 @@ internal class HttpCacheTest {
     }
 
     @Test
-    fun `given a request happened 10 minutes ago, when a new request with the same details and cache tolerance of 5 minutes, then no value is returned because is stale`() {
+    fun `given a request happened 10 minutes ago, when a new request with the same details and cache tolerance of 5 minutes, then no value is returned because is stale`() = runTest {
         val value = FakeResponse()
         val mockApiCall = mockApiCall()
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
-
+        coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns Radix.Gateway.default.url
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(10, ChronoUnit.MINUTES)
         mockkStatic(Instant::class)
