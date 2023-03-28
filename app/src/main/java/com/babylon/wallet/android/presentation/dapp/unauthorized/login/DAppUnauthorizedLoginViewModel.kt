@@ -79,29 +79,28 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    @Suppress("UnsafeCallOnNullableType")
     private fun setInitialDappLoginRoute() {
-        val hasOneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem != null
-        val hasOneTimePersonDataRequestItem = request.oneTimePersonaDataRequestItem != null
-        if (hasOneTimeAccountsRequestItem) {
-            _state.update {
-                it.copy(
-                    initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
-                        request.oneTimeAccountsRequestItem!!.numberOfAccounts,
-                        request.oneTimeAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
+        when {
+            request.oneTimeAccountsRequestItem != null -> {
+                _state.update {
+                    it.copy(
+                        initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
+                            request.oneTimeAccountsRequestItem.numberOfAccounts,
+                            request.oneTimeAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
+                        )
                     )
-                )
+                }
             }
-        } else if (hasOneTimePersonDataRequestItem) {
-            _state.update {
-                it.copy(
-                    initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
-                        request.oneTimePersonaDataRequestItem!!.fields.map { it.toKind() }.encodeToString()
+            request.oneTimePersonaDataRequestItem != null -> {
+                _state.update { state ->
+                    state.copy(
+                        initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
+                            request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+                        )
                     )
-                )
+                }
             }
-        } else {
-            onRejectRequest()
+            else -> onRejectRequest()
         }
     }
 

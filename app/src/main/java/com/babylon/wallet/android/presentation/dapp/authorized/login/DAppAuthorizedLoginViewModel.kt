@@ -47,7 +47,6 @@ import rdx.works.profile.data.repository.addOrUpdateAuthorizedDappPersona
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
-import timber.log.Timber
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -150,6 +149,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
         dapp: Network.AuthorizedDapp,
         authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest,
@@ -166,11 +166,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
             val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
             if (ongoingAccountsRequestItem != null && (
-                        !requestedAccountsPermissionAlreadyGranted(
-                            authRequest.personaAddress,
-                            ongoingAccountsRequestItem
-                        ) || resetAccounts
-                        )
+                !requestedAccountsPermissionAlreadyGranted(
+                        authRequest.personaAddress,
+                        ongoingAccountsRequestItem
+                    ) || resetAccounts
+                )
             ) {
                 _state.update {
                     it.copy(
@@ -204,8 +204,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         }
                     }
                     oneTimePersonaDataRequestItem != null -> {
-                        _state.update {
-                            it.copy(
+                        _state.update { state ->
+                            state.copy(
                                 initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
                                     oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                                 )
@@ -244,19 +244,26 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
             updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona)
-            when {
-                request.hasOnlyAuthItem() -> {
-                    sendRequestResponse()
-                }
-                request.ongoingAccountsRequestItem != null -> {
-                    handleOngoingAddressRequestItem(
-                        request.ongoingAccountsRequestItem,
-                        selectedPersona.address
-                    )
-                }
-                request.oneTimeAccountsRequestItem != null -> {
-                    handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
-                }
+            handleNextRequestItem(selectedPersona)
+        }
+    }
+
+    private suspend fun handleNextRequestItem(selectedPersona: Network.Persona) {
+        when {
+            request.hasOnlyAuthItem() -> {
+                sendRequestResponse()
+            }
+            request.ongoingAccountsRequestItem != null -> {
+                handleOngoingAddressRequestItem(
+                    request.ongoingAccountsRequestItem,
+                    selectedPersona.address
+                )
+            }
+            request.ongoingPersonaDataRequestItem != null -> {
+                handleOngoingPersonaDataRequestItem(selectedPersona.address, request.ongoingPersonaDataRequestItem)
+            }
+            request.oneTimeAccountsRequestItem != null -> {
+                handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
             }
         }
     }
@@ -279,15 +286,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 mutex.withLock {
                     editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(updatedPersona.address, dataFields.map { it.id })
                 }
-                when {
-                    request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
-                        request.oneTimeAccountsRequestItem
-                    )
-                    request.oneTimePersonaDataRequestItem != null -> {
-                        handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
-                    }
-                    else -> sendRequestResponse()
-                }
+                handleNextOneTimeRequestItem()
             }
         }
     }
@@ -335,15 +334,19 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         }
                     )
             }
-            when {
-                request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
-                    request.oneTimeAccountsRequestItem
-                )
-                request.oneTimePersonaDataRequestItem != null -> {
-                    handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
-                }
-                else -> sendRequestResponse()
+            handleNextOneTimeRequestItem()
+        }
+    }
+
+    private suspend fun handleNextOneTimeRequestItem() {
+        when {
+            request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
+                request.oneTimeAccountsRequestItem
+            )
+            request.oneTimePersonaDataRequestItem != null -> {
+                handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
             }
+            else -> sendRequestResponse()
         }
     }
 
@@ -364,7 +367,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
-        Timber.d("$oneTimePersonaRequestItem")
+        viewModelScope.launch {
+            sendEvent(DAppAuthorizedLoginEvent.PersonaDataOnetime(oneTimePersonaRequestItem.fields.map { it.toKind() }.encodeToString()))
+        }
     }
 
     private suspend fun handleOngoingAddressRequestItem(
@@ -560,6 +565,7 @@ sealed interface DAppAuthorizedLoginEvent : OneOffEvent {
     ) : DAppAuthorizedLoginEvent
 
     data class PersonaDataOngoing(val personaAddress: String, val requiredFieldsEncoded: String) : DAppAuthorizedLoginEvent
+    data class PersonaDataOnetime(val requiredFieldsEncoded: String) : DAppAuthorizedLoginEvent
     data class ChooseAccounts(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

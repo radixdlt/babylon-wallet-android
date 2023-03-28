@@ -51,7 +51,7 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
                 }
             }
         )
-    ) { entry ->
+    ) {
         PersonaDataOnetimeScreen(
             sharedViewModel = sharedViewModel,
             onEdit = onEdit,

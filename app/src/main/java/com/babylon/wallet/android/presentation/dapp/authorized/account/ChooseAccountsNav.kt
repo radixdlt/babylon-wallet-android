@@ -62,6 +62,7 @@ fun NavGraphBuilder.chooseAccounts(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit,
 ) {
     composable(
         route = ROUTE_CHOOSE_ACCOUNTS,
@@ -100,7 +101,8 @@ fun NavGraphBuilder.chooseAccounts(
             onChooseAccounts = onChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
             onBackClick = onBackClick,
-            onPersonaOngoingData = onPersonaOngoingData
+            onPersonaOngoingData = onPersonaOngoingData,
+            onPersonaDataOnetime = onPersonaDataOnetime
         )
     }
 }

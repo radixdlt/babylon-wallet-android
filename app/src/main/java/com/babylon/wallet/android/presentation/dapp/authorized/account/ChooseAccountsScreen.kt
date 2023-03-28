@@ -30,9 +30,8 @@ fun ChooseAccountsScreen(
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (String?) -> Unit,
     onBackClick: () -> Boolean,
-    onPersonaOngoingData: (
-        DAppAuthorizedLoginEvent.PersonaDataOngoing
-    ) -> Unit
+    onPersonaOngoingData: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
@@ -40,6 +39,7 @@ fun ChooseAccountsScreen(
                 is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
                 is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
                 is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaOngoingData(event)
+                is DAppAuthorizedLoginEvent.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is DAppAuthorizedLoginEvent.RejectLogin -> onLoginFlowComplete(null)
                 else -> {}
             }

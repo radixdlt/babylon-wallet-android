@@ -63,6 +63,9 @@ fun DappAuthorizedLoginNavigationHost(
             },
             onPersonaDataOngoing = {
                 navController.personaDataOngoing(it.personaAddress, it.requiredFieldsEncoded)
+            },
+            onPersonaDataOnetime = {
+                navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
             }
         )
         personaInfoScreen(
@@ -138,11 +141,14 @@ fun DappAuthorizedLoginNavigationHost(
             },
             initialAuthorizedLoginRoute = initialAuthorizedLoginRoute as? InitialAuthorizedLoginRoute.ChooseAccount,
             sharedViewModel = sharedViewModel,
+            onBackClick = {
+                navController.popBackStack()
+            },
             onPersonaOngoingData = {
                 navController.personaDataOngoing(it.personaAddress, it.requiredFieldsEncoded)
             },
-            onBackClick = {
-                navController.popBackStack()
+            onPersonaDataOnetime = {
+                navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
             }
         )
         personaEditScreen(onBackClick = {

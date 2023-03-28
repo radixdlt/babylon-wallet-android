@@ -103,9 +103,9 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
         ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaDataField.GivenName), true)
     )
 
-    private val usePersonaRequestOneTime = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+    private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = "dappId",
-        requestId = "1",
+        "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -116,6 +116,21 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
             false, false, 1,
             MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
         )
+    )
+
+    private val usePersonaRequestOneTimeAccountsAndData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        "1",
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "",
+            "address"
+        ),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            false, false, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        ),
+        oneTimePersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaDataField.GivenName), false)
     )
 
     override fun initVM(): DAppAuthorizedLoginViewModel {
@@ -191,7 +206,9 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     fun `init sets correct state for use persona accounts and data when accounts are already granted`() = runTest {
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
-        coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(SampleDataProvider().randomAddress())
+        coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(
+            SampleDataProvider().randomAddress()
+        )
         val vm = vm.value
         advanceUntilIdle()
         vm.state.test {
@@ -202,7 +219,7 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
 
     @Test
     fun `init sets correct state for use persona onetime request`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOneTime
+        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOneTimeAccounts
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         val vm = vm.value
         advanceUntilIdle()

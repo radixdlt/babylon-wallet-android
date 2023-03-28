@@ -45,7 +45,9 @@ fun PersonaPropertyInput(
                     )
                 }
             }
-        } else null,
+        } else {
+            null
+        },
         onFocusChanged = onFocusChanged,
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Next)
