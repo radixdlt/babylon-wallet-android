@@ -135,6 +135,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     ): Result<String> {
         val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
         val result = dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
+            dappId = request.dappId,
             interactionId = request.requestId,
             persona = persona,
             usePersona = request.isUsePersonaAuth(),

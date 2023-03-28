@@ -25,9 +25,9 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() &&
-                    oneTimePersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null &&
-                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                        oneTimePersonaDataRequestItem == null &&
+                        oneTimeAccountsRequestItem == null &&
+                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isUsePersonaAuth(): Boolean {
@@ -36,9 +36,9 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null &&
-                    ongoingPersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null &&
-                    oneTimePersonaDataRequestItem == null
+                        ongoingPersonaDataRequestItem == null &&
+                        oneTimeAccountsRequestItem == null &&
+                        oneTimePersonaDataRequestItem == null
             }
 
             sealed interface AuthRequest {
@@ -53,7 +53,7 @@ sealed interface MessageFromDataChannel {
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(requestId, requestMetadata)
+        ) : IncomingRequest(dappId, requestId, requestMetadata)
 
         data class TransactionRequest(
             val dappId: String, // from which dapp comes the message
@@ -104,7 +104,7 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
-    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
+        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly

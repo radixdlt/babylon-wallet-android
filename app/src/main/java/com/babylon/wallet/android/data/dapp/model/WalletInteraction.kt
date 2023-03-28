@@ -134,7 +134,7 @@ private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
         requestId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
-        oneTimePersonaRequestItem = oneTimePersonaData?.toDomainModel(),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
     )
 }
 

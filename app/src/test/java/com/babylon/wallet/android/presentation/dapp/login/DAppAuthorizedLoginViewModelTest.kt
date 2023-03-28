@@ -78,7 +78,8 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     )
 
     private val usePersonaRequestOngoingPlusOngoingData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "1",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -93,7 +94,8 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     )
 
     private val usePersonaRequestOngoingDataOnly = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "1",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -104,8 +106,8 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     )
 
     private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        dappId = "dappId",
-        "1",
+        dappId = "1",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -119,7 +121,8 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     )
 
     private val usePersonaRequestOneTimeAccountsAndData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "1",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",

@@ -35,6 +35,7 @@ class DappMessengerFake : DappMessenger {
     }
 
     override suspend fun sendWalletInteractionAuthorizedSuccessResponse(
+        dappId: String,
         interactionId: String,
         persona: Network.Persona,
         usePersona: Boolean,

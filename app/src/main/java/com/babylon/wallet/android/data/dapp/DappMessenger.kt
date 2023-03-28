@@ -38,13 +38,13 @@ import javax.inject.Inject
 interface DappMessenger {
 
     suspend fun sendWalletInteractionUnauthorizedSuccessResponse(
+        dappId: String,
         requestId: String,
         onetimeAccounts: List<AccountItemUiModel> = emptyList(),
         onetimeDataFields: List<Network.Persona.Field> = emptyList()
     ): Result<Unit>
 
     suspend fun sendWalletInteractionResponseFailure(
-        dappId: String,
         dappId: String,
         requestId: String,
         error: WalletErrorType,
@@ -58,6 +58,7 @@ interface DappMessenger {
     ): Result<Unit>
 
     suspend fun sendWalletInteractionAuthorizedSuccessResponse(
+        dappId: String,
         interactionId: String,
         persona: Network.Persona,
         usePersona: Boolean,
@@ -74,6 +75,7 @@ class DappMessengerImpl @Inject constructor(
 ) : DappMessenger {
 
     override suspend fun sendWalletInteractionUnauthorizedSuccessResponse(
+        dappId: String,
         requestId: String,
         oneTimeAccounts: List<AccountItemUiModel>,
         onetimeDataFields: List<Network.Persona.Field>
@@ -160,6 +162,7 @@ class DappMessengerImpl @Inject constructor(
     }
 
     override suspend fun sendWalletInteractionAuthorizedSuccessResponse(
+        dappId: String,
         interactionId: String,
         persona: Network.Persona,
         usePersona: Boolean,
@@ -184,7 +187,7 @@ class DappMessengerImpl @Inject constructor(
             Timber.d(e)
             ""
         }
-        return when (peerdroidClient.sendMessage(messageJson)) {
+        return when (peerdroidClient.sendMessage(dappId, messageJson)) {
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
             is rdx.works.peerdroid.helpers.Result.Success -> {
                 incomingRequestRepository.requestHandled(interactionId)
