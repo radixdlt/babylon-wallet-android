@@ -167,6 +167,17 @@ fun DappAuthorizedLoginNavigationHost(
                 finishDappLogin()
                 showSuccessDialog(dappName)
             },
+            onPersonaDataOnetime = {
+                navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
+            },
+            onChooseAccounts = { event ->
+                navController.chooseAccounts(
+                    event.numberOfAccounts,
+                    event.isExactAccountsCount,
+                    event.oneTime,
+                    event.showBack
+                )
+            }
         )
         personaDataOnetimeAuthorized(
             onEdit = {
