@@ -8,7 +8,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
@@ -25,7 +24,7 @@ internal class PersonaDataOnetimeArgs(val requiredFields: Array<Network.Persona.
 }
 
 const val ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED =
-    "route_persona_data_onetime_authorized/{$ARG_REQUIRED_FIELDS}}"
+    "route_persona_data_onetime_authorized/{$ARG_REQUIRED_FIELDS}"
 
 fun NavController.personaDataOnetimeAuthorized(requiredFieldsEncoded: String) {
     navigate("route_persona_data_onetime_authorized/$requiredFieldsEncoded")
@@ -45,7 +44,7 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
         route = ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED,
         arguments = listOf(
             navArgument(ARG_REQUIRED_FIELDS) {
-                type = NavType.SerializableArrayType(PersonaDataField::class.java)
+                type = NavType.StringType
                 initialAuthorizedLoginRoute?.let {
                     defaultValue = initialAuthorizedLoginRoute.requestedFieldsEncoded
                 }
