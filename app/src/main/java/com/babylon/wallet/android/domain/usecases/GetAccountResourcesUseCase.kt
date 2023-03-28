@@ -75,12 +75,12 @@ class GetAccountResourcesUseCase @Inject constructor(
 
         // For every Account stored in the profile, map it to AccountResources
         this.mapNotNull { profileAccount ->
-            val accountOnGateWay = accountsOnGateway.find {
+            val accountOnGateway = accountsOnGateway.find {
                 it.address == profileAccount.address
             } ?: return@mapNotNull null
 
-            val fungibleTokens = accountOnGateWay.resolveFungibleTokens(allResources)
-            val nonFungibleTokens = accountOnGateWay.resolveNonFungibleTokens(
+            val fungibleTokens = accountOnGateway.resolveFungibleTokens(allResources)
+            val nonFungibleTokens = accountOnGateway.resolveNonFungibleTokens(
                 allResources,
                 nonFungiblesWithIds
             )
