@@ -19,7 +19,7 @@ info:
     which is configured to read from [full node(s)](https://github.com/radixdlt/babylon-node) to extract
     and index data from the network.
 servers: # TODO define mainnet / betanet endpoints?
-  - url: https://betanet.radixdlt.com
+  - url: https://rcnet.radixdlt.com
   - url: http://localhost:5208
 x-tagGroups:
   - name: Overview
@@ -502,10 +502,10 @@ paths:
                 $ref: "#/components/schemas/StateNonFungibleIdsResponse"
         "4XX":
           $ref: "#/components/responses/ErrorResponse"
-  /state/non-fungible/details:
+  /state/non-fungible/data:
     post:
-      operationId: NonFungibleDetails
-      summary: Get Non-Fungible Details
+      operationId: NonFungibleData
+      summary: Get Non-Fungible Data
       description: |
         Returns data associated with a given non-fungible ID of a given non-fungible resource.
       tags:
@@ -515,14 +515,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StateNonFungibleDetailsRequest"
+              $ref: "#/components/schemas/StateNonFungibleDataRequest"
       responses:
         "200":
           description: Non-Fungible ID Data
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StateNonFungibleDetailsResponse"
+                $ref: "#/components/schemas/StateNonFungibleDataResponse"
         "4XX":
           $ref: "#/components/responses/ErrorResponse"
 
@@ -1256,10 +1256,13 @@ components:
     TransactionPreviewResponse:
       type: object
       required:
+        - encoded_receipt
         - receipt
         - resource_changes
         - logs
       properties:
+        encoded_receipt:
+          $ref: "#/components/schemas/HexString"
         receipt:
           type: object
         resource_changes:
@@ -1765,7 +1768,7 @@ components:
             non_fungible_ids:
               $ref: "#/components/schemas/NonFungibleIdsCollection"
 
-    StateNonFungibleDetailsRequest:
+    StateNonFungibleDataRequest:
       allOf:
         - $ref: "#/components/schemas/AtLedgerStateMixin"
         - $ref: "#/components/schemas/CursorLimitMixin"
@@ -1783,7 +1786,7 @@ components:
       example:
         resource_address: "<non-fungible-entity-address>"
         non_fungible_ids: ["0a0100000000"]
-    StateNonFungibleDetailsResponse:
+    StateNonFungibleDataResponse:
       allOf:
         - $ref: "#/components/schemas/LedgerStateMixin"
         - type: object
@@ -1805,14 +1808,11 @@ components:
       required:
         - non_fungible_id
         - mutable_data
-        - immutable_data
         - last_updated_at_state_version
       properties:
         non_fungible_id:
           $ref: "#/components/schemas/NonFungibleId"
         mutable_data:
-          $ref: "#/components/schemas/ScryptoSborValue"
-        immutable_data:
           $ref: "#/components/schemas/ScryptoSborValue"
         last_updated_at_state_version:
           $ref: "#/components/schemas/LastUpdatedAtStateVersion"

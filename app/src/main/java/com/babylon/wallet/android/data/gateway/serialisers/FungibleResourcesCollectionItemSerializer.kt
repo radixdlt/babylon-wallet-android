@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.data.gateway.serialisers
 
-import com.babylon.wallet.android.data.gateway.generated.models.*
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemGloballyAggregated
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
+import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement

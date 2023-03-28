@@ -23,9 +23,9 @@ import kotlinx.serialization.Serializable
  * 
  *
  * @param type 
- * @param packageAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
- * @param blueprintName 
+ * @param blueprintName
  * @param accessRulesChain 
+ * @param packageAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
  * @param state 
  * @param royaltyAggregator 
  */
@@ -35,15 +35,15 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
-    @SerialName(value = "package_address")
-    val packageAddress: kotlin.String? = null,
-
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
 //    @Contextual @SerialName(value = "access_rules_chain")
 //    val accessRulesChain: kotlin.Any,
+
+    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    @SerialName(value = "package_address")
+    val packageAddress: kotlin.String? = null,
 
 //    @Contextual @SerialName(value = "state")
 //    val state: kotlin.Any? = null,

@@ -22,9 +22,9 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param packageAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
  * @param blueprintName 
  * @param accessRulesChain 
+ * @param packageAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
  * @param state 
  * @param royaltyAggregator 
  */
@@ -32,15 +32,15 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityDetailsResponseComponentDetailsAllOf (
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
-    @SerialName(value = "package_address")
-    val packageAddress: kotlin.String,
-
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
 //    @Contextual @SerialName(value = "access_rules_chain")
 //    val accessRulesChain: kotlin.Any,
+
+    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    @SerialName(value = "package_address")
+    val packageAddress: kotlin.String? = null,
 
 //    @Contextual @SerialName(value = "state")
 //    val state: kotlin.Any? = null,

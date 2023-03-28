@@ -22,6 +22,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
+ * @param encodedReceipt Hex-encoded binary blob.
  * @param receipt 
  * @param resourceChanges 
  * @param logs 
@@ -29,6 +30,10 @@ import kotlinx.serialization.Contextual
 @Serializable
 
 data class TransactionPreviewResponse (
+
+    /* Hex-encoded binary blob. */
+    @SerialName(value = "encoded_receipt")
+    val encodedReceipt: kotlin.String,
 
 //    @Contextual @SerialName(value = "receipt")
 //    val receipt: kotlin.Any,
