@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.gateway.RadixGatewayException
-import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
-import com.babylon.wallet.android.data.gateway.generated.model.ErrorResponse
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.decodeFromString

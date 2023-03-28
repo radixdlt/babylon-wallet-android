@@ -3,9 +3,11 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
-import com.babylon.wallet.android.data.gateway.DynamicUrlApi
-import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.converter.Serializer
+import com.babylon.wallet.android.data.gateway.apis.DynamicUrlApi
+import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.apis.StatusApi
+import com.babylon.wallet.android.data.gateway.apis.TransactionApi
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -61,17 +63,48 @@ object NetworkModule {
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
-    fun provideGatewayApi(okHttpClient: OkHttpClient, json: Json): GatewayApi {
+    fun provideStateApi(okHttpClient: OkHttpClient, json: Json): StateApi {
         val retrofitBuilder = Retrofit.Builder().client(okHttpClient)
             .baseUrl(BuildConfig.GATEWAY_API_URL)
             .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
             .build()
-        return retrofitBuilder.create(GatewayApi::class.java)
+        return retrofitBuilder.create(StateApi::class.java)
     }
 
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
-    fun provideGatewayInfoApi(json: Json): DynamicUrlApi {
+    @Singleton
+    fun provideTransactionApi(okHttpClient: OkHttpClient, json: Json): TransactionApi {
+        val retrofitBuilder = Retrofit.Builder().client(okHttpClient)
+            .baseUrl(BuildConfig.GATEWAY_API_URL)
+            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .build()
+        return retrofitBuilder.create(TransactionApi::class.java)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Provides
+    @Singleton
+    fun provideStatusApi(json: Json): StatusApi {
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            Timber.d(message)
+        }
+        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
+        val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
+        val retrofitBuilder = Retrofit.Builder().client(httpClient)
+            .baseUrl(BuildConfig.GATEWAY_API_URL)
+            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
+            .build()
+        return retrofitBuilder.create(StatusApi::class.java)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Provides
+    fun provideDynamicUrlApi(json: Json): DynamicUrlApi {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Timber.d(message)
         }

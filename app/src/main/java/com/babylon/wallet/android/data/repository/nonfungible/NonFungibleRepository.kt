@@ -1,8 +1,7 @@
 package com.babylon.wallet.android.data.repository.nonfungible
 
-import com.babylon.wallet.android.data.gateway.GatewayApi
-import com.babylon.wallet.android.data.gateway.generated.model.NonFungibleIdsRequest
-import com.babylon.wallet.android.data.gateway.toDomainModel
+import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.FIVE_MINUTES
@@ -12,7 +11,6 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import javax.inject.Inject
 
-// TODO translate from network models to domain models
 interface NonFungibleRepository {
 
     suspend fun nonFungibleIds(
@@ -24,7 +22,7 @@ interface NonFungibleRepository {
 }
 
 class NonFungibleRepositoryImpl @Inject constructor(
-    private val gatewayApi: GatewayApi,
+    private val stateApi: StateApi,
     private val httpCache: HttpCache
 ) : NonFungibleRepository {
 
@@ -34,12 +32,18 @@ class NonFungibleRepositoryImpl @Inject constructor(
         limit: Int?,
         isRefreshing: Boolean
     ): Result<NonFungibleTokenIdContainer> {
-        return gatewayApi.nonFungibleIds(NonFungibleIdsRequest(address)).execute(
+        return stateApi.nonFungibleIds(StateNonFungibleIdsRequest(address)).execute(
             cacheParameters = CacheParameters(
                 httpCache = httpCache,
                 timeoutDuration = if (isRefreshing) NO_CACHE else FIVE_MINUTES
             ),
-            map = { it.toDomainModel() }
+            map = { response ->
+                NonFungibleTokenIdContainer(
+                    ids = response.nonFungibleIds.items.map { it.nonFungibleId },
+                    nextCursor = response.nonFungibleIds.nextCursor,
+                    previousCursor = response.nonFungibleIds.previousCursor
+                )
+            }
         )
     }
 }

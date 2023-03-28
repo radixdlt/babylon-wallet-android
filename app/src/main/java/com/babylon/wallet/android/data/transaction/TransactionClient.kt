@@ -2,21 +2,22 @@
 
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
-import com.radixdlt.toolkit.models.address.Address
+import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
@@ -82,16 +83,13 @@ class TransactionClient @Inject constructor(
             is Result.Success -> manifestConversionResult.data
         }
         val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
-        val accountAddressToLockFee = selectAccountAddressToLockFee(
-            addressesInvolved
-        ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
-        if (accountAddressToLockFee == null) {
-            return Result.Error(
+        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+            ?: return Result.Error(
                 TransactionApprovalException(
                     DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
                 )
             )
-        }
+
         return Result.Success(
             addLockFeeInstructionToManifest(
                 manifest = jsonTransactionManifest,
@@ -120,16 +118,13 @@ class TransactionClient @Inject constructor(
         val manifestWithTransactionFee = if (hasLockFeeInstruction) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee = selectAccountAddressToLockFee(
-                addressesInvolved
-            ) ?: selectAccountAddressToLockFee(getAddressesOfThisWallet())
-            if (accountAddressToLockFee == null) {
-                return Result.Error(
+            val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+                ?: return Result.Error(
                     TransactionApprovalException(
                         DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                     )
                 )
-            }
+
             addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
@@ -187,24 +182,16 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
-        var selectedAddress: String? = null
-        for (address in involvedAddresses) {
-            when (val account = getAccountResourcesUseCase(address, isRefreshing = true)) {
-                is Result.Error -> null
-                is Result.Success -> {
-                    if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
-                        selectedAddress = account.data.address
-                        break
-                    }
-                }
-            }
-        }
-        return selectedAddress
-    }
+    suspend fun selectAccountAddressToLockFee(addresses: List<String>): String? {
+        val accountFromInvolvedAddresses = getAccountResourcesUseCase
+            .getAccounts(addresses = addresses, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
 
-    private suspend fun getAddressesOfThisWallet(): List<String> {
-        return accountRepository.getAccounts().map { it.address }
+        return accountFromInvolvedAddresses?.address ?: getAccountResourcesUseCase
+            .getAccountsFromProfile(isRefreshing = true)
+            .value()
+            ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+            ?.address
     }
 
     private suspend fun buildTransactionHeader(
@@ -312,10 +299,10 @@ class TransactionClient @Inject constructor(
     ): TransactionManifest {
         val instructions = manifest.instructions
         val lockFeeInstruction: Instruction = Instruction.CallMethod(
-            componentAddress = Value.ComponentAddress(addressToLockFee),
-            methodName = Value.String(MethodName.LockFee.stringValue),
+            componentAddress = ManifestAstValue.Address(addressToLockFee),
+            methodName = ManifestAstValue.String(MethodName.LockFee.stringValue),
             arguments = arrayOf(
-                Value.Decimal(
+                ManifestAstValue.Decimal(
                     BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
                 )
             )
@@ -355,7 +342,11 @@ class TransactionClient @Inject constructor(
 
                 if (submitResult.data.duplicate) {
                     Result.Error(
-                        TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(txID))
+                        TransactionApprovalException(
+                            DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
+                                txID
+                            )
+                        )
                     )
                 } else {
                     Result.Success(txID)
@@ -381,7 +372,11 @@ class TransactionClient @Inject constructor(
             }
             if (tryCount > maxTries) {
                 return Result.Error(
-                    TransactionApprovalException(DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(txID))
+                    TransactionApprovalException(
+                        DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(
+                            txID
+                        )
+                    )
                 )
             }
             delay(delayBetweenTriesMs)
@@ -391,7 +386,9 @@ class TransactionClient @Inject constructor(
                 TransactionStatus.committedFailure -> {
                     return Result.Error(
                         TransactionApprovalException(
-                            DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(txID)
+                            DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(
+                                txID
+                            )
                         )
                     )
                 }
@@ -409,7 +406,10 @@ class TransactionClient @Inject constructor(
     }
 
     fun getAddressesNeededToSign(jsonTransactionManifest: TransactionManifest): List<String> {
-        return getAddressesInvolvedInATransaction(jsonTransactionManifest, ::callMethodAuthorizedFilter)
+        return getAddressesInvolvedInATransaction(
+            jsonTransactionManifest,
+            ::callMethodAuthorizedFilter
+        )
     }
 
     @Suppress("NestedBlockDepth")
@@ -424,20 +424,21 @@ class TransactionClient @Inject constructor(
                     .forEach { instruction ->
                         when (instruction) {
                             is Instruction.CallMethod -> {
-                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
-                                    if (callInstructionFilter(instruction.methodName.value)) {
-                                        addressesNeededToSign.add(accountAddress)
+                                (instruction.componentAddress as? ManifestAstValue.Address)
+                                    ?.executeIfAccountComponent { accountAddress ->
+                                        if (callInstructionFilter(instruction.methodName.value)) {
+                                            addressesNeededToSign.add(accountAddress)
+                                        }
                                     }
-                                }
                             }
                             is Instruction.SetMetadata -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)
+                                (instruction.entityAddress as? ManifestAstValue.Address)
                                     ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
                             }
                             is Instruction.SetMethodAccessRule -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)
+                                (instruction.entityAddress as? ManifestAstValue.Address)
                                     ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
@@ -471,15 +472,9 @@ class TransactionClient @Inject constructor(
             .contains(instructionName)
     }
 
-    private fun Value.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
-        if (address.componentAddress.startsWith("account")) {
-            action(address.componentAddress)
-        }
-    }
-
-    private fun Address.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
-        if (componentAddress.startsWith("account")) {
-            action(componentAddress)
+    private fun ManifestAstValue.Address.executeIfAccountComponent(action: (String) -> Unit) {
+        if (address.startsWith("account")) {
+            action(address)
         }
     }
 

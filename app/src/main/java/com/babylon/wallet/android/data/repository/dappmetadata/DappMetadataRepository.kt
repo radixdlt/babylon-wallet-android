@@ -1,7 +1,8 @@
 package com.babylon.wallet.android.data.repository.dappmetadata
 
 import com.babylon.wallet.android.BuildConfig
-import com.babylon.wallet.android.data.gateway.DynamicUrlApi
+import com.babylon.wallet.android.data.gateway.apis.DynamicUrlApi
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -13,6 +14,7 @@ import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
+import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
@@ -47,7 +49,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 getDappMetadata(
                     defitnionAddress = dAppDefinitionAddress,
                     needMostRecentData = false
-                ).map { gatewayMetadata ->
+                ).switchMap { gatewayMetadata ->
                     when {
                         !gatewayMetadata.isDappDefinition() -> {
                             Result.Error(
@@ -65,7 +67,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                             wellKnownFileMetadata(origin)
                         }
                     }
-                }.map { wellKnownFileDappsMetadata ->
+                }.switchMap { wellKnownFileDappsMetadata ->
                     val isWellKnown = wellKnownFileDappsMetadata.any {
                         it.dAppDefinitionAddress == dAppDefinitionAddress
                     }
@@ -113,18 +115,13 @@ class DappMetadataRepositoryImpl @Inject constructor(
         needMostRecentData: Boolean
     ): Result<DappMetadata> {
         return withContext(ioDispatcher) {
-            when (
-                val result = entityRepository.entityDetails(
-                    address = defitnionAddress,
-                    isRefreshing = needMostRecentData
-                )
-            ) {
-                is Result.Error -> Result.Error(result.exception)
-                is Result.Success -> Result.Success(
-                    DappMetadata(
-                        defitnionAddress,
-                        result.data.metadata.items.associate { it.key to it.value }
-                    )
+            entityRepository.stateEntityDetails(
+                addresses = listOf(defitnionAddress),
+                isRefreshing = needMostRecentData
+            ).map { response ->
+                DappMetadata(
+                    dAppDefinitionAddress = defitnionAddress,
+                    metadata = response.items.first().metadata.asMetadataStringMap()
                 )
             }
         }

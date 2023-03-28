@@ -42,37 +42,37 @@ class ProfileTest {
             creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
         )
 
+        val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
-        assertEquals(profile.networks.first().networkID, Radix.Network.nebunet.id)
+        assertEquals(profile.networks.first().networkID, defaultNetwork.id)
         assertEquals(profile.networks.first().accounts.count(), 1)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
             "Next derivation index for second account",
-            profile.factorSources.first().getNextAccountDerivationIndex(Radix.Network.nebunet.networkId()),
+            profile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
             1
         )
 
         println("Profile generated $profile")
 
-        val networkId = NetworkId.Nebunet
         val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
         val firstAccount = init(
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
-            networkId = networkId
+            networkId = defaultNetwork.networkId()
         )
 
         var updatedProfile = profile.addAccount(
             account = firstAccount,
             withFactorSourceId = factorSource.id,
-            onNetwork = networkId
+            onNetwork = defaultNetwork.networkId()
         )
 
         assertEquals(updatedProfile.networks.first().accounts.count(), 2)
         assertEquals(
             "Next derivation index for third account",
-            updatedProfile.factorSources.first().getNextAccountDerivationIndex(Radix.Network.nebunet.networkId()),
+            updatedProfile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
             2
         )
 
@@ -92,19 +92,19 @@ class ProfileTest {
             ),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = factorSource,
-            networkId = networkId
+            networkId = defaultNetwork.networkId()
         )
 
         updatedProfile = updatedProfile.addPersona(
             persona = firstPersona,
             withFactorSourceId = factorSource.id,
-            onNetwork = networkId
+            onNetwork = defaultNetwork.networkId()
         )
 
         assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
-            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(Radix.Network.nebunet.networkId()),
+            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(defaultNetwork.networkId()),
             1
         )
 
@@ -145,7 +145,8 @@ class ProfileTest {
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             firstAccountDisplayName = "First",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            gateway = gateway
         )
 
         val secondAccount = init(
@@ -235,7 +236,7 @@ class ProfileTest {
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "identity_tdx_b_1pwvt6shevmzedf0709cgdq0d6axrts5gjfxaws46wdpsedwrfm",
+                    identityAddress = "identity_tdx_b_1psauxn0kkttjn3xhw6lvjudnrx48mu0jaxt0crp09d4smx5gv5",
                     fieldIDs = listOf(
                         "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
                         "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
@@ -243,8 +244,8 @@ class ProfileTest {
                     sharedAccounts =
                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
-                            "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu",
-                            "account_tdx_b_1pr2q677ep9d5wxnhkkay9c6gvqln6hg3ul006w0a54tshau0z6"
+                            "account_tdx_b_1p93amtza2ys6xrq7saycsrh97pdwm0atuf7xthpxyexsjnczsg",
+                            "account_tdx_b_1p8afjm9e5exmj0sxltq4my53rtzm6e4vqskj2znx27qq6xnnxf"
                         ),
                         request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
@@ -254,7 +255,7 @@ class ProfileTest {
                     lastUsedOn = "some date"
                 ),
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "identity_tdx_b_1p0vtykvnyhqfamnk9jpnjeuaes9e7f72sekpw6ztqnkshkxgen",
+                    identityAddress = "identity_tdx_b_1pnec3phquyel59q39v3kcyc6z3ljy9jv40mdwf4dgxps5y05k2",
                     fieldIDs = listOf(
                         "FAD199A5-D6A8-425D-8807-C1561C2425C8",
                         "AC37E346-32EF-4670-9097-1AC27B20D394"
@@ -262,7 +263,7 @@ class ProfileTest {
                     sharedAccounts =
                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
-                            "account_tdx_b_1ppvvvxm3mpk2cja05fwhpmev0ylsznqfqhlewnrxg5gqmpswhu"
+                            "account_tdx_b_1p93amtza2ys6xrq7saycsrh97pdwm0atuf7xthpxyexsjnczsg"
                         ),
                         request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,

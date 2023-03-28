@@ -13,7 +13,7 @@ import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -79,13 +79,14 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountResource(address: String = randomAddress()): AccountResources {
+    fun sampleAccountResource(
+        address: String = randomAddress(),
+        withFungibleTokens: List<OwnedFungibleToken> = sampleFungibleTokens(address)
+    ): AccountResources {
         return AccountResources(
             address = address,
             displayName = "My account",
-            currencySymbol = "$",
-            value = "10",
-            fungibleTokens = sampleFungibleTokens(address),
+            fungibleTokens = withFungibleTokens,
             appearanceID = 1
         )
     }
@@ -97,7 +98,7 @@ class SampleDataProvider {
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
-                gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
+                gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(
@@ -113,7 +114,10 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleFungibleTokens(ownerAddress: String = randomAddress()): List<OwnedFungibleToken> {
+    fun sampleFungibleTokens(
+        ownerAddress: String = randomAddress(),
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+    ): List<OwnedFungibleToken> {
         val result = mutableListOf<OwnedFungibleToken>()
         return result.apply {
             repeat(3) {
@@ -121,14 +125,11 @@ class SampleDataProvider {
                 add(
                     OwnedFungibleToken(
                         AccountAddress(ownerAddress),
-                        BigDecimal.valueOf(100000),
+                        amount.first,
                         tokenAddress,
                         FungibleToken(
                             tokenAddress,
-                            totalSupply = BigDecimal.valueOf(10000000000),
-                            totalMinted = BigDecimal.valueOf(1000000),
-                            totalBurnt = BigDecimal.valueOf(100),
-                            metadata = mapOf("symbol" to "XRD")
+                            metadata = mapOf("symbol" to amount.second)
                         )
                     )
                 )
@@ -139,13 +140,13 @@ class SampleDataProvider {
     fun sampleManifest(): TransactionManifest {
         return ManifestBuilder()
             .callMethod(
-                Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
+                ManifestAstValue.Address("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
                 "free",
             )
             .callMethod(
-                Value.ComponentAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"),
+                ManifestAstValue.Address("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"),
                 "deposit_batch",
-                Value.Expression("ENTIRE_WORKTOP")
+                ManifestAstValue.Expression("ENTIRE_WORKTOP")
             )
             .build()
     }
@@ -181,7 +182,7 @@ class SampleDataProvider {
                 address = "owner address",
                 label = "NBA"
             ),
-            amount = BigDecimal(1.007),
+            amount = 10L,
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
@@ -202,7 +203,7 @@ class SampleDataProvider {
                 address = "owner address",
                 label = "Space"
             ),
-            amount = BigDecimal(1.007),
+            amount = 10L,
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",

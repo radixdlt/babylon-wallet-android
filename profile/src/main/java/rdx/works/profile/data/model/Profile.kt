@@ -156,16 +156,15 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 24
+        const val LATEST_PROFILE_VERSION = 26
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             firstAccountDisplayName: String,
-            creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER
+            creatingDevice: String = GENERIC_ANDROID_DEVICE_PLACEHOLDER,
+            gateway: Radix.Gateway = Radix.Gateway.default
         ): Profile {
-            val gateway = Radix.Gateway.default
-
             val factorSource = FactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 hint = creatingDevice

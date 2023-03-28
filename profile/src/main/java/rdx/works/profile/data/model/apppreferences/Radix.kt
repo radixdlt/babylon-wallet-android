@@ -19,7 +19,8 @@ object Radix {
     ) {
 
         fun networkId(): NetworkId {
-            return NetworkId.values().find { it.value == id } ?: throw IllegalArgumentException("Network ID not valid")
+            return NetworkId.values().find { it.value == id }
+                ?: throw IllegalArgumentException("Network ID not valid")
         }
 
         companion object {
@@ -33,6 +34,11 @@ object Radix {
                 name = "nebunet",
                 displayDescription = "Radix Public Network"
             )
+            val kisharnet = Network(
+                id = NetworkId.Kisharnet.value,
+                name = "kisharnet",
+                displayDescription = "RCnet"
+            )
             val mardunet = Network(
                 id = NetworkId.Mardunet.value,
                 name = "mardunet",
@@ -45,7 +51,7 @@ object Radix {
             )
 
             fun allKnownNetworks(): List<Network> {
-                return listOf(hammunet, nebunet, mardunet, enkinet)
+                return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet)
             }
 
             fun forName(name: String): Network {
@@ -67,14 +73,12 @@ object Radix {
     ) {
 
         val isDefault: Boolean
-            get() = url == nebunet.url
+            get() = url == default.url
 
-        fun displayName(): String {
-            return if (network.id == Network.nebunet.networkId().value) {
-                "Radix Betanet Gateway"
-            } else {
-                url
-            }
+        fun displayName(): String = when (network.id) {
+            Network.nebunet.id -> "Radix Betanet Gateway"
+            Network.kisharnet.id -> "RCnet Gateway"
+            else -> url
         }
 
         fun displayDescription(): String {
@@ -83,11 +87,15 @@ object Radix {
 
         companion object {
             val default: Gateway
-                get() = nebunet
+                get() = kisharnet
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
                 network = Network.nebunet
+            )
+            val kisharnet = Gateway(
+                url = "https://rcnet.radixdlt.com/",
+                network = Network.kisharnet
             )
             val hammunet = Gateway(
                 url = "https://hammunet-gateway.radixdlt.com",

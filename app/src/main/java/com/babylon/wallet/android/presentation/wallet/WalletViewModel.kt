@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,8 +52,9 @@ class WalletViewModel @Inject constructor(
                     isLoading = false
                 )
             }
-            val result = getAccountResourcesUseCase(isRefreshing = isRefreshing)
+            val result = getAccountResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
             result.onError { error ->
+                Timber.w(error)
                 _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
             }
             result.onValue { resourceList ->

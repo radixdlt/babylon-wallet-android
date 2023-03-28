@@ -116,7 +116,7 @@ class ProfileDataSourceImpl @Inject constructor(
     override suspend fun getCurrentNetwork(): Radix.Network = readProfile()
         ?.appPreferences
         ?.gateways?.current()?.network
-        ?: Radix.Gateway.nebunet.network
+        ?: Radix.Gateway.default.network
 
     override suspend fun getCurrentNetworkId(): NetworkId {
         return getGateway().network.networkId()
@@ -178,6 +178,6 @@ class ProfileDataSourceImpl @Inject constructor(
         return readProfile()
             ?.appPreferences
             ?.gateways?.current()
-            ?: Radix.Gateway.nebunet
+            ?: Radix.Gateway.default
     }
 }

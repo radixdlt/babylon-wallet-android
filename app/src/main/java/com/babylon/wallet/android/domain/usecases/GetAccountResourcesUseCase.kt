@@ -1,20 +1,25 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.toFungibleToken
-import com.babylon.wallet.android.data.gateway.toNonFungibleToken
+import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
+import com.babylon.wallet.android.data.gateway.extensions.amount
+import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
+import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.common.map
+import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.FungibleToken
+import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
+import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
 
@@ -24,149 +29,131 @@ class GetAccountResourcesUseCase @Inject constructor(
     private val accountRepository: AccountRepository
 ) {
 
-    suspend operator fun invoke(isRefreshing: Boolean, failOnAnyError: Boolean = true): Result<List<AccountResources>> = coroutineScope {
-        val accountResourceList = mutableListOf<AccountResources>()
-        val results = accountRepository.getAccounts().map { account ->
-            async {
-                getSingleAccountResources(
-                    account.address,
-                    account.displayName,
-                    account.appearanceID,
-                    isRefreshing
-                )
-            }
-        }.awaitAll()
+    /**
+     * Retrieves all data related to the accounts saved in the profile.
+     *
+     * @param isRefreshing When need to override the cache.
+     */
+    suspend fun getAccountsFromProfile(isRefreshing: Boolean) = accountRepository.getAccounts()
+        .resolveDetailsInGateway(isRefreshing = isRefreshing)
 
-        results.forEach { result ->
-            if (failOnAnyError && result is Result.Error) return@coroutineScope Result.Error(result.exception)
-            result.onValue {
-                accountResourceList.add(it)
-            }
-        }
-        if (accountResourceList.isNotEmpty()) {
-            Result.Success(accountResourceList.toList())
-        } else {
-            Result.Error()
-        }
-    }
+    /**
+     * Retrieves all data related to those specific [addresses] that exist in the Profile.
+     */
+    suspend fun getAccounts(addresses: List<String>, isRefreshing: Boolean) = accountRepository
+        .getAccounts()
+        .filter { it.address in addresses }
+        .resolveDetailsInGateway(isRefreshing = isRefreshing)
 
-    suspend operator fun invoke(address: String, isRefreshing: Boolean): Result<AccountResources> {
-        val account = accountRepository.getAccountByAddress(address)
-        requireNotNull(account) {
-            "account is null"
-        }
-        return getSingleAccountResources(
-            account.address,
-            account.displayName,
-            account.appearanceID,
-            isRefreshing
-        )
-    }
+    /**
+     * Retrieves all data related to this certain address that exists in the Profile.
+     *
+     * @param isRefreshing When need to override the cache.
+     */
+    suspend fun getAccount(address: String, isRefreshing: Boolean): Result<AccountResources> =
+        getAccounts(addresses = listOf(address), isRefreshing = isRefreshing).map { it.first() }
 
-    @Suppress("LongMethod")
-    private suspend fun getSingleAccountResources(
-        address: String,
-        accountDisplayName: String,
-        appearanceId: Int,
+    private suspend fun List<Network.Account>.resolveDetailsInGateway(
         isRefreshing: Boolean
-    ) = coroutineScope {
-        when (val accountResources = entityRepository.getAccountResources(address, isRefreshing)) {
-            is Result.Error -> Result.Error(accountResources.exception)
-            is Result.Success -> {
-                val fungibleTokens = mutableListOf<OwnedFungibleToken>()
-                val nonFungibleTokens = mutableListOf<OwnedNonFungibleToken>()
+    ): Result<List<AccountResources>> = entityRepository.stateEntityDetails(
+        addresses = this.map { it.address },
+        isRefreshing = isRefreshing
+    ).map { result ->
+        val accountsOnGateway = result.items
 
-                accountResources.data.let { resources ->
-                    val fungibleTokensDeferred = resources.simpleFungibleTokens.map { fungibleToken ->
-                        async {
-                            entityRepository.entityDetails(
-                                address = fungibleToken.address,
-                                isRefreshing = isRefreshing
-                            )
-                        }
-                    }
+        // Compile a list of all accounts' fungible and non fungible resources
+        val allResourceAddresses = accountsOnGateway.map { accountItem ->
+            accountItem.allResourceAddresses
+        }.flatten()
 
-                    val nonFungibleTokensDeferred = mutableListOf<Deferred<Result<EntityDetailsResponse>>>()
-                    val nonFungibleTokensIdsDeferred = mutableListOf<Deferred<Result<NonFungibleTokenIdContainer>>>()
+        // Query those resources all at once
+        val allResources = allResourceAddresses.getResourcesData(isRefreshing)
 
-                    resources.simpleNonFungibleTokens
-                        .map { nonFungibleToken ->
-                            nonFungibleTokensDeferred.add(
-                                async {
-                                    entityRepository.entityDetails(
-                                        address = nonFungibleToken.tokenResourceAddress,
-                                        isRefreshing = isRefreshing
-                                    )
-                                }
-                            )
-                            nonFungibleTokensIdsDeferred.add(
-                                async {
-                                    nonFungibleRepository.nonFungibleIds(
-                                        address = nonFungibleToken.tokenResourceAddress,
-                                        isRefreshing = isRefreshing
-                                    )
-                                }
-                            )
-                        }
+        // Query non fungible ids only for non fungible resources contained in all accounts
+        // and associate them with the resource address
+        val nonFungiblesWithIds = accountsOnGateway.associateWithNonFungibleIds(isRefreshing)
 
-                    // Run all requests simultaneously
-                    val accountResourcesJobs = AccountResourcesJobs(
-                        fungibleTokens = fungibleTokensDeferred.awaitAll(),
-                        nonFungibleTokens = nonFungibleTokensDeferred.awaitAll(),
-                        nonFungibleTokensIds = nonFungibleTokensIdsDeferred.awaitAll()
-                    )
+        // For every Account stored in the profile, map it to AccountResources
+        this.mapNotNull { profileAccount ->
+            val accountOnGateway = accountsOnGateway.find {
+                it.address == profileAccount.address
+            } ?: return@mapNotNull null
 
-                    accountResourcesJobs.fungibleTokens.forEachIndexed { index, result ->
-                        val fungibleToken = accountResources.data.simpleFungibleTokens[index]
-                        result.onValue { entityDetailsResponse ->
-                            fungibleTokens.add(
-                                OwnedFungibleToken(
-                                    fungibleToken.owner,
-                                    fungibleToken.amount,
-                                    fungibleToken.address,
-                                    entityDetailsResponse.toFungibleToken()
-                                )
-                            )
-                        }
-                    }
+            val fungibleTokens = accountOnGateway.resolveFungibleTokens(allResources)
+            val nonFungibleTokens = accountOnGateway.resolveNonFungibleTokens(
+                allResources,
+                nonFungiblesWithIds
+            )
 
-                    accountResourcesJobs.nonFungibleTokens.forEachIndexed { index, result ->
-                        val nonFungibleToken = accountResources.data.simpleNonFungibleTokens[index]
-                        val nonFungibleId = accountResourcesJobs.nonFungibleTokensIds[index]
-
-                        result.onValue { entityDetailsResponse ->
-                            nonFungibleId.onValue { nonFungibleTokenIdContainer ->
-                                nonFungibleTokens.add(
-                                    OwnedNonFungibleToken(
-                                        nonFungibleToken.owner,
-                                        nonFungibleToken.amount,
-                                        nonFungibleToken.tokenResourceAddress,
-                                        entityDetailsResponse.toNonFungibleToken(nonFungibleTokenIdContainer)
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Result.Success(
-                    data = AccountResources(
-                        address = address,
-                        displayName = accountDisplayName,
-                        currencySymbol = "$", // TODO replace when endpoint ready
-                        value = "100",
-                        fungibleTokens = fungibleTokens,
-                        nonFungibleTokens = nonFungibleTokens,
-                        appearanceID = appearanceId
-                    )
-                )
-            }
+            AccountResources(
+                address = profileAccount.address,
+                displayName = profileAccount.displayName,
+                appearanceID = profileAccount.appearanceID,
+                fungibleTokens = fungibleTokens,
+                nonFungibleTokens = nonFungibleTokens
+            )
         }
     }
-}
 
-data class AccountResourcesJobs(
-    val fungibleTokens: List<Result<EntityDetailsResponse>>,
-    val nonFungibleTokens: List<Result<EntityDetailsResponse>>,
-    val nonFungibleTokensIds: List<Result<NonFungibleTokenIdContainer>>,
-)
+    private suspend fun List<StateEntityDetailsResponseItem>.associateWithNonFungibleIds(
+        isRefreshing: Boolean
+    ) = map { it.nonFungibleResourceAddresses }
+        .flatten()
+        .associateWith { address ->
+            nonFungibleRepository.nonFungibleIds(
+                address = address,
+                isRefreshing = isRefreshing
+            ).value()
+        }
+
+    private suspend fun List<String>.getResourcesData(
+        isRefreshing: Boolean
+    ) = if (isNotEmpty()) {
+        entityRepository.stateEntityDetails(
+            addresses = this,
+            isRefreshing = isRefreshing
+        ).value()?.items.orEmpty()
+    } else {
+        emptyList()
+    }
+
+    private fun StateEntityDetailsResponseItem.resolveFungibleTokens(
+        allResources: List<StateEntityDetailsResponseItem>
+    ) = fungibleResources?.items?.map {
+        val tokenResource = allResources.find { resource ->
+            resource.address == it.resourceAddress
+        } ?: error("Resource ${it.resourceAddress} not found")
+
+        OwnedFungibleToken(
+            owner = AccountAddress(address),
+            amount = it.amountDecimal,
+            address = it.resourceAddress,
+            token = FungibleToken(
+                address = tokenResource.address,
+                metadata = tokenResource.metadata.asMetadataStringMap()
+            )
+        )
+    }.orEmpty()
+
+    private fun StateEntityDetailsResponseItem.resolveNonFungibleTokens(
+        allResources: List<StateEntityDetailsResponseItem>,
+        nonFungiblesWithIds: Map<String, NonFungibleTokenIdContainer?>
+    ) = nonFungibleResources?.items?.map {
+        val tokenResource = allResources.find { resource ->
+            resource.address == it.resourceAddress
+        } ?: error("Resource ${it.resourceAddress} not found")
+
+        OwnedNonFungibleToken(
+            owner = AccountAddress(address),
+            amount = it.amount,
+            tokenResourceAddress = it.resourceAddress,
+            token = NonFungibleToken(
+                address = tokenResource.address,
+                nonFungibleIdContainer = nonFungiblesWithIds[it.resourceAddress],
+                metadataContainer = NonFungibleMetadataContainer(
+                    metadata = tokenResource.metadata.asMetadataStringMap()
+                )
+            )
+        )
+    }.orEmpty()
+}

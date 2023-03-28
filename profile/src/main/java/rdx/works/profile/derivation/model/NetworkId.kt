@@ -9,6 +9,7 @@ enum class NetworkId(val value: Int) {
     Mainnet(1),
     Adapanet(10),
     Nebunet(11),
+    Kisharnet(12),
     Gilganet(32),
     Enkinet(33),
     Hammunet(34),
