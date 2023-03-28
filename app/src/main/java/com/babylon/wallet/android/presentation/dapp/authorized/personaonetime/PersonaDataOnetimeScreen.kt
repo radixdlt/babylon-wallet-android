@@ -104,7 +104,6 @@ fun PersonaDataOnetimeScreen(
         },
         isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData,
         personas = state.personaListToDisplay,
-        missingFields = state.requiredFields,
         onSelectPersona = viewModel::onSelectPersona,
         onCreatePersona = onCreatePersona,
         onEditClick = viewModel::onEditClick
@@ -119,7 +118,6 @@ private fun PersonaDataOnetimeContent(
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
     personas: ImmutableList<PersonaUiModel>,
-    missingFields: ImmutableList<Network.Persona.Field.Kind>,
     onSelectPersona: ((Network.Persona) -> Unit)?,
     onCreatePersona: () -> Unit,
     onEditClick: (String) -> Unit,
@@ -177,7 +175,7 @@ private fun PersonaDataOnetimeContent(
             items(personas) { persona ->
                 PersonaDetailCard(
                     persona = persona,
-                    missingFields = missingFields,
+                    missingFields = persona.missingFieldKinds(),
                     onEditClick = onEditClick,
                     modifier = Modifier
                         .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectMedium)
@@ -248,7 +246,6 @@ fun LoginPermissionContentPreview() {
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,
             personas = persistentListOf(PersonaUiModel(SampleDataProvider().samplePersona())),
-            missingFields = persistentListOf(),
             onSelectPersona = {},
             onCreatePersona = {},
             onEditClick = {}

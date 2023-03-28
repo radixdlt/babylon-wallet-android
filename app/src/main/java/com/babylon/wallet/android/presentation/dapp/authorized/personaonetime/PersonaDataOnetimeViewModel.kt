@@ -29,14 +29,16 @@ class PersonaDataOnetimeViewModel @Inject constructor(
     private val args = PersonaDataOnetimeArgs(savedStateHandle)
 
     override fun initialState(): PersonaDataOnetimeUiState {
-        return PersonaDataOnetimeUiState(requiredFields = args.requiredFields.toList().toPersistentList())
+        return PersonaDataOnetimeUiState()
     }
 
     init {
         viewModelScope.launch {
             personaRepository.personas.collect { personas ->
                 _state.update { state ->
-                    state.copy(personaListToDisplay = personas.map { PersonaUiModel(it) }.toImmutableList())
+                    state.copy(personaListToDisplay = personas.map {
+                        PersonaUiModel(it, requiredFieldKinds = args.requiredFields.toList())
+                    }.toImmutableList())
                 }
             }
         }
@@ -62,6 +64,5 @@ sealed interface PersonaDataOnetimeEvent : OneOffEvent {
 
 data class PersonaDataOnetimeUiState(
     val personaListToDisplay: ImmutableList<PersonaUiModel> = persistentListOf(),
-    val requiredFields: ImmutableList<Network.Persona.Field.Kind> = persistentListOf(),
     val continueButtonEnabled: Boolean = false
 ) : UiState
