@@ -21,15 +21,16 @@ class VerifyDappUseCase @Inject constructor(
             Result.Success(true)
         } else {
             val validationResult = dappMetadataRepository.verifyDapp(
-                request.metadata.origin,
-                request.metadata.dAppDefinitionAddress
+                origin = request.metadata.origin,
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
             validationResult.onError { e ->
                 (e as? TransactionApprovalException)?.let {
                     dAppMessenger.sendWalletInteractionResponseFailure(
-                        request.id,
-                        it.failure.toWalletErrorType(),
-                        it.failure.getDappMessage()
+                        dappId = request.remoteClientId,
+                        requestId = request.id,
+                        error = it.failure.toWalletErrorType(),
+                        message = it.failure.getDappMessage()
                     )
                 }
             }

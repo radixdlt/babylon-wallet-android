@@ -11,10 +11,12 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_REQUEST_ID = "request_id"
+internal const val ARG_REQUEST_ID = "arg_request_id"
 
 internal class OneTimeChooseAccountsArgs(val requestId: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String
+    )
 }
 
 fun NavController.chooseAccountsOneTime(requestId: String) {

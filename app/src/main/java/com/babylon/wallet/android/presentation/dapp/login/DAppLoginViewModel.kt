@@ -157,12 +157,13 @@ class DAppLoginViewModel @Inject constructor(
             onSelectPersona(persona)
             val ongoingAccountsRequestItem = authorizedRequest.ongoingAccountsRequestItem
             val oneTimeAccountsRequestItem = authorizedRequest.oneTimeAccountsRequestItem
-            if (ongoingAccountsRequestItem != null && (
-                !requestedPermissionAlreadyGranted(
-                        authRequest.personaAddress,
-                        ongoingAccountsRequestItem
-                    ) || resetAccounts
-                )
+            if (ongoingAccountsRequestItem != null &&
+                (
+                    !requestedPermissionAlreadyGranted(
+                            personaAddress = authRequest.personaAddress,
+                            accountsRequestItem = ongoingAccountsRequestItem
+                        ) || resetAccounts
+                    )
             ) {
                 _state.update {
                     it.copy(
@@ -196,9 +197,10 @@ class DAppLoginViewModel @Inject constructor(
         )
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(TransactionApprovalException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
-            args.requestId,
-            failure.toWalletErrorType(),
-            failure.getDappMessage()
+            dappId = authorizedRequest.dappId,
+            requestId = args.requestId,
+            error = failure.toWalletErrorType(),
+            message = failure.getDappMessage()
         )
         delay(4000)
         topLevelOneOffEventHandler.sendEvent(DAppLoginEvent.RejectLogin)
@@ -323,7 +325,8 @@ class DAppLoginViewModel @Inject constructor(
     fun onRejectLogin() {
         viewModelScope.launch {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                args.requestId,
+                dappId = authorizedRequest.dappId,
+                requestId = args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
             topLevelOneOffEventHandler.sendEvent(DAppLoginEvent.RejectLogin)
@@ -400,11 +403,12 @@ class DAppLoginViewModel @Inject constructor(
         val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(selectedPersona)
         dAppMessenger.sendWalletInteractionSuccessResponse(
-            args.requestId,
-            selectedPersona,
-            authorizedRequest.isUsePersonaAuth(),
-            state.value.selectedAccountsOneTime,
-            state.value.selectedAccountsOngoing
+            dappId = authorizedRequest.dappId,
+            interactionId = args.requestId,
+            persona = selectedPersona,
+            usePersona = authorizedRequest.isUsePersonaAuth(),
+            oneTimeAccounts = state.value.selectedAccountsOneTime,
+            ongoingAccounts = state.value.selectedAccountsOngoing
         )
         mutex.withLock {
             editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }

@@ -28,7 +28,8 @@ internal sealed interface SignalingServerMessage {
     // At the moment this data class is used to map only the INCOMING messages from the Signaling Server.
     sealed interface RemoteData : SignalingServerMessage {
 
-        val remoteClientId: String
+        val remoteClientId: String // from which dapp
+        // maybe later we need also the connectionId to define from which websocket
 
         // when the incoming message is an offer from browser extension
         // then return the request id and the remote session description
@@ -62,10 +63,10 @@ internal sealed interface SignalingServerMessage {
 
         data class InvalidMessage(
             val errorMessage: String
-        ) : SignalingServerMessage
+        ) : Error
 
-        object Validation : SignalingServerMessage
+        object Validation : Error
 
-        object Unknown : SignalingServerMessage
+        object Unknown : Error
     }
 }

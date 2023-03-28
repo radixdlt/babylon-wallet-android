@@ -19,10 +19,12 @@ data class SendTransactionItem(
 )
 
 fun SendTransactionItem.toDomainModel(
+    dappId: String, // from which dapp comes the message
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ) =
     MessageFromDataChannel.IncomingRequest.TransactionRequest(
+        dappId = dappId,
         requestId = requestId,
         transactionManifestData = TransactionManifestData(
             transactionManifest,
@@ -31,5 +33,5 @@ fun SendTransactionItem.toDomainModel(
             blobs?.map { decode(it) }.orEmpty(),
             message = message
         ),
-        metadata
+        requestMetadata = metadata
     )
