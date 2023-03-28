@@ -1,7 +1,7 @@
 package rdx.works.peerdroid.domain
 
+import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageMessageDto
-import rdx.works.peerdroid.helpers.toHexString
 
 sealed interface BasePackage {
     val messageId: String

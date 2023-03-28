@@ -28,6 +28,9 @@ android {
 }
 
 dependencies {
+    implementation libs.ket
+    implementation libs.slip10
+
     testImplementation libs.junit
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso

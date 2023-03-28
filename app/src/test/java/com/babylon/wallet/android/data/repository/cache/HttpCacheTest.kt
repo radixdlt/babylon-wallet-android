@@ -1,24 +1,24 @@
 package com.babylon.wallet.android.data.repository.cache
 
-import com.radixdlt.crypto.hash.sha256.extensions.sha256
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.test.runTest
-import java.time.Duration
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import kotlinx.serialization.KSerializer
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import rdx.works.peerdroid.helpers.toHexString
+import rdx.works.core.blake2Hash
+import rdx.works.core.toHexString
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 import retrofit2.Call
+import java.time.Duration
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 internal class HttpCacheTest {
 
@@ -37,7 +37,7 @@ internal class HttpCacheTest {
         coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns url
         val mockApiCall = mockApiCall(method = method, url = url)
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
-        val key = arrayOf(method, url, "").contentToString().sha256().toHexString()
+        val key = arrayOf(method, url, "").contentToString().blake2Hash().toHexString()
 
         testedClass.store(mockApiCall, value, mockSerializer)
 

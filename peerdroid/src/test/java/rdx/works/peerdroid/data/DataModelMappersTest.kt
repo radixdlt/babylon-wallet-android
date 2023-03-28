@@ -3,6 +3,7 @@ package rdx.works.peerdroid.data
 import okio.ByteString.Companion.decodeHex
 import org.webrtc.IceCandidate
 import org.webrtc.SessionDescription
+import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageMessageDto.Companion.toChunk
 import rdx.works.peerdroid.data.PackageMessageDto.Companion.toMetadata
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
@@ -13,7 +14,6 @@ import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.Companion
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.domain.BasePackage
-import rdx.works.peerdroid.helpers.toHexString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

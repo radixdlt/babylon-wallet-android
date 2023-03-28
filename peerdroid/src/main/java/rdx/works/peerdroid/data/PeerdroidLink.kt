@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import rdx.works.core.sha256Hash
+import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -23,8 +25,6 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.peerdroid.helpers.sha256
-import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 
 interface PeerdroidLink {
@@ -52,7 +52,7 @@ internal class PeerdroidLinkImpl(
     override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
-        val connectionId = encryptionKey.sha256().toHexString()
+        val connectionId = encryptionKey.sha256Hash().toHexString()
         Timber.d("🛠️️ add new connection for connection id: $connectionId")
 
         withContext(ioDispatcher) {

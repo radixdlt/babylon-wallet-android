@@ -27,6 +27,7 @@ import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
+import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -34,7 +35,6 @@ import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.C
 import rdx.works.peerdroid.data.websocket.model.SignalingServerDto
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
 
