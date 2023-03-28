@@ -155,9 +155,11 @@ class DappDetailViewModel @Inject constructor(
     fun onEditAccountSharing() {
         viewModelScope.launch {
             val persona = checkNotNull(state.value.selectedPersona?.persona)
-            val sharedAccounts = checkNotNull(authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
-                it.identityAddress == persona.address
-            }?.sharedAccounts)
+            val sharedAccounts = checkNotNull(
+                authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
+                    it.identityAddress == persona.address
+                }?.sharedAccounts
+            )
             val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
                 dappId = "",
                 requestId = UUIDGenerator.uuid().toString(),

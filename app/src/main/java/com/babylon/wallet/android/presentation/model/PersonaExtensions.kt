@@ -38,7 +38,8 @@ fun String.decodePersonaDataKinds(): List<Network.Persona.Field.Kind> {
     return decodeUtf8().split(",").filter { it.isNotEmpty() }.map { Network.Persona.Field.Kind.valueOf(it) }
 }
 
-fun Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.toQuantifierUsedInRequest(): MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
+fun Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.toQuantifierUsedInRequest():
+        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
     return when (this) {
         Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly -> {
             MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly

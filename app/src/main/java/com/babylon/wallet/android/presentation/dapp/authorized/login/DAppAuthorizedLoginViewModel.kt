@@ -166,11 +166,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
             val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
             if (ongoingAccountsRequestItem != null && (
-                        !requestedAccountsPermissionAlreadyGranted(
-                            authRequest.personaAddress,
-                            ongoingAccountsRequestItem
-                        ) || resetAccounts
-                        )
+                !requestedAccountsPermissionAlreadyGranted(
+                        authRequest.personaAddress,
+                        ongoingAccountsRequestItem
+                    ) || resetAccounts
+                )
             ) {
                 _state.update {
                     it.copy(

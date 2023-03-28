@@ -36,6 +36,7 @@ fun NavController.personaDataOngoing(personaId: String, fieldsEncoded: String) {
     navigate("route_persona_data_ongoing/$personaId/$fieldsEncoded")
 }
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personaDataOngoing(
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,

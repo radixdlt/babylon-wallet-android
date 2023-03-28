@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
@@ -21,6 +22,7 @@ import rdx.works.profile.data.repository.PersonaRepository
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>() {
 
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
         state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
     }
@@ -39,6 +41,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
             dappMetadataRepository,
             personaRepository,
             accountRepository,
+            incomingRequestRepository,
             savedStateHandle
         )
     }

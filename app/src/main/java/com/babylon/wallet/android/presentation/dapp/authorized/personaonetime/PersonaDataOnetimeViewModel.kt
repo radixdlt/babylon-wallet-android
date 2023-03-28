@@ -36,9 +36,11 @@ class PersonaDataOnetimeViewModel @Inject constructor(
         viewModelScope.launch {
             personaRepository.personas.collect { personas ->
                 _state.update { state ->
-                    state.copy(personaListToDisplay = personas.map {
-                        PersonaUiModel(it, requiredFieldKinds = args.requiredFields.toList())
-                    }.toImmutableList())
+                    state.copy(
+                        personaListToDisplay = personas.map {
+                            PersonaUiModel(it, requiredFieldKinds = args.requiredFields.toList())
+                        }.toImmutableList()
+                    )
                 }
             }
         }

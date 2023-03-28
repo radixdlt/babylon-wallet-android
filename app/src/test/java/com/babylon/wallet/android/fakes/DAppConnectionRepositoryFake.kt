@@ -143,4 +143,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     ) {
     }
 
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>) {
+    }
+
 }
