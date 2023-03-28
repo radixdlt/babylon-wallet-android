@@ -288,7 +288,7 @@ fun Network.AuthorizedDapp.updateAuthorizedDappPersonaFields(
     fieldIds: List<String>
 ): Network.AuthorizedDapp {
     val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = { it.identityAddress == personaAddress }) {
-        it.copy(fieldIDs = fieldIds)
+        it.copy(fieldIDs = (it.fieldIDs + fieldIds).distinct())
     }
     return copy(
         networkID = networkID,

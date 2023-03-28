@@ -413,6 +413,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     request.oneTimeAccountsRequestItem
                 )
                 request.oneTimePersonaDataRequestItem != null -> {
+                    handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                 }
                 else -> sendRequestResponse()
             }
@@ -513,6 +514,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
                     }
                     request.oneTimePersonaDataRequestItem != null -> {
+                        handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                     }
                     else -> {
                         authorizedDapp?.let { dapp ->
@@ -526,6 +528,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             _state.update { it.copy(selectedAccountsOneTime = selectedAccounts) }
             when {
                 request.oneTimePersonaDataRequestItem != null -> {
+                    handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                 }
                 else -> {
                     viewModelScope.launch {
