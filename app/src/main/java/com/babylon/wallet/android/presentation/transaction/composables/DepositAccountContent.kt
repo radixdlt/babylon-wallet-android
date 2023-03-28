@@ -72,8 +72,7 @@ fun DepositAccountContent(
                         address = account.address,
                         metadata = emptyMap()
                     ),
-                    accountName = account.displayName,
-                    onCopyClick = {}
+                    accountName = account.displayName
                 )
 
                 if (!lastItem) {

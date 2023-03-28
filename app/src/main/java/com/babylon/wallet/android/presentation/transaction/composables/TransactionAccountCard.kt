@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,7 +31,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.utils.truncatedHash
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.math.BigDecimal
@@ -42,8 +41,7 @@ fun TransactionAccountCard(
     token: TokenUiModel,
     modifier: Modifier = Modifier,
     appearanceId: Int,
-    accountName: String,
-    onCopyClick: () -> Unit
+    accountName: String
 ) {
     Column(
         modifier = modifier
@@ -67,27 +65,12 @@ fun TransactionAccountCard(
                 color = RadixTheme.colors.white
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            Row(
-                modifier = Modifier.throttleClickable {
-                    onCopyClick()
-                },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
-            ) {
-                Text(
-                    modifier = Modifier.weight(1f, false),
-                    text = token.address.truncatedHash(),
-                    color = RadixTheme.colors.white.copy(alpha = 0.8f),
-                    style = RadixTheme.typography.body2HighImportance,
-                    maxLines = 1
-                )
-                Icon(
-                    modifier = Modifier.size(14.dp),
-                    painter = painterResource(id = R.drawable.ic_copy),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.white.copy(alpha = 0.8f),
-                )
-            }
+            ActionableAddressView(
+                address = token.address.truncatedHash(),
+                textStyle = RadixTheme.typography.body1Regular,
+                textColor = RadixTheme.colors.gray1,
+                iconColor = RadixTheme.colors.gray2
+            )
         }
 
         Row(
@@ -135,29 +118,30 @@ fun TransactionAccountCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Column(
+            // TODO no fiat value for now
+//            Column(
+//                modifier = Modifier.weight(0.7f),
+//                horizontalAlignment = Alignment.End
+//            ) {
+            Text(
                 modifier = Modifier.weight(0.7f),
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = token.tokenQuantityToDisplay,
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
-                )
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = token.tokenValue.orEmpty(),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
-                )
-            }
+                text = token.tokenQuantityToDisplay,
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End
+            )
+//                Text(
+//                    modifier = Modifier.weight(1f),
+//                    text = token.tokenValue.orEmpty(),
+//                    style = RadixTheme.typography.body2HighImportance,
+//                    color = RadixTheme.colors.gray2,
+//                    maxLines = 1,
+//                    overflow = TextOverflow.Ellipsis,
+//                    textAlign = TextAlign.End
+//                )
+//            }
         }
     }
 }
@@ -182,8 +166,7 @@ fun TransactionAccountCardPreview() {
             ),
             modifier = Modifier,
             appearanceId = 0,
-            accountName = "My main account",
-            onCopyClick = {}
+            accountName = "My main account"
         )
     }
 }

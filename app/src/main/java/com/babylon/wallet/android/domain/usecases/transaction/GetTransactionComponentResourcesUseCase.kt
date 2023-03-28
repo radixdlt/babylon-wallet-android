@@ -5,6 +5,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
+import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import rdx.works.profile.data.repository.AccountRepository
 import javax.inject.Inject
@@ -18,7 +20,8 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         amount: String
     ): Result<TransactionAccountItemUiModel> {
         val entityDetailsResponse = entityRepository.stateEntityDetails(
-            addresses = accountAddresses
+            addresses = accountAddresses,
+            isRefreshing = false
         )
         var account: Result<TransactionAccountItemUiModel> = Result.Error()
         entityDetailsResponse.onValue { stateEntityDetailsResponse ->
@@ -31,11 +34,11 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
 
             var tokenSymbol = ""
             var iconUrl = ""
-            if (resourceItem.metadata.asMetadataStringMap().containsKey("symbol")) {
-                tokenSymbol = resourceItem.metadata.asMetadataStringMap().getValue("symbol")
+            if (resourceItem.metadata.asMetadataStringMap().containsKey(KEY_SYMBOL)) {
+                tokenSymbol = resourceItem.metadata.asMetadataStringMap().getValue(KEY_SYMBOL)
             }
-            if (resourceItem.metadata.asMetadataStringMap().containsKey("icon")) {
-                iconUrl = resourceItem.metadata.asMetadataStringMap().getValue("icon")
+            if (resourceItem.metadata.asMetadataStringMap().containsKey(KEY_ICON)) {
+                iconUrl = resourceItem.metadata.asMetadataStringMap().getValue(KEY_ICON)
             }
 
             val accountDisplayName = accountRepository

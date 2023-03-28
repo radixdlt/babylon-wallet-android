@@ -69,7 +69,6 @@ fun TransactionApprovalScreen(
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
         isSigning = state.isSigning,
-        onCustomizeClick = viewModel::onCustomizeClick,
         onApproveTransaction = viewModel::approveTransaction,
         approved = state.approved,
         error = state.error,
@@ -101,7 +100,6 @@ private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
     isSigning: Boolean,
-    onCustomizeClick: () -> Unit,
     onApproveTransaction: () -> Unit,
     approved: Boolean,
     error: UiMessage?,
@@ -193,8 +191,7 @@ private fun TransactionPreviewContent(
 
                         NetworkFeeContent(
                             networkFee = networkFee,
-                            isNetworkCongested = false,
-                            onCustomizeClick = onCustomizeClick
+                            isNetworkCongested = false
                         )
 
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -323,7 +320,6 @@ fun TransactionPreviewContentPreview() {
                 )
             ),
             onApproveTransaction = {},
-            onCustomizeClick = {},
             approved = false,
             error = null,
             onMessageShown = {},

@@ -307,10 +307,6 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onMessageShown() {
         state = state.copy(error = null)
     }
-
-    fun onCustomizeClick() {
-        // TODO
-    }
 }
 
 data class TransactionAccountItemUiModel(

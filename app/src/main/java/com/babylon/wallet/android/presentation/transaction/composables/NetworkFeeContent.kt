@@ -17,14 +17,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
 fun NetworkFeeContent(
     networkFee: String,
     isNetworkCongested: Boolean,
-    onCustomizeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -73,11 +71,11 @@ fun NetworkFeeContent(
                 color = RadixTheme.colors.orange1
             )
         }
-
-        RadixTextButton(
-            text = stringResource(id = R.string.customize),
-            onClick = onCustomizeClick
-        )
+        // TODO hidden for now
+//        RadixTextButton(
+//            text = stringResource(id = R.string.customize),
+//            onClick = onCustomizeClick
+//        )
     }
 }
 
@@ -86,7 +84,6 @@ fun NetworkFeeContent(
 fun NetworkFeeContentPreview() {
     NetworkFeeContent(
         networkFee = "0.1",
-        isNetworkCongested = false,
-        onCustomizeClick = {}
+        isNetworkCongested = false
     )
 }
