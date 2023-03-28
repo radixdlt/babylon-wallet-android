@@ -83,26 +83,24 @@ class MainViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun establishLinkConnection(connectionPassword: String) {
+    private suspend fun establishLinkConnection(connectionPassword: String) {
         val encryptionKey = parseEncryptionKeyFromConnectionPassword(
             connectionPassword = connectionPassword
         )
         if (encryptionKey != null) {
-            viewModelScope.launch {
-                when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
-                    is Result.Success -> {
-                        Timber.d("Link connection established")
-                        if (handlingCurrentRequestJob == null) {
-                            // We must run this only once
-                            // otherwise for each new link connection
-                            // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
-                            // I think this can be improved.
-                            listenForIncomingDappRequests()
-                        }
+            when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
+                is Result.Success -> {
+                    Timber.d("Link connection established")
+                    if (handlingCurrentRequestJob == null) {
+                        // We must run this only once
+                        // otherwise for each new link connection
+                        // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
+                        // I think this can be improved.
+                        listenForIncomingDappRequests()
                     }
-                    is Result.Error -> {
-                        Timber.e("Failed to establish link connection: ${result.message}")
-                    }
+                }
+                is Result.Error -> {
+                    Timber.e("Failed to establish link connection: ${result.message}")
                 }
             }
         }
