@@ -301,10 +301,11 @@ fun Network.AuthorizedDapp.updateAuthorizedDappPersonas(
 
 fun Network.AuthorizedDapp.updateAuthorizedDappPersonaFields(
     personaAddress: String,
-    fieldIds: List<String>
+    allExistingFieldIds: List<String>,
+    requestedFieldIds: List<String>
 ): Network.AuthorizedDapp {
-    val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = { it.identityAddress == personaAddress }) {
-        it.copy(fieldIDs = (it.fieldIDs + fieldIds).distinct())
+    val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = { it.identityAddress == personaAddress }) { persona ->
+        persona.copy(fieldIDs = (persona.fieldIDs.filter { allExistingFieldIds.contains(it) } + requestedFieldIds).distinct())
     }
     return copy(
         networkID = networkID,

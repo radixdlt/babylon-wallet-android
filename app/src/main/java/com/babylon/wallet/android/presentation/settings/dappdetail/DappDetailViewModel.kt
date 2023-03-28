@@ -170,10 +170,10 @@ class DappDetailViewModel @Inject constructor(
                 ),
                 authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(persona.address),
                 ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-                    true,
-                    false,
-                    sharedAccounts.request.quantity,
-                    sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
+                    isOngoing = true,
+                    requiresProofOfOwnership = false,
+                    numberOfAccounts = sharedAccounts.request.quantity,
+                    quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
                 ),
                 resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
             )

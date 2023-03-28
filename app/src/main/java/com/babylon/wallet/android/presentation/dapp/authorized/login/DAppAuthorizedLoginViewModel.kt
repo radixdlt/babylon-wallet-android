@@ -285,7 +285,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
                 _state.update { it.copy(selectedPersona = updatedPersona.toUiModel(), selectedOngoingDataFields = dataFields) }
                 mutex.withLock {
-                    editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(updatedPersona.address, dataFields.map { it.id })
+                    editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(
+                        personaAddress = updatedPersona.address,
+                        allExistingFieldIds = updatedPersona.fields.map { it.id },
+                        requestedFieldIds = dataFields.map { it.id })
                 }
                 handleNextOneTimeRequestItem()
             }
