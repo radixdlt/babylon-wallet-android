@@ -19,7 +19,8 @@ object Radix {
     ) {
 
         fun networkId(): NetworkId {
-            return NetworkId.values().find { it.value == id } ?: throw IllegalArgumentException("Network ID not valid")
+            return NetworkId.values().find { it.value == id }
+                ?: throw IllegalArgumentException("Network ID not valid")
         }
 
         companion object {
@@ -36,7 +37,7 @@ object Radix {
             val kisharnet = Network(
                 id = NetworkId.Kisharnet.value,
                 name = "kisharnet",
-                displayDescription = "Kisharnet (Test Network)"
+                displayDescription = "RCnet"
             )
             val mardunet = Network(
                 id = NetworkId.Mardunet.value,
@@ -74,12 +75,10 @@ object Radix {
         val isDefault: Boolean
             get() = url == default.url
 
-        fun displayName(): String {
-            return if (network.id == Network.nebunet.networkId().value) {
-                "Radix Betanet Gateway"
-            } else {
-                url
-            }
+        fun displayName(): String = when (network.id) {
+            Network.nebunet.id -> "Radix Betanet Gateway"
+            Network.kisharnet.id -> "RCnet Gateway"
+            else -> url
         }
 
         fun displayDescription(): String {
