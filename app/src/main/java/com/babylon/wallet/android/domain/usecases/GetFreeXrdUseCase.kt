@@ -60,13 +60,13 @@ class GetFreeXrdUseCase @Inject constructor(
         includeLockFeeInstruction: Boolean
     ): TransactionManifest {
         val manifestBuilder = ManifestBuilder()
-        manifestBuilder.addFreeXrdInstruction(networkId)
-        manifestBuilder.addDepositBatchInstruction(address)
         if (includeLockFeeInstruction) {
             manifestBuilder.addLockFeeInstruction(
                 addressToLockFee = faucetComponentAddress(networkId.value.toUByte()).address
             )
         }
+        manifestBuilder.addFreeXrdInstruction(networkId)
+        manifestBuilder.addDepositBatchInstruction(address)
 
         return manifestBuilder.build()
     }
