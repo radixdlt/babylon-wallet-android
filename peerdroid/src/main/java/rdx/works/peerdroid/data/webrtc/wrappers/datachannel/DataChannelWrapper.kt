@@ -140,8 +140,8 @@ data class DataChannelWrapper(
     }
 
     fun close() {
-        Timber.d("📯 ${this.webRtcDataChannel} close")
+        Timber.d("📯 ${this.webRtcDataChannel} close for remote client: $remoteClientId")
         webRtcDataChannel.close()
-        Timber.d("📯 ${this.webRtcDataChannel} state is ${this.state}")
+        Timber.d("📯 ${this.webRtcDataChannel} state is ${this.state} for remote client: $remoteClientId")
     }
 }

@@ -143,6 +143,7 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
 
     registerObserver(callback)
 
+    Timber.d("📯 $this@eventFlow: is registered")
     trySend(this@eventFlow.currentState())
 
     awaitClose {
