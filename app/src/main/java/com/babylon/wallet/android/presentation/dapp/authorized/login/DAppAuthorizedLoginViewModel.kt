@@ -107,23 +107,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleResetRequestItem(
-        request: AuthorizedRequest,
-        authorizedDapp: Network.AuthorizedDapp
-    ) {
-        if (request.isUsePersonaAuth()) {
-            val auth = request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
-            request.resetRequestItem?.let { reset ->
-                dAppConnectionRepository.resetPersonaPermissions(
-                    dAppDefinitionAddress = authorizedDapp.dAppDefinitionAddress,
-                    personaAddress = auth.personaAddress,
-                    personaData = reset.personaData,
-                    accounts = reset.accounts
-                )
-            }
-        }
-    }
-
     private suspend fun setInitialDappLoginRoute() {
         val isLoginRequest = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest
         val usePersonaRequest = request.isUsePersonaAuth()
@@ -282,13 +265,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val requiredFields = checkNotNull(request.ongoingPersonaDataRequestItem?.fields?.map { it.toKind() })
             val selectedPersona = checkNotNull(state.value.selectedPersona)
             personaRepository.getPersonaByAddress(selectedPersona.persona.address)?.let { updatedPersona ->
-                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
-                _state.update { it.copy(selectedPersona = updatedPersona.toUiModel(), selectedOngoingDataFields = dataFields) }
+                val requiredDataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
+                _state.update { it.copy(selectedPersona = updatedPersona.toUiModel(), selectedOngoingDataFields = requiredDataFields) }
                 mutex.withLock {
                     editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(
                         personaAddress = updatedPersona.address,
                         allExistingFieldIds = updatedPersona.fields.map { it.id },
-                        requestedFieldIds = dataFields.map { it.id }
+                        requestedFieldIds = requiredDataFields.map { it.id }
                     )
                 }
                 handleNextOneTimeRequestItem()
@@ -526,12 +509,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     request.oneTimePersonaDataRequestItem != null -> {
                         handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                     }
-                    else -> {
-                        authorizedDapp?.let { dapp ->
-                            handleResetRequestItem(request, dapp)
-                        }
-                        sendRequestResponse()
-                    }
+                    else -> { sendRequestResponse() }
                 }
             }
         } else if (handledRequest?.isOngoing == false) {

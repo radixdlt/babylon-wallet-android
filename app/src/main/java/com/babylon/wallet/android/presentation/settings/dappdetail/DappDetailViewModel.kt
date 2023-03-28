@@ -85,20 +85,10 @@ class DappDetailViewModel @Inject constructor(
                     val selectedPersona = personas.firstOrNull {
                         it.address == state.selectedPersona?.persona?.address
                     } ?: state.selectedPersona?.persona
-                    val requiredFieldIds = authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
-                        it.identityAddress == selectedPersona?.address
-                    }?.fieldIDs.orEmpty()
-                    val selectedPersonaRequiredFieldKinds =
-                        selectedPersona?.fields?.filter { requiredFieldIds.contains(it.id) }?.map { it.kind }.orEmpty()
+                    selectedPersona?.let { persona -> updateSelectedPersonaData(persona) }
                     state.copy(
                         dapp = authorizedDapp,
                         personas = personas.toPersistentList(),
-                        selectedPersona = selectedPersona?.let {
-                            PersonaUiModel(
-                                it,
-                                requiredFieldKinds = selectedPersonaRequiredFieldKinds
-                            )
-                        }
                     )
                 }
             }
@@ -107,21 +97,25 @@ class DappDetailViewModel @Inject constructor(
 
     fun onPersonaClick(persona: Network.Persona) {
         viewModelScope.launch {
-            val personaSimple =
-                authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
-            val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
-                accountRepository.getAccountByAddress(it)?.toUiModel()
-            }.orEmpty()
-            val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
-            val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
-                it.kind
-            }
-            _state.update {
-                it.copy(
-                    selectedPersona = PersonaUiModel(persona, requiredFieldKinds = requiredFieldKinds),
-                    sharedPersonaAccounts = sharedAccounts.toPersistentList()
-                )
-            }
+            updateSelectedPersonaData(persona)
+        }
+    }
+
+    private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
+        val personaSimple =
+            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
+        val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
+            accountRepository.getAccountByAddress(it)?.toUiModel()
+        }.orEmpty()
+        val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
+        val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
+            it.kind
+        }
+        _state.update {
+            it.copy(
+                selectedPersona = PersonaUiModel(persona, requiredFieldKinds = requiredFieldKinds),
+                sharedPersonaAccounts = sharedAccounts.toPersistentList()
+            )
         }
     }
 

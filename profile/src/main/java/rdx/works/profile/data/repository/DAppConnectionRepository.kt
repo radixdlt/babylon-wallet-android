@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -49,12 +50,6 @@ interface DAppConnectionRepository {
 
     fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?>
     suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String)
-    suspend fun resetPersonaPermissions(
-        dAppDefinitionAddress: String,
-        personaAddress: String,
-        personaData: Boolean,
-        accounts: Boolean
-    )
 
     suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>)
 }
@@ -66,6 +61,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
 
     override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
         return profileDataSource.profile.map {
+            Timber.d("Authorized dapps $it")
             it?.getAuthorizedDapp(dAppDefinitionAddress)
         }
     }
@@ -82,9 +78,8 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         val profile = profileDataSource.readProfile()
 
         requireNotNull(profile)
-
+        Timber.d("Authorized dapps updating profile dapp: $authorizedDApp")
         val updatedProfile = profile.createOrUpdateAuthorizedDapp(authorizedDApp)
-
         profileDataSource.saveProfile(updatedProfile)
     }
 
@@ -168,32 +163,6 @@ class DAppConnectionRepositoryImpl @Inject constructor(
             } else {
                 updateOrCreateAuthorizedDApp(updatedDapp)
             }
-        }
-    }
-
-    private suspend fun deleteDataForPersona(dAppDefinitionAddress: String, personaAddress: String) {
-        getAuthorizedDapp(dAppDefinitionAddress)?.let { dapp ->
-            val updatedDapp = dapp.copy(
-                referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.mapWhen(
-                    predicate = { it.identityAddress == personaAddress }
-                ) {
-                    it.copy(fieldIDs = emptyList())
-                }
-            )
-            updateOrCreateAuthorizedDApp(updatedDapp)
-        }
-    }
-
-    override suspend fun resetPersonaPermissions(
-        dAppDefinitionAddress: String,
-        personaAddress: String,
-        personaData: Boolean,
-        accounts: Boolean
-    ) {
-        if (personaData) {
-            deleteDataForPersona(dAppDefinitionAddress, personaAddress)
-        } else if (accounts) {
-            deletePersonaForDapp(dAppDefinitionAddress, personaAddress)
         }
     }
 
