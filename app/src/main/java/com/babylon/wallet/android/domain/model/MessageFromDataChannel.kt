@@ -4,10 +4,14 @@ import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.Authorized
 
 sealed interface MessageFromDataChannel {
 
-    sealed class IncomingRequest(val id: String, val metadata: RequestMetadata) :
-        MessageFromDataChannel {
+    sealed class IncomingRequest(
+        val remoteClientId: String, // from which dapp comes the message
+        val id: String, // the id of the request
+        val metadata: RequestMetadata
+    ) : MessageFromDataChannel {
 
         data class AuthorizedRequest(
+            val dappId: String, // from which dapp comes the message
             val requestId: String,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
@@ -16,7 +20,7 @@ sealed interface MessageFromDataChannel {
             val oneTimePersonaRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaRequestItem: PersonaRequestItem? = null,
             val resetRequestItem: ResetRequestItem? = null
-        ) : IncomingRequest(requestId, requestMetadata) {
+        ) : IncomingRequest(dappId, requestId, requestMetadata) {
 
             fun isUsePersonaWithOngoingAccountsOnly(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest &&
@@ -34,19 +38,25 @@ sealed interface MessageFromDataChannel {
         }
 
         data class UnauthorizedRequest(
+            val dappId: String, // from which dapp comes the message
             val requestId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(requestId, requestMetadata)
+        ) : IncomingRequest(dappId, requestId, requestMetadata)
 
         data class TransactionRequest(
+            val dappId: String, // from which dapp comes the message
             val requestId: String,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata
-        ) : IncomingRequest(requestId, requestMetadata)
+        ) : IncomingRequest(dappId, requestId, requestMetadata)
 
-        data class RequestMetadata(val networkId: Int, val origin: String, val dAppDefinitionAddress: String)
+        data class RequestMetadata(
+            val networkId: Int,
+            val origin: String,
+            val dAppDefinitionAddress: String
+        )
 
         data class AccountsRequestItem(
             val isOngoing: Boolean,

@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +51,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -64,7 +68,7 @@ fun SettingsConnectorScreen(
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
-        connectorName = state.connectorName,
+        activeConnectors = state.activeConnectors,
         onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
         isLoading = state.isLoading,
         onBackClick = onBackClick,
@@ -83,7 +87,7 @@ fun SettingsConnectorScreen(
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun SettingsLinkConnectorContent(
-    connectorName: String?,
+    activeConnectors: ImmutableList<ActiveConnectorUiModel>,
     onLinkNewConnectorClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
@@ -92,14 +96,13 @@ private fun SettingsLinkConnectorContent(
     buttonEnabled: Boolean,
     onConnectorDisplayNameChanged: (String) -> Unit,
     onConnectionPasswordDecoded: (String) -> Unit,
-    onDeleteConnectorClick: () -> Unit,
+    onDeleteConnectorClick: (String) -> Unit,
     settingsMode: SettingsConnectorMode,
     onLinkConnector: () -> Unit,
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
 ) {
-    var showDeleteConnectorPrompt by remember { mutableStateOf(false) }
-
+    var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
         snapshotFlow { triggerCameraPermissionPrompt }
@@ -139,10 +142,10 @@ private fun SettingsLinkConnectorContent(
                 }
                 SettingsConnectorMode.ShowDetails -> {
                     ActiveConnectorDetails(
-                        connectorName = connectorName,
+                        activeConnectors = activeConnectors,
                         onLinkConnector = onLinkConnector,
                         cameraPermissionState = cameraPermissionState,
-                        onDeleteConnectorClick = { showDeleteConnectorPrompt = true },
+                        onDeleteConnectorClick = { connectionPasswordToDelete = it },
                         isLoading = isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -161,13 +164,14 @@ private fun SettingsLinkConnectorContent(
             if (isLoading) {
                 FullscreenCircularProgressContent()
             }
-            if (showDeleteConnectorPrompt) {
+            if (connectionPasswordToDelete != null) {
+                @Suppress("UnsafeCallOnNullableType")
                 BasicPromptAlertDialog(
                     finish = {
                         if (it) {
-                            onDeleteConnectorClick()
+                            onDeleteConnectorClick(connectionPasswordToDelete!!)
                         }
-                        showDeleteConnectorPrompt = false
+                        connectionPasswordToDelete = null
                     },
                     title = {
                         Text(
@@ -190,12 +194,13 @@ private fun SettingsLinkConnectorContent(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun ActiveConnectorDetails(
-    connectorName: String?,
+    activeConnectors: ImmutableList<ActiveConnectorUiModel>,
     onLinkConnector: () -> Unit,
     cameraPermissionState: PermissionState,
-    onDeleteConnectorClick: () -> Unit,
+    onDeleteConnectorClick: (String) -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -207,7 +212,11 @@ private fun ActiveConnectorDetails(
             color = RadixTheme.colors.gray2
         )
         Divider(color = RadixTheme.colors.gray5)
-        AnimatedVisibility(visible = connectorName == null && !isLoading) {
+        ActiveConnectorsListContent(
+            activeConnectors = activeConnectors,
+            onDeleteConnectorClick = onDeleteConnectorClick
+        )
+        AnimatedVisibility(!isLoading) {
             Column {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixSecondaryButton(
@@ -230,20 +239,36 @@ private fun ActiveConnectorDetails(
                 )
             }
         }
-        connectorName?.let { name ->
-            ShowConnectorContent(
-                connectorName = name,
-                onDeleteConnectorClick = onDeleteConnectorClick
-            )
-        }
+    }
+}
+
+@Composable
+private fun ActiveConnectorsListContent(
+    modifier: Modifier = Modifier,
+    activeConnectors: ImmutableList<ActiveConnectorUiModel>,
+    onDeleteConnectorClick: (String) -> Unit
+) {
+    LazyColumn(modifier) {
+        items(
+            items = activeConnectors,
+            key = { activeConnectorUiModel: ActiveConnectorUiModel ->
+                activeConnectorUiModel.id
+            },
+            itemContent = { activeConnectorUiModel ->
+                ShowConnectorContent(
+                    activeConnectorUiModel = activeConnectorUiModel,
+                    onDeleteConnectorClick = onDeleteConnectorClick
+                )
+            }
+        )
     }
 }
 
 @Composable
 private fun ShowConnectorContent(
-    connectorName: String,
+    activeConnectorUiModel: ActiveConnectorUiModel,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: () -> Unit,
+    onDeleteConnectorClick: (String) -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -255,11 +280,13 @@ private fun ShowConnectorContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = connectorName,
+                text = activeConnectorUiModel.name,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            IconButton(onClick = onDeleteConnectorClick) {
+            IconButton(onClick = {
+                onDeleteConnectorClick(activeConnectorUiModel.connectionPassword)
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete_24),
                     contentDescription = null,
@@ -309,7 +336,7 @@ private fun ConnectorNameInput(
 fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
     RadixWalletTheme {
         SettingsLinkConnectorContent(
-            connectorName = "",
+            activeConnectors = persistentListOf(),
             onLinkNewConnectorClick = {},
             isLoading = false,
             onBackClick = {},
@@ -332,7 +359,13 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
 fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
     RadixWalletTheme {
         SettingsLinkConnectorContent(
-            connectorName = "my cool connection",
+            activeConnectors = persistentListOf(
+                ActiveConnectorUiModel(
+                    id = "id",
+                    name = "my cool connection",
+                    connectionPassword = "conn pass"
+                )
+            ),
             onLinkNewConnectorClick = {},
             isLoading = false,
             onBackClick = {},

@@ -20,15 +20,11 @@ import org.webrtc.EglBase
 import org.webrtc.PeerConnectionFactory
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.PeerdroidConnectorImpl
-import rdx.works.peerdroid.data.webrtc.WebRtcManager
-import rdx.works.peerdroid.data.webrtc.WebRtcManagerImpl
-import rdx.works.peerdroid.data.websocket.WebSocketClient
-import rdx.works.peerdroid.data.websocket.WebSocketClientImpl
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object PeerdroidModule {
+object PeerdroidConnectorModule {
 
     @Provides
     @Singleton
@@ -48,18 +44,6 @@ object PeerdroidModule {
             }
         }
     }
-
-    @Provides
-    @Singleton
-    internal fun provideWebSocketClient(
-        client: HttpClient
-    ): WebSocketClient = WebSocketClientImpl(
-        client = client,
-        // fixes https://radixdlt.atlassian.net/browse/ABW-902
-        json = Json {
-            ignoreUnknownKeys = true
-        }
-    )
 
     @Provides
     @Singleton
@@ -93,22 +77,13 @@ object PeerdroidModule {
     }
 
     @Provides
-    internal fun provideWebRtcManager(
-        peerConnectionFactory: PeerConnectionFactory
-    ): WebRtcManager = WebRtcManagerImpl(
-        peerConnectionFactory = peerConnectionFactory
-    )
-
-    @Provides
     @Singleton
     internal fun providePeerdroidConnector(
-        webRtcManager: WebRtcManager,
-        webSocketClient: WebSocketClient,
+        @ApplicationContext applicationContext: Context,
         @ApplicationScope applicationScope: CoroutineScope,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): PeerdroidConnector = PeerdroidConnectorImpl(
-        webRtcManager = webRtcManager,
-        webSocketClient = webSocketClient,
+        applicationContext = applicationContext,
         applicationScope = applicationScope,
         ioDispatcher = ioDispatcher
     )

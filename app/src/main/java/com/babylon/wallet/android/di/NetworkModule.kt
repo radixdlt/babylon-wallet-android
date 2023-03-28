@@ -13,6 +13,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -21,6 +22,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.peerdroid.data.PeerdroidConnector
+import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.profile.data.repository.ProfileDataSource
 import retrofit2.Retrofit
 import timber.log.Timber
@@ -124,8 +126,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providePeerdroidClient(
-        peerdroidConnector: PeerdroidConnector
+        peerdroidConnector: PeerdroidConnector,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): PeerdroidClient = PeerdroidClientImpl(
-        peerdroidConnector = peerdroidConnector
+        peerdroidConnector = peerdroidConnector,
+        ioDispatcher = ioDispatcher
     )
 }

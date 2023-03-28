@@ -42,7 +42,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     private val samplePersona = SampleDataProvider().samplePersona()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -57,7 +58,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     )
 
     private val usePersonaRequestOngoing = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -71,7 +73,8 @@ class DAppLoginViewModelTest : BaseViewModelTest<DAppLoginViewModel>() {
     )
 
     private val usePersonaRequestOneTime = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",

@@ -12,12 +12,14 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_REQUEST_ID = "request_id"
+internal const val ARG_REQUEST_ID = "arg_request_id"
 
 const val ROUTE_DAPP_LOGIN = "dapp_login/{$ARG_REQUEST_ID}"
 
 internal class DAppLoginArgs(val requestId: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String
+    )
 }
 
 fun NavController.dAppLogin(requestId: String) {
@@ -25,7 +27,6 @@ fun NavController.dAppLogin(requestId: String) {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-@Suppress("LongParameterList")
 fun NavGraphBuilder.dAppLogin(
     navController: NavController,
     onBackClick: () -> Unit,
@@ -34,9 +35,7 @@ fun NavGraphBuilder.dAppLogin(
     composable(
         route = ROUTE_DAPP_LOGIN,
         arguments = listOf(
-            navArgument(ARG_REQUEST_ID) {
-                type = NavType.StringType
-            }
+            navArgument(ARG_REQUEST_ID) { type = NavType.StringType }
         )
     ) { entry ->
         val parentEntry = remember(entry) {

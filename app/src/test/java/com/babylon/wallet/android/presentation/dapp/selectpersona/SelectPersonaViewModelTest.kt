@@ -31,7 +31,8 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        "1",
+        dappId = "dappId",
+        requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
@@ -58,7 +59,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     override fun setUp() {
         super.setUp()
         val addressSlot = slot<String>()
-        every { savedStateHandle.get<String>(com.babylon.wallet.android.presentation.dapp.login.ARG_REQUEST_ID) } returns "1"
+        every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
         coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)

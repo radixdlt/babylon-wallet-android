@@ -42,9 +42,10 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
     private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-        sampleRequestId,
-        TransactionManifestData("", 1, 11),
-        MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
+        dappId = "dappId",
+        requestId = sampleRequestId,
+        transactionManifestData = TransactionManifestData("", 1, 11),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 
@@ -60,15 +61,17 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         coEvery { transactionClient.pollTransactionStatus(any()) } returns Result.Success("")
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
-                sampleRequestId,
-                sampleTxId
+                dappId = "dappId",
+                requestId = sampleRequestId,
+                txId = sampleTxId
             )
         } returns Result.Success(Unit)
         coEvery {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                sampleRequestId,
-                any(),
-                any()
+                dappId = "dappId",
+                requestId = sampleRequestId,
+                error = any(),
+                message = any()
             )
         } returns Result.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
@@ -104,7 +107,11 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         assert(vm.state.approved)
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseSuccess(sampleRequestId, sampleTxId)
+            dAppMessenger.sendTransactionWriteResponseSuccess(
+                dappId = "dappId",
+                requestId = sampleRequestId,
+                txId = sampleTxId
+            )
         }
     }
 
@@ -118,9 +125,10 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                sampleRequestId,
-                capture(errorSlot),
-                any()
+                dappId = "dappId",
+                requestId = sampleRequestId,
+                error = capture(errorSlot),
+                message = any()
             )
         }
         assert(errorSlot.captured == WalletErrorType.WrongNetwork)
@@ -141,9 +149,10 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                sampleRequestId,
-                capture(errorSlot),
-                any()
+                dappId = "dappId",
+                requestId = sampleRequestId,
+                error = capture(errorSlot),
+                message = any()
             )
         }
         assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)

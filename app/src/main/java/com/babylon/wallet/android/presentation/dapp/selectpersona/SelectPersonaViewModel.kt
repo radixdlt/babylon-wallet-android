@@ -26,7 +26,6 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList")
 class SelectPersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,

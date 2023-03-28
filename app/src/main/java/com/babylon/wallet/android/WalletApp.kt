@@ -63,14 +63,20 @@ fun WalletApp(
                 is MainEvent.IncomingRequestEvent -> {
                     when (val incomingRequest = event.request) {
                         is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
-                            navController.transactionApproval(incomingRequest.requestId)
+                            navController.transactionApproval(
+                                requestId = incomingRequest.requestId
+                            )
                         }
                         is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLogin(incomingRequest.requestId)
+                            navController.dAppLogin(
+                                requestId = incomingRequest.requestId
+                            )
                         }
                         is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
                             if (incomingRequest.oneTimeAccountsRequestItem != null) {
-                                navController.chooseAccountsOneTime(incomingRequest.requestId)
+                                navController.chooseAccountsOneTime(
+                                    requestId = incomingRequest.requestId
+                                )
                             }
                         }
                     }

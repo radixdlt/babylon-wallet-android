@@ -13,7 +13,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.UUID
 import rdx.works.core.UUIDGenerator
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
@@ -22,6 +21,7 @@ class IncomingRequestRepositoryTest {
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val amountOfIncomingRequests = 1000
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        dappId = "dappId",
         requestId = UUIDGenerator.uuid().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest(),
