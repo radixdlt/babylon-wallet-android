@@ -16,7 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 
-import com.babylon.wallet.android.data.gateway.generated.serialisers.GatewayErrorSerializer
+import com.babylon.wallet.android.data.gateway.serialisers.GatewayErrorSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 

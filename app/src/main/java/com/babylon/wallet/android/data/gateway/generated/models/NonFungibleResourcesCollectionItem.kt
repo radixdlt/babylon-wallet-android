@@ -15,11 +15,9 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-
-import com.babylon.wallet.android.data.gateway.generated.serialisers.NonFungibleResourcesCollectionItemSerializer
+import com.babylon.wallet.android.data.gateway.serialisers.NonFungibleResourcesCollectionItemSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
 import java.math.BigDecimal
 
 /**

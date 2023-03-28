@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.gateway.generated.serialisers
+package com.babylon.wallet.android.data.gateway.serialisers
 
 import com.babylon.wallet.android.data.gateway.generated.models.*
 import kotlinx.serialization.DeserializationStrategy
