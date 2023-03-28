@@ -11,6 +11,8 @@ import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -34,6 +36,8 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     private val transactionClient = mockk<TransactionClient>()
     private val profileDataSource = mockk<ProfileDataSource>()
+    private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
+    private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -77,6 +81,8 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     override fun initVM(): TransactionApprovalViewModel {
         return TransactionApprovalViewModel(
             transactionClient,
+            getTransactionComponentResourcesUseCase,
+            getTransactionProofResourcesUseCase,
             incomingRequestRepository,
             profileDataSource,
             deviceSecurityHelper,
