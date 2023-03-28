@@ -12,23 +12,18 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_DAPP_ID = "arg_dapp_id"
 internal const val ARG_REQUEST_ID = "arg_request_id"
 
-const val ROUTE_DAPP_LOGIN = "dapp_login/{$ARG_DAPP_ID}/{$ARG_REQUEST_ID}"
+const val ROUTE_DAPP_LOGIN = "dapp_login/{$ARG_REQUEST_ID}"
 
-internal class DAppLoginArgs(
-    val dappId: String,
-    val requestId: String
-) {
+internal class DAppLoginArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_DAPP_ID]) as String,
         checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String
     )
 }
 
-fun NavController.dAppLogin(dappId: String, requestId: String) {
-    navigate("dapp_login/$dappId/$requestId")
+fun NavController.dAppLogin(requestId: String) {
+    navigate("dapp_login/$requestId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -40,7 +35,6 @@ fun NavGraphBuilder.dAppLogin(
     composable(
         route = ROUTE_DAPP_LOGIN,
         arguments = listOf(
-            navArgument(ARG_DAPP_ID) { type = NavType.StringType },
             navArgument(ARG_REQUEST_ID) { type = NavType.StringType }
         )
     ) { entry ->

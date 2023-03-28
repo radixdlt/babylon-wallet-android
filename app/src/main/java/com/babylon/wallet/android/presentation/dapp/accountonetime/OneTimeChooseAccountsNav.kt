@@ -11,21 +11,16 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_DAPP_ID = "arg_dapp_id"
 internal const val ARG_REQUEST_ID = "arg_request_id"
 
-internal class OneTimeChooseAccountsArgs(
-    val dappId: String,
-    val requestId: String
-) {
+internal class OneTimeChooseAccountsArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_DAPP_ID]) as String,
         checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String
     )
 }
 
-fun NavController.chooseAccountsOneTime(dappId: String, requestId: String) {
-    navigate("choose_accounts_route/$dappId/$requestId")
+fun NavController.chooseAccountsOneTime(requestId: String) {
+    navigate("choose_accounts_route/$requestId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -35,9 +30,8 @@ fun NavGraphBuilder.chooseAccountsOneTime(
     onAccountCreationClick: () -> Unit
 ) {
     composable(
-        route = "choose_accounts_route/{$ARG_DAPP_ID}/{$ARG_REQUEST_ID}",
+        route = "choose_accounts_route/{$ARG_REQUEST_ID}",
         arguments = listOf(
-            navArgument(ARG_DAPP_ID) { type = NavType.StringType },
             navArgument(ARG_REQUEST_ID) { type = NavType.StringType },
         )
     ) {

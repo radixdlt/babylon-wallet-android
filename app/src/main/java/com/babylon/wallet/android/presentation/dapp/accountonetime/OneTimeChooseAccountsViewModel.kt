@@ -153,7 +153,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     fun onRejectRequest() {
         viewModelScope.launch {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = args.dappId,
+                dappId = accountsRequest.dappId,
                 requestId = args.requestId,
                 error = WalletErrorType.RejectedByUser
             )

@@ -197,7 +197,7 @@ class DAppLoginViewModel @Inject constructor(
         )
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(TransactionApprovalException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
-            dappId = args.dappId,
+            dappId = authorizedRequest.dappId,
             requestId = args.requestId,
             error = failure.toWalletErrorType(),
             message = failure.getDappMessage()
@@ -325,7 +325,7 @@ class DAppLoginViewModel @Inject constructor(
     fun onRejectLogin() {
         viewModelScope.launch {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = args.dappId,
+                dappId = authorizedRequest.dappId,
                 requestId = args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
@@ -403,7 +403,7 @@ class DAppLoginViewModel @Inject constructor(
         val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(selectedPersona)
         dAppMessenger.sendWalletInteractionSuccessResponse(
-            dappId = args.dappId,
+            dappId = authorizedRequest.dappId,
             interactionId = args.requestId,
             persona = selectedPersona,
             usePersona = authorizedRequest.isUsePersonaAuth(),

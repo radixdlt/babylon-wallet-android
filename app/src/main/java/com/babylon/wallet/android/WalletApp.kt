@@ -64,20 +64,17 @@ fun WalletApp(
                     when (val incomingRequest = event.request) {
                         is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
                             navController.transactionApproval(
-                                dappId = incomingRequest.remoteClientId,
                                 requestId = incomingRequest.requestId
                             )
                         }
                         is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
                             navController.dAppLogin(
-                                dappId = incomingRequest.remoteClientId,
                                 requestId = incomingRequest.requestId
                             )
                         }
                         is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
                             if (incomingRequest.oneTimeAccountsRequestItem != null) {
                                 navController.chooseAccountsOneTime(
-                                    dappId = incomingRequest.remoteClientId,
                                     requestId = incomingRequest.requestId
                                 )
                             }

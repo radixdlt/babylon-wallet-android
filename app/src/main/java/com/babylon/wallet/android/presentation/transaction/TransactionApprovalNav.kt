@@ -11,32 +11,23 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_TRANSACTION_DAPP_ID = "arg_transaction_dapp_id"
 internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
 
-internal class TransactionApprovalArgs(
-    val dappId: String,
-    val requestId: String
-) {
+internal class TransactionApprovalArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_TRANSACTION_DAPP_ID]) as String,
         checkNotNull(savedStateHandle[ARG_TRANSACTION_REQUEST_ID]) as String
     )
 }
 
-fun NavController.transactionApproval(
-    dappId: String,
-    requestId: String
-) {
-    navigate("transaction_approval_route/$dappId/$requestId")
+fun NavController.transactionApproval(requestId: String) {
+    navigate("transaction_approval_route/$requestId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
     composable(
-        route = "transaction_approval_route/{$ARG_TRANSACTION_DAPP_ID}/{$ARG_TRANSACTION_REQUEST_ID}",
+        route = "transaction_approval_route/{$ARG_TRANSACTION_REQUEST_ID}",
         arguments = listOf(
-            navArgument(ARG_TRANSACTION_DAPP_ID) { type = NavType.StringType },
             navArgument(ARG_TRANSACTION_REQUEST_ID) { type = NavType.StringType }
         )
     ) {

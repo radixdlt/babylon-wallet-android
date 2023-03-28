@@ -46,6 +46,7 @@ class TransactionApprovalViewModel @Inject constructor(
 ) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
     private val args = TransactionApprovalArgs(savedStateHandle)
+    private val transactionWriteRequest = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
 
     internal var state by mutableStateOf(TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure()))
         private set
@@ -54,7 +55,6 @@ class TransactionApprovalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val transactionWriteRequest = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
             state = state.copy(
                 manifestData = transactionWriteRequest.transactionManifestData
             )
@@ -89,7 +89,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     error = UiMessage.ErrorMessage(error)
                 )
                 dAppMessenger.sendWalletInteractionResponseFailure(
-                    dappId = args.dappId,
+                    dappId = transactionWriteRequest.dappId,
                     requestId = args.requestId,
                     error = WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
                 )
@@ -105,7 +105,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = args.dappId,
+                        dappId = transactionWriteRequest.dappId,
                         requestId = args.requestId,
                         error = failure.toWalletErrorType(),
                         message = failure.getDappMessage()
@@ -119,7 +119,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         result.onValue { txId ->
                             // Send confirmation to the dApp that tx was submitted before status polling
                             dAppMessenger.sendTransactionWriteResponseSuccess(
-                                dappId = args.dappId,
+                                dappId = transactionWriteRequest.dappId,
                                 requestId = args.requestId,
                                 txId = txId
                             )
@@ -136,7 +136,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 val exception = it as? TransactionApprovalException
                                 if (exception != null) {
                                     dAppMessenger.sendWalletInteractionResponseFailure(
-                                        dappId = args.dappId,
+                                        dappId = transactionWriteRequest.dappId,
                                         requestId = args.requestId,
                                         error = exception.failure.toWalletErrorType(),
                                         message = exception.failure.getDappMessage()
@@ -151,7 +151,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             val exception = it as? TransactionApprovalException
                             if (exception != null) {
                                 dAppMessenger.sendWalletInteractionResponseFailure(
-                                    dappId = args.dappId,
+                                    dappId = transactionWriteRequest.dappId,
                                     requestId = args.requestId,
                                     error = exception.failure.toWalletErrorType(),
                                     message = exception.failure.getDappMessage()
@@ -173,7 +173,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
                 dAppMessenger.sendWalletInteractionResponseFailure(
-                    dappId = args.dappId,
+                    dappId = transactionWriteRequest.dappId,
                     requestId = args.requestId,
                     error = WalletErrorType.RejectedByUser
                 )
