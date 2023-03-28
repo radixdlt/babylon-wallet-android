@@ -16,10 +16,8 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.serialisers.FungibleResourcesCollectionItemSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
-import java.math.BigDecimal
+import kotlinx.serialization.Serializable
 
 /**
  *
@@ -36,12 +34,4 @@ abstract class FungibleResourcesCollectionItem {
     @SerialName(value = "resource_address")
     abstract val resourceAddress: kotlin.String
 }
-
-val FungibleResourcesCollectionItem.amountDecimal: BigDecimal
-    get() = when (this) {
-        is FungibleResourcesCollectionItemGloballyAggregated -> BigDecimal(amount)
-        is FungibleResourcesCollectionItemVaultAggregated ->
-            vaults.items.sumOf { item -> BigDecimal(item.amount) }
-        else -> BigDecimal.ZERO
-    }
 

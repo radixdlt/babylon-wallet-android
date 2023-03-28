@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.apis.DynamicUrlApi
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache

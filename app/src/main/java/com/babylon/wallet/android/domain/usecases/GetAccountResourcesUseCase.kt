@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
+import com.babylon.wallet.android.data.gateway.extensions.amount
+import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
+import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.generated.models.amount
-import com.babylon.wallet.android.data.gateway.generated.models.amountDecimal
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
 import com.babylon.wallet.android.domain.common.Result

@@ -15,8 +15,8 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -51,15 +51,5 @@ data class StateEntityDetailsResponseItem (
     @SerialName(value = "details")
     val details: StateEntityDetailsResponseItemDetails? = null
 
-) {
-
-    private val fungibleResourceAddresses: List<String>
-        get() = fungibleResources?.items?.map { it.resourceAddress }.orEmpty()
-
-    val nonFungibleResourceAddresses: List<String>
-        get() = nonFungibleResources?.items?.map { it.resourceAddress }.orEmpty()
-
-    val allResourceAddresses: List<String>
-        get() = fungibleResourceAddresses + nonFungibleResourceAddresses
-}
+)
 

@@ -15,8 +15,8 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Entity metadata collection.
@@ -45,13 +45,4 @@ data class EntityMetadataCollection (
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 
-) {
-
-    // TODO 1181
-    fun asMetadataStringMap() = items.associate { metadataItem ->
-        metadataItem.key to metadataItem.value.asString
-    }.mapNotNull { (key, value) ->
-        value?.let { key to it }
-    }.toMap()
-
-}
+)
