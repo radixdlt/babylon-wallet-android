@@ -1,6 +1,7 @@
 package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
@@ -54,6 +55,8 @@ interface DAppConnectionRepository {
         personaData: Boolean,
         accounts: Boolean
     )
+
+    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>)
 }
 
 @Suppress("TooManyFunctions")
@@ -191,6 +194,19 @@ class DAppConnectionRepositoryImpl @Inject constructor(
             deleteDataForPersona(dAppDefinitionAddress, personaAddress)
         } else if (accounts) {
             deletePersonaForDapp(dAppDefinitionAddress, personaAddress)
+        }
+    }
+
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>) {
+        getAuthorizedDappsByPersona(personaAddress).firstOrNull()?.forEach { dapp ->
+            val updatedDapp = dapp.copy(
+                referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.mapWhen(
+                    predicate = { it.identityAddress == personaAddress }
+                ) { authorizedPersona ->
+                    authorizedPersona.copy(fieldIDs = authorizedPersona.fieldIDs.filter { existingFieldIds.contains(it) })
+                }
+            )
+            updateOrCreateAuthorizedDApp(updatedDapp)
         }
     }
 
