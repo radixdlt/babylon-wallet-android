@@ -1,10 +1,12 @@
 @file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.TestDispatcherRule
+import com.babylon.wallet.android.presentation.model.encodeToString
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -15,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.PersonaRepository
 
 internal class PersonaDataOngoingViewModelTest {
@@ -37,7 +40,7 @@ internal class PersonaDataOngoingViewModelTest {
     @Before
     fun setUp() {
         every { savedStateHandle.get<String>(ARG_PERSONA_ID) } returns samplePersona.address
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns "GivenName"
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
         coEvery { personaRepository.getPersonaByAddressFlow(any()) } returns flow {
             emit(samplePersona)
         }
@@ -56,7 +59,7 @@ internal class PersonaDataOngoingViewModelTest {
 
     @Test
     fun `initial state is set up properly when fields are missing`() = runTest {
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns "PhoneNumber"
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.PhoneNumber).encodeToString()
         val vm = initVM()
         advanceUntilIdle()
         vm.state.test {

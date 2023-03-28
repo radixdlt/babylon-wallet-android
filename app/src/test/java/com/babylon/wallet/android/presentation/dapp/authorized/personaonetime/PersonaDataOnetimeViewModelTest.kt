@@ -2,13 +2,11 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.model.encodeToString
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -25,7 +23,7 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 
-    private val samplePersona = SampleDataProvider().samplePersona()
+    private val samplePersona = sampleDataProvider.samplePersona()
 
     override fun initVM(): PersonaDataOnetimeViewModel {
         return PersonaDataOnetimeViewModel(
@@ -37,9 +35,7 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
     @Before
     override fun setUp() {
         super.setUp()
-        mockkStatic("com.babylon.wallet.android.presentation.model.PersonaExtensionsKt")
-        every { any<List<Network.Persona.Field.Kind>>().encodeToString() } returns "GivenName"
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns "GivenName"
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
         coEvery { personaRepository.personas } returns flow {
             emit(listOf(samplePersona))
         }
@@ -52,7 +48,7 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
         vm.state.test {
             val item = expectMostRecentItem()
             assert(item.personaListToDisplay.size == 1)
-            assert(item.requiredFields.size == 1 && item.requiredFields.first() == Network.Persona.Field.Kind.GivenName)
+            assert(item.personaListToDisplay.first().missingFieldKinds().size == 0)
         }
     }
 

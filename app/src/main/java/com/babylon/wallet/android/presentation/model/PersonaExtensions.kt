@@ -34,7 +34,8 @@ fun List<Network.Persona.Field.Kind>.encodeToString(): String {
 }
 
 fun String.decodePersonaDataKinds(): List<Network.Persona.Field.Kind> {
-    return decodeUtf8().split(",").filter { it.isNotEmpty() }.map { Network.Persona.Field.Kind.valueOf(it) }
+    val split = decodeUtf8().split(",")
+    return split.filter { it.isNotEmpty() }.map { Network.Persona.Field.Kind.valueOf(it) }
 }
 
 @StringRes
