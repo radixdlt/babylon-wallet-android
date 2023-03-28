@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
 import com.google.accompanist.navigation.animation.composable
@@ -37,7 +38,7 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.OneTimePersonaData?,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     onCreatePersona: () -> Unit
 ) {
     composable(

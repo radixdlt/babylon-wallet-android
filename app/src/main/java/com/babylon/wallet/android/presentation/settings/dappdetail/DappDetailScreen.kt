@@ -115,7 +115,7 @@ fun DappDetailScreen(
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
         onDeleteDapp = viewModel::onDeleteDapp,
         onEditPersona = viewModel::onEditPersona,
-        onEditAccountSharing = {},
+        onEditAccountSharing = viewModel::onEditAccountSharing,
         loading = state.loading
     )
 }

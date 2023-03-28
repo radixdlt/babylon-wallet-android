@@ -60,7 +60,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
     private val profileDataSource: ProfileDataSource,
     private val dappMetadataRepository: DappMetadataRepository,
-    incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<DAppAuthorizedLoginEvent> by OneOffEventHandlerImpl() {
 
     private val args = DAppAuthorizedLoginArgs(savedStateHandle)
@@ -166,11 +166,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
             val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
             if (ongoingAccountsRequestItem != null && (
-                !requestedAccountsPermissionAlreadyGranted(
-                        authRequest.personaAddress,
-                        ongoingAccountsRequestItem
-                    ) || resetAccounts
-                )
+                        !requestedAccountsPermissionAlreadyGranted(
+                            authRequest.personaAddress,
+                            ongoingAccountsRequestItem
+                        ) || resetAccounts
+                        )
             ) {
                 _state.update {
                     it.copy(
@@ -456,11 +456,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onRejectLogin() {
         viewModelScope.launch {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                request.dappId,
-                args.requestId,
-                error = WalletErrorType.RejectedByUser
-            )
+            if (request.isInternalRequest()) {
+                incomingRequestRepository.requestHandled(request.id)
+            } else {
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    request.dappId,
+                    args.requestId,
+                    error = WalletErrorType.RejectedByUser
+                )
+            }
             topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
         }
     }
@@ -544,26 +548,35 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private suspend fun sendRequestResponse() {
         val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(selectedPersona)
-        dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
-            request.dappId,
-            args.requestId,
-            selectedPersona,
-            request.isUsePersonaAuth(),
-            state.value.selectedAccountsOneTime,
-            state.value.selectedAccountsOngoing,
-            state.value.selectedOngoingDataFields,
-            state.value.selectedOnetimeDataFields,
-        )
+        if (request.isInternalRequest()) {
+            incomingRequestRepository.requestHandled(request.requestId)
+        } else {
+            dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
+                request.dappId,
+                args.requestId,
+                selectedPersona,
+                request.isUsePersonaAuth(),
+                state.value.selectedAccountsOneTime,
+                state.value.selectedAccountsOngoing,
+                state.value.selectedOngoingDataFields,
+                state.value.selectedOnetimeDataFields,
+            )
+        }
         mutex.withLock {
             editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
         }
-        sendEvent(DAppAuthorizedLoginEvent.LoginFlowCompleted(state.value.dappMetadata?.getName() ?: "Unknown dApp"))
+        sendEvent(
+            DAppAuthorizedLoginEvent.LoginFlowCompleted(
+                state.value.dappMetadata?.getName() ?: "Unknown dApp",
+                showSuccessDialog = !request.isInternalRequest()
+            )
+        )
     }
 }
 
 sealed interface DAppAuthorizedLoginEvent : OneOffEvent {
     object RejectLogin : DAppAuthorizedLoginEvent
-    data class LoginFlowCompleted(val dappName: String) : DAppAuthorizedLoginEvent
+    data class LoginFlowCompleted(val dappName: String, val showSuccessDialog: Boolean = true) : DAppAuthorizedLoginEvent
     data class DisplayPermission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

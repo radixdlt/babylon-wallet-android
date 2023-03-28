@@ -26,7 +26,7 @@ internal class SelectPersonaArgs(val requestId: String) {
 fun NavGraphBuilder.selectPersona(
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     createNewPersona: () -> Unit,
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.SelectPersona?,
     sharedViewModel: DAppAuthorizedLoginViewModel,

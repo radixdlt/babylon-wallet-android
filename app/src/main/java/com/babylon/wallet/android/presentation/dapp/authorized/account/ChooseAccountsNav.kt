@@ -57,7 +57,7 @@ fun NavGraphBuilder.chooseAccounts(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String?) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.ChooseAccount?,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Boolean,

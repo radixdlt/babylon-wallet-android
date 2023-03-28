@@ -42,7 +42,7 @@ fun NavGraphBuilder.personaDataOngoing(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.OngoingPersonaData?,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit
 ) {

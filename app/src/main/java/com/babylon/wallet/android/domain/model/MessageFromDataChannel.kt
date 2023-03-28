@@ -30,6 +30,10 @@ sealed interface MessageFromDataChannel {
                         (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
+            fun isInternalRequest(): Boolean {
+                return dappId.isEmpty()
+            }
+
             fun isUsePersonaAuth(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest
             }

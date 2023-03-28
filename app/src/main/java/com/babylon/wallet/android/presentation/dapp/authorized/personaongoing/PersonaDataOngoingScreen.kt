@@ -56,7 +56,7 @@ fun PersonaDataOngoingScreen(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
 ) {
@@ -74,7 +74,7 @@ fun PersonaDataOngoingScreen(
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
                 is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
                 is DAppAuthorizedLoginEvent.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 else -> {}

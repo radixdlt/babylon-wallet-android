@@ -51,7 +51,6 @@ fun DappAuthorizedLoginNavigationHost(
             },
             onLoginFlowComplete = { dappName ->
                 finishDappLogin()
-                showSuccessDialog(dappName)
             },
             createNewPersona = {
                 navController.createPersonaScreen()
@@ -135,9 +134,11 @@ fun DappAuthorizedLoginNavigationHost(
                     event.showBack
                 )
             },
-            onLoginFlowComplete = { dappName ->
+            onLoginFlowComplete = { event ->
                 finishDappLogin()
-                dappName?.let { showSuccessDialog(it) }
+                if (event.showSuccessDialog) {
+                    showSuccessDialog(event.dappName)
+                }
             },
             initialAuthorizedLoginRoute = initialAuthorizedLoginRoute as? InitialAuthorizedLoginRoute.ChooseAccount,
             sharedViewModel = sharedViewModel,
@@ -163,9 +164,11 @@ fun DappAuthorizedLoginNavigationHost(
             onBackClick = {
                 navController.navigateUp()
             },
-            onLoginFlowComplete = { dappName ->
+            onLoginFlowComplete = { event ->
                 finishDappLogin()
-                showSuccessDialog(dappName)
+                if (event.showSuccessDialog) {
+                    showSuccessDialog(event.dappName)
+                }
             },
             onPersonaDataOnetime = {
                 navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
@@ -188,9 +191,11 @@ fun DappAuthorizedLoginNavigationHost(
             onBackClick = {
                 navController.navigateUp()
             },
-            onLoginFlowComplete = { dappName ->
+            onLoginFlowComplete = { event ->
                 finishDappLogin()
-                showSuccessDialog(dappName)
+                if (event.showSuccessDialog) {
+                    showSuccessDialog(event.dappName)
+                }
             }
         ) {
             navController.createPersonaScreen()

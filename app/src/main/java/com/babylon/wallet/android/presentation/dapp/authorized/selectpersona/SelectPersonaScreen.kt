@@ -60,7 +60,7 @@ fun SelectPersonaScreen(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     createNewPersona: () -> Unit,
     onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,
     onPersonaDataOngoing: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
@@ -70,7 +70,7 @@ fun SelectPersonaScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 DAppAuthorizedLoginEvent.RejectLogin -> onBackClick()
-                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
                 is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
                 is DAppAuthorizedLoginEvent.DisplayPermission -> onDisplayPermission(event)
                 is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaDataOngoing(event)

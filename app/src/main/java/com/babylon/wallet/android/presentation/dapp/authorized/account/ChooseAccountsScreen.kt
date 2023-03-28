@@ -28,7 +28,7 @@ fun ChooseAccountsScreen(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (String?) -> Unit,
+    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
@@ -37,10 +37,10 @@ fun ChooseAccountsScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
-                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
                 is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaOngoingData(event)
                 is DAppAuthorizedLoginEvent.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is DAppAuthorizedLoginEvent.RejectLogin -> onLoginFlowComplete(null)
+                is DAppAuthorizedLoginEvent.RejectLogin -> onLoginFlowComplete(DAppAuthorizedLoginEvent.LoginFlowCompleted("", false))
                 else -> {}
             }
         }
