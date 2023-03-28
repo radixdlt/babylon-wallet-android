@@ -43,6 +43,7 @@ import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.helpers.sha256
 import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
+import java.util.concurrent.ConcurrentHashMap
 
 interface PeerdroidConnector {
 
@@ -64,13 +65,13 @@ internal class PeerdroidConnectorImpl(
 ) : PeerdroidConnector {
 
     // one per CE. One CE can have multiple remote clients
-    private val mapOfWebSockets = mutableMapOf<ConnectionIdHolder, WebSocketHolder>()
+    private val mapOfWebSockets = ConcurrentHashMap<ConnectionIdHolder, WebSocketHolder>()
 
     // one per remote client (dapp)
-    private val mapOfPeerConnections = mutableMapOf<RemoteClientHolder, PeerConnectionHolder>()
+    private val mapOfPeerConnections = ConcurrentHashMap<RemoteClientHolder, PeerConnectionHolder>()
 
     // one per remote client (dapp)
-    private val mapOfDataChannels = mutableMapOf<RemoteClientHolder, DataChannelHolder>()
+    private val mapOfDataChannels = ConcurrentHashMap<RemoteClientHolder, DataChannelHolder>()
 
     // every time a new data channel opens it will be added in the dataChannelMessagesFromRemoteClients
     private val dataChannelObserver = MutableStateFlow<DataChannelWrapper?>(null)
@@ -313,14 +314,14 @@ internal class PeerdroidConnectorImpl(
     }
 
     private fun terminatePeerConnectionAndDataChannel(remoteClientHolder: RemoteClientHolder) {
-        val dataChannelHolder = mapOfDataChannels.remove(remoteClientHolder)
-        dataChannelHolder?.let {
-            dataChannelHolder.dataChannel.close()
-        }
         val peerConnectionHolder = mapOfPeerConnections.remove(remoteClientHolder)
         peerConnectionHolder?.let {
             peerConnectionHolder.observePeerConnectionJob.cancel()
             peerConnectionHolder.webRtcManager.close()
+        }
+        val dataChannelHolder = mapOfDataChannels.remove(remoteClientHolder)
+        dataChannelHolder?.let {
+            dataChannelHolder.dataChannel.close()
         }
     }
 
