@@ -4,6 +4,7 @@ import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +32,7 @@ import java.math.BigDecimal
 fun TokenItemCard(
     token: TokenUiModel,
     modifier: Modifier = Modifier,
+    fiatAmount: String? = null
 ) {
     Box(modifier = modifier) {
         Row(
@@ -81,15 +83,30 @@ fun TokenItemCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                modifier = Modifier.weight(0.7f),
-                text = token.tokenQuantityToDisplay,
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
+            Column(
+                modifier = Modifier.weight(0.7f)
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = token.tokenQuantityToDisplay,
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
+                fiatAmount?.let { amount ->
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = amount,
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
         }
     }
 }

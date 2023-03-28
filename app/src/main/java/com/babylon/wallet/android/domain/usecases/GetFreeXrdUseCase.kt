@@ -1,17 +1,16 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.data.manifest.addDepositBatchInstruction
+import com.babylon.wallet.android.data.manifest.addFreeXrdInstruction
+import com.babylon.wallet.android.data.manifest.addLockFeeInstruction
+import com.babylon.wallet.android.data.manifest.faucetComponentAddress
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
-import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.ManifestAstValue
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -55,48 +54,21 @@ class GetFreeXrdUseCase @Inject constructor(
         }
     }
 
-    private fun faucetComponentAddress(
-        networkId: UByte
-    ): ManifestAstValue.Address {
-        val faucetComponentAddress = RadixEngineToolkit.knownEntityAddresses(
-            request = KnownEntityAddressesRequest(
-                networkId = networkId
-            )
-        ).getOrThrow().faucetComponentAddress
-        return ManifestAstValue.Address(faucetComponentAddress.toString())
-    }
-
     private fun buildFaucetManifest(
         networkId: NetworkId,
         address: String,
-        includeLockFeeInstruction: Boolean,
+        includeLockFeeInstruction: Boolean
     ): TransactionManifest {
-        var manifest = ManifestBuilder()
-            .addInstruction(
-                Instruction.CallMethod(
-                    componentAddress = faucetComponentAddress(networkId.value.toUByte()),
-                    methodName = ManifestAstValue.String(MethodName.Free.stringValue),
-                    arguments = arrayOf()
-                )
-            ).addInstruction(
-                Instruction.CallMethod(
-                    componentAddress = ManifestAstValue.Address(
-                        address = address
-                    ),
-                    methodName = ManifestAstValue.String(MethodName.DepositBatch.stringValue),
-                    arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
-                )
-            )
-            .build()
-
+        val manifestBuilder = ManifestBuilder()
+        manifestBuilder.addFreeXrdInstruction(networkId)
+        manifestBuilder.addDepositBatchInstruction(address)
         if (includeLockFeeInstruction) {
-            manifest = transactionClient.addLockFeeInstructionToManifest(
-                manifest = manifest,
+            manifestBuilder.addLockFeeInstruction(
                 addressToLockFee = faucetComponentAddress(networkId.value.toUByte()).address
             )
         }
 
-        return manifest
+        return manifestBuilder.build()
     }
 
     fun isAllowedToUseFaucet(address: String): Flow<Boolean> {

@@ -17,7 +17,10 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -25,10 +28,19 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.radixdlt.toolkit.models.request.AccountDeposit
+import com.radixdlt.toolkit.models.request.ResourceSpecifier
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import rdx.works.core.decodeHex
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
@@ -36,6 +48,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
+    private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
+    private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val profileDataSource: ProfileDataSource,
     deviceSecurityHelper: DeviceSecurityHelper,
@@ -56,11 +70,13 @@ class TransactionApprovalViewModel @Inject constructor(
         viewModelScope.launch {
             val transactionWriteRequest = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
             state = state.copy(
-                manifestData = transactionWriteRequest.transactionManifestData
+                manifestData = transactionWriteRequest.transactionManifestData,
+                transactionMessage = transactionWriteRequest.transactionManifestData.message.orEmpty()
             )
             val manifestResult = transactionClient.addLockFeeToTransactionManifestData(
                 transactionWriteRequest.transactionManifestData
             )
+
             manifestResult.onValue { manifestWithLockFee ->
                 when (
                     val manifestInStringFormatConversionResult = transactionClient.manifestInStringFormat(
@@ -74,6 +90,112 @@ class TransactionApprovalViewModel @Inject constructor(
                         )
                     }
                     is Result.Success -> {
+                        val transactionManifest = manifestInStringFormatConversionResult.data
+                        val transactionPreview = transactionClient.getTransactionPreview(
+                            manifest = transactionManifest,
+                            networkId = profileDataSource.getCurrentNetworkId().value
+                        )
+                        transactionPreview.onValue { transactionPreviewResponse ->
+
+                            transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
+                                val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
+                                val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
+                                val networkFee = costUnitPrice.multiply(costUnitsConsumed).toString()
+                                state = state.copy(
+                                    networkFee = networkFee
+                                )
+                            }
+
+                            val manifestPreview = transactionClient.analyzeManifest(
+                                networkId = profileDataSource.getCurrentNetworkId(),
+                                transactionManifest = transactionManifest,
+                                transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
+                            )
+
+                            manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
+
+                                val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> = mutableListOf()
+                                val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> = mutableListOf()
+
+                                analyzeManifestWithPreviewResponse.accountDeposits.forEach {
+                                    when (it) {
+                                        is AccountDeposit.Estimate -> {
+                                            val accountDepositResourceSpecifier =
+                                                (it.resourceSpecifier as ResourceSpecifier.Amount)
+
+                                            depositJobs.add(
+                                                async {
+                                                    getTransactionComponentResourcesUseCase.invoke(
+                                                        accountAddresses = listOf(
+                                                            it.componentAddress.address,
+                                                            accountDepositResourceSpecifier.resourceAddress.address
+                                                        ),
+                                                        amount = accountDepositResourceSpecifier.amount
+                                                    )
+                                                }
+                                            )
+                                        }
+                                        is AccountDeposit.Exact -> {
+                                            val accountDepositResourceSpecifier =
+                                                (it.resourceSpecifier as ResourceSpecifier.Amount)
+                                            depositJobs.add(
+                                                async {
+                                                    getTransactionComponentResourcesUseCase.invoke(
+                                                        accountAddresses = listOf(
+                                                            it.componentAddress.address,
+                                                            accountDepositResourceSpecifier.resourceAddress.address
+                                                        ),
+                                                        amount = accountDepositResourceSpecifier.amount
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                                analyzeManifestWithPreviewResponse.accountWithdraws.forEach {
+                                    val accountWithdrawResourceSpecifier =
+                                        (it.resourceSpecifier as ResourceSpecifier.Amount)
+                                    withdrawJobs.add(
+                                        async {
+                                            getTransactionComponentResourcesUseCase.invoke(
+                                                accountAddresses = listOf(
+                                                    it.componentAddress.address,
+                                                    accountWithdrawResourceSpecifier.resourceAddress.address
+                                                ),
+                                                amount = accountWithdrawResourceSpecifier.amount
+                                            )
+                                        }
+                                    )
+                                }
+
+                                val depositResults = depositJobs.awaitAll()
+                                val withdrawResults = withdrawJobs.awaitAll()
+
+                                val withdrawingAccounts = withdrawResults
+                                    .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                    .map {
+                                        it.data
+                                    }
+
+                                val depositingAccounts = depositResults
+                                    .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                    .map {
+                                        it.data
+                                    }
+
+                                val proofs = getTransactionProofResourcesUseCase(
+                                    analyzeManifestWithPreviewResponse.accountProofResources
+                                )
+
+                                state = state.copy(
+                                    withdrawingAccounts = withdrawingAccounts.toPersistentList(),
+                                    depositingAccounts = depositingAccounts.toPersistentList(),
+                                    presentingProofs = proofs.toPersistentList(),
+                                    connectedDApps = persistentListOf(), // TODO something to come later on
+                                )
+                            }
+                        }
+
                         state = state.copy(
                             manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
                             manifestData = transactionWriteRequest.transactionManifestData,
@@ -175,7 +297,31 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onMessageShown() {
         state = state.copy(error = null)
     }
+
+    fun onCustomizeClick() {
+        // TODO
+    }
 }
+
+data class TransactionAccountItemUiModel(
+    val address: String,
+    val displayName: String,
+    val tokenSymbol: String,
+    val tokenQuantity: String,
+    val fiatAmount: String,
+    val appearanceID: Int,
+    val iconUrl: String
+)
+
+data class PresentingProofUiModel(
+    val iconUrl: String,
+    val title: String
+)
+
+data class ConnectedDAppUiModel(
+    val icon: String,
+    val title: String
+)
 
 internal data class TransactionUiState(
     val manifestData: TransactionManifestData? = null,
@@ -186,6 +332,12 @@ internal data class TransactionUiState(
     val isDeviceSecure: Boolean = false,
     val error: UiMessage? = null,
     val canApprove: Boolean = false,
+    val networkFee: String = "",
+    val transactionMessage: String = "",
+    val withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
+    val depositingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
+    val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
+    val connectedDApps: ImmutableList<ConnectedDAppUiModel> = persistentListOf()
 )
 
 internal sealed interface TransactionApprovalEvent : OneOffEvent {

@@ -28,7 +28,8 @@ fun SendTransactionItem.toDomainModel(
             transactionManifest,
             version,
             metadata.networkId,
-            blobs?.map { decode(it) }.orEmpty()
+            blobs?.map { decode(it) }.orEmpty(),
+            message = message
         ),
         metadata
     )

@@ -3,6 +3,8 @@
 package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionConstructionResponse
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecentRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecentResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatusRequest
@@ -32,4 +34,9 @@ interface TransactionApi {
     fun transactionStatus(
         @Body transactionStatusRequest: TransactionStatusRequest
     ): Call<TransactionStatusResponse>
+
+    @POST("transaction/preview")
+    fun transactionPreview(
+        @Body transactionPreviewRequest: TransactionPreviewRequest
+    ): Call<TransactionPreviewResponse>
 }

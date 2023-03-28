@@ -2,7 +2,16 @@ package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 data class RadixShapes(
@@ -15,3 +24,42 @@ data class RadixShapes(
     val roundedRectBottomMedium: CornerBasedShape = RoundedCornerShape(bottomEnd = 8.dp, bottomStart = 8.dp),
     val roundedRectTopDefault: CornerBasedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
 )
+
+fun bubbleShape(
+    density: Density,
+    cornerRadius: Dp = 16.dp,
+    arrowWidth: Dp = 19.dp,
+    arrowHeight: Dp = 11.dp,
+    arrowOffset: Dp = 40.dp,
+): GenericShape {
+    val cornerRadiusPx: Float
+    val arrowWidthPx: Float
+    val arrowHeightPx: Float
+    val arrowOffsetPx: Float
+
+    with(density) {
+        cornerRadiusPx = cornerRadius.toPx()
+        arrowWidthPx = arrowWidth.toPx()
+        arrowHeightPx = arrowHeight.toPx()
+        arrowOffsetPx = arrowOffset.toPx()
+    }
+
+    return GenericShape { size: Size, _: LayoutDirection ->
+
+        addRoundRect(
+            RoundRect(
+                rect = Rect(
+                    offset = Offset(0f, 0f),
+                    size = Size(size.width, size.height)
+                ),
+                cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
+            )
+        )
+
+        val arrowXPoint = size.width - arrowOffsetPx
+
+        moveTo(arrowXPoint, size.height)
+        lineTo(arrowXPoint - arrowWidthPx / 2, size.height + arrowHeightPx)
+        lineTo(arrowXPoint - arrowWidthPx, size.height)
+    }
+}

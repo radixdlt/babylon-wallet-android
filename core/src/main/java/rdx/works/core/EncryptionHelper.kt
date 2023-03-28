@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.core
 
 import android.security.keystore.KeyGenParameterSpec
@@ -113,4 +115,13 @@ private fun generateAesKey(keyAlias: String): SecretKey {
 private fun getSecretKey(keyAlias: String): SecretKey? {
     val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
     return (keyStore.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry)?.secretKey
+}
+
+@Suppress("MagicNumber")
+fun String.decodeHex(): ByteArray {
+    check(length % 2 == 0) { "Must have an even length" }
+
+    return chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
 }
