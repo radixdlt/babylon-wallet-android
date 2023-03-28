@@ -288,7 +288,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(
                         personaAddress = updatedPersona.address,
                         allExistingFieldIds = updatedPersona.fields.map { it.id },
-                        requestedFieldIds = dataFields.map { it.id })
+                        requestedFieldIds = dataFields.map { it.id }
+                    )
                 }
                 handleNextOneTimeRequestItem()
             }

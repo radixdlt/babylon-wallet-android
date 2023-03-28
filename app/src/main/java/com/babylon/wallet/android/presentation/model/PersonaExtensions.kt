@@ -39,7 +39,7 @@ fun String.decodePersonaDataKinds(): List<Network.Persona.Field.Kind> {
 }
 
 fun Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.toQuantifierUsedInRequest():
-        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
+    MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
     return when (this) {
         Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly -> {
             MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
