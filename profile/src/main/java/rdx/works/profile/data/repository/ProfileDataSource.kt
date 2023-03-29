@@ -47,8 +47,6 @@ interface ProfileDataSource {
 
     suspend fun hasAccountForGateway(gateway: Radix.Gateway): Boolean
 
-    suspend fun deleteGateway(gateway: Radix.Gateway)
-
     suspend fun updateDeveloperMode(isEnabled: Boolean)
 
     suspend fun isInDeveloperMode(): Boolean
@@ -135,13 +133,6 @@ class ProfileDataSourceImpl @Inject constructor(
                 perNetwork.networkID == knownNetwork.id
             }
         } ?: false
-    }
-
-    override suspend fun deleteGateway(gateway: Radix.Gateway) {
-        readProfile()?.let { profile ->
-            val updatedProfile = profile.deleteGateway(gateway)
-            saveProfile(updatedProfile)
-        }
     }
 
     override suspend fun updateDeveloperMode(isEnabled: Boolean) {

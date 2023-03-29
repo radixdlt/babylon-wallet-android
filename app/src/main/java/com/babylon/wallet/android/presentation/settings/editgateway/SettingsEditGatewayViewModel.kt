@@ -24,6 +24,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
+import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +32,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
     private val profileDataSource: ProfileDataSource,
     private val changeGatewayUseCase: ChangeGatewayUseCase,
     private val addGatewayUseCase: AddGatewayUseCase,
+    private val deleteGatewayUseCase: DeleteGatewayUseCase,
     private val networkInfoRepository: NetworkInfoRepository,
 ) : ViewModel(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
@@ -79,7 +81,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
                 val defaultGateway = state.value.gatewayList.first { it.gateway.isDefault }
                 switchGateway(defaultGateway.gateway)
             }
-            profileDataSource.deleteGateway(gateway.gateway)
+            deleteGatewayUseCase(gateway.gateway)
         }
     }
 

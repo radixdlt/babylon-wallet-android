@@ -24,6 +24,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
+import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -35,6 +36,7 @@ class SettingsEditGatewayViewModelTest {
     private val profileDataSource = mockk<ProfileDataSource>()
     private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
     private val addGatewayUseCase = mockk<AddGatewayUseCase>()
+    private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
     private val profile = SampleDataProvider().sampleProfile()
@@ -45,6 +47,7 @@ class SettingsEditGatewayViewModelTest {
             profileDataSource = profileDataSource,
             changeGatewayUseCase = changeGatewayUseCase,
             addGatewayUseCase = addGatewayUseCase,
+            deleteGatewayUseCase = deleteGatewayUseCase,
             networkInfoRepository = networkInfoRepository
         )
         every { profileDataSource.gateways } returns flow { emit(profile.appPreferences.gateways) }
