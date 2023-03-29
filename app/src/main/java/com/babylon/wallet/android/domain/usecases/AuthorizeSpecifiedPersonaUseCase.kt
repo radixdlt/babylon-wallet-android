@@ -2,6 +2,8 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.toKind
+import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -46,7 +48,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 .referencesToAuthorizedPersonas
                 .firstOrNull {
                     it.identityAddress == (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
-                } ?: return Result.Error()
+                } ?: return Result.Error(DappRequestException(DappRequestFailure.InvalidPersona))
 
             val persona = personaRepository.getPersonaByAddress(
                 address = authorizedPersonaSimple.identityAddress
