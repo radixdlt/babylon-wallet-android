@@ -46,6 +46,7 @@ import rdx.works.profile.data.repository.addOrUpdateAuthorizedDappPersona
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -57,7 +58,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val personaRepository: PersonaRepository,
     private val accountRepository: AccountRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<DAppAuthorizedLoginEvent> by OneOffEventHandlerImpl() {
@@ -81,7 +82,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
+            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
                     DappRequestFailure.WrongNetwork(

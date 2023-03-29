@@ -32,12 +32,13 @@ import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
-    private val profileDataSource = mockk<ProfileDataSource>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val accountRepository = AccountRepositoryFake()
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
@@ -143,7 +144,7 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
             dAppConnectionRepository,
             personaRepository,
             accountRepository,
-            profileDataSource,
+            getCurrentGatewayUseCase,
             dappMetadataRepository,
             incomingRequestRepository
         )
@@ -154,7 +155,7 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
         super.setUp()
         val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)
         }

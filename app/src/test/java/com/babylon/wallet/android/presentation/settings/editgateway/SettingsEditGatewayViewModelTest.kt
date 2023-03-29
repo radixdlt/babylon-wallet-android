@@ -6,15 +6,14 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.utils.isValidUrl
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -25,6 +24,7 @@ import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
+import rdx.works.profile.domain.gateway.GetGatewaysUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -33,7 +33,7 @@ class SettingsEditGatewayViewModelTest {
 
     private lateinit var vm: SettingsEditGatewayViewModel
 
-    private val profileDataSource = mockk<ProfileDataSource>()
+    private val getGatewaysUseCase = mockk<GetGatewaysUseCase>()
     private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
     private val addGatewayUseCase = mockk<AddGatewayUseCase>()
     private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
@@ -44,13 +44,13 @@ class SettingsEditGatewayViewModelTest {
     @Before
     fun setUp() = runTest {
         vm = SettingsEditGatewayViewModel(
-            profileDataSource = profileDataSource,
+            getGatewaysUseCase = getGatewaysUseCase,
             changeGatewayUseCase = changeGatewayUseCase,
             addGatewayUseCase = addGatewayUseCase,
             deleteGatewayUseCase = deleteGatewayUseCase,
             networkInfoRepository = networkInfoRepository
         )
-        every { profileDataSource.gateways } returns flow { emit(profile.appPreferences.gateways) }
+        every { getGatewaysUseCase() } returns flowOf(profile.appPreferences.gateways)
         coEvery { changeGatewayUseCase(any()) } returns true
         coEvery { addGatewayUseCase(any()) } returns Unit
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")

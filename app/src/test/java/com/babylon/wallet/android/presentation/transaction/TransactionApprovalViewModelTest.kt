@@ -29,14 +29,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionApprovalViewModel>() {
 
     private val transactionClient = mockk<TransactionClient>()
-    private val profileDataSource = mockk<ProfileDataSource>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
@@ -59,7 +58,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
-        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
@@ -88,7 +87,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             getTransactionComponentResourcesUseCase,
             getTransactionProofResourcesUseCase,
             incomingRequestRepository,
-            profileDataSource,
+            getCurrentGatewayUseCase,
             deviceSecurityHelper,
             dAppMessenger,
             TestScope(),
@@ -124,7 +123,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.hammunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.hammunet
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction()

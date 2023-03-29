@@ -41,7 +41,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -52,7 +52,7 @@ class TransactionApprovalViewModel @Inject constructor(
     private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
@@ -287,7 +287,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun approveTransaction() {
         approvalJob = appScope.launch {
             state.manifestData?.let { manifestData ->
-                val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
+                val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendWalletInteractionResponseFailure(

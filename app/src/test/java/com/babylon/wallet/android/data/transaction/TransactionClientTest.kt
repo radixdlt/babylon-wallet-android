@@ -21,6 +21,7 @@ import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
@@ -29,7 +30,7 @@ internal class TransactionClientTest {
     val coroutineRule = TestDispatcherRule()
 
     private val transactionRepository = mockk<TransactionRepository>()
-    private val profileDataSource = mockk<ProfileDataSource>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val accountRepository = mockk<AccountRepository>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
     private val cache = mockk<HttpCache>()
@@ -40,12 +41,12 @@ internal class TransactionClientTest {
     fun setUp() {
         transactionClient = TransactionClient(
             transactionRepository,
-            profileDataSource,
+            getCurrentGatewayUseCase,
             accountRepository,
             getAccountResourceUseCase,
             cache
         )
-        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

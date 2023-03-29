@@ -28,7 +28,6 @@ import rdx.works.profile.data.repository.ProfileDataSource
 internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
-    private val profileDataSource = mockk<ProfileDataSource>()
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
@@ -68,7 +67,6 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
             emit(true)
         }
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
             SampleDataProvider().samplePersona(addressSlot.captured)
         }

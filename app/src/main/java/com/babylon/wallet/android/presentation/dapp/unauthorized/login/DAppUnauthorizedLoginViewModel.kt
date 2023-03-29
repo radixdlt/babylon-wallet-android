@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,7 +43,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppMessenger: DappMessenger,
     private val personaRepository: PersonaRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : BaseViewModel<DAppUnauthorizedLoginUiState>(),
@@ -59,7 +60,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
+            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
                     DappRequestFailure.WrongNetwork(

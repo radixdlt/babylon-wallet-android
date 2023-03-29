@@ -25,11 +25,12 @@ import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
+import rdx.works.profile.domain.gateway.GetGatewaysUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
-    private val profileDataSource: ProfileDataSource,
+    private val getGatewaysUseCase: GetGatewaysUseCase,
     private val changeGatewayUseCase: ChangeGatewayUseCase,
     private val addGatewayUseCase: AddGatewayUseCase,
     private val deleteGatewayUseCase: DeleteGatewayUseCase,
@@ -45,7 +46,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private fun observeProfile() {
         viewModelScope.launch {
-            profileDataSource.gateways.collect { gateways ->
+            getGatewaysUseCase().collect { gateways ->
                 val current = gateways.current()
                 _state.update { state ->
                     state.copy(
