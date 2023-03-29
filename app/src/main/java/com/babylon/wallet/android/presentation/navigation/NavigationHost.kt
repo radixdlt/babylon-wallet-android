@@ -25,7 +25,7 @@ import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
-import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
+import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
@@ -170,8 +170,8 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            showSuccessDialog = {
-                navController.requestSuccess(it)
+            showSuccessDialog = { requestId, dAppName ->
+                navController.requestResultSuccess(requestId, dAppName)
             }
         )
         dAppLoginUnauthorized(
@@ -179,12 +179,12 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            showSuccessDialog = {
-                navController.requestSuccess(it)
+            showSuccessDialog = { requestId, dAppName ->
+                navController.requestResultSuccess(requestId, dAppName)
             }
         )
         settingsNavGraph(navController)
-        requestSuccess(onBackPress = {
+        requestResultSuccess(onBackPress = {
             navController.popBackStack()
         })
         createPersonaConfirmationScreen(

@@ -7,7 +7,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
-import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
+import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
@@ -76,7 +76,10 @@ fun WalletApp(
                     }
                 }
                 is MainEvent.HandledUsePersonaAuthRequest -> {
-                    navController.requestSuccess(event.dAppName)
+                    navController.requestResultSuccess(
+                        requestId = event.requestId,
+                        dAppName = event.dAppName
+                    )
                 }
             }
         }
