@@ -25,7 +25,6 @@ import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
-import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
@@ -35,6 +34,7 @@ import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScr
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.ui.composables.requestresult.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable

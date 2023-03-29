@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.requestsuccess
+package com.babylon.wallet.android.presentation.ui.composables.requestresult.success
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
