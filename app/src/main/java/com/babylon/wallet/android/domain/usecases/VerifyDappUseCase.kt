@@ -7,16 +7,17 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.preferences.IsInDeveloperModeUseCase
 import javax.inject.Inject
 
 class VerifyDappUseCase @Inject constructor(
     private val dappMetadataRepository: DappMetadataRepository,
     private val dAppMessenger: DappMessenger,
-    private val profileDataSource: ProfileDataSource
+    private val isInDeveloperModeUseCase: IsInDeveloperModeUseCase
 ) {
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
-        val developerMode = profileDataSource.isInDeveloperMode()
+        val developerMode = isInDeveloperModeUseCase()
         return if (developerMode) {
             Result.Success(true)
         } else {

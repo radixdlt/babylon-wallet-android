@@ -45,9 +45,6 @@ interface ProfileDataSource {
 
     suspend fun getCurrentNetworkBaseUrl(): String
 
-    suspend fun updateDeveloperMode(isEnabled: Boolean)
-
-    suspend fun isInDeveloperMode(): Boolean
 }
 
 @Suppress("TooManyFunctions")
@@ -117,19 +114,6 @@ class ProfileDataSourceImpl @Inject constructor(
 
     override suspend fun getCurrentNetworkBaseUrl(): String {
         return getGateway().url
-    }
-
-    override suspend fun updateDeveloperMode(isEnabled: Boolean) {
-        withContext(ioDispatcher) {
-            readProfile()?.let { profile ->
-                val updatedProfile = profile.updateDeveloperMode(isEnabled)
-                saveProfile(updatedProfile)
-            }
-        }
-    }
-
-    override suspend fun isInDeveloperMode(): Boolean = withContext(ioDispatcher) {
-        readProfile()?.appPreferences?.security?.isDeveloperModeEnabled ?: false
     }
 
     private suspend fun getGateway(): Radix.Gateway {

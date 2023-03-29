@@ -7,5 +7,9 @@ class IsInDeveloperModeUseCase @Inject constructor(
     val profileDataSource: ProfileDataSource
 ) {
 
-    suspend operator fun invoke() = profileDataSource.isInDeveloperMode()
+    suspend operator fun invoke() = profileDataSource
+        .readProfile()
+        ?.appPreferences
+        ?.security
+        ?.isDeveloperModeEnabled ?: false
 }
