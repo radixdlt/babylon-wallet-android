@@ -31,8 +31,7 @@ import java.math.BigDecimal
 @Composable
 fun TokenItemCard(
     token: TokenUiModel,
-    modifier: Modifier = Modifier,
-    fiatAmount: String? = null
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
         Row(
@@ -83,30 +82,15 @@ fun TokenItemCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Column(
-                modifier = Modifier.weight(0.7f)
-            ) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = token.tokenQuantityToDisplay,
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
-                )
-                fiatAmount?.let { amount ->
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = amount,
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.End
-                    )
-                }
-            }
+            Text(
+                modifier = Modifier.weight(0.7f),
+                text = token.tokenQuantityToDisplay,
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End
+            )
         }
     }
 }
