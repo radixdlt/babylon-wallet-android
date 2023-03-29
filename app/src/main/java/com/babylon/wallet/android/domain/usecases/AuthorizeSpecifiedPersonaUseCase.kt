@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.toISO8601String
-import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
@@ -17,6 +16,14 @@ import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+/**
+ * Purpose of this use case is to respond to dApp login request silently without showing dApp login flow.
+ * This can happen if those are satisfied:
+ * - request is of type AuthorizedRequest
+ * - auth type is of type UsePersonaRequest
+ * - there are only ongoing request items within that request, no reset item
+ * - we have all the data already granted for ongoing request items that are part this request
+ */
 class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dAppMessenger: DappMessenger,
@@ -24,53 +31,53 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val personaRepository: PersonaRepository
 ) {
 
-    suspend operator fun invoke(request: IncomingRequest): Result<String> =
-        coroutineScope {
-            var operationResult: Result<String> = Result.Error()
-            (request as? IncomingRequest.AuthorizedRequest)?.let { request ->
-                val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
-                    request.metadata.dAppDefinitionAddress
-                ) ?: return@coroutineScope Result.Error()
-                val authorizedPersonaSimple =
-                    authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
-                        it.identityAddress == (request.authRequest as? IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest)
-                            ?.personaAddress
-                    } ?: return@coroutineScope Result.Error()
-                val persona = personaRepository.getPersonaByAddress(
-                    authorizedPersonaSimple.identityAddress
-                ) ?: return@coroutineScope Result.Error()
-                if (request.hasOngoingRequestItemsOnly()) {
-                    val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
-                    val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
-                    val selectedAccounts: List<AccountItemUiModel> = emptyList()
-                    val selectedPersonaData: List<Network.Persona.Field>
-                    when {
-                        hasOngoingAccountsRequest -> {
-                            operationResult = handleOngoingAccountsRequest(
-                                request,
-                                authorizedDapp,
-                                authorizedPersonaSimple,
-                                hasOngoingPersonaDataRequest,
-                                persona
+    @Suppress("ReturnCount", "NestedBlockDepth")
+    suspend operator fun invoke(incomingRequest: IncomingRequest): Result<String> {
+        var operationResult: Result<String> = Result.Error()
+        (incomingRequest as? IncomingRequest.AuthorizedRequest)?.let { request ->
+            val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
+                request.metadata.dAppDefinitionAddress
+            ) ?: return Result.Error()
+            val authorizedPersonaSimple =
+                authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
+                    it.identityAddress == (request.authRequest as? IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest)
+                        ?.personaAddress
+                } ?: return Result.Error()
+            val persona = personaRepository.getPersonaByAddress(
+                authorizedPersonaSimple.identityAddress
+            ) ?: return Result.Error()
+            if (request.hasOngoingRequestItemsOnly()) {
+                val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
+                val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
+                val selectedAccounts: List<AccountItemUiModel> = emptyList()
+                val selectedPersonaData: List<Network.Persona.Field>
+                when {
+                    hasOngoingAccountsRequest -> {
+                        operationResult = handleOngoingAccountsRequest(
+                            request,
+                            authorizedDapp,
+                            authorizedPersonaSimple,
+                            hasOngoingPersonaDataRequest,
+                            persona
+                        )
+                    }
+                    hasOngoingPersonaDataRequest -> {
+                        selectedPersonaData = getAlreadyGrantedPersonaData(request, authorizedDapp, authorizedPersonaSimple)
+                        if (selectedPersonaData.isNotEmpty()) {
+                            operationResult = sendSuccessResponse(
+                                request = request,
+                                persona = persona,
+                                selectedAccounts = selectedAccounts,
+                                selectedPersonaData = selectedPersonaData,
+                                authorizedDapp = authorizedDapp
                             )
-                        }
-                        hasOngoingPersonaDataRequest -> {
-                            selectedPersonaData = getAlreadyGrantedPersonaData(request, authorizedDapp, authorizedPersonaSimple)
-                            if (selectedPersonaData.isNotEmpty()) {
-                                operationResult = sendSuccessResponse(
-                                    request = request,
-                                    persona = persona,
-                                    selectedAccounts = selectedAccounts,
-                                    selectedPersonaData = selectedPersonaData,
-                                    authorizedDapp = authorizedDapp
-                                )
-                            }
                         }
                     }
                 }
             }
-            operationResult
         }
+        return operationResult
+    }
 
     private suspend fun handleOngoingAccountsRequest(
         request: IncomingRequest.AuthorizedRequest,

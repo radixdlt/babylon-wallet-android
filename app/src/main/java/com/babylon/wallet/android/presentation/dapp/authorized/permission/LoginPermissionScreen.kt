@@ -67,7 +67,13 @@ fun LoginPermissionScreen(
             }
         }
     }
-    BackHandler(enabled = state.initialAuthorizedLoginRoute !is InitialAuthorizedLoginRoute.Permission) {}
+    BackHandler {
+        if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+            viewModel.onRejectLogin()
+        } else {
+            onBackClick()
+        }
+    }
     LoginPermissionContent(
         onContinueClick = {
             viewModel.onPermissionGranted(numberOfAccounts, isExactAccountsCount, oneTime)

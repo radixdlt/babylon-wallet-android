@@ -57,7 +57,9 @@ class PersonaEditViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         persona = persona,
-                        personaDisplayName = PersonaDisplayNameFieldWrapper(persona.displayName)
+                        personaDisplayName = PersonaDisplayNameFieldWrapper(
+                            value = persona.displayName
+                        )
                     )
                 }
             }

@@ -24,9 +24,7 @@ sealed interface MessageFromDataChannel {
         ) : IncomingRequest(dappId, requestId, requestMetadata) {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
-                return isUsePersonaAuth() &&
-                    oneTimePersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null &&
+                return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
                     (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
@@ -36,6 +34,14 @@ sealed interface MessageFromDataChannel {
 
             fun isUsePersonaAuth(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest
+            }
+
+            private fun hasNoOneTimeRequestItems(): Boolean {
+                return oneTimePersonaDataRequestItem == null && oneTimeAccountsRequestItem == null
+            }
+
+            private fun hasNoResetRequestItem(): Boolean {
+                return resetRequestItem?.personaData != true && resetRequestItem?.accounts != true
             }
 
             fun hasOnlyAuthItem(): Boolean {
