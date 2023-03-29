@@ -45,7 +45,7 @@ internal class TransactionClientTest {
             getAccountResourceUseCase,
             cache
         )
-        coEvery { profileDataSource.getCurrentNetworkId() } returns Radix.Network.nebunet.networkId()
+        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

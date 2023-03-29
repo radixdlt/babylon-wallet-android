@@ -37,7 +37,7 @@ class CreateAccountUseCase @Inject constructor(
                     }
                 )
             }
-            val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
+            val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetwork().networkId()
 
             val factorSource = profile.babylonDeviceFactorSource
 

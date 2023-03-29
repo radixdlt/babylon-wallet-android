@@ -287,7 +287,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun approveTransaction() {
         approvalJob = appScope.launch {
             state.manifestData?.let { manifestData ->
-                val currentNetworkId = profileDataSource.getCurrentNetworkId().value
+                val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
                 if (currentNetworkId != manifestData.networkId) {
                     val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendWalletInteractionResponseFailure(

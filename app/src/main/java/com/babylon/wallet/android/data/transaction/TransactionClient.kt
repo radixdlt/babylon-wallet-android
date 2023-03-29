@@ -57,12 +57,12 @@ class TransactionClient @Inject constructor(
         manifest: TransactionManifest,
         hasLockFee: Boolean
     ): Result<String> {
-        val networkId = profileDataSource.getCurrentNetworkId().value
+        val networkId = profileDataSource.getCurrentNetwork().networkId().value
         return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
 
     suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
-        val networkId = profileDataSource.getCurrentNetworkId().value
+        val networkId = profileDataSource.getCurrentNetwork().networkId().value
         val manifestConversionResult = convertManifestInstructionsToJSON(
             manifest = TransactionManifest(
                 instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
@@ -253,7 +253,7 @@ class TransactionClient @Inject constructor(
     private suspend fun convertManifestInstructionsToJSON(
         manifest: TransactionManifest
     ): Result<ConvertManifestResponse> {
-        val networkId = profileDataSource.getCurrentNetworkId()
+        val networkId = profileDataSource.getCurrentNetwork().networkId()
         return try {
             Result.Success(
                 engine.convertManifest(
@@ -278,7 +278,7 @@ class TransactionClient @Inject constructor(
     private suspend fun convertManifestInstructionsToString(
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
-        val networkId = profileDataSource.getCurrentNetworkId()
+        val networkId = profileDataSource.getCurrentNetwork().networkId()
         return try {
             Result.Success(
                 engine.convertManifest(

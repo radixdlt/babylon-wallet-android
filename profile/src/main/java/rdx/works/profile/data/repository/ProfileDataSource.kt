@@ -41,9 +41,6 @@ interface ProfileDataSource {
     suspend fun clear()
 
     suspend fun getCurrentNetwork(): Radix.Network
-    suspend fun getCurrentNetworkId(): NetworkId
-
-    suspend fun getCurrentNetworkBaseUrl(): String
 
 }
 
@@ -107,19 +104,4 @@ class ProfileDataSourceImpl @Inject constructor(
         ?.appPreferences
         ?.gateways?.current()?.network
         ?: Radix.Gateway.default.network
-
-    override suspend fun getCurrentNetworkId(): NetworkId {
-        return getGateway().network.networkId()
-    }
-
-    override suspend fun getCurrentNetworkBaseUrl(): String {
-        return getGateway().url
-    }
-
-    private suspend fun getGateway(): Radix.Gateway {
-        return readProfile()
-            ?.appPreferences
-            ?.gateways?.current()
-            ?: Radix.Gateway.default
-    }
 }

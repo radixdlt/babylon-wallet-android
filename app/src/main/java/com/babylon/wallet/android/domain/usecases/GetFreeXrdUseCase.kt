@@ -34,7 +34,7 @@ class GetFreeXrdUseCase @Inject constructor(
     ): Result<String> {
         return withContext(ioDispatcher) {
             val manifest = buildFaucetManifest(
-                networkId = profileDataSource.getCurrentNetworkId(),
+                networkId = profileDataSource.getCurrentNetwork().networkId(),
                 address = address,
                 includeLockFeeInstruction = includeLockFeeInstruction
             )

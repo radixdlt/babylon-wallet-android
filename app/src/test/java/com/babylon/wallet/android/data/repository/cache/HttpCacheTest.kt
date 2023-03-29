@@ -15,6 +15,7 @@ import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Call
 import java.time.Duration
 import java.time.Instant
@@ -23,8 +24,8 @@ import java.time.temporal.ChronoUnit
 internal class HttpCacheTest {
 
     private val memoryCacheClient = MemoryCacheClient()
-    private val profileDataSourceMock = mockk<ProfileDataSource>()
-    private val testedClass = HttpCacheImpl(profileDataSourceMock, memoryCacheClient)
+    private val getCurrentGatewayUseCaseMock = mockk<GetCurrentGatewayUseCase>()
+    private val testedClass = HttpCacheImpl(getCurrentGatewayUseCaseMock, memoryCacheClient)
 
     @Test
     fun `when a new call, the cache calculates the correct key and timestamp for the cached value`() = runTest {
@@ -34,7 +35,7 @@ internal class HttpCacheTest {
         val url = "https://fake.com/fakeGet"
         mockkStatic(Instant::class)
         every { Instant.now() } returns now
-        coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns url
+        coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway(url, Radix.Network.nebunet)
         val mockApiCall = mockApiCall(method = method, url = url)
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
         val key = arrayOf(method, url, "").contentToString().blake2Hash().toHexString()
@@ -51,7 +52,7 @@ internal class HttpCacheTest {
         val value = FakeResponse()
         val mockApiCall = mockApiCall()
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
-        coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns Radix.Gateway.default.url
+        coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway.default
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(2, ChronoUnit.MINUTES)
         mockkStatic(Instant::class)
@@ -69,7 +70,7 @@ internal class HttpCacheTest {
         val value = FakeResponse()
         val mockApiCall = mockApiCall()
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
-        coEvery { profileDataSourceMock.getCurrentNetworkBaseUrl() } returns Radix.Gateway.default.url
+        coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway.default
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(10, ChronoUnit.MINUTES)
         mockkStatic(Instant::class)

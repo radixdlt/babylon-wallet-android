@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -58,7 +59,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
-        coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Nebunet
+        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
@@ -123,7 +124,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Hammunet
+        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.hammunet
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction()

@@ -8,6 +8,7 @@ import okio.IOException
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Call
 import timber.log.Timber
 import java.net.URL
@@ -60,7 +61,7 @@ interface HttpCache {
 }
 
 class HttpCacheImpl @Inject constructor(
-    private val profileDataSource: ProfileDataSource,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val cacheClient: CacheClient
 ) : HttpCache {
 
@@ -117,7 +118,7 @@ class HttpCacheImpl @Inject constructor(
     }
 
     private suspend fun Call<*>.cacheKeyData(): CacheKeyData {
-        val baseUrl = URL(profileDataSource.getCurrentNetworkBaseUrl())
+        val baseUrl = URL(getCurrentGatewayUseCase().url)
 
         return CacheKeyData(
             method = request().method,
