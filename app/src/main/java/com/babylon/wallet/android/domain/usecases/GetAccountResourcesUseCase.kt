@@ -155,5 +155,5 @@ class GetAccountResourcesUseCase @Inject constructor(
                 )
             )
         )
-    }.orEmpty()
+    }?.filterNot { it.amount == 0L }.orEmpty()
 }
