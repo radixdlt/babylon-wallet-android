@@ -45,8 +45,6 @@ interface ProfileDataSource {
 
     suspend fun getCurrentNetworkBaseUrl(): String
 
-    suspend fun hasAccountForGateway(gateway: Radix.Gateway): Boolean
-
     suspend fun updateDeveloperMode(isEnabled: Boolean)
 
     suspend fun isInDeveloperMode(): Boolean
@@ -119,20 +117,6 @@ class ProfileDataSourceImpl @Inject constructor(
 
     override suspend fun getCurrentNetworkBaseUrl(): String {
         return getGateway().url
-    }
-
-    override suspend fun hasAccountForGateway(gateway: Radix.Gateway): Boolean {
-        val knownNetwork = Radix.Network
-            .allKnownNetworks()
-            .firstOrNull { network ->
-                network.name == gateway.network.name
-            } ?: return false
-
-        return readProfile()?.let { profile ->
-            profile.networks.any { perNetwork ->
-                perNetwork.networkID == knownNetwork.id
-            }
-        } ?: false
     }
 
     override suspend fun updateDeveloperMode(isEnabled: Boolean) {

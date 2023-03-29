@@ -14,8 +14,23 @@ class ChangeGatewayUseCase @Inject constructor(
         .profile
         .firstOrNull()
         ?.let { profile ->
-            val updatedProfile = profile.changeGateway(gateway)
-            profileDataSource.saveProfile(updatedProfile)
-        }
+            val knownNetwork = Radix.Network
+                .allKnownNetworks()
+                .firstOrNull { network ->
+                    network.name == gateway.network.name
+                } ?: return@let false
+
+            val networkExists = profile.networks.any { network ->
+                network.networkID == knownNetwork.id
+            }
+
+            return@let if (networkExists) {
+                val updatedProfile = profile.changeGateway(gateway)
+                profileDataSource.saveProfile(updatedProfile)
+                true
+            } else {
+                false
+            }
+        } ?: false
 
 }

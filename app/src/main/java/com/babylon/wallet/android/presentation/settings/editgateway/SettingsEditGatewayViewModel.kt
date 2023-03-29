@@ -116,11 +116,10 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private suspend fun switchGateway(gateway: Radix.Gateway) {
         if (gateway.url == state.value.currentGateway?.url) return
-        if (profileDataSource.hasAccountForGateway(gateway)) {
-            changeGatewayUseCase(gateway)
-            _state.update { state ->
-                state.copy(addingGateway = false)
-            }
+
+        val isGatewayChanged = changeGatewayUseCase(gateway)
+        if (isGatewayChanged) {
+            _state.update { state -> state.copy(addingGateway = false) }
         } else {
             val urlEncoded = gateway.url.encodeUtf8()
             sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
