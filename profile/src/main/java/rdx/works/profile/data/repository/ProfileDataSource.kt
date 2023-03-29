@@ -16,7 +16,6 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addGateway
-import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.apppreferences.deleteGateway
 import rdx.works.profile.data.model.apppreferences.updateDeveloperMode
 import rdx.works.profile.datastore.EncryptedPreferencesManager
@@ -47,8 +46,6 @@ interface ProfileDataSource {
     suspend fun getCurrentNetworkBaseUrl(): String
 
     suspend fun hasAccountForGateway(gateway: Radix.Gateway): Boolean
-
-    suspend fun changeGateway(gateway: Radix.Gateway)
 
     suspend fun addGateway(gateway: Radix.Gateway)
 
@@ -140,13 +137,6 @@ class ProfileDataSourceImpl @Inject constructor(
                 perNetwork.networkID == knownNetwork.id
             }
         } ?: false
-    }
-
-    override suspend fun changeGateway(gateway: Radix.Gateway) {
-        readProfile()?.let { profile ->
-            val updatedProfile = profile.changeGateway(gateway)
-            saveProfile(updatedProfile)
-        }
     }
 
     override suspend fun addGateway(gateway: Radix.Gateway) {

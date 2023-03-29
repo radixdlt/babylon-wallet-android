@@ -22,6 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -31,15 +32,16 @@ class SettingsEditGatewayViewModelTest {
     private lateinit var vm: SettingsEditGatewayViewModel
 
     private val profileDataSource = mockk<ProfileDataSource>()
+    private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
     private val profile = SampleDataProvider().sampleProfile()
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(profileDataSource, networkInfoRepository)
+        vm = SettingsEditGatewayViewModel(profileDataSource, changeGatewayUseCase, networkInfoRepository)
         every { profileDataSource.gateways } returns flow { emit(profile.appPreferences.gateways) }
-        coEvery { profileDataSource.changeGateway(any()) } just Runs
+        coEvery { changeGatewayUseCase(any()) } returns Unit
         coEvery { profileDataSource.addGateway(any()) } just Runs
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
@@ -94,7 +96,7 @@ class SettingsEditGatewayViewModelTest {
         coEvery { profileDataSource.hasAccountForGateway(gateway) } returns true
         vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
         advanceUntilIdle()
-        coVerify(exactly = 1) { profileDataSource.changeGateway(gateway) }
+        coVerify(exactly = 1) { changeGatewayUseCase(gateway) }
     }
 
     @Test
@@ -104,7 +106,7 @@ class SettingsEditGatewayViewModelTest {
         vm.onNewUrlChanged(sampleUrl)
         vm.onGatewayClick(gateway)
         advanceUntilIdle()
-        coVerify(exactly = 0) { profileDataSource.changeGateway(gateway) }
+        coVerify(exactly = 0) { changeGatewayUseCase(gateway) }
         assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.AlreadyExist)
     }
 

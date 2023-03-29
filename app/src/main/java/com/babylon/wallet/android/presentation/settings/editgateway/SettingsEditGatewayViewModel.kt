@@ -22,11 +22,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
     private val profileDataSource: ProfileDataSource,
+    private val changeGatewayUseCase: ChangeGatewayUseCase,
     private val networkInfoRepository: NetworkInfoRepository,
 ) : ViewModel(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
@@ -111,7 +113,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
     private suspend fun switchGateway(gateway: Radix.Gateway) {
         if (gateway.url == state.value.currentGateway?.url) return
         if (profileDataSource.hasAccountForGateway(gateway)) {
-            profileDataSource.changeGateway(gateway)
+            changeGatewayUseCase(gateway)
             _state.update { state ->
                 state.copy(addingGateway = false)
             }
