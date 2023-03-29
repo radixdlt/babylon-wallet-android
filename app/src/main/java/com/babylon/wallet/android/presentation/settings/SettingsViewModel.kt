@@ -17,11 +17,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val profileDataSource: ProfileDataSource,
+    private val getP2PLinksUseCase: GetP2PLinksUseCase,
     private val preferencesManager: PreferencesManager,
     private val peerdroidClient: PeerdroidClient
 ) : ViewModel(), OneOffEventHandler<SettingsEvent> by OneOffEventHandlerImpl() {
@@ -35,7 +37,7 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state = profileDataSource.p2pLinks
+    val state = getP2PLinksUseCase()
         .map { p2pLinks ->
             val updatedSettings = if (p2pLinks.isEmpty()) {
                 defaultSettings.toMutableList().apply {

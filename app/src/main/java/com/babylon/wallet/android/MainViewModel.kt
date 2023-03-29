@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -34,6 +35,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val profileDataSource: ProfileDataSource,
+    private val getP2PLinksUseCase: GetP2PLinksUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
@@ -70,7 +72,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeForP2PLinks() {
-        observeP2PLinksJob = profileDataSource.p2pLinks
+        observeP2PLinksJob = getP2PLinksUseCase()
             .map { p2pLinks ->
                 Timber.d("found ${p2pLinks.size} p2p links")
                 p2pLinks.forEach { p2PLink ->

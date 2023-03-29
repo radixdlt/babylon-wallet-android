@@ -18,6 +18,7 @@ import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
 import rdx.works.profile.domain.p2plink.DeleteP2PLinkUseCase
+import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -25,7 +26,7 @@ import javax.inject.Inject
 class SettingsConnectorViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     private val peerdroidLink: PeerdroidLink,
-    profileDataSource: ProfileDataSource,
+    getP2PLinksUseCase: GetP2PLinksUseCase,
     private val addP2PLinkUseCase: AddP2PLinkUseCase,
     private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
     savedStateHandle: SavedStateHandle,
@@ -49,7 +50,7 @@ class SettingsConnectorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profileDataSource.p2pLinks
+            getP2PLinksUseCase()
                 .collect { p2pLinks ->
                     _state.update {
                         it.copy(

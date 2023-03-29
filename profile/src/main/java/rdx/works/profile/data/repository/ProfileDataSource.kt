@@ -2,8 +2,6 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -12,7 +10,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -24,8 +21,6 @@ interface ProfileDataSource {
     val profileState: Flow<Result<Profile?>>
 
     val profile: Flow<Profile?>
-
-    val p2pLinks: Flow<List<P2PLink>>
 
     suspend fun readProfile(): Profile?
 
@@ -65,12 +60,6 @@ class ProfileDataSourceImpl @Inject constructor(
         profileState.map {
             it.getOrNull()
         }
-
-    override val p2pLinks: Flow<List<P2PLink>> = profile
-        .map { profile ->
-            profile?.appPreferences?.p2pLinks.orEmpty()
-        }
-        .distinctUntilChanged()
 
     override suspend fun readProfile(): Profile? {
         return profile.firstOrNull()
