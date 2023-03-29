@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
@@ -15,15 +16,50 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
     private val accountRepository: AccountRepository,
     private val entityRepository: EntityRepository
 ) {
+    @Suppress("LongMethod")
     suspend fun invoke(
-        accountAddresses: List<String>,
+        componentAddresses: List<String>,
         amount: String
     ): Result<TransactionAccountItemUiModel> {
         val entityDetailsResponse = entityRepository.stateEntityDetails(
-            addresses = accountAddresses,
+            addresses = componentAddresses,
             isRefreshing = false
         )
         var account: Result<TransactionAccountItemUiModel> = Result.Error()
+        entityDetailsResponse.onError {
+            // TODO This is a hack but will exists until KET will return appropriate flag
+            val accountAddressesOnly = componentAddresses.filter { address ->
+                address.startsWith("account_")
+            }
+            val accountsDetailsResponse = entityRepository.stateEntityDetails(
+                addresses = accountAddressesOnly,
+                isRefreshing = false
+            )
+            accountsDetailsResponse.onValue { stateAccountDetailsResponse ->
+                val accountItem = stateAccountDetailsResponse.items.filter {
+                    it.details?.type == StateEntityDetailsResponseItemDetailsType.component
+                }.first()
+
+                val accountDisplayName = accountRepository
+                    .getAccountByAddress(accountItem.address)?.displayName.orEmpty()
+
+                val accountAppearanceId = accountRepository
+                    .getAccountByAddress(accountItem.address)?.appearanceID ?: 1
+
+                account = Result.Success(
+                    TransactionAccountItemUiModel(
+                        address = accountItem.address,
+                        displayName = accountDisplayName,
+                        tokenSymbol = "Unknown",
+                        tokenQuantity = amount,
+                        fiatAmount = "$1234.12",
+                        appearanceID = accountAppearanceId,
+                        iconUrl = ""
+                    )
+                )
+            }
+        }
+
         entityDetailsResponse.onValue { stateEntityDetailsResponse ->
             val resourceItem = stateEntityDetailsResponse.items.first {
                 it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource

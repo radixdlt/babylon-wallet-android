@@ -95,8 +95,13 @@ class TransactionApprovalViewModel @Inject constructor(
                             manifest = transactionManifest,
                             networkId = profileDataSource.getCurrentNetworkId().value
                         )
+                        transactionPreview.onError {
+                            state = state.copy(
+                                isLoading = false,
+                                error = UiMessage.ErrorMessage(it)
+                            )
+                        }
                         transactionPreview.onValue { transactionPreviewResponse ->
-
                             transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
                                 val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
                                 val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
@@ -112,6 +117,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                 transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                             )
 
+                            manifestPreview.exceptionOrNull().let {
+                                state = state.copy(
+                                    isLoading = false,
+                                    error = UiMessage.ErrorMessage(it)
+                                )
+                            }
+
                             manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
 
                                 val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> = mutableListOf()
@@ -126,7 +138,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                             depositJobs.add(
                                                 async {
                                                     getTransactionComponentResourcesUseCase.invoke(
-                                                        accountAddresses = listOf(
+                                                        componentAddresses = listOf(
                                                             it.componentAddress.address,
                                                             accountDepositResourceSpecifier.resourceAddress.address
                                                         ),
@@ -141,7 +153,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                             depositJobs.add(
                                                 async {
                                                     getTransactionComponentResourcesUseCase.invoke(
-                                                        accountAddresses = listOf(
+                                                        componentAddresses = listOf(
                                                             it.componentAddress.address,
                                                             accountDepositResourceSpecifier.resourceAddress.address
                                                         ),
@@ -158,7 +170,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     withdrawJobs.add(
                                         async {
                                             getTransactionComponentResourcesUseCase.invoke(
-                                                accountAddresses = listOf(
+                                                componentAddresses = listOf(
                                                     it.componentAddress.address,
                                                     accountWithdrawResourceSpecifier.resourceAddress.address
                                                 ),
