@@ -45,7 +45,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val profileDataSource: ProfileDataSource,
     private val dappMetadataRepository: DappMetadataRepository,
     incomingRequestRepository: IncomingRequestRepository
-) : BaseViewModel<DAppUnauthorizedLoginUiState>(), OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<DAppUnauthorizedLoginUiState>(),
+    OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
@@ -181,7 +182,12 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             state.value.selectedAccountsOneTime,
             state.value.selectedOnetimeDataFields,
         )
-        sendEvent(DAppUnauthorizedLoginEvent.LoginFlowCompleted(state.value.dappMetadata?.getName() ?: "Unknown dApp"))
+        sendEvent(
+            DAppUnauthorizedLoginEvent.LoginFlowCompleted(
+                requestId = request.id,
+                dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
+            )
+        )
     }
 
     override fun initialState(): DAppUnauthorizedLoginUiState {
@@ -190,8 +196,14 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 }
 
 sealed interface DAppUnauthorizedLoginEvent : OneOffEvent {
+
     object RejectLogin : DAppUnauthorizedLoginEvent
-    data class LoginFlowCompleted(val dappName: String) : DAppUnauthorizedLoginEvent
+
+    data class LoginFlowCompleted(
+        val requestId: String,
+        val dAppName: String
+    ) : DAppUnauthorizedLoginEvent
+
     data class PersonaDataOnetime(val requiredFieldsEncoded: String) : DAppUnauthorizedLoginEvent
 }
 

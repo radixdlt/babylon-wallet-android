@@ -26,7 +26,7 @@ fun DappUnauthorizedLoginNavigationHost(
     initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute,
     navController: NavHostController,
     finishDappLogin: () -> Unit,
-    showSuccessDialog: (String) -> Unit,
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel
 ) {
     AnimatedNavHost(
@@ -79,9 +79,9 @@ fun DappUnauthorizedLoginNavigationHost(
             onPersonaOnetime = {
                 navController.personaDataOnetimeUnauthorized(it)
             },
-            onLoginFlowComplete = {
+            onLoginFlowComplete = { requestId, dAppName ->
                 finishDappLogin()
-                showSuccessDialog(it)
+                showSuccessDialog(requestId, dAppName)
             },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
@@ -96,9 +96,9 @@ fun DappUnauthorizedLoginNavigationHost(
             onBackClick = {
                 navController.navigateUp()
             },
-            onLoginFlowComplete = { dappName ->
+            onLoginFlowComplete = { requestId, dAppName ->
                 finishDappLogin()
-                showSuccessDialog(dappName)
+                showSuccessDialog(requestId, dAppName)
             },
             onCreatePersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {

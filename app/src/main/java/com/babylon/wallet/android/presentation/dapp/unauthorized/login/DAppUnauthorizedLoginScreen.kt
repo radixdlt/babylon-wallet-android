@@ -27,7 +27,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 fun DappUnauthorizedLoginScreen(
     viewModel: DAppUnauthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    showSuccessDialog: (String) -> Unit,
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
