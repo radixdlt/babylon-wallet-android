@@ -149,11 +149,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
             val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
             if (ongoingAccountsRequestItem != null && (
-                !requestedAccountsPermissionAlreadyGranted(
-                        authRequest.personaAddress,
-                        ongoingAccountsRequestItem
-                    ) || resetAccounts
-                )
+                        !requestedAccountsPermissionAlreadyGranted(
+                            authRequest.personaAddress,
+                            ongoingAccountsRequestItem
+                        ) || resetAccounts
+                        )
             ) {
                 _state.update {
                     it.copy(
@@ -509,7 +509,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     request.oneTimePersonaDataRequestItem != null -> {
                         handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                     }
-                    else -> { sendRequestResponse() }
+                    else -> {
+                        sendRequestResponse()
+                    }
                 }
             }
         } else if (handledRequest?.isOngoing == false) {
@@ -547,9 +549,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         mutex.withLock {
             editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
         }
+        val dappName = if (state.value.dappMetadata?.getName().isNullOrEmpty()) {
+            "Unknown dApp"
+        } else {
+            state.value.dappMetadata?.getName().orEmpty()
+        }
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
-                state.value.dappMetadata?.getName() ?: "Unknown dApp",
+                dappName,
                 showSuccessDialog = !request.isInternalRequest()
             )
         )

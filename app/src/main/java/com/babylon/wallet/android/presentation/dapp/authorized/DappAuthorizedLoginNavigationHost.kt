@@ -25,6 +25,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ROU
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.selectPersona
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.utils.decodeUtf8
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -39,7 +40,7 @@ fun DappAuthorizedLoginNavigationHost(
     val loginFlowCompletedCallback = { event: DAppAuthorizedLoginEvent.LoginFlowCompleted ->
         finishDappLogin()
         if (event.showSuccessDialog) {
-            showSuccessDialog(event.dappName)
+            showSuccessDialog(event.dappName.decodeUtf8())
         }
     }
     AnimatedNavHost(
