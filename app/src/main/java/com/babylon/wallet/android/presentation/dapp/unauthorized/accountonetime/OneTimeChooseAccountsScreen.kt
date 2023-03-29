@@ -29,13 +29,13 @@ fun OneTimeChooseAccountsScreen(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
     onPersonaOnetime: (String) -> Unit
 ) {
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
                 is DAppUnauthorizedLoginEvent.PersonaDataOnetime -> onPersonaOnetime(event.requiredFieldsEncoded)
                 DAppUnauthorizedLoginEvent.RejectLogin -> sharedViewModel.onRejectRequest()
             }
