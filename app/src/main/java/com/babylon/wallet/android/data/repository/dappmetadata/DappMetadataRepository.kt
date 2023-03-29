@@ -9,8 +9,8 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.execute
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
@@ -53,14 +53,14 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     when {
                         !gatewayMetadata.isDappDefinition() -> {
                             Result.Error(
-                                TransactionApprovalException(
+                                DappRequestException(
                                     DappRequestFailure.DappVerificationFailure.WrongAccountType
                                 )
                             )
                         }
                         gatewayMetadata.getRelatedDomainName() != origin -> {
                             Result.Error(
-                                TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                                DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
                             )
                         }
                         else -> {
@@ -75,7 +75,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                         Result.Success(true)
                     } else {
                         Result.Error(
-                            TransactionApprovalException(
+                            DappRequestException(
                                 DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress
                             )
                         )
@@ -83,7 +83,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 }
             } else {
                 Result.Error(
-                    TransactionApprovalException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                    DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
                 )
             }
         }
@@ -104,7 +104,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     response.dAppMetadata.map { it.toDomainModel() }
                 },
                 error = {
-                    TransactionApprovalException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
+                    DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
             )
         }

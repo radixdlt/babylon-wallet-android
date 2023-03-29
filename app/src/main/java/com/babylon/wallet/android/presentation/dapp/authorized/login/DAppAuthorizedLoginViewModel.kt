@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
@@ -125,10 +125,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     resetAccounts
                 )
             } else {
-                onRejectLogin()
+                onAbortDappLogin(WalletErrorType.InvalidPersona)
             }
         } else {
-            onRejectLogin()
+            onAbortDappLogin()
         }
     }
 
@@ -198,7 +198,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             }
         } else {
-            onRejectLogin()
+            onAbortDappLogin(WalletErrorType.InvalidPersona)
         }
     }
 
@@ -208,7 +208,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             currentNetworkId,
             request.requestMetadata.networkId
         )
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(TransactionApprovalException(failure))) }
+        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
             args.requestId,
@@ -441,7 +441,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onRejectLogin() {
+    fun onAbortDappLogin(walletWalletErrorType: WalletErrorType = WalletErrorType.RejectedByUser) {
         viewModelScope.launch {
             if (request.isInternalRequest()) {
                 incomingRequestRepository.requestHandled(request.id)
@@ -449,7 +449,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     request.dappId,
                     args.requestId,
-                    error = WalletErrorType.RejectedByUser
+                    error = walletWalletErrorType
                 )
             }
             topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)

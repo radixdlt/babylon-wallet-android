@@ -89,7 +89,7 @@ fun SelectPersonaScreen(
     val sharedState by sharedViewModel.state.collectAsState()
     BackHandler(enabled = true) {}
     SelectPersonaContent(
-        onCancelClick = sharedViewModel::onRejectLogin,
+        onCancelClick = sharedViewModel::onAbortDappLogin,
         onContinueClick = sharedViewModel::personaSelectionConfirmed,
         onSelectPersona = {
             sharedViewModel.onSelectPersona(it)
