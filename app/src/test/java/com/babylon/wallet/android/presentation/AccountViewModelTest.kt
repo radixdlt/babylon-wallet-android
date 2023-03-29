@@ -12,6 +12,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.decodeUtf8
 import io.mockk.every
 import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -53,6 +55,11 @@ class AccountViewModelTest {
         whenever(appEventBus.events).thenReturn(MutableSharedFlow<AppEvent>().asSharedFlow())
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().decodeUtf8() } returns accountName
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
     }
 
     @Test

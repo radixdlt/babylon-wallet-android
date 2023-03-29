@@ -5,8 +5,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.sha256Hash
 import rdx.works.peerdroid.domain.BasePackage
-import rdx.works.peerdroid.helpers.sha256
 
 suspend fun ByteArray.splitMessage(
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -33,7 +33,7 @@ suspend fun ByteArray.splitMessage(
                 BasePackage.MetadataPackage(
                     messageId = messageId,
                     chunkCount = packages.count(),
-                    hashOfMessage = sha256(),
+                    hashOfMessage = sha256Hash(),
                     messageByteCount = messageSize
                 )
             )
@@ -42,7 +42,7 @@ suspend fun ByteArray.splitMessage(
                 BasePackage.MetadataPackage(
                     messageId = messageId,
                     chunkCount = 1,
-                    hashOfMessage = sha256(),
+                    hashOfMessage = sha256Hash(),
                     messageByteCount = messageSize
                 )
             )

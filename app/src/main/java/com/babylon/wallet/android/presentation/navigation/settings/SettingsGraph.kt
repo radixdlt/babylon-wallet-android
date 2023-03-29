@@ -49,8 +49,8 @@ fun NavGraphBuilder.settingsNavGraph(
             onBackClick = {
                 navController.popBackStack()
             },
-            onEditPersona = {
-                navController.personaEditScreen(it.address)
+            onEditPersona = { personaAddress, requiredFields ->
+                navController.personaEditScreen(personaAddress, requiredFields)
             }
         )
         settingsGatewayEdit(navController)

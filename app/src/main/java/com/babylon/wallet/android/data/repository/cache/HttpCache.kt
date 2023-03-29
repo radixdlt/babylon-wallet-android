@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.data.repository.cache
 
-import com.radixdlt.crypto.hash.sha256.extensions.sha256
 import kotlinx.serialization.KSerializer
 import okhttp3.HttpUrl
 import okhttp3.RequestBody
 import okio.Buffer
 import okio.IOException
-import rdx.works.peerdroid.helpers.toHexString
+import rdx.works.core.blake2Hash
+import rdx.works.core.toHexString
 import rdx.works.profile.data.repository.ProfileDataSource
 import retrofit2.Call
 import timber.log.Timber
@@ -136,7 +136,7 @@ class HttpCacheImpl @Inject constructor(
             method,
             url.toString(),
             body?.readUtf8().orEmpty()
-        ).contentToString().sha256().toHexString()
+        ).contentToString().blake2Hash().toHexString()
 
         @Suppress("SwallowedException")
         private fun RequestBody.readUtf8(): String = try {

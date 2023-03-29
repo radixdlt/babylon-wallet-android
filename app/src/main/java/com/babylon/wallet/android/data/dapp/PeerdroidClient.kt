@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
+import com.radixdlt.hex.extensions.toHexString
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -14,14 +15,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
+import rdx.works.core.sha256Hash
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent.IncomingMessage
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent.StateChanged
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.peerdroid.helpers.sha256
-import rdx.works.peerdroid.helpers.toHexString
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -98,7 +98,7 @@ class PeerdroidClientImpl @Inject constructor(
             connectionPassword = connectionPassword
         )
         encryptionKey?.let {
-            val connectionIdHolder = ConnectionIdHolder(id = it.sha256().toHexString())
+            val connectionIdHolder = ConnectionIdHolder(id = it.sha256Hash().toHexString())
             peerdroidConnector.deleteConnector(connectionIdHolder)
         } ?: Timber.e("Failed to close peer connection because connection password is wrong")
     }

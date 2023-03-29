@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.common
 
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.utils.isValidEmail
 import kotlinx.collections.immutable.ImmutableList
@@ -10,19 +11,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 
 interface PersonaEditable {
 
     val personaEditState: StateFlow<PersonaEditLogicState>
 
-    fun setPersona(persona: Network.Persona?)
+    fun setPersona(persona: Network.Persona?, requiredFieldKinds: List<Network.Persona.Field.Kind> = emptyList())
     fun onDeleteField(kind: Network.Persona.Field.Kind)
     fun onFieldValueChanged(kind: Network.Persona.Field.Kind, value: String)
     fun onDisplayNameChanged(value: String)
     fun onSelectionChanged(kind: Network.Persona.Field.Kind, selected: Boolean)
     fun onAddFields()
     fun validateInput()
+    fun onFieldFocusChanged(kind: Network.Persona.Field.Kind, focused: Boolean)
+    fun onPersonaDisplayNameFieldFocusChanged(focused: Boolean)
 }
 
 class PersonaEditableImpl : PersonaEditable {
@@ -32,16 +36,41 @@ class PersonaEditableImpl : PersonaEditable {
     override val personaEditState: StateFlow<PersonaEditLogicState>
         get() = _state.asStateFlow()
 
-    override fun setPersona(persona: Network.Persona?) {
-        val existingFields =
-            persona?.fields?.map { PersonaFieldKindWrapper(it.kind, value = it.value, valid = true) }.orEmpty().toPersistentList()
+    override fun setPersona(persona: Network.Persona?, requiredFieldKinds: List<Network.Persona.Field.Kind>) {
+        val shouldValidateInput = requiredFieldKinds.isNotEmpty()
+        val existingPersonaFields =
+            persona?.fields?.map {
+                PersonaFieldKindWrapper(
+                    kind = it.kind,
+                    value = it.value,
+                    valid = true,
+                    required = requiredFieldKinds.contains(it.kind)
+                )
+            }.orEmpty().toPersistentList()
+        val missingFields = requiredFieldKinds.minus(existingPersonaFields.map { it.kind }.toSet())
+        val currentFields =
+            (
+                existingPersonaFields + missingFields.map {
+                    PersonaFieldKindWrapper(
+                        it,
+                        required = true,
+                        shouldDisplayValidationError = true,
+                        wasEdited = true
+                    )
+                }
+                ).sortedBy { it.kind.ordinal }
+                .toPersistentList()
         _state.update { state ->
-            val fieldsToAdd = getFieldsToAdd(existingFields.map { it.kind }.toSet())
+            val fieldsToAdd = getFieldsToAdd(currentFields.map { it.kind }.toSet())
             state.copy(
-                currentFields = existingFields,
+                requiredFieldKinds = requiredFieldKinds.toPersistentList(),
+                currentFields = currentFields,
                 fieldsToAdd = fieldsToAdd,
-                personaDisplayName = persona?.displayName
+                personaDisplayName = PersonaDisplayNameFieldWrapper(persona?.displayName.orEmpty())
             )
+        }
+        if (shouldValidateInput) {
+            validateInput()
         }
     }
 
@@ -61,11 +90,22 @@ class PersonaEditableImpl : PersonaEditable {
     override fun onFieldValueChanged(kind: Network.Persona.Field.Kind, value: String) {
         _state.update { s ->
             s.copy(
-                currentFields = s.currentFields.map {
-                    if (it.kind == kind) {
-                        it.copy(value = value)
-                    } else {
+                currentFields = s.currentFields.mapWhen(predicate = { it.kind == kind }) {
+                    it.copy(value = value, wasEdited = true)
+                }.toPersistentList()
+            )
+        }
+        validateInput()
+    }
+
+    override fun onFieldFocusChanged(kind: Network.Persona.Field.Kind, focused: Boolean) {
+        _state.update { s ->
+            s.copy(
+                currentFields = s.currentFields.mapWhen(predicate = { kind == it.kind }) {
+                    if (focused) {
                         it
+                    } else {
+                        it.copy(shouldDisplayValidationError = it.wasEdited)
                     }
                 }.toPersistentList()
             )
@@ -73,8 +113,22 @@ class PersonaEditableImpl : PersonaEditable {
         validateInput()
     }
 
+    override fun onPersonaDisplayNameFieldFocusChanged(focused: Boolean) {
+        if (!focused) {
+            _state.update { s ->
+                val displayName = s.personaDisplayName
+                s.copy(
+                    personaDisplayName = displayName.copy(shouldDisplayValidationError = displayName.wasEdited)
+                )
+            }
+            validateInput()
+        }
+    }
+
     override fun onDisplayNameChanged(value: String) {
-        _state.update { it.copy(personaDisplayName = value) }
+        _state.update { state ->
+            state.copy(personaDisplayName = state.personaDisplayName.copy(value = value, wasEdited = true))
+        }
         validateInput()
     }
 
@@ -93,11 +147,9 @@ class PersonaEditableImpl : PersonaEditable {
 
     override fun onAddFields() {
         _state.update { s ->
-            val existingFields = _state.value.currentFields.map { field ->
-                PersonaFieldKindWrapper(field.kind, value = field.value)
-            } + _state.value.fieldsToAdd.filter {
+            val existingFields = _state.value.currentFields + _state.value.fieldsToAdd.filter {
                 it.selected
-            }.map { PersonaFieldKindWrapper(it.kind) }
+            }.map { PersonaFieldKindWrapper(it.kind, required = personaEditState.value.requiredFieldKinds.contains(it.kind)) }
             val fieldsToAdd = getFieldsToAdd(existingFields.map { it.kind }.toSet())
             s.copy(
                 currentFields = existingFields.sortedBy { it.kind.ordinal }.toPersistentList(),
@@ -111,18 +163,19 @@ class PersonaEditableImpl : PersonaEditable {
     override fun validateInput() {
         val validatedFields = _state.value.currentFields.map {
             when (it.kind) {
-                Network.Persona.Field.Kind.FirstName,
-                Network.Persona.Field.Kind.LastName,
-                Network.Persona.Field.Kind.PersonalIdentificationNumber,
-                Network.Persona.Field.Kind.ZipCode -> it.copy(valid = it.value.trim().isNotEmpty())
-                Network.Persona.Field.Kind.Email -> it.copy(valid = it.value.trim().isValidEmail())
+                Network.Persona.Field.Kind.GivenName,
+                Network.Persona.Field.Kind.FamilyName,
+                Network.Persona.Field.Kind.PhoneNumber -> {
+                    it.copy(valid = it.value.trim().isNotEmpty())
+                }
+                Network.Persona.Field.Kind.EmailAddress -> it.copy(valid = it.value.trim().isValidEmail())
             }
         }
         _state.update { state ->
             state.copy(
                 currentFields = validatedFields.toPersistentList(),
-                inputValid = validatedFields.all { it.valid == true } && state.personaDisplayName?.trim()
-                    ?.isNotEmpty() == true
+                inputValid = validatedFields.all { it.valid == true } && state.personaDisplayName.value.trim().isNotEmpty(),
+                personaDisplayName = state.personaDisplayName.copy(valid = state.personaDisplayName.value.trim().isNotEmpty())
             )
         }
     }
@@ -130,17 +183,18 @@ class PersonaEditableImpl : PersonaEditable {
     private fun getFieldsToAdd(
         existingFields: Set<Network.Persona.Field.Kind>
     ): PersistentList<PersonaFieldKindWrapper> {
-        return (
-            Network.Persona.Field.Kind.values()
-                .toSet() - existingFields
-            ).sortedBy { it.ordinal }.map { PersonaFieldKindWrapper(kind = it) }.toPersistentList()
+        val requiredFieldKinds = personaEditState.value.requiredFieldKinds
+        return (Network.Persona.Field.Kind.values().toSet() - existingFields)
+            .sortedBy { it.ordinal }.map { PersonaFieldKindWrapper(kind = it, required = requiredFieldKinds.contains(it)) }
+            .toPersistentList()
     }
 }
 
 data class PersonaEditLogicState(
+    val requiredFieldKinds: ImmutableList<Network.Persona.Field.Kind> = persistentListOf(),
     val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
     val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
-    val personaDisplayName: String? = null,
+    val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
     val areThereFieldsSelected: Boolean = false,
     val inputValid: Boolean = false
 )

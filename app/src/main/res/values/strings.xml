@@ -43,7 +43,7 @@
     <string name="create_dapp_login_button_title">+ Create a new dApp Login</string>
     <string name="choose_dapp_accounts_title">Choose At Least One Account</string>
     <string name="choose_dapp_accounts_body">Choose the account(s) you want dashboard to know about.</string>
-    <string name="create_dapp_accounts_button_title">+ Create a new Account</string>
+    <string name="create_dapp_accounts_button_title">+ Create a New Account</string>
     <string name="dapp_successful_title">dApp Connection Successful</string>
     <string name="dapp_successful_body">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
     <string name="dapp_successful_button_title">Go to %s</string>
@@ -127,6 +127,8 @@
     <string name="select_a_persona">Select a Persona</string>
     <string name="account_permission">Account Permission</string>
     <string name="dapp_is_requesting_ongoing_permission">%s is requesting permission to always be able to view account information when you login with this Persona.</string>
+    <string name="dapp_is_requesting_ongoing_persona_data_permission">%s is requesting permission to always be able to view the following personal data when you login with this Persona.</string>
+    <string name="dapp_is_requesting_onetime_persona_data_permission">%s is requesting that you provide some pieces personal data just one time.</string>
     <string name="always">always</string>
     <string name="dapp_is_requesting_permission">%s is requesting permission to view the following</string>
     <string name="revoke">Revoke</string>
@@ -153,8 +155,8 @@
     <string name="here_are_all_the_decentralized_apps">Here are all the dApps that you have logged into using this Radix Wallet.</string>
     <string name="here_are_the_personas">Here are the Personas that you have previously used to connect to this dApp.</string>
     <string name="dapp_definition">dApp Definition</string>
-    <string name="first_name">First Name</string>
-    <string name="last_name">Last Name</string>
+    <string name="given_name">Given Name</string>
+    <string name="family_name">Family Name</string>
     <string name="email">Email</string>
     <string name="personal_identification_number">Personal Identification Number</string>
     <string name="zip_code">Zip Code</string>
@@ -185,7 +187,6 @@
     <string name="first_name_empty">First name can\'t be empty</string>
     <string name="last_name_empty">Empty last name</string>
     <string name="email_wrong">Wrong email address</string>
-    <string name="personal_identification_number_empty">Empty value</string>
     <string name="zip_code_empty">Empty value</string>
     <string name="edit">Edit</string>
     <string name="app_settings">App Settings</string>
@@ -256,4 +257,15 @@
     <string name="withdrawing">Withdrawing</string>
     <string name="presenting">Presenting</string>
     <string name="using_dapps">Using dApps</string>
+    <string name="personal_data_permission">Personal Data Permission</string>
+    <string name="required_information">Required information:\u0020</string>
+    <string name="phone">Phone</string>
+    <string name="empty_phone">Empty phone number</string>
+    <string name="empty_display_name">Empty display name</string>
+    <string name="one_time_data_request">One-Time Data Request</string>
+    <string name="just_one_time">just one time</string>
+    <string name="choose_data_to_provide">Choose the data to provide</string>
+    <string name="required_by_dapp">Required by dApp</string>
+    <string name="required_field_for_this_dapp">Required field for this dApp</string>
+    <string name="required_field">Required field</string>
 </resources>

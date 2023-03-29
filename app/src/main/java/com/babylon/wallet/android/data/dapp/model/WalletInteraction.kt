@@ -134,7 +134,7 @@ private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
         requestId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
-        oneTimePersonaRequestItem = oneTimePersonaData?.toDomainModel(),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
     )
 }
 
@@ -154,8 +154,8 @@ private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
         authRequest = auth,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
         ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(),
-        oneTimePersonaRequestItem = oneTimePersonaData?.toDomainModel(),
-        ongoingPersonaRequestItem = ongoingPersonaData?.toDomainModel(),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
+        ongoingPersonaDataRequestItem = ongoingPersonaData?.toDomainModel(),
         resetRequestItem = reset?.toDomainModel()
     )
 }

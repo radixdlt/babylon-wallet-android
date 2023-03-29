@@ -4,10 +4,10 @@ import io.ktor.util.encodeBase64
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.decodeHex
 import org.junit.Test
+import rdx.works.core.sha256Hash
+import rdx.works.core.toHexString
 import rdx.works.peerdroid.domain.BasePackage
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.peerdroid.helpers.sha256
-import rdx.works.peerdroid.helpers.toHexString
 import kotlin.test.assertEquals
 
 class MessageAssemblerTest {
@@ -20,7 +20,7 @@ class MessageAssemblerTest {
         val actualMessageChunkCount = 1
         val actualChunkData = "dGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ=="
 
-        val expectedHashOfMessage = textMessage.toByteArray().sha256().toHexString()
+        val expectedHashOfMessage = textMessage.toByteArray().sha256Hash().toHexString()
         assertEquals(expectedHashOfMessage, actualHashOfMessageInHexString)
 
         val expectedChunkData = textMessage.encodeBase64()

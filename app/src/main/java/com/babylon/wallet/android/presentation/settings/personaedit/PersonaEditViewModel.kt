@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -52,11 +53,13 @@ class PersonaEditViewModel @Inject constructor(
         }
         viewModelScope.launch {
             personaRepository.getPersonaByAddressFlow(args.personaAddress).collect { persona ->
-                setPersona(persona = persona)
+                setPersona(persona = persona, requiredFieldKinds = args.requiredFields.toList())
                 _state.update { state ->
                     state.copy(
                         persona = persona,
-                        personaDisplayName = persona.displayName
+                        personaDisplayName = PersonaDisplayNameFieldWrapper(
+                            value = persona.displayName
+                        )
                     )
                 }
             }
@@ -70,7 +73,7 @@ class PersonaEditViewModel @Inject constructor(
                     Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
                 }
                 val updatedPersona =
-                    persona.copy(displayName = state.value.personaDisplayName?.trim().orEmpty(), fields = fields)
+                    persona.copy(displayName = state.value.personaDisplayName.value.trim(), fields = fields)
                 updatePersonaUseCase(updatedPersona)
                 sendEvent(PersonaEditEvent.PersonaSaved)
             }
@@ -86,7 +89,7 @@ data class PersonaEditUiState(
     val persona: Network.Persona? = null,
     val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
     val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
-    val personaDisplayName: String? = null,
+    val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
     val addFieldButtonEnabled: Boolean = false,
     val saveButtonEnabled: Boolean = false
 )

@@ -258,20 +258,17 @@ data class Network(
 
             @Serializable
             enum class Kind {
-                @SerialName("firstName")
-                FirstName,
+                @SerialName("givenName")
+                GivenName,
 
-                @SerialName("lastName")
-                LastName,
+                @SerialName("familyName")
+                FamilyName,
 
-                @SerialName("email")
-                Email,
+                @SerialName("emailAddress")
+                EmailAddress,
 
-                @SerialName("personalIdentificationNumber")
-                PersonalIdentificationNumber,
-
-                @SerialName("zipCode")
-                ZipCode
+                @SerialName("phoneNumber")
+                PhoneNumber
             }
 
             companion object {
@@ -317,7 +314,7 @@ data class Network(
             /**
              * List of "ongoing personaData" (identified by OnNetwork.Persona.Field.ID) user has given Dapp access to.
              */
-            @SerialName("fieldIDs")
+            @SerialName("sharedFieldIDs")
             val fieldIDs: List<String>,
 
             @SerialName("lastUsedOn")
