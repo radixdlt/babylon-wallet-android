@@ -13,10 +13,8 @@ import com.babylon.wallet.android.R
 internal const val ARG_DAPP_NAME = "dapp_name"
 
 fun NavController.requestSuccess(dappName: String) {
-    val name = if (dappName.isEmpty()) {
+    val name = dappName.ifEmpty {
         context.resources.getString(R.string.unknown_dapp)
-    } else {
-        dappName
     }
     navigate("request_success/$name")
 }

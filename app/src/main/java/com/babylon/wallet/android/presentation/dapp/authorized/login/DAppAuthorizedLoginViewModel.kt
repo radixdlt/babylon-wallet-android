@@ -110,11 +110,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private suspend fun setInitialDappLoginRoute() {
         val isLoginRequest = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest
         val usePersonaRequest = request.isUsePersonaAuth()
-        val resetPersonaData = request.resetRequestItem?.personaData == true
         val resetAccounts = request.resetRequestItem?.accounts == true
-        val showSelectPersona = isLoginRequest || resetPersonaData
-
-        if (showSelectPersona) {
+        if (isLoginRequest) {
             _state.update { it.copy(initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(args.requestId)) }
         } else if (usePersonaRequest) {
             val dapp = authorizedDapp
