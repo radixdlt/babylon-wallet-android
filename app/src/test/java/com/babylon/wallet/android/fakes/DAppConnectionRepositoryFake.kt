@@ -103,6 +103,14 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         return emptyList()
     }
 
+    override suspend fun dAppAuthorizedPersonaHasAllDataFields(
+        dAppDefinitionAddress: String,
+        personaAddress: String,
+        fieldIds: List<String>
+    ): Boolean {
+        return false
+    }
+
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
@@ -127,12 +135,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
     }
 
-    override suspend fun resetPersonaPermissions(
-        dAppDefinitionAddress: String,
-        personaAddress: String,
-        personaData: Boolean,
-        accounts: Boolean
-    ) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>) {
     }
 
 }

@@ -10,6 +10,7 @@ interface PersonaRepository {
 
     val personas: Flow<List<Network.Persona>>
     suspend fun getPersonas(): List<Network.Persona>
+    suspend fun getPersonaDataFields(address: String, fields: List<Network.Persona.Field.Kind>): List<Network.Persona.Field>
     suspend fun getPersonaByAddress(address: String): Network.Persona?
     fun getPersonaByAddressFlow(address: String): Flow<Network.Persona>
 }
@@ -26,6 +27,10 @@ class PersonaRepositoryImpl @Inject constructor(
 
     override suspend fun getPersonas(): List<Network.Persona> {
         return getPerNetwork()?.personas.orEmpty()
+    }
+
+    override suspend fun getPersonaDataFields(address: String, fields: List<Network.Persona.Field.Kind>): List<Network.Persona.Field> {
+        return getPersonaByAddress(address)?.fields?.filter { fields.contains(it.kind) }.orEmpty()
     }
 
     override fun getPersonaByAddressFlow(address: String): Flow<Network.Persona> {

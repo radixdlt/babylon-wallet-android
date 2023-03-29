@@ -2,11 +2,12 @@
 
 package com.babylon.wallet.android.utils
 
-import android.net.Uri
 import android.util.Patterns
 import android.webkit.URLUtil
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import java.net.URLDecoder
+import java.net.URLEncoder
 import java.text.DecimalFormat
 
 fun String.truncatedHash(): String {
@@ -68,11 +69,11 @@ fun String.isValidEmail(): Boolean {
 }
 
 fun String.encodeUtf8(): String {
-    return Uri.encode(this).orEmpty()
+    return URLEncoder.encode(this, "UTF-8")
 }
 
 fun String.decodeUtf8(): String {
-    return Uri.decode(this).orEmpty()
+    return URLDecoder.decode(this, "UTF-8")
 }
 
 fun String.prependHttpsPrefixIfNotPresent(): String {

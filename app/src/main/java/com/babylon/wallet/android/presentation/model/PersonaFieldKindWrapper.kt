@@ -7,5 +7,11 @@ data class PersonaFieldKindWrapper(
     val selected: Boolean = false,
     val value: String = "",
     val valid: Boolean? = null,
-    val required: Boolean = false
-)
+    val required: Boolean = false,
+    val wasEdited: Boolean = false,
+    val shouldDisplayValidationError: Boolean = false
+) {
+    fun isPhoneNumber(): Boolean {
+        return kind == Network.Persona.Field.Kind.PhoneNumber
+    }
+}

@@ -6,9 +6,9 @@ import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
-import com.babylon.wallet.android.presentation.dapp.accountonetime.chooseAccountsOneTime
-import com.babylon.wallet.android.presentation.dapp.login.dAppLogin
+import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
@@ -68,16 +68,10 @@ fun WalletApp(
                             )
                         }
                         is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLogin(
-                                requestId = incomingRequest.requestId
-                            )
+                            navController.dAppLoginAuthorized(incomingRequest.requestId)
                         }
                         is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
-                            if (incomingRequest.oneTimeAccountsRequestItem != null) {
-                                navController.chooseAccountsOneTime(
-                                    requestId = incomingRequest.requestId
-                                )
-                            }
+                            navController.dAppLoginUnauthorized(incomingRequest.requestId)
                         }
                     }
                 }

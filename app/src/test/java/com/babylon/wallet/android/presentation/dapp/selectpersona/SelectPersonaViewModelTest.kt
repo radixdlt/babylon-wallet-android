@@ -7,6 +7,8 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -31,7 +33,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        dappId = "dappId",
+        dappId = "1",
         requestId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,

@@ -10,20 +10,24 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun PersonaPropertyInput(
+    modifier: Modifier,
     label: String,
     value: String,
     onValueChanged: (String) -> Unit,
     onDeleteField: () -> Unit,
     onFocusChanged: ((FocusState) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    required: Boolean,
+    phoneInput: Boolean = false,
+    error: String? = null
 ) {
     val focusManager = LocalFocusManager.current
     RadixTextField(
@@ -31,33 +35,32 @@ fun PersonaPropertyInput(
         onValueChanged = onValueChanged,
         value = value,
         leftLabel = label,
-        iconToTheRight = {
-            IconButton(onClick = onDeleteField) {
-                Icon(
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = null,
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
-                )
+        iconToTheRight = if (!required) {
+            {
+                IconButton(onClick = onDeleteField) {
+                    Icon(
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = null,
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
+                    )
+                }
             }
+        } else {
+            null
         },
         onFocusChanged = onFocusChanged,
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Next)
         }),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+            keyboardType = if (phoneInput) {
+                KeyboardType.Phone
+            } else {
+                KeyboardOptions.Default.keyboardType
+            }
+        ),
+        rightLabel = if (required) stringResource(id = R.string.required_by_dapp) else null,
+        error = error
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PersonaPropertyInputPreview() {
-    RadixWalletTheme {
-        PersonaPropertyInput(
-            label = "Test label",
-            value = "Value",
-            onValueChanged = {},
-            onDeleteField = {},
-            onFocusChanged = {}
-        )
-    }
 }

@@ -135,7 +135,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(Network.Persona.Field.Kind.FirstName)),
+            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(Network.Persona.Field.Kind.GivenName)),
             anyFieldSelected = false
         )
     }

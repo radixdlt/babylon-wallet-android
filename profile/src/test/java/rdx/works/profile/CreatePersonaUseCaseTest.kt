@@ -10,7 +10,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -24,6 +23,7 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.CreatePersonaUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
@@ -45,12 +45,12 @@ class CreatePersonaUseCaseTest {
         val personaFields = listOf(
             Network.Persona.Field(
                 id = "ID213",
-                kind = Network.Persona.Field.Kind.FirstName,
+                kind = Network.Persona.Field.Kind.GivenName,
                 value = "Emily"
             ),
             Network.Persona.Field(
                 id = "ID0921",
-                kind = Network.Persona.Field.Kind.LastName,
+                kind = Network.Persona.Field.Kind.FamilyName,
                 value = "Jacobs"
             )
         )

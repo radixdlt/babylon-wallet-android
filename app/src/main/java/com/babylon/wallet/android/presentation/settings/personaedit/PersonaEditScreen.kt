@@ -40,6 +40,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -86,7 +87,9 @@ fun PersonaEditScreen(
         onDisplayNameChanged = viewModel::onDisplayNameChanged,
         addButtonEnabled = state.addFieldButtonEnabled,
         personaDisplayName = state.personaDisplayName,
-        saveButtonEnabled = state.saveButtonEnabled
+        saveButtonEnabled = state.saveButtonEnabled,
+        onFieldFocusChanged = viewModel::onFieldFocusChanged,
+        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged
     )
 }
 
@@ -106,8 +109,10 @@ private fun PersonaEditContent(
     onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     addButtonEnabled: Boolean,
-    personaDisplayName: String?,
-    saveButtonEnabled: Boolean
+    personaDisplayName: PersonaDisplayNameFieldWrapper,
+    saveButtonEnabled: Boolean,
+    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
@@ -176,7 +181,9 @@ private fun PersonaEditContent(
                         onValueChanged = onValueChanged,
                         onDisplayNameChanged = onDisplayNameChanged,
                         personaDisplayName = personaDisplayName,
-                        addButtonEnabled = fieldsToAdd.isNotEmpty()
+                        addButtonEnabled = fieldsToAdd.isNotEmpty(),
+                        onFieldFocusChanged = onFieldFocusChanged,
+                        onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged
                     )
                 }
             }
@@ -196,8 +203,10 @@ private fun PersonaDetailList(
     onDeleteField: (Network.Persona.Field.Kind) -> Unit,
     onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
-    personaDisplayName: String?,
-    addButtonEnabled: Boolean
+    personaDisplayName: PersonaDisplayNameFieldWrapper,
+    addButtonEnabled: Boolean,
+    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -220,8 +229,16 @@ private fun PersonaDetailList(
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
                 onValueChanged = onDisplayNameChanged,
-                value = personaDisplayName.orEmpty(),
+                value = personaDisplayName.value,
                 leftLabel = stringResource(id = R.string.persona_label),
+                error = if (personaDisplayName.shouldDisplayValidationError && personaDisplayName.valid == false) {
+                    stringResource(id = R.string.empty_display_name)
+                } else {
+                    null
+                },
+                onFocusChanged = {
+                    onPersonaDisplayNameFocusChanged(it.hasFocus)
+                }
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
             Divider(
@@ -242,19 +259,27 @@ private fun PersonaDetailList(
         }
         items(editedFields) { field ->
             PersonaPropertyInput(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingDefault),
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {
                     onValueChanged(field.kind, it)
                 },
+                onFocusChanged = {
+                    onFieldFocusChanged(field.kind, it.hasFocus)
+                },
                 onDeleteField = {
                     onDeleteField(field.kind)
                 },
-                onFocusChanged = {
+                required = field.required,
+                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                    stringResource(id = R.string.required_field_for_this_dapp)
+                } else {
+                    null
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault)
+                phoneInput = field.isPhoneNumber()
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
@@ -287,8 +312,10 @@ fun DappDetailContentPreview() {
             onValueChanged = { _, _ -> },
             onDisplayNameChanged = {},
             addButtonEnabled = false,
-            personaDisplayName = "Persona",
-            saveButtonEnabled = false
+            personaDisplayName = PersonaDisplayNameFieldWrapper("Persona"),
+            saveButtonEnabled = false,
+            onFieldFocusChanged = { _, _ -> },
+            onPersonaDisplayNameFocusChanged = {}
         )
     }
 }

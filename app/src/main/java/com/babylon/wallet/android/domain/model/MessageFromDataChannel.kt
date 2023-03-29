@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {
 
@@ -17,18 +18,37 @@ sealed interface MessageFromDataChannel {
             val authRequest: AuthRequest,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
-            val oneTimePersonaRequestItem: PersonaRequestItem? = null,
-            val ongoingPersonaRequestItem: PersonaRequestItem? = null,
+            val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
+            val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
             val resetRequestItem: ResetRequestItem? = null
         ) : IncomingRequest(dappId, requestId, requestMetadata) {
 
-            fun isUsePersonaWithOngoingAccountsOnly(): Boolean {
-                return authRequest is AuthRequest.UsePersonaRequest &&
-                    ongoingAccountsRequestItem != null && oneTimeAccountsRequestItem == null
+            fun hasOngoingRequestItemsOnly(): Boolean {
+                return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+            }
+
+            fun isInternalRequest(): Boolean {
+                return dappId.isEmpty()
             }
 
             fun isUsePersonaAuth(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest
+            }
+
+            private fun hasNoOneTimeRequestItems(): Boolean {
+                return oneTimePersonaDataRequestItem == null && oneTimeAccountsRequestItem == null
+            }
+
+            private fun hasNoResetRequestItem(): Boolean {
+                return resetRequestItem?.personaData != true && resetRequestItem?.accounts != true
+            }
+
+            fun hasOnlyAuthItem(): Boolean {
+                return ongoingAccountsRequestItem == null &&
+                    ongoingPersonaDataRequestItem == null &&
+                    oneTimeAccountsRequestItem == null &&
+                    oneTimePersonaDataRequestItem == null
             }
 
             sealed interface AuthRequest {
@@ -42,7 +62,7 @@ sealed interface MessageFromDataChannel {
             val requestId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
-            val oneTimePersonaRequestItem: PersonaRequestItem? = null
+            val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
         ) : IncomingRequest(dappId, requestId, requestMetadata)
 
         data class TransactionRequest(
@@ -74,7 +94,7 @@ sealed interface MessageFromDataChannel {
         }
 
         data class PersonaRequestItem(
-            val fields: List<String>,
+            val fields: List<PersonaDataField>,
             val isOngoing: Boolean
         )
 
@@ -94,13 +114,13 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
-    SharedAccounts.NumberOfAccounts.Quantifier {
+    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
-            SharedAccounts.NumberOfAccounts.Quantifier.Exactly
+            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly
         }
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
-            SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
+            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
         }
     }
 }

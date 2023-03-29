@@ -51,6 +51,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -95,7 +96,9 @@ fun CreatePersonaScreen(
             onSelectionChanged = viewModel::onSelectionChanged,
             onAddFields = viewModel::onAddFields,
             onDeleteField = viewModel::onDeleteField,
-            onValueChanged = viewModel::onFieldValueChanged
+            onValueChanged = viewModel::onFieldValueChanged,
+            onFieldFocusChanged = viewModel::onFieldFocusChanged,
+            onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged
         )
     }
 
@@ -115,7 +118,7 @@ fun CreatePersonaScreen(
 fun CreatePersonaContent(
     onPersonaNameChange: (String) -> Unit,
     onPersonaCreateClick: () -> Unit,
-    personaName: String,
+    personaName: PersonaDisplayNameFieldWrapper,
     continueButtonEnabled: Boolean,
     onBackClick: () -> Unit,
     isDeviceSecure: Boolean,
@@ -126,7 +129,9 @@ fun CreatePersonaContent(
     onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     onAddFields: () -> Unit,
     onDeleteField: (Network.Persona.Field.Kind) -> Unit,
-    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit
+    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
+    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
@@ -188,6 +193,8 @@ fun CreatePersonaContent(
                         bottomSheetState.show()
                     }
                 },
+                onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
+                onFieldFocusChanged = onFieldFocusChanged,
                 onEditAvatar = {}
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -229,14 +236,16 @@ fun CreatePersonaContent(
 @Composable
 private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
-    personaName: String,
+    personaName: PersonaDisplayNameFieldWrapper,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
     onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
     onDeleteField: (Network.Persona.Field.Kind) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
-    onEditAvatar: () -> Unit
+    onEditAvatar: () -> Unit,
+    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -275,9 +284,17 @@ private fun CreatePersonaContentList(
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onPersonaNameChange,
-                value = personaName,
+                value = personaName.value,
                 leftLabel = stringResource(id = com.babylon.wallet.android.R.string.persona_label),
-                hint = stringResource(id = com.babylon.wallet.android.R.string.hint_persona_name)
+                hint = stringResource(id = com.babylon.wallet.android.R.string.hint_persona_name),
+                onFocusChanged = {
+                    onPersonaDisplayNameFocusChanged(it.hasFocus)
+                },
+                error = if (personaName.shouldDisplayValidationError && personaName.valid == false) {
+                    stringResource(id = com.babylon.wallet.android.R.string.empty_display_name)
+                } else {
+                    null
+                },
             )
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
             Text(
@@ -290,6 +307,7 @@ private fun CreatePersonaContentList(
         }
         items(currentFields, key = { it.kind }) { field ->
             PersonaPropertyInput(
+                modifier = Modifier.fillMaxWidth().animateItemPlacement(),
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {
@@ -298,7 +316,16 @@ private fun CreatePersonaContentList(
                 onDeleteField = {
                     onDeleteField(field.kind)
                 },
-                modifier = Modifier.fillMaxWidth().animateItemPlacement()
+                onFocusChanged = {
+                    onFieldFocusChanged(field.kind, it.hasFocus)
+                },
+                required = field.required,
+                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                    stringResource(id = com.babylon.wallet.android.R.string.required_field)
+                } else {
+                    null
+                },
+                phoneInput = field.isPhoneNumber()
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
@@ -321,14 +348,13 @@ private fun CreatePersonaContentList(
 }
 
 @Preview(showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountContentPreview() {
     RadixWalletTheme {
         CreatePersonaContent(
             onPersonaNameChange = {},
             onPersonaCreateClick = {},
-            personaName = "Name",
+            personaName = PersonaDisplayNameFieldWrapper("Name"),
             continueButtonEnabled = false,
             onBackClick = {},
             isDeviceSecure = true,
@@ -338,7 +364,10 @@ fun CreateAccountContentPreview() {
             anyFieldSelected = false,
             onSelectionChanged = { _, _ -> },
             onAddFields = {},
-            onDeleteField = {}
-        ) { _, _ -> }
+            onDeleteField = {},
+            { _, _ -> },
+            onFieldFocusChanged = { _, _ -> },
+            onPersonaDisplayNameFocusChanged = {}
+        )
     }
 }

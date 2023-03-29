@@ -2,15 +2,12 @@ package rdx.works.profile
 
 import io.mockk.every
 import io.mockk.mockkObject
-import java.io.File
-import java.util.UUID
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -23,8 +20,11 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.derivation.model.NetworkId
+import java.io.File
+import java.util.UUID
 
 class ProfileTest {
 
@@ -32,7 +32,7 @@ class ProfileTest {
     fun `test profile generation`() {
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
 
@@ -81,12 +81,12 @@ class ProfileTest {
             fields = listOf(
                 Network.Persona.Field.init(
                     id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = Network.Persona.Field.Kind.FirstName,
+                    kind = Network.Persona.Field.Kind.GivenName,
                     value = "Alice"
                 ),
                 Network.Persona.Field.init(
                     id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = Network.Persona.Field.Kind.LastName,
+                    kind = Network.Persona.Field.Kind.FamilyName,
                     value = "Anderson"
                 )
             ),
@@ -129,7 +129,7 @@ class ProfileTest {
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
-                "sudden possible story mask neutral prize goose mandate",
+                    "sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
 
@@ -178,12 +178,12 @@ class ProfileTest {
             fields = listOf(
                 Network.Persona.Field.init(
                     id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = Network.Persona.Field.Kind.FirstName,
+                    kind = Network.Persona.Field.Kind.GivenName,
                     value = "Jane"
                 ),
                 Network.Persona.Field.init(
                     id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = Network.Persona.Field.Kind.LastName,
+                    kind = Network.Persona.Field.Kind.FamilyName,
                     value = "Incognitoson"
                 )
             ),
@@ -202,12 +202,12 @@ class ProfileTest {
             fields = listOf(
                 Network.Persona.Field.init(
                     id = "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-                    kind = Network.Persona.Field.Kind.FirstName,
+                    kind = Network.Persona.Field.Kind.GivenName,
                     value = "Maria"
                 ),
                 Network.Persona.Field.init(
                     id = "AC37E346-32EF-4670-9097-1AC27B20D394",
-                    kind = Network.Persona.Field.Kind.LastName,
+                    kind = Network.Persona.Field.Kind.FamilyName,
                     value = "Publicson"
                 )
             ),

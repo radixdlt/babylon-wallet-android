@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +41,7 @@ class CreatePersonaViewModel @Inject constructor(
             personaEditState.collect { s ->
                 state = state.copy(
                     anyFieldSelected = s.areThereFieldsSelected,
-                    personaDisplayName = s.personaDisplayName.orEmpty(),
+                    personaDisplayName = s.personaDisplayName,
                     continueButtonEnabled = s.inputValid,
                     currentFields = s.currentFields,
                     fieldsToAdd = s.fieldsToAdd
@@ -59,7 +60,7 @@ class CreatePersonaViewModel @Inject constructor(
                 Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
             }
             val persona = createPersonaUseCase(
-                displayName = state.personaDisplayName,
+                displayName = state.personaDisplayName.value,
                 fields = fields
             )
 
@@ -81,7 +82,7 @@ class CreatePersonaViewModel @Inject constructor(
         val loading: Boolean = false,
         val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
         val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
-        val personaDisplayName: String = "",
+        val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
         val continueButtonEnabled: Boolean = false,
         val anyFieldSelected: Boolean = false,
         val isDeviceSecure: Boolean = false
