@@ -22,6 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,16 +34,22 @@ class SettingsEditGatewayViewModelTest {
 
     private val profileDataSource = mockk<ProfileDataSource>()
     private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
+    private val addGatewayUseCase = mockk<AddGatewayUseCase>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
     private val profile = SampleDataProvider().sampleProfile()
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(profileDataSource, changeGatewayUseCase, networkInfoRepository)
+        vm = SettingsEditGatewayViewModel(
+            profileDataSource = profileDataSource,
+            changeGatewayUseCase = changeGatewayUseCase,
+            addGatewayUseCase = addGatewayUseCase,
+            networkInfoRepository = networkInfoRepository
+        )
         every { profileDataSource.gateways } returns flow { emit(profile.appPreferences.gateways) }
         coEvery { changeGatewayUseCase(any()) } returns Unit
-        coEvery { profileDataSource.addGateway(any()) } just Runs
+        coEvery { addGatewayUseCase(any()) } returns Unit
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
@@ -67,7 +74,7 @@ class SettingsEditGatewayViewModelTest {
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
-        coVerify(exactly = 1) { profileDataSource.addGateway(any()) }
+        coVerify(exactly = 1) { addGatewayUseCase(any()) }
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
             assert(item is SettingsEditGatewayEvent.GatewayAdded)
