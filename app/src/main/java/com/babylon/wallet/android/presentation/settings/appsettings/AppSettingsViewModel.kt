@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.domain.IsInDeveloperModeUseCase
-import rdx.works.profile.domain.UpdateDeveloperModeUseCase
+import rdx.works.profile.domain.preferences.IsInDeveloperModeUseCase
+import rdx.works.profile.domain.preferences.UpdateDeveloperModeUseCase
 import javax.inject.Inject
 
 @HiltViewModel

@@ -11,7 +11,7 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.AddP2PLinkUseCase
+import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
 import kotlin.test.Ignore
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security

@@ -16,8 +16,8 @@ import kotlinx.coroutines.launch
 import rdx.works.peerdroid.data.PeerdroidLink
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.AddP2PLinkUseCase
-import rdx.works.profile.domain.DeleteP2PLinkUseCase
+import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
+import rdx.works.profile.domain.p2plink.DeleteP2PLinkUseCase
 import timber.log.Timber
 import javax.inject.Inject
 

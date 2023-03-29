@@ -1,4 +1,4 @@
-package rdx.works.profile.domain
+package rdx.works.profile.domain.p2plink
 
 import rdx.works.profile.data.model.apppreferences.deleteP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource

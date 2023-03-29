@@ -1,4 +1,4 @@
-package rdx.works.profile.domain
+package rdx.works.profile.domain.preferences
 
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
