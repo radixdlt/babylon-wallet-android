@@ -69,7 +69,7 @@ fun LoginPermissionScreen(
     }
     BackHandler {
         if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
-            viewModel.onRejectLogin()
+            viewModel.onAbortDappLogin()
         } else {
             onBackClick()
         }
@@ -81,7 +81,7 @@ fun LoginPermissionScreen(
         dappMetadata = state.dappMetadata,
         onBackClick = {
             if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
-                viewModel.onRejectLogin()
+                viewModel.onAbortDappLogin()
             } else {
                 onBackClick()
             }

@@ -52,7 +52,7 @@ fun ChooseAccountsScreen(
         if (state.showBackButton) {
             onBackClick()
         } else {
-            sharedViewModel.onRejectLogin()
+            sharedViewModel.onAbortDappLogin()
         }
     }
 
@@ -61,7 +61,7 @@ fun ChooseAccountsScreen(
             if (state.showBackButton) {
                 onBackClick()
             } else {
-                sharedViewModel.onRejectLogin()
+                sharedViewModel.onAbortDappLogin()
             }
         },
         onContinueClick = {

@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
-import com.babylon.wallet.android.data.transaction.TransactionApprovalException
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
@@ -25,7 +25,7 @@ class VerifyDappUseCase @Inject constructor(
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
             validationResult.onError { e ->
-                (e as? TransactionApprovalException)?.let {
+                (e as? DappRequestException)?.let {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         dappId = request.remoteClientId,
                         requestId = request.id,

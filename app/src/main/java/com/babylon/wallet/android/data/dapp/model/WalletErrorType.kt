@@ -46,5 +46,8 @@ enum class WalletErrorType {
     WrongAccountType,
 
     @SerialName("unknownDefinitionAddress")
-    UnknownDefinitionAddress
+    UnknownDefinitionAddress,
+
+    @SerialName("invalidPersona")
+    InvalidPersona,
 }

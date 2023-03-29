@@ -257,4 +257,6 @@
     <string name="required_by_dapp">Required by dApp</string>
     <string name="required_field_for_this_dapp">Required field for this dApp</string>
     <string name="required_field">Required field</string>
+    <string name="invalid_persona_id_specified_by_dapp">Invalid persona id specified by dApp</string>
+    <string name="unknown_dapp">Unknown dApp</string>
 </resources>

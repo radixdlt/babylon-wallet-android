@@ -83,7 +83,7 @@ fun PersonaDataOngoingScreen(
     }
     BackHandler {
         if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
-            sharedViewModel.onRejectLogin()
+            sharedViewModel.onAbortDappLogin()
         } else {
             onBackClick()
         }
@@ -93,7 +93,7 @@ fun PersonaDataOngoingScreen(
         dappMetadata = sharedState.dappMetadata,
         onBackClick = {
             if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
-                sharedViewModel.onRejectLogin()
+                sharedViewModel.onAbortDappLogin()
             } else {
                 onBackClick()
             }
