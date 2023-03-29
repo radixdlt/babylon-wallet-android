@@ -42,6 +42,11 @@ class MainViewModel @Inject constructor(
     private val verifyDappUseCase: VerifyDappUseCase
 ) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
+    private var observeP2PLinksJob: Job? = null
+    private var incomingRequestsJob: Job? = null
+    private var handlingCurrentRequestJob: Job? = null
+    private var processingRequestJob: Job? = null
+
     val state = combine(
         preferencesManager.showOnboarding,
         profileDataSource.profileState
@@ -66,10 +71,19 @@ class MainViewModel @Inject constructor(
         MainUiState()
     )
 
-    private var observeP2PLinksJob: Job? = null
-    private var incomingRequestsJob: Job? = null
-    private var handlingCurrentRequestJob: Job? = null
-    private var processingRequestJob: Job? = null
+    fun incomingRequestHandled(requestId: String) {
+        viewModelScope.launch {
+            incomingRequestRepository.requestHandled(requestId)
+        }
+    }
+
+    fun deleteProfile() {
+        viewModelScope.launch {
+            profileDataSource.clear()
+            preferencesManager.clear()
+            peerdroidClient.terminate()
+        }
+    }
 
     private fun observeForP2PLinks() {
         observeP2PLinksJob = profileDataSource.p2pLinks
@@ -130,12 +144,17 @@ class MainViewModel @Inject constructor(
             val verificationResult = verifyDappUseCase(request)
             verificationResult.onValue { verified ->
                 if (verified) {
-                    when (val result = authorizeSpecifiedPersonaUseCase(request)) {
+                    when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
                         is com.babylon.wallet.android.domain.common.Result.Error -> {
                             incomingRequestRepository.add(request)
                         }
                         is com.babylon.wallet.android.domain.common.Result.Success -> {
-                            sendEvent(MainEvent.HandledUsePersonaAuthRequest(result.data))
+                            sendEvent(
+                                MainEvent.HandledUsePersonaAuthRequest(
+                                    requestId = dAppData.data.requestId,
+                                    dAppName = dAppData.data.name
+                                )
+                            )
                         }
                     }
                 }
@@ -153,22 +172,19 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun deleteProfile() {
-        viewModelScope.launch {
-            profileDataSource.clear()
-            preferencesManager.clear()
-            peerdroidClient.terminate()
-        }
-    }
-
     companion object {
         private const val REQUEST_HANDLING_DELAY = 500L
     }
 }
 
 sealed class MainEvent : OneOffEvent {
+
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-    data class HandledUsePersonaAuthRequest(val dAppName: String) : MainEvent()
+
+    data class HandledUsePersonaAuthRequest(
+        val requestId: String,
+        val dAppName: String
+    ) : MainEvent()
 }
 
 data class MainUiState(
