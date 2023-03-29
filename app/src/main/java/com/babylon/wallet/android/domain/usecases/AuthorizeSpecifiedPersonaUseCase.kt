@@ -2,10 +2,10 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.toKind
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
@@ -33,21 +33,25 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val personaRepository: PersonaRepository
 ) {
 
-    @Suppress("ReturnCount", "NestedBlockDepth")
-    suspend operator fun invoke(incomingRequest: IncomingRequest): Result<String> {
-        var operationResult: Result<String> = Result.Error()
-        (incomingRequest as? IncomingRequest.AuthorizedRequest)?.let { request ->
+    @Suppress("ReturnCount", "NestedBlockDepth", "LongMethod")
+    suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
+        var operationResult: Result<DAppData> = Result.Error()
+
+        (incomingRequest as? AuthorizedRequest)?.let { request ->
             val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
-                request.metadata.dAppDefinitionAddress
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             ) ?: return Result.Error()
-            val authorizedPersonaSimple =
-                authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
-                    it.identityAddress == (request.authRequest as? IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest)
-                        ?.personaAddress
-                } ?: return Result.Error(DappRequestException(DappRequestFailure.InvalidPersona))
+
+            val authorizedPersonaSimple = authorizedDapp
+                .referencesToAuthorizedPersonas
+                .firstOrNull {
+                    it.identityAddress == (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
+                } ?: return Result.Error()
+
             val persona = personaRepository.getPersonaByAddress(
-                authorizedPersonaSimple.identityAddress
+                address = authorizedPersonaSimple.identityAddress
             ) ?: return Result.Error()
+
             if (request.hasOngoingRequestItemsOnly()) {
                 val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
                 val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
@@ -55,24 +59,40 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 val selectedPersonaData: List<Network.Persona.Field>
                 when {
                     hasOngoingAccountsRequest -> {
-                        operationResult = handleOngoingAccountsRequest(
+                        val result = handleOngoingAccountsRequest(
                             request,
                             authorizedDapp,
                             authorizedPersonaSimple,
                             hasOngoingPersonaDataRequest,
                             persona
                         )
+                        operationResult = when (result) {
+                            is Result.Success -> Result.Success(
+                                DAppData(requestId = request.id, name = result.data)
+                            )
+                            is Result.Error -> result
+                        }
                     }
                     hasOngoingPersonaDataRequest -> {
-                        selectedPersonaData = getAlreadyGrantedPersonaData(request, authorizedDapp, authorizedPersonaSimple)
+                        selectedPersonaData = getAlreadyGrantedPersonaData(
+                            request = request,
+                            authorizedDapp = authorizedDapp,
+                            authorizedPersonaSimple = authorizedPersonaSimple
+                        )
                         if (selectedPersonaData.isNotEmpty()) {
-                            operationResult = sendSuccessResponse(
+                            val result = sendSuccessResponse(
                                 request = request,
                                 persona = persona,
                                 selectedAccounts = selectedAccounts,
                                 selectedPersonaData = selectedPersonaData,
                                 authorizedDapp = authorizedDapp
                             )
+                            operationResult = when (result) {
+                                is Result.Success -> Result.Success(
+                                    DAppData(requestId = request.id, name = result.data)
+                                )
+                                is Result.Error -> result
+                            }
                         }
                     }
                 }
@@ -82,14 +102,18 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun handleOngoingAccountsRequest(
-        request: IncomingRequest.AuthorizedRequest,
+        request: AuthorizedRequest,
         authorizedDapp: Network.AuthorizedDapp,
         authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple,
         hasOngoingPersonaDataRequest: Boolean,
         persona: Network.Persona
     ): Result<String> {
         var operationResult: Result<String> = Result.Error()
-        val selectedAccounts: List<AccountItemUiModel> = getAccountsWithGrantedAccess(request, authorizedDapp, authorizedPersonaSimple)
+        val selectedAccounts: List<AccountItemUiModel> = getAccountsWithGrantedAccess(
+            request,
+            authorizedDapp,
+            authorizedPersonaSimple
+        )
         var selectedPersonaData: List<Network.Persona.Field> = emptyList()
         when {
             hasOngoingPersonaDataRequest -> {
@@ -136,7 +160,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun sendSuccessResponse(
-        request: IncomingRequest.AuthorizedRequest,
+        request: AuthorizedRequest,
         persona: Network.Persona,
         selectedAccounts: List<AccountItemUiModel>,
         selectedPersonaData: List<Network.Persona.Field>,
@@ -163,7 +187,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun getAlreadyGrantedPersonaData(
-        request: IncomingRequest.AuthorizedRequest,
+        request: AuthorizedRequest,
         authorizedDapp: Network.AuthorizedDapp,
         authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
     ): List<Network.Persona.Field> {
@@ -179,7 +203,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun getAccountsWithGrantedAccess(
-        request: IncomingRequest.AuthorizedRequest,
+        request: AuthorizedRequest,
         authorizedDapp: Network.AuthorizedDapp,
         authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
     ): List<AccountItemUiModel> {
@@ -204,7 +228,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     private suspend fun personaDataAccessAlreadyGranted(
         dApp: Network.AuthorizedDapp,
-        requestItem: IncomingRequest.PersonaRequestItem,
+        requestItem: PersonaRequestItem,
         personaAddress: String
     ): Boolean {
         val requestedFieldsCount = requestItem.fields.size
@@ -218,3 +242,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         )
     }
 }
+
+data class DAppData(
+    val requestId: String,
+    val name: String
+)
