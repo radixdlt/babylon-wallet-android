@@ -293,8 +293,6 @@ internal class WebSocketClient(applicationContext: Context) {
     }
 
     companion object {
-        // TODO same url for production?
-        private const val BASE_URL = "wss://signaling-server-dev.rdx-works-main.extratools.works/"
-//        private const val BASE_URL = "wss://signaling-server-betanet.radixdlt.com/"
+        private const val BASE_URL = "wss://signaling-server-rcnet.radixdlt.com/"
     }
 }
