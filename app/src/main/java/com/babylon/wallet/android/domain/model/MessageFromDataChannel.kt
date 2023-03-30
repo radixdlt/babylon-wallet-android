@@ -96,7 +96,11 @@ sealed interface MessageFromDataChannel {
         data class PersonaRequestItem(
             val fields: List<PersonaDataField>,
             val isOngoing: Boolean
-        )
+        ) {
+            fun isValid(): Boolean {
+                return fields.isNotEmpty()
+            }
+        }
 
         data class ResetRequestItem(
             val accounts: Boolean,

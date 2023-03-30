@@ -160,7 +160,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         )
                     }
                 }
-                ongoingPersonaDataRequestItem != null && (!requestedDataAlreadyGranted || resetPersonaData) -> {
+                ongoingPersonaDataRequestItem != null &&
+                        ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
                     _state.update { state ->
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
@@ -181,7 +182,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         )
                     }
                 }
-                oneTimePersonaDataRequestItem != null -> {
+                oneTimePersonaDataRequestItem != null && oneTimePersonaDataRequestItem.isValid() -> {
                     _state.update { state ->
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
@@ -238,11 +239,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     selectedPersona.address
                 )
             }
-            request.ongoingPersonaDataRequestItem != null -> {
+            request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> {
                 handleOngoingPersonaDataRequestItem(selectedPersona.address, request.ongoingPersonaDataRequestItem)
             }
             request.oneTimeAccountsRequestItem != null -> {
                 handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
+            }
+            request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
+                handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
+            }
+            else -> {
+                sendRequestResponse()
             }
         }
     }
@@ -335,7 +342,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
                 request.oneTimeAccountsRequestItem
             )
-            request.oneTimePersonaDataRequestItem != null -> {
+            request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
                 handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
             }
             else -> sendRequestResponse()
@@ -402,14 +409,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     )
             }
             when {
-                request.ongoingPersonaDataRequestItem != null -> handleOngoingPersonaDataRequestItem(
+                request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> handleOngoingPersonaDataRequestItem(
                     personaAddress,
                     request.ongoingPersonaDataRequestItem
                 )
                 request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
                     request.oneTimeAccountsRequestItem
                 )
-                request.oneTimePersonaDataRequestItem != null -> {
+                request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
                     handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                 }
                 else -> sendRequestResponse()
@@ -510,7 +517,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     )
                 }
                 when {
-                    request.ongoingPersonaDataRequestItem != null -> {
+                    request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> {
                         handleOngoingPersonaDataRequestItem(
                             selectedPersona.address,
                             request.ongoingPersonaDataRequestItem
@@ -519,7 +526,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     request.oneTimeAccountsRequestItem != null -> {
                         handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
                     }
-                    request.oneTimePersonaDataRequestItem != null -> {
+                    request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
                         handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                     }
                     else -> {
@@ -530,7 +537,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         } else if (handledRequest?.isOngoing == false) {
             _state.update { it.copy(selectedAccountsOneTime = selectedAccounts) }
             when {
-                request.oneTimePersonaDataRequestItem != null -> {
+                request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
                     handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                 }
                 else -> {
