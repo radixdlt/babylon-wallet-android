@@ -134,14 +134,14 @@ class TransactionApprovalViewModel @Inject constructor(
                                         is AccountDeposit.Estimate -> {
                                             val accountDepositResourceSpecifier =
                                                 (it.resourceSpecifier as ResourceSpecifier.Amount)
-
                                             depositJobs.add(
                                                 async {
                                                     getTransactionComponentResourcesUseCase.invoke(
-                                                        componentAddresses = listOf(
-                                                            it.componentAddress.address,
-                                                            accountDepositResourceSpecifier.resourceAddress.address
-                                                        ),
+                                                        componentAddress = it.componentAddress.address,
+                                                        resourceAddress = accountDepositResourceSpecifier
+                                                            .resourceAddress.address,
+                                                        createdEntities = analyzeManifestWithPreviewResponse
+                                                            .createdEntities,
                                                         amount = accountDepositResourceSpecifier.amount
                                                     )
                                                 }
@@ -153,10 +153,11 @@ class TransactionApprovalViewModel @Inject constructor(
                                             depositJobs.add(
                                                 async {
                                                     getTransactionComponentResourcesUseCase.invoke(
-                                                        componentAddresses = listOf(
-                                                            it.componentAddress.address,
-                                                            accountDepositResourceSpecifier.resourceAddress.address
-                                                        ),
+                                                        componentAddress = it.componentAddress.address,
+                                                        resourceAddress = accountDepositResourceSpecifier
+                                                            .resourceAddress.address,
+                                                        createdEntities = analyzeManifestWithPreviewResponse
+                                                            .createdEntities,
                                                         amount = accountDepositResourceSpecifier.amount
                                                     )
                                                 }
@@ -170,10 +171,11 @@ class TransactionApprovalViewModel @Inject constructor(
                                     withdrawJobs.add(
                                         async {
                                             getTransactionComponentResourcesUseCase.invoke(
-                                                componentAddresses = listOf(
-                                                    it.componentAddress.address,
-                                                    accountWithdrawResourceSpecifier.resourceAddress.address
-                                                ),
+                                                componentAddress = it.componentAddress.address,
+                                                resourceAddress = accountWithdrawResourceSpecifier
+                                                    .resourceAddress.address,
+                                                createdEntities = analyzeManifestWithPreviewResponse
+                                                    .createdEntities,
                                                 amount = accountWithdrawResourceSpecifier.amount
                                             )
                                         }
