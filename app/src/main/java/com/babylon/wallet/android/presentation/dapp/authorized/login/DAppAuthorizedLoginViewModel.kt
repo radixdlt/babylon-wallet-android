@@ -26,7 +26,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
 import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,7 +76,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private var authorizedDapp: Network.AuthorizedDapp? = null
     private var editedDapp: Network.AuthorizedDapp? = null
 
-    private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppUnauthorizedLoginEvent>()
+    private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppAuthorizedLoginEvent>()
     val topLevelOneOffEvent by topLevelOneOffEventHandler
 
     init {
@@ -210,7 +209,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             failure.getDappMessage()
         )
         delay(4000)
-        topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+        topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
@@ -421,7 +420,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            val dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
+            val dAppName = state.value.dappMetadata?.getName().orEmpty().ifEmpty { "Unknown dApp" }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,
@@ -461,7 +460,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     error = walletWalletErrorType
                 )
             }
-            topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+            topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
             incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }

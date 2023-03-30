@@ -159,7 +159,7 @@ private fun PersonaDataOngoingPermissionContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             PermissionRequestHeader(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                dappName = dappMetadata?.getName() ?: "Unknown dApp"
+                dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) }
             )
             persona?.let {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

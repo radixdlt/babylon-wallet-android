@@ -163,7 +163,7 @@ private fun PersonaDataOnetimeContent(
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                PermissionRequestHeader(dappName = dappMetadata?.getName() ?: "Unknown dApp")
+                PermissionRequestHeader(dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(id = R.string.choose_data_to_provide),
