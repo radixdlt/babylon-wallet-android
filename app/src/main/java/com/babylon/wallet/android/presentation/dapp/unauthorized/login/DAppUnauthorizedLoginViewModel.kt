@@ -176,8 +176,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun sendRequestResponse() {
-        val selectedPersona = state.value.selectedPersona?.persona
-        requireNotNull(selectedPersona)
         dAppMessenger.sendWalletInteractionUnauthorizedSuccessResponse(
             request.dappId,
             args.requestId,

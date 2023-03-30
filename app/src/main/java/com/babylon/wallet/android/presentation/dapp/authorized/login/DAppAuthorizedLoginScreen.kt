@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.DappAuthorizedLoginNavigationHost
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
@@ -32,7 +31,7 @@ fun DappAuthorizedLoginScreen(
     LaunchedEffect(Unit) {
         viewModel.topLevelOneOffEvent.collect { event ->
             when (event) {
-                DAppUnauthorizedLoginEvent.RejectLogin -> onBackClick()
+                DAppAuthorizedLoginEvent.RejectLogin -> onBackClick()
                 else -> {}
             }
         }

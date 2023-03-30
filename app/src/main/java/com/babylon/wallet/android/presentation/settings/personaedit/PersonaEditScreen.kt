@@ -89,7 +89,8 @@ fun PersonaEditScreen(
         personaDisplayName = state.personaDisplayName,
         saveButtonEnabled = state.saveButtonEnabled,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
-        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged
+        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
+        dappContextEdit = state.dappContextEdit
     )
 }
 
@@ -112,7 +113,8 @@ private fun PersonaEditContent(
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     saveButtonEnabled: Boolean,
     onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
+    dappContextEdit: Boolean
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
@@ -183,7 +185,8 @@ private fun PersonaEditContent(
                         personaDisplayName = personaDisplayName,
                         addButtonEnabled = fieldsToAdd.isNotEmpty(),
                         onFieldFocusChanged = onFieldFocusChanged,
-                        onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged
+                        onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
+                        dappContextEdit = dappContextEdit
                     )
                 }
             }
@@ -206,7 +209,8 @@ private fun PersonaDetailList(
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
     onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
+    dappContextEdit: Boolean
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -258,6 +262,11 @@ private fun PersonaDetailList(
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
         items(editedFields) { field ->
+            val validationError = if (dappContextEdit) {
+                stringResource(id = R.string.required_field_for_this_dapp)
+            } else {
+                stringResource(id = R.string.required_field)
+            }
             PersonaPropertyInput(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -275,7 +284,7 @@ private fun PersonaDetailList(
                 },
                 required = field.required,
                 error = if (field.shouldDisplayValidationError && field.valid == false) {
-                    stringResource(id = R.string.required_field_for_this_dapp)
+                    validationError
                 } else {
                     null
                 },
@@ -315,7 +324,8 @@ fun DappDetailContentPreview() {
             personaDisplayName = PersonaDisplayNameFieldWrapper("Persona"),
             saveButtonEnabled = false,
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {}
+            onPersonaDisplayNameFocusChanged = {},
+            dappContextEdit = false
         )
     }
 }

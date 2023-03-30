@@ -143,7 +143,7 @@ private fun LoginPermissionContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            PermissionRequestHeader(dappName = dappMetadata?.getName() ?: "Unknown dApp")
+            PermissionRequestHeader(dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
             Spacer(modifier = Modifier.weight(0.5f))
             RequestedPermissionsList(
                 modifier = Modifier

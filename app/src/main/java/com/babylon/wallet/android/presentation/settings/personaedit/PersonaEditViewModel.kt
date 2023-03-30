@@ -46,7 +46,8 @@ class PersonaEditViewModel @Inject constructor(
                         personaDisplayName = s.personaDisplayName,
                         addFieldButtonEnabled = s.areThereFieldsSelected,
                         currentFields = s.currentFields,
-                        fieldsToAdd = s.fieldsToAdd
+                        fieldsToAdd = s.fieldsToAdd,
+                        dappContextEdit = s.requiredFieldKinds.isNotEmpty()
                     )
                 }
             }
@@ -91,5 +92,6 @@ data class PersonaEditUiState(
     val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
     val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
     val addFieldButtonEnabled: Boolean = false,
-    val saveButtonEnabled: Boolean = false
+    val saveButtonEnabled: Boolean = false,
+    val dappContextEdit: Boolean = false
 )

@@ -105,7 +105,7 @@ fun ChooseAccountContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     ChooseAccountsSubtitle(
-                        dappName = dappMetadata?.getName() ?: "Unknown dApp",
+                        dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                         isOneTime = isOneTime,
                         numberOfAccounts = numberOfAccounts,
                         isExactAccountsCount = isExactAccountsCount
