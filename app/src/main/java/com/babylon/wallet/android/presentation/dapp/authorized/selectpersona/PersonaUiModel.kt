@@ -13,7 +13,7 @@ data class PersonaUiModel(
     val requiredFieldKinds: List<Network.Persona.Field.Kind> = emptyList()
 ) {
     fun missingFieldKinds(): ImmutableList<Network.Persona.Field.Kind> {
-        return requiredFieldKinds.minus(persona.fields.map { it.kind }.toSet()).toPersistentList()
+        return requiredFieldKinds.minus(persona.fields.map { it.kind }.toSet()).sortedBy { it.ordinal }.toPersistentList()
     }
 }
 
