@@ -545,11 +545,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         mutex.withLock {
             editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
         }
-        val dappName = if (state.value.dappMetadata?.getName().isNullOrEmpty()) {
-            "Unknown dApp"
-        } else {
-            state.value.dappMetadata?.getName().orEmpty()
-        }
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
                 state.value.dappMetadata?.getName().orEmpty(),

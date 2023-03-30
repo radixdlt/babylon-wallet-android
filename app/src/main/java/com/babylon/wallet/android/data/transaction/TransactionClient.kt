@@ -474,7 +474,7 @@ class TransactionClient @Inject constructor(
         val addressesNeededToSign = getAddressesNeededToSign(manifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
-                TransactionApprovalException(
+                DappRequestException(
                     DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                 )
             )
