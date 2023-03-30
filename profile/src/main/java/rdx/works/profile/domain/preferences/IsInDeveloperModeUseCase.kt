@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.preferences
 
+import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
 
@@ -8,7 +9,8 @@ class IsInDeveloperModeUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke() = profileDataSource
-        .readProfile()
+        .profile
+        .firstOrNull()
         ?.appPreferences
         ?.security
         ?.isDeveloperModeEnabled ?: false

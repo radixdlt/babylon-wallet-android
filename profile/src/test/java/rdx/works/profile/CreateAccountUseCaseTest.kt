@@ -1,6 +1,7 @@
 package rdx.works.profile
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -94,7 +95,7 @@ class CreateAccountUseCaseTest {
             }
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.readProfile()).thenReturn(profile)
+            whenever(profileDataSource.profile).thenReturn(flowOf(profile))
 
             val createAccountUseCase = CreateAccountUseCase(
                 getMnemonicUseCase = getMnemonicUseCase,

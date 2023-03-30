@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.p2plink
 
+import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.profile.data.model.apppreferences.deleteP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
 import javax.inject.Inject
@@ -9,7 +10,7 @@ class DeleteP2PLinkUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(connectionPassword: String) {
-        val profile = profileDataSource.readProfile()
+        val profile = profileDataSource.profile.firstOrNull()
         checkNotNull(profile) {
             "Profile does not exist"
         }

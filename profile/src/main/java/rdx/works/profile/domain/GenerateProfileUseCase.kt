@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -16,7 +17,7 @@ class GenerateProfileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(accountDisplayName: String): Profile {
-        profileDataSource.readProfile()?.let { profile ->
+        profileDataSource.profile.firstOrNull()?.let { profile ->
             return profile
         } ?: run {
             return withContext(defaultDispatcher) {

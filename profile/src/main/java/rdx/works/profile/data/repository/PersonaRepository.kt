@@ -1,6 +1,8 @@
 package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.profile.data.model.pernetwork.Network
@@ -42,6 +44,6 @@ class PersonaRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getPerNetwork(): Network? {
-        return profileDataSource.readProfile()?.currentNetwork
+        return profileDataSource.profile.firstOrNull()?.currentNetwork
     }
 }

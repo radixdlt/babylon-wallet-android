@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.CreateAccountUseCase
@@ -49,7 +50,7 @@ class CreateAccountViewModel @Inject constructor(
             loading = true
         )
         viewModelScope.launch {
-            val hasProfile = profileDataSource.readProfile() != null
+            val hasProfile = profileDataSource.profile.firstOrNull() != null
             val accountName = accountName.value.trim()
             val account = if (hasProfile) {
                 createAccountUseCase(

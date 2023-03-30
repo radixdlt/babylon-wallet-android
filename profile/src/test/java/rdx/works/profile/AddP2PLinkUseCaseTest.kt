@@ -1,5 +1,6 @@
 package rdx.works.profile
 
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.mockito.Mockito.mock
@@ -41,7 +42,7 @@ class AddP2PLinkUseCaseTest {
             networks = emptyList(),
             version = 1
         )
-        whenever(profileDataSource.readProfile()).thenReturn(initialProfile)
+        whenever(profileDataSource.profile).thenReturn(flowOf(initialProfile))
 
         addP2PLinkUseCase(
             displayName = "Mac browser",
@@ -67,7 +68,7 @@ class AddP2PLinkUseCaseTest {
         val profileDataSource = mock(ProfileDataSource::class.java)
         val addP2PLinkUseCase = AddP2PLinkUseCase(profileDataSource)
 
-        whenever(profileDataSource.readProfile()).thenReturn(null)
+        whenever(profileDataSource.profile).thenReturn(flowOf(null))
 
         addP2PLinkUseCase(
             displayName = "Mac browser",

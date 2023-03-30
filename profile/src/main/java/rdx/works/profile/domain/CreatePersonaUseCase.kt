@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
@@ -20,7 +21,7 @@ class CreatePersonaUseCase @Inject constructor(
         fields: List<Network.Persona.Field>
     ): Network.Persona {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.readProfile()
+            val profile = profileDataSource.profile.firstOrNull()
             checkNotNull(profile) {
                 "Profile does not exist"
             }

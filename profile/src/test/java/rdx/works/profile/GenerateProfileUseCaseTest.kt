@@ -1,6 +1,7 @@
 package rdx.works.profile
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -93,7 +94,7 @@ class GenerateProfileUseCaseTest {
                 version = 1
             )
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.readProfile()).thenReturn(profile)
+            whenever(profileDataSource.profile).thenReturn(flowOf(profile))
 
             // when
             val generateProfileUseCase = GenerateProfileUseCase(
@@ -129,7 +130,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileDataSource.readProfile()).thenReturn(null)
+            whenever(profileDataSource.profile).thenReturn(flowOf(null))
 
             val profile = generateProfileUseCase("main")
 
@@ -168,7 +169,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileDataSource.readProfile()).thenReturn(null)
+            whenever(profileDataSource.profile).thenReturn(flowOf(null))
 
             val profile = generateProfileUseCase("main")
 

@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
@@ -23,7 +24,7 @@ class CreateAccountUseCase @Inject constructor(
         switchNetwork: Boolean = false
     ): Network.Account {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.readProfile()
+            val profile = profileDataSource.profile.firstOrNull()
             checkNotNull(profile) {
                 "Profile does not exist"
             }

@@ -19,6 +19,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
@@ -68,7 +69,7 @@ class WalletViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
-            profileDataSource.readProfile()?.let {
+            profileDataSource.profile.firstOrNull()?.let {
                 loadResourceData(isRefreshing = true)
             }
             _walletUiState.update { it.copy(isRefreshing = false) }

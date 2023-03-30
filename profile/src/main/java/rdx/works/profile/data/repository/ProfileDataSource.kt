@@ -21,8 +21,6 @@ interface ProfileDataSource {
 
     val profile: Flow<Profile?>
 
-    suspend fun readProfile(): Profile?
-
     suspend fun saveProfile(profile: Profile)
 
     suspend fun clear()
@@ -57,10 +55,6 @@ class ProfileDataSourceImpl @Inject constructor(
         profileState.map {
             it.getOrNull()
         }
-
-    override suspend fun readProfile(): Profile? {
-        return profile.firstOrNull()
-    }
 
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {

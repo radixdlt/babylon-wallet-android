@@ -1,6 +1,8 @@
 package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.Network
@@ -49,7 +51,7 @@ class AccountRepositoryImpl @Inject constructor(
         networkId: Int,
         addresses: List<String>
     ): List<AccountSigner> {
-        val profile = profileDataSource.readProfile() ?: return emptyList()
+        val profile = profileDataSource.profile.firstOrNull() ?: return emptyList()
 
         return profile.getAccountSigners(
             addresses = addresses,
@@ -61,6 +63,6 @@ class AccountRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getPerNetwork(): Network? {
-        return profileDataSource.readProfile()?.currentNetwork
+        return profileDataSource.profile.firstOrNull()?.currentNetwork
     }
 }

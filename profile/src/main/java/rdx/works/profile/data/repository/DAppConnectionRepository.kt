@@ -1,6 +1,7 @@
 package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.core.mapWhen
@@ -67,7 +68,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
-        return profileDataSource.readProfile()?.getAuthorizedDapp(dAppDefinitionAddress)
+        return profileDataSource.profile.firstOrNull()?.getAuthorizedDapp(dAppDefinitionAddress)
     }
 
     override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
@@ -75,7 +76,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
-        val profile = profileDataSource.readProfile()
+        val profile = profileDataSource.profile.firstOrNull()
 
         requireNotNull(profile)
         Timber.d("Authorized dapps updating profile dapp: $authorizedDApp")
@@ -84,7 +85,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
-        val profile = profileDataSource.readProfile()
+        val profile = profileDataSource.profile.firstOrNull()
 
         requireNotNull(profile)
 
