@@ -46,7 +46,7 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
-import com.babylon.wallet.android.presentation.ui.composables.BottomContinueButton
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
@@ -219,9 +219,9 @@ private fun SelectPersonaContent(
                     }
                 }
             }
-            BottomContinueButton(
-                onLoginClick = onContinueClick,
-                loginButtonEnabled = continueButtonEnabled,
+            BottomPrimaryButton(
+                onClick = onContinueClick,
+                enabled = continueButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground)

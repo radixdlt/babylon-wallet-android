@@ -259,4 +259,6 @@
     <string name="required_field">Required field</string>
     <string name="invalid_persona_id_specified_by_dapp">Invalid persona id specified by dApp</string>
     <string name="unknown_dapp">Unknown dApp</string>
+    <string name="are_you_sure_you_want_to_discard">Are you sure you want to discard changes to this persona?</string>
+    <string name="discard">Discard</string>
 </resources>
