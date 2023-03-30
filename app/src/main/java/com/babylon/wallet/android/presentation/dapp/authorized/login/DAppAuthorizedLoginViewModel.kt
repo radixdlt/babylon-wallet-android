@@ -161,7 +161,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     }
                 }
                 ongoingPersonaDataRequestItem != null &&
-                        ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
                     _state.update { state ->
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
@@ -409,10 +409,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     )
             }
             when {
-                request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> handleOngoingPersonaDataRequestItem(
-                    personaAddress,
-                    request.ongoingPersonaDataRequestItem
-                )
+                request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> {
+                    handleOngoingPersonaDataRequestItem(
+                        personaAddress,
+                        request.ongoingPersonaDataRequestItem
+                    )
+                }
                 request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
                     request.oneTimeAccountsRequestItem
                 )
