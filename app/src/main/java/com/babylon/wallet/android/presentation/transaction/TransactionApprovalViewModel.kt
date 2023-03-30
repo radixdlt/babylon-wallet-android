@@ -264,6 +264,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 approvalJob = null
                                 appEventBus.sendEvent(AppEvent.ApprovedTransaction)
                                 sendEvent(TransactionApprovalEvent.NavigateBack)
+                                incomingRequestRepository.requestHandled(args.requestId)
                             }
                             transactionStatus.onError {
                                 state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
@@ -277,6 +278,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                     approvalJob = null
                                     sendEvent(TransactionApprovalEvent.NavigateBack)
+                                    incomingRequestRepository.requestHandled(args.requestId)
                                 }
                             }
                         }
@@ -292,6 +294,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 )
                                 approvalJob = null
                                 sendEvent(TransactionApprovalEvent.NavigateBack)
+                                incomingRequestRepository.requestHandled(args.requestId)
                             }
                         }
                     }
@@ -312,6 +315,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     error = WalletErrorType.RejectedByUser
                 )
                 sendEvent(TransactionApprovalEvent.NavigateBack)
+                incomingRequestRepository.requestHandled(args.requestId)
             }
         }
     }
