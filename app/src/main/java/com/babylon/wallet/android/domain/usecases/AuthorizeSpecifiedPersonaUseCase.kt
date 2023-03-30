@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
@@ -68,11 +69,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                             hasOngoingPersonaDataRequest,
                             persona
                         )
-                        operationResult = when (result) {
-                            is Result.Success -> Result.Success(
-                                DAppData(requestId = request.id, name = result.data)
-                            )
-                            is Result.Error -> result
+                        operationResult = result.map { dAppName ->
+                            DAppData(requestId = request.id, name = dAppName)
                         }
                     }
                     hasOngoingPersonaDataRequest -> {
@@ -89,11 +87,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                 selectedPersonaData = selectedPersonaData,
                                 authorizedDapp = authorizedDapp
                             )
-                            operationResult = when (result) {
-                                is Result.Success -> Result.Success(
-                                    DAppData(requestId = request.id, name = result.data)
-                                )
-                                is Result.Error -> result
+                            operationResult = result.map { dAppName ->
+                                DAppData(requestId = request.id, name = dAppName)
                             }
                         }
                     }
