@@ -95,7 +95,6 @@ class CreateAccountUseCaseTest {
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             whenever(profileDataSource.readProfile()).thenReturn(profile)
-            whenever(profileDataSource.getCurrentNetwork()).thenReturn(Radix.Network.hammunet)
 
             val createAccountUseCase = CreateAccountUseCase(
                 getMnemonicUseCase = getMnemonicUseCase,

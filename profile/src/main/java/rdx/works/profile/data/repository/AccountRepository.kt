@@ -28,13 +28,7 @@ class AccountRepositoryImpl @Inject constructor(
 
     override val accounts: Flow<List<Network.Account>> = profileDataSource.profile
         .map { profile ->
-            profile
-                ?.networks
-                ?.firstOrNull { perNetwork ->
-                    perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
-                }
-        }.map { perNetwork ->
-            perNetwork?.accounts.orEmpty()
+            profile?.currentNetwork?.accounts.orEmpty()
         }
 
     override suspend fun getAccounts(): List<Network.Account> {
@@ -67,10 +61,6 @@ class AccountRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getPerNetwork(): Network? {
-        return profileDataSource.readProfile()
-            ?.networks
-            ?.firstOrNull { perNetwork ->
-                perNetwork.networkID == profileDataSource.getCurrentNetwork().networkId().value
-            }
+        return profileDataSource.readProfile()?.currentNetwork
     }
 }

@@ -53,6 +53,9 @@ data class Network(
         assert(accounts.isNotEmpty())
     }
 
+    val knownNetworkId: NetworkId?
+        get() = NetworkId.values().find { it.value == networkID }
+
     @Serializable
     data class Account(
         /**

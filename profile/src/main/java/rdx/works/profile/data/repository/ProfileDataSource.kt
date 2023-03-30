@@ -10,7 +10,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -27,8 +26,6 @@ interface ProfileDataSource {
     suspend fun saveProfile(profile: Profile)
 
     suspend fun clear()
-
-    suspend fun getCurrentNetwork(): Radix.Network
 
 }
 
@@ -75,9 +72,4 @@ class ProfileDataSourceImpl @Inject constructor(
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
     }
-
-    override suspend fun getCurrentNetwork(): Radix.Network = readProfile()
-        ?.appPreferences
-        ?.gateways?.current()?.network
-        ?: Radix.Gateway.default.network
 }
