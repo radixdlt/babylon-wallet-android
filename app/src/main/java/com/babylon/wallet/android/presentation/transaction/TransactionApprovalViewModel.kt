@@ -93,7 +93,8 @@ class TransactionApprovalViewModel @Inject constructor(
                         val transactionManifest = manifestInStringFormatConversionResult.data
                         val transactionPreview = transactionClient.getTransactionPreview(
                             manifest = transactionManifest,
-                            networkId = profileDataSource.getCurrentNetworkId().value
+                            networkId = profileDataSource.getCurrentNetworkId().value,
+                            blobs = transactionManifest.blobs ?: emptyArray()
                         )
                         transactionPreview.onError {
                             state = state.copy(

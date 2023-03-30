@@ -461,6 +461,7 @@ class TransactionClient @Inject constructor(
     suspend fun getTransactionPreview(
         manifest: TransactionManifest,
         networkId: Int,
+        blobs: Array<ByteArray>
     ): Result<TransactionPreviewResponse> {
         var startEpochInclusive = 0L
         var endEpochExclusive = 0L
@@ -495,7 +496,7 @@ class TransactionClient @Inject constructor(
                 nonce = generateNonce().toString(),
                 signerPublicKeys = listOf(),
                 flags = TransactionPreviewRequestFlags(true, true, true, true),
-                blobsHex = listOf(),
+                blobsHex = blobs.map { it.toHexString() },
                 notaryPublicKey = notaryPublicKey,
                 notaryAsSignatory = false
             )
