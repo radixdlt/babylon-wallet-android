@@ -181,17 +181,19 @@ private fun SelectPersonaContent(
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             LoginRequestHeader(
-                                dappName = dappMetadata?.getName() ?: "Unknown dApp",
+                                dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                                 firstTimeLogin = firstTimeLogin,
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                             )
-                            Text(
-                                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                text = stringResource(R.string.choose_a_persona),
-                                textAlign = TextAlign.Center,
-                                style = RadixTheme.typography.body1Header,
-                                color = RadixTheme.colors.gray1
-                            )
+                            if (personas.isNotEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(R.string.choose_a_persona),
+                                    textAlign = TextAlign.Center,
+                                    style = RadixTheme.typography.body1Header,
+                                    color = RadixTheme.colors.gray1
+                                )
+                            }
                         }
                         itemsIndexed(items = personas) { _, personaItem ->
                             PersonaCard(
