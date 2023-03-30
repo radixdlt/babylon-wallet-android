@@ -278,6 +278,19 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
+    fun onGrantedPersonaDataOnetime(persona: Network.Persona) {
+        viewModelScope.launch {
+            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
+            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.kind) }
+            _state.update {
+                it.copy(
+                    selectedOnetimeDataFields = requiredDataFields
+                )
+            }
+            sendRequestResponse()
+        }
+    }
+
     private suspend fun requestedAccountsPermissionAlreadyGranted(
         personaAddress: String,
         accountsRequestItem: AccountsRequestItem?

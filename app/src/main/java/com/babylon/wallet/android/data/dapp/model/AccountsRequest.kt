@@ -47,7 +47,7 @@ fun OneTimeAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestI
     return IncomingRequest.AccountsRequestItem(
         isOngoing = false,
         requiresProofOfOwnership = requiresProofOfOwnership,
-        numberOfAccounts = numberOfAccounts.quantity,
+        numberOfAccounts = numberOfAccounts.quantity.coerceAtLeast(1),
         quantifier = numberOfAccounts.quantifier.toDomainModel()
     )
 }
@@ -56,7 +56,7 @@ fun OngoingAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestI
     return IncomingRequest.AccountsRequestItem(
         isOngoing = true,
         requiresProofOfOwnership = requiresProofOfOwnership,
-        numberOfAccounts = numberOfAccounts.quantity,
+        numberOfAccounts = numberOfAccounts.quantity.coerceAtLeast(1),
         quantifier = numberOfAccounts.quantifier.toDomainModel()
     )
 }

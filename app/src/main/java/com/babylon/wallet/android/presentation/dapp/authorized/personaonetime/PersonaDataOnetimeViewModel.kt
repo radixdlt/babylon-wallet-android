@@ -77,4 +77,8 @@ sealed interface PersonaDataOnetimeEvent : OneOffEvent {
 data class PersonaDataOnetimeUiState(
     val personaListToDisplay: ImmutableList<PersonaUiModel> = persistentListOf(),
     val continueButtonEnabled: Boolean = false
-) : UiState
+) : UiState {
+    fun selectedPersona(): Network.Persona {
+        return personaListToDisplay.first { it.selected }.persona
+    }
+}

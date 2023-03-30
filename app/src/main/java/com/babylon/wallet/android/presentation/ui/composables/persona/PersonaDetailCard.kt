@@ -27,7 +27,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.personalInfoFormatted
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
@@ -76,7 +75,7 @@ fun PersonaDetailCard(
             }
         }
         Divider(color = RadixTheme.colors.gray4)
-        val personalInfo = persona.persona.personalInfoFormatted()
+        val personalInfo = persona.personalInfoFormatted()
         if (personalInfo.isNotEmpty()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(

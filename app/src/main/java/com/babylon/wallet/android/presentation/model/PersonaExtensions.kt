@@ -17,19 +17,6 @@ fun Network.Persona.Field.Kind.toDisplayResource(): Int {
     }
 }
 
-fun Network.Persona.personalInfoFormatted(): String {
-    return buildString {
-        val givenName = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.GivenName }?.value
-        val familyName = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.FamilyName }?.value
-        val email = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.EmailAddress }?.value
-        val phone = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.PhoneNumber }?.value
-        append(
-            listOfNotNull(listOfNotNull(givenName, familyName).joinToString(separator = " "), email, phone).filter { it.isNotEmpty() }
-                .joinToString("\n")
-        )
-    }
-}
-
 fun List<Network.Persona.Field.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
