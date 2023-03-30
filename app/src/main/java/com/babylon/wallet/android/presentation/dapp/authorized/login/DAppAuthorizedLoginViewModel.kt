@@ -211,6 +211,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
         delay(4000)
         topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+        incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
     fun onMessageShown() {
@@ -461,6 +462,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 )
             }
             topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+            incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
 

@@ -44,7 +44,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val personaRepository: PersonaRepository,
     private val profileDataSource: ProfileDataSource,
     private val dappMetadataRepository: DappMetadataRepository,
-    incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : BaseViewModel<DAppUnauthorizedLoginUiState>(),
     OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
 
@@ -120,6 +120,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         )
         delay(4000)
         topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+        incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
     fun onMessageShown() {
@@ -151,6 +152,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 error = WalletErrorType.RejectedByUser
             )
             topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+            incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
 
