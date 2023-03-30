@@ -40,7 +40,13 @@ fun ChooseAccountsScreen(
                 is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
                 is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaOngoingData(event)
                 is DAppAuthorizedLoginEvent.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is DAppAuthorizedLoginEvent.RejectLogin -> onLoginFlowComplete(DAppAuthorizedLoginEvent.LoginFlowCompleted("", false))
+                is DAppAuthorizedLoginEvent.RejectLogin -> onLoginFlowComplete(
+                    DAppAuthorizedLoginEvent.LoginFlowCompleted(
+                        requestId = "",
+                        dAppName = "",
+                        showSuccessDialog = false
+                    )
+                )
                 else -> {}
             }
         }

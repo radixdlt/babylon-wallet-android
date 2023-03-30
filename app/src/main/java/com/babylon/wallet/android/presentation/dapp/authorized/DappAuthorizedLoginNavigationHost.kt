@@ -7,10 +7,10 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountReques
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSONA
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
+import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.account.ROUTE_CHOOSE_ACCOUNTS
 import com.babylon.wallet.android.presentation.dapp.authorized.account.chooseAccounts
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
@@ -34,13 +34,16 @@ fun DappAuthorizedLoginNavigationHost(
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute,
     navController: NavHostController,
     finishDappLogin: () -> Unit,
-    showSuccessDialog: (String) -> Unit,
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
     sharedViewModel: DAppAuthorizedLoginViewModel
 ) {
     val loginFlowCompletedCallback = { event: DAppAuthorizedLoginEvent.LoginFlowCompleted ->
         finishDappLogin()
         if (event.showSuccessDialog) {
-            showSuccessDialog(event.dappName.decodeUtf8())
+            showSuccessDialog(
+                event.requestId,
+                event.dAppName.decodeUtf8()
+            )
         }
     }
     AnimatedNavHost(
@@ -58,8 +61,12 @@ fun DappAuthorizedLoginNavigationHost(
                 )
             },
             onLoginFlowComplete = loginFlowCompletedCallback,
-            createNewPersona = {
-                navController.createPersonaScreen()
+            createNewPersona = { isFirstPersonaCreated ->
+                if (isFirstPersonaCreated) {
+                    navController.createPersonaScreen()
+                } else {
+                    navController.personaInfoScreen()
+                }
             },
             initialAuthorizedLoginRoute = initialAuthorizedLoginRoute as? InitialAuthorizedLoginRoute.SelectPersona,
             sharedViewModel = sharedViewModel,
@@ -85,7 +92,7 @@ fun DappAuthorizedLoginNavigationHost(
         )
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
-                navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
+                navController.popPersonaCreation()
             }
         )
         createAccountScreen(
@@ -187,10 +194,15 @@ fun DappAuthorizedLoginNavigationHost(
             onBackClick = {
                 navController.navigateUp()
             },
-            onLoginFlowComplete = loginFlowCompletedCallback
-        ) {
-            navController.createPersonaScreen()
-        }
+            onLoginFlowComplete = loginFlowCompletedCallback,
+            onCreatePersona = { isFirstPersonaCreated ->
+                if (isFirstPersonaCreated) {
+                    navController.createPersonaScreen()
+                } else {
+                    navController.personaInfoScreen()
+                }
+            }
+        )
     }
 }
 

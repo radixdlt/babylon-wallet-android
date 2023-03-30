@@ -211,6 +211,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
         delay(4000)
         topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+        incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
     fun onMessageShown() {
@@ -260,7 +261,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val selectedPersona = checkNotNull(state.value.selectedPersona)
             personaRepository.getPersonaByAddress(selectedPersona.persona.address)?.let { updatedPersona ->
                 val requiredDataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
-                _state.update { it.copy(selectedPersona = updatedPersona.toUiModel(), selectedOngoingDataFields = requiredDataFields) }
+                _state.update {
+                    it.copy(
+                        selectedPersona = updatedPersona.toUiModel(),
+                        selectedOngoingDataFields = requiredDataFields
+                    )
+                }
                 mutex.withLock {
                     editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(
                         personaAddress = updatedPersona.address,
@@ -303,7 +309,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 )
             )
         } else {
-            val dataFields = personaRepository.getPersonaDataFields(address = personaAddress, requestItem.fields.map { it.toKind() })
+            val dataFields = personaRepository.getPersonaDataFields(
+                address = personaAddress,
+                fields = requestItem.fields.map { it.toKind() }
+            )
             _state.update { it.copy(selectedOngoingDataFields = dataFields) }
             mutex.withLock {
                 editedDapp =
@@ -352,7 +361,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
         viewModelScope.launch {
-            sendEvent(DAppAuthorizedLoginEvent.PersonaDataOnetime(oneTimePersonaRequestItem.fields.map { it.toKind() }.encodeToString()))
+            sendEvent(
+                DAppAuthorizedLoginEvent.PersonaDataOnetime(
+                    oneTimePersonaRequestItem.fields.map { it.toKind() }.encodeToString()
+                )
+            )
         }
     }
 
@@ -449,6 +462,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 )
             }
             topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+            incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
 
@@ -497,7 +511,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
                 when {
                     request.ongoingPersonaDataRequestItem != null -> {
-                        handleOngoingPersonaDataRequestItem(selectedPersona.address, request.ongoingPersonaDataRequestItem)
+                        handleOngoingPersonaDataRequestItem(
+                            selectedPersona.address,
+                            request.ongoingPersonaDataRequestItem
+                        )
                     }
                     request.oneTimeAccountsRequestItem != null -> {
                         handleOneTimeAccountRequestItem(request.oneTimeAccountsRequestItem)
@@ -547,7 +564,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
-                state.value.dappMetadata?.getName().orEmpty(),
+                requestId = request.requestId,
+                dAppName = state.value.dappMetadata?.getName().orEmpty(),
                 showSuccessDialog = !request.isInternalRequest()
             )
         )
@@ -555,16 +573,28 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 }
 
 sealed interface DAppAuthorizedLoginEvent : OneOffEvent {
+
     object RejectLogin : DAppAuthorizedLoginEvent
-    data class LoginFlowCompleted(val dappName: String, val showSuccessDialog: Boolean = true) : DAppAuthorizedLoginEvent
+
+    data class LoginFlowCompleted(
+        val requestId: String,
+        val dAppName: String,
+        val showSuccessDialog: Boolean = true
+    ) : DAppAuthorizedLoginEvent
+
     data class DisplayPermission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,
         val oneTime: Boolean = false
     ) : DAppAuthorizedLoginEvent
 
-    data class PersonaDataOngoing(val personaAddress: String, val requiredFieldsEncoded: String) : DAppAuthorizedLoginEvent
+    data class PersonaDataOngoing(
+        val personaAddress: String,
+        val requiredFieldsEncoded: String
+    ) : DAppAuthorizedLoginEvent
+
     data class PersonaDataOnetime(val requiredFieldsEncoded: String) : DAppAuthorizedLoginEvent
+
     data class ChooseAccounts(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

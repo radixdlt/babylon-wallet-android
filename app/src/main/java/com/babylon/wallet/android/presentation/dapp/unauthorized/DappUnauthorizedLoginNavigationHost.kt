@@ -7,9 +7,10 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountReques
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSONA
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
+import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
+import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ROUTE_CHOOSE_ACCOUNTS_ONETIME
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.chooseAccountsOneTime
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
@@ -25,7 +26,7 @@ fun DappUnauthorizedLoginNavigationHost(
     initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute,
     navController: NavHostController,
     finishDappLogin: () -> Unit,
-    showSuccessDialog: (String) -> Unit,
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel
 ) {
     AnimatedNavHost(
@@ -40,7 +41,7 @@ fun DappUnauthorizedLoginNavigationHost(
         )
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
-                navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
+                navController.popPersonaCreation()
             }
         )
         createAccountScreen(
@@ -78,9 +79,9 @@ fun DappUnauthorizedLoginNavigationHost(
             onPersonaOnetime = {
                 navController.personaDataOnetimeUnauthorized(it)
             },
-            onLoginFlowComplete = {
+            onLoginFlowComplete = { requestId, dAppName ->
                 finishDappLogin()
-                showSuccessDialog(it)
+                showSuccessDialog(requestId, dAppName)
             },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
@@ -95,13 +96,18 @@ fun DappUnauthorizedLoginNavigationHost(
             onBackClick = {
                 navController.navigateUp()
             },
-            onLoginFlowComplete = { dappName ->
+            onLoginFlowComplete = { requestId, dAppName ->
                 finishDappLogin()
-                showSuccessDialog(dappName)
+                showSuccessDialog(requestId, dAppName)
+            },
+            onCreatePersona = { isFirstPersonaCreated ->
+                if (isFirstPersonaCreated) {
+                    navController.createPersonaScreen()
+                } else {
+                    navController.personaInfoScreen()
+                }
             }
-        ) {
-            navController.createPersonaScreen()
-        }
+        )
     }
 }
 

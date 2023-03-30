@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,11 +37,18 @@ fun PersonasScreen(
     modifier: Modifier = Modifier,
     viewModel: PersonasViewModel,
     onBackClick: () -> Unit,
-    createNewPersona: () -> Unit,
+    createNewPersona: (Boolean) -> Unit,
     onPersonaClick: (String) -> Unit
 ) {
     val state = viewModel.state
 
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is PersonasViewModel.PersonasEvent.CreatePersona -> createNewPersona(it.firstPersonaCreated)
+            }
+        }
+    }
     PersonasContent(
         personas = state.personas,
         modifier = modifier
@@ -48,7 +56,7 @@ fun PersonasScreen(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         onBackClick = onBackClick,
-        createNewPersona = createNewPersona,
+        createNewPersona = viewModel::onCreatePersona,
         onPersonaClick = onPersonaClick
     )
 }

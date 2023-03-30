@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -16,6 +17,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -30,6 +32,7 @@ class SelectPersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val personaRepository: PersonaRepository,
+    private val preferencesManager: PreferencesManager,
     incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<DAppSelectPersonaEvent> by OneOffEventHandlerImpl() {
 
@@ -124,10 +127,17 @@ class SelectPersonaViewModel @Inject constructor(
         }.toPersistentList()
         _state.update { it.copy(personaListToDisplay = updatedPersonas, continueButtonEnabled = true) }
     }
+
+    fun onCreatePersona() {
+        viewModelScope.launch {
+            sendEvent(DAppSelectPersonaEvent.CreatePersona(preferencesManager.firstPersonaCreated.first()))
+        }
+    }
 }
 
 sealed interface DAppSelectPersonaEvent : OneOffEvent {
     data class PersonaSelected(val persona: Network.Persona) : DAppSelectPersonaEvent
+    data class CreatePersona(val firstPersonaCreated: Boolean) : DAppSelectPersonaEvent
 }
 
 data class SelectPersonaUiState(

@@ -71,10 +71,9 @@ class PeerdroidClientImpl @Inject constructor(
                         parseDataChannelState(dataChannelEvent)
                     }
                     is IncomingMessage.DecodedMessage -> {
-                        Timber.d("📯 data channel for remote client: ${dataChannelEvent.remoteClientId} received message")
                         parseIncomingMessage(
                             remoteClientId = dataChannelEvent.remoteClientId,
-                            messageInJsonString = dataChannelEvent.message
+                            messageInJsonString = dataChannelEvent.messageInJsonString
                         )
                     }
                     else -> {

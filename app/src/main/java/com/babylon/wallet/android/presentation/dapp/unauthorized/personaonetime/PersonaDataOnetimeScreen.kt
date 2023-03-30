@@ -61,16 +61,16 @@ fun PersonaDataOnetimeScreen(
     viewModel: PersonaDataOnetimeViewModel,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
-    onCreatePersona: () -> Unit,
+    onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit
+    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val sharedState by sharedViewModel.state.collectAsState()
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
                 else -> {}
             }
         }
@@ -81,6 +81,7 @@ fun PersonaDataOnetimeScreen(
                 is PersonaDataOnetimeEvent.OnEditPersona -> {
                     onEdit(event)
                 }
+                is PersonaDataOnetimeEvent.CreatePersona -> onCreatePersona(event.firstPersonaCreated)
             }
         }
     }
@@ -100,7 +101,7 @@ fun PersonaDataOnetimeScreen(
             viewModel.onSelectPersona(it)
             sharedViewModel.onSelectPersona(it)
         },
-        onCreatePersona = onCreatePersona,
+        onCreatePersona = viewModel::onCreatePersona,
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled
     )

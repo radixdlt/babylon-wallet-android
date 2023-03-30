@@ -42,7 +42,7 @@ fun NavGraphBuilder.chooseAccountsOneTime(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
+    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
     onPersonaOnetime: (String) -> Unit
 ) {
     composable(

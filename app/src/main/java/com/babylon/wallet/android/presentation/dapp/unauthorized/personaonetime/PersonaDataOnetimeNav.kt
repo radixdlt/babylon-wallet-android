@@ -37,8 +37,8 @@ fun NavGraphBuilder.personaDataOnetimeUnauthorized(
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     initialDappLoginRoute: InitialUnauthorizedLoginRoute.OnetimePersonaData?,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit,
-    onCreatePersona: () -> Unit
+    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
+    onCreatePersona: (Boolean) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DATA_ONETIME_UNAUTHORIZED,

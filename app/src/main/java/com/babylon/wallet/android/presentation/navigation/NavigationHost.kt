@@ -18,14 +18,13 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountReques
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.createpersona.ROUTE_CREATE_PERSONA
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
+import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
-import com.babylon.wallet.android.presentation.dapp.requestsuccess.requestSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
@@ -35,6 +34,7 @@ import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScr
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.ui.composables.requestresult.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -135,7 +135,11 @@ fun NavigationHost(
         personasScreen(
             onBackClick = { navController.navigateUp() },
             createPersonaScreen = {
-                navController.createPersonaScreen()
+                if (it) {
+                    navController.createPersonaScreen()
+                } else {
+                    navController.personaInfoScreen()
+                }
             },
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
@@ -166,8 +170,8 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            showSuccessDialog = {
-                navController.requestSuccess(it)
+            showSuccessDialog = { requestId, dAppName ->
+                navController.requestResultSuccess(requestId, dAppName)
             }
         )
         dAppLoginUnauthorized(
@@ -175,17 +179,17 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            showSuccessDialog = {
-                navController.requestSuccess(it)
+            showSuccessDialog = { requestId, dAppName ->
+                navController.requestResultSuccess(requestId, dAppName)
             }
         )
         settingsNavGraph(navController)
-        requestSuccess(onBackPress = {
+        requestResultSuccess(onBackPress = {
             navController.popBackStack()
         })
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
-                navController.popBackStack(ROUTE_CREATE_PERSONA, inclusive = true)
+                navController.popPersonaCreation()
             }
         )
         composable(

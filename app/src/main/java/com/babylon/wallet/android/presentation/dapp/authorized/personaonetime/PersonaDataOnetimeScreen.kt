@@ -62,7 +62,7 @@ fun PersonaDataOnetimeScreen(
     viewModel: PersonaDataOnetimeViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
-    onCreatePersona: () -> Unit,
+    onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit
 ) {
@@ -82,6 +82,7 @@ fun PersonaDataOnetimeScreen(
                 is PersonaDataOnetimeEvent.OnEditPersona -> {
                     onEdit(event)
                 }
+                is PersonaDataOnetimeEvent.CreatePersona -> onCreatePersona(event.firstPersonaCreated)
             }
         }
     }
@@ -105,7 +106,7 @@ fun PersonaDataOnetimeScreen(
         isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData,
         personas = state.personaListToDisplay,
         onSelectPersona = viewModel::onSelectPersona,
-        onCreatePersona = onCreatePersona,
+        onCreatePersona = viewModel::onCreatePersona,
         onEditClick = viewModel::onEditClick
     )
 }

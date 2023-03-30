@@ -188,7 +188,6 @@ internal class PeerdroidConnectorImpl(
         return withContext(ioDispatcher) {
             val remoteClientHolder = RemoteClientHolder(id = remoteClientId)
             if (mapOfDataChannels.contains(key = remoteClientHolder)) {
-                Timber.d("📯 send message to remote client: $remoteClientId")
                 mapOfDataChannels.getValue(remoteClientHolder).dataChannel.sendMessage(message)
             } else {
                 Timber.e("📯 failed to send message to remote client: $remoteClientId because its data channel is closed")

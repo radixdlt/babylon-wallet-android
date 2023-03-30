@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalAnimationApi::class, ExperimentalAnimationApi::class, ExperimentalAnimationApi::class)
-
 package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.compose.animation.AnimatedVisibility
@@ -23,11 +21,12 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnaut
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DappAuthorizedLoginScreen(
     viewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    showSuccessDialog: (String) -> Unit,
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
