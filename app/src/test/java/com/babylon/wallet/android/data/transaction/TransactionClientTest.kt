@@ -202,7 +202,7 @@ internal class TransactionClientTest {
             transactionClient.selectAccountAddressToLockFee(addressesInvolved)
         } catch (exception: Exception) {
             Assert.assertEquals(
-                TransactionApprovalException(
+                DappRequestException(
                     DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
                 ),
                 exception

@@ -7,12 +7,16 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.R
 
 @VisibleForTesting
 internal const val ARG_DAPP_NAME = "dapp_name"
 
 fun NavController.requestSuccess(dappName: String) {
-    navigate("request_success/$dappName")
+    val name = dappName.ifEmpty {
+        context.resources.getString(R.string.unknown_dapp)
+    }
+    navigate("request_success/$name")
 }
 
 fun NavGraphBuilder.requestSuccess(onBackPress: () -> Unit) {

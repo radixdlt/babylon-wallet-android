@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
@@ -110,95 +110,89 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private suspend fun setInitialDappLoginRoute() {
         val isLoginRequest = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest
         val usePersonaRequest = request.isUsePersonaAuth()
-        val resetPersonaData = request.resetRequestItem?.personaData == true
-        val resetAccounts = request.resetRequestItem?.accounts == true
-        val showSelectPersona = isLoginRequest || resetPersonaData
-
-        if (showSelectPersona) {
+        if (isLoginRequest) {
             _state.update { it.copy(initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(args.requestId)) }
         } else if (usePersonaRequest) {
             val dapp = authorizedDapp
             if (dapp != null) {
                 setInitialDappLoginRouteForUsePersonaRequest(
                     dapp,
-                    request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest,
-                    resetAccounts
+                    request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
                 )
             } else {
-                onRejectLogin()
+                onAbortDappLogin(WalletErrorType.InvalidPersona)
             }
         } else {
-            onRejectLogin()
+            onAbortDappLogin()
         }
     }
 
     @Suppress("LongMethod")
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
         dapp: Network.AuthorizedDapp,
-        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest,
-        resetAccounts: Boolean
+        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
     ) {
         val hasAuthorizedPersona = dapp.hasAuthorizedPersona(
             authRequest.personaAddress
         )
         if (hasAuthorizedPersona) {
+            val resetAccounts = request.resetRequestItem?.accounts == true
+            val resetPersonaData = request.resetRequestItem?.personaData == true
             val persona = checkNotNull(personaRepository.getPersonaByAddress(authRequest.personaAddress))
             onSelectPersona(persona)
             val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
             val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
             val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
             val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
-            if (ongoingAccountsRequestItem != null && (
-                !requestedAccountsPermissionAlreadyGranted(
-                        authRequest.personaAddress,
-                        ongoingAccountsRequestItem
-                    ) || resetAccounts
-                )
-            ) {
-                _state.update {
-                    it.copy(
-                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.Permission(
-                            ongoingAccountsRequestItem.numberOfAccounts,
-                            isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
+            val requestedAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
+                authRequest.personaAddress,
+                ongoingAccountsRequestItem
+            )
+            val requestedDataAlreadyGranted = personaDataAccessAlreadyGranted(ongoingPersonaDataRequestItem, persona.address)
+            when {
+                ongoingAccountsRequestItem != null && (!requestedAccountsAlreadyGranted || resetAccounts) -> {
+                    _state.update {
+                        it.copy(
+                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.Permission(
+                                ongoingAccountsRequestItem.numberOfAccounts,
+                                isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
+                            )
                         )
-                    )
+                    }
                 }
-            } else {
-                when {
-                    ongoingPersonaDataRequestItem != null -> {
-                        _state.update { state ->
-                            state.copy(
-                                initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                                    authRequest.personaAddress,
-                                    ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
-                                )
+                ongoingPersonaDataRequestItem != null && (!requestedDataAlreadyGranted || resetPersonaData) -> {
+                    _state.update { state ->
+                        state.copy(
+                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
+                                authRequest.personaAddress,
+                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                             )
-                        }
+                        )
                     }
-                    oneTimeAccountsRequestItem != null -> {
-                        _state.update {
-                            it.copy(
-                                initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
-                                    oneTimeAccountsRequestItem.numberOfAccounts,
-                                    isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
-                                    oneTime = true
-                                )
+                }
+                oneTimeAccountsRequestItem != null -> {
+                    _state.update {
+                        it.copy(
+                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
+                                oneTimeAccountsRequestItem.numberOfAccounts,
+                                isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
+                                oneTime = true
                             )
-                        }
+                        )
                     }
-                    oneTimePersonaDataRequestItem != null -> {
-                        _state.update { state ->
-                            state.copy(
-                                initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
-                                    oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
-                                )
+                }
+                oneTimePersonaDataRequestItem != null -> {
+                    _state.update { state ->
+                        state.copy(
+                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
+                                oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                             )
-                        }
+                        )
                     }
                 }
             }
         } else {
-            onRejectLogin()
+            onAbortDappLogin(WalletErrorType.InvalidPersona)
         }
     }
 
@@ -208,7 +202,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             currentNetworkId,
             request.requestMetadata.networkId
         )
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(TransactionApprovalException(failure))) }
+        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
             args.requestId,
@@ -281,8 +275,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun requestedAccountsPermissionAlreadyGranted(
         personaAddress: String,
-        accountsRequestItem: AccountsRequestItem
+        accountsRequestItem: AccountsRequestItem?
     ): Boolean {
+        if (accountsRequestItem == null) return false
         return authorizedDapp?.let { dapp ->
             val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
                 dapp.dAppDefinitionAddress,
@@ -339,9 +334,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun personaDataAccessAlreadyGranted(
-        requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem,
+        requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem?,
         personaAddress: String
     ): Boolean {
+        if (requestItem == null) return false
         val dapp = requireNotNull(editedDapp)
         val requestedFieldsCount = requestItem.fields.size
         val requestedFieldKinds = requestItem.fields.map { it.toKind() }
@@ -441,7 +437,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onRejectLogin() {
+    fun onAbortDappLogin(walletWalletErrorType: WalletErrorType = WalletErrorType.RejectedByUser) {
         viewModelScope.launch {
             if (request.isInternalRequest()) {
                 incomingRequestRepository.requestHandled(request.id)
@@ -449,7 +445,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     request.dappId,
                     args.requestId,
-                    error = WalletErrorType.RejectedByUser
+                    error = walletWalletErrorType
                 )
             }
             topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
@@ -556,7 +552,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
-                dappName,
+                state.value.dappMetadata?.getName().orEmpty(),
                 showSuccessDialog = !request.isInternalRequest()
             )
         )

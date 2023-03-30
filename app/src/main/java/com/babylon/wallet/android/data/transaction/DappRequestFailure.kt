@@ -9,6 +9,7 @@ sealed interface DappRequestFailure {
 
     object GetEpoch : DappRequestFailure
     object RejectedByUser : DappRequestFailure
+    object InvalidPersona : DappRequestFailure
     data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure
 
     sealed interface TransactionApprovalFailure : DappRequestFailure {
@@ -54,6 +55,7 @@ sealed interface DappRequestFailure {
             DappVerificationFailure.UnknownDefinitionAddress -> WalletErrorType.UnknownDefinitionAddress
             DappVerificationFailure.UnknownWebsite -> WalletErrorType.UnknownWebsite
             DappVerificationFailure.WrongAccountType -> WalletErrorType.WrongAccountType
+            InvalidPersona -> WalletErrorType.InvalidPersona
         }
     }
 
@@ -76,6 +78,7 @@ sealed interface DappRequestFailure {
             DappVerificationFailure.UnknownDefinitionAddress -> R.string.definition_address_does_not_match
             DappVerificationFailure.UnknownWebsite -> R.string.origin_does_not_match
             DappVerificationFailure.WrongAccountType -> R.string.expected_to_find_dapp_account_type
+            InvalidPersona -> R.string.invalid_persona_id_specified_by_dapp
         }
     }
 

@@ -87,7 +87,7 @@ fun PersonaDataOnetimeScreen(
     }
     BackHandler {
         if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
-            sharedViewModel.onRejectLogin()
+            sharedViewModel.onAbortDappLogin()
         } else {
             onBackClick()
         }
@@ -97,7 +97,7 @@ fun PersonaDataOnetimeScreen(
         dappMetadata = sharedState.dappMetadata,
         onBackClick = {
             if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData) {
-                sharedViewModel.onRejectLogin()
+                sharedViewModel.onAbortDappLogin()
             } else {
                 onBackClick()
             }

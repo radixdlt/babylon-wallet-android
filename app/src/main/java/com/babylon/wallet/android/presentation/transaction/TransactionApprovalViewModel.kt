@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.TransactionApprovalException
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -267,7 +267,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             }
                             transactionStatus.onError {
                                 state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
-                                val exception = it as? TransactionApprovalException
+                                val exception = it as? DappRequestException
                                 if (exception != null) {
                                     dAppMessenger.sendWalletInteractionResponseFailure(
                                         dappId = transactionWriteRequest.dappId,
@@ -282,7 +282,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         }
                         result.onError {
                             state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
-                            val exception = it as? TransactionApprovalException
+                            val exception = it as? DappRequestException
                             if (exception != null) {
                                 dAppMessenger.sendWalletInteractionResponseFailure(
                                     dappId = transactionWriteRequest.dappId,
