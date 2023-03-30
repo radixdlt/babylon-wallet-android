@@ -58,8 +58,8 @@ fun DappAuthorizedLoginNavigationHost(
                 )
             },
             onLoginFlowComplete = loginFlowCompletedCallback,
-            createNewPersona = {
-                if (it) {
+            createNewPersona = { isFirstPersonaCreated ->
+                if (isFirstPersonaCreated) {
                     navController.createPersonaScreen()
                 } else {
                     navController.personaInfoScreen()
@@ -192,8 +192,8 @@ fun DappAuthorizedLoginNavigationHost(
                 navController.navigateUp()
             },
             onLoginFlowComplete = loginFlowCompletedCallback,
-            onCreatePersona = {
-                if (it) {
+            onCreatePersona = { isFirstPersonaCreated ->
+                if (isFirstPersonaCreated) {
                     navController.createPersonaScreen()
                 } else {
                     navController.personaInfoScreen()

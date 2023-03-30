@@ -27,10 +27,13 @@ fun NavController.personaInfoScreen() {
     navigate(ROUTE_PERSONA_INFO)
 }
 
+@Suppress("SwallowedException")
 fun NavController.popPersonaCreation() {
-    val backstack = currentBackStack.value
-    val entryToPop = backstack.lastOrNull { it.destination.route == ROUTE_PERSONA_INFO }
-        ?: backstack.last { it.destination.route == ROUTE_CREATE_PERSONA }
+    val entryToPop = try {
+        getBackStackEntry(ROUTE_PERSONA_INFO)
+    } catch (e: java.lang.IllegalArgumentException) {
+        getBackStackEntry(ROUTE_CREATE_PERSONA)
+    }
     popBackStack(entryToPop.destination.id, true)
 }
 

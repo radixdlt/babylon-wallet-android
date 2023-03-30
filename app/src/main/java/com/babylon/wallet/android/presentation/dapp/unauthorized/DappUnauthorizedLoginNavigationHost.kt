@@ -100,8 +100,8 @@ fun DappUnauthorizedLoginNavigationHost(
                 finishDappLogin()
                 showSuccessDialog(dappName)
             },
-            onCreatePersona = {
-                if (it) {
+            onCreatePersona = { isFirstPersonaCreated ->
+                if (isFirstPersonaCreated) {
                     navController.createPersonaScreen()
                 } else {
                     navController.personaInfoScreen()
