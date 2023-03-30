@@ -245,6 +245,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         message = failure.getDappMessage()
                     )
                     sendEvent(TransactionApprovalEvent.NavigateBack)
+                    incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
                 } else {
                     state = state.copy(isSigning = true)
