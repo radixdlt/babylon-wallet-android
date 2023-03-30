@@ -15,6 +15,20 @@ data class PersonaUiModel(
     fun missingFieldKinds(): ImmutableList<Network.Persona.Field.Kind> {
         return requiredFieldKinds.minus(persona.fields.map { it.kind }.toSet()).sortedBy { it.ordinal }.toPersistentList()
     }
+
+    fun personalInfoFormatted(): String {
+        return buildString {
+            val fields = persona.fields.filter { requiredFieldKinds.contains(it.kind) }
+            val givenName = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.GivenName }?.value
+            val familyName = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.FamilyName }?.value
+            val email = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.EmailAddress }?.value
+            val phone = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.PhoneNumber }?.value
+            append(
+                listOfNotNull(listOfNotNull(givenName, familyName).joinToString(separator = " "), email, phone).filter { it.isNotEmpty() }
+                    .joinToString("\n")
+            )
+        }
+    }
 }
 
 fun Network.Persona.toUiModel(): PersonaUiModel {
