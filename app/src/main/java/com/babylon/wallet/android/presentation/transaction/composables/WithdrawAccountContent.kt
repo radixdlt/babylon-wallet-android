@@ -56,7 +56,7 @@ fun WithdrawAccountContent(
                         description = "",
                         id = "",
                         symbol = account.tokenSymbol,
-                        tokenQuantity = account.tokenQuantity.toBigDecimal(),
+                        tokenQuantity = account.tokenQuantityDecimal,
                         tokenValue = account.fiatAmount,
                         address = account.address,
                         metadata = emptyMap()

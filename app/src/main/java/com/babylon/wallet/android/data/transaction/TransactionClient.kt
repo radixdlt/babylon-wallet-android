@@ -461,7 +461,7 @@ class TransactionClient @Inject constructor(
     suspend fun getTransactionPreview(
         manifest: TransactionManifest,
         networkId: Int,
-        blobs: Array<ByteArray>
+        blobs: Array<out ByteArray>
     ): Result<TransactionPreviewResponse> {
         var startEpochInclusive = 0L
         var endEpochExclusive = 0L

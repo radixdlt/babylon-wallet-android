@@ -42,6 +42,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.repository.ProfileDataSource
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -94,7 +95,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         val transactionPreview = transactionClient.getTransactionPreview(
                             manifest = transactionManifest,
                             networkId = profileDataSource.getCurrentNetworkId().value,
-                            blobs = transactionManifest.blobs ?: emptyArray()
+                            blobs = transactionManifest.blobs.orEmpty()
                         )
                         transactionPreview.onError {
                             state = state.copy(
@@ -133,33 +134,59 @@ class TransactionApprovalViewModel @Inject constructor(
                                 analyzeManifestWithPreviewResponse.accountDeposits.forEach {
                                     when (it) {
                                         is AccountDeposit.Estimate -> {
-                                            val accountDepositResourceSpecifier =
-                                                (it.resourceSpecifier as ResourceSpecifier.Amount)
+                                            val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                                is ResourceSpecifier.Amount -> {
+                                                    resSpecifier.amount
+                                                }
+                                                is ResourceSpecifier.Ids -> {
+                                                    ""
+                                                }
+                                            }
+                                            val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                                is ResourceSpecifier.Amount -> {
+                                                    resSpecifier.resourceAddress.address
+                                                }
+                                                is ResourceSpecifier.Ids -> {
+                                                    resSpecifier.resourceAddress.address
+                                                }
+                                            }
                                             depositJobs.add(
                                                 async {
                                                     getTransactionComponentResourcesUseCase.invoke(
                                                         componentAddress = it.componentAddress.address,
-                                                        resourceAddress = accountDepositResourceSpecifier
-                                                            .resourceAddress.address,
+                                                        resourceAddress = resourceAddress,
                                                         createdEntities = analyzeManifestWithPreviewResponse
                                                             .createdEntities,
-                                                        amount = accountDepositResourceSpecifier.amount
+                                                        amount = amount
                                                     )
                                                 }
                                             )
                                         }
                                         is AccountDeposit.Exact -> {
-                                            val accountDepositResourceSpecifier =
-                                                (it.resourceSpecifier as ResourceSpecifier.Amount)
+                                            val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                                is ResourceSpecifier.Amount -> {
+                                                    resSpecifier.amount
+                                                }
+                                                is ResourceSpecifier.Ids -> {
+                                                    ""
+                                                }
+                                            }
+                                            val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                                is ResourceSpecifier.Amount -> {
+                                                    resSpecifier.resourceAddress.address
+                                                }
+                                                is ResourceSpecifier.Ids -> {
+                                                    resSpecifier.resourceAddress.address
+                                                }
+                                            }
                                             depositJobs.add(
                                                 async {
                                                     getTransactionComponentResourcesUseCase.invoke(
                                                         componentAddress = it.componentAddress.address,
-                                                        resourceAddress = accountDepositResourceSpecifier
-                                                            .resourceAddress.address,
+                                                        resourceAddress = resourceAddress,
                                                         createdEntities = analyzeManifestWithPreviewResponse
                                                             .createdEntities,
-                                                        amount = accountDepositResourceSpecifier.amount
+                                                        amount = amount
                                                     )
                                                 }
                                             )
@@ -167,17 +194,30 @@ class TransactionApprovalViewModel @Inject constructor(
                                     }
                                 }
                                 analyzeManifestWithPreviewResponse.accountWithdraws.forEach {
-                                    val accountWithdrawResourceSpecifier =
-                                        (it.resourceSpecifier as ResourceSpecifier.Amount)
+                                    val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                        is ResourceSpecifier.Amount -> {
+                                            resSpecifier.amount
+                                        }
+                                        is ResourceSpecifier.Ids -> {
+                                            ""
+                                        }
+                                    }
+                                    val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                        is ResourceSpecifier.Amount -> {
+                                            resSpecifier.resourceAddress.address
+                                        }
+                                        is ResourceSpecifier.Ids -> {
+                                            resSpecifier.resourceAddress.address
+                                        }
+                                    }
                                     withdrawJobs.add(
                                         async {
                                             getTransactionComponentResourcesUseCase.invoke(
                                                 componentAddress = it.componentAddress.address,
-                                                resourceAddress = accountWithdrawResourceSpecifier
-                                                    .resourceAddress.address,
+                                                resourceAddress = resourceAddress,
                                                 createdEntities = analyzeManifestWithPreviewResponse
                                                     .createdEntities,
-                                                amount = accountWithdrawResourceSpecifier.amount
+                                                amount = amount
                                             )
                                         }
                                     )
@@ -337,7 +377,10 @@ data class TransactionAccountItemUiModel(
     val fiatAmount: String,
     val appearanceID: Int,
     val iconUrl: String
-)
+) {
+    val tokenQuantityDecimal: BigDecimal
+        get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal()
+}
 
 data class PresentingProofUiModel(
     val iconUrl: String,

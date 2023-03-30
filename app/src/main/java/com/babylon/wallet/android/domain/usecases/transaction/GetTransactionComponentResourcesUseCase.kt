@@ -24,7 +24,6 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         createdEntities: CreatedEntities,
         amount: String
     ): Result<TransactionAccountItemUiModel> {
-
         val createdEntitiesAddresses = createdEntities
             .resourceAddresses.filterIsInstance<EntityAddress.ResourceAddress>()
             .map { resAddress ->
