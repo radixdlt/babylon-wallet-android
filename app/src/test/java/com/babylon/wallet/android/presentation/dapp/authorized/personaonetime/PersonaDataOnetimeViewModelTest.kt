@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.model.encodeToString
 import io.mockk.coEvery
@@ -22,13 +23,15 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
 
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val preferencesManager = mockk<PreferencesManager>()
 
     private val samplePersona = sampleDataProvider.samplePersona()
 
     override fun initVM(): PersonaDataOnetimeViewModel {
         return PersonaDataOnetimeViewModel(
             savedStateHandle,
-            personaRepository
+            personaRepository,
+            preferencesManager
         )
     }
 
@@ -36,6 +39,9 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
     override fun setUp() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
+        coEvery { preferencesManager.firstPersonaCreated } returns flow {
+            emit(true)
+        }
         coEvery { personaRepository.personas } returns flow {
             emit(listOf(samplePersona))
         }

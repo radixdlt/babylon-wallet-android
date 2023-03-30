@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -30,6 +31,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     private val profileDataSource = mockk<ProfileDataSource>()
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val preferencesManager = mockk<PreferencesManager>()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
@@ -53,6 +55,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
             savedStateHandle,
             dAppConnectionRepository,
             personaRepository,
+            preferencesManager,
             incomingRequestRepository
         )
     }
@@ -61,6 +64,9 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     override fun setUp() {
         super.setUp()
         val addressSlot = slot<String>()
+        coEvery { preferencesManager.firstPersonaCreated } returns flow {
+            emit(true)
+        }
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
         coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
         coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {

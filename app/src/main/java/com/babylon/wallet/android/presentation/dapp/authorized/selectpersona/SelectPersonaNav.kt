@@ -27,7 +27,7 @@ fun NavGraphBuilder.selectPersona(
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
-    createNewPersona: () -> Unit,
+    createNewPersona: (Boolean) -> Unit,
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.SelectPersona?,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,

@@ -1,13 +1,17 @@
 package com.babylon.wallet.android.presentation
 
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaViewModel
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -28,6 +32,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
 
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val createPersonaUseCase = mockk<CreatePersonaUseCase>()
+    private val preferencesManager = mockk<PreferencesManager>()
 
     private val personaId = "fj3489fj348f"
     private val personaName = PersonaDisplayNameFieldWrapper("My first persona", valid = true, wasEdited = true)
@@ -39,6 +44,10 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         coEvery {
             deviceSecurityHelper.isDeviceSecure()
         } returns true
+        coEvery { preferencesManager.firstPersonaCreated } returns flow {
+            emit(true)
+        }
+        coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
 
         coEvery { createPersonaUseCase.invoke(any(), any()) } returns Network.Persona(
             address = personaId,
@@ -60,7 +69,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+        val viewModel = CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
         advanceUntilIdle()
 
         // then
@@ -74,7 +83,7 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         runTest {
 
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+            val viewModel = CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
 
             viewModel.onDisplayNameChanged(personaName.value)
 
@@ -98,6 +107,6 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+        return CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
     }
 }
