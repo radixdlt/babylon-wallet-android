@@ -34,13 +34,16 @@ fun DappAuthorizedLoginNavigationHost(
     initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute,
     navController: NavHostController,
     finishDappLogin: () -> Unit,
-    showSuccessDialog: (String) -> Unit,
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
     sharedViewModel: DAppAuthorizedLoginViewModel
 ) {
     val loginFlowCompletedCallback = { event: DAppAuthorizedLoginEvent.LoginFlowCompleted ->
         finishDappLogin()
         if (event.showSuccessDialog) {
-            showSuccessDialog(event.dappName.decodeUtf8())
+            showSuccessDialog(
+                event.requestId,
+                event.dAppName.decodeUtf8()
+            )
         }
     }
     AnimatedNavHost(

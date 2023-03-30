@@ -29,7 +29,7 @@ fun NavController.dAppLoginAuthorized(requestId: String) {
 fun NavGraphBuilder.dAppLoginAuthorized(
     navController: NavController,
     onBackClick: () -> Unit,
-    showSuccessDialog: (String) -> Unit
+    showSuccessDialog: (requestId: String, dAppName: String) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN_AUTHORIZED,

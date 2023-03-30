@@ -63,14 +63,14 @@ fun PersonaDataOnetimeScreen(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (String) -> Unit
+    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val sharedState by sharedViewModel.state.collectAsState()
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.dappName)
+                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
                 else -> {}
             }
         }

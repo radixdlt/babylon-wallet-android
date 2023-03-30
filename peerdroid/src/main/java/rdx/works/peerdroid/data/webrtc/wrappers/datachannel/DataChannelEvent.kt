@@ -20,7 +20,7 @@ sealed interface DataChannelEvent {
         // and its assembled and decoded message
         data class DecodedMessage(
             val remoteClientId: String,
-            val message: String
+            val messageInJsonString: String
         ) : IncomingMessage
 
         // a confirmation notification from the other peer to confirm that

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import timber.log.Timber
 import javax.inject.Inject
 
 interface IncomingRequestRepository {
@@ -42,6 +43,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
                 _currentRequestToHandle.emit(incomingRequest)
             }
             listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)
+            Timber.d("🗂 new incoming request with id ${incomingRequest.id} added in list, so size now is ${listOfIncomingRequests.size}")
         }
     }
 
@@ -51,6 +53,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
             listOfIncomingRequests.values.firstOrNull()?.let { nextRequest ->
                 _currentRequestToHandle.emit(nextRequest)
             }
+            Timber.d("🗂 request $requestId handled so size of list is now: ${listOfIncomingRequests.size}")
         }
     }
 

@@ -40,7 +40,7 @@ interface DappMessenger {
     suspend fun sendWalletInteractionUnauthorizedSuccessResponse(
         dappId: String,
         requestId: String,
-        onetimeAccounts: List<AccountItemUiModel> = emptyList(),
+        oneTimeAccounts: List<AccountItemUiModel> = emptyList(),
         onetimeDataFields: List<Network.Persona.Field> = emptyList()
     ): Result<Unit>
 
@@ -70,8 +70,7 @@ interface DappMessenger {
 }
 
 class DappMessengerImpl @Inject constructor(
-    private val peerdroidClient: PeerdroidClient,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val peerdroidClient: PeerdroidClient
 ) : DappMessenger {
 
     override suspend fun sendWalletInteractionUnauthorizedSuccessResponse(
@@ -102,15 +101,8 @@ class DappMessengerImpl @Inject constructor(
         val json = Json.encodeToString(walletResponse)
 
         return when (peerdroidClient.sendMessage(dappId, json)) {
-            is rdx.works.peerdroid.helpers.Result.Success -> {
-                incomingRequestRepository.requestHandled(requestId)
-                Result.Success(Unit)
-            }
-            is rdx.works.peerdroid.helpers.Result.Error -> {
-                Timber.e("failed to send response with accounts")
-                incomingRequestRepository.requestHandled(requestId)
-                Result.Error()
-            }
+            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
+            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
     }
 
@@ -125,14 +117,8 @@ class DappMessengerImpl @Inject constructor(
         )
         val message = Json.encodeToString(response)
         return when (peerdroidClient.sendMessage(dappId, message)) {
-            is rdx.works.peerdroid.helpers.Result.Error -> {
-                incomingRequestRepository.requestHandled(requestId)
-                Result.Error()
-            }
-            is rdx.works.peerdroid.helpers.Result.Success -> {
-                incomingRequestRepository.requestHandled(requestId)
-                Result.Success(Unit)
-            }
+            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
+            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
     }
 
@@ -150,14 +136,8 @@ class DappMessengerImpl @Inject constructor(
             )
         )
         return when (peerdroidClient.sendMessage(dappId, messageJson)) {
-            is rdx.works.peerdroid.helpers.Result.Error -> {
-                incomingRequestRepository.requestHandled(requestId)
-                Result.Error()
-            }
-            is rdx.works.peerdroid.helpers.Result.Success -> {
-                incomingRequestRepository.requestHandled(requestId)
-                Result.Success(Unit)
-            }
+            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
+            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
     }
 
@@ -171,16 +151,15 @@ class DappMessengerImpl @Inject constructor(
         ongoingDataFields: List<Network.Persona.Field>,
         onetimeDataFields: List<Network.Persona.Field>
     ): Result<Unit> {
-        val walletSuccessResponse: WalletInteractionResponse =
-            buildSuccessResponse(
-                interactionId = interactionId,
-                usePersona = usePersona,
-                persona = persona,
-                oneTimeAccounts = oneTimeAccounts,
-                ongoingAccounts = ongoingAccounts,
-                ongoingDataFields = ongoingDataFields,
-                onetimeDataFields = onetimeDataFields
-            )
+        val walletSuccessResponse: WalletInteractionResponse = buildSuccessResponse(
+            interactionId = interactionId,
+            usePersona = usePersona,
+            persona = persona,
+            oneTimeAccounts = oneTimeAccounts,
+            ongoingAccounts = ongoingAccounts,
+            ongoingDataFields = ongoingDataFields,
+            onetimeDataFields = onetimeDataFields
+        )
         val messageJson = try {
             Json.encodeToString(walletSuccessResponse)
         } catch (e: Exception) {
@@ -188,11 +167,8 @@ class DappMessengerImpl @Inject constructor(
             ""
         }
         return when (peerdroidClient.sendMessage(dappId, messageJson)) {
+            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
-            is rdx.works.peerdroid.helpers.Result.Success -> {
-                incomingRequestRepository.requestHandled(interactionId)
-                Result.Success(Unit)
-            }
         }
     }
 
@@ -242,12 +218,20 @@ class DappMessengerImpl @Inject constructor(
                     null
                 },
                 ongoingPersonaData = if (ongoingDataFields.isNotEmpty()) {
-                    OngoingPersonaDataRequestResponseItem(ongoingDataFields.map { PersonaData(it.kind.toPersonaDataField(), it.value) })
+                    OngoingPersonaDataRequestResponseItem(
+                        ongoingDataFields.map {
+                            PersonaData(it.kind.toPersonaDataField(), it.value)
+                        }
+                    )
                 } else {
                     null
                 },
                 oneTimePersonaData = if (onetimeDataFields.isNotEmpty()) {
-                    OneTimePersonaDataRequestResponseItem(ongoingDataFields.map { PersonaData(it.kind.toPersonaDataField(), it.value) })
+                    OneTimePersonaDataRequestResponseItem(
+                        ongoingDataFields.map {
+                            PersonaData(it.kind.toPersonaDataField(), it.value)
+                        }
+                    )
                 } else {
                     null
                 }
