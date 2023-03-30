@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -26,6 +27,13 @@ fun NavController.personaInfoScreen() {
     navigate(ROUTE_PERSONA_INFO)
 }
 
+fun NavController.popPersonaCreation() {
+    val backstack = currentBackStack.value
+    val entryToPop = backstack.lastOrNull { it.destination.route == ROUTE_PERSONA_INFO }
+        ?: backstack.last { it.destination.route == ROUTE_CREATE_PERSONA }
+    popBackStack(entryToPop.destination.id, true)
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personaInfoScreen(
     onBackClick: () -> Unit,
@@ -41,7 +49,7 @@ fun NavGraphBuilder.personaInfoScreen(
             null
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
@@ -86,7 +94,7 @@ fun NavGraphBuilder.createPersonaScreen(
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
-    createPersonaScreen: () -> Unit,
+    createPersonaScreen: (Boolean) -> Unit,
     onPersonaClick: (String) -> Unit
 ) {
     composable(
@@ -96,7 +104,7 @@ fun NavGraphBuilder.personasScreen(
         },
         exitTransition = {
             when (targetState.destination.route) {
-                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA -> null
+                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> null
                 else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
             }
         },

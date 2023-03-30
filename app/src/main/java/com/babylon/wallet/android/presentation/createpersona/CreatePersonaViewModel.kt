@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
     private val createPersonaUseCase: CreatePersonaUseCase,
+    private val preferencesManager: PreferencesManager,
     deviceSecurityHelper: DeviceSecurityHelper,
 ) : ViewModel(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
@@ -69,6 +71,7 @@ class CreatePersonaViewModel @Inject constructor(
             state = state.copy(
                 loading = true
             )
+            preferencesManager.markFirstPersonaCreated()
 
             sendEvent(
                 CreatePersonaEvent.Complete(

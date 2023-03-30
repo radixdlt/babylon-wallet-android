@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -14,6 +15,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -23,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PersonaDataOnetimeViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val personaRepository: PersonaRepository
+    private val personaRepository: PersonaRepository,
+    private val preferencesManager: PreferencesManager
 ) : BaseViewModel<PersonaDataOnetimeUiState>(), OneOffEventHandler<PersonaDataOnetimeEvent> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDataOnetimeArgs(savedStateHandle)
@@ -53,6 +56,12 @@ class PersonaDataOnetimeViewModel @Inject constructor(
         _state.update { it.copy(personaListToDisplay = updatedPersonas, continueButtonEnabled = true) }
     }
 
+    fun onCreatePersona() {
+        viewModelScope.launch {
+            sendEvent(PersonaDataOnetimeEvent.CreatePersona(preferencesManager.firstPersonaCreated.first()))
+        }
+    }
+
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
             sendEvent(PersonaDataOnetimeEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
@@ -62,6 +71,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 
 sealed interface PersonaDataOnetimeEvent : OneOffEvent {
     data class OnEditPersona(val personaAddress: String, val requiredFieldsEncoded: String? = null) : PersonaDataOnetimeEvent
+    data class CreatePersona(val firstPersonaCreated: Boolean) : PersonaDataOnetimeEvent
 }
 
 data class PersonaDataOnetimeUiState(

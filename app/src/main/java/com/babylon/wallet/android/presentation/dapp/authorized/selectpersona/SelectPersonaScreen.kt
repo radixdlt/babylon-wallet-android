@@ -61,7 +61,7 @@ fun SelectPersonaScreen(
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
-    createNewPersona: () -> Unit,
+    createNewPersona: (Boolean) -> Unit,
     onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,
     onPersonaDataOngoing: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
@@ -82,6 +82,7 @@ fun SelectPersonaScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is DAppSelectPersonaEvent.PersonaSelected -> sharedViewModel.onSelectPersona(event.persona)
+                is DAppSelectPersonaEvent.CreatePersona -> createNewPersona(event.firstPersonaCreated)
             }
         }
     }
@@ -99,7 +100,7 @@ fun SelectPersonaScreen(
         firstTimeLogin = state.firstTimeLogin,
         continueButtonEnabled = state.continueButtonEnabled,
         personas = state.personaListToDisplay,
-        createNewPersona = createNewPersona,
+        createNewPersona = viewModel::onCreatePersona,
         isLoading = state.isLoading
     )
 }

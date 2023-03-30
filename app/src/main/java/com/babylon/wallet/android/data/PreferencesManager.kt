@@ -29,6 +29,17 @@ class PreferencesManager @Inject constructor(
             preferences[SHOW_ONBOARDING] ?: false
         }
 
+    val firstPersonaCreated: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[FIRST_PERSONA_CREATED] ?: false
+        }
+
+    suspend fun markFirstPersonaCreated() {
+        dataStore.edit { preferences ->
+            preferences[FIRST_PERSONA_CREATED] = true
+        }
+    }
+
     fun getLastUsedEpochFlow(address: String): Flow<Long?> {
         return dataStore.data
             .map { preferences ->
@@ -55,6 +66,7 @@ class PreferencesManager @Inject constructor(
 
     companion object {
         private val SHOW_ONBOARDING = booleanPreferencesKey("show_onboarding")
+        private val FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
     }
 }
