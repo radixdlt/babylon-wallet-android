@@ -39,12 +39,12 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
             } else {
                 try {
                     val jsonString = p0.data.moveToByteArray().decodeToString()
-                    Timber.d("📯 package message json is: $jsonString")
+                    Timber.d("📯 received package message dto 📦 in json: $jsonString")
                     // parse json string to a PackageMessageDto object
                     val packageMessageDto = Json.decodeFromString<PackageMessageDto>(jsonString)
                     parsePackageDto(packageMessageDto = packageMessageDto)
                 } catch (exception: Exception) {
-                    Timber.e("📯 an error occurred while decoding the message: ${exception.localizedMessage}")
+                    Timber.e("📯 an error occurred while decoding the package message dto 📦: ${exception.localizedMessage}")
                 }
             }
         }
@@ -68,7 +68,7 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
                     try {
                         parseChunkAndSendEventIfListIsComplete(packageMessageDto.toChunk())
                     } catch (exception: Exception) {
-                        Timber.e("📯 exception occurred while parsing chunk packages: ${exception.localizedMessage}")
+                        Timber.e("📯 exception occurred while parsing chunk packages 📦: ${exception.localizedMessage}")
                         trySend(
                             DataChannelEvent.UnknownError(
                                 message = "exception occurred while parsing chunk packages"
@@ -143,13 +143,13 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelEvent> = callbackFlow {
 
     registerObserver(callback)
 
-    Timber.d("📯 $this@eventFlow: is registered")
+    Timber.d("📯 event flow for remote client ${this@eventFlow.label()}: is registered")
     trySend(this@eventFlow.currentState())
 
     awaitClose {
-        Timber.d("📯 $this@eventFlow: awaitClose")
+        Timber.d("📯 event flow for remote client ${this@eventFlow.label()}: awaitClose ⭕️")
         unregisterObserver()
-        Timber.d("📯 $this@eventFlow: unregister observer and state is: ${this@eventFlow.currentState()}")
+        Timber.d("📯 for remote client ${this@eventFlow.label()}: unregister observer and check the state ${this@eventFlow.currentState()}")
     }
 }
 

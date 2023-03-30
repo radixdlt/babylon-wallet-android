@@ -133,8 +133,11 @@ class MainViewModel @Inject constructor(
                 .listenForIncomingRequests()
                 .filterIsInstance<IncomingRequest>()
                 .cancellable()
-                .collect { message ->
-                    processIncomingRequest(message)
+                .collect { incomingRequest ->
+                    val remoteClient = incomingRequest.remoteClientId
+                    val requestId = incomingRequest.id
+                    Timber.d("📯 wallet received incoming request from remote client $remoteClient with id $requestId")
+                    processIncomingRequest(incomingRequest)
                 }
         }
     }
