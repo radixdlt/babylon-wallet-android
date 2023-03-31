@@ -51,6 +51,11 @@ sealed interface MessageFromDataChannel {
                     oneTimePersonaDataRequestItem == null
             }
 
+            fun isValidRequest(): Boolean {
+                return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
+            }
+
             sealed interface AuthRequest {
                 data class LoginRequest(val challenge: String? = null) : AuthRequest
                 data class UsePersonaRequest(val personaAddress: String) : AuthRequest
@@ -63,7 +68,11 @@ sealed interface MessageFromDataChannel {
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(dappId, requestId, requestMetadata)
+        ) : IncomingRequest(dappId, requestId, requestMetadata) {
+            fun isValidRequest(): Boolean {
+                return oneTimeAccountsRequestItem?.isValidRequestItem() != false
+            }
+        }
 
         data class TransactionRequest(
             val dappId: String, // from which dapp comes the message
@@ -90,6 +99,10 @@ sealed interface MessageFromDataChannel {
                 fun exactly(): Boolean {
                     return this == Exactly
                 }
+            }
+
+            fun isValidRequestItem(): Boolean {
+                return numberOfAccounts >= 0
             }
         }
 

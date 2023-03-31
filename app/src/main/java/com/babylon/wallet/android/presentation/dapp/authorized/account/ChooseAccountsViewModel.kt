@@ -57,7 +57,8 @@ class ChooseAccountsViewModel @Inject constructor(
                 state = state.copy(
                     availableAccountItems = accountItems.toPersistentList(),
                     error = null,
-                    showProgress = false
+                    showProgress = false,
+                    isContinueButtonEnabled = !state.isExactAccountsCount && state.numberOfAccounts == 0
                 )
             }
         }
