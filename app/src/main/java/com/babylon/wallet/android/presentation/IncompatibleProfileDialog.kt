@@ -19,7 +19,7 @@ const val ROUTE_INCOMPATIBLE_PROFILE = "incompatible_profile_route"
 
 @Composable
 fun IncompatibleProfileContent(
-    viewModel: MainViewModel,
+    mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val activity = (LocalContext.current as MainActivity)
@@ -32,7 +32,7 @@ fun IncompatibleProfileContent(
         BasicPromptAlertDialog(
             finish = {
                 if (it) {
-                    viewModel.deleteProfile()
+                    mainViewModel.deleteProfile()
                 } else {
                     activity.finish()
                 }

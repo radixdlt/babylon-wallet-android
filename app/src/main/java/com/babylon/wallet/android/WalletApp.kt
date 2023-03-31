@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 @Composable
 @Suppress("ModifierMissing")
 fun WalletApp(
+    mainViewModel: MainViewModel,
     appNavigationState: AppNavigationState,
     oneOffEvent: Flow<MainEvent>,
 ) {
@@ -28,24 +29,28 @@ fun WalletApp(
     when (appNavigationState) {
         AppNavigationState.CreateAccount -> {
             NavigationHost(
+                mainViewModel = mainViewModel,
                 startDestination = ROUTE_CREATE_ACCOUNT,
                 navController = navController
             )
         }
         AppNavigationState.Wallet -> {
             NavigationHost(
+                mainViewModel = mainViewModel,
                 startDestination = Screen.WalletDestination.route,
                 navController = navController
             )
         }
         is AppNavigationState.IncompatibleProfile -> {
             NavigationHost(
+                mainViewModel = mainViewModel,
                 startDestination = ROUTE_INCOMPATIBLE_PROFILE,
                 navController = navController
             )
         }
         AppNavigationState.Onboarding -> {
             NavigationHost(
+                mainViewModel = mainViewModel,
                 startDestination = Screen.OnboardingDestination.route,
                 navController = navController
             )
