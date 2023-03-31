@@ -30,7 +30,7 @@ import java.math.BigDecimal
 @Composable
 fun TokenItemCard(
     token: TokenUiModel,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
         Row(

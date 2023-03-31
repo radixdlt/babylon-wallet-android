@@ -35,14 +35,43 @@ data class TransactionPreviewResponse (
     @SerialName(value = "encoded_receipt")
     val encodedReceipt: kotlin.String,
 
-//    @Contextual @SerialName(value = "receipt")
-//    val receipt: kotlin.Any,
-
-//    @SerialName(value = "resource_changes")
-//    val resourceChanges: kotlin.collections.List<@Contextual kotlin.Any>,
+    @SerialName(value = "receipt")
+    val receipt: Receipt,
 
     @SerialName(value = "logs")
     val logs: kotlin.collections.List<TransactionPreviewResponseLogsInner>
 
 )
 
+@Serializable
+data class Receipt(
+    @SerialName("fee_summary")
+    val fee_summary: FeeSummary,
+    @SerialName("status")
+    val status: String,
+    @SerialName("error_message")
+    val errorMessage: String? = null
+) {
+    val isFailed
+        get() = status == "Failed"
+}
+
+@Serializable
+data class FeeSummary(
+    @SerialName("cost_unit_limit")
+    val cost_unit_limit: Int,
+    @SerialName("cost_unit_price")
+    val cost_unit_price: String,
+    @SerialName("cost_units_consumed")
+    val cost_units_consumed: Int,
+    @SerialName("tip_percentage")
+    val tip_percentage: Int,
+    @SerialName("xrd_royalty_receivers")
+    val xrd_royalty_receivers: List<String>,
+    @SerialName("xrd_total_execution_cost")
+    val xrd_total_execution_cost: String,
+    @SerialName("xrd_total_royalty_cost")
+    val xrd_total_royalty_cost: String,
+    @SerialName("xrd_total_tipped")
+    val xrd_total_tipped: String
+)

@@ -62,3 +62,19 @@ fun TransactionManifest.toPrettyString(): String {
 
     return "$instructionsFormatted$blobsString"
 }
+
+fun TransactionManifest.toStringWithoutBlobs(): String {
+    if (instructions is ManifestInstructions.ParsedInstructions) return ""
+    val instructionsSeparator = "\n\n"
+    val instructionsArgumentSeparator = "\n\t"
+
+    val instructionsFormatted = (instructions as ManifestInstructions.StringInstructions).let { stringInstructions ->
+        stringInstructions.instructions.trim().removeSuffix(";").split(";").map { "${it.trim()};" }
+            .joinToString(separator = instructionsSeparator) { instruction ->
+                instruction.split(" ").filter { it.isNotEmpty() }
+                    .joinToString(separator = instructionsArgumentSeparator)
+            }
+    }
+
+    return instructionsFormatted
+}

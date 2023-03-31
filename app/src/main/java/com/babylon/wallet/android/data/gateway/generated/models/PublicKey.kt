@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.serialisers.PublicKeySerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -24,7 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param keyType 
  */
-@Serializable
+@Serializable(with = PublicKeySerializer::class)
 abstract class PublicKey {
 
     @Contextual @SerialName(value = "key_type")

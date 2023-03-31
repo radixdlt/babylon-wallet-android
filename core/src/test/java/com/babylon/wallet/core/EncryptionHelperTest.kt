@@ -2,6 +2,7 @@ package com.babylon.wallet.core
 
 import org.junit.Assert
 import org.junit.Test
+import rdx.works.core.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import java.nio.ByteBuffer
@@ -59,14 +60,6 @@ class EncryptionHelperTest {
         val copy = ByteArray(remaining())
         get(copy)
         return copy
-    }
-
-    private fun String.decodeHex(): ByteArray {
-        check(length % 2 == 0) { "Must have an even length" }
-
-        return chunked(2)
-            .map { it.toInt(16).toByte() }
-            .toByteArray()
     }
 
     private fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }

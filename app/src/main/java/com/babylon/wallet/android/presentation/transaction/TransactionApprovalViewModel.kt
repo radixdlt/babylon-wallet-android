@@ -17,7 +17,10 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -25,17 +28,29 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.radixdlt.toolkit.models.request.AccountDeposit
+import com.radixdlt.toolkit.models.request.ResourceSpecifier
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import rdx.works.core.decodeHex
 import rdx.works.profile.data.repository.ProfileDataSource
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
+    private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
+    private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val profileDataSource: ProfileDataSource,
     deviceSecurityHelper: DeviceSecurityHelper,
@@ -56,11 +71,13 @@ class TransactionApprovalViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             state = state.copy(
-                manifestData = transactionWriteRequest.transactionManifestData
+                manifestData = transactionWriteRequest.transactionManifestData,
+                transactionMessage = transactionWriteRequest.transactionManifestData.message.orEmpty()
             )
             val manifestResult = transactionClient.addLockFeeToTransactionManifestData(
                 transactionWriteRequest.transactionManifestData
             )
+
             manifestResult.onValue { manifestWithLockFee ->
                 when (
                     val manifestInStringFormatConversionResult = transactionClient.manifestInStringFormat(
@@ -74,12 +91,181 @@ class TransactionApprovalViewModel @Inject constructor(
                         )
                     }
                     is Result.Success -> {
-                        state = state.copy(
-                            manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
-                            manifestData = transactionWriteRequest.transactionManifestData,
-                            canApprove = true,
-                            isLoading = false
+                        val transactionManifest = manifestInStringFormatConversionResult.data
+                        val transactionPreview = transactionClient.getTransactionPreview(
+                            manifest = transactionManifest,
+                            networkId = profileDataSource.getCurrentNetworkId().value,
+                            blobs = transactionManifest.blobs.orEmpty()
                         )
+                        transactionPreview.onError {
+                            state = state.copy(
+                                isLoading = false,
+                                error = UiMessage.ErrorMessage(it)
+                            )
+                        }
+                        transactionPreview.onValue { transactionPreviewResponse ->
+
+                            if (transactionPreviewResponse.receipt.isFailed) {
+                                state = state.copy(
+                                    isLoading = false,
+                                    error = UiMessage.ErrorMessage(
+                                        error = Throwable(transactionPreviewResponse.receipt.errorMessage)
+                                    )
+                                )
+                            } else {
+                                transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
+                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
+                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
+                                    val networkFee = costUnitPrice.multiply(costUnitsConsumed).toString()
+                                    state = state.copy(
+                                        networkFee = networkFee
+                                    )
+                                }
+
+                                val manifestPreview = transactionClient.analyzeManifest(
+                                    networkId = profileDataSource.getCurrentNetworkId(),
+                                    transactionManifest = transactionManifest,
+                                    transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
+                                )
+
+                                manifestPreview.exceptionOrNull().let {
+                                    state = state.copy(
+                                        isLoading = false,
+                                        error = UiMessage.ErrorMessage(it)
+                                    )
+                                }
+
+                                manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
+
+                                    val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
+                                        mutableListOf()
+                                    val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
+                                        mutableListOf()
+
+                                    analyzeManifestWithPreviewResponse.accountDeposits.forEach {
+                                        when (it) {
+                                            is AccountDeposit.Estimate -> {
+                                                val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.amount
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        ""
+                                                    }
+                                                }
+                                                val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                }
+                                                depositJobs.add(
+                                                    async {
+                                                        getTransactionComponentResourcesUseCase.invoke(
+                                                            componentAddress = it.componentAddress.address,
+                                                            resourceAddress = resourceAddress,
+                                                            createdEntities = analyzeManifestWithPreviewResponse
+                                                                .createdEntities,
+                                                            amount = amount
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                            is AccountDeposit.Exact -> {
+                                                val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.amount
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        ""
+                                                    }
+                                                }
+                                                val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                }
+                                                depositJobs.add(
+                                                    async {
+                                                        getTransactionComponentResourcesUseCase.invoke(
+                                                            componentAddress = it.componentAddress.address,
+                                                            resourceAddress = resourceAddress,
+                                                            createdEntities = analyzeManifestWithPreviewResponse
+                                                                .createdEntities,
+                                                            amount = amount
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    analyzeManifestWithPreviewResponse.accountWithdraws.forEach {
+                                        val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                            is ResourceSpecifier.Amount -> {
+                                                resSpecifier.amount
+                                            }
+                                            is ResourceSpecifier.Ids -> {
+                                                ""
+                                            }
+                                        }
+                                        val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                            is ResourceSpecifier.Amount -> {
+                                                resSpecifier.resourceAddress.address
+                                            }
+                                            is ResourceSpecifier.Ids -> {
+                                                resSpecifier.resourceAddress.address
+                                            }
+                                        }
+                                        withdrawJobs.add(
+                                            async {
+                                                getTransactionComponentResourcesUseCase.invoke(
+                                                    componentAddress = it.componentAddress.address,
+                                                    resourceAddress = resourceAddress,
+                                                    createdEntities = analyzeManifestWithPreviewResponse
+                                                        .createdEntities,
+                                                    amount = amount
+                                                )
+                                            }
+                                        )
+                                    }
+
+                                    val depositResults = depositJobs.awaitAll()
+                                    val withdrawResults = withdrawJobs.awaitAll()
+
+                                    val withdrawingAccounts = withdrawResults
+                                        .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                        .map {
+                                            it.data
+                                        }
+
+                                    val depositingAccounts = depositResults
+                                        .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                        .map {
+                                            it.data
+                                        }
+
+                                    val proofs = getTransactionProofResourcesUseCase(
+                                        analyzeManifestWithPreviewResponse.accountProofResources
+                                    )
+
+                                    state = state.copy(
+                                        withdrawingAccounts = withdrawingAccounts.toPersistentList(),
+                                        depositingAccounts = depositingAccounts.toPersistentList(),
+                                        presentingProofs = proofs.toPersistentList(),
+                                        connectedDApps = persistentListOf(), // TODO something to come later on
+                                        manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
+                                        manifestData = transactionWriteRequest.transactionManifestData,
+                                        canApprove = true,
+                                        isLoading = false
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -111,6 +297,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         message = failure.getDappMessage()
                     )
                     sendEvent(TransactionApprovalEvent.NavigateBack)
+                    incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
                 } else {
                     state = state.copy(isSigning = true)
@@ -130,6 +317,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 approvalJob = null
                                 appEventBus.sendEvent(AppEvent.ApprovedTransaction)
                                 sendEvent(TransactionApprovalEvent.NavigateBack)
+                                incomingRequestRepository.requestHandled(args.requestId)
                             }
                             transactionStatus.onError {
                                 state = state.copy(isSigning = false, error = UiMessage.ErrorMessage(error = it))
@@ -143,6 +331,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                     approvalJob = null
                                     sendEvent(TransactionApprovalEvent.NavigateBack)
+                                    incomingRequestRepository.requestHandled(args.requestId)
                                 }
                             }
                         }
@@ -158,6 +347,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 )
                                 approvalJob = null
                                 sendEvent(TransactionApprovalEvent.NavigateBack)
+                                incomingRequestRepository.requestHandled(args.requestId)
                             }
                         }
                     }
@@ -178,6 +368,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     error = WalletErrorType.RejectedByUser
                 )
                 sendEvent(TransactionApprovalEvent.NavigateBack)
+                incomingRequestRepository.requestHandled(args.requestId)
             }
         }
     }
@@ -186,6 +377,29 @@ class TransactionApprovalViewModel @Inject constructor(
         state = state.copy(error = null)
     }
 }
+
+data class TransactionAccountItemUiModel(
+    val address: String,
+    val displayName: String,
+    val tokenSymbol: String,
+    val tokenQuantity: String,
+    val fiatAmount: String,
+    val appearanceID: Int,
+    val iconUrl: String
+) {
+    val tokenQuantityDecimal: BigDecimal
+        get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal()
+}
+
+data class PresentingProofUiModel(
+    val iconUrl: String,
+    val title: String
+)
+
+data class ConnectedDAppUiModel(
+    val icon: String,
+    val title: String
+)
 
 internal data class TransactionUiState(
     val manifestData: TransactionManifestData? = null,
@@ -196,6 +410,12 @@ internal data class TransactionUiState(
     val isDeviceSecure: Boolean = false,
     val error: UiMessage? = null,
     val canApprove: Boolean = false,
+    val networkFee: String = "",
+    val transactionMessage: String = "",
+    val withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
+    val depositingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
+    val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
+    val connectedDApps: ImmutableList<ConnectedDAppUiModel> = persistentListOf()
 )
 
 internal sealed interface TransactionApprovalEvent : OneOffEvent {

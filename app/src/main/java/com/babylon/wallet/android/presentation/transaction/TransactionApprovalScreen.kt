@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,23 +24,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.transaction.composables.ConnectedDAppsContent
+import com.babylon.wallet.android.presentation.transaction.composables.DepositAccountContent
+import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
+import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
+import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
+import com.babylon.wallet.android.presentation.transaction.composables.TransactionMessageContent
+import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
+import com.babylon.wallet.android.presentation.transaction.composables.WithdrawAccountContent
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun TransactionApprovalScreen(
@@ -49,23 +61,29 @@ fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
 ) {
     val state = viewModel.state
+
     BackHandler(true) {}
-    TransactionApprovalContent(
+
+    TransactionPreviewContent(
+        modifier = modifier,
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
         isSigning = state.isSigning,
-        manifestContent = state.manifestString,
         onApproveTransaction = viewModel::approveTransaction,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
         approved = state.approved,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
         isDeviceSecure = state.isDeviceSecure,
-        canApprove = state.canApprove
+        canApprove = state.canApprove,
+        transactionMessage = state.transactionMessage,
+        networkFee = state.networkFee,
+        rawManifestContent = state.manifestString,
+        presentingProofs = state.presentingProofs,
+        connectedDApps = state.connectedDApps,
+        withdrawingAccounts = state.withdrawingAccounts,
+        depositingAccounts = state.depositingAccounts
     )
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
@@ -78,11 +96,10 @@ fun TransactionApprovalScreen(
 }
 
 @Composable
-private fun TransactionApprovalContent(
+private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
     isSigning: Boolean,
-    manifestContent: String,
     onApproveTransaction: () -> Unit,
     approved: Boolean,
     error: UiMessage?,
@@ -90,22 +107,35 @@ private fun TransactionApprovalContent(
     modifier: Modifier = Modifier,
     isDeviceSecure: Boolean,
     canApprove: Boolean,
+    transactionMessage: String,
+    networkFee: String,
+    rawManifestContent: String,
+    presentingProofs: ImmutableList<PresentingProofUiModel>,
+    connectedDApps: ImmutableList<ConnectedDAppUiModel>,
+    withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel>,
+    depositingAccounts: ImmutableList<TransactionAccountItemUiModel>,
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
-    Box(modifier = modifier) {
+    var showRawManifest by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier.navigationBarsPadding()
+    ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RadixTheme.colors.gray5)
+                .padding(RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.Start
         ) {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.approve_transaction),
+            TransactionPreviewHeader(
                 onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1
+                onRawManifestClick = { showRawManifest = !showRawManifest }
             )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .padding(RadixTheme.dimensions.paddingXSmall)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
@@ -124,61 +154,86 @@ private fun TransactionApprovalContent(
                         )
                     }
                 }
-                AnimatedVisibility(visible = !approved) {
-                    if (manifestContent.isNotEmpty()) {
-                        Box(
+                AnimatedVisibility(visible = !approved && !isLoading) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    RadixTheme.colors.gray4,
-                                    RadixTheme.shapes.roundedRectDefault
-                                )
-                                .padding(RadixTheme.dimensions.paddingMedium)
-                        ) {
-                            Text(
-                                text = manifestContent,
-                                style = RadixTheme.typography.body2HighImportance,
-                                color = RadixTheme.colors.gray2,
-                            )
-                        }
+                                .padding(
+                                    vertical = RadixTheme.dimensions.paddingLarge,
+                                    horizontal = RadixTheme.dimensions.paddingDefault
+                                ),
+                            text = stringResource(R.string.review_your_transaction),
+                            style = RadixTheme.typography.title,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+
+                        TransactionMessageContent(transactionMessage = transactionMessage)
+
+                        PresentingProofsContent(presentingProofs = presentingProofs)
+
+                        WithdrawAccountContent(withdrawingAccounts = withdrawingAccounts)
+
+                        StrokeLine(height = 40.dp)
+
+                        ConnectedDAppsContent(connectedDApps = connectedDApps)
+
+                        StrokeLine()
+
+                        DepositAccountContent(depositingAccounts = depositingAccounts)
+
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                        NetworkFeeContent(
+                            networkFee = networkFee,
+                            isNetworkCongested = false
+                        )
+
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                        val context = LocalContext.current
+                        RadixPrimaryButton(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            text = stringResource(id = R.string.approve_transaction),
+                            onClick = {
+                                if (isDeviceSecure) {
+                                    context.findFragmentActivity()?.let { activity ->
+                                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                                            if (authenticatedSuccessfully) {
+                                                onApproveTransaction()
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    showNotSecuredDialog = true
+                                }
+                            },
+                            enabled = !isLoading && !isSigning && canApprove
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(100.dp))
             }
         }
         if (isLoading || isSigning) {
             FullscreenCircularProgressContent()
         }
-        val context = LocalContext.current
-        AnimatedVisibility(
-            visible = !approved,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(RadixTheme.dimensions.paddingDefault)
-        ) {
-            RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                text = stringResource(id = R.string.approve_transaction),
-                onClick = {
-                    if (isDeviceSecure) {
-                        context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onApproveTransaction()
-                                }
-                            }
-                        }
-                    } else {
-                        showNotSecuredDialog = true
-                    }
-                },
-                enabled = !isLoading && !isSigning && canApprove
-            )
-        }
         SnackbarUiMessageHandler(message = error) {
             onMessageShown()
         }
+    }
+    if (showRawManifest) {
+        RawTransactionContent(
+            manifestContent = rawManifestContent,
+            finish = {
+                showRawManifest = !showRawManifest
+            }
+        )
     }
     if (showNotSecuredDialog) {
         NotSecureAlertDialog(finish = {
@@ -190,15 +245,80 @@ private fun TransactionApprovalContent(
     }
 }
 
+@Composable
+private fun RawTransactionContent(
+    manifestContent: String,
+    finish: () -> Unit,
+) {
+    Dialog(onDismissRequest = finish) {
+        Column(
+            modifier = Modifier
+                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+                .clip(RadixTheme.shapes.roundedRectSmall),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .verticalScroll(rememberScrollState())
+                    .weight(weight = 1f, fill = false)
+            ) {
+                Text(
+                    text = manifestContent,
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+
+            RadixTextButton(
+                text = stringResource(id = R.string.ok),
+                onClick = finish
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-fun TransactionApprovalContentPreview() {
+fun TransactionPreviewContentPreview() {
     RadixWalletTheme {
-        TransactionApprovalContent(
+        TransactionPreviewContent(
             onBackClick = {},
             isLoading = false,
             isSigning = false,
-            manifestContent = SampleDataProvider().sampleManifest().toString(),
+            transactionMessage = "Message",
+            networkFee = "0.1",
+            rawManifestContent = "",
+            presentingProofs = persistentListOf(
+                PresentingProofUiModel("", "Proof"),
+                PresentingProofUiModel("", "Proof")
+            ),
+            connectedDApps = persistentListOf(
+                ConnectedDAppUiModel("", "DApp"),
+                ConnectedDAppUiModel("", "DApp")
+            ),
+            withdrawingAccounts = persistentListOf(
+                TransactionAccountItemUiModel(
+                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    displayName = "My Savings Account",
+                    tokenSymbol = "XRD",
+                    tokenQuantity = "689.203",
+                    fiatAmount = "$1234",
+                    appearanceID = 1,
+                    iconUrl = ""
+                )
+            ),
+            depositingAccounts = persistentListOf(
+                TransactionAccountItemUiModel(
+                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    displayName = "My Savings Account",
+                    tokenSymbol = "XRD",
+                    tokenQuantity = "689.203",
+                    fiatAmount = "$1234",
+                    appearanceID = 1,
+                    iconUrl = ""
+                )
+            ),
             onApproveTransaction = {},
             approved = false,
             error = null,

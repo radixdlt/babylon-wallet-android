@@ -246,6 +246,17 @@
     <string name="this_will_be_shared_with_dapps">This will be shared with dApps you login to</string>
     <string name="some_dapps_may_request">Some dApps may request personal information, like name or email address, that can be added to your Persona. Add some of this data now if you like.</string>
     <string name="save_and_continue">Save and Continue</string>
+    <string name="review_your_transaction">Review Your Transaction</string>
+    <string name="xrd_amount">XRD %s</string>
+    <string name="network_is_congested_info">The network is currently congested. Add a tip to speed up your transfer.</string>
+    <string name="customize">Customize</string>
+    <string name="approve">Approve</string>
+    <string name="message">Message</string>
+    <string name="network_fee">Network Fee</string>
+    <string name="depositing">Depositing</string>
+    <string name="withdrawing">Withdrawing</string>
+    <string name="presenting">Presenting</string>
+    <string name="using_dapps">Using dApps</string>
     <string name="personal_data_permission">Personal Data Permission</string>
     <string name="required_information">Required information:\u0020</string>
     <string name="phone">Phone</string>

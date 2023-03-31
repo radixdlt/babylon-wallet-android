@@ -2,22 +2,33 @@
 
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyType
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
+import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.crypto.toECKeyPair
+import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
+import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextRequest
+import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextResponse
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
@@ -28,7 +39,7 @@ import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
-import java.math.BigDecimal
+import rdx.works.profile.derivation.model.NetworkId
 import java.security.SecureRandom
 import javax.inject.Inject
 
@@ -91,10 +102,7 @@ class TransactionClient @Inject constructor(
             )
 
         return Result.Success(
-            addLockFeeInstructionToManifest(
-                manifest = jsonTransactionManifest,
-                addressToLockFee = accountAddressToLockFee
-            )
+            jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         )
     }
 
@@ -124,8 +132,7 @@ class TransactionClient @Inject constructor(
                         DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                     )
                 )
-
-            addLockFeeInstructionToManifest(jsonTransactionManifest, accountAddressToLockFee)
+            jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
@@ -293,32 +300,6 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    fun addLockFeeInstructionToManifest(
-        manifest: TransactionManifest,
-        addressToLockFee: String,
-    ): TransactionManifest {
-        val instructions = manifest.instructions
-        val lockFeeInstruction: Instruction = Instruction.CallMethod(
-            componentAddress = ManifestAstValue.Address(addressToLockFee),
-            methodName = ManifestAstValue.String(MethodName.LockFee.stringValue),
-            arguments = arrayOf(
-                ManifestAstValue.Decimal(
-                    BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
-                )
-            )
-        )
-        var updatedInstructions = instructions
-        when (instructions) {
-            is ManifestInstructions.ParsedInstructions -> {
-                updatedInstructions = instructions.copy(
-                    instructions = arrayOf(lockFeeInstruction) + instructions.instructions
-                )
-            }
-            is ManifestInstructions.StringInstructions -> {}
-        }
-        return manifest.copy(updatedInstructions, manifest.blobs)
-    }
-
     private suspend fun submitNotarizedTransaction(
         txID: String,
         notarizedTransaction: CompileNotarizedTransactionResponse,
@@ -461,6 +442,65 @@ class TransactionClient @Inject constructor(
             }
         }
         return addressesNeededToSign.distinct().toList()
+    }
+
+    fun analyzeManifest(
+        networkId: NetworkId,
+        transactionManifest: TransactionManifest,
+        transactionReceipt: ByteArray
+    ): kotlin.Result<AnalyzeManifestWithPreviewContextResponse> {
+        return engine.analyzeManifestWithPreviewContext(
+            AnalyzeManifestWithPreviewContextRequest(
+                networkId = networkId.value.toUByte(),
+                manifest = transactionManifest,
+                transactionReceipt = transactionReceipt
+            )
+        )
+    }
+
+    suspend fun getTransactionPreview(
+        manifest: TransactionManifest,
+        networkId: Int,
+        blobs: Array<out ByteArray>
+    ): Result<TransactionPreviewResponse> {
+        var startEpochInclusive = 0L
+        var endEpochExclusive = 0L
+        val epochResult = transactionRepository.getLedgerEpoch()
+        if (epochResult is Result.Success) {
+            val epoch = epochResult.data
+            startEpochInclusive = epoch
+            endEpochExclusive = epoch + 1L
+        }
+
+        val addressesNeededToSign = getAddressesNeededToSign(manifest)
+        val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
+            ?: return Result.Error(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
+            )
+
+        val notaryPublicKey = PublicKeyEddsaEd25519(
+            keyType = PublicKeyType.eddsaEd25519,
+            keyHex = notaryAndSigners.notarySigner.privateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero().toHexString()
+        )
+
+        return transactionRepository.getTransactionPreview(
+            // TODO things like tipPercentage might change later on
+            TransactionPreviewRequest(
+                manifest = manifest.toStringWithoutBlobs(),
+                startEpochInclusive = startEpochInclusive,
+                endEpochExclusive = endEpochExclusive,
+                costUnitLimit = COST_UNIT_LIMIT.toLong(),
+                tipPercentage = 5,
+                nonce = generateNonce().toString(),
+                signerPublicKeys = listOf(),
+                flags = TransactionPreviewRequestFlags(true, true, true, true),
+                blobsHex = blobs.map { it.toHexString() },
+                notaryPublicKey = notaryPublicKey,
+                notaryAsSignatory = false
+            )
+        )
     }
 
     private fun callMethodAuthorizedFilter(instructionName: String): Boolean {
