@@ -488,7 +488,7 @@ class TransactionClient @Inject constructor(
         return transactionRepository.getTransactionPreview(
             // TODO things like tipPercentage might change later on
             TransactionPreviewRequest(
-                manifest = manifest.toPrettyString(),
+                manifest = manifest.toStringWithoutBlobs(),
                 startEpochInclusive = startEpochInclusive,
                 endEpochExclusive = endEpochExclusive,
                 costUnitLimit = COST_UNIT_LIMIT.toLong(),
