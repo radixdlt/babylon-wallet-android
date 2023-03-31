@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
@@ -62,27 +63,15 @@ fun TokenItemCard(
                         .size(44.dp)
                         .clip(RadixTheme.shapes.circle)
                 )
-                if (token.iconUrl == null) {
-                    Text(
-                        text = token.symbol.orEmpty(),
-                        style = RadixTheme.typography.body1HighImportance,
-                        modifier = Modifier.align(
-                            Alignment.Center
-                        )
-                    )
-                }
             }
             Text(
-                modifier = Modifier
-                    .weight(0.3f),
-                text = token.symbol.orEmpty(),
+                text = token.tokenItemTitle,
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
             )
             Text(
-                modifier = Modifier.weight(0.7f),
+                modifier = Modifier.fillMaxWidth(),
                 text = token.tokenQuantityToDisplay,
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
