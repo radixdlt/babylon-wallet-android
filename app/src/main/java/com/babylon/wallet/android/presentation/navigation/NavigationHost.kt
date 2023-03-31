@@ -9,6 +9,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.MainViewModel
 import com.babylon.wallet.android.presentation.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.account.AccountScreen
@@ -44,6 +45,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
+    mainViewModel: MainViewModel,
     startDestination: String,
     navController: NavHostController,
 ) {
@@ -184,9 +186,12 @@ fun NavigationHost(
             }
         )
         settingsNavGraph(navController)
-        requestResultSuccess(onBackPress = {
-            navController.popBackStack()
-        })
+        requestResultSuccess(
+            mainViewModel = mainViewModel,
+            onBackPress = {
+                navController.popBackStack()
+            }
+        )
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
                 navController.popPersonaCreation()
@@ -208,9 +213,7 @@ fun NavigationHost(
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
-            IncompatibleProfileContent(
-                viewModel = hiltViewModel()
-            )
+            IncompatibleProfileContent(mainViewModel = mainViewModel)
         }
     }
 }

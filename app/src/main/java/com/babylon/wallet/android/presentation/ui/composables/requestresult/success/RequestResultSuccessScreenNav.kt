@@ -2,12 +2,12 @@ package com.babylon.wallet.android.presentation.ui.composables.requestresult.suc
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.MainViewModel
 import com.babylon.wallet.android.R
 
 @VisibleForTesting
@@ -26,7 +26,10 @@ fun NavController.requestResultSuccess(
     navigate("request_result_success/$requestId/$name")
 }
 
-fun NavGraphBuilder.requestResultSuccess(onBackPress: () -> Unit) {
+fun NavGraphBuilder.requestResultSuccess(
+    mainViewModel: MainViewModel,
+    onBackPress: () -> Unit
+) {
     dialog(
         route = "request_result_success/{$ARG_REQUEST_ID}/{$ARG_DAPP_NAME}",
         arguments = listOf(
@@ -39,7 +42,7 @@ fun NavGraphBuilder.requestResultSuccess(onBackPress: () -> Unit) {
         val dAppName = checkNotNull(it.arguments?.getString(ARG_DAPP_NAME))
 
         RequestResultSuccessScreen(
-            viewModel = hiltViewModel(),
+            viewModel = mainViewModel,
             requestId = requestId,
             dAppName = dAppName,
             onBackPress = onBackPress
