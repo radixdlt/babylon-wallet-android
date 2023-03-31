@@ -38,7 +38,7 @@ interface PeerdroidClient {
 
     suspend fun deleteLink(connectionPassword: String)
 
-    suspend fun terminate()
+    fun terminate()
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -102,7 +102,7 @@ class PeerdroidClientImpl @Inject constructor(
         } ?: Timber.e("Failed to close peer connection because connection password is wrong")
     }
 
-    override suspend fun terminate() {
+    override fun terminate() {
         peerdroidConnector.terminateConnectionToConnectorExtension()
     }
 
