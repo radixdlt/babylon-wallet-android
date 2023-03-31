@@ -65,7 +65,6 @@ class MainViewModel @Inject constructor(
         observeForP2PLinks()
     }.onCompletion {
         terminatePeerdroid()
-        incomingRequestRepository.removeAll()
         observeP2PLinksJob?.cancel()
         Timber.d("terminate main view model state")
     }.stateIn(
@@ -175,6 +174,7 @@ class MainViewModel @Inject constructor(
         handlingCurrentRequestJob = null
         processingRequestJob?.cancel()
         peerdroidClient.terminate()
+        incomingRequestRepository.removeAll()
         Timber.d("Peerdroid terminated")
     }
 
