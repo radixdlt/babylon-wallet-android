@@ -61,10 +61,12 @@ class MainViewModel @Inject constructor(
             }
         )
     }.onStart {
+        Timber.d("start observing for p2p links")
         observeForP2PLinks()
     }.onCompletion {
         terminatePeerdroid()
         observeP2PLinksJob?.cancel()
+        Timber.d("terminate main view model state")
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
@@ -88,7 +90,7 @@ class MainViewModel @Inject constructor(
     private fun observeForP2PLinks() {
         observeP2PLinksJob = profileDataSource.p2pLinks
             .map { p2pLinks ->
-                Timber.d("found ${p2pLinks.size} links")
+                Timber.d("found ${p2pLinks.size} p2p links")
                 p2pLinks.forEach { p2PLink ->
                     establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
                 }
@@ -106,6 +108,7 @@ class MainViewModel @Inject constructor(
                 is Result.Success -> {
                     Timber.d("Link connection established")
                     if (handlingCurrentRequestJob == null) {
+                        Timber.d("Listen for incoming requests from dapps")
                         // We must run this only once
                         // otherwise for each new link connection
                         // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
@@ -166,13 +169,13 @@ class MainViewModel @Inject constructor(
     }
 
     private fun terminatePeerdroid() {
-        viewModelScope.launch {
-            incomingRequestsJob?.cancel()
-            handlingCurrentRequestJob?.cancel()
-            handlingCurrentRequestJob = null
-            processingRequestJob?.cancel()
-            peerdroidClient.terminate()
-        }
+        incomingRequestsJob?.cancel()
+        handlingCurrentRequestJob?.cancel()
+        handlingCurrentRequestJob = null
+        processingRequestJob?.cancel()
+        peerdroidClient.terminate()
+        incomingRequestRepository.removeAll()
+        Timber.d("Peerdroid terminated")
     }
 
     companion object {
