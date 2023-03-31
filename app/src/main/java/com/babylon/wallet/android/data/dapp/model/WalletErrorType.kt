@@ -50,4 +50,7 @@ enum class WalletErrorType {
 
     @SerialName("invalidPersona")
     InvalidPersona,
+
+    @SerialName("invalidRequest")
+    InvalidRequest,
 }

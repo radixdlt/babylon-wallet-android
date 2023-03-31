@@ -61,7 +61,16 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
-                handleWrongNetwork(currentNetworkId)
+                handleRequestError(
+                    DappRequestFailure.WrongNetwork(
+                        currentNetworkId,
+                        request.requestMetadata.networkId
+                    )
+                )
+                return@launch
+            }
+            if (!request.isValidRequest()) {
+                handleRequestError(DappRequestFailure.InvalidRequest)
                 return@launch
             }
             val result = dappMetadataRepository.getDappMetadata(
@@ -106,11 +115,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     @Suppress("MagicNumber")
-    private suspend fun handleWrongNetwork(currentNetworkId: Int) {
-        val failure = DappRequestFailure.WrongNetwork(
-            currentNetworkId,
-            request.requestMetadata.networkId
-        )
+    private suspend fun handleRequestError(failure: DappRequestFailure) {
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
@@ -118,7 +123,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             failure.toWalletErrorType(),
             failure.getDappMessage()
         )
-        delay(4000)
+        delay(2000)
         topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }

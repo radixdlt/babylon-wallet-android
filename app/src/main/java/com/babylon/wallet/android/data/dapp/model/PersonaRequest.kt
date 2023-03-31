@@ -16,10 +16,12 @@ data class OngoingPersonaDataRequestItem(
     val fields: List<PersonaDataField>
 )
 
-fun OneTimePersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem {
+fun OneTimePersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
+    if (fields.isEmpty()) return null
     return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, false)
 }
 
-fun OngoingPersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem {
+fun OngoingPersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
+    if (fields.isEmpty()) return null
     return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, true)
 }
