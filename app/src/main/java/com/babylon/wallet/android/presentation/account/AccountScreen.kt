@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
@@ -146,6 +147,15 @@ private fun AccountScreenContent(
             rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
         val scope = rememberCoroutineScope()
         val sheetHeight = maxHeight * 0.9f
+        BackHandler {
+            if (bottomSheetState.isVisible) {
+                scope.launch {
+                    bottomSheetState.hide()
+                }
+            } else {
+                onBackClick()
+            }
+        }
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
             sheetBackgroundColor = RadixTheme.colors.defaultBackground,
