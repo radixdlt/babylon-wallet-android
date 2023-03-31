@@ -228,7 +228,7 @@ class DappMessengerImpl @Inject constructor(
                 },
                 oneTimePersonaData = if (onetimeDataFields.isNotEmpty()) {
                     OneTimePersonaDataRequestResponseItem(
-                        ongoingDataFields.map {
+                        onetimeDataFields.map {
                             PersonaData(it.kind.toPersonaDataField(), it.value)
                         }
                     )

@@ -23,7 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -44,6 +47,8 @@ import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrap
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -90,7 +95,8 @@ fun PersonaEditScreen(
         saveButtonEnabled = state.saveButtonEnabled,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
         onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
-        dappContextEdit = state.dappContextEdit
+        dappContextEdit = state.dappContextEdit,
+        wasEdited = state.wasEdited
     )
 }
 
@@ -114,15 +120,24 @@ private fun PersonaEditContent(
     saveButtonEnabled: Boolean,
     onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
-    dappContextEdit: Boolean
+    dappContextEdit: Boolean,
+    wasEdited: Boolean
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        scope.launch {
-            bottomSheetState.hide()
+    var showCancelPrompt by remember { mutableStateOf(false) }
+    BackHandler {
+        when {
+            bottomSheetState.isVisible -> {
+                scope.launch {
+                    bottomSheetState.hide()
+                }
+            }
+            wasEdited -> {
+                showCancelPrompt = true
+            }
         }
     }
     DefaultModalSheetLayout(modifier = modifier, sheetState = bottomSheetState, sheetContent = {
@@ -155,16 +170,15 @@ private fun PersonaEditContent(
                 Column(Modifier.fillMaxSize()) {
                     RadixCenteredTopAppBar(
                         title = persona.displayName,
-                        onBackClick = onBackClick,
-                        contentColor = RadixTheme.colors.gray1,
-                        backIconType = BackIconType.Cancel,
-                        actions = {
-                            UnderlineTextButton(
-                                text = stringResource(id = R.string.save),
-                                onClick = onSave,
-                                enabled = saveButtonEnabled
-                            )
+                        onBackClick = {
+                            if (wasEdited) {
+                                showCancelPrompt = true
+                            } else {
+                                onBackClick()
+                            }
                         },
+                        contentColor = RadixTheme.colors.gray1,
+                        backIconType = BackIconType.Close
                     )
                     Divider(color = RadixTheme.colors.gray5)
                     PersonaDetailList(
@@ -188,6 +202,33 @@ private fun PersonaEditContent(
                         onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
                         dappContextEdit = dappContextEdit
                     )
+                    BottomPrimaryButton(
+                        onClick = onSave,
+                        enabled = saveButtonEnabled,
+                        text = stringResource(id = R.string.save),
+                        modifier = Modifier.imePadding()
+                            .fillMaxWidth()
+                            .background(RadixTheme.colors.defaultBackground),
+                        buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault)
+                    )
+                    if (showCancelPrompt) {
+                        BasicPromptAlertDialog(
+                            finish = {
+                                if (it) {
+                                    onBackClick()
+                                }
+                                showCancelPrompt = false
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.are_you_sure_you_want_to_discard),
+                                    style = RadixTheme.typography.body2Regular,
+                                    color = RadixTheme.colors.gray1
+                                )
+                            },
+                            confirmText = stringResource(id = R.string.discard),
+                        )
+                    }
                 }
             }
         }
@@ -215,7 +256,7 @@ private fun PersonaDetailList(
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.imePadding()
+        modifier = modifier
     ) {
         item {
             PersonaRoundedAvatar(
@@ -299,7 +340,7 @@ private fun PersonaDetailList(
                 onClick = onAddField,
                 enabled = addButtonEnabled
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
@@ -325,7 +366,8 @@ fun DappDetailContentPreview() {
             saveButtonEnabled = false,
             onFieldFocusChanged = { _, _ -> },
             onPersonaDisplayNameFocusChanged = {},
-            dappContextEdit = false
+            dappContextEdit = false,
+            wasEdited = false
         )
     }
 }

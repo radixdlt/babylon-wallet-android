@@ -94,7 +94,9 @@ fun PersonaDataOnetimeScreen(
         }
     }
     PersonaDataOnetimeContent(
-        onContinueClick = {},
+        onContinueClick = {
+            sharedViewModel.onGrantedPersonaDataOnetime(state.selectedPersona())
+        },
         dappMetadata = sharedState.dappMetadata,
         onBackClick = {
             if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData) {
@@ -107,7 +109,8 @@ fun PersonaDataOnetimeScreen(
         personas = state.personaListToDisplay,
         onSelectPersona = viewModel::onSelectPersona,
         onCreatePersona = viewModel::onCreatePersona,
-        onEditClick = viewModel::onEditClick
+        onEditClick = viewModel::onEditClick,
+        continueButtonEnabled = state.continueButtonEnabled
     )
 }
 
@@ -122,6 +125,7 @@ private fun PersonaDataOnetimeContent(
     onSelectPersona: ((Network.Persona) -> Unit)?,
     onCreatePersona: () -> Unit,
     onEditClick: (String) -> Unit,
+    continueButtonEnabled: Boolean,
 ) {
     Column(
         modifier = modifier
@@ -210,6 +214,7 @@ private fun PersonaDataOnetimeContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
+            enabled = continueButtonEnabled,
             onClick = onContinueClick,
             text = stringResource(id = R.string.continue_button_title)
         )
@@ -249,7 +254,8 @@ fun LoginPermissionContentPreview() {
             personas = persistentListOf(PersonaUiModel(SampleDataProvider().samplePersona())),
             onSelectPersona = {},
             onCreatePersona = {},
-            onEditClick = {}
+            onEditClick = {},
+            continueButtonEnabled = false
         )
     }
 }

@@ -83,7 +83,16 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
-                handleWrongNetwork(currentNetworkId)
+                handleRequestError(
+                    DappRequestFailure.WrongNetwork(
+                        currentNetworkId,
+                        request.requestMetadata.networkId
+                    )
+                )
+                return@launch
+            }
+            if (!request.isValidRequest()) {
+                handleRequestError(DappRequestFailure.InvalidRequest)
                 return@launch
             }
             authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
@@ -197,11 +206,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     @Suppress("MagicNumber")
-    private suspend fun handleWrongNetwork(currentNetworkId: Int) {
-        val failure = DappRequestFailure.WrongNetwork(
-            currentNetworkId,
-            request.requestMetadata.networkId
-        )
+    private suspend fun handleRequestError(failure: DappRequestFailure) {
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
@@ -209,7 +214,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             failure.toWalletErrorType(),
             failure.getDappMessage()
         )
-        delay(4000)
+        delay(2000)
         topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
@@ -282,6 +287,19 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
                 handleNextOneTimeRequestItem()
             }
+        }
+    }
+
+    fun onGrantedPersonaDataOnetime(persona: Network.Persona) {
+        viewModelScope.launch {
+            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
+            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.kind) }
+            _state.update {
+                it.copy(
+                    selectedOnetimeDataFields = requiredDataFields
+                )
+            }
+            sendRequestResponse()
         }
     }
 
