@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AssetUiModel
@@ -77,16 +78,14 @@ class AccountViewModel @Inject constructor(
                     }
                 }
                 result.onValue { accountResource ->
-                    val xrdToken = if (accountResource.hasXrdToken()) {
-                        accountResource.fungibleTokens[INDEX_OF_XRD]
-                    } else {
-                        null
+                    val xrdToken = accountResource.fungibleTokens.find {
+                        it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
                     }
-                    val fungibleTokens = if (accountResource.hasXrdToken()) {
-                        accountResource.fungibleTokens.subList(1, accountResource.fungibleTokens.size)
-                    } else {
-                        accountResource.fungibleTokens
+
+                    val fungibleTokens = accountResource.fungibleTokens.filter {
+                        it.token.metadata[MetadataConstants.KEY_SYMBOL] != MetadataConstants.SYMBOL_XRD
                     }
+
                     _accountUiState.update { accountUiState ->
                         accountUiState.copy(
                             isRefreshing = false,
@@ -120,10 +119,6 @@ class AccountViewModel @Inject constructor(
                 selectedNft = nftItemUiModel
             )
         }
-    }
-
-    companion object {
-        private const val INDEX_OF_XRD = 0
     }
 }
 
