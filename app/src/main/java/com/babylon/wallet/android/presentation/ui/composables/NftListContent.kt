@@ -45,7 +45,7 @@ fun NftListContent(
             }
             items(
                 dataItem.nft,
-                key = { nft -> nft.id }
+                key = { nft -> nft.displayId }
             ) { item ->
                 AnimatedVisibility(
                     visible = !collapsed,
