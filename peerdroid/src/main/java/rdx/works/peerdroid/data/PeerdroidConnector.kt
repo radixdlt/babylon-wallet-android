@@ -51,7 +51,7 @@ interface PeerdroidConnector {
 
     suspend fun deleteConnector(connectionIdHolder: ConnectionIdHolder)
 
-    suspend fun terminateConnectionToConnectorExtension()
+    fun terminateConnectionToConnectorExtension()
 
     val dataChannelMessagesFromRemoteClients: Flow<DataChannelEvent>
 
@@ -86,9 +86,7 @@ internal class PeerdroidConnectorImpl(
         return withContext(ioDispatcher) {
             if (mapOfWebSockets.containsKey(ConnectionIdHolder(id = connectionId))) {
                 Timber.d("⚙️ already connected to CE with connectionId: $connectionId")
-                return@withContext Result.Error(
-                    message = "Link connection is already established for the connectionId: $connectionId"
-                )
+                return@withContext Result.Success(Unit)
             }
 
             Timber.d("⚙️ connect to CE with connectionId: $connectionId")
@@ -140,12 +138,13 @@ internal class PeerdroidConnectorImpl(
                 dataChannelHolder.dataChannel.close()
             }
             mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
+            Timber.d("⚙️ connector with connectionId: $connectionIdHolder deleted ❌")
         }
     }
 
-    override suspend fun terminateConnectionToConnectorExtension() {
+    override fun terminateConnectionToConnectorExtension() {
         Timber.d("⚙️ terminate connection to connector extension")
-        withContext(ioDispatcher) {
+        applicationScope.launch(ioDispatcher) {
             mapOfWebSockets.values.forEach { webSocketHolder ->
                 webSocketHolder.listenMessagesJob.cancel()
                 webSocketHolder.webSocketClient.closeSession()
@@ -162,6 +161,7 @@ internal class PeerdroidConnectorImpl(
                 dataChannelHolder.dataChannel.close()
             }
             mapOfDataChannels.clear()
+            Timber.d("⚙️ connection to connector extension terminated 🚫")
         }
     }
 
