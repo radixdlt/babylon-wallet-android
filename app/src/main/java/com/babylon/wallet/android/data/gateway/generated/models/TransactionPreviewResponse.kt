@@ -48,8 +48,13 @@ data class Receipt(
     @SerialName("fee_summary")
     val fee_summary: FeeSummary,
     @SerialName("status")
-    val status: String
-)
+    val status: String,
+    @SerialName("error_message")
+    val errorMessage: String? = null
+) {
+    val isFailed
+        get() = status == "Failed"
+}
 
 @Serializable
 data class FeeSummary(

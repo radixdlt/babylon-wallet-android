@@ -104,159 +104,168 @@ class TransactionApprovalViewModel @Inject constructor(
                             )
                         }
                         transactionPreview.onValue { transactionPreviewResponse ->
-                            transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
-                                val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
-                                val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
-                                val networkFee = costUnitPrice.multiply(costUnitsConsumed).toString()
-                                state = state.copy(
-                                    networkFee = networkFee
-                                )
-                            }
 
-                            val manifestPreview = transactionClient.analyzeManifest(
-                                networkId = profileDataSource.getCurrentNetworkId(),
-                                transactionManifest = transactionManifest,
-                                transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
-                            )
-
-                            manifestPreview.exceptionOrNull().let {
+                            if (transactionPreviewResponse.receipt.isFailed) {
                                 state = state.copy(
                                     isLoading = false,
-                                    error = UiMessage.ErrorMessage(it)
+                                    error = UiMessage.ErrorMessage(
+                                        error = Throwable(transactionPreviewResponse.receipt.errorMessage)
+                                    )
                                 )
-                            }
-
-                            manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
-
-                                val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> = mutableListOf()
-                                val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> = mutableListOf()
-
-                                analyzeManifestWithPreviewResponse.accountDeposits.forEach {
-                                    when (it) {
-                                        is AccountDeposit.Estimate -> {
-                                            val amount = when (val resSpecifier = it.resourceSpecifier) {
-                                                is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.amount
-                                                }
-                                                is ResourceSpecifier.Ids -> {
-                                                    ""
-                                                }
-                                            }
-                                            val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
-                                                is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.resourceAddress.address
-                                                }
-                                                is ResourceSpecifier.Ids -> {
-                                                    resSpecifier.resourceAddress.address
-                                                }
-                                            }
-                                            depositJobs.add(
-                                                async {
-                                                    getTransactionComponentResourcesUseCase.invoke(
-                                                        componentAddress = it.componentAddress.address,
-                                                        resourceAddress = resourceAddress,
-                                                        createdEntities = analyzeManifestWithPreviewResponse
-                                                            .createdEntities,
-                                                        amount = amount
-                                                    )
-                                                }
-                                            )
-                                        }
-                                        is AccountDeposit.Exact -> {
-                                            val amount = when (val resSpecifier = it.resourceSpecifier) {
-                                                is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.amount
-                                                }
-                                                is ResourceSpecifier.Ids -> {
-                                                    ""
-                                                }
-                                            }
-                                            val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
-                                                is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.resourceAddress.address
-                                                }
-                                                is ResourceSpecifier.Ids -> {
-                                                    resSpecifier.resourceAddress.address
-                                                }
-                                            }
-                                            depositJobs.add(
-                                                async {
-                                                    getTransactionComponentResourcesUseCase.invoke(
-                                                        componentAddress = it.componentAddress.address,
-                                                        resourceAddress = resourceAddress,
-                                                        createdEntities = analyzeManifestWithPreviewResponse
-                                                            .createdEntities,
-                                                        amount = amount
-                                                    )
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                                analyzeManifestWithPreviewResponse.accountWithdraws.forEach {
-                                    val amount = when (val resSpecifier = it.resourceSpecifier) {
-                                        is ResourceSpecifier.Amount -> {
-                                            resSpecifier.amount
-                                        }
-                                        is ResourceSpecifier.Ids -> {
-                                            ""
-                                        }
-                                    }
-                                    val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
-                                        is ResourceSpecifier.Amount -> {
-                                            resSpecifier.resourceAddress.address
-                                        }
-                                        is ResourceSpecifier.Ids -> {
-                                            resSpecifier.resourceAddress.address
-                                        }
-                                    }
-                                    withdrawJobs.add(
-                                        async {
-                                            getTransactionComponentResourcesUseCase.invoke(
-                                                componentAddress = it.componentAddress.address,
-                                                resourceAddress = resourceAddress,
-                                                createdEntities = analyzeManifestWithPreviewResponse
-                                                    .createdEntities,
-                                                amount = amount
-                                            )
-                                        }
+                            } else {
+                                transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
+                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
+                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
+                                    val networkFee = costUnitPrice.multiply(costUnitsConsumed).toString()
+                                    state = state.copy(
+                                        networkFee = networkFee
                                     )
                                 }
 
-                                val depositResults = depositJobs.awaitAll()
-                                val withdrawResults = withdrawJobs.awaitAll()
-
-                                val withdrawingAccounts = withdrawResults
-                                    .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
-                                    .map {
-                                        it.data
-                                    }
-
-                                val depositingAccounts = depositResults
-                                    .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
-                                    .map {
-                                        it.data
-                                    }
-
-                                val proofs = getTransactionProofResourcesUseCase(
-                                    analyzeManifestWithPreviewResponse.accountProofResources
+                                val manifestPreview = transactionClient.analyzeManifest(
+                                    networkId = profileDataSource.getCurrentNetworkId(),
+                                    transactionManifest = transactionManifest,
+                                    transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                                 )
 
-                                state = state.copy(
-                                    withdrawingAccounts = withdrawingAccounts.toPersistentList(),
-                                    depositingAccounts = depositingAccounts.toPersistentList(),
-                                    presentingProofs = proofs.toPersistentList(),
-                                    connectedDApps = persistentListOf(), // TODO something to come later on
-                                )
+                                manifestPreview.exceptionOrNull().let {
+                                    state = state.copy(
+                                        isLoading = false,
+                                        error = UiMessage.ErrorMessage(it)
+                                    )
+                                }
+
+                                manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
+
+                                    val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
+                                        mutableListOf()
+                                    val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
+                                        mutableListOf()
+
+                                    analyzeManifestWithPreviewResponse.accountDeposits.forEach {
+                                        when (it) {
+                                            is AccountDeposit.Estimate -> {
+                                                val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.amount
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        ""
+                                                    }
+                                                }
+                                                val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                }
+                                                depositJobs.add(
+                                                    async {
+                                                        getTransactionComponentResourcesUseCase.invoke(
+                                                            componentAddress = it.componentAddress.address,
+                                                            resourceAddress = resourceAddress,
+                                                            createdEntities = analyzeManifestWithPreviewResponse
+                                                                .createdEntities,
+                                                            amount = amount
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                            is AccountDeposit.Exact -> {
+                                                val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.amount
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        ""
+                                                    }
+                                                }
+                                                val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                                    is ResourceSpecifier.Amount -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                    is ResourceSpecifier.Ids -> {
+                                                        resSpecifier.resourceAddress.address
+                                                    }
+                                                }
+                                                depositJobs.add(
+                                                    async {
+                                                        getTransactionComponentResourcesUseCase.invoke(
+                                                            componentAddress = it.componentAddress.address,
+                                                            resourceAddress = resourceAddress,
+                                                            createdEntities = analyzeManifestWithPreviewResponse
+                                                                .createdEntities,
+                                                            amount = amount
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    analyzeManifestWithPreviewResponse.accountWithdraws.forEach {
+                                        val amount = when (val resSpecifier = it.resourceSpecifier) {
+                                            is ResourceSpecifier.Amount -> {
+                                                resSpecifier.amount
+                                            }
+                                            is ResourceSpecifier.Ids -> {
+                                                ""
+                                            }
+                                        }
+                                        val resourceAddress = when (val resSpecifier = it.resourceSpecifier) {
+                                            is ResourceSpecifier.Amount -> {
+                                                resSpecifier.resourceAddress.address
+                                            }
+                                            is ResourceSpecifier.Ids -> {
+                                                resSpecifier.resourceAddress.address
+                                            }
+                                        }
+                                        withdrawJobs.add(
+                                            async {
+                                                getTransactionComponentResourcesUseCase.invoke(
+                                                    componentAddress = it.componentAddress.address,
+                                                    resourceAddress = resourceAddress,
+                                                    createdEntities = analyzeManifestWithPreviewResponse
+                                                        .createdEntities,
+                                                    amount = amount
+                                                )
+                                            }
+                                        )
+                                    }
+
+                                    val depositResults = depositJobs.awaitAll()
+                                    val withdrawResults = withdrawJobs.awaitAll()
+
+                                    val withdrawingAccounts = withdrawResults
+                                        .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                        .map {
+                                            it.data
+                                        }
+
+                                    val depositingAccounts = depositResults
+                                        .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                        .map {
+                                            it.data
+                                        }
+
+                                    val proofs = getTransactionProofResourcesUseCase(
+                                        analyzeManifestWithPreviewResponse.accountProofResources
+                                    )
+
+                                    state = state.copy(
+                                        withdrawingAccounts = withdrawingAccounts.toPersistentList(),
+                                        depositingAccounts = depositingAccounts.toPersistentList(),
+                                        presentingProofs = proofs.toPersistentList(),
+                                        connectedDApps = persistentListOf(), // TODO something to come later on
+                                        manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
+                                        manifestData = transactionWriteRequest.transactionManifestData,
+                                        canApprove = true,
+                                        isLoading = false
+                                    )
+                                }
                             }
                         }
-
-                        state = state.copy(
-                            manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
-                            manifestData = transactionWriteRequest.transactionManifestData,
-                            canApprove = true,
-                            isLoading = false
-                        )
                     }
                 }
             }
