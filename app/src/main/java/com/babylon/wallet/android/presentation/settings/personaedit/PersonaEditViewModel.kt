@@ -40,14 +40,15 @@ class PersonaEditViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             personaEditState.collect { s ->
-                _state.update {
-                    it.copy(
+                _state.update { state ->
+                    state.copy(
                         saveButtonEnabled = s.inputValid,
                         personaDisplayName = s.personaDisplayName,
                         addFieldButtonEnabled = s.areThereFieldsSelected,
                         currentFields = s.currentFields,
                         fieldsToAdd = s.fieldsToAdd,
-                        dappContextEdit = s.requiredFieldKinds.isNotEmpty()
+                        dappContextEdit = s.requiredFieldKinds.isNotEmpty(),
+                        wasEdited = s.currentFields.any { it.wasEdited } || state.currentFields.size != s.currentFields.size
                     )
                 }
             }
@@ -93,5 +94,6 @@ data class PersonaEditUiState(
     val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
     val addFieldButtonEnabled: Boolean = false,
     val saveButtonEnabled: Boolean = false,
-    val dappContextEdit: Boolean = false
+    val dappContextEdit: Boolean = false,
+    val wasEdited: Boolean = false
 )

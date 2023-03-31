@@ -15,8 +15,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun BasicPromptAlertDialog(
     finish: (accepted: Boolean) -> Unit,
-    title: @Composable () -> Unit,
-    text: @Composable () -> Unit,
+    title: (@Composable () -> Unit)? = null,
+    text: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     confirmText: String = stringResource(id = R.string.confirm),
     dismissText: String = stringResource(id = R.string.cancel),
@@ -33,12 +33,8 @@ fun BasicPromptAlertDialog(
         dismissButton = {
             RadixTextButton(text = dismissText, onClick = { finish(false) })
         },
-        title = {
-            title()
-        },
-        text = {
-            text()
-        }
+        title = title,
+        text = text
     )
 }
 

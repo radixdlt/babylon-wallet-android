@@ -143,9 +143,9 @@ fun ChooseAccountContent(
                 }
             }
         }
-        BottomContinueButton(
-            onLoginClick = onContinueClick,
-            loginButtonEnabled = isContinueButtonEnabled,
+        BottomPrimaryButton(
+            onClick = onContinueClick,
+            enabled = isContinueButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground)
