@@ -9,9 +9,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.MainViewModel
-import com.babylon.wallet.android.presentation.IncompatibleProfileContent
-import com.babylon.wallet.android.presentation.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
@@ -26,16 +23,18 @@ import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
+import com.babylon.wallet.android.presentation.dapp.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
+import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
+import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
-import com.babylon.wallet.android.presentation.ui.composables.requestresult.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -45,7 +44,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
-    mainViewModel: MainViewModel,
     startDestination: String,
     navController: NavHostController,
 ) {
@@ -187,7 +185,6 @@ fun NavigationHost(
         )
         settingsNavGraph(navController)
         requestResultSuccess(
-            mainViewModel = mainViewModel,
             onBackPress = {
                 navController.popBackStack()
             }
@@ -213,7 +210,7 @@ fun NavigationHost(
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
-            IncompatibleProfileContent(mainViewModel = mainViewModel)
+            IncompatibleProfileContent(hiltViewModel())
         }
     }
 }
