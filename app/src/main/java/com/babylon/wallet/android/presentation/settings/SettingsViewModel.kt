@@ -16,13 +16,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val profileDataSource: ProfileDataSource,
+    private val deleteProfileUseCase: DeleteProfileUseCase,
     private val getP2PLinksUseCase: GetP2PLinksUseCase,
     private val preferencesManager: PreferencesManager,
     private val peerdroidClient: PeerdroidClient
@@ -59,7 +59,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onDeleteWalletClick() {
         viewModelScope.launch {
-            profileDataSource.clear()
+            deleteProfileUseCase()
             preferencesManager.clear()
             peerdroidClient.terminate()
             sendEvent(SettingsEvent.ProfileDeleted)

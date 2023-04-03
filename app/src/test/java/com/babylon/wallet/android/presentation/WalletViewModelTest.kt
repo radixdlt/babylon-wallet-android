@@ -22,6 +22,8 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest {
@@ -31,7 +33,8 @@ class WalletViewModelTest {
 
     private lateinit var vm: WalletViewModel
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
-    private val profileDataSource = mock(ProfileDataSource::class.java)
+    private val getProfileUseCase = mock<GetProfileUseCase>()
+    private val getProfileStateUseCase = mock<GetProfileStateUseCase>()
     private val accountRepository = AccountRepositoryFake()
 
     private val profile = SampleDataProvider().sampleProfile()
@@ -40,24 +43,14 @@ class WalletViewModelTest {
 
     @Before
     fun setUp() {
-        vm = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
-        whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
-    }
-
-    @Test
-    fun `when view model init, verify initial value of wallet UI state is Loading`() = runTest {
-        // given
-        val event = mutableListOf<WalletUiState>()
-
-        // when
-        vm.walletUiState
-            .onEach { event.add(it) }
-            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-
-        advanceUntilIdle()
-
-        // then
-        assertTrue(event.first().isLoading)
+        vm = WalletViewModel(
+            requestAccountsUseCase,
+            getProfileStateUseCase,
+            getProfileUseCase,
+            accountRepository
+        )
+        whenever(getProfileStateUseCase()).thenReturn(flowOf(ProfileState.Restored(profile)))
+        whenever(getProfileUseCase()).thenReturn(flowOf(profile))
     }
 
     @Test
@@ -80,11 +73,11 @@ class WalletViewModelTest {
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-        val viewModel = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
-        whenever(requestAccountsUseCase.getAccountsFromProfile(isRefreshing = false)).thenReturn(Result.Success(listOf(sampleData)))
+        whenever(requestAccountsUseCase.getAccountsFromProfile(isRefreshing = false))
+            .thenReturn(Result.Success(listOf(sampleData)))
 
         // when
-        viewModel.walletUiState
+        vm.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 

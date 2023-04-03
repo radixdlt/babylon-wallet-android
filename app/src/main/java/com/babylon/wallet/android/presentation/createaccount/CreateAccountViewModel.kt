@@ -14,16 +14,16 @@ import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.CreateAccountUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
+import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.exists
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val profileDataSource: ProfileDataSource,
+    private val getProfileStateUseCase: GetProfileStateUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
     deviceSecurityHelper: DeviceSecurityHelper,
@@ -51,7 +51,7 @@ class CreateAccountViewModel @Inject constructor(
             loading = true
         )
         viewModelScope.launch {
-            val hasProfile = profileDataSource.profileState.first() is ProfileState.Restored
+            val hasProfile = getProfileStateUseCase.exists()
             val accountName = accountName.value.trim()
             val account = if (hasProfile) {
                 createAccountUseCase(

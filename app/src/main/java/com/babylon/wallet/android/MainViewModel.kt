@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,13 +35,13 @@ import javax.inject.Inject
 @Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager,
-    private val profileDataSource: ProfileDataSource,
+    private val preferencesManager: PreferencesManager
     private val getP2PLinksUseCase: GetP2PLinksUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
-    private val verifyDappUseCase: VerifyDappUseCase
+    private val verifyDappUseCase: VerifyDappUseCase,
+    getProfileStateUseCase: GetProfileStateUseCase
 ) : BaseViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var observeP2PLinksJob: Job? = null
@@ -53,7 +53,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 preferencesManager.showOnboarding,
-                profileDataSource.profileState
+                getProfileStateUseCase(),
             ) { showOnboarding, profileState ->
                 MainUiState(
                     initialAppState = when {

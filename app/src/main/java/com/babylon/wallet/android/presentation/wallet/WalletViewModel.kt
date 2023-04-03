@@ -18,20 +18,20 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.AccountRepository
-import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.data.repository.profile
+import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.exists
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
-    private val profileDataSource: ProfileDataSource,
+    private val getProfileStateUseCase: GetProfileStateUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val accountRepository: AccountRepository
 ) : ViewModel(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -40,7 +40,7 @@ class WalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
-            profileDataSource.profile.collect {
+            getProfileUseCase().collect {
                 loadResourceData(isRefreshing = false)
             }
         }
@@ -70,7 +70,7 @@ class WalletViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
-            if (profileDataSource.profileState.first() is ProfileState.Restored) {
+            if (getProfileStateUseCase.exists()) {
                 loadResourceData(isRefreshing = true)
             }
             _walletUiState.update { it.copy(isRefreshing = false) }
