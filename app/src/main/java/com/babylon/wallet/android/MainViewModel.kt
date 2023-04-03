@@ -127,7 +127,19 @@ class MainViewModel @Inject constructor(
         handlingCurrentRequestJob = viewModelScope.launch {
             incomingRequestRepository.currentRequestToHandle.collect { request ->
                 delay(REQUEST_HANDLING_DELAY)
-                sendEvent(MainEvent.IncomingRequestEvent(request))
+                when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
+                    is com.babylon.wallet.android.domain.common.Result.Error -> {
+                        sendEvent(MainEvent.IncomingRequestEvent(request))
+                    }
+                    is com.babylon.wallet.android.domain.common.Result.Success -> {
+                        sendEvent(
+                            MainEvent.HandledUsePersonaAuthRequest(
+                                requestId = dAppData.data.requestId,
+                                dAppName = dAppData.data.name
+                            )
+                        )
+                    }
+                }
             }
         }
 
@@ -150,19 +162,7 @@ class MainViewModel @Inject constructor(
             val verificationResult = verifyDappUseCase(request)
             verificationResult.onValue { verified ->
                 if (verified) {
-                    when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
-                        is com.babylon.wallet.android.domain.common.Result.Error -> {
-                            incomingRequestRepository.add(request)
-                        }
-                        is com.babylon.wallet.android.domain.common.Result.Success -> {
-                            sendEvent(
-                                MainEvent.HandledUsePersonaAuthRequest(
-                                    requestId = dAppData.data.requestId,
-                                    dAppName = dAppData.data.name
-                                )
-                            )
-                        }
-                    }
+                    incomingRequestRepository.add(request)
                 }
             }
         }
