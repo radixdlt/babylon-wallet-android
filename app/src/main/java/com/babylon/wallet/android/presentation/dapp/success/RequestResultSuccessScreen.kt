@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.requestresult.success
+package com.babylon.wallet.android.presentation.dapp.success
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.MainViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -24,7 +23,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickableNoIn
 
 @Composable
 fun RequestResultSuccessScreen(
-    viewModel: MainViewModel,
+    viewModel: RequestResultSuccessViewModel,
     requestId: String,
     dAppName: String,
     onBackPress: () -> Unit,

@@ -119,6 +119,7 @@ class MainViewModel @Inject constructor(
                 is Result.Error -> {
                     Timber.e("Failed to establish link connection: ${result.message}")
                 }
+                else -> {}
             }
         }
     }
@@ -162,6 +163,7 @@ class MainViewModel @Inject constructor(
                                 )
                             )
                         }
+                        else -> {}
                     }
                 }
             }

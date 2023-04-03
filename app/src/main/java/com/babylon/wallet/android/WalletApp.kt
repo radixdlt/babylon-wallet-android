@@ -4,14 +4,14 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.presentation.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
+import com.babylon.wallet.android.presentation.dapp.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
-import com.babylon.wallet.android.presentation.ui.composables.requestresult.success.requestResultSuccess
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.Flow
 @Composable
 @Suppress("ModifierMissing")
 fun WalletApp(
-    mainViewModel: MainViewModel,
     appNavigationState: AppNavigationState,
     oneOffEvent: Flow<MainEvent>,
 ) {
@@ -29,28 +28,24 @@ fun WalletApp(
     when (appNavigationState) {
         AppNavigationState.CreateAccount -> {
             NavigationHost(
-                mainViewModel = mainViewModel,
                 startDestination = ROUTE_CREATE_ACCOUNT,
                 navController = navController
             )
         }
         AppNavigationState.Wallet -> {
             NavigationHost(
-                mainViewModel = mainViewModel,
                 startDestination = Screen.WalletDestination.route,
                 navController = navController
             )
         }
         is AppNavigationState.IncompatibleProfile -> {
             NavigationHost(
-                mainViewModel = mainViewModel,
                 startDestination = ROUTE_INCOMPATIBLE_PROFILE,
                 navController = navController
             )
         }
         AppNavigationState.Onboarding -> {
             NavigationHost(
-                mainViewModel = mainViewModel,
                 startDestination = Screen.OnboardingDestination.route,
                 navController = navController
             )

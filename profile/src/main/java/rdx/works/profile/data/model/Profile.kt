@@ -156,7 +156,7 @@ data class Profile(
         }
 
     companion object {
-        const val LATEST_PROFILE_VERSION = 26
+        const val LATEST_PROFILE_VERSION = 27
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
         fun init(

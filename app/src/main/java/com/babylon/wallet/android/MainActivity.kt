@@ -39,7 +39,6 @@ class MainActivity : FragmentActivity() {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 DevelopmentPreviewWrapper {
                     WalletApp(
-                        mainViewModel = viewModel,
                         appNavigationState = state.initialAppState,
                         oneOffEvent = viewModel.oneOffEvent
                     )

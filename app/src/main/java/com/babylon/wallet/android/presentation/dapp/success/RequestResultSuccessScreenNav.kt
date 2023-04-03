@@ -1,13 +1,13 @@
-package com.babylon.wallet.android.presentation.ui.composables.requestresult.success
+package com.babylon.wallet.android.presentation.dapp.success
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.MainViewModel
 import com.babylon.wallet.android.R
 
 @VisibleForTesting
@@ -27,7 +27,6 @@ fun NavController.requestResultSuccess(
 }
 
 fun NavGraphBuilder.requestResultSuccess(
-    mainViewModel: MainViewModel,
     onBackPress: () -> Unit
 ) {
     dialog(
@@ -42,7 +41,7 @@ fun NavGraphBuilder.requestResultSuccess(
         val dAppName = checkNotNull(it.arguments?.getString(ARG_DAPP_NAME))
 
         RequestResultSuccessScreen(
-            viewModel = mainViewModel,
+            viewModel = hiltViewModel(),
             requestId = requestId,
             dAppName = dAppName,
             onBackPress = onBackPress
