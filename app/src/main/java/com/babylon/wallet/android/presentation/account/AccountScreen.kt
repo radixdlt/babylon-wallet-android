@@ -1,8 +1,11 @@
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+
 package com.babylon.wallet.android.presentation.account
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,6 +21,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -71,9 +76,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderVi
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -117,7 +120,7 @@ fun AccountScreen(
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 private fun AccountScreenContent(
     accountName: String,
     onAccountPreferenceClick: () -> Unit,
@@ -389,7 +392,6 @@ fun AccountContentWithScrollableHeader(
     }
 }
 
-@ExperimentalPagerApi
 @Composable
 private fun AccountContent(
     accountAddress: String,
@@ -475,7 +477,6 @@ private fun AccountSummaryContent(
     }
 }
 
-@ExperimentalPagerApi
 @Composable
 fun AssetsContent(
     xrdToken: TokenUiModel?,
@@ -534,7 +535,7 @@ fun AssetsContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            count = AssetTypeTab.values().size,
+            pageCount = AssetTypeTab.values().size,
             state = pagerState,
             userScrollEnabled = false
         ) { page ->

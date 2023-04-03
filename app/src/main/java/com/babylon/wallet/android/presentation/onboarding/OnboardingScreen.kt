@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +20,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,9 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.rememberPagerState
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -72,7 +75,6 @@ fun OnboardingScreen(
     )
 }
 
-@ExperimentalPagerApi
 @Composable
 private fun OnboardingScreenContent(
     currentPage: Int,
@@ -93,14 +95,6 @@ private fun OnboardingScreenContent(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            RadixOnboardingPagerIndicator(
-                pagerState = pagerState,
-                modifier = Modifier
-                    .wrapContentSize()
-                    .align(Alignment.CenterHorizontally),
-                indicatorWidth = 48.dp,
-                indicatorHeight = 4.dp,
-            )
             val onboardPages = listOf(
                 OnboardingPage(
                     title = stringResource(id = R.string.onboarding_title_1),
@@ -123,9 +117,18 @@ private fun OnboardingScreenContent(
                     R.drawable.img_carousel_asset
                 )
             )
+            RadixOnboardingPagerIndicator(
+                pagerState = pagerState,
+                pageCount = onboardPages.size,
+                modifier = Modifier
+                    .wrapContentSize()
+                    .align(Alignment.CenterHorizontally),
+                indicatorWidth = 48.dp,
+                indicatorHeight = 4.dp,
+            )
 
             HorizontalPager(
-                count = onboardPages.size,
+                pageCount = onboardPages.size,
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -153,7 +156,7 @@ private fun OnboardingScreenContent(
         }
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = pagerState.currentPage == pagerState.pageCount - 1
+            visible = !pagerState.canScrollForward
         ) {
             Column(
                 modifier = Modifier
@@ -177,12 +180,11 @@ private fun OnboardingScreenContent(
     }
 }
 
-@ExperimentalPagerApi
 @Composable
 fun RadixOnboardingPagerIndicator(
     pagerState: PagerState,
+    pageCount: Int,
     modifier: Modifier = Modifier,
-    pageCount: Int = pagerState.pageCount,
     pageIndexMapping: (Int) -> Int = { it },
     inactiveColor: Color = RadixTheme.colors.gray4,
     indicatorWidth: Dp = 8.dp,
@@ -214,7 +216,7 @@ fun RadixOnboardingPagerIndicator(
             Modifier
                 .offset {
                     val position = pageIndexMapping(pagerState.currentPage)
-                    val offset = pagerState.currentPageOffset
+                    val offset = pagerState.currentPageOffsetFraction
                     val next = pageIndexMapping(pagerState.currentPage + offset.sign.toInt())
                     val scrollPosition = ((next - position) * offset.absoluteValue + position)
                         .coerceIn(
@@ -244,7 +246,6 @@ fun RadixOnboardingPagerIndicator(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Preview
 @Composable
 fun OnboardingScreenPreview() {

@@ -12,7 +12,7 @@ buildscript {
         classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.22.0"
         classpath "org.jacoco:org.jacoco.core:0.8.8"
         classpath "org.jetbrains.kotlin:kotlin-serialization:1.8.0"
-        classpath "nl.littlerobots.vcu:plugin:0.7.0"
+        classpath "nl.littlerobots.vcu:plugin:0.8.0"
     }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
@@ -38,5 +38,16 @@ allprojects {
         exclude("**/test/**")
         exclude("**/generated/**")
         exclude("**/androidTest/**")
+    }
+}
+
+def isNonStable = { String version ->
+    def nonStable = ['ALPHA', 'BETA'].any { it -> version.toUpperCase().contains(it) }
+    return nonStable
+}
+
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
     }
 }

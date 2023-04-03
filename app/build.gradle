@@ -157,7 +157,6 @@ dependencies {
     implementation libs.immutableCollections
 
     // Accompanist
-    implementation libs.accompanistPager
     implementation libs.accompanistPagerIndicators
     implementation libs.accompanistDrawablePainter
     implementation libs.accompanistNavigationAnimation
