@@ -8,7 +8,7 @@ import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -20,6 +20,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.ProfileDataSource
 
 @ExperimentalCoroutinesApi
@@ -40,7 +41,7 @@ class WalletViewModelTest {
     @Before
     fun setUp() {
         vm = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
-        whenever(profileDataSource.profile).thenReturn(flow { emit(profile) })
+        whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
     }
 
     @Test
@@ -79,17 +80,16 @@ class WalletViewModelTest {
     fun `when view model init, verify account Ui state content is loaded at the end`() = runTest {
         // given
         val event = mutableListOf<WalletUiState>()
-
-        // when
         val viewModel = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
         whenever(requestAccountsUseCase.getAccountsFromProfile(isRefreshing = false)).thenReturn(Result.Success(listOf(sampleData)))
+
+        // when
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
-        advanceUntilIdle()
-
         // then
+        advanceUntilIdle()
         assertTrue(!event.last().isLoading)
     }
 }

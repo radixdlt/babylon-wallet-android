@@ -13,6 +13,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
@@ -108,7 +109,7 @@ class CreatePersonaUseCaseTest {
             }
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.profile).thenReturn(flowOf(profile))
+            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
             val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
 

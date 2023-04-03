@@ -2,6 +2,7 @@ package rdx.works.profile.domain.gateway
 
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class GetGatewaysUseCase @Inject constructor(

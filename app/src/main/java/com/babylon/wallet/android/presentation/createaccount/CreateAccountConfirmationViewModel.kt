@@ -20,7 +20,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 ) : ViewModel(), OneOffEventHandler<CreateAccountConfirmationEvent> by OneOffEventHandlerImpl() {
 
     internal val args = CreateAccountConfirmationArgs(savedStateHandle)
-    private var _state = MutableStateFlow(AccountConfirmationUiState())
+    private val _state = MutableStateFlow(AccountConfirmationUiState())
     val state: StateFlow<AccountConfirmationUiState> = _state
 
     init {

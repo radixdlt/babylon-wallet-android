@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class AddP2PLinkUseCase @Inject constructor(

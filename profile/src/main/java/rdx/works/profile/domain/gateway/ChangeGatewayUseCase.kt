@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class ChangeGatewayUseCase @Inject constructor(

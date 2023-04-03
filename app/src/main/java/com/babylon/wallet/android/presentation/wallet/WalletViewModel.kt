@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.profile
 import timber.log.Timber
 import javax.inject.Inject
 

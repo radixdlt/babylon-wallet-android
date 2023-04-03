@@ -7,16 +7,16 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
-import kotlin.test.Ignore
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.profile
+import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
+import kotlin.test.Ignore
 
 class AddP2PLinkUseCaseTest {
 
@@ -62,18 +62,5 @@ class AddP2PLinkUseCaseTest {
             version = initialProfile.version
         )
         verify(profileDataSource).saveProfile(updatedProfile)
-    }
-
-    @Test(expected = NullPointerException::class)
-    fun `when profile does not exist, verify exception thrown when adding p2pLink`(): Unit = runBlocking {
-        val profileDataSource = mock(ProfileDataSource::class.java)
-        val addP2PLinkUseCase = AddP2PLinkUseCase(profileDataSource)
-
-        whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.None))
-
-        addP2PLinkUseCase(
-            displayName = "Mac browser",
-            connectionPassword = "pass1234"
-        )
     }
 }

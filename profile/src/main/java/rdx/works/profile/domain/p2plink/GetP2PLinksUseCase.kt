@@ -3,6 +3,7 @@ package rdx.works.profile.domain.p2plink
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class GetP2PLinksUseCase @Inject constructor(
