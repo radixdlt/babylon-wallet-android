@@ -73,20 +73,6 @@ class MainViewModel @Inject constructor(
         MainUiState()
     )
 
-    fun incomingRequestHandled(requestId: String) {
-        viewModelScope.launch {
-            incomingRequestRepository.requestHandled(requestId)
-        }
-    }
-
-    fun deleteProfile() {
-        viewModelScope.launch {
-            profileDataSource.clear()
-            preferencesManager.clear()
-            peerdroidClient.terminate()
-        }
-    }
-
     private fun observeForP2PLinks() {
         observeP2PLinksJob = profileDataSource.p2pLinks
             .map { p2pLinks ->
@@ -163,7 +149,6 @@ class MainViewModel @Inject constructor(
                                 )
                             )
                         }
-                        else -> {}
                     }
                 }
             }
