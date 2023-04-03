@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.updatePersona
@@ -20,10 +20,8 @@ class UpdatePersonaUseCase @Inject constructor(
         updatedPersona: Network.Persona,
     ) {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.profile.firstOrNull()
-            checkNotNull(profile) {
-                "Profile does not exist"
-            }
+            val profile = profileDataSource.profile.first()
+
             val updatedProfile = profile.updatePersona(updatedPersona)
             profileDataSource.saveProfile(updatedProfile)
             dAppConnectionRepository.ensureAuthorizedPersonasFieldsExist(updatedPersona.address, updatedPersona.fields.map { it.id })

@@ -2,7 +2,7 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -10,6 +10,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -17,14 +18,13 @@ import javax.inject.Inject
 @Suppress("TooManyFunctions")
 interface ProfileDataSource {
 
-    val profileState: Flow<Result<Profile?>>
+    val profileState: Flow<ProfileState>
 
-    val profile: Flow<Profile?>
+    val profile: Flow<Profile>
 
     suspend fun saveProfile(profile: Profile)
 
     suspend fun clear()
-
 }
 
 @Suppress("TooManyFunctions")
@@ -35,26 +35,24 @@ class ProfileDataSourceImpl @Inject constructor(
 ) : ProfileDataSource {
 
     @Suppress("SwallowedException")
-    override val profileState: Flow<Result<Profile?>> =
+    override val profileState: Flow<ProfileState> =
         encryptedPreferencesManager.encryptedProfile
             .map { profileContent ->
                 profileContent?.let { profile ->
                     val profileVersion = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(profile)
                     val profileIncompatible = profileVersion.version < Profile.LATEST_PROFILE_VERSION
                     if (profileIncompatible) {
-                        Result.failure(Exception("Profile incompatible, migration needed"))
+                        ProfileState.Incompatible
                     } else {
-                        Result.success(Json.decodeFromString<ProfileSnapshot>(profile).toProfile())
+                        ProfileState.Restored(Json.decodeFromString<ProfileSnapshot>(profile).toProfile())
                     }
-                } ?: run {
-                    Result.success(null)
-                }
+                } ?: ProfileState.None
             }
 
-    override val profile: Flow<Profile?> =
-        profileState.map {
-            it.getOrNull()
-        }
+    override val profile: Flow<Profile> =
+        profileState
+            .filter { it is ProfileState.Restored }
+            .map { (it as ProfileState.Restored).profile }
 
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {

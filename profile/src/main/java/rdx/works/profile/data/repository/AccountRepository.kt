@@ -2,7 +2,6 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.Network
@@ -30,19 +29,19 @@ class AccountRepositoryImpl @Inject constructor(
 
     override val accounts: Flow<List<Network.Account>> = profileDataSource.profile
         .map { profile ->
-            profile?.currentNetwork?.accounts.orEmpty()
+            profile.currentNetwork.accounts
         }
 
     override suspend fun getAccounts(): List<Network.Account> {
         val perNetwork = getPerNetwork()
-        return perNetwork?.accounts.orEmpty()
+        return perNetwork.accounts
     }
 
     override suspend fun getAccountByAddress(address: String): Network.Account? {
         val perNetwork = getPerNetwork()
         return perNetwork
-            ?.accounts
-            ?.firstOrNull { account ->
+            .accounts
+            .firstOrNull { account ->
                 account.address == address
             }
     }
@@ -51,7 +50,7 @@ class AccountRepositoryImpl @Inject constructor(
         networkId: Int,
         addresses: List<String>
     ): List<AccountSigner> {
-        val profile = profileDataSource.profile.firstOrNull() ?: return emptyList()
+        val profile = profileDataSource.profile.first()
 
         return profile.getAccountSigners(
             addresses = addresses,
@@ -62,7 +61,7 @@ class AccountRepositoryImpl @Inject constructor(
         )
     }
 
-    private suspend fun getPerNetwork(): Network? {
-        return profileDataSource.profile.firstOrNull()?.currentNetwork
+    private suspend fun getPerNetwork(): Network {
+        return profileDataSource.profile.first().currentNetwork
     }
 }

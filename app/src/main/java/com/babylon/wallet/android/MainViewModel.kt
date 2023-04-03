@@ -26,11 +26,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
@@ -55,9 +57,9 @@ class MainViewModel @Inject constructor(
             ) { showOnboarding, profileState ->
                 MainUiState(
                     initialAppState = when {
-                        profileState.isFailure -> AppState.IncompatibleProfile
+                        profileState is ProfileState.Incompatible -> AppState.IncompatibleProfile
                         showOnboarding -> AppState.Onboarding
-                        profileState.getOrNull() != null -> AppState.HasProfile
+                        profileState is ProfileState.Restored -> AppState.HasProfile
                         else -> AppState.NoProfile
                     }
                 )

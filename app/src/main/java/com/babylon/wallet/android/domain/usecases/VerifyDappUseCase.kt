@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.preferences.IsInDeveloperModeUseCase
 import javax.inject.Inject
 

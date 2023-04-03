@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
@@ -24,10 +24,7 @@ class CreateAccountUseCase @Inject constructor(
         switchNetwork: Boolean = false
     ): Network.Account {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.profile.firstOrNull()
-            checkNotNull(profile) {
-                "Profile does not exist"
-            }
+            val profile = profileDataSource.profile.first()
 
             var gateway: Radix.Gateway? = null
             if (networkUrl != null && networkName != null) {
@@ -38,9 +35,9 @@ class CreateAccountUseCase @Inject constructor(
                     }
                 )
             }
-            val networkID = gateway?.network?.networkId() ?:
-                profile.currentNetwork.knownNetworkId ?:
-                Radix.Gateway.default.network.networkId()
+            val networkID = gateway?.network?.networkId()
+                ?: profile.currentNetwork.knownNetworkId
+                ?: Radix.Gateway.default.network.networkId()
 
             val factorSource = profile.babylonDeviceFactorSource
 

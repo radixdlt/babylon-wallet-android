@@ -38,8 +38,8 @@ import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
 import rdx.works.profile.data.repository.AccountRepository
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.security.SecureRandom
 import javax.inject.Inject
 

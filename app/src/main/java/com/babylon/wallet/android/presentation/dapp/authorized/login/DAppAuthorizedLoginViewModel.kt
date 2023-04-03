@@ -41,7 +41,6 @@ import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.Authorized
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.repository.addOrUpdateAuthorizedDappPersona
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas

@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
@@ -94,7 +95,7 @@ class GenerateProfileUseCaseTest {
                 version = 1
             )
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.profile).thenReturn(flowOf(profile))
+            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
             // when
             val generateProfileUseCase = GenerateProfileUseCase(
@@ -130,7 +131,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileDataSource.profile).thenReturn(flowOf(null))
+            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.None))
 
             val profile = generateProfileUseCase("main")
 
@@ -169,7 +170,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileDataSource.profile).thenReturn(flowOf(null))
+            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.None))
 
             val profile = generateProfileUseCase("main")
 

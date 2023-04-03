@@ -1,9 +1,10 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -17,10 +18,9 @@ class GenerateProfileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(accountDisplayName: String): Profile {
-        profileDataSource.profile.firstOrNull()?.let { profile ->
-            return profile
-        } ?: run {
-            return withContext(defaultDispatcher) {
+        return when (val state = profileDataSource.profileState.first()) {
+            is ProfileState.Restored -> state.profile
+            else -> withContext(defaultDispatcher) {
                 val mnemonicWithPassphrase = getMnemonicUseCase()
 
                 val profile = Profile.init(

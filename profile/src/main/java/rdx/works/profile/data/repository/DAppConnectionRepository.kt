@@ -63,31 +63,28 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
         return profileDataSource.profile.map {
             Timber.d("Authorized dapps $it")
-            it?.getAuthorizedDapp(dAppDefinitionAddress)
+            it.getAuthorizedDapp(dAppDefinitionAddress)
         }
     }
 
     override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
-        return profileDataSource.profile.firstOrNull()?.getAuthorizedDapp(dAppDefinitionAddress)
+        return profileDataSource.profile.first().getAuthorizedDapp(dAppDefinitionAddress)
     }
 
     override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
-        return profileDataSource.profile.map { profile -> profile?.getAuthorizedDapps().orEmpty() }
+        return profileDataSource.profile.map { profile -> profile.getAuthorizedDapps() }
     }
 
     override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
-        val profile = profileDataSource.profile.firstOrNull()
+        val profile = profileDataSource.profile.first()
 
-        requireNotNull(profile)
         Timber.d("Authorized dapps updating profile dapp: $authorizedDApp")
         val updatedProfile = profile.createOrUpdateAuthorizedDapp(authorizedDApp)
         profileDataSource.saveProfile(updatedProfile)
     }
 
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
-        val profile = profileDataSource.profile.firstOrNull()
-
-        requireNotNull(profile)
+        val profile = profileDataSource.profile.first()
 
         getAuthorizedDapp(dAppDefinitionAddress)?.let {
             val updatedProfile = profile.deleteAuthorizedDapp(it)

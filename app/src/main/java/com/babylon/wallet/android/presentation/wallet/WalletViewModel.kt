@@ -18,10 +18,10 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import timber.log.Timber
@@ -39,7 +39,7 @@ class WalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
-            profileDataSource.profile.filterNotNull().collect {
+            profileDataSource.profile.collect {
                 loadResourceData(isRefreshing = false)
             }
         }
@@ -69,7 +69,7 @@ class WalletViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
-            profileDataSource.profile.firstOrNull()?.let {
+            if (profileDataSource.profileState.first() is ProfileState.Restored) {
                 loadResourceData(isRefreshing = true)
             }
             _walletUiState.update { it.copy(isRefreshing = false) }

@@ -1,6 +1,6 @@
 package rdx.works.profile.domain.gateway
 
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -12,8 +12,8 @@ class ChangeGatewayUseCase @Inject constructor(
 
     suspend operator fun invoke(gateway: Radix.Gateway) = profileDataSource
         .profile
-        .firstOrNull()
-        ?.let { profile ->
+        .first()
+        .let { profile ->
             val knownNetwork = Radix.Network
                 .allKnownNetworks()
                 .firstOrNull { network ->
@@ -31,6 +31,5 @@ class ChangeGatewayUseCase @Inject constructor(
             } else {
                 false
             }
-        } ?: false
-
+        }
 }

@@ -7,7 +7,6 @@ import okio.Buffer
 import okio.IOException
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Call
 import timber.log.Timber

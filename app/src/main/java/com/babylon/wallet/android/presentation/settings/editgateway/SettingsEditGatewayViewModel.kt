@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase

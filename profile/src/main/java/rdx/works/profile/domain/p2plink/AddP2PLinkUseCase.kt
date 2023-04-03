@@ -1,7 +1,6 @@
 package rdx.works.profile.domain.p2plink
 
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -15,10 +14,7 @@ class AddP2PLinkUseCase @Inject constructor(
         displayName: String,
         connectionPassword: String
     ) {
-        val profile = profileDataSource.profile.firstOrNull()
-        checkNotNull(profile) {
-            "Profile does not exist"
-        }
+        val profile = profileDataSource.profile.first()
 
         val p2pLink = P2PLink.init(
             connectionPassword = connectionPassword,

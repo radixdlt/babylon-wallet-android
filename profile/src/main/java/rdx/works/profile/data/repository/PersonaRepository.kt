@@ -2,7 +2,6 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.profile.data.model.pernetwork.Network
@@ -22,11 +21,11 @@ class PersonaRepositoryImpl @Inject constructor(
 ) : PersonaRepository {
 
     override val personas: Flow<List<Network.Persona>> = profileDataSource.profile.map { profile ->
-        profile?.currentNetwork?.personas.orEmpty()
+        profile.currentNetwork.personas
     }
 
     override suspend fun getPersonas(): List<Network.Persona> {
-        return getPerNetwork()?.personas.orEmpty()
+        return getPerNetwork().personas
     }
 
     override suspend fun getPersonaDataFields(address: String, fields: List<Network.Persona.Field.Kind>): List<Network.Persona.Field> {
@@ -38,12 +37,12 @@ class PersonaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPersonaByAddress(address: String): Network.Persona? {
-        return getPerNetwork()?.personas?.firstOrNull { persona ->
+        return getPerNetwork().personas.firstOrNull { persona ->
             persona.address == address
         }
     }
 
-    private suspend fun getPerNetwork(): Network? {
-        return profileDataSource.profile.firstOrNull()?.currentNetwork
+    private suspend fun getPerNetwork(): Network {
+        return profileDataSource.profile.first().currentNetwork
     }
 }

@@ -23,7 +23,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Retrofit
 import timber.log.Timber
