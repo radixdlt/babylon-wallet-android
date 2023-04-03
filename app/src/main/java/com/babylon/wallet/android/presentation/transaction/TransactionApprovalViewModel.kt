@@ -94,7 +94,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         val transactionManifest = manifestInStringFormatConversionResult.data
                         val transactionPreview = transactionClient.getTransactionPreview(
                             manifest = transactionManifest,
-                            networkId = profileDataSource.getCurrentNetworkId().value,
+                            networkId = getCurrentGatewayUseCase().network.networkId().value,
                             blobs = transactionManifest.blobs.orEmpty()
                         )
                         transactionPreview.onError {
@@ -123,7 +123,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 }
 
                                 val manifestPreview = transactionClient.analyzeManifest(
-                                    networkId = profileDataSource.getCurrentNetworkId(),
+                                    networkId = getCurrentGatewayUseCase().network.networkId(),
                                     transactionManifest = transactionManifest,
                                     transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                                 )
