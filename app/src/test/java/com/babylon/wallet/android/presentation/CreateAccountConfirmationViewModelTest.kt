@@ -81,7 +81,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
                 accountAddress = accountId,
                 appearanceId = 123
             ),
-            viewModel.accountUiState
+            viewModel.state.value
         )
 
         Assert.assertEquals(event.first(), CreateAccountConfirmationEvent.NavigateToHome)
@@ -108,7 +108,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
                 accountAddress = accountId,
                 appearanceId = 123
             ),
-            viewModel.accountUiState
+            viewModel.state.value
         )
 
         Assert.assertEquals(event.first(), CreateAccountConfirmationEvent.FinishAccountCreation)

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,7 +34,7 @@ fun CreateAccountConfirmationScreen(
     navigateToWallet: () -> Unit,
     finishAccountCreation: () -> Unit,
 ) {
-    val accountState = viewModel.accountUiState
+    val accountState by viewModel.state.collectAsState()
     SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     CreateAccountConfirmationContent(
         modifier = modifier,
