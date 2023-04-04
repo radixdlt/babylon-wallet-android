@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.createaccount
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,10 +9,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.domain.account.CreateAccountUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.account.CreateAccountUseCase
 import rdx.works.profile.domain.exists
 import javax.inject.Inject
 
@@ -32,13 +32,14 @@ class CreateAccountViewModel @Inject constructor(
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
 
-    var state by mutableStateOf(
+    private val _state = MutableStateFlow(
         CreateAccountState(
             isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
             firstTime = args.requestSource == CreateAccountRequestSource.FirstTime
         )
     )
-        private set
+    val state: StateFlow<CreateAccountState> = _state
+
 
     fun onAccountNameChange(accountName: String) {
         savedStateHandle[ACCOUNT_NAME] = accountName.take(ACCOUNT_NAME_MAX_LENGTH)
@@ -46,9 +47,7 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     fun onAccountCreateClick() {
-        state = state.copy(
-            loading = true
-        )
+        _state.update { it.copy(loading = true) }
         viewModelScope.launch {
             val hasProfile = getProfileStateUseCase.exists()
             val accountName = accountName.value.trim()
@@ -67,12 +66,14 @@ class CreateAccountViewModel @Inject constructor(
             }
             val accountId = account.address
 
-            state = state.copy(
-                loading = true,
-                accountId = accountId,
-                accountName = accountName,
-                hasProfile = hasProfile
-            )
+            _state.update {
+                it.copy(
+                    loading = true,
+                    accountId = accountId,
+                    accountName = accountName,
+                    hasProfile = hasProfile
+                )
+            }
 
             sendEvent(
                 CreateAccountEvent.Complete(

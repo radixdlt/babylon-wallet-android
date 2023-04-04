@@ -17,6 +17,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,18 +53,18 @@ fun CreateAccountScreen(
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
     onCloseApp: () -> Unit
 ) {
+    val state by viewModel.state.collectAsState()
     val backHandler = {
-        if (viewModel.state.firstTime) {
+        if (state.firstTime) {
             onCloseApp()
         } else {
             onBackClick()
         }
     }
     BackHandler(onBack = backHandler)
-    if (viewModel.state.loading) {
+    if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val state = viewModel.state
         val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
         val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
 
