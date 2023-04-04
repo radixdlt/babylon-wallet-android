@@ -29,7 +29,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.GenerateProfileUseCase
-import rdx.works.profile.data.repository.MnemonicDataSource
+import rdx.works.profile.data.repository.MnemonicRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GenerateProfileUseCaseTest {
@@ -47,7 +47,7 @@ class GenerateProfileUseCaseTest {
                     "humble limb repeat video sudden possible story mask neutral prize goose mandate",
                 bip39Passphrase = ""
             )
-            val mnemonicDataSource = mock<MnemonicDataSource> {
+            val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking { invoke() } doReturn mnemonicWithPassphrase
             }
 
@@ -99,7 +99,7 @@ class GenerateProfileUseCaseTest {
 
             // when
             val generateProfileUseCase = GenerateProfileUseCase(
-                mnemonicDataSource = mnemonicDataSource,
+                mnemonicRepository = mnemonicRepository,
                 profileDataSource = profileDataSource,
                 deviceInfoRepository = fakeDeviceInfoRepository,
                 defaultDispatcher = testDispatcher
@@ -118,14 +118,14 @@ class GenerateProfileUseCaseTest {
                     "humble limb repeat video sudden possible story mask neutral prize goose mandate",
                 bip39Passphrase = ""
             )
-            val mnemonicDataSource = mock<MnemonicDataSource> {
+            val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking { invoke() } doReturn mnemonicWithPassphrase
             }
 
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase)
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
-                mnemonicDataSource = mnemonicDataSource,
+                mnemonicRepository = mnemonicRepository,
                 profileDataSource = profileDataSource,
                 deviceInfoRepository = fakeDeviceInfoRepository,
                 defaultDispatcher = testDispatcher
@@ -157,14 +157,14 @@ class GenerateProfileUseCaseTest {
                 mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
                 bip39Passphrase = ""
             )
-            val mnemonicDataSource = mock<MnemonicDataSource> {
+            val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking { invoke() } doReturn mnemonicWithPassphrase
             }
 
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
-                mnemonicDataSource = mnemonicDataSource,
+                mnemonicRepository = mnemonicRepository,
                 profileDataSource = profileDataSource,
                 deviceInfoRepository = fakeDeviceInfoRepository,
                 defaultDispatcher = testDispatcher

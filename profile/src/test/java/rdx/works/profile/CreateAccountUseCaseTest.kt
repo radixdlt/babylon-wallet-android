@@ -28,7 +28,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.account.CreateAccountUseCase
-import rdx.works.profile.data.repository.MnemonicDataSource
+import rdx.works.profile.data.repository.MnemonicRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateAccountUseCaseTest {
@@ -88,7 +88,7 @@ class CreateAccountUseCaseTest {
                 version = 1
             )
 
-            val mnemonicDataSource = mock<MnemonicDataSource> {
+            val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
                     invoke(profile.babylonDeviceFactorSource.id)
                 } doReturn mnemonicWithPassphrase
@@ -98,7 +98,7 @@ class CreateAccountUseCaseTest {
             whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
             val createAccountUseCase = CreateAccountUseCase(
-                mnemonicDataSource = mnemonicDataSource,
+                mnemonicRepository = mnemonicRepository,
                 profileDataSource = profileDataSource,
                 testDispatcher
             )

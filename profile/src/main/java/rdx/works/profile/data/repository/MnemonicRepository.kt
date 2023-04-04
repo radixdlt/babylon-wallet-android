@@ -12,7 +12,7 @@ import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
-class MnemonicDataSource @Inject constructor(
+class MnemonicRepository @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
