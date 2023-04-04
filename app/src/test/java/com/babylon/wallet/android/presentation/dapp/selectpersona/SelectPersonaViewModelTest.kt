@@ -7,28 +7,27 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.PersonaRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
-    private val personaRepository = mockk<PersonaRepository>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
@@ -53,7 +52,7 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
         return SelectPersonaViewModel(
             savedStateHandle,
             dAppConnectionRepository,
-            personaRepository,
+            getProfileUseCase,
             preferencesManager,
             incomingRequestRepository
         )
@@ -62,22 +61,16 @@ internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewM
     @Before
     override fun setUp() {
         super.setUp()
-        val addressSlot = slot<String>()
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
-            SampleDataProvider().samplePersona(addressSlot.captured)
-        }
-        coEvery { personaRepository.personas } returns flow {
-            emit(
-                listOf(
-                    SampleDataProvider().samplePersona("address1"),
-                    SampleDataProvider().samplePersona("address2")
-                )
-            )
-        }
+        every { getProfileUseCase() } returns flowOf(
+            profile(personas = listOf(
+                SampleDataProvider().samplePersona("address1"),
+                SampleDataProvider().samplePersona("address2")
+            ))
+        )
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
 

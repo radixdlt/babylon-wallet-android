@@ -1,11 +1,13 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.createpersona.ARG_PERSONA_ID
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaConfirmationEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaConfirmationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -15,20 +17,19 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
-import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
 class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaConfirmationViewModel>() {
 
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
-    private val personaRepository = Mockito.mock(PersonaRepository::class.java)
+    private val getProfileUseCase = Mockito.mock(GetProfileUseCase::class.java)
     private val personaId = "fj3489fj348f"
     private val personaName = "My first persona"
 
@@ -52,15 +53,14 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     override fun setUp() = runTest {
         super.setUp()
         whenever(savedStateHandle.get<String>(ARG_PERSONA_ID)).thenReturn(personaId)
-        whenever(personaRepository.getPersonaByAddress(any())).thenReturn(persona)
+        whenever(getProfileUseCase()).thenReturn(flowOf(
+            profile(personas = listOf(persona))
+        ))
     }
 
     @Test
     fun `when view model init, verify persona details are fetched and passed to ui`() = runTest {
         // when
-        whenever(personaRepository.getPersonas()).thenReturn(
-            listOf(persona)
-        )
         val viewModel = vm.value
         advanceUntilIdle()
 
@@ -76,9 +76,9 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     @Test
     fun `given view model init, when persona created clicked, verify finish person creation event sent`() = runTest {
         // given
-        whenever(personaRepository.getPersonas()).thenReturn(
-            listOf(persona, persona)
-        )
+        whenever(getProfileUseCase()).thenReturn(flowOf(
+            profile(personas = listOf(persona, persona))
+        ))
         val viewModel = vm.value
         val event = mutableListOf<CreatePersonaConfirmationEvent>()
 
@@ -106,6 +106,6 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
     }
 
     override fun initVM(): CreatePersonaConfirmationViewModel {
-        return CreatePersonaConfirmationViewModel(personaRepository, savedStateHandle)
+        return CreatePersonaConfirmationViewModel(getProfileUseCase)
     }
 }

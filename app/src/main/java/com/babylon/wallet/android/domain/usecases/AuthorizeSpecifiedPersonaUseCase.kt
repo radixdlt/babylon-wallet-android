@@ -14,13 +14,12 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.toISO8601String
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.data.model.pernetwork.filterFields
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.personaOnCurrentNetwork
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -35,8 +34,7 @@ import javax.inject.Inject
 class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dAppMessenger: DappMessenger,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val personaRepository: PersonaRepository
+    private val getProfileUseCase: GetProfileUseCase
 ) {
 
     @Suppress("ReturnCount", "NestedBlockDepth", "LongMethod")
@@ -54,8 +52,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     it.identityAddress == (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
                 } ?: return Result.Error(DappRequestException(DappRequestFailure.InvalidPersona))
 
-            val persona = personaRepository.getPersonaByAddress(
-                address = authorizedPersonaSimple.identityAddress
+            val persona = getProfileUseCase.personaOnCurrentNetwork(
+                withAddress = authorizedPersonaSimple.identityAddress
             ) ?: return Result.Error()
 
             if (request.hasOngoingRequestItemsOnly()) {
@@ -194,10 +192,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         var result: List<Network.Persona.Field> = emptyList()
         val handledRequest = checkNotNull(request.ongoingPersonaDataRequestItem)
         if (personaDataAccessAlreadyGranted(authorizedDapp, handledRequest, authorizedPersonaSimple.identityAddress)) {
-            result = personaRepository.getPersonaDataFields(
-                address = authorizedPersonaSimple.identityAddress,
-                handledRequest.fields.map { it.toKind() }
-            )
+            result = getProfileUseCase.personaOnCurrentNetwork(
+                authorizedPersonaSimple.identityAddress
+            )?.filterFields(handledRequest.fields.map { it.toKind() }).orEmpty()
         }
         return result
     }
@@ -219,7 +216,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             if (potentialOngoingAddresses.isNotEmpty()) {
                 result = potentialOngoingAddresses
                     .mapNotNull {
-                        getProfileUseCase.accountOnCurrentNetwork(address = it)?.toUiModel(true)
+                        getProfileUseCase.accountOnCurrentNetwork(withAddress = it)?.toUiModel(true)
                     }
             }
         }
@@ -233,7 +230,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     ): Boolean {
         val requestedFieldsCount = requestItem.fields.size
         val requestedFieldKinds = requestItem.fields.map { it.toKind() }
-        val personaFields = personaRepository.getPersonaByAddress(personaAddress)?.fields.orEmpty()
+        val personaFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)?.fields.orEmpty()
         val requestedFieldsIds = personaFields.filter { requestedFieldKinds.contains(it.kind) }.map { it.id }
         return requestedFieldsCount == requestedFieldsIds.size && dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
             dApp.dAppDefinitionAddress,

@@ -18,13 +18,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdatePersonaUseCase
+import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class PersonaEditViewModel @Inject constructor(
-    private val personaRepository: PersonaRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val updatePersonaUseCase: UpdatePersonaUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
@@ -54,7 +55,7 @@ class PersonaEditViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            personaRepository.getPersonaByAddressFlow(args.personaAddress).collect { persona ->
+            getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress).collect { persona ->
                 setPersona(persona = persona, requiredFieldKinds = args.requiredFields.toList())
                 _state.update { state ->
                     state.copy(

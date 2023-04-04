@@ -550,3 +550,6 @@ fun Profile.addPersona(
         )
     )
 }
+
+fun Network.Persona.filterFields(with: List<Network.Persona.Field.Kind>) =
+    fields.filter { with.contains(it.kind) }

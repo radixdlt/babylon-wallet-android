@@ -21,11 +21,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.*
-import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi

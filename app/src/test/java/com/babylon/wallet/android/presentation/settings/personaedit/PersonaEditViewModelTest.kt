@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.isValidEmail
@@ -16,7 +17,7 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -24,34 +25,32 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel>() {
 
-    private val personaRepository = mockk<PersonaRepository>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val updatePersonaUseCase = mockk<UpdatePersonaUseCase>()
 
     override fun initVM(): PersonaEditViewModel {
-        return PersonaEditViewModel(personaRepository, updatePersonaUseCase, savedStateHandle)
+        return PersonaEditViewModel(getProfileUseCase, updatePersonaUseCase, savedStateHandle)
     }
 
     @Before
     override fun setUp() {
         super.setUp()
-        val addressSlot = slot<String>()
+
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
         every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidEmail() } returns true
         coEvery { updatePersonaUseCase(any()) } just Runs
-        coEvery { personaRepository.getPersonaByAddressFlow(capture(addressSlot)) } answers {
-            flow {
-                emit(SampleDataProvider().samplePersona(addressSlot.captured))
-            }
-        }
+        every { getProfileUseCase() } returns flowOf(profile(personas = listOf(
+            SampleDataProvider().samplePersona("1")
+        )))
     }
 
     fun <T> StateFlow<T>.whileCollecting(action: suspend () -> Unit) = runTest {

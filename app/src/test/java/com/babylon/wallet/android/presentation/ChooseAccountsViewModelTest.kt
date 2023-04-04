@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.fakes.fakeGetProfileUseCase
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
@@ -28,7 +27,6 @@ class ChooseAccountsViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     private val getProfileUseCase = fakeGetProfileUseCase()
-    private val dappMetadataRepository = DappMetadataRepositoryFake()
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
 

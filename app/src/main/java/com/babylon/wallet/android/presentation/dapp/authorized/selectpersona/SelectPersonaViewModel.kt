@@ -23,7 +23,8 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personasOnCurrentNetwork
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -31,7 +32,7 @@ import javax.inject.Inject
 class SelectPersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val personaRepository: PersonaRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel(), OneOffEventHandler<DAppSelectPersonaEvent> by OneOffEventHandlerImpl() {
@@ -72,7 +73,7 @@ class SelectPersonaViewModel @Inject constructor(
 
     private fun observePersonas() {
         viewModelScope.launch {
-            personaRepository.personas.collect { personas ->
+            getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
                 authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     authorizedRequest.requestMetadata.dAppDefinitionAddress
                 )

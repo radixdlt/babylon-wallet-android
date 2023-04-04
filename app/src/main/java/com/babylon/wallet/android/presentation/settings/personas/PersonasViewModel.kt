@@ -16,12 +16,13 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class PersonasViewModel @Inject constructor(
-    private val personaRepository: PersonaRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager
 ) : ViewModel(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
@@ -30,7 +31,7 @@ class PersonasViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            personaRepository.personas.collect { personas ->
+            getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
                 state = state.copy(personas = personas.toPersistentList())
             }
         }

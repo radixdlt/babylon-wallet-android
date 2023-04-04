@@ -7,18 +7,14 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -30,7 +26,6 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
     }
     private val dappMetadataRepository = DappMetadataRepositoryFake()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val samplePersonas = listOf(
         sampleDataProvider.samplePersona("address1"),
@@ -41,7 +36,6 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
         return DappDetailViewModel(
             dAppConnectionRepository,
             dappMetadataRepository,
-            personaRepository,
             getProfileUseCase,
             incomingRequestRepository,
             savedStateHandle
@@ -51,15 +45,8 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
     @Before
     override fun setUp() {
         super.setUp()
-        val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_DAPP_ADDRESS) } returns "address1"
-        coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
-            sampleDataProvider.samplePersona(addressSlot.captured)
-        }
-        coEvery { personaRepository.personas } returns flow {
-            emit(samplePersonas)
-        }
-        every { getProfileUseCase() } returns flowOf(profile())
+        every { getProfileUseCase() } returns flowOf(profile(personas = samplePersonas))
     }
 
     @Test

@@ -27,18 +27,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class DappDetailViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dappMetadataRepository: DappMetadataRepository,
-    private val personaRepository: PersonaRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
@@ -81,7 +79,7 @@ class DappDetailViewModel @Inject constructor(
                     authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress))
                 }
                 val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
-                    personaRepository.getPersonaByAddress(personaSimple.identityAddress)
+                    getProfileUseCase.personaOnCurrentNetwork(personaSimple.identityAddress)
                 }
                 _state.update { state ->
                     val selectedPersona = personas.firstOrNull {
