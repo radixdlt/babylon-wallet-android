@@ -114,9 +114,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                 )
                             } else {
                                 transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
-                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
-                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
-                                    val networkFee = costUnitPrice.multiply(costUnitsConsumed).toString()
+                                    //TODO this will be done properly when backend work comes
+//                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
+//                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
+                                    val networkFee = "10"//TODO this will be done properly when backend work comes
                                     state = state.copy(
                                         networkFee = networkFee
                                     )
