@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.createpersona.CreatePersonaConfir
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaConfirmationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -69,7 +70,7 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
             CreatePersonaConfirmationViewModel.PersonaConfirmationUiState(
                 isFirstPersona = true
             ),
-            viewModel.personaUiState
+            viewModel.state.first()
         )
     }
 
@@ -101,7 +102,7 @@ class CreatePersonaConfirmationViewModelTest : BaseViewModelTest<CreatePersonaCo
             CreatePersonaConfirmationViewModel.PersonaConfirmationUiState(
                 isFirstPersona = false
             ),
-            viewModel.personaUiState
+            viewModel.state.first()
         )
     }
 
