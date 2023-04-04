@@ -52,7 +52,7 @@ fun ChooseAccountsScreen(
         }
     }
 
-    val state = viewModel.state
+    val state by viewModel.state.collectAsState()
     val sharedState by sharedViewModel.state.collectAsState()
     BackHandler {
         if (state.showBackButton) {
