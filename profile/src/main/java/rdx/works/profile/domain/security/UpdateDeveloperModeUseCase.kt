@@ -1,4 +1,4 @@
-package rdx.works.profile.domain.preferences
+package rdx.works.profile.domain.security
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.updateDeveloperMode

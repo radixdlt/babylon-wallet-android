@@ -52,6 +52,12 @@ val GetProfileUseCase.gateways
     get() = invoke().map { it.appPreferences.gateways }
 
 /**
+ * Security preferences
+ */
+val GetProfileUseCase.security
+    get() = invoke().map { it.appPreferences.security }
+
+/**
  * P2P Links preferences
  */
 val GetProfileUseCase.p2pLinks
