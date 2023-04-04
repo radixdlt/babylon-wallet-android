@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
@@ -13,7 +10,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -26,13 +26,13 @@ class PersonasViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : ViewModel(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
-    internal var state by mutableStateOf(PersonasUiState())
-        private set
+    private val _state = MutableStateFlow(PersonasUiState())
+    internal val state: StateFlow<PersonasUiState> = _state
 
     init {
         viewModelScope.launch {
             getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
-                state = state.copy(personas = personas.toPersistentList())
+                _state.update { it.copy(personas = personas.toPersistentList()) }
             }
         }
     }
