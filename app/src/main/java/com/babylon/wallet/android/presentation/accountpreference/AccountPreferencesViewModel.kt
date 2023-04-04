@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.accountpreference
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +13,9 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,39 +30,46 @@ class AccountPreferenceViewModel @Inject constructor(
 
     private val args = AccountPreferencesArgs(savedStateHandle)
 
-    internal var state by mutableStateOf(AccountPreferenceUiState())
-        private set
+    private val _state = MutableStateFlow(AccountPreferenceUiState())
+    internal val state: StateFlow<AccountPreferenceUiState> = _state
 
     init {
         viewModelScope.launch {
-            state = state.copy(
-                isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
-            )
-            getFreeXrdUseCase.isAllowedToUseFaucet(args.address).collect {
-                state = state.copy(
-                    canUseFaucet = it,
-                    isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
-                )
+            _state.update {
+                it.copy(isDeviceSecure = deviceSecurityHelper.isDeviceSecure())
+            }
+            getFreeXrdUseCase.isAllowedToUseFaucet(args.address).collect { isAllowed ->
+                _state.update {
+                    it.copy(
+                        canUseFaucet = isAllowed,
+                        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+                    )
+                }
             }
         }
     }
 
     fun onGetFreeXrdClick() {
         appScope.launch {
-            state = state.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
             val result = getFreeXrdUseCase(true, args.address)
             result.onValue {
-                state = state.copy(isLoading = false, gotFreeXrd = true)
+                _state.update { it.copy(isLoading = false, gotFreeXrd = true) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }
-            result.onError {
-                state = state.copy(isLoading = false, error = UiMessage.ErrorMessage(error = it))
+            result.onError { error ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = UiMessage.ErrorMessage(error = error)
+                    )
+                }
             }
         }
     }
 
     fun onMessageShown() {
-        state = state.copy(error = null)
+        _state.update { it.copy(error = null) }
     }
 }
 

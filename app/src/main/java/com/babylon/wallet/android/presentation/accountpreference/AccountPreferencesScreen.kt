@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +39,7 @@ fun AccountPreferenceScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state = viewModel.state
+    val state by viewModel.state.collectAsState()
     AccountPreferenceContent(
         onBackClick = onBackClick,
         modifier = modifier
