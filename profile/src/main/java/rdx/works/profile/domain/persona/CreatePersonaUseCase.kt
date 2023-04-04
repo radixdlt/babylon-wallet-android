@@ -1,4 +1,4 @@
-package rdx.works.profile.domain
+package rdx.works.profile.domain.persona
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
@@ -9,6 +9,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.profile.domain.GetMnemonicUseCase
 import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(

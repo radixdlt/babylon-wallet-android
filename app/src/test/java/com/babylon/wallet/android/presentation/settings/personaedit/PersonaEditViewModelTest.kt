@@ -26,7 +26,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.UpdatePersonaUseCase
+import rdx.works.profile.domain.persona.UpdatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel>() {

@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.UpdatePersonaUseCase
+import rdx.works.profile.domain.persona.UpdatePersonaUseCase
 import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 

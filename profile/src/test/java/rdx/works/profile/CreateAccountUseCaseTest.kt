@@ -27,7 +27,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.CreateAccountUseCase
+import rdx.works.profile.domain.account.CreateAccountUseCase
 import rdx.works.profile.domain.GetMnemonicUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -1,4 +1,4 @@
-package rdx.works.profile.domain
+package rdx.works.profile.domain.persona
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first

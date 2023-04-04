@@ -19,7 +19,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.CreatePersonaUseCase
+import rdx.works.profile.domain.persona.CreatePersonaUseCase
 import javax.inject.Inject
 
 @HiltViewModel

@@ -25,7 +25,7 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.domain.CreatePersonaUseCase
+import rdx.works.profile.domain.persona.CreatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
