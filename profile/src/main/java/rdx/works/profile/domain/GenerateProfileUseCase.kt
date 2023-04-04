@@ -6,12 +6,13 @@ import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.MnemonicDataSource
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(
-    private val getMnemonicUseCase: GetMnemonicUseCase,
+    private val mnemonicDataSource: MnemonicDataSource,
     private val profileDataSource: ProfileDataSource,
     private val deviceInfoRepository: DeviceInfoRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -21,7 +22,7 @@ class GenerateProfileUseCase @Inject constructor(
         return when (val state = profileDataSource.profileState.first()) {
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
-                val mnemonicWithPassphrase = getMnemonicUseCase()
+                val mnemonicWithPassphrase = mnemonicDataSource()
 
                 val profile = Profile.init(
                     mnemonicWithPassphrase = mnemonicWithPassphrase,

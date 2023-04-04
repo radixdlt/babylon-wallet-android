@@ -11,11 +11,11 @@ import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import rdx.works.profile.domain.GetMnemonicUseCase
+import rdx.works.profile.data.repository.MnemonicDataSource
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
-    private val getMnemonicUseCase: GetMnemonicUseCase,
+    private val mnemonicDataSource: MnemonicDataSource,
     private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -46,7 +46,7 @@ class CreateAccountUseCase @Inject constructor(
             // Construct new account
             val newAccount = init(
                 displayName = displayName,
-                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
+                mnemonicWithPassphrase = mnemonicDataSource(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
             )

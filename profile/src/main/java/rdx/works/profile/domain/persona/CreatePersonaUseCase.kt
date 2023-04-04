@@ -9,11 +9,11 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import rdx.works.profile.domain.GetMnemonicUseCase
+import rdx.works.profile.data.repository.MnemonicDataSource
 import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
-    private val getMnemonicUseCase: GetMnemonicUseCase,
+    private val mnemonicDataSource: MnemonicDataSource,
     private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -33,7 +33,7 @@ class CreatePersonaUseCase @Inject constructor(
             val newPersona = init(
                 displayName = displayName,
                 fields = fields,
-                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
+                mnemonicWithPassphrase = mnemonicDataSource(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
             )

@@ -1,4 +1,4 @@
-package rdx.works.profile.domain
+package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -12,7 +12,7 @@ import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
-class GetMnemonicUseCase @Inject constructor(
+class MnemonicDataSource @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {

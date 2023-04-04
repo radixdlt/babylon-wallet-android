@@ -28,7 +28,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
-import rdx.works.profile.domain.GetMnemonicUseCase
+import rdx.works.profile.data.repository.MnemonicDataSource
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaUseCaseTest {
@@ -102,7 +102,7 @@ class CreatePersonaUseCaseTest {
                 version = 1
             )
 
-            val getMnemonicUseCase = mock<GetMnemonicUseCase> {
+            val mnemonicDataSource = mock<MnemonicDataSource> {
                 onBlocking {
                     invoke(profile.babylonDeviceFactorSource.id)
                 } doReturn mnemonicWithPassphrase
@@ -111,7 +111,7 @@ class CreatePersonaUseCaseTest {
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
             whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
-            val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
+            val createPersonaUseCase = CreatePersonaUseCase(mnemonicDataSource, profileDataSource, testDispatcher)
 
             val newPersona = createPersonaUseCase(
                 displayName = personaName,
