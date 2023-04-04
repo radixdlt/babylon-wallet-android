@@ -28,15 +28,16 @@ import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.domain.GetProfileStateUseCase
-import rdx.works.profile.domain.p2plink.GetP2PLinksUseCase
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager
-    private val getP2PLinksUseCase: GetP2PLinksUseCase,
+    private val preferencesManager: PreferencesManager,
+    private val getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
@@ -74,7 +75,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeForP2PLinks() {
-        observeP2PLinksJob = getP2PLinksUseCase()
+        observeP2PLinksJob = getProfileUseCase.p2pLinks()
             .map { p2pLinks ->
                 Timber.d("found ${p2pLinks.size} p2p links")
                 p2pLinks.forEach { p2PLink ->

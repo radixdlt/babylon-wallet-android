@@ -12,7 +12,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -20,11 +19,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
-import rdx.works.profile.domain.gateway.GetGatewaysUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -33,7 +31,7 @@ class SettingsEditGatewayViewModelTest {
 
     private lateinit var vm: SettingsEditGatewayViewModel
 
-    private val getGatewaysUseCase = mockk<GetGatewaysUseCase>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
     private val addGatewayUseCase = mockk<AddGatewayUseCase>()
     private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
@@ -44,13 +42,13 @@ class SettingsEditGatewayViewModelTest {
     @Before
     fun setUp() = runTest {
         vm = SettingsEditGatewayViewModel(
-            getGatewaysUseCase = getGatewaysUseCase,
+            getProfileUseCase = getProfileUseCase,
             changeGatewayUseCase = changeGatewayUseCase,
             addGatewayUseCase = addGatewayUseCase,
             deleteGatewayUseCase = deleteGatewayUseCase,
             networkInfoRepository = networkInfoRepository
         )
-        every { getGatewaysUseCase() } returns flowOf(profile.appPreferences.gateways)
+        every { getProfileUseCase() } returns flowOf(profile)
         coEvery { changeGatewayUseCase(any()) } returns true
         coEvery { addGatewayUseCase(any()) } returns Unit
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")
