@@ -100,8 +100,9 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     fun `init sets state properly`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.manifestData == sampleRequest.transactionManifestData)
-        assert(vm.state.manifestString == sampleManifest.toPrettyString())
+        val state = vm.state.first()
+        assert(state.manifestData == sampleRequest.transactionManifestData)
+        assert(state.manifestString == sampleManifest.toPrettyString())
         coVerify(exactly = 1) { transactionClient.addLockFeeToTransactionManifestData(any()) }
     }
 
@@ -111,7 +112,8 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         vm.approveTransaction()
         advanceUntilIdle()
-        assert(vm.state.approved)
+        val state = vm.state.first()
+        assert(state.approved)
         coVerify(exactly = 1) {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",
@@ -152,6 +154,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         vm.approveTransaction()
         advanceUntilIdle()
+        val state = vm.state.first()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
@@ -162,6 +165,6 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             )
         }
         assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)
-        assert(vm.state.error != null)
+        assert(state.error != null)
     }
 }

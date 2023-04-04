@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,7 +61,7 @@ fun TransactionApprovalScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state = viewModel.state
+    val state by viewModel.state.collectAsState()
 
     BackHandler(true) {}
 
@@ -253,7 +254,10 @@ private fun RawTransactionContent(
     Dialog(onDismissRequest = finish) {
         Column(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+                .background(
+                    RadixTheme.colors.defaultBackground,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
                 .clip(RadixTheme.shapes.roundedRectSmall),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
