@@ -2,19 +2,19 @@ package rdx.works.profile.domain.preferences
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.updateDeveloperMode
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class UpdateDeveloperModeUseCase @Inject constructor(
-    val profileDataSource: ProfileDataSource
+    val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke(isEnabled: Boolean) = profileDataSource
+    suspend operator fun invoke(isEnabled: Boolean) = profileRepository
         .profile
         .first()
         .let { profile ->
             val updatedProfile = profile.updateDeveloperMode(isEnabled)
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
         }
 }

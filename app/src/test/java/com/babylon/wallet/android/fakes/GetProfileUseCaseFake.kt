@@ -5,14 +5,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 
 fun fakeGetProfileUseCase(
     initialProfileState: ProfileState = ProfileState.Restored(profile = profile())
-) = GetProfileUseCase(profileDataSource = fakeProfileDataSource(initialProfileState = initialProfileState))
+) = GetProfileUseCase(profileRepository = fakeProfileDataSource(initialProfileState = initialProfileState))
 
-private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : ProfileDataSource {
+private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : ProfileRepository {
 
     private val profileStateSource: MutableStateFlow<ProfileState> = MutableStateFlow(
         initialProfileState

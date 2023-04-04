@@ -2,10 +2,10 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
-class GetProfileStateUseCase @Inject constructor(private val dataSource: ProfileDataSource) {
+class GetProfileStateUseCase @Inject constructor(private val dataSource: ProfileRepository) {
 
     operator fun invoke() = dataSource.profileState
 }

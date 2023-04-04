@@ -27,7 +27,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
 
@@ -94,13 +94,13 @@ class GenerateProfileUseCaseTest {
                 ),
                 version = 1
             )
-            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
+            val profileRepository = Mockito.mock(ProfileRepository::class.java)
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
             // when
             val generateProfileUseCase = GenerateProfileUseCase(
                 mnemonicRepository = mnemonicRepository,
-                profileDataSource = profileDataSource,
+                profileRepository = profileRepository,
                 deviceInfoRepository = fakeDeviceInfoRepository,
                 defaultDispatcher = testDispatcher
             )
@@ -123,15 +123,15 @@ class GenerateProfileUseCaseTest {
             }
 
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase)
-            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
                 mnemonicRepository = mnemonicRepository,
-                profileDataSource = profileDataSource,
+                profileRepository = profileRepository,
                 deviceInfoRepository = fakeDeviceInfoRepository,
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.None))
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
 
             val profile = generateProfileUseCase("main")
 
@@ -162,15 +162,15 @@ class GenerateProfileUseCaseTest {
             }
 
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
-            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
+            val profileRepository = Mockito.mock(ProfileRepository::class.java)
             val generateProfileUseCase = GenerateProfileUseCase(
                 mnemonicRepository = mnemonicRepository,
-                profileDataSource = profileDataSource,
+                profileRepository = profileRepository,
                 deviceInfoRepository = fakeDeviceInfoRepository,
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.None))
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
 
             val profile = generateProfileUseCase("main")
 

@@ -6,7 +6,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addPersona
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -23,7 +23,7 @@ class CreatePersonaUseCase @Inject constructor(
         fields: List<Network.Persona.Field>
     ): Network.Persona {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.profile.first()
+            val profile = profileRepository.profile.first()
 
             val networkID = profile.appPreferences.gateways.current().network.networkId()
 
@@ -46,7 +46,7 @@ class CreatePersonaUseCase @Inject constructor(
             )
 
             // Save updated profile
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
 
             // Return new persona
             newPersona

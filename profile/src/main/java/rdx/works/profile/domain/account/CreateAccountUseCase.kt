@@ -8,7 +8,7 @@ import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccount
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
@@ -26,7 +26,7 @@ class CreateAccountUseCase @Inject constructor(
         switchNetwork: Boolean = false
     ): Network.Account {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.profile.first()
+            val profile = profileRepository.profile.first()
 
             var gateway: Radix.Gateway? = null
             if (networkUrl != null && networkName != null) {
@@ -62,7 +62,7 @@ class CreateAccountUseCase @Inject constructor(
                 updatedProfile = updatedProfile.changeGateway(gateway)
             }
             // Save updated profile
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
             // Return new account
             newAccount
         }

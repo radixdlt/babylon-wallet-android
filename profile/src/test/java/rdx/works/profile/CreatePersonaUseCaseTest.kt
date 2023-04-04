@@ -26,7 +26,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addPersona
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
 
@@ -108,10 +108,10 @@ class CreatePersonaUseCaseTest {
                 } doReturn mnemonicWithPassphrase
             }
 
-            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
+            val profileRepository = Mockito.mock(ProfileRepository::class.java)
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
-            val createPersonaUseCase = CreatePersonaUseCase(mnemonicRepository, profileDataSource, testDispatcher)
+            val createPersonaUseCase = CreatePersonaUseCase(mnemonicRepository, profileRepository, testDispatcher)
 
             val newPersona = createPersonaUseCase(
                 displayName = personaName,
@@ -124,7 +124,7 @@ class CreatePersonaUseCaseTest {
                 onNetwork = network.network.networkId()
             )
 
-            verify(profileDataSource).saveProfile(updatedProfile)
+            verify(profileRepository).saveProfile(updatedProfile)
         }
     }
 }

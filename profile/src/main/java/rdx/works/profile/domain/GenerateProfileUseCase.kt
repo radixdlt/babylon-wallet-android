@@ -7,19 +7,19 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(accountDisplayName: String): Profile {
-        return when (val state = profileDataSource.profileState.first()) {
+        return when (val state = profileRepository.profileState.first()) {
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
                 val mnemonicWithPassphrase = mnemonicRepository()
@@ -30,7 +30,7 @@ class GenerateProfileUseCase @Inject constructor(
                     creatingDevice = deviceInfoRepository.getDeviceInfo().displayName
                 )
 
-                profileDataSource.saveProfile(profile)
+                profileRepository.saveProfile(profile)
 
                 profile
             }

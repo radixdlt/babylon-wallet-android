@@ -21,7 +21,7 @@ import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
-interface ProfileDataSource {
+interface ProfileRepository {
 
     val profileState: Flow<ProfileState>
 
@@ -30,17 +30,17 @@ interface ProfileDataSource {
     suspend fun clear()
 }
 
-val ProfileDataSource.profile: Flow<Profile>
+val ProfileRepository.profile: Flow<Profile>
     get() = profileState
         .filter { it is ProfileState.Restored }
         .map { (it as ProfileState.Restored).profile }
 
-class ProfileDataSourceImpl @Inject constructor(
+class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val relaxedJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
-) : ProfileDataSource {
+) : ProfileRepository {
 
     init {
         applicationScope.launch {

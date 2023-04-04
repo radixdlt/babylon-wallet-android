@@ -57,38 +57,38 @@ interface DAppConnectionRepository {
 
 @Suppress("TooManyFunctions")
 class DAppConnectionRepositoryImpl @Inject constructor(
-    private val profileDataSource: ProfileDataSource
+    private val profileRepository: ProfileRepository
 ) : DAppConnectionRepository {
 
     override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
-        return profileDataSource.profile.map {
+        return profileRepository.profile.map {
             Timber.d("Authorized dapps $it")
             it.getAuthorizedDapp(dAppDefinitionAddress)
         }
     }
 
     override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
-        return profileDataSource.profile.first().getAuthorizedDapp(dAppDefinitionAddress)
+        return profileRepository.profile.first().getAuthorizedDapp(dAppDefinitionAddress)
     }
 
     override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
-        return profileDataSource.profile.map { profile -> profile.getAuthorizedDapps() }
+        return profileRepository.profile.map { profile -> profile.getAuthorizedDapps() }
     }
 
     override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
-        val profile = profileDataSource.profile.first()
+        val profile = profileRepository.profile.first()
 
         Timber.d("Authorized dapps updating profile dapp: $authorizedDApp")
         val updatedProfile = profile.createOrUpdateAuthorizedDapp(authorizedDApp)
-        profileDataSource.saveProfile(updatedProfile)
+        profileRepository.saveProfile(updatedProfile)
     }
 
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
-        val profile = profileDataSource.profile.first()
+        val profile = profileRepository.profile.first()
 
         getAuthorizedDapp(dAppDefinitionAddress)?.let {
             val updatedProfile = profile.deleteAuthorizedDapp(it)
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
         }
     }
 

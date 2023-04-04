@@ -1,15 +1,15 @@
 package rdx.works.profile.domain.gateway
 
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class GetCurrentGatewayUseCase @Inject constructor(
-    private val profileDataSource: ProfileDataSource
+    private val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke() = profileDataSource
+    suspend operator fun invoke() = profileRepository
         .profile
         .first().appPreferences.gateways.current()
 }

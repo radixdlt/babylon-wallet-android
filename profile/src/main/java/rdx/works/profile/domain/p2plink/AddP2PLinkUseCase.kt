@@ -3,19 +3,19 @@ package rdx.works.profile.domain.p2plink
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.addP2PLink
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class AddP2PLinkUseCase @Inject constructor(
-    private val profileDataSource: ProfileDataSource,
+    private val profileRepository: ProfileRepository,
 ) {
 
     suspend operator fun invoke(
         displayName: String,
         connectionPassword: String
     ) {
-        val profile = profileDataSource.profile.first()
+        val profile = profileRepository.profile.first()
 
         val p2pLink = P2PLink.init(
             connectionPassword = connectionPassword,
@@ -28,6 +28,6 @@ class AddP2PLinkUseCase @Inject constructor(
         )
 
         // Save updated profile
-        profileDataSource.saveProfile(updatedProfile)
+        profileRepository.saveProfile(updatedProfile)
     }
 }

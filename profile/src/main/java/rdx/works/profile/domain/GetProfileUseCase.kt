@@ -3,13 +3,13 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
-class GetProfileUseCase @Inject constructor(private val profileDataSource: ProfileDataSource) {
+class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
 
-    operator fun invoke() = profileDataSource.profile
+    operator fun invoke() = profileRepository.profile
 }
 
 /**

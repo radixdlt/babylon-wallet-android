@@ -3,15 +3,15 @@ package rdx.works.profile.domain.gateway
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class ChangeGatewayUseCase @Inject constructor(
-    private val profileDataSource: ProfileDataSource
+    private val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke(gateway: Radix.Gateway) = profileDataSource
+    suspend operator fun invoke(gateway: Radix.Gateway) = profileRepository
         .profile
         .first()
         .let { profile ->
@@ -27,7 +27,7 @@ class ChangeGatewayUseCase @Inject constructor(
 
             return@let if (networkExists) {
                 val updatedProfile = profile.changeGateway(gateway)
-                profileDataSource.saveProfile(updatedProfile)
+                profileRepository.saveProfile(updatedProfile)
                 true
             } else {
                 false
