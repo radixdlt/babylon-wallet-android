@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +12,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -28,14 +28,14 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
 
     private val args = OneTimeChooseAccountsArgs(savedStateHandle)
 
-    var state by mutableStateOf(
+    private val _state = MutableStateFlow(
         OneTimeChooseAccountUiState(
             numberOfAccounts = args.numberOfAccounts,
             isExactAccountsCount = args.isExactAccountsCount,
             isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
         )
     )
-        private set
+    val state: StateFlow<OneTimeChooseAccountUiState> = _state
 
     init {
         viewModelScope.launch {
@@ -44,60 +44,68 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow
                 val accountItems = accounts.map { account ->
-                    val currentAccountItemState = state.availableAccountItems.find { accountItemUiModel ->
+                    val currentAccountItemState = _state.value.availableAccountItems.find { accountItemUiModel ->
                         accountItemUiModel.address == account.address
                     }
                     account.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }
 
-                state = state.copy(
-                    availableAccountItems = accountItems.toPersistentList(),
-                    error = null,
-                    showProgress = false,
-                    isContinueButtonEnabled = !state.isExactAccountsCount && state.numberOfAccounts == 0
-                )
+                _state.update {
+                    it.copy(
+                        availableAccountItems = accountItems.toPersistentList(),
+                        error = null,
+                        showProgress = false,
+                        isContinueButtonEnabled = !it.isExactAccountsCount && it.numberOfAccounts == 0
+                    )
+                }
             }
         }
     }
 
     fun onAccountSelect(index: Int) {
-        if (state.isExactAccountsCount && state.numberOfAccounts == 1) {
+        if (_state.value.isExactAccountsCount && _state.value.numberOfAccounts == 1) {
             // Radio buttons selection unselects the previous one
-            state = state.copy(
-                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
-                    if (index == i) {
-                        accountItem.copy(isSelected = true)
-                    } else {
-                        accountItem.copy(isSelected = false)
-                    }
-                }.toPersistentList()
-            )
+            _state.update {
+                it.copy(
+                    availableAccountItems = it.availableAccountItems.mapIndexed { i, accountItem ->
+                        if (index == i) {
+                            accountItem.copy(isSelected = true)
+                        } else {
+                            accountItem.copy(isSelected = false)
+                        }
+                    }.toPersistentList()
+                )
+            }
         } else {
-            state = state.copy(
-                availableAccountItems = state.availableAccountItems.mapIndexed { i, accountItem ->
-                    if (index == i) {
-                        accountItem.copy(isSelected = !accountItem.isSelected)
-                    } else {
-                        accountItem
-                    }
-                }.toPersistentList()
-            )
+            _state.update {
+                it.copy(
+                    availableAccountItems = it.availableAccountItems.mapIndexed { i, accountItem ->
+                        if (index == i) {
+                            accountItem.copy(isSelected = !accountItem.isSelected)
+                        } else {
+                            accountItem
+                        }
+                    }.toPersistentList()
+                )
+            }
         }
-        val isContinueButtonEnabled = if (state.isExactAccountsCount) {
-            state
+        val isContinueButtonEnabled = if (_state.value.isExactAccountsCount) {
+            _state
+                .value
                 .availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
                 } == args.numberOfAccounts
         } else {
-            state
+            _state
+                .value
                 .availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
                 } >= args.numberOfAccounts
         }
 
-        state = state.copy(isContinueButtonEnabled = isContinueButtonEnabled)
+        _state.update { it.copy(isContinueButtonEnabled = isContinueButtonEnabled) }
     }
 }
 

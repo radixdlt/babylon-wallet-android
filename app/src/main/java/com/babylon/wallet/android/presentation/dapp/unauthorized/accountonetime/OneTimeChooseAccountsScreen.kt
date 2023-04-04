@@ -6,6 +6,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,7 +57,7 @@ fun OneTimeChooseAccountsScreen(
     BackHandler {
         sharedViewModel.onRejectRequest()
     }
-    val state = viewModel.state
+    val state by viewModel.state.collectAsState()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     ChooseAccountContent(
         onBackClick = sharedViewModel::onRejectRequest,

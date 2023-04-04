@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.fakes.fakeGetProfileUseCase
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact
@@ -11,6 +10,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
@@ -50,47 +50,47 @@ class ChooseAccountsViewModelTest {
     @Test
     fun `given a profile with 2 accounts, when Choose Accounts screen is launched, then it shows two profiles to select`() =
         runTest {
-            viewModel.state
             advanceUntilIdle()
-            assertTrue(viewModel.state.availableAccountItems.size == 2)
+            val state = viewModel.state.first()
+            assertTrue(state.availableAccountItems.size == 2)
         }
 
     @Test
     fun `given a request for at least 2 accounts, when Choose Accounts screen is launched, then continue button is disabled`() =
         runTest {
-            viewModel.state
             advanceUntilIdle()
-            assertFalse(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertFalse(state.isContinueButtonEnabled)
         }
 
     @Test
     fun `given a request for at least 2 accounts, when user selects one, then continue button is disabled`() =
         runTest {
-            viewModel.state
             advanceUntilIdle()
             viewModel.onAccountSelect(0)
-            assertFalse(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertFalse(state.isContinueButtonEnabled)
         }
 
     @Test
     fun `given a request for at least 2 accounts, when user selects two, then continue button is enabled`() =
         runTest {
-            viewModel.state
             advanceUntilIdle()
             viewModel.onAccountSelect(0)
             viewModel.onAccountSelect(1)
-            assertTrue(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertTrue(state.isContinueButtonEnabled)
         }
 
     @Test
     fun `given a request for at least 2 accounts, when user selects two and unselect the last selected, then continue button is disabled`() =
         runTest {
-            viewModel.state
             advanceUntilIdle()
             viewModel.onAccountSelect(0)
             viewModel.onAccountSelect(1)
             viewModel.onAccountSelect(1)
-            assertFalse(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertFalse(state.isContinueButtonEnabled)
         }
 
     @Test
@@ -109,14 +109,14 @@ class ChooseAccountsViewModelTest {
                 getProfileUseCase = getProfileUseCase
             )
 
-            viewModel.state
             advanceUntilIdle()
 
             // when
             viewModel.onAccountSelect(0)
 
             // then
-            assertTrue(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertTrue(state.isContinueButtonEnabled)
         }
 
     @Test
@@ -135,14 +135,14 @@ class ChooseAccountsViewModelTest {
                 getProfileUseCase = getProfileUseCase
             )
 
-            viewModel.state
             advanceUntilIdle()
 
             // when
             viewModel.onAccountSelect(0)
 
             // then
-            assertFalse(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertFalse(state.isContinueButtonEnabled)
         }
 
     @Test
@@ -159,7 +159,6 @@ class ChooseAccountsViewModelTest {
                 ),
                 getProfileUseCase = getProfileUseCase
             )
-            viewModel.state
             advanceUntilIdle()
 
             // when
@@ -167,7 +166,8 @@ class ChooseAccountsViewModelTest {
             viewModel.onAccountSelect(1)
 
             // then
-            assertTrue(viewModel.state.isContinueButtonEnabled)
+            val state = viewModel.state.first()
+            assertTrue(state.isContinueButtonEnabled)
         }
 
 }
