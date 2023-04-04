@@ -105,7 +105,8 @@ fun DappAuthorizedLoginNavigationHost(
                     accountId,
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
-            }
+            },
+            onCloseApp = {}
         )
         createAccountConfirmationScreen(
             onNavigateToWallet = {

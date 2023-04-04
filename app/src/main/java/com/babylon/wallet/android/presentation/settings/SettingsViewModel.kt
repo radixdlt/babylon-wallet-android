@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.AppConstants
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -21,7 +24,7 @@ class SettingsViewModel @Inject constructor(
     private val profileDataSource: ProfileDataSource,
     private val preferencesManager: PreferencesManager,
     private val peerdroidClient: PeerdroidClient
-) : ViewModel() {
+) : ViewModel(), OneOffEventHandler<SettingsEvent> by OneOffEventHandlerImpl() {
 
     private val defaultSettings = persistentListOf(
         SettingsItem.TopLevelSettings.LinkedConnector,
@@ -57,8 +60,13 @@ class SettingsViewModel @Inject constructor(
             profileDataSource.clear()
             preferencesManager.clear()
             peerdroidClient.terminate()
+            sendEvent(SettingsEvent.ProfileDeleted)
         }
     }
+}
+
+internal sealed interface SettingsEvent : OneOffEvent {
+    object ProfileDeleted : SettingsEvent
 }
 
 data class SettingsUiState(
