@@ -16,8 +16,6 @@ class AccountRepositoryFake : AccountRepository {
         listOf(account1, account2)
     )
 
-    override val accounts: Flow<List<Network.Account>> = accountsData
-
     override suspend fun getAccounts(): List<Network.Account> {
         return accountsData.first()
     }

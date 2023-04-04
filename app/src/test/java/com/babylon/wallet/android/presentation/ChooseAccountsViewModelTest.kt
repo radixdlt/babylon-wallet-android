@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
+import com.babylon.wallet.android.fakes.fakeGetProfileUseCase
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact
 import com.babylon.wallet.android.mockdata.accountsTwoRequestExact
@@ -26,7 +27,7 @@ class ChooseAccountsViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val accountRepository = AccountRepositoryFake()
+    private val getProfileUseCase = fakeGetProfileUseCase()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
@@ -44,7 +45,7 @@ class ChooseAccountsViewModelTest {
                     ARG_EXACT_ACCOUNT_COUNT to true
                 )
             ),
-            accountRepository = accountRepository
+            getProfileUseCase = getProfileUseCase
         )
     }
 
@@ -107,7 +108,7 @@ class ChooseAccountsViewModelTest {
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                accountRepository = accountRepository
+                getProfileUseCase = getProfileUseCase
             )
 
             viewModel.state
@@ -133,7 +134,7 @@ class ChooseAccountsViewModelTest {
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                accountRepository = accountRepository
+                getProfileUseCase = getProfileUseCase
             )
 
             viewModel.state
@@ -158,7 +159,7 @@ class ChooseAccountsViewModelTest {
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                accountRepository = accountRepository
+                getProfileUseCase = getProfileUseCase
             )
             viewModel.state
             advanceUntilIdle()

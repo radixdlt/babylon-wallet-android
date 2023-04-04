@@ -16,13 +16,14 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val accountRepository: AccountRepository
+    private val getProfileUseCase: GetProfileUseCase
 ) : ViewModel(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = OneTimeChooseAccountsArgs(savedStateHandle)
@@ -38,7 +39,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            accountRepository.accounts.collect { accounts ->
+            getProfileUseCase.accountsOnCurrentNetwork().collect { accounts ->
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow

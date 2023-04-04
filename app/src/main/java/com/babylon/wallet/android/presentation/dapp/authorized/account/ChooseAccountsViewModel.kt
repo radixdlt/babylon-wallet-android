@@ -14,14 +14,15 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import java.util.Collections.emptyList
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val accountRepository: AccountRepository
+    private val getProfileUseCase: GetProfileUseCase
 ) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = ChooseAccountsArgs(savedStateHandle)
@@ -37,7 +38,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            accountRepository.accounts.collect { accounts ->
+            getProfileUseCase.accountsOnCurrentNetwork().collect { accounts ->
                 // Check if single or multiple choice (radio or chechbox)
                 val isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
                 state = state.copy(
