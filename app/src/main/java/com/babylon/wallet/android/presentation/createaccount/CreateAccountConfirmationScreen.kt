@@ -63,7 +63,8 @@ fun CreateAccountConfirmationContent(
     requestSource: CreateAccountRequestSource,
 ) {
     Column(
-        modifier = modifier.background(RadixTheme.colors.defaultBackground)
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground)
 //            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
@@ -82,8 +83,13 @@ fun CreateAccountConfirmationContent(
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        val text = if (requestSource == CreateAccountRequestSource.FirstTime) {
+            stringResource(id = R.string.you_ve_created_your_first_account)
+        } else {
+            stringResource(id = R.string.your_account_has_been_created)
+        }
         Text(
-            text = stringResource(id = R.string.your_account_has_been_created),
+            text = text,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
