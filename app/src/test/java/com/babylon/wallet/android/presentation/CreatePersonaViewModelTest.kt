@@ -11,6 +11,7 @@ import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -73,9 +74,10 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(viewModel.state.loading, false)
-        Assert.assertEquals(viewModel.state.personaDisplayName, PersonaDisplayNameFieldWrapper())
-        Assert.assertEquals(viewModel.state.isDeviceSecure, true)
+        val state = viewModel.state.first()
+        Assert.assertEquals(state.loading, false)
+        Assert.assertEquals(state.personaDisplayName, PersonaDisplayNameFieldWrapper())
+        Assert.assertEquals(state.isDeviceSecure, true)
     }
 
     @Test
@@ -93,9 +95,10 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             advanceUntilIdle()
 
             // then
-            Assert.assertEquals(viewModel.state.loading, true)
-            Assert.assertEquals(viewModel.state.personaDisplayName, personaName)
-            Assert.assertEquals(viewModel.state.isDeviceSecure, true)
+            val state = viewModel.state.first()
+            Assert.assertEquals(state.loading, true)
+            Assert.assertEquals(state.personaDisplayName, personaName)
+            Assert.assertEquals(state.isDeviceSecure, true)
 
             advanceUntilIdle()
 

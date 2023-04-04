@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,11 +78,10 @@ fun CreatePersonaScreen(
         personaId: String
     ) -> Unit = { _: String -> },
 ) {
-    if (viewModel.state.loading) {
+    val state by viewModel.state.collectAsState()
+    if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val state = viewModel.state
-
         CreatePersonaContent(
             onPersonaNameChange = viewModel::onDisplayNameChanged,
             onPersonaCreateClick = viewModel::onPersonaCreateClick,
@@ -307,7 +307,9 @@ private fun CreatePersonaContentList(
         }
         items(currentFields, key = { it.kind }) { field ->
             PersonaPropertyInput(
-                modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItemPlacement(),
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {

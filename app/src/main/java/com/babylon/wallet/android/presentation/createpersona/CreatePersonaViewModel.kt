@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.createpersona
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
@@ -17,6 +14,9 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
@@ -31,46 +31,44 @@ class CreatePersonaViewModel @Inject constructor(
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
-    var state by mutableStateOf(
+    private val _state = MutableStateFlow(
         CreatePersonaUiState(
             isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
         )
     )
-        private set
+    val state: StateFlow<CreatePersonaUiState> = _state
 
     init {
         viewModelScope.launch {
             personaEditState.collect { s ->
-                state = state.copy(
-                    anyFieldSelected = s.areThereFieldsSelected,
-                    personaDisplayName = s.personaDisplayName,
-                    continueButtonEnabled = s.inputValid,
-                    currentFields = s.currentFields,
-                    fieldsToAdd = s.fieldsToAdd
-                )
+                _state.update {
+                    it.copy(
+                        anyFieldSelected = s.areThereFieldsSelected,
+                        personaDisplayName = s.personaDisplayName,
+                        continueButtonEnabled = s.inputValid,
+                        currentFields = s.currentFields,
+                        fieldsToAdd = s.fieldsToAdd
+                    )
+                }
             }
         }
         setPersona(null)
     }
 
     fun onPersonaCreateClick() {
-        state = state.copy(
-            loading = true
-        )
+        _state.update { it.copy(loading = true) }
         viewModelScope.launch {
-            val fields = state.currentFields.map {
+            val fields = _state.value.currentFields.map {
                 Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
             }
             val persona = createPersonaUseCase(
-                displayName = state.personaDisplayName.value,
+                displayName = _state.value.personaDisplayName.value,
                 fields = fields
             )
 
             val personaId = persona.address
 
-            state = state.copy(
-                loading = true
-            )
+            _state.update { it.copy(loading = true) }
             preferencesManager.markFirstPersonaCreated()
 
             sendEvent(
