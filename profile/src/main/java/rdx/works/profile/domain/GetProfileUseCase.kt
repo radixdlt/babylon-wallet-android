@@ -1,6 +1,5 @@
 package rdx.works.profile.domain
 
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.repository.ProfileDataSource
@@ -13,16 +12,18 @@ class GetProfileUseCase @Inject constructor(private val profileDataSource: Profi
 }
 
 val GetProfileUseCase.accountsOnCurrentNetwork
-    get() = invoke()
-        .map { it.currentNetwork.accounts }
-        .distinctUntilChanged()
+    get() = invoke().map { it.currentNetwork.accounts }
+
+suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
+
+suspend fun GetProfileUseCase.accountOnCurrentNetwork(
+    address: String
+) = accountsOnCurrentNetwork().firstOrNull { account ->
+    account.address == address
+}
 
 val GetProfileUseCase.gateways
-    get() = invoke()
-        .map { it.appPreferences.gateways }
-        .distinctUntilChanged()
+    get() = invoke().map { it.appPreferences.gateways }
 
 val GetProfileUseCase.p2pLinks
-    get() = invoke()
-        .map { it.appPreferences.p2pLinks }
-        .distinctUntilChanged()
+    get() = invoke().map { it.appPreferences.p2pLinks }

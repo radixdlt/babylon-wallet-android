@@ -1,28 +1,15 @@
 package com.babylon.wallet.android.fakes
 
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.mockdata.account1
-import com.babylon.wallet.android.mockdata.account2
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import com.babylon.wallet.android.mockdata.account
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.profile.data.model.pernetwork.AccountSigner
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
 
 class AccountRepositoryFake : AccountRepository {
 
     private val accountsData = flowOf(
-        listOf(account1, account2)
+        listOf(account("account-1"), account("account-2"))
     )
-
-    override suspend fun getAccounts(): List<Network.Account> {
-        return accountsData.first()
-    }
-
-    override suspend fun getAccountByAddress(address: String): Network.Account {
-        return SampleDataProvider().sampleAccount(address)
-    }
 
     override suspend fun getSignersForAddresses(networkId: Int, addresses: List<String>): List<AccountSigner> {
         TODO("Not yet implemented")

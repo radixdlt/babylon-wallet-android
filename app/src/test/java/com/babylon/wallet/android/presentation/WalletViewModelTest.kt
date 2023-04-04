@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
-import com.babylon.wallet.android.fakes.AccountRepositoryFake
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +21,6 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -35,9 +34,6 @@ class WalletViewModelTest {
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
     private val getProfileUseCase = mock<GetProfileUseCase>()
     private val getProfileStateUseCase = mock<GetProfileStateUseCase>()
-    private val accountRepository = AccountRepositoryFake()
-
-    private val profile = SampleDataProvider().sampleProfile()
 
     private val sampleData = SampleDataProvider().sampleAccountResource()
 
@@ -46,11 +42,10 @@ class WalletViewModelTest {
         vm = WalletViewModel(
             requestAccountsUseCase,
             getProfileStateUseCase,
-            getProfileUseCase,
-            accountRepository
+            getProfileUseCase
         )
-        whenever(getProfileStateUseCase()).thenReturn(flowOf(ProfileState.Restored(profile)))
-        whenever(getProfileUseCase()).thenReturn(flowOf(profile))
+        whenever(getProfileStateUseCase()).thenReturn(flowOf(ProfileState.Restored(profile())))
+        whenever(getProfileUseCase()).thenReturn(flowOf(profile()))
     }
 
     @Test

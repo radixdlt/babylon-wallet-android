@@ -45,6 +45,8 @@ import rdx.works.profile.data.repository.addOrUpdateAuthorizedDappPersona
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -56,7 +58,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val personaRepository: PersonaRepository,
-    private val accountRepository: AccountRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
@@ -410,7 +412,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             sendEvent(DAppAuthorizedLoginEvent.DisplayPermission(numberOfAccounts, isExactAccountsCount))
         } else {
             val selectedAccounts = potentialOngoingAddresses.mapNotNull {
-                accountRepository.getAccountByAddress(it)?.toUiModel(true)
+                getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel(true)
             }
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             mutex.withLock {

@@ -11,7 +11,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountAddress
@@ -22,14 +21,18 @@ import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import com.babylon.wallet.android.mockdata.account
+import com.babylon.wallet.android.mockdata.profile
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.domain.GetProfileUseCase
 import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,19 +40,25 @@ class GetAccountResourcesUseCaseTest {
 
     private val entityRepositoryMock = mockk<EntityRepository>()
     private val nonFungibleRepositoryMock = mockk<NonFungibleRepository>()
-    private val accountRepositoryMock = mockk<AccountRepository>()
+    private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
 
     private val testedClass = GetAccountResourcesUseCase(
         entityRepository = entityRepositoryMock,
         nonFungibleRepository = nonFungibleRepositoryMock,
-        accountRepository = accountRepositoryMock
+        getProfileUseCase = getProfileUseCaseMock
     )
 
     @Test
     fun `account in profile with no resources`() = runTest {
         val expectedProfileAccountAddress = "1234"
-        val expectedProfileAccount = SampleDataProvider().sampleAccount(address = expectedProfileAccountAddress)
-        coEvery { accountRepositoryMock.getAccounts() } returns listOf(expectedProfileAccount)
+        val expectedProfileAccountName = "account1"
+        val expectedProfile = profile(accounts = listOf(
+            account(
+                address = expectedProfileAccountAddress,
+                name = expectedProfileAccountName
+            )
+        ))
+        every { getProfileUseCaseMock.invoke() } returns flowOf(expectedProfile)
 
         coEvery {
             entityRepositoryMock.stateEntityDetails(addresses = listOf(expectedProfileAccountAddress), isRefreshing = true)
@@ -63,8 +72,8 @@ class GetAccountResourcesUseCaseTest {
             listOf(
                 AccountResources(
                     address = expectedProfileAccountAddress,
-                    displayName = expectedProfileAccount.displayName,
-                    appearanceID = expectedProfileAccount.appearanceID,
+                    displayName = expectedProfileAccountName,
+                    appearanceID = 1,
                     fungibleTokens = listOf(),
                     nonFungibleTokens = listOf(),
                 )
@@ -76,14 +85,20 @@ class GetAccountResourcesUseCaseTest {
     @Test
     fun `account in profile with a fungible resource`() = runTest {
         val expectedProfileAccountAddress = "account_rdx_1234"
+        val expectedProfileAccountName = "account1"
         val expectedResource = FungibleResourcesCollectionItemGloballyAggregated(
             aggregationLevel = ResourceAggregationLevel.global,
             resourceAddress = "resource_rdx_5678",
             amount = "1000",
             lastUpdatedAtStateVersion = 0L
         )
-        val expectedProfileAccount = SampleDataProvider().sampleAccount(address = expectedProfileAccountAddress)
-        coEvery { accountRepositoryMock.getAccounts() } returns listOf(expectedProfileAccount)
+        val expectedProfile = profile(
+            accounts = listOf(account(
+                address = expectedProfileAccountAddress,
+                name = expectedProfileAccountName
+            ))
+        )
+        every { getProfileUseCaseMock() } returns flowOf(expectedProfile)
         coEvery {
             entityRepositoryMock.stateEntityDetails(addresses = listOf(expectedProfileAccountAddress), isRefreshing = true)
         } returns Result.Success(
@@ -101,8 +116,8 @@ class GetAccountResourcesUseCaseTest {
             listOf(
                 AccountResources(
                     address = expectedProfileAccountAddress,
-                    displayName = expectedProfileAccount.displayName,
-                    appearanceID = expectedProfileAccount.appearanceID,
+                    displayName = expectedProfileAccountName,
+                    appearanceID = 1,
                     fungibleTokens = listOf(
                         OwnedFungibleToken(
                             owner = AccountAddress(expectedProfileAccountAddress),
@@ -121,6 +136,7 @@ class GetAccountResourcesUseCaseTest {
     @Test
     fun `account in profile with a non fungible resource`() = runTest {
         val expectedProfileAccountAddress = "account_rdx_1234"
+        val expectedProfileAccountName = "account1"
         val expectedResource = NonFungibleResourcesCollectionItemGloballyAggregated(
             aggregationLevel = ResourceAggregationLevel.global,
             resourceAddress = "resource_rdx_5678",
@@ -130,8 +146,10 @@ class GetAccountResourcesUseCaseTest {
         val expectedNonFungibleIdContainer = NonFungibleTokenIdContainer(
             ids = listOf("id_container")
         )
-        val expectedProfileAccount = SampleDataProvider().sampleAccount(address = expectedProfileAccountAddress)
-        coEvery { accountRepositoryMock.getAccounts() } returns listOf(expectedProfileAccount)
+        val expectedProfile = profile(accounts = listOf(
+            account(address = expectedProfileAccountAddress, name = expectedProfileAccountName))
+        )
+        every { getProfileUseCaseMock() } returns flowOf(expectedProfile)
         coEvery {
             entityRepositoryMock.stateEntityDetails(addresses = listOf(expectedProfileAccountAddress), isRefreshing = true)
         } returns Result.Success(
@@ -154,8 +172,8 @@ class GetAccountResourcesUseCaseTest {
             listOf(
                 AccountResources(
                     address = expectedProfileAccountAddress,
-                    displayName = expectedProfileAccount.displayName,
-                    appearanceID = expectedProfileAccount.appearanceID,
+                    displayName = expectedProfileAccountName,
+                    appearanceID = 1,
                     fungibleTokens = listOf(),
                     nonFungibleTokens = listOf(
                         OwnedNonFungibleToken(

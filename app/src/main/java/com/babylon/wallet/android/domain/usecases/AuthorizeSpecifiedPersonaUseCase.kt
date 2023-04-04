@@ -18,6 +18,9 @@ import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -32,7 +35,7 @@ import javax.inject.Inject
 class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dAppMessenger: DappMessenger,
-    private val accountRepository: AccountRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val personaRepository: PersonaRepository
 ) {
 
@@ -216,7 +219,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             if (potentialOngoingAddresses.isNotEmpty()) {
                 result = potentialOngoingAddresses
                     .mapNotNull {
-                        accountRepository.getAccountByAddress(it)?.toUiModel(true)
+                        getProfileUseCase.accountOnCurrentNetwork(address = it)?.toUiModel(true)
                     }
             }
         }

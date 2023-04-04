@@ -30,6 +30,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,7 +39,7 @@ class DappDetailViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dappMetadataRepository: DappMetadataRepository,
     private val personaRepository: PersonaRepository,
-    private val accountRepository: AccountRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
@@ -105,7 +107,7 @@ class DappDetailViewModel @Inject constructor(
         val personaSimple =
             authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
         val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
-            accountRepository.getAccountByAddress(it)?.toUiModel()
+            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
         }.orEmpty()
         val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
         val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {

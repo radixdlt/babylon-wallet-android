@@ -20,13 +20,14 @@ import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val nonFungibleRepository: NonFungibleRepository,
-    private val accountRepository: AccountRepository
+    private val getProfileUseCase: GetProfileUseCase
 ) {
 
     /**
@@ -34,14 +35,15 @@ class GetAccountResourcesUseCase @Inject constructor(
      *
      * @param isRefreshing When need to override the cache.
      */
-    suspend fun getAccountsFromProfile(isRefreshing: Boolean) = accountRepository.getAccounts()
+    suspend fun getAccountsFromProfile(isRefreshing: Boolean) = getProfileUseCase
+        .accountsOnCurrentNetwork()
         .resolveDetailsInGateway(isRefreshing = isRefreshing)
 
     /**
      * Retrieves all data related to those specific [addresses] that exist in the Profile.
      */
-    suspend fun getAccounts(addresses: List<String>, isRefreshing: Boolean) = accountRepository
-        .getAccounts()
+    suspend fun getAccounts(addresses: List<String>, isRefreshing: Boolean) = getProfileUseCase
+        .accountsOnCurrentNetwork()
         .filter { it.address in addresses }
         .resolveDetailsInGateway(isRefreshing = isRefreshing)
 

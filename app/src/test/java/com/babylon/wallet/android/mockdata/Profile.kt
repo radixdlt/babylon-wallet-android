@@ -8,9 +8,11 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.*
+import rdx.works.profile.data.model.pernetwork.Network
 
-val profile = Profile(
+fun profile(
+    accounts: List<Network.Account> = listOf(account("acc-1"), account("acc-2"))
+) = Profile(
     id = "9958f568-8c9b-476a-beeb-017d1f843266",
     creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
     appPreferences = AppPreferences(
@@ -30,10 +32,7 @@ val profile = Profile(
     networks = listOf(
         Network(
             networkID = Radix.Gateway.default.network.id,
-            accounts = listOf(
-                account1,
-                account2
-            ),
+            accounts = accounts,
             personas = emptyList(),
             authorizedDapps = emptyList()
         )

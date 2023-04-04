@@ -3,9 +3,9 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import io.mockk.coEvery
 import io.mockk.every
@@ -13,11 +13,13 @@ import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>() {
@@ -27,7 +29,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
         state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
     }
     private val dappMetadataRepository = DappMetadataRepositoryFake()
-    private val accountRepository = AccountRepositoryFake()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val personaRepository = mockk<PersonaRepository>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val samplePersonas = listOf(
@@ -40,7 +42,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
             dAppConnectionRepository,
             dappMetadataRepository,
             personaRepository,
-            accountRepository,
+            getProfileUseCase,
             incomingRequestRepository,
             savedStateHandle
         )
@@ -57,6 +59,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
         coEvery { personaRepository.personas } returns flow {
             emit(samplePersonas)
         }
+        every { getProfileUseCase() } returns flowOf(profile())
     }
 
     @Test

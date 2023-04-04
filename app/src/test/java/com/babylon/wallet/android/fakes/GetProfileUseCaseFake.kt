@@ -9,7 +9,7 @@ import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.domain.GetProfileUseCase
 
 fun fakeGetProfileUseCase(
-    initialProfileState: ProfileState = ProfileState.Restored(profile = profile)
+    initialProfileState: ProfileState = ProfileState.Restored(profile = profile())
 ) = GetProfileUseCase(profileDataSource = fakeProfileDataSource(initialProfileState = initialProfileState))
 
 private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : ProfileDataSource {

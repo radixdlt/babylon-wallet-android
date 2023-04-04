@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.exists
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,8 +31,7 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val accountRepository: AccountRepository
+    private val getProfileUseCase: GetProfileUseCase
 ) : ViewModel(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private val _walletUiState: MutableStateFlow<WalletUiState> = MutableStateFlow(WalletUiState())
@@ -50,7 +49,9 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             _walletUiState.update { state ->
                 state.copy(
-                    resources = accountRepository.getAccounts().map { it.toDomainModel() }.toPersistentList(),
+                    resources = getProfileUseCase.accountsOnCurrentNetwork()
+                        .map { it.toDomainModel() }
+                        .toPersistentList(),
                     isLoading = false
                 )
             }

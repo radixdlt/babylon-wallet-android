@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateAccountConfirmationViewModel @Inject constructor(
-    private val accountRepository: AccountRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel(), OneOffEventHandler<CreateAccountConfirmationEvent> by OneOffEventHandlerImpl() {
 
@@ -25,7 +27,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val account = accountRepository.getAccountByAddress(args.accountId)
+            val account = getProfileUseCase.accountOnCurrentNetwork(args.accountId)
             requireNotNull(account) {
                 "account is null"
             }

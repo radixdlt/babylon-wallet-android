@@ -19,8 +19,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.AccountRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.account.GetAccountSignersUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 
@@ -31,7 +30,7 @@ internal class TransactionClientTest {
 
     private val transactionRepository = mockk<TransactionRepository>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val accountRepository = mockk<AccountRepository>()
+    private val getAccountSignersUseCase = mockk<GetAccountSignersUseCase>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
     private val cache = mockk<HttpCache>()
 
@@ -42,7 +41,7 @@ internal class TransactionClientTest {
         transactionClient = TransactionClient(
             transactionRepository,
             getCurrentGatewayUseCase,
-            accountRepository,
+            getAccountSignersUseCase,
             getAccountResourceUseCase,
             cache
         )
