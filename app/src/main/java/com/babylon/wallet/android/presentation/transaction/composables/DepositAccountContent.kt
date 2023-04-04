@@ -72,7 +72,8 @@ fun DepositAccountContent(
                         address = account.address,
                         metadata = emptyMap()
                     ),
-                    accountName = account.displayName
+                    accountName = account.displayName,
+                    isTokenAmountVisible = account.isTokenAmountVisible
                 )
 
                 if (!lastItem) {
@@ -124,7 +125,8 @@ fun DepositAccountContentPreview() {
                 "200",
                 "$1234",
                 1,
-                ""
+                "",
+                isTokenAmountVisible = true
             )
         )
     )

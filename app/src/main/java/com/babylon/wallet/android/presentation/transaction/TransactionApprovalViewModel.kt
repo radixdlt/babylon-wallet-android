@@ -385,7 +385,8 @@ data class TransactionAccountItemUiModel(
     val tokenQuantity: String,
     val fiatAmount: String,
     val appearanceID: Int,
-    val iconUrl: String
+    val iconUrl: String,
+    val isTokenAmountVisible: Boolean
 ) {
     val tokenQuantityDecimal: BigDecimal
         get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal()
