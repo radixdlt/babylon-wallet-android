@@ -38,7 +38,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork().collect { accounts ->
+            getProfileUseCase.accountsOnCurrentNetwork.collect { accounts ->
                 // Check if single or multiple choice (radio or chechbox)
                 val isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
                 state = state.copy(

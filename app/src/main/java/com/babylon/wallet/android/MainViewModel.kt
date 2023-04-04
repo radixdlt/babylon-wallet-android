@@ -75,7 +75,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeForP2PLinks() {
-        observeP2PLinksJob = getProfileUseCase.p2pLinks()
+        observeP2PLinksJob = getProfileUseCase.p2pLinks
             .map { p2pLinks ->
                 Timber.d("found ${p2pLinks.size} p2p links")
                 p2pLinks.forEach { p2PLink ->

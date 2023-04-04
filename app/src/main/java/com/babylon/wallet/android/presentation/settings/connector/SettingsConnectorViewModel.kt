@@ -50,7 +50,7 @@ class SettingsConnectorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.p2pLinks()
+            getProfileUseCase.p2pLinks
                 .collect { p2pLinks ->
                     _state.update {
                         it.copy(

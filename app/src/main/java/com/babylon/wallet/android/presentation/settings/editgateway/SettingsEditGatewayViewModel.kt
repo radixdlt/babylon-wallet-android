@@ -46,7 +46,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private fun observeProfile() {
         viewModelScope.launch {
-            getProfileUseCase.gateways().collect { gateways ->
+            getProfileUseCase.gateways.collect { gateways ->
                 val current = gateways.current()
                 _state.update { state ->
                     state.copy(

@@ -39,7 +39,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork().collect { accounts ->
+            getProfileUseCase.accountsOnCurrentNetwork.collect { accounts ->
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow

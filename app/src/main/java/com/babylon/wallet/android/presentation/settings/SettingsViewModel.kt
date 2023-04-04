@@ -38,7 +38,7 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state = getProfileUseCase.p2pLinks()
+    val state = getProfileUseCase.p2pLinks
         .map { p2pLinks ->
             val updatedSettings = if (p2pLinks.isEmpty()) {
                 defaultSettings.toMutableList().apply {
