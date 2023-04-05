@@ -38,8 +38,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.presentation.dapp.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.account.AccountSelectionCard
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 
@@ -105,7 +105,7 @@ fun ChooseAccountContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     ChooseAccountsSubtitle(
-                        dappName = dappMetadata?.getName() ?: "Unknown dApp",
+                        dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                         isOneTime = isOneTime,
                         numberOfAccounts = numberOfAccounts,
                         isExactAccountsCount = isExactAccountsCount
@@ -143,9 +143,9 @@ fun ChooseAccountContent(
                 }
             }
         }
-        BottomContinueButton(
-            onLoginClick = onContinueClick,
-            loginButtonEnabled = isContinueButtonEnabled,
+        BottomPrimaryButton(
+            onClick = onContinueClick,
+            enabled = isContinueButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground)

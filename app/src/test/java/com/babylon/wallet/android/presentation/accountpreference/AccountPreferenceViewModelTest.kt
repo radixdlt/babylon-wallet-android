@@ -28,7 +28,7 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
-    private val sampleAddress = sampleDataProvider.randomTokenAddress()
+    private val sampleAddress = sampleDataProvider.randomAddress()
 
     override fun initVM(): AccountPreferenceViewModel {
         return AccountPreferenceViewModel(

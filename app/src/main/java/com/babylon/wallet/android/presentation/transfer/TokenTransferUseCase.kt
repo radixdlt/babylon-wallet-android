@@ -3,12 +3,14 @@ package com.babylon.wallet.android.presentation.transfer
 import com.babylon.wallet.android.data.manifest.addDepositBatchInstruction
 import com.babylon.wallet.android.data.manifest.addLockFeeInstruction
 import com.babylon.wallet.android.data.manifest.addWithdrawInstruction
+import com.babylon.wallet.android.data.manifest.faucetComponentAddress
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
+import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -48,15 +50,15 @@ class TokenTransferUseCase @Inject constructor(
     ): TransactionManifest {
         return ManifestBuilder()
             .addLockFeeInstruction(
-                addressToLockFee = Value.ComponentAddress.faucetComponentAddress(
-                    networkId = networkId.value.toUByte()
-                ).address.componentAddress
+                addressToLockFee = faucetComponentAddress(networkId.value.toUByte()).address
             )
             .addWithdrawInstruction(
                 withdrawComponentAddress = senderAccount,
-                tokenResourceAddress = Value.ResourceAddress.xrdResourceAddress(
-                    networkId = networkId.value.toUByte()
-                ).address.resourceAddress,
+                tokenResourceAddress = RadixEngineToolkit.knownEntityAddresses(
+                    request = KnownEntityAddressesRequest(
+                        networkId = networkId.value.toUByte()
+                    )
+                ).getOrThrow().xrdResourceAddress.address,
                 amount = tokenAmount
             )
             .addDepositBatchInstruction(recipientAccount)

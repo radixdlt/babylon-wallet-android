@@ -5,12 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OneTimePersonaDataRequestResponseItem(
-    @SerialName("accounts")
-    val fields: List<PersonaDataField>
+    @SerialName("fields")
+    val fields: List<PersonaData>
 )
 
 @Serializable
 data class OngoingPersonaDataRequestResponseItem(
     @SerialName("fields")
-    val fields: List<PersonaDataField>
+    val fields: List<PersonaData>
 )

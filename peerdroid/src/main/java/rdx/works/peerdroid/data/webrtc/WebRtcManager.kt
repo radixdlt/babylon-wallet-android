@@ -1,5 +1,10 @@
 package rdx.works.peerdroid.data.webrtc
 
+import android.content.Context
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.Flow
 import org.webrtc.DataChannel
 import org.webrtc.MediaConstraints
@@ -8,16 +13,14 @@ import org.webrtc.PeerConnectionFactory
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
-import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper.SessionDescriptionValue
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.addSuspendingIceCandidate
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createPeerConnectionFlow
+import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingAnswer
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingOffer
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingLocalDescription
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingRemoteDescription
 import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 private val STUN_SERVERS_LIST = listOf(
     "stun:stun.l.google.com:19302",
@@ -27,44 +30,19 @@ private val STUN_SERVERS_LIST = listOf(
     "stun:stun4.l.google.com:19302"
 )
 private val TURN_SERVERS_LIST = listOf(
-    "turn:turn-dev-tcp.rdx-works-main.extratools.works:80",
-    "turn:turn-dev-udp.rdx-works-main.extratools.works:80"
+    "turn:turn-rcnet-udp.radixdlt.com:80?transport=udp",
+    "turn:turn-rcnet-tcp.radixdlt.com:80?transport=tcp"
 )
 private const val TURN_SERVER_USERNAME = "username"
 private const val TURN_SERVER_PASSWORD = "password"
 
-internal interface WebRtcManager {
+internal class WebRtcManager(applicationContext: Context) {
 
-    fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent>
-
-    suspend fun createOffer(): Result<SessionDescriptionValue>
-
-    suspend fun setLocalDescription(sessionDescription: SessionDescriptionWrapper): Result<Unit>
-
-    suspend fun setRemoteDescription(sessionDescription: SessionDescriptionWrapper): Result<Unit>
-
-    suspend fun addRemoteIceCandidates(remoteIceCandidates: List<RemoteIceCandidate>): Result<Unit>
-
-    fun getDataChannel(): DataChannel
-}
-
-/*
- * WebRtcManager flow in summary (the first three steps must be in this order):
- * 1. create peer connection
- * 2. create data channel
- * 3. create offer
- * 4. set local description
- * 5. generate/discover local ICE Candidates
- * 6. set remote Answer (remote description)
- * 7. add remote ice candidates => return data channel
- *
- */
-@Singleton
-internal class WebRtcManagerImpl @Inject constructor(
-    private val peerConnectionFactory: PeerConnectionFactory
-) : WebRtcManager {
-    private lateinit var peerConnection: PeerConnection
-    private lateinit var dataChannel: DataChannel // this will be returned
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface PeerConnectionFactoryEntryPoint {
+        fun providePeerConnectionFactory(): PeerConnectionFactory
+    }
 
     // STUN servers are used to find the public facing IP address of each peer
     private val stunUrls = PeerConnection
@@ -81,7 +59,6 @@ internal class WebRtcManagerImpl @Inject constructor(
         .createIceServer()
 
     // DtlsSrtpKeyAgreement is for peer connection and IceRestart for offer.
-    // Check the WebRTCImplementation+CreatePeerConnection.swift
     private val mediaConstraints = MediaConstraints().apply {
         mandatory.add(MediaConstraints.KeyValuePair("IceRestart", "true"))
         optional.add(MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"))
@@ -92,7 +69,7 @@ internal class WebRtcManagerImpl @Inject constructor(
     ).apply {
         iceServers = listOf(stunUrls, turnUrls)
         sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-        continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
+        continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
     }
 
     // configuration for the RTCDataChannel
@@ -102,63 +79,78 @@ internal class WebRtcManagerImpl @Inject constructor(
         id = 0
     }
 
+    private val peerConnectionFactoryEntryPoint = EntryPointAccessors.fromApplication(
+        context = applicationContext,
+        entryPoint = PeerConnectionFactoryEntryPoint::class.java
+    )
+
+    private lateinit var peerConnection: PeerConnection
+    private lateinit var dataChannel: DataChannel // this will be returned
+
     init {
-        Timber.d("initialize WebRTC manager")
+        Timber.d("🔌 initialize WebRtcManager")
     }
 
-    override fun createPeerConnection(connectionId: String): Flow<PeerConnectionEvent> =
-        peerConnectionFactory.createPeerConnectionFlow(
+    fun createPeerConnection(remoteClientId: String): Flow<PeerConnectionEvent> {
+        val peerConnectionFactory = peerConnectionFactoryEntryPoint.providePeerConnectionFactory()
+        return peerConnectionFactory.createPeerConnectionFlow(
             rtcConfiguration = rtcConfiguration,
             initializePeerConnection = { peerConnection ->
-                initializePeerConnection(peerConnection)
+                initializePeerConnection(peerConnection, remoteClientId)
             },
-            createRtcDataChannel = { createRtcDataChannel(connectionId) }
+            createRtcDataChannel = { createRtcDataChannel(remoteClientId) },
+            remoteClientId = remoteClientId
         )
+    }
 
-    private fun initializePeerConnection(peerConnection: PeerConnection?) {
+    private fun initializePeerConnection(peerConnection: PeerConnection?, remoteClientId: String): PeerConnection {
         peerConnection?.let {
             this.peerConnection = it
-            Timber.d("created a peer connection")
-        } ?: Timber.e("failed to create a peer connection")
+            Timber.d("🔌 created a peer connection: $peerConnection for remote client: $remoteClientId")
+        } ?: Timber.e("🔌 failed to create a peer connection")
+        return this.peerConnection
     }
 
-    private fun createRtcDataChannel(connectionId: String) {
-        dataChannel = peerConnection.createDataChannel(connectionId, dataChannelInit)
-        Timber.d("created a RTC data channel")
+    private fun createRtcDataChannel(remoteClientId: String) {
+        peerConnection.let {
+            dataChannel = it.createDataChannel(remoteClientId, dataChannelInit)
+            Timber.d("🔌 created a data channel for remote client: $remoteClientId")
+            Timber.d("🔌 created a RTC data channel")
+        }
     }
 
-    override suspend fun createOffer(): Result<SessionDescriptionValue> =
+    suspend fun createOffer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> =
         peerConnection.createSuspendingOffer(mediaConstraints = mediaConstraints)
 
-    override suspend fun setLocalDescription(
+    suspend fun createAnswer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> =
+        peerConnection.createSuspendingAnswer(mediaConstraints = mediaConstraints)
+
+    suspend fun setLocalDescription(
         sessionDescription: SessionDescriptionWrapper
     ): Result<Unit> = peerConnection.setSuspendingLocalDescription(sessionDescription = sessionDescription)
 
-    override suspend fun setRemoteDescription(
+    suspend fun setRemoteDescription(
         sessionDescription: SessionDescriptionWrapper
     ): Result<Unit> = peerConnection.setSuspendingRemoteDescription(sessionDescription = sessionDescription)
 
-    // this is the last step in the flow,
-    // webrtc adds all remote ice candidates successfully
-    override suspend fun addRemoteIceCandidates(
-        remoteIceCandidates: List<RemoteIceCandidate>
-    ): Result<Unit> {
-        var areAllIceCandidatesAdded = true
-
-        remoteIceCandidates.forEach { remoteIceCandidate ->
-            areAllIceCandidatesAdded = areAllIceCandidatesAdded.and(
-                peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
-            )
-        }
-
-        return if (areAllIceCandidatesAdded) {
-            Timber.d("added successfully ice candidates")
-            Result.Success(Unit)
-        } else {
-            Timber.d("failed to add all ice candidates")
-            Result.Error("failed to add all ice candidates")
+    suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
+        return when (val result = peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)) {
+            is Result.Success -> {
+                Timber.d("🔌 added successfully ice candidate")
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.e("🔌 failed to add ice candidate with error: ${result.message}")
+                Result.Error("failed to add ice candidate")
+            }
         }
     }
 
-    override fun getDataChannel(): DataChannel = dataChannel
+    fun close() {
+        Timber.d("🔌 close data channel and peer connection")
+        dataChannel.close()
+        peerConnection.close()
+    }
+
+    fun getDataChannel(): DataChannel = dataChannel
 }

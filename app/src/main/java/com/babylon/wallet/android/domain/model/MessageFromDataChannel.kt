@@ -1,29 +1,59 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.OnNetwork.ConnectedDapp.AuthorizedPersonaSimple.SharedAccounts
+import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {
 
-    sealed class IncomingRequest(val id: String, val metadata: RequestMetadata) :
-        MessageFromDataChannel {
+    sealed class IncomingRequest(
+        val remoteClientId: String, // from which dapp comes the message
+        val id: String, // the id of the request
+        val metadata: RequestMetadata
+    ) : MessageFromDataChannel {
 
         data class AuthorizedRequest(
+            val dappId: String, // from which dapp comes the message
             val requestId: String,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
-            val oneTimePersonaRequestItem: PersonaRequestItem? = null,
-            val ongoingPersonaRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(requestId, requestMetadata) {
+            val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
+            val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
+            val resetRequestItem: ResetRequestItem? = null
+        ) : IncomingRequest(dappId, requestId, requestMetadata) {
 
-            fun isUsePersonaWithOngoingAccountsOnly(): Boolean {
-                return authRequest is AuthRequest.UsePersonaRequest &&
-                    ongoingAccountsRequestItem != null && oneTimeAccountsRequestItem == null
+            fun hasOngoingRequestItemsOnly(): Boolean {
+                return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+            }
+
+            fun isInternalRequest(): Boolean {
+                return dappId.isEmpty()
             }
 
             fun isUsePersonaAuth(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest
+            }
+
+            private fun hasNoOneTimeRequestItems(): Boolean {
+                return oneTimePersonaDataRequestItem == null && oneTimeAccountsRequestItem == null
+            }
+
+            private fun hasNoResetRequestItem(): Boolean {
+                return resetRequestItem?.personaData != true && resetRequestItem?.accounts != true
+            }
+
+            fun hasOnlyAuthItem(): Boolean {
+                return ongoingAccountsRequestItem == null &&
+                    ongoingPersonaDataRequestItem == null &&
+                    oneTimeAccountsRequestItem == null &&
+                    oneTimePersonaDataRequestItem == null
+            }
+
+            fun isValidRequest(): Boolean {
+                return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -33,19 +63,29 @@ sealed interface MessageFromDataChannel {
         }
 
         data class UnauthorizedRequest(
+            val dappId: String, // from which dapp comes the message
             val requestId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
-            val oneTimePersonaRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(requestId, requestMetadata)
+            val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
+        ) : IncomingRequest(dappId, requestId, requestMetadata) {
+            fun isValidRequest(): Boolean {
+                return oneTimeAccountsRequestItem?.isValidRequestItem() != false
+            }
+        }
 
         data class TransactionRequest(
+            val dappId: String, // from which dapp comes the message
             val requestId: String,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata
-        ) : IncomingRequest(requestId, requestMetadata)
+        ) : IncomingRequest(dappId, requestId, requestMetadata)
 
-        data class RequestMetadata(val networkId: Int, val origin: String, val dAppDefinitionAddress: String)
+        data class RequestMetadata(
+            val networkId: Int,
+            val origin: String,
+            val dAppDefinitionAddress: String
+        )
 
         data class AccountsRequestItem(
             val isOngoing: Boolean,
@@ -60,11 +100,24 @@ sealed interface MessageFromDataChannel {
                     return this == Exactly
                 }
             }
+
+            fun isValidRequestItem(): Boolean {
+                return numberOfAccounts >= 0
+            }
         }
 
         data class PersonaRequestItem(
-            val fields: List<String>,
+            val fields: List<PersonaDataField>,
             val isOngoing: Boolean
+        ) {
+            fun isValid(): Boolean {
+                return fields.isNotEmpty()
+            }
+        }
+
+        data class ResetRequestItem(
+            val accounts: Boolean,
+            val personaData: Boolean
         )
     }
 
@@ -78,13 +131,13 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
-    SharedAccounts.NumberOfAccounts.Quantifier {
+    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
-            SharedAccounts.NumberOfAccounts.Quantifier.Exactly
+            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly
         }
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
-            SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
+            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
         }
     }
 }

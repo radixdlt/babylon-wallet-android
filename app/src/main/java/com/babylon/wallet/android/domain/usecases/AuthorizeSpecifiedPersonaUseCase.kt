@@ -1,86 +1,246 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.DAppMessenger
+import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.data.dapp.model.toKind
+import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
-import com.babylon.wallet.android.presentation.dapp.account.toUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.toISO8601String
-import kotlinx.coroutines.coroutineScope
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.PersonaRepository
-import rdx.works.profile.data.repository.updateConnectedDappPersonas
+import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+/**
+ * Purpose of this use case is to respond to dApp login request silently without showing dApp login flow.
+ * This can happen if those are satisfied:
+ * - request is of type AuthorizedRequest
+ * - auth type is of type UsePersonaRequest
+ * - there are only ongoing request items within that request, no reset item
+ * - we have all the data already granted for ongoing request items that are part this request
+ */
 class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val dAppMessenger: DAppMessenger,
+    private val dAppMessenger: DappMessenger,
     private val accountRepository: AccountRepository,
     private val personaRepository: PersonaRepository
 ) {
 
-    @Suppress("LongMethod")
-    suspend operator fun invoke(request: IncomingRequest): Result<String> =
-        coroutineScope {
-            var operationResult: Result<String> =
-                Result.Error()
-            if (request is IncomingRequest.AuthorizedRequest &&
-                request.isUsePersonaWithOngoingAccountsOnly()
-            ) {
-                val ongoingRequest = checkNotNull(request.ongoingAccountsRequestItem)
-                val dappDefinitionAddress = request.metadata.dAppDefinitionAddress
-                val authRequest = request.authRequest as IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest
-                val connectedDapp = dAppConnectionRepository.getConnectedDapp(
-                    dappDefinitionAddress
-                )
-                val authorizedPersonaSimple =
-                    connectedDapp?.referencesToAuthorizedPersonas?.firstOrNull {
-                        it.identityAddress == authRequest.personaAddress
+    @Suppress("ReturnCount", "NestedBlockDepth", "LongMethod")
+    suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
+        var operationResult: Result<DAppData> = Result.Error()
+
+        (incomingRequest as? AuthorizedRequest)?.let { request ->
+            val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+            ) ?: return Result.Error()
+
+            val authorizedPersonaSimple = authorizedDapp
+                .referencesToAuthorizedPersonas
+                .firstOrNull {
+                    it.identityAddress == (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
+                } ?: return Result.Error(DappRequestException(DappRequestFailure.InvalidPersona))
+
+            val persona = personaRepository.getPersonaByAddress(
+                address = authorizedPersonaSimple.identityAddress
+            ) ?: return Result.Error()
+
+            if (request.hasOngoingRequestItemsOnly()) {
+                val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
+                val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
+                val selectedAccounts: List<AccountItemUiModel> = emptyList()
+                val selectedPersonaData: List<Network.Persona.Field>
+                when {
+                    hasOngoingAccountsRequest -> {
+                        val result = handleOngoingAccountsRequest(
+                            request,
+                            authorizedDapp,
+                            authorizedPersonaSimple,
+                            hasOngoingPersonaDataRequest,
+                            persona
+                        )
+                        operationResult = result.map { dAppName ->
+                            DAppData(requestId = request.id, name = dAppName)
+                        }
                     }
-                if (connectedDapp != null && authorizedPersonaSimple != null) {
-                    val potentialOngoingAddresses = dAppConnectionRepository.dAppConnectedPersonaAccountAddresses(
-                        connectedDapp.dAppDefinitionAddress,
-                        authorizedPersonaSimple.identityAddress,
-                        ongoingRequest.numberOfAccounts,
-                        ongoingRequest.quantifier.toProfileShareAccountsQuantifier()
-                    )
-                    if (potentialOngoingAddresses.isNotEmpty()) {
-                        val selectedAccounts = potentialOngoingAddresses
-                            .mapNotNull {
-                                accountRepository.getAccountByAddress(it)?.toUiModel(true)
-                            }
-                        val updatedDapp = connectedDapp.updateConnectedDappPersonas(
-                            connectedDapp.referencesToAuthorizedPersonas.map { ref ->
-                                if (ref.identityAddress == authorizedPersonaSimple.identityAddress) {
-                                    ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
-                                } else {
-                                    ref
-                                }
-                            }
+                    hasOngoingPersonaDataRequest -> {
+                        selectedPersonaData = getAlreadyGrantedPersonaData(
+                            request = request,
+                            authorizedDapp = authorizedDapp,
+                            authorizedPersonaSimple = authorizedPersonaSimple
                         )
-                        val persona = checkNotNull(
-                            personaRepository.getPersonaByAddress(authorizedPersonaSimple.identityAddress)
-                        )
-                        val result = dAppMessenger.sendWalletInteractionSuccessResponse(
-                            interactionId = request.requestId,
-                            persona = persona,
-                            usePersona = request.isUsePersonaAuth(),
-                            ongoingAccounts = selectedAccounts
-                        )
-                        dAppConnectionRepository.updateOrCreateConnectedDApp(updatedDapp)
-                        when (result) {
-                            is Result.Success -> {
-                                operationResult = Result.Success(
-                                    connectedDapp.displayName
-                                )
+                        if (selectedPersonaData.isNotEmpty()) {
+                            val result = sendSuccessResponse(
+                                request = request,
+                                persona = persona,
+                                selectedAccounts = selectedAccounts,
+                                selectedPersonaData = selectedPersonaData,
+                                authorizedDapp = authorizedDapp
+                            )
+                            operationResult = result.map { dAppName ->
+                                DAppData(requestId = request.id, name = dAppName)
                             }
-                            else -> {}
                         }
                     }
                 }
             }
-            operationResult
         }
+        return operationResult
+    }
+
+    private suspend fun handleOngoingAccountsRequest(
+        request: AuthorizedRequest,
+        authorizedDapp: Network.AuthorizedDapp,
+        authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple,
+        hasOngoingPersonaDataRequest: Boolean,
+        persona: Network.Persona
+    ): Result<String> {
+        var operationResult: Result<String> = Result.Error()
+        val selectedAccounts: List<AccountItemUiModel> = getAccountsWithGrantedAccess(
+            request,
+            authorizedDapp,
+            authorizedPersonaSimple
+        )
+        var selectedPersonaData: List<Network.Persona.Field> = emptyList()
+        when {
+            hasOngoingPersonaDataRequest -> {
+                selectedPersonaData = getAlreadyGrantedPersonaData(request, authorizedDapp, authorizedPersonaSimple)
+                if (selectedAccounts.isNotEmpty() && selectedPersonaData.isNotEmpty()) {
+                    operationResult = sendSuccessResponse(
+                        request = request,
+                        persona = persona,
+                        selectedAccounts = selectedAccounts,
+                        selectedPersonaData = selectedPersonaData,
+                        authorizedDapp = authorizedDapp
+                    )
+                }
+            }
+            else -> {
+                if (selectedAccounts.isNotEmpty()) {
+                    operationResult = sendSuccessResponse(
+                        request = request,
+                        persona = persona,
+                        selectedAccounts = selectedAccounts,
+                        selectedPersonaData = selectedPersonaData,
+                        authorizedDapp = authorizedDapp
+                    )
+                }
+            }
+        }
+        return operationResult
+    }
+
+    private fun updateDappPersonaWithLastUsedTimestamp(
+        authorizedDapp: Network.AuthorizedDapp,
+        personaAddress: String
+    ): Network.AuthorizedDapp {
+        val updatedDapp = authorizedDapp.updateAuthorizedDappPersonas(
+            authorizedDapp.referencesToAuthorizedPersonas.map { ref ->
+                if (ref.identityAddress == personaAddress) {
+                    ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                } else {
+                    ref
+                }
+            }
+        )
+        return updatedDapp
+    }
+
+    private suspend fun sendSuccessResponse(
+        request: AuthorizedRequest,
+        persona: Network.Persona,
+        selectedAccounts: List<AccountItemUiModel>,
+        selectedPersonaData: List<Network.Persona.Field>,
+        authorizedDapp: Network.AuthorizedDapp
+    ): Result<String> {
+        val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
+        val result = dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
+            dappId = request.dappId,
+            interactionId = request.requestId,
+            persona = persona,
+            usePersona = request.isUsePersonaAuth(),
+            ongoingAccounts = selectedAccounts,
+            ongoingDataFields = selectedPersonaData
+        )
+        dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
+        return when (result) {
+            is Result.Success -> {
+                Result.Success(
+                    authorizedDapp.displayName
+                )
+            }
+            else -> Result.Error()
+        }
+    }
+
+    private suspend fun getAlreadyGrantedPersonaData(
+        request: AuthorizedRequest,
+        authorizedDapp: Network.AuthorizedDapp,
+        authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
+    ): List<Network.Persona.Field> {
+        var result: List<Network.Persona.Field> = emptyList()
+        val handledRequest = checkNotNull(request.ongoingPersonaDataRequestItem)
+        if (personaDataAccessAlreadyGranted(authorizedDapp, handledRequest, authorizedPersonaSimple.identityAddress)) {
+            result = personaRepository.getPersonaDataFields(
+                address = authorizedPersonaSimple.identityAddress,
+                handledRequest.fields.map { it.toKind() }
+            )
+        }
+        return result
+    }
+
+    private suspend fun getAccountsWithGrantedAccess(
+        request: AuthorizedRequest,
+        authorizedDapp: Network.AuthorizedDapp,
+        authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
+    ): List<AccountItemUiModel> {
+        var result: List<AccountItemUiModel> = emptyList()
+        val handledRequest = checkNotNull(request.ongoingAccountsRequestItem)
+        if (request.resetRequestItem?.personaData != true && request.resetRequestItem?.accounts != true) {
+            val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+                authorizedDapp.dAppDefinitionAddress,
+                authorizedPersonaSimple.identityAddress,
+                handledRequest.numberOfAccounts,
+                handledRequest.quantifier.toProfileShareAccountsQuantifier()
+            )
+            if (potentialOngoingAddresses.isNotEmpty()) {
+                result = potentialOngoingAddresses
+                    .mapNotNull {
+                        accountRepository.getAccountByAddress(it)?.toUiModel(true)
+                    }
+            }
+        }
+        return result
+    }
+
+    private suspend fun personaDataAccessAlreadyGranted(
+        dApp: Network.AuthorizedDapp,
+        requestItem: PersonaRequestItem,
+        personaAddress: String
+    ): Boolean {
+        val requestedFieldsCount = requestItem.fields.size
+        val requestedFieldKinds = requestItem.fields.map { it.toKind() }
+        val personaFields = personaRepository.getPersonaByAddress(personaAddress)?.fields.orEmpty()
+        val requestedFieldsIds = personaFields.filter { requestedFieldKinds.contains(it.kind) }.map { it.id }
+        return requestedFieldsCount == requestedFieldsIds.size && dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
+            dApp.dAppDefinitionAddress,
+            personaAddress,
+            requestedFieldsIds
+        )
+    }
 }
+
+data class DAppData(
+    val requestId: String,
+    val name: String
+)

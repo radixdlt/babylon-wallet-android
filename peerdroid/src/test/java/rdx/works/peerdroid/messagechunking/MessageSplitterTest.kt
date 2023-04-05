@@ -4,9 +4,9 @@ import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
+import rdx.works.core.sha256Hash
+import rdx.works.core.toHexString
 import rdx.works.peerdroid.domain.BasePackage
-import rdx.works.peerdroid.helpers.sha256
-import rdx.works.peerdroid.helpers.toHexString
 import kotlin.random.Random
 import kotlin.test.assertEquals
 
@@ -71,7 +71,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as BasePackage.MetadataPackage
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash()))
     }
 
     @Test
@@ -119,7 +119,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as BasePackage.MetadataPackage
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash()))
     }
 
     @Test

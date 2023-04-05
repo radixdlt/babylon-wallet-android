@@ -7,7 +7,6 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfir
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -21,6 +20,7 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.*
 import rdx.works.profile.data.repository.AccountRepository
 
@@ -39,24 +39,16 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
         whenever(accountRepository.getAccountByAddress(any())).thenReturn(
-            OnNetwork.Account(
+            Network.Account(
                 address = accountId,
                 appearanceID = 123,
-                derivationPath = "m/1'/1'/1'/1'/1'/1'",
                 displayName = accountName,
-                index = 0,
                 networkID = 10,
                 securityState = SecurityState.Unsecured(
-                    discriminator = "dsics",
                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                         genesisFactorInstance = FactorInstance(
-                            derivationPath = DerivationPath("few", "disc"),
-                            factorInstanceID = "IDIDDIIDD",
-                            factorSourceReference = FactorSourceReference(
-                                factorSourceID = "f32f3",
-                                factorSourceKind = "kind"
-                            ),
-                            initializationDate = "Date1",
+                            derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                            factorSourceId = FactorSource.ID("IDIDDIIDD"),
                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                         )
                     )
@@ -86,7 +78,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         Assert.assertEquals(
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
                 accountName = accountName,
-                accountAddressTruncated = accountId.truncatedHash(),
+                accountAddress = accountId,
                 appearanceId = 123
             ),
             viewModel.accountUiState
@@ -113,7 +105,7 @@ class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountCo
         Assert.assertEquals(
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
                 accountName = accountName,
-                accountAddressTruncated = accountId.truncatedHash(),
+                accountAddress = accountId,
                 appearanceId = 123
             ),
             viewModel.accountUiState

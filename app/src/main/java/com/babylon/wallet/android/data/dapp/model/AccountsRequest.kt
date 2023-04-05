@@ -43,7 +43,9 @@ fun NumberOfAccounts.AccountNumberQuantifier.toDomainModel(): IncomingRequest.Ac
     }
 }
 
-fun OneTimeAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem {
+fun OneTimeAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem? {
+    // correct request but not actionable, return null
+    if (numberOfAccounts.quantity == 0 && numberOfAccounts.quantifier == NumberOfAccounts.AccountNumberQuantifier.Exactly) return null
     return IncomingRequest.AccountsRequestItem(
         isOngoing = false,
         requiresProofOfOwnership = requiresProofOfOwnership,
@@ -52,7 +54,9 @@ fun OneTimeAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestI
     )
 }
 
-fun OngoingAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem {
+fun OngoingAccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem? {
+    // correct request but not actionable, return null
+    if (numberOfAccounts.quantity == 0 && numberOfAccounts.quantifier == NumberOfAccounts.AccountNumberQuantifier.Exactly) return null
     return IncomingRequest.AccountsRequestItem(
         isOngoing = true,
         requiresProofOfOwnership = requiresProofOfOwnership,

@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.domain.common
 
-import com.babylon.wallet.android.R
-
 sealed interface Result<out T> {
 
     data class Success<T>(val data: T) : Result<T>
@@ -17,7 +15,14 @@ suspend fun <T> Result<T>.onValue(action: suspend (T) -> Unit) {
     }
 }
 
-suspend fun <T, R> Result<T>.map(action: suspend (T) -> Result<R>): Result<R> {
+suspend fun <T, R> Result<T>.map(action: suspend (T) -> R): Result<R> {
+    return when (this) {
+        is Result.Error -> Result.Error(this.exception)
+        is Result.Success -> Result.Success(action(data))
+    }
+}
+
+suspend fun <T, R> Result<T>.switchMap(action: suspend (T) -> Result<R>): Result<R> {
     return when (this) {
         is Result.Error -> Result.Error(this.exception)
         is Result.Success -> action(this.data)

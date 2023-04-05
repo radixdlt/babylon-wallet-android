@@ -1,11 +1,13 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.bip39.generateMnemonic
-import com.radixdlt.bip39.model.MnemonicWords
-import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.factorsources.FactorSources.Companion.factorSourceId
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.generate
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
@@ -18,46 +20,46 @@ class GetMnemonicUseCase @Inject constructor(
     /**
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
-    private suspend fun readMnemonic(key: String): String =
-        encryptedPreferencesManager.readMnemonic(key).orEmpty()
+    @Suppress("SwallowedException")
+    private suspend fun readMnemonic(key: FactorSource.ID): MnemonicWithPassphrase? {
+        val serialised = encryptedPreferencesManager.readMnemonic(key.value).orEmpty()
+        return try {
+            Json.decodeFromString(serialised)
+        } catch (exception: Exception) {
+            return null
+        }
+    }
 
     /**
      * We save mnemonic under specific key which will be factorSourceId
      */
     private suspend fun saveMnemonic(
-        key: String,
-        mnemonic: String
-    ) = encryptedPreferencesManager.putString("mnemonic$key", mnemonic)
+        key: FactorSource.ID,
+        mnemonicWithPassphrase: MnemonicWithPassphrase
+    ) {
+        val serialised = Json.encodeToString(mnemonicWithPassphrase)
+        encryptedPreferencesManager.putString("mnemonic${key.value}", serialised)
+    }
 
     /**
-     * Key is empty by default when no profile has been generated before
-     * If profile exists we should pass factorSourceId here
+     * Used to return or generate a new mnemonic. The mnemonic can:
+     * 1. Not exist in the first place or we didn't pass a key:
+     *    In this case we generate a new mnemonic, and based on that a "default" factor source id.`
+     * 2. Exist, but could not be deserialized properly:
+     *    This should not happen to the end users, but as we refactor the project we used to save
+     *    only the mnemonic words. Now we save a json representation of both the mnemonic words and
+     *    the passphrase. In such a scenario, when the user upgrades to the newest version, we will
+     *    not be able to deserialize properly. In this case we generate a new mnemonic like in (1).
+     * 3. We passed a key and the mnemonic exists:
+     *    We deserialize it properly and just return that back.
      */
-    suspend operator fun invoke(mnemonicKey: String? = null): String {
-        /*
-         * If key is not null, it means we have had factorSourceId and we can read existing mnemonic
-         * Otherwise, we generate mnemonic, and calculate the key for it (factorSourceId)
-         */
-        mnemonicKey?.let { key ->
-            return readMnemonic(key)
-        } ?: run {
-            return withContext(defaultDispatcher) {
-                val mnemonic = generateMnemonic(
-                    strength = ENTROPY_STRENGTH,
-                    wordList = WORDLIST_ENGLISH
-                )
+    suspend operator fun invoke(mnemonicKey: FactorSource.ID? = null): MnemonicWithPassphrase {
+        return mnemonicKey?.let { readMnemonic(key = it) } ?: withContext(defaultDispatcher) {
+            val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
 
-                val key = factorSourceId(
-                    mnemonic = MnemonicWords(
-                        phrase = mnemonic
-                    )
-                )
-                saveMnemonic(
-                    key = key,
-                    mnemonic = mnemonic
-                )
-                mnemonic
-            }
+            val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
+            saveMnemonic(key = key, mnemonicWithPassphrase = generated)
+            generated
         }
     }
 

@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
+import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
@@ -8,8 +9,7 @@ import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
-import com.radixdlt.toolkit.models.address.Address
+import com.radixdlt.toolkit.models.ManifestAstValue
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,9 +18,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Network
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import java.math.BigDecimal
 
 internal class TransactionClientTest {
 
@@ -31,43 +32,182 @@ internal class TransactionClientTest {
     private val profileDataSource = mockk<ProfileDataSource>()
     private val accountRepository = mockk<AccountRepository>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
+    private val cache = mockk<HttpCache>()
 
     private lateinit var transactionClient: TransactionClient
 
     @Before
     fun setUp() {
         transactionClient = TransactionClient(
-            transactionRepository, profileDataSource, accountRepository, getAccountResourceUseCase
+            transactionRepository,
+            profileDataSource,
+            accountRepository,
+            getAccountResourceUseCase,
+            cache
         )
-        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab") } returns Result.Success(
-            SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py7ab")
-        )
-        coEvery { getAccountResourceUseCase("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej") } returns Result.Success(
-            SampleDataProvider().sampleAccountResource("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej")
-        )
-        coEvery { profileDataSource.getCurrentNetworkId() } returns Network.nebunet.networkId()
-
+        coEvery { profileDataSource.getCurrentNetworkId() } returns Radix.Network.nebunet.networkId()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `finds address involved & signing for set metadata manifest`() = runTest {
-        var manifest = ManifestBuilder().addInstruction(
+    fun `when address exists, finds address involved & signing for set metadata manifest`() =
+        runTest {
+            val expectedAddress =
+                "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
+            coEvery {
+                getAccountResourceUseCase.getAccounts(
+                    addresses = listOf(expectedAddress),
+                    isRefreshing = true
+                )
+            } returns Result.Success(
+                listOf(SampleDataProvider().sampleAccountResource(expectedAddress))
+            )
+
+            var manifest = ManifestBuilder().addInstruction(
+                Instruction.SetMetadata(
+                    entityAddress = ManifestAstValue.Address(expectedAddress),
+                    ManifestAstValue.String("name"),
+                    ManifestAstValue.Enum("RadixDashboard")
+                )
+            ).build()
+
+            val addressesInvolved = transactionClient.getAddressesInvolvedInATransaction(manifest)
+            val addressToLockFee =
+                transactionClient.selectAccountAddressToLockFee(addressesInvolved)
+            manifest =
+                manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
+            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
+
+
+            Assert.assertEquals(1, addressesNeededToSign.size)
+            Assert.assertEquals(
+                expectedAddress,
+                addressesNeededToSign.first()
+            )
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
+        runTest {
+            val addressWithNoFunds =
+                "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
+            val addressWithFunds =
+                "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjdgt5674682"
+            coEvery {
+                getAccountResourceUseCase.getAccounts(
+                    addresses = listOf(addressWithNoFunds),
+                    isRefreshing = true
+                )
+            } returns Result.Success(
+                listOf(
+                    SampleDataProvider().sampleAccountResource(
+                        address = addressWithNoFunds,
+                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
+                            ownerAddress = addressWithNoFunds,
+                            amount = BigDecimal.ZERO to "XRD"
+                        )
+                    )
+                )
+            )
+            coEvery {
+                getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
+            } returns Result.Success(
+                listOf(
+                    SampleDataProvider().sampleAccountResource(
+                        address = addressWithNoFunds,
+                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
+                            ownerAddress = addressWithNoFunds,
+                            amount = BigDecimal.ZERO to "XRD"
+                        )
+                    ),
+                    SampleDataProvider().sampleAccountResource(
+                        address = addressWithFunds,
+                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
+                            ownerAddress = addressWithNoFunds,
+                            amount = BigDecimal(100000) to "XRD"
+                        )
+                    )
+                )
+            )
+
+            var manifest = ManifestBuilder().addInstruction(
+                Instruction.SetMetadata(
+                    entityAddress = ManifestAstValue.Address(addressWithNoFunds),
+                    ManifestAstValue.String("name"),
+                    ManifestAstValue.Enum("RadixDashboard")
+                )
+            ).build()
+
+            val addressesInvolved = transactionClient.getAddressesInvolvedInATransaction(manifest)
+            val addressToLockFee =
+                transactionClient.selectAccountAddressToLockFee(addressesInvolved)
+            manifest =
+                manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
+            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
+
+            Assert.assertEquals(2, addressesNeededToSign.size)
+            Assert.assertEquals(
+                addressWithFunds,
+                addressesNeededToSign.first()
+            )
+
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `when address has no funds, return the respective error`() = runTest {
+        val expectedAddress = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
+        coEvery {
+            getAccountResourceUseCase.getAccounts(
+                addresses = listOf(expectedAddress),
+                isRefreshing = true
+            )
+        } returns Result.Success(
+            listOf(
+                SampleDataProvider().sampleAccountResource(
+                    address = expectedAddress,
+                    withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
+                        ownerAddress = expectedAddress,
+                        amount = BigDecimal.ZERO to "XRD"
+                    )
+                )
+            )
+        )
+        coEvery {
+            getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
+        } returns Result.Success(
+            listOf(
+                SampleDataProvider().sampleAccountResource(
+                    address = expectedAddress,
+                    withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
+                        ownerAddress = expectedAddress,
+                        amount = BigDecimal.ZERO to "XRD"
+                    )
+                )
+            )
+        )
+
+        val manifest = ManifestBuilder().addInstruction(
             Instruction.SetMetadata(
-                entityAddress = Address.ComponentAddress("account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"),
-                Value.String("name"),
-                Value.String("RadixDashboard")
+                entityAddress = ManifestAstValue.Address(expectedAddress),
+                ManifestAstValue.String("name"),
+                ManifestAstValue.Enum("RadixDashboard")
             )
         ).build()
+
         val addressesInvolved = transactionClient.getAddressesInvolvedInATransaction(manifest)
-        val addressToLockFee = transactionClient.selectAccountAddressToLockFee(addressesInvolved)
-        assert(addressToLockFee != null)
-        manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-        val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
-        Assert.assertEquals(1, addressesNeededToSign.size)
-        Assert.assertEquals(
-            "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej",
-            addressesNeededToSign.first()
-        )
+
+        try {
+            transactionClient.selectAccountAddressToLockFee(addressesInvolved)
+        } catch (exception: Exception) {
+            Assert.assertEquals(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
+                ),
+                exception
+            )
+        }
+
     }
 }

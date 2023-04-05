@@ -1,4 +1,4 @@
-@file:Suppress("ReturnCount", "ComplexCondition")
+@file:Suppress("ComplexCondition")
 
 package com.babylon.wallet.android.presentation.ui.composables
 

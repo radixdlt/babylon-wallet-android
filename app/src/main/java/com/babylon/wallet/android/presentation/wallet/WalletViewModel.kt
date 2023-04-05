@@ -1,17 +1,15 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.common.OneOffEvent
-import com.babylon.wallet.android.domain.common.OneOffEventHandler
-import com.babylon.wallet.android.domain.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.toDomainModel
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.encodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,11 +23,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val clipboardManager: ClipboardManager,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val profileDataSource: ProfileDataSource,
     private val accountRepository: AccountRepository
@@ -41,18 +39,22 @@ class WalletViewModel @Inject constructor(
     init {
         viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
             profileDataSource.profile.filterNotNull().collect {
-                loadResourceData()
+                loadResourceData(isRefreshing = false)
             }
         }
     }
 
-    private suspend fun loadResourceData() {
+    private suspend fun loadResourceData(isRefreshing: Boolean) {
         viewModelScope.launch {
             _walletUiState.update { state ->
-                state.copy(resources = accountRepository.getAccounts().map { it.toDomainModel() }.toPersistentList())
+                state.copy(
+                    resources = accountRepository.getAccounts().map { it.toDomainModel() }.toPersistentList(),
+                    isLoading = false
+                )
             }
-            val result = getAccountResourcesUseCase()
+            val result = getAccountResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
             result.onError { error ->
+                Timber.w(error)
                 _walletUiState.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
             }
             result.onValue { resourceList ->
@@ -67,15 +69,10 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             _walletUiState.update { it.copy(isRefreshing = true) }
             profileDataSource.readProfile()?.let {
-                loadResourceData()
+                loadResourceData(isRefreshing = true)
             }
             _walletUiState.update { it.copy(isRefreshing = false) }
         }
-    }
-
-    fun onCopyAccountAddress(address: String) {
-        val clipData = ClipData.newPlainText("accountAddress", address)
-        clipboardManager.setPrimaryClip(clipData)
     }
 
     fun onMessageShown() {

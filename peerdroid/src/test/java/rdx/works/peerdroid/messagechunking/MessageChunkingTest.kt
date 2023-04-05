@@ -3,9 +3,9 @@ package rdx.works.peerdroid.messagechunking
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
+import rdx.works.core.sha256Hash
 import rdx.works.peerdroid.domain.BasePackage
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.peerdroid.helpers.sha256
 import kotlin.random.Random
 
 class MessageChunkingTest {
@@ -56,7 +56,7 @@ class MessageChunkingTest {
         chunks[0] = BasePackage.MetadataPackage(
             messageId = metaData.messageId,
             chunkCount = metaData.chunkCount,
-            hashOfMessage = "abc".toByteArray().sha256(),
+            hashOfMessage = "abc".toByteArray().sha256Hash(),
             messageByteCount = metaData.messageByteCount
         )
 

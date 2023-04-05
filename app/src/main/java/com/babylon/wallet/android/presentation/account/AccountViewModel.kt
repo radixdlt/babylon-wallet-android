@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.account
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -9,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AssetUiModel
@@ -21,7 +20,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.decodeUtf8
-import com.babylon.wallet.android.utils.truncatedHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -37,7 +35,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
-    private val clipboardManager: ClipboardManager,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -48,14 +45,13 @@ class AccountViewModel @Inject constructor(
     private val _accountUiState = MutableStateFlow(
         AccountUiState(
             accountAddressFull = accountId,
-            accountName = accountName.decodeUtf8(),
-            accountAddressShortened = accountId.truncatedHash()
+            accountName = accountName.decodeUtf8()
         )
     )
     val accountUiState = _accountUiState.asStateFlow()
 
     init {
-        loadAccountData()
+        loadAccountData(isRefreshing = false)
         viewModelScope.launch {
             appEventBus.events.filter { event ->
                 event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
@@ -69,29 +65,27 @@ class AccountViewModel @Inject constructor(
         _accountUiState.update { state ->
             state.copy(isRefreshing = true)
         }
-        loadAccountData()
+        loadAccountData(isRefreshing = true)
     }
 
-    private fun loadAccountData() {
+    private fun loadAccountData(isRefreshing: Boolean) {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                val result = getAccountResourcesUseCase(accountId)
+                val result = getAccountResourcesUseCase.getAccount(accountId, isRefreshing)
                 result.onError { e ->
                     _accountUiState.update { accountUiState ->
                         accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
                     }
                 }
                 result.onValue { accountResource ->
-                    val xrdToken = if (accountResource.hasXrdToken()) {
-                        accountResource.fungibleTokens[INDEX_OF_XRD]
-                    } else {
-                        null
+                    val xrdToken = accountResource.fungibleTokens.find {
+                        it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
                     }
-                    val fungibleTokens = if (accountResource.hasXrdToken()) {
-                        accountResource.fungibleTokens.subList(1, accountResource.fungibleTokens.size)
-                    } else {
-                        accountResource.fungibleTokens
+
+                    val fungibleTokens = accountResource.fungibleTokens.filter {
+                        it.token.metadata[MetadataConstants.KEY_SYMBOL] != MetadataConstants.SYMBOL_XRD
                     }
+
                     _accountUiState.update { accountUiState ->
                         accountUiState.copy(
                             isRefreshing = false,
@@ -107,11 +101,6 @@ class AccountViewModel @Inject constructor(
                 Timber.d("arg account id is empty")
             }
         }
-    }
-
-    fun onCopyAccountAddress(hash: String) {
-        val clipData = ClipData.newPlainText("accountHash", hash)
-        clipboardManager.setPrimaryClip(clipData)
     }
 
     fun onFungibleTokenClick(token: TokenUiModel) {
@@ -131,10 +120,6 @@ class AccountViewModel @Inject constructor(
             )
         }
     }
-
-    companion object {
-        private const val INDEX_OF_XRD = 0
-    }
 }
 
 data class AccountUiState(
@@ -142,7 +127,6 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
     val accountName: String = "",
-    val accountAddressShortened: String = "",
     val accountAddressFull: String = "",
     val walletFiatBalance: String? = null,
     val xrdToken: TokenUiModel? = null,

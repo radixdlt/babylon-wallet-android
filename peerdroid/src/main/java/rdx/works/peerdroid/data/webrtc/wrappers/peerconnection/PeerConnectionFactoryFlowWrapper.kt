@@ -17,9 +17,11 @@ import timber.log.Timber
 internal fun PeerConnectionFactory.createPeerConnectionFlow(
     rtcConfiguration: PeerConnection.RTCConfiguration,
     initializePeerConnection: (PeerConnection?) -> Unit,
-    createRtcDataChannel: () -> Unit
+    createRtcDataChannel: () -> Unit,
+    remoteClientId: String
 ) = callbackFlow {
     val observer = object : PeerConnectionObserver() {
+
         override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
             super.onSignalingChange(p0)
             trySend(
@@ -69,11 +71,10 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
 
         override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
             super.onIceConnectionChange(p0)
-            if (p0 == PeerConnection.IceConnectionState.FAILED ||
-                p0 == PeerConnection.IceConnectionState.DISCONNECTED
-            ) {
-                trySend(PeerConnectionEvent.Disconnected)
+            if (p0 == PeerConnection.IceConnectionState.DISCONNECTED) {
+                trySend(PeerConnectionEvent.Disconnected(remoteClientId))
             }
+            Timber.d("🔌 ice connection changed: $p0 for remote client: $remoteClientId")
         }
 
         // used only to check when the peer connection state is connected
@@ -82,9 +83,15 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
             super.onConnectionChange(newState)
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                 trySend(PeerConnectionEvent.Connected)
+            } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
+                trySend(PeerConnectionEvent.Disconnected(remoteClientId))
+            } else if (newState == PeerConnection.PeerConnectionState.FAILED) {
+                trySend(PeerConnectionEvent.Failed(remoteClientId))
             }
+            Timber.d("🔌 peer connection changed: $newState for remote client: $remoteClientId")
         }
     }
+    Timber.d("🔌 observer created for remote client: $remoteClientId")
 
     var peerConnection = createPeerConnection(rtcConfiguration, observer)
     initializePeerConnection(peerConnection)
@@ -100,7 +107,7 @@ internal fun PeerConnectionFactory.createPeerConnectionFlow(
      * is typically used to cleanup the resources after the completion, e.g. unregister a callback.
      */
     awaitClose {
-        Timber.d("peer connection: awaitClose")
+        Timber.d("🔌 peer connection with remoteClientId: $remoteClientId awaitClose")
         peerConnection?.close()
         peerConnection = null
     }

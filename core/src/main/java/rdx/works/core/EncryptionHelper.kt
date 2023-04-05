@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.core
 
 import android.security.keystore.KeyGenParameterSpec
@@ -6,7 +8,9 @@ import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
+import android.util.Base64
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.spec.AlgorithmParameterSpec
@@ -22,7 +26,6 @@ private const val AES_KEY_SIZE = 256
 private const val GCM_IV_LENGTH = 12
 private const val AUTH_TAG_LENGTH = 128 // bit
 private const val PROVIDER = "AndroidKeyStore"
-private const val KEY_ALIAS = "EncryptedDataStoreAlias"
 
 /**
  * The implementation of these methods are heavily based on this:
@@ -31,16 +34,25 @@ private const val KEY_ALIAS = "EncryptedDataStoreAlias"
  * https://levelup.gitconnected.com/doing-aes-gcm-in-android-adventures-in-the-field-72617401269d
  */
 
-fun encryptData(
-    input: ByteArray,
-    encryptionKey: ByteArray? = null
-): ByteArray {
-    val secretKey: SecretKey = if (encryptionKey != null) {
-        SecretKeySpec(encryptionKey, AES_ALGORITHM)
-    } else {
-        getOrCreateSecretKey()
-    }
+fun String.encrypt(
+    withKeyAlias: String
+): String = Base64.encodeToString(
+    this.toByteArray().encrypt(withKeyAlias = withKeyAlias),
+    Base64.DEFAULT
+)
 
+fun ByteArray.encrypt(
+    withKeyAlias: String
+): ByteArray = encryptData(input = this, secretKey = getOrCreateSecretKey(withKeyAlias))
+
+fun ByteArray.encrypt(
+    withEncryptionKey: ByteArray
+): ByteArray = encryptData(input = this, secretKey = SecretKeySpec(withEncryptionKey, AES_ALGORITHM))
+
+private fun encryptData(
+    input: ByteArray,
+    secretKey: SecretKey
+): ByteArray {
     val cipher = Cipher.getInstance(AES_GCM_NOPADDING)
     val ivBytes = ByteArray(GCM_IV_LENGTH)
     SecureRandom().nextBytes(ivBytes)
@@ -56,16 +68,25 @@ fun encryptData(
     return byteBuffer.array()
 }
 
-fun decryptData(
-    input: ByteArray,
-    encryptionKey: ByteArray? = null
-): ByteArray {
-    val secretKey: SecretKey = if (encryptionKey != null) {
-        SecretKeySpec(encryptionKey, AES_ALGORITHM)
-    } else {
-        getOrCreateSecretKey()
-    }
+fun String.decrypt(
+    withKeyAlias: String
+): String {
+    val decryptedBytes = Base64.decode(this, Base64.DEFAULT).decrypt(withKeyAlias)
+    return String(decryptedBytes, StandardCharsets.UTF_8)
+}
 
+fun ByteArray.decrypt(
+    withKeyAlias: String
+): ByteArray = decryptData(input = this, secretKey = getOrCreateSecretKey(withKeyAlias))
+
+fun ByteArray.decrypt(
+    withEncryptionKey: ByteArray
+): ByteArray = decryptData(input = this, secretKey = SecretKeySpec(withEncryptionKey, AES_ALGORITHM))
+
+private fun decryptData(
+    input: ByteArray,
+    secretKey: SecretKey
+): ByteArray {
     val cipher = Cipher.getInstance(AES_GCM_NOPADDING)
     val gcmIv: AlgorithmParameterSpec =
         GCMParameterSpec(AUTH_TAG_LENGTH, input, 0, GCM_IV_LENGTH)
@@ -74,13 +95,13 @@ fun decryptData(
     return cipher.doFinal(input, GCM_IV_LENGTH, input.size - GCM_IV_LENGTH)
 }
 
-private fun getOrCreateSecretKey(): SecretKey {
-    return getSecretKey() ?: generateAesKey()
+private fun getOrCreateSecretKey(keyAlias: String): SecretKey {
+    return getSecretKey(keyAlias) ?: generateAesKey(keyAlias)
 }
 
-private fun generateAesKey(): SecretKey {
+private fun generateAesKey(keyAlias: String): SecretKey {
     val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES, PROVIDER)
-    val builder = KeyGenParameterSpec.Builder(KEY_ALIAS, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
+    val builder = KeyGenParameterSpec.Builder(keyAlias, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
         .setBlockModes(BLOCK_MODE_GCM)
         .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
         // This is required to be able to provide the IV ourselves
@@ -91,7 +112,16 @@ private fun generateAesKey(): SecretKey {
     return keyGenerator.generateKey()
 }
 
-private fun getSecretKey(): SecretKey? {
+private fun getSecretKey(keyAlias: String): SecretKey? {
     val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
-    return (keyStore.getEntry(KEY_ALIAS, null) as? KeyStore.SecretKeyEntry)?.secretKey
+    return (keyStore.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry)?.secretKey
+}
+
+@Suppress("MagicNumber")
+fun String.decodeHex(): ByteArray {
+    check(length % 2 == 0) { "Must have an even length" }
+
+    return chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
 }

@@ -2,21 +2,33 @@
 
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.gateway.generated.model.TransactionStatus
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyType
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
+import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.crypto.toECKeyPair
+import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
 import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.Value
-import com.radixdlt.toolkit.models.address.Address
+import com.radixdlt.toolkit.models.ManifestAstValue
+import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextRequest
+import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextResponse
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
@@ -27,6 +39,7 @@ import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
 import rdx.works.profile.data.repository.AccountRepository
 import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.derivation.model.NetworkId
 import java.security.SecureRandom
 import javax.inject.Inject
 
@@ -35,6 +48,7 @@ class TransactionClient @Inject constructor(
     private val profileDataSource: ProfileDataSource,
     private val accountRepository: AccountRepository,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val cache: HttpCache
 ) {
 
     private val engine = RadixEngineToolkit
@@ -80,13 +94,15 @@ class TransactionClient @Inject constructor(
             is Result.Success -> manifestConversionResult.data
         }
         val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
-        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
-            TransactionApprovalException(TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
-        )
-        return Result.Success(
-            jsonTransactionManifest.addLockFeeInstructionToManifest(
-                addressToLockFee = accountAddressToLockFee
+        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+            ?: return Result.Error(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
+                )
             )
+
+        return Result.Success(
+            jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         )
     }
 
@@ -110,18 +126,20 @@ class TransactionClient @Inject constructor(
         val manifestWithTransactionFee = if (hasLockFeeInstruction) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee =
-                selectAccountAddressToLockFee(addressesInvolved) ?: return Result.Error(
-                    TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+            val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+                ?: return Result.Error(
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                    )
                 )
-            jsonTransactionManifest.addLockFeeInstructionToManifest(
-                addressToLockFee = accountAddressToLockFee
-            )
+            jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         }
         val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
-                TransactionApprovalException(TransactionApprovalFailure.PrepareNotarizedTransaction)
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
             )
         when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
             is Result.Error -> return transactionHeaderResult
@@ -138,8 +156,8 @@ class TransactionClient @Inject constructor(
                     notarizedTransactionBuilder.notarize(notaryAndSigners.notarySigner.privateKey.toEngineModel())
                 } catch (e: Exception) {
                     return Result.Error(
-                        TransactionApprovalException(
-                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                             msg = e.message,
                             e = e
                         )
@@ -147,8 +165,8 @@ class TransactionClient @Inject constructor(
                 }
                 val compiledNotarizedTransaction = notarizedTransaction.compile().getOrElse { e ->
                     return Result.Error(
-                        TransactionApprovalException(
-                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                             msg = e.message,
                             e = e
                         )
@@ -156,41 +174,31 @@ class TransactionClient @Inject constructor(
                 }
                 val txID = notarizedTransaction.transactionId().getOrElse { e ->
                     return Result.Error(
-                        TransactionApprovalException(
-                            TransactionApprovalFailure.PrepareNotarizedTransaction,
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                             msg = e.message,
                             e = e
                         )
                     )
                 }
-                val submitResult = submitNotarizedTransaction(
+                return submitNotarizedTransaction(
                     txID.toHexString(),
                     CompileNotarizedTransactionResponse(compiledNotarizedTransaction)
                 )
-                return when (submitResult) {
-                    is Result.Error -> submitResult
-                    is Result.Success -> {
-                        submitResult
-                    }
-                }
             }
         }
     }
 
-    suspend fun selectAccountAddressToLockFee(involvedAddresses: List<String>): String? {
-        var selectedAddress: String? = null
-        for (address in involvedAddresses) {
-            when (val account = getAccountResourcesUseCase(address)) {
-                is Result.Error -> null
-                is Result.Success -> {
-                    if (account.data.hasXrdWithEnoughBalance(TransactionConfig.DEFAULT_LOCK_FEE)) {
-                        selectedAddress = account.data.address
-                        break
-                    }
-                }
-            }
-        }
-        return selectedAddress
+    suspend fun selectAccountAddressToLockFee(addresses: List<String>): String? {
+        val accountFromInvolvedAddresses = getAccountResourcesUseCase
+            .getAccounts(addresses = addresses, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+
+        return accountFromInvolvedAddresses?.address ?: getAccountResourcesUseCase
+            .getAccountsFromProfile(isRefreshing = true)
+            .value()
+            ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+            ?.address
     }
 
     private suspend fun buildTransactionHeader(
@@ -218,15 +226,15 @@ class TransactionClient @Inject constructor(
                 )
             } catch (e: Exception) {
                 Result.Error(
-                    TransactionApprovalException(
-                        TransactionApprovalFailure.BuildTransactionHeader,
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader,
                         e.message,
                         e
                     )
                 )
             }
         } else {
-            return Result.Error(TransactionApprovalException(TransactionApprovalFailure.GetEpoch))
+            return Result.Error(DappRequestException(DappRequestFailure.GetEpoch))
         }
     }
 
@@ -258,8 +266,8 @@ class TransactionClient @Inject constructor(
             )
         } catch (e: Exception) {
             Result.Error(
-                TransactionApprovalException(
-                    failure = TransactionApprovalFailure.ConvertManifest,
+                DappRequestException(
+                    failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                     msg = e.message,
                     e = e
                 )
@@ -283,8 +291,8 @@ class TransactionClient @Inject constructor(
             )
         } catch (e: Exception) {
             Result.Error(
-                TransactionApprovalException(
-                    TransactionApprovalFailure.ConvertManifest,
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                     e.message,
                     e
                 )
@@ -302,26 +310,34 @@ class TransactionClient @Inject constructor(
         return when (submitResult) {
             is Result.Error -> {
                 Result.Error(
-                    TransactionApprovalException(
-                        TransactionApprovalFailure.SubmitNotarizedTransaction,
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
                         e = submitResult.exception,
                     )
                 )
             }
             is Result.Success -> {
+                // Invalidate all cached information stored, since a transaction may mutate
+                // some resource information
+                cache.invalidate()
+
                 if (submitResult.data.duplicate) {
                     Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.InvalidTXDuplicate(txID))
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
+                                txID
+                            )
+                        )
                     )
                 } else {
-                    pollTransactionStatus(txID)
+                    Result.Success(txID)
                 }
             }
         }
     }
 
     @Suppress("MagicNumber")
-    private suspend fun pollTransactionStatus(txID: String): Result<String> {
+    suspend fun pollTransactionStatus(txID: String): Result<String> {
         var transactionStatus = TransactionStatus.pending
         var tryCount = 0
         var errorCount = 0
@@ -337,7 +353,11 @@ class TransactionClient @Inject constructor(
             }
             if (tryCount > maxTries) {
                 return Result.Error(
-                    TransactionApprovalException(TransactionApprovalFailure.FailedToPollTXStatus(txID))
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(
+                            txID
+                        )
+                    )
                 )
             }
             delay(delayBetweenTriesMs)
@@ -346,12 +366,18 @@ class TransactionClient @Inject constructor(
             when (transactionStatus) {
                 TransactionStatus.committedFailure -> {
                     return Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.GatewayCommittedFailure(txID))
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(
+                                txID
+                            )
+                        )
                     )
                 }
                 TransactionStatus.rejected -> {
                     return Result.Error(
-                        TransactionApprovalException(TransactionApprovalFailure.GatewayRejected(txID))
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.GatewayRejected(txID)
+                        )
                     )
                 }
                 else -> {}
@@ -361,7 +387,10 @@ class TransactionClient @Inject constructor(
     }
 
     fun getAddressesNeededToSign(jsonTransactionManifest: TransactionManifest): List<String> {
-        return getAddressesInvolvedInATransaction(jsonTransactionManifest, ::callMethodAuthorizedFilter)
+        return getAddressesInvolvedInATransaction(
+            jsonTransactionManifest,
+            ::callMethodAuthorizedFilter
+        )
     }
 
     @Suppress("NestedBlockDepth")
@@ -376,20 +405,21 @@ class TransactionClient @Inject constructor(
                     .forEach { instruction ->
                         when (instruction) {
                             is Instruction.CallMethod -> {
-                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
-                                    if (callInstructionFilter(instruction.methodName.value)) {
-                                        addressesNeededToSign.add(accountAddress)
+                                (instruction.componentAddress as? ManifestAstValue.Address)
+                                    ?.executeIfAccountComponent { accountAddress ->
+                                        if (callInstructionFilter(instruction.methodName.value)) {
+                                            addressesNeededToSign.add(accountAddress)
+                                        }
                                     }
-                                }
                             }
                             is Instruction.SetMetadata -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)
+                                (instruction.entityAddress as? ManifestAstValue.Address)
                                     ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
                             }
                             is Instruction.SetMethodAccessRule -> {
-                                (instruction.entityAddress as? Address.ComponentAddress)
+                                (instruction.entityAddress as? ManifestAstValue.Address)
                                     ?.executeIfAccountComponent { accountAddress ->
                                         addressesNeededToSign.add(accountAddress)
                                     }
@@ -414,6 +444,65 @@ class TransactionClient @Inject constructor(
         return addressesNeededToSign.distinct().toList()
     }
 
+    fun analyzeManifest(
+        networkId: NetworkId,
+        transactionManifest: TransactionManifest,
+        transactionReceipt: ByteArray
+    ): kotlin.Result<AnalyzeManifestWithPreviewContextResponse> {
+        return engine.analyzeManifestWithPreviewContext(
+            AnalyzeManifestWithPreviewContextRequest(
+                networkId = networkId.value.toUByte(),
+                manifest = transactionManifest,
+                transactionReceipt = transactionReceipt
+            )
+        )
+    }
+
+    suspend fun getTransactionPreview(
+        manifest: TransactionManifest,
+        networkId: Int,
+        blobs: Array<out ByteArray>
+    ): Result<TransactionPreviewResponse> {
+        var startEpochInclusive = 0L
+        var endEpochExclusive = 0L
+        val epochResult = transactionRepository.getLedgerEpoch()
+        if (epochResult is Result.Success) {
+            val epoch = epochResult.data
+            startEpochInclusive = epoch
+            endEpochExclusive = epoch + 1L
+        }
+
+        val addressesNeededToSign = getAddressesNeededToSign(manifest)
+        val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
+            ?: return Result.Error(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
+            )
+
+        val notaryPublicKey = PublicKeyEddsaEd25519(
+            keyType = PublicKeyType.eddsaEd25519,
+            keyHex = notaryAndSigners.notarySigner.privateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero().toHexString()
+        )
+
+        return transactionRepository.getTransactionPreview(
+            // TODO things like tipPercentage might change later on
+            TransactionPreviewRequest(
+                manifest = manifest.toStringWithoutBlobs(),
+                startEpochInclusive = startEpochInclusive,
+                endEpochExclusive = endEpochExclusive,
+                costUnitLimit = COST_UNIT_LIMIT.toLong(),
+                tipPercentage = 5,
+                nonce = generateNonce().toString(),
+                signerPublicKeys = listOf(),
+                flags = TransactionPreviewRequestFlags(true, true, true, true),
+                blobsHex = blobs.map { it.toHexString() },
+                notaryPublicKey = notaryPublicKey,
+                notaryAsSignatory = false
+            )
+        )
+    }
+
     private fun callMethodAuthorizedFilter(instructionName: String): Boolean {
         return MethodName
             .methodsThatRequireAuth()
@@ -423,15 +512,9 @@ class TransactionClient @Inject constructor(
             .contains(instructionName)
     }
 
-    private fun Value.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
-        if (address.componentAddress.startsWith("account")) {
-            action(address.componentAddress)
-        }
-    }
-
-    private fun Address.ComponentAddress.executeIfAccountComponent(action: (String) -> Unit) {
-        if (componentAddress.startsWith("account")) {
-            action(componentAddress)
+    private fun ManifestAstValue.Address.executeIfAccountComponent(action: (String) -> Unit) {
+        if (address.startsWith("account")) {
+            action(address)
         }
     }
 

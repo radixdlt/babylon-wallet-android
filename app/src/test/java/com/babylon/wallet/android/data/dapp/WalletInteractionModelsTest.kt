@@ -87,7 +87,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"unauthorizedRequest",
                   "oneTimePersonaData":{
-                     "fields":["name", "address"]
+                    "fields":["givenName", "emailAddress"]
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
@@ -181,7 +181,7 @@ class WalletInteractionModelsTest {
                     "identityAddress":"randomAddress1"
                   }
                   "oneTimePersonaData":{
-                     "fields":["name", "address"]
+                    "fields":["givenName", "emailAddress"]
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
@@ -209,7 +209,7 @@ class WalletInteractionModelsTest {
                     "identityAddress":"randomAddress1"
                   }
                   "ongoingPersonaData":{
-                     "fields":["name", "address"]
+                     "fields":["givenName", "emailAddress"]
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
@@ -301,7 +301,7 @@ class WalletInteractionModelsTest {
                     "discriminator":"login"                   
                   }
                   "oneTimePersonaData":{
-                     "fields":["name", "address"]
+                    "fields":["givenName", "emailAddress"]
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
@@ -330,7 +330,7 @@ class WalletInteractionModelsTest {
                     "challenge":"randomChallenge"
                   }
                   "ongoingPersonaData":{
-                     "fields":["name", "address"]
+                    "fields":["givenName", "emailAddress"]
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",

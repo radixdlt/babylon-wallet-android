@@ -4,9 +4,9 @@ import io.ktor.util.encodeBase64
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import rdx.works.core.UUIDGenerator
+import rdx.works.core.sha256Hash
 import rdx.works.peerdroid.domain.BasePackage
-import rdx.works.peerdroid.helpers.sha256
-import rdx.works.peerdroid.helpers.uuid
 
 suspend fun ByteArray.splitMessage(
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -14,7 +14,7 @@ suspend fun ByteArray.splitMessage(
 ): List<BasePackage> {
     val messageSize = size
     val packages = mutableListOf<BasePackage>()
-    val messageId = uuid()
+    val messageId = UUIDGenerator.uuid().toString()
 
     withContext(dispatcher) {
         if (messageSize > chunkSize) {
@@ -33,7 +33,7 @@ suspend fun ByteArray.splitMessage(
                 BasePackage.MetadataPackage(
                     messageId = messageId,
                     chunkCount = packages.count(),
-                    hashOfMessage = sha256(),
+                    hashOfMessage = sha256Hash(),
                     messageByteCount = messageSize
                 )
             )
@@ -42,7 +42,7 @@ suspend fun ByteArray.splitMessage(
                 BasePackage.MetadataPackage(
                     messageId = messageId,
                     chunkCount = 1,
-                    hashOfMessage = sha256(),
+                    hashOfMessage = sha256Hash(),
                     messageByteCount = messageSize
                 )
             )

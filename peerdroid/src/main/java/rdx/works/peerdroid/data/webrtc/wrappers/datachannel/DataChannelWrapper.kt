@@ -3,9 +3,8 @@ package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -23,9 +22,9 @@ import java.nio.ByteBuffer
 
 @Suppress("InjectDispatcher")
 data class DataChannelWrapper(
+    private val remoteClientId: String,
     private val webRtcDataChannel: DataChannel
 ) {
-    private val deleteConnectionObservable = MutableStateFlow(false)
 
     val state: DataChannelEvent.StateChanged
         get() = when (webRtcDataChannel.state()) {
@@ -38,27 +37,28 @@ data class DataChannelWrapper(
 
     suspend fun sendMessage(message: String): Result<Unit> {
         return try {
+            Timber.d("📯 send message 📦 to remote client: $remoteClientId")
             val listOfPackages = splitMessage(messageInByteArray = message.toByteArray())
             listOfPackages.forEachIndexed { index, basePackage ->
                 if (index == 0) {
                     val metadata = basePackage as BasePackage.MetadataPackage
                     val metadataDto = metadata.toPackageMessageDto()
-                    send(metadataDto)
+                    send(packageMessageDto = metadataDto)
                 } else {
                     val chunk = basePackage as BasePackage.ChunkPackage
                     val chunkDto = chunk.toPackageMessageDto()
-                    send(chunkDto)
+                    send(packageMessageDto = chunkDto)
                 }
             }
             Result.Success(Unit)
         } catch (iobe: IndexOutOfBoundsException) {
-            Timber.d("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
+            Timber.e("📯 failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
             Result.Error("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.d("failed to convert and send the message: ${exception.localizedMessage}")
+            Timber.e("📯 failed to convert and send the message: ${exception.localizedMessage}")
             Result.Error("failed to send message with exception: ${exception.localizedMessage}")
         }
     }
@@ -66,28 +66,29 @@ data class DataChannelWrapper(
     val dataChannelEvents: Flow<DataChannelEvent>
         get() = webRtcDataChannel
             .eventFlow()
-            .combine(deleteConnectionObservable) { dataChannelEvent, isDeleteConnectionEvent ->
-                if (isDeleteConnectionEvent) {
-                    DataChannelEvent.StateChanged.DELETE_CONNECTION
-                } else {
-                    if (dataChannelEvent is DataChannelEvent.IncomingMessage.Package) {
-                        val result = assembleAndVerifyMessageFromPackageList(
-                            packageList = dataChannelEvent.messageInListOfPackages
-                        )
-                        when (result) {
-                            is Result.Success -> {
-                                val incomingMessageByteArray = result.data
-                                DataChannelEvent.IncomingMessage.DecodedMessage(
-                                    message = incomingMessageByteArray.decodeToString()
-                                )
-                            }
-                            is Result.Error -> {
-                                DataChannelEvent.IncomingMessage.MessageHashMismatch
-                            }
+            .map { dataChannelEvent ->
+                // if the data channel event is type of IncomingMessage.Package then
+                // 1. assemble it, 2. verify it, 3. convert it to type of IncomingMessage.DecodedMessage
+                // so the PeerdroidConnector can deliver a a json string of the message to the wallet
+                if (dataChannelEvent is DataChannelEvent.IncomingMessage.Package) {
+                    val result = assembleAndVerifyMessageFromPackageList(
+                        packageList = dataChannelEvent.messageInListOfPackages
+                    )
+                    when (result) {
+                        is Result.Success -> {
+                            val incomingMessageByteArray = result.data
+                            DataChannelEvent.IncomingMessage.DecodedMessage(
+                                remoteClientId = remoteClientId,
+                                messageInJsonString = incomingMessageByteArray.decodeToString()
+                            )
                         }
-                    } else {
-                        dataChannelEvent
+                        is Result.Error -> {
+                            Timber.e("📯 failed to assemble and verify incoming message from remote client $remoteClientId")
+                            DataChannelEvent.IncomingMessage.MessageHashMismatch
+                        }
                     }
+                } else {
+                    dataChannelEvent
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -104,12 +105,12 @@ data class DataChannelWrapper(
         return when (result) {
             is Result.Error -> {
                 result.data?.let { messageId ->
-                    sendReceiveMessageError(messageId) // inform extension
+                    sendReceiveMessageError(messageId = messageId) // inform extension
                 }
-                Result.Error("data channel failed to initialize")
+                Result.Error("failed to assemble and verify incoming message")
             }
             is Result.Success -> {
-                sendReceiveMessageConfirmation(result.data) // inform extension
+                sendReceiveMessageConfirmation(messageId = result.data) // inform extension
                 Result.Success(assembledMessageInByteArray)
             }
         }
@@ -121,7 +122,8 @@ data class DataChannelWrapper(
             messageId = messageId,
             packageType = PackageMessageDto.PackageType.MESSAGE_CONFIRMATION.type
         )
-        send(confirmationDto)
+        Timber.d("📯 send ReceiveMessageConfirmation ❕ to remote client $remoteClientId")
+        send(packageMessageDto = confirmationDto)
     }
 
     // once the incoming message is assembled but not verified send an error to the extension
@@ -131,6 +133,7 @@ data class DataChannelWrapper(
             packageType = PackageMessageDto.PackageType.MESSAGE_ERROR.type,
             error = "messageHashesMismatch"
         )
+        Timber.d("📯 send sendReceiveMessageError ❗️ to remote client $remoteClientId")
         send(errorDto)
     }
 
@@ -143,10 +146,9 @@ data class DataChannelWrapper(
         }
     }
 
-    fun close(isDeleteConnectionEvent: Boolean) {
-        if (isDeleteConnectionEvent) {
-            deleteConnectionObservable.value = true
-        }
+    fun close() {
+        Timber.d("📯 ${this.webRtcDataChannel} close for remote client: $remoteClientId")
         webRtcDataChannel.close()
+        Timber.d("📯 ${this.webRtcDataChannel} state is ${this.state} for remote client: $remoteClientId")
     }
 }

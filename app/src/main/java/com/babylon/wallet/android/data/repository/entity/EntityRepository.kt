@@ -1,34 +1,45 @@
 package com.babylon.wallet.android.data.repository.entity
 
-import com.babylon.wallet.android.data.gateway.generated.model.EntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityMetadataResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungibleIdsResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityNonFungiblesResponse
-import com.babylon.wallet.android.data.gateway.generated.model.EntityOverviewResponse
+import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
+import com.babylon.wallet.android.data.repository.cache.CacheParameters
+import com.babylon.wallet.android.data.repository.cache.HttpCache
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
+import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.NO_CACHE
+import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.AccountResourcesSlim
+import javax.inject.Inject
 
-// TODO translate from network models to domain models
 interface EntityRepository {
-    suspend fun entityDetails(address: String): Result<EntityDetailsResponse>
-    suspend fun getAccountResources(address: String): Result<AccountResourcesSlim>
-    suspend fun entityOverview(addresses: List<String>): Result<EntityOverviewResponse>
 
-    suspend fun entityMetadata(
-        address: String,
-        page: String? = null,
-        limit: Int? = null
-    ): Result<EntityMetadataResponse>
+    suspend fun stateEntityDetails(
+        addresses: List<String>,
+        isRefreshing: Boolean = true
+    ): Result<StateEntityDetailsResponse>
+}
 
-    suspend fun entityNonFungibles(
-        address: String,
-        page: String? = null,
-        limit: Int? = null
-    ): Result<EntityNonFungiblesResponse>
+class EntityRepositoryImpl @Inject constructor(
+    private val stateApi: StateApi,
+    private val cache: HttpCache
+) : EntityRepository {
 
-    suspend fun entityNonFungibleIds(
-        address: String,
-        page: String? = null,
-        limit: Int? = null
-    ): Result<EntityNonFungibleIdsResponse>
+    override suspend fun stateEntityDetails(
+        addresses: List<String>,
+        isRefreshing: Boolean
+    ): Result<StateEntityDetailsResponse> {
+        return stateApi.entityDetails(
+            StateEntityDetailsRequest(
+                addresses = addresses,
+                aggregationLevel = ResourceAggregationLevel.global
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+            ),
+            map = { it }
+        )
+    }
 }

@@ -49,12 +49,16 @@ dependencies {
     // Datastore
     implementation libs.datastorePreferences
 
+    //Timber
+    implementation libs.timber
+
     implementation libs.slip10
     implementation libs.ket
 
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
     testImplementation libs.coroutinesTest
+    testImplementation libs.mockk
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
 }

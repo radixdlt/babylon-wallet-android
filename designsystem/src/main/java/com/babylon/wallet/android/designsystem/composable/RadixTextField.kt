@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.designsystem.composable
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -16,7 +18,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,7 +40,10 @@ fun RadixTextField(
     optionalHint: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     trailingIcon: @Composable (() -> Unit)? = null,
-    singleLine: Boolean = false
+    iconToTheRight: @Composable (() -> Unit)? = null,
+    singleLine: Boolean = false,
+    onFocusChanged: ((FocusState) -> Unit)? = null,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -52,33 +58,49 @@ fun RadixTextField(
                 Text(text = hint, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
             }
         }
-        OutlinedTextField(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            value = value,
-            onValueChange = onValueChanged,
-            shape = RadixTheme.shapes.roundedRectSmall,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = RadixTheme.colors.gray5,
-                placeholderColor = RadixTheme.colors.gray2,
-                textColor = RadixTheme.colors.gray1,
-                focusedBorderColor = RadixTheme.colors.gray1,
-                unfocusedBorderColor = Color.Transparent,
-                errorBorderColor = RadixTheme.colors.red1,
-                cursorColor = RadixTheme.colors.gray1,
-                selectionColors = TextSelectionColors(
-                    RadixTheme.colors.gray1,
-                    LocalTextSelectionColors.current.backgroundColor
-                )
-            ),
-            placeholder = {
-                hint?.let { Text(text = it, style = RadixTheme.typography.body1Regular) }
-            },
-            trailingIcon = trailingIcon,
-            isError = error != null,
-            keyboardOptions = keyboardOptions,
-            singleLine = singleLine,
-            textStyle = RadixTheme.typography.body1Regular
-        )
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .onFocusChanged {
+                        onFocusChanged?.invoke(it)
+                    },
+                value = value,
+                onValueChange = onValueChanged,
+                shape = RadixTheme.shapes.roundedRectSmall,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = RadixTheme.colors.gray5,
+                    placeholderColor = RadixTheme.colors.gray2,
+                    textColor = RadixTheme.colors.gray1,
+                    focusedBorderColor = RadixTheme.colors.gray1,
+                    unfocusedBorderColor = RadixTheme.colors.gray3,
+                    errorBorderColor = RadixTheme.colors.red1,
+                    cursorColor = RadixTheme.colors.gray1,
+                    selectionColors = TextSelectionColors(
+                        RadixTheme.colors.gray1,
+                        LocalTextSelectionColors.current.backgroundColor
+                    )
+                ),
+                placeholder = {
+                    hint?.let { Text(text = it, style = RadixTheme.typography.body1Regular) }
+                },
+                trailingIcon = trailingIcon,
+                isError = error != null,
+                singleLine = singleLine,
+                textStyle = RadixTheme.typography.body1Regular,
+                keyboardActions = keyboardActions,
+                keyboardOptions = keyboardOptions
+            )
+            iconToTheRight?.let { icon ->
+                Box {
+                    icon()
+                }
+            }
+        }
         if (error != null) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
@@ -87,7 +109,7 @@ fun RadixTextField(
                 Icon(
                     modifier = Modifier.size(14.dp),
                     painter = painterResource(id = R.drawable.ic_warning_error),
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = RadixTheme.colors.red1
                 )
                 Text(text = error, style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)

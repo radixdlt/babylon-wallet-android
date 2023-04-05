@@ -13,23 +13,43 @@ import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.Value
+import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import java.math.BigDecimal
 
 class SampleDataProvider {
 
-    fun randomTokenAddress(): String {
+    fun sampleAccount(address: String = "fj3489fj348f"): Network.Account {
+        return Network.Account(
+            address = address,
+            appearanceID = 123,
+            displayName = "my account",
+            networkID = 999,
+            securityState = SecurityState.Unsecured(
+                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    genesisFactorInstance = FactorInstance(
+                        derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                    )
+                )
+            )
+        )
+    }
+
+    fun randomAddress(): String {
         val characters = "abcdefghijklmnopqrstuvwxyz0123456789"
         val sb = StringBuilder()
         repeat((0 until 26).count()) {
@@ -38,28 +58,20 @@ class SampleDataProvider {
         return sb.toString()
     }
 
-    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): OnNetwork.Persona {
-        return OnNetwork.Persona(
+    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): Network.Persona {
+        return Network.Persona(
             address = personaAddress,
-            derivationPath = "m/1'/1'/1'/1'/1'/1'",
             displayName = personaName,
-            index = 0,
             networkID = 11,
             fields = listOf(
-                OnNetwork.Persona.Field("1", OnNetwork.Persona.Field.Kind.Email, "test@test.pl"),
-                OnNetwork.Persona.Field("2", OnNetwork.Persona.Field.Kind.FirstName, "John")
+                Network.Persona.Field("1", Network.Persona.Field.Kind.EmailAddress, "test@test.pl"),
+                Network.Persona.Field("2", Network.Persona.Field.Kind.GivenName, "John")
             ),
             securityState = SecurityState.Unsecured(
-                discriminator = "dsics",
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath("few", "disc"),
-                        factorInstanceID = "IDIDDIIDD",
-                        factorSourceReference = FactorSourceReference(
-                            factorSourceID = "f32f3",
-                            factorSourceKind = "kind"
-                        ),
-                        initializationDate = "Date1",
+                        derivationPath = DerivationPath.forIdentity("few"),
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -67,49 +79,57 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountResource(address: String = randomTokenAddress()): AccountResources {
+    fun sampleAccountResource(
+        address: String = randomAddress(),
+        withFungibleTokens: List<OwnedFungibleToken> = sampleFungibleTokens(address)
+    ): AccountResources {
         return AccountResources(
             address = address,
             displayName = "My account",
-            currencySymbol = "$",
-            value = "10",
-            fungibleTokens = sampleFungibleTokens(address),
+            fungibleTokens = withFungibleTokens,
             appearanceID = 1
         )
     }
 
     fun sampleProfile(): Profile {
         return Profile(
+            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
             appPreferences = AppPreferences(
                 display = Display.default,
-                networkAndGateway = NetworkAndGateway.hammunet,
-                p2pClients = emptyList()
+                security = Security.default,
+                gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),
+                p2pLinks = emptyList()
             ),
-            factorSources = FactorSources(
-                curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = emptyList(),
-                secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
+            factorSources = listOf(
+                FactorSource.babylon(
+                    mnemonicWithPassphrase = MnemonicWithPassphrase(
+                        mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+                        bip39Passphrase = ""
+                    )
+                )
             ),
-            onNetwork = emptyList(),
+            networks = emptyList(),
             version = 1
         )
     }
 
-    fun sampleFungibleTokens(ownerAddress: String = randomTokenAddress()): List<OwnedFungibleToken> {
+    fun sampleFungibleTokens(
+        ownerAddress: String = randomAddress(),
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+    ): List<OwnedFungibleToken> {
         val result = mutableListOf<OwnedFungibleToken>()
         return result.apply {
             repeat(3) {
-                val tokenAddress = randomTokenAddress()
+                val tokenAddress = randomAddress()
                 add(
                     OwnedFungibleToken(
                         AccountAddress(ownerAddress),
-                        BigDecimal.valueOf(100000),
+                        amount.first,
                         tokenAddress,
                         FungibleToken(
                             tokenAddress,
-                            totalSupply = BigDecimal.valueOf(10000000000),
-                            totalMinted = BigDecimal.valueOf(1000000),
-                            totalBurnt = BigDecimal.valueOf(100),
-                            metadata = mapOf("symbol" to "XRD")
+                            metadata = mapOf("symbol" to amount.second)
                         )
                     )
                 )
@@ -120,13 +140,13 @@ class SampleDataProvider {
     fun sampleManifest(): TransactionManifest {
         return ManifestBuilder()
             .callMethod(
-                Value.ComponentAddress("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
+                ManifestAstValue.Address("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
                 "free",
             )
             .callMethod(
-                Value.ComponentAddress("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"),
+                ManifestAstValue.Address("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"),
                 "deposit_batch",
-                Value.Expression("ENTIRE_WORKTOP")
+                ManifestAstValue.Expression("ENTIRE_WORKTOP")
             )
             .build()
     }
@@ -135,8 +155,8 @@ class SampleDataProvider {
         ownedFungibleToken.toTokenUiModel()
     }
 
-    fun sampleSimpleFungibleTokens(address: String = randomTokenAddress()): List<SimpleOwnedFungibleToken> {
-        val tokenAddress = randomTokenAddress()
+    fun sampleSimpleFungibleTokens(address: String = randomAddress()): List<SimpleOwnedFungibleToken> {
+        val tokenAddress = randomAddress()
         return listOf(
             SimpleOwnedFungibleToken(
                 AccountAddress(address),
@@ -162,7 +182,7 @@ class SampleDataProvider {
                 address = "owner address",
                 label = "NBA"
             ),
-            amount = BigDecimal(1.007),
+            amount = 10L,
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
@@ -183,7 +203,7 @@ class SampleDataProvider {
                 address = "owner address",
                 label = "Space"
             ),
-            amount = BigDecimal(1.007),
+            amount = 10L,
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",

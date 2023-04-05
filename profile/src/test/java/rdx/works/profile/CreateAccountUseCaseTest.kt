@@ -10,18 +10,20 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.extensions.addAccountOnNetwork
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.model.apppreferences.P2PClient
-import rdx.works.profile.data.model.factorsources.FactorSources
+import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.CreateAccountUseCase
@@ -37,57 +39,48 @@ class CreateAccountUseCaseTest {
     fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() {
         testScope.runTest {
             // given
+            val mnemonicWithPassphrase = MnemonicWithPassphrase(
+                mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+                bip39Passphrase = ""
+            )
             val accountName = "First account"
+            val network = Radix.Gateway.hammunet
             val profile = Profile(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 appPreferences = AppPreferences(
                     display = Display.default,
-                    NetworkAndGateway.hammunet,
-                    p2pClients = listOf(
-                        P2PClient.init(
+                    security = Security.default,
+                    gateways = Gateways(network.url, listOf(network)),
+                    p2pLinks = listOf(
+                        P2PLink.init(
                             connectionPassword = "My password",
                             displayName = "Browser name test"
                         )
                     )
                 ),
-                factorSources = FactorSources(
-                    curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources = listOf(
-                        FactorSources.Curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSource(
-                            creationDate = "Date",
-                            factorSourceID = "XXX111222333",
-                            label = "Label"
-                        )
-                    ),
-                    secp256k1OnDeviceStoredMnemonicHierarchicalDeterministicBIP44FactorSources = emptyList()
-                ),
-                onNetwork = listOf(
-                    OnNetwork(
+                factorSources = listOf(FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
+                networks = listOf(
+                    Network(
                         accounts = listOf(
-                            OnNetwork.Account(
+                            Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
-                                derivationPath = "m/1'/1'/1'/1'/1'/1'",
                                 displayName = "my account",
-                                index = 0,
-                                networkID = 999,
+                                networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
-                                    discriminator = "dsics",
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
-                                            derivationPath = DerivationPath("few", "disc"),
-                                            factorInstanceID = "IDIDDIIDD",
-                                            factorSourceReference = FactorSourceReference(
-                                                factorSourceID = "f32f3",
-                                                factorSourceKind = "kind"
-                                            ),
-                                            initializationDate = "Date1",
+                                            derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                                            factorSourceId = FactorSource.ID("IDIDDIIDD"),
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )
                                     )
                                 )
                             )
                         ),
-                        connectedDapps = emptyList(),
-                        networkID = 999,
+                        authorizedDapps = emptyList(),
+                        networkID = network.network.networkId().value,
                         personas = emptyList()
                     )
                 ),
@@ -96,10 +89,8 @@ class CreateAccountUseCaseTest {
 
             val getMnemonicUseCase = mock<GetMnemonicUseCase> {
                 onBlocking {
-                    invoke(
-                        profile.factorSources.curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources.first().factorSourceID
-                    )
-                } doReturn "noodle question hungry sail type offer grocery clay nation hello mixture forum"
+                    invoke(profile.babylonDeviceFactorSource.id)
+                } doReturn mnemonicWithPassphrase
             }
 
             val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
@@ -107,7 +98,7 @@ class CreateAccountUseCaseTest {
             whenever(profileDataSource.getCurrentNetworkId()).thenReturn(NetworkId.Hammunet)
 
             val createAccountUseCase = CreateAccountUseCase(
-                generateMnemonicUseCase = getMnemonicUseCase,
+                getMnemonicUseCase = getMnemonicUseCase,
                 profileDataSource = profileDataSource,
                 testDispatcher
             )
@@ -116,9 +107,10 @@ class CreateAccountUseCaseTest {
                 displayName = accountName
             )
 
-            val updatedProfile = profile.addAccountOnNetwork(
-                account,
-                networkID = NetworkId.Hammunet
+            val updatedProfile = profile.addAccount(
+                account = account,
+                withFactorSourceId = profile.babylonDeviceFactorSource.id,
+                onNetwork = network.network.networkId()
             )
 
             verify(profileDataSource).saveProfile(updatedProfile)

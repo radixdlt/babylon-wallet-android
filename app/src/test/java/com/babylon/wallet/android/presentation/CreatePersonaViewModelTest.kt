@@ -1,12 +1,17 @@
 package com.babylon.wallet.android.presentation
 
+import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaViewModel
+import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -15,10 +20,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.FactorSourceReference
-import rdx.works.profile.data.model.pernetwork.OnNetwork
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.domain.CreatePersonaUseCase
 
@@ -27,9 +32,10 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
 
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val createPersonaUseCase = mockk<CreatePersonaUseCase>()
+    private val preferencesManager = mockk<PreferencesManager>()
 
     private val personaId = "fj3489fj348f"
-    private val personaName = "My first persona"
+    private val personaName = PersonaDisplayNameFieldWrapper("My first persona", valid = true, wasEdited = true)
 
     @Before
     override fun setUp() = runTest {
@@ -38,25 +44,21 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         coEvery {
             deviceSecurityHelper.isDeviceSecure()
         } returns true
+        coEvery { preferencesManager.firstPersonaCreated } returns flow {
+            emit(true)
+        }
+        coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
 
-        coEvery { createPersonaUseCase.invoke(any(), any()) } returns OnNetwork.Persona(
+        coEvery { createPersonaUseCase.invoke(any(), any()) } returns Network.Persona(
             address = personaId,
-            derivationPath = "m/1'/1'/1'/1'/1'/1'",
-            displayName = personaName,
-            index = 0,
+            displayName = personaName.value,
             networkID = 10,
             fields = emptyList(),
             securityState = SecurityState.Unsecured(
-                discriminator = "dsics",
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath("few", "disc"),
-                        factorInstanceID = "IDIDDIIDD",
-                        factorSourceReference = FactorSourceReference(
-                            factorSourceID = "f32f3",
-                            factorSourceKind = "kind"
-                        ),
-                        initializationDate = "Date1",
+                        derivationPath = DerivationPath.forIdentity("m/1'/1'/1'/1'/1'/1'"),
+                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -67,18 +69,13 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+        val viewModel = CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(
-            CreatePersonaViewModel.CreatePersonaUiState(
-                loading = false,
-                personaName = "",
-                isDeviceSecure = true
-            ),
-            viewModel.state
-        )
+        Assert.assertEquals(viewModel.state.loading, false)
+        Assert.assertEquals(viewModel.state.personaDisplayName, PersonaDisplayNameFieldWrapper())
+        Assert.assertEquals(viewModel.state.isDeviceSecure, true)
     }
 
     @Test
@@ -86,9 +83,9 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         runTest {
 
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+            val viewModel = CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
 
-            viewModel.onPersonaNameChange(personaName)
+            viewModel.onDisplayNameChanged(personaName.value)
 
             // when
             viewModel.onPersonaCreateClick()
@@ -96,15 +93,9 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
             advanceUntilIdle()
 
             // then
-            Assert.assertEquals(
-                CreatePersonaViewModel.CreatePersonaUiState(
-                    loading = true,
-                    personaName = personaName,
-                    buttonEnabled = true,
-                    isDeviceSecure = true
-                ),
-                viewModel.state
-            )
+            Assert.assertEquals(viewModel.state.loading, true)
+            Assert.assertEquals(viewModel.state.personaDisplayName, personaName)
+            Assert.assertEquals(viewModel.state.isDeviceSecure, true)
 
             advanceUntilIdle()
 
@@ -116,6 +107,6 @@ class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaUseCase, deviceSecurityHelper)
+        return CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
     }
 }

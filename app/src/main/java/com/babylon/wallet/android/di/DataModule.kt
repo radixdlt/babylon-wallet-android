@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.di
 
-import com.babylon.wallet.android.data.dapp.DAppMessenger
-import com.babylon.wallet.android.data.dapp.DAppMessengerImpl
+import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.data.dapp.DappMessengerImpl
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.data.repository.cache.HttpCache
+import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
@@ -51,12 +53,18 @@ interface DataModule {
 
     @Binds
     fun bindDAppMessenger(
-        dAppMessenger: DAppMessengerImpl
-    ): DAppMessenger
+        dAppMessenger: DappMessengerImpl
+    ): DappMessenger
 
     @Binds
     @Singleton
     fun bindIncomingRequestRepository(
         dAppMessenger: IncomingRequestRepositoryImpl
     ): IncomingRequestRepository
+
+    @Binds
+    @Singleton
+    fun bindHttpCache(
+        cache: HttpCacheImpl
+    ): HttpCache
 }

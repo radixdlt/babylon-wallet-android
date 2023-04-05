@@ -1,21 +1,18 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.extensions.addAccountOnNetwork
-import rdx.works.profile.data.extensions.setNetworkAndGateway
-import rdx.works.profile.data.model.apppreferences.Network
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
-import rdx.works.profile.data.model.pernetwork.OnNetwork
-import rdx.works.profile.data.model.pernetwork.OnNetwork.Account.Companion.createNewVirtualAccount
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.changeGateway
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
+import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.data.utils.accountsPerNetworkCount
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
-    private val generateMnemonicUseCase: GetMnemonicUseCase,
+    private val getMnemonicUseCase: GetMnemonicUseCase,
     private val profileDataSource: ProfileDataSource,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -24,46 +21,43 @@ class CreateAccountUseCase @Inject constructor(
         networkUrl: String? = null,
         networkName: String? = null,
         switchNetwork: Boolean = false
-    ): OnNetwork.Account {
+    ): Network.Account {
         return withContext(defaultDispatcher) {
             val profile = profileDataSource.readProfile()
             checkNotNull(profile) {
                 "Profile does not exist"
             }
 
-            var networkAndGateway: NetworkAndGateway? = null
+            var gateway: Radix.Gateway? = null
             if (networkUrl != null && networkName != null) {
-                networkAndGateway = NetworkAndGateway(
-                    gatewayAPIEndpointURL = networkUrl,
-                    network = Network.allKnownNetworks().first { network ->
+                gateway = Radix.Gateway(
+                    url = networkUrl,
+                    network = Radix.Network.allKnownNetworks().first { network ->
                         network.name == networkName
                     }
                 )
             }
-            val networkID = networkAndGateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
+            val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
+
+            val factorSource = profile.babylonDeviceFactorSource
 
             // Construct new account
-            val newAccount = createNewVirtualAccount(
+            val newAccount = init(
                 displayName = displayName,
-                entityIndex = profile.onNetwork.accountsPerNetworkCount(networkID),
-                mnemonic = MnemonicWords(
-                    phrase = generateMnemonicUseCase(
-                        mnemonicKey = profile.factorSources
-                            .curve25519OnDeviceStoredMnemonicHierarchicalDeterministicSLIP10FactorSources
-                            .first().factorSourceID
-                    )
-                ),
-                factorSources = profile.factorSources,
+                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
+                factorSource = factorSource,
                 networkId = networkID
             )
 
             // Add account to the profile
-            var updatedProfile = profile.addAccountOnNetwork(
-                newAccount,
-                networkID = networkID
+            var updatedProfile = profile.addAccount(
+                account = newAccount,
+                withFactorSourceId = factorSource.id,
+                onNetwork = networkID
             )
-            if (switchNetwork && networkAndGateway != null) {
-                updatedProfile = updatedProfile.setNetworkAndGateway(networkAndGateway)
+
+            if (switchNetwork && gateway != null) {
+                updatedProfile = updatedProfile.changeGateway(gateway)
             }
             // Save updated profile
             profileDataSource.saveProfile(updatedProfile)

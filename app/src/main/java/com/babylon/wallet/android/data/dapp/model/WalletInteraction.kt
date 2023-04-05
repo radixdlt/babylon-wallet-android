@@ -60,7 +60,9 @@ data class WalletAuthorizedRequestItems(
     @SerialName("oneTimePersonaData")
     val oneTimePersonaData: OneTimePersonaDataRequestItem? = null,
     @SerialName("ongoingPersonaData")
-    val ongoingPersonaData: OngoingPersonaDataRequestItem? = null
+    val ongoingPersonaData: OngoingPersonaDataRequestItem? = null,
+    @SerialName("reset")
+    val reset: ResetRequestItem? = null
 ) : WalletInteractionItems()
 
 private val walletRequestSerializersModule = SerializersModule {
@@ -103,36 +105,41 @@ val walletRequestJson = Json {
     classDiscriminator = "discriminator"
 }
 
-fun WalletInteraction.toDomainModel(): MessageFromDataChannel.IncomingRequest {
+fun WalletInteraction.toDomainModel(dappId: String): MessageFromDataChannel.IncomingRequest {
     val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-        metadata.networkId,
-        metadata.origin,
-        metadata.dAppDefinitionAddress
+        networkId = metadata.networkId,
+        origin = metadata.origin,
+        dAppDefinitionAddress = metadata.dAppDefinitionAddress
     )
     return when (items) {
-        is WalletTransactionItems -> items.send.toDomainModel(interactionId, metadata)
+        is WalletTransactionItems -> {
+            items.send.toDomainModel(dappId, interactionId, metadata)
+        }
         is WalletAuthorizedRequestItems -> {
-            items.parseAuthorizedRequest(interactionId, metadata)
+            items.parseAuthorizedRequest(dappId, interactionId, metadata)
         }
         is WalletUnauthorizedRequestItems -> {
-            items.parseUnauthorizedRequest(interactionId, metadata)
+            items.parseUnauthorizedRequest(dappId, interactionId, metadata)
         }
     }
 }
 
 private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
+    dappId: String,
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ): MessageFromDataChannel.IncomingRequest.UnauthorizedRequest {
     return MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-        requestId,
-        metadata,
-        oneTimeAccounts?.toDomainModel(),
-        oneTimePersonaData?.toDomainModel(),
+        dappId = dappId,
+        requestId = requestId,
+        requestMetadata = metadata,
+        oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
     )
 }
 
 private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
+    dappId: String,
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ): MessageFromDataChannel.IncomingRequest {
@@ -141,12 +148,14 @@ private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
         is AuthUsePersonaRequestItem -> auth.toDomainModel()
     }
     return MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        dappId = dappId,
         requestId = requestId,
         requestMetadata = metadata,
         authRequest = auth,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
         ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(),
-        oneTimePersonaRequestItem = oneTimePersonaData?.toDomainModel(),
-        ongoingPersonaRequestItem = ongoingPersonaData?.toDomainModel(),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
+        ongoingPersonaDataRequestItem = ongoingPersonaData?.toDomainModel(),
+        resetRequestItem = reset?.toDomainModel()
     )
 }

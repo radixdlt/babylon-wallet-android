@@ -37,7 +37,7 @@ fun CreateAccountConfirmationScreen(
     CreateAccountConfirmationContent(
         modifier = modifier,
         accountName = accountState.accountName,
-        accountId = accountState.accountAddressTruncated,
+        accountId = accountState.accountAddress,
         accountConfirmed = viewModel::accountConfirmed,
         appearanceId = accountState.appearanceId,
         requestSource = viewModel.args.requestSource
@@ -103,7 +103,7 @@ fun CreateAccountConfirmationContent(
                     CreateAccountRequestSource.AccountsList -> R.string.go_to_account_list
                     CreateAccountRequestSource.ChooseAccount -> R.string.go_to_choose_accounts
                     CreateAccountRequestSource.FirstTime -> R.string.go_to_home
-                    CreateAccountRequestSource.Settings -> R.string.go_to_settings
+                    CreateAccountRequestSource.Gateways -> R.string.go_to_gateways
                 }
             ),
             onClick = accountConfirmed

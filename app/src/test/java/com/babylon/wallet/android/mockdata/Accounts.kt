@@ -1,49 +1,34 @@
 package com.babylon.wallet.android.mockdata
 
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.*
 
-val account1 = OnNetwork.Account(
+val account1 = Network.Account(
     address = "address1",
     appearanceID = 1,
-    derivationPath = "derivationPath1",
     displayName = "displayName1",
-    index = 1,
     networkID = 10,
     securityState = SecurityState.Unsecured(
-        discriminator = "dsics",
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             genesisFactorInstance = FactorInstance(
-                derivationPath = DerivationPath("few", "disc"),
-                factorInstanceID = "IDIDDIIDD",
-                factorSourceReference = FactorSourceReference(
-                    factorSourceID = "f32f3",
-                    factorSourceKind = "kind"
-                ),
-                initializationDate = "Date1",
+                derivationPath = DerivationPath.forAccount("derivationPath1"),
+                factorSourceId = FactorSource.ID("IDIDDIIDD"),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
         )
     )
 )
 
-val account2 = OnNetwork.Account(
+val account2 = Network.Account(
     address = "address2",
     appearanceID = 2,
-    derivationPath = "derivationPath2",
     displayName = "displayName2",
-    index = 2,
     networkID = 10,
     securityState = SecurityState.Unsecured(
-        discriminator = "dsics",
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             genesisFactorInstance = FactorInstance(
-                derivationPath = DerivationPath("few", "disc"),
-                factorInstanceID = "IDIDDIIDD",
-                factorSourceReference = FactorSourceReference(
-                    factorSourceID = "f32f3",
-                    factorSourceKind = "kind"
-                ),
-                initializationDate = "Date1",
+                derivationPath = DerivationPath.forAccount("derivationPath2"),
+                factorSourceId = FactorSource.ID("IDIDDIIDD"),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
         )

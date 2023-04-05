@@ -1,7 +1,11 @@
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+
 package com.babylon.wallet.android.presentation.account
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +21,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -63,16 +69,14 @@ import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
-import com.babylon.wallet.android.presentation.ui.composables.AccountAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -103,7 +107,6 @@ fun AccountScreen(
         xrdToken = state.xrdToken,
         fungibleTokens = state.fungibleTokens,
         nonFungibleTokens = state.nonFungibleTokens,
-        onCopyAccountAddress = viewModel::onCopyAccountAddress,
         gradientIndex = state.gradientIndex,
         onHistoryClick = {},
         onTransferClick = {},
@@ -117,7 +120,7 @@ fun AccountScreen(
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 private fun AccountScreenContent(
     accountName: String,
     onAccountPreferenceClick: () -> Unit,
@@ -129,7 +132,6 @@ private fun AccountScreenContent(
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
     nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    onCopyAccountAddress: (String) -> Unit,
     gradientIndex: Int,
     onHistoryClick: () -> Unit,
     onTransferClick: () -> Unit,
@@ -148,6 +150,15 @@ private fun AccountScreenContent(
             rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
         val scope = rememberCoroutineScope()
         val sheetHeight = maxHeight * 0.9f
+        BackHandler {
+            if (bottomSheetState.isVisible) {
+                scope.launch {
+                    bottomSheetState.hide()
+                }
+            } else {
+                onBackClick()
+            }
+        }
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
             sheetBackgroundColor = RadixTheme.colors.defaultBackground,
@@ -176,7 +187,7 @@ private fun AccountScreenContent(
                                 scope.launch {
                                     bottomSheetState.hide()
                                 }
-                            }, onCopyAccountAddress, modifier = Modifier.fillMaxSize())
+                            }, modifier = Modifier.fillMaxSize())
                         }
                         null -> {}
                     }
@@ -231,7 +242,6 @@ private fun AccountScreenContent(
                         refreshTriggerDistance = 100.dp,
                         content = {
                             AccountContent(
-                                onCopyAccountAddressClick = onCopyAccountAddress,
                                 accountAddress = accountAddress,
                                 xrdToken = xrdToken,
                                 fungibleTokens = fungibleTokens,
@@ -307,7 +317,6 @@ fun AccountContentWithScrollableHeader(
     onAccountPreferenceClick: () -> Unit,
     accountAddress: String,
     walletFiatBalance: String?,
-    onCopyAccountAddress: (String) -> Unit,
     onTransferClick: () -> Unit,
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
@@ -349,7 +358,6 @@ fun AccountContentWithScrollableHeader(
                         modifier = Modifier.fillMaxWidth(),
                         accountAddress = accountAddress,
                         walletFiatBalance = walletFiatBalance,
-                        onCopyAccountAddressClick = onCopyAccountAddress,
                         onTransferClick = onTransferClick
                     )
                 }
@@ -384,10 +392,8 @@ fun AccountContentWithScrollableHeader(
     }
 }
 
-@ExperimentalPagerApi
 @Composable
 private fun AccountContent(
-    onCopyAccountAddressClick: (String) -> Unit,
     accountAddress: String,
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
@@ -407,7 +413,6 @@ private fun AccountContent(
             modifier = Modifier.fillMaxWidth(),
             accountAddress = accountAddress,
             walletFiatBalance = walletFiatBalance,
-            onCopyAccountAddressClick = onCopyAccountAddressClick,
             onTransferClick = onTransferClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -434,17 +439,16 @@ private fun AccountSummaryContent(
     modifier: Modifier,
     accountAddress: String,
     walletFiatBalance: String?,
-    onCopyAccountAddressClick: (String) -> Unit,
     onTransferClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AccountAddressView(
+        ActionableAddressView(
             address = accountAddress,
-            onCopyAccountAddressClick = onCopyAccountAddressClick,
-            contentColor = RadixTheme.colors.white
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         walletFiatBalance?.let { value ->
@@ -473,7 +477,6 @@ private fun AccountSummaryContent(
     }
 }
 
-@ExperimentalPagerApi
 @Composable
 fun AssetsContent(
     xrdToken: TokenUiModel?,
@@ -489,7 +492,9 @@ fun AssetsContent(
         val scope = rememberCoroutineScope()
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         TabRow(
-            modifier = Modifier.height(50.dp).width(200.dp),
+            modifier = Modifier
+                .height(50.dp)
+                .width(200.dp),
             selectedTabIndex = pagerState.currentPage,
             divider = {}, /* Disable the built-in divider */
             indicator = { tabPositions ->
@@ -530,7 +535,7 @@ fun AssetsContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            count = AssetTypeTab.values().size,
+            pageCount = AssetTypeTab.values().size,
             state = pagerState,
             userScrollEnabled = false
         ) { page ->
@@ -570,17 +575,16 @@ fun AccountContentPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                accountName = randomTokenAddress(),
+                accountName = randomAddress(),
                 onAccountPreferenceClick = {},
                 onBackClick = {},
                 isLoading = false,
                 isRefreshing = false,
                 onRefresh = {},
-                accountAddress = randomTokenAddress(),
+                accountAddress = randomAddress(),
                 xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
                 fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
-                onCopyAccountAddress = {},
                 gradientIndex = 0,
                 onHistoryClick = {},
                 onTransferClick = {},
@@ -601,17 +605,16 @@ fun AccountContentDarkPreview() {
     RadixWalletTheme(darkTheme = true) {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                accountName = randomTokenAddress(),
+                accountName = randomAddress(),
                 onAccountPreferenceClick = {},
                 onBackClick = {},
                 isLoading = false,
                 isRefreshing = false,
                 onRefresh = {},
-                accountAddress = randomTokenAddress(),
+                accountAddress = randomAddress(),
                 xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
                 fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
-                onCopyAccountAddress = {},
                 gradientIndex = 0,
                 onHistoryClick = {},
                 onTransferClick = {},
@@ -634,8 +637,7 @@ fun FungibleTokenDetailsDarkPreview() {
             FungibleTokenBottomSheetDetails(
                 modifier = Modifier.fillMaxSize(),
                 token = sampleFungibleTokens().first().toTokenUiModel(),
-                onCloseClick = {},
-                onCopyAccountAddress = {}
+                onCloseClick = {}
             )
         }
     }

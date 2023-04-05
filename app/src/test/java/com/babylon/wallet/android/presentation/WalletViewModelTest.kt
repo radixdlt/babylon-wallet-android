@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
@@ -21,7 +19,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.repository.ProfileDataSource
 
@@ -33,7 +30,6 @@ class WalletViewModelTest {
 
     private lateinit var vm: WalletViewModel
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
-    private val clipboardManager = mock(ClipboardManager::class.java)
     private val profileDataSource = mock(ProfileDataSource::class.java)
     private val accountRepository = AccountRepositoryFake()
 
@@ -43,7 +39,7 @@ class WalletViewModelTest {
 
     @Before
     fun setUp() {
-        vm = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource, accountRepository)
+        vm = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
         whenever(profileDataSource.profile).thenReturn(flow { emit(profile) })
     }
 
@@ -85,8 +81,8 @@ class WalletViewModelTest {
         val event = mutableListOf<WalletUiState>()
 
         // when
-        val viewModel = WalletViewModel(clipboardManager, requestAccountsUseCase, profileDataSource, accountRepository)
-        whenever(requestAccountsUseCase()).thenReturn(Result.Success(listOf(sampleData)))
+        val viewModel = WalletViewModel(requestAccountsUseCase, profileDataSource, accountRepository)
+        whenever(requestAccountsUseCase.getAccountsFromProfile(isRefreshing = false)).thenReturn(Result.Success(listOf(sampleData)))
         viewModel.walletUiState
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -95,16 +91,5 @@ class WalletViewModelTest {
 
         // then
         assertTrue(!event.last().isLoading)
-    }
-
-    @Test
-    fun `when onCopy called, verify content copied to clipboard manager`() {
-        // given
-        val hash = "somehash2123"
-        val clipData = ClipData.newPlainText("accountHash", hash)
-        vm.onCopyAccountAddress(hash)
-
-        // then
-        verify(clipboardManager).setPrimaryClip(clipData)
     }
 }

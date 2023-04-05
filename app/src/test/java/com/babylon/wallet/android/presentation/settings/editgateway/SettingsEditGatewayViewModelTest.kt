@@ -1,11 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.editgateway
 
+import app.cash.turbine.test
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
-import com.babylon.wallet.android.presentation.common.InfoMessageType
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.isValidUrl
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -15,14 +14,13 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.NetworkAndGateway
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileDataSource
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,61 +38,83 @@ class SettingsEditGatewayViewModelTest {
     @Before
     fun setUp() = runTest {
         vm = SettingsEditGatewayViewModel(profileDataSource, networkInfoRepository)
-        every { profileDataSource.networkAndGateway } returns flow { emit(profile.appPreferences.networkAndGateway) }
-        coEvery { profileDataSource.setNetworkAndGateway(any(), any()) } just Runs
-        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("mardunet")
+        every { profileDataSource.gateways } returns flow { emit(profile.appPreferences.gateways) }
+        coEvery { profileDataSource.changeGateway(any()) } just Runs
+        coEvery { profileDataSource.addGateway(any()) } just Runs
+        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
     }
 
     @Test
     fun `init loads profile and url`() = runTest {
-        assert(vm.state.newUrl.isNotEmpty())
-        assert(vm.state.currentNetworkAndGateway != null)
+        assert(vm.state.value.currentGateway != null)
     }
 
     @Test
     fun `url change updates it's value and valid state`() = runTest {
         val sampleUrl = "https://test.com"
         vm.onNewUrlChanged(sampleUrl)
-        assert(vm.state.newUrl == sampleUrl)
-        assert(vm.state.newUrlValid)
+        assert(vm.state.value.newUrl == sampleUrl)
+        assert(vm.state.value.newUrlValid)
     }
 
     @Test
-    fun `on message shown clears UI message`() = runTest {
-        vm.onMessageShown()
-        assert(vm.state.uiMessage == null)
-    }
-
-    @Test
-    fun `on network switch changes network`() = runTest {
-        val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
+    fun `adding network triggers network save`() = runTest {
+        val sampleUrl = Radix.Gateway.nebunet.url
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { profileDataSource.hasAccountOnNetwork(sampleUrl, any()) } returns true
-        vm.onSwitchToClick()
+        vm.onAddGateway()
         advanceUntilIdle()
-        coVerify(exactly = 1) { profileDataSource.setNetworkAndGateway(any(), any()) }
+        coVerify(exactly = 1) { profileDataSource.addGateway(any()) }
+        vm.oneOffEvent.test {
+            val item = expectMostRecentItem()
+            assert(item is SettingsEditGatewayEvent.GatewayAdded)
+        }
     }
 
     @Test
-    fun `on network switch calls for create account`() = runTest {
-        val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
+    fun `network switch calls for create account`() = runTest {
+        val sampleUrl = Radix.Gateway.hammunet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.hammunet)
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { profileDataSource.hasAccountOnNetwork(sampleUrl, any()) } returns false
-        vm.onSwitchToClick()
+        coEvery { profileDataSource.hasAccountForGateway(gateway) } returns false
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
         advanceUntilIdle()
-        assert(vm.oneOffEvent.first() is SettingsEditGatewayEvent.CreateProfileOnNetwork)
+        vm.oneOffEvent.test {
+            val item = expectMostRecentItem()
+            assert(item is SettingsEditGatewayEvent.CreateProfileOnNetwork)
+        }
+    }
+
+    @Test
+    fun `network switch calls changes gateway when there are accounts present`() = runTest {
+        val sampleUrl = Radix.Gateway.hammunet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.hammunet)
+        vm.onNewUrlChanged(sampleUrl)
+        coEvery { profileDataSource.hasAccountForGateway(gateway) } returns true
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
+        advanceUntilIdle()
+        coVerify(exactly = 1) { profileDataSource.changeGateway(gateway) }
+    }
+
+    @Test
+    fun `trying to switch to current network is no op`() = runTest {
+        val sampleUrl = Radix.Gateway.default.url
+        val gateway = Radix.Gateway.default
+        vm.onNewUrlChanged(sampleUrl)
+        vm.onGatewayClick(gateway)
+        advanceUntilIdle()
+        coVerify(exactly = 0) { profileDataSource.changeGateway(gateway) }
+        assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.AlreadyExist)
     }
 
     @Test
     fun `network info error triggers ui error`() = runTest {
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Error()
-        val sampleUrl = NetworkAndGateway.nebunet.gatewayAPIEndpointURL
+        val sampleUrl = Radix.Gateway.nebunet.url
         vm.onNewUrlChanged(sampleUrl)
-        vm.onSwitchToClick()
+        vm.onAddGateway()
         advanceUntilIdle()
-        val uiMessage = vm.state.uiMessage
-        assert(uiMessage is UiMessage.InfoMessage && uiMessage.type == InfoMessageType.GatewayInvalid)
+        assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.ErrorWhileAdding)
     }
 }

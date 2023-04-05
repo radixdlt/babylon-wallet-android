@@ -5,11 +5,14 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.babylon.wallet.android.data.repository.cache.CacheClient
+import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -33,5 +36,14 @@ object ApplicationModule {
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
         return context.userDataStore
+    }
+
+    @Provides
+    @Singleton
+    fun provideCacheClient(
+        @ApplicationContext applicationContext: Context,
+        jsonSerializer: Json,
+    ): CacheClient {
+        return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
     }
 }
