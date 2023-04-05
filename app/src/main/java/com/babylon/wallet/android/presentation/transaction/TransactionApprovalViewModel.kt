@@ -161,8 +161,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                         analyzeManifestWithPreviewResponse.accountDeposits.forEach {
                                             when (it) {
                                                 is AccountDeposit.Estimate -> {
-                                                    val amount = when (val resSpecifier =
-                                                        it.resourceSpecifier) {
+                                                    val amount = when (
+                                                        val resSpecifier =
+                                                            it.resourceSpecifier
+                                                    ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.amount
                                                         }
@@ -170,8 +172,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                                             ""
                                                         }
                                                     }
-                                                    val resourceAddress = when (val resSpecifier =
-                                                        it.resourceSpecifier) {
+                                                    val resourceAddress = when (
+                                                        val resSpecifier =
+                                                            it.resourceSpecifier
+                                                    ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.resourceAddress.address
                                                         }
@@ -192,8 +196,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                                     )
                                                 }
                                                 is AccountDeposit.Exact -> {
-                                                    val amount = when (val resSpecifier =
-                                                        it.resourceSpecifier) {
+                                                    val amount = when (
+                                                        val resSpecifier =
+                                                            it.resourceSpecifier
+                                                    ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.amount
                                                         }
@@ -201,8 +207,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                                             ""
                                                         }
                                                     }
-                                                    val resourceAddress = when (val resSpecifier =
-                                                        it.resourceSpecifier) {
+                                                    val resourceAddress = when (
+                                                        val resSpecifier =
+                                                            it.resourceSpecifier
+                                                    ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.resourceAddress.address
                                                         }
@@ -339,7 +347,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             )
 
                             val transactionStatus = transactionClient.pollTransactionStatus(txId)
-                            transactionStatus.onValue {
+                            transactionStatus.onValue { _ ->
                                 _state.update { it.copy(isSigning = false, approved = true) }
                                 approvalJob = null
                                 appEventBus.sendEvent(AppEvent.ApprovedTransaction)

@@ -8,10 +8,10 @@ import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import rdx.works.profile.data.repository.MnemonicRepository
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(

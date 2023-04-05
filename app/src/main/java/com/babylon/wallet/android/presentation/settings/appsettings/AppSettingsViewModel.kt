@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import rdx.works.profile.domain.security
+import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import javax.inject.Inject
 
 @HiltViewModel

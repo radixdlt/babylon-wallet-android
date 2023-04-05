@@ -6,10 +6,10 @@ import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addPersona
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import rdx.works.profile.data.repository.MnemonicRepository
 import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(

@@ -53,7 +53,7 @@ class AccountPreferenceViewModel @Inject constructor(
         appScope.launch {
             _state.update { it.copy(isLoading = true) }
             val result = getFreeXrdUseCase(true, args.address)
-            result.onValue {
+            result.onValue { _ ->
                 _state.update { it.copy(isLoading = false, gotFreeXrd = true) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }

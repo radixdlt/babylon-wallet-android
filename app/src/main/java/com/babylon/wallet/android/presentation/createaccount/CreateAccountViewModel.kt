@@ -40,7 +40,6 @@ class CreateAccountViewModel @Inject constructor(
     )
     val state: StateFlow<CreateAccountState> = _state
 
-
     fun onAccountNameChange(accountName: String) {
         savedStateHandle[ACCOUNT_NAME] = accountName.take(ACCOUNT_NAME_MAX_LENGTH)
         savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty()
