@@ -96,4 +96,4 @@ data class WalletUiState(
     val isRefreshing: Boolean = false,
     val resources: ImmutableList<AccountResources> = persistentListOf(),
     val error: UiMessage? = null,
-): UiState
+) : UiState

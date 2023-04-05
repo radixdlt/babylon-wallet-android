@@ -139,7 +139,7 @@ data class SettingsUiState(
     val newUrlValid: Boolean = false,
     val addingGateway: Boolean = false,
     val gatewayAddFailure: GatewayAddFailure? = null
-): UiState
+) : UiState
 
 enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding

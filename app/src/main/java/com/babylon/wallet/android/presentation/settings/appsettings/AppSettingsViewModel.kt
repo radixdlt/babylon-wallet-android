@@ -61,7 +61,7 @@ class AppSettingsViewModel @Inject constructor(
 
 data class SettingsUiState(
     val settings: ImmutableSet<AppSettings>
-): UiState {
+) : UiState {
 
     companion object {
         val default = SettingsUiState(

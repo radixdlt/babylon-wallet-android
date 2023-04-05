@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.common.BaseViewModel
@@ -12,8 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,7 +43,7 @@ class PersonasViewModel @Inject constructor(
 
     data class PersonasUiState(
         val personas: ImmutableList<Network.Persona> = persistentListOf()
-    ): UiState
+    ) : UiState
 
     sealed interface PersonasEvent : OneOffEvent {
         data class CreatePersona(val firstPersonaCreated: Boolean) : PersonasEvent

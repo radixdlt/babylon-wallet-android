@@ -186,4 +186,4 @@ data class DappDetailUiState(
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
-): UiState
+) : UiState

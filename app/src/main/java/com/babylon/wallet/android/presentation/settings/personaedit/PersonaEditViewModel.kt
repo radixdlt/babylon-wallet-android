@@ -94,4 +94,4 @@ data class PersonaEditUiState(
     val saveButtonEnabled: Boolean = false,
     val dappContextEdit: Boolean = false,
     val wasEdited: Boolean = false
-): UiState
+) : UiState
