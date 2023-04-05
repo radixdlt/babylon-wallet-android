@@ -18,10 +18,12 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -53,20 +55,19 @@ class TransactionApprovalViewModel @Inject constructor(
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    deviceSecurityHelper: DeviceSecurityHelper,
+    private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
-) : ViewModel(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<TransactionUiState>(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
     private val args = TransactionApprovalArgs(savedStateHandle)
     private val transactionWriteRequest =
         incomingRequestRepository.getTransactionWriteRequest(args.requestId)
 
-    private val _state =
-        MutableStateFlow(TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure()))
-    internal val state: StateFlow<TransactionUiState> = _state
+    override fun initialState(): TransactionUiState =
+        TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure())
 
     private var approvalJob: Job? = null
 
@@ -446,7 +447,7 @@ data class ConnectedDAppUiModel(
     val title: String
 )
 
-internal data class TransactionUiState(
+data class TransactionUiState(
     val manifestData: TransactionManifestData? = null,
     val manifestString: String = "",
     val isLoading: Boolean = true,
@@ -461,8 +462,8 @@ internal data class TransactionUiState(
     val depositingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
     val connectedDApps: ImmutableList<ConnectedDAppUiModel> = persistentListOf()
-)
+): UiState
 
-internal sealed interface TransactionApprovalEvent : OneOffEvent {
+sealed interface TransactionApprovalEvent : OneOffEvent {
     object NavigateBack : TransactionApprovalEvent
 }

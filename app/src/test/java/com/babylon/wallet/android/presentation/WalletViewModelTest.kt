@@ -54,7 +54,7 @@ class WalletViewModelTest {
         val event = mutableListOf<WalletUiState>()
 
         // when
-        vm.walletUiState
+        vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -72,7 +72,7 @@ class WalletViewModelTest {
             .thenReturn(Result.Success(listOf(sampleData)))
 
         // when
-        vm.walletUiState
+        vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 

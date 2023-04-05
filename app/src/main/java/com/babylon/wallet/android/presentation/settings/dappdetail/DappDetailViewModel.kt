@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.dappdetail
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
@@ -9,9 +8,11 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -21,8 +22,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -40,14 +39,12 @@ class DappDetailViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
-) : ViewModel(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<DappDetailUiState>(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
     private lateinit var authorizedDapp: Network.AuthorizedDapp
     private val args = DappDetailScreenArgs(savedStateHandle)
 
-    private val _state: MutableStateFlow<DappDetailUiState> =
-        MutableStateFlow(DappDetailUiState())
-    val state = _state.asStateFlow()
+    override fun initialState(): DappDetailUiState = DappDetailUiState()
 
     init {
         viewModelScope.launch {
@@ -189,4 +186,4 @@ data class DappDetailUiState(
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
-)
+): UiState

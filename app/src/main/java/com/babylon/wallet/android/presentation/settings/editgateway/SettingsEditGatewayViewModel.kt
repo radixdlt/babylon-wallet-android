@@ -1,14 +1,15 @@
 package com.babylon.wallet.android.presentation.settings.editgateway
 
 import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
 import com.babylon.wallet.android.utils.prependHttpsPrefixIfNotPresent
@@ -16,8 +17,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -35,10 +34,9 @@ class SettingsEditGatewayViewModel @Inject constructor(
     private val addGatewayUseCase: AddGatewayUseCase,
     private val deleteGatewayUseCase: DeleteGatewayUseCase,
     private val networkInfoRepository: NetworkInfoRepository,
-) : ViewModel(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<SettingsUiState>(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
-    private val _state: MutableStateFlow<SettingsUiState> = MutableStateFlow(SettingsUiState())
-    internal val state = _state.asStateFlow()
+    override fun initialState(): SettingsUiState = SettingsUiState()
 
     init {
         observeProfile()
@@ -134,16 +132,16 @@ internal sealed interface SettingsEditGatewayEvent : OneOffEvent {
     data class CreateProfileOnNetwork(val newUrl: String, val networkName: String) : SettingsEditGatewayEvent
 }
 
-internal data class SettingsUiState(
+data class SettingsUiState(
     val currentGateway: Radix.Gateway? = null,
     val gatewayList: PersistentList<GatewayWrapper> = persistentListOf(),
     val newUrl: String = "",
     val newUrlValid: Boolean = false,
     val addingGateway: Boolean = false,
     val gatewayAddFailure: GatewayAddFailure? = null
-)
+): UiState
 
-internal enum class GatewayAddFailure {
+enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding
 }
 

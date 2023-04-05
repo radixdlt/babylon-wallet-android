@@ -1,16 +1,15 @@
 package com.babylon.wallet.android.presentation.settings.connector
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.data.PeerdroidLink
@@ -30,23 +29,20 @@ class SettingsConnectorViewModel @Inject constructor(
     private val addP2PLinkUseCase: AddP2PLinkUseCase,
     private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
     savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+) : BaseViewModel<SettingsConnectorUiState>() {
 
     private var currentConnectionPassword: String = ""
 
     private val args = SettingsConnectorScreenArgs(savedStateHandle)
-    private val _state: MutableStateFlow<SettingsConnectorUiState> =
-        MutableStateFlow(
-            SettingsConnectorUiState(
-                mode = if (args.scanQr) {
-                    SettingsConnectorMode.ScanQr
-                } else {
-                    SettingsConnectorMode.ShowDetails
-                },
-                triggerCameraPermissionPrompt = args.scanQr
-            )
-        )
-    val state = _state.asStateFlow()
+
+    override fun initialState(): SettingsConnectorUiState = SettingsConnectorUiState(
+        mode = if (args.scanQr) {
+            SettingsConnectorMode.ScanQr
+        } else {
+            SettingsConnectorMode.ShowDetails
+        },
+        triggerCameraPermissionPrompt = args.scanQr
+    )
 
     init {
         viewModelScope.launch {
@@ -156,7 +152,7 @@ data class SettingsConnectorUiState(
     val isScanningQr: Boolean = false,
     val mode: SettingsConnectorMode = SettingsConnectorMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,
-)
+) : UiState
 
 data class ActiveConnectorUiModel(
     val id: String,

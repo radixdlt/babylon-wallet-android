@@ -3,9 +3,11 @@ package com.babylon.wallet.android.presentation.settings.personas
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -24,10 +26,9 @@ import javax.inject.Inject
 class PersonasViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager
-) : ViewModel(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<PersonasViewModel.PersonasUiState>(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
-    private val _state = MutableStateFlow(PersonasUiState())
-    internal val state: StateFlow<PersonasUiState> = _state
+    override fun initialState(): PersonasUiState = PersonasUiState()
 
     init {
         viewModelScope.launch {
@@ -45,7 +46,7 @@ class PersonasViewModel @Inject constructor(
 
     data class PersonasUiState(
         val personas: ImmutableList<Network.Persona> = persistentListOf()
-    )
+    ): UiState
 
     sealed interface PersonasEvent : OneOffEvent {
         data class CreatePersona(val firstPersonaCreated: Boolean) : PersonasEvent

@@ -1,20 +1,19 @@
 package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -28,15 +27,13 @@ class PersonaEditViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val updatePersonaUseCase: UpdatePersonaUseCase,
     savedStateHandle: SavedStateHandle
-) : ViewModel(),
+) : BaseViewModel<PersonaEditUiState>(),
     OneOffEventHandler<PersonaEditEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
     private val args = PersonaEditScreenArgs(savedStateHandle)
 
-    private val _state: MutableStateFlow<PersonaEditUiState> =
-        MutableStateFlow(PersonaEditUiState())
-    val state = _state.asStateFlow()
+    override fun initialState(): PersonaEditUiState = PersonaEditUiState()
 
     init {
         viewModelScope.launch {
@@ -97,4 +94,4 @@ data class PersonaEditUiState(
     val saveButtonEnabled: Boolean = false,
     val dappContextEdit: Boolean = false,
     val wasEdited: Boolean = false
-)
+): UiState

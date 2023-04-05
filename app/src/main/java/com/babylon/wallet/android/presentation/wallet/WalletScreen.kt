@@ -63,7 +63,7 @@ fun WalletScreen(
     onNavigateToIncompatibleProfile: () -> Unit
 ) {
     val appState by mainUiState.collectAsStateWithLifecycle()
-    val walletState by viewModel.walletUiState.collectAsStateWithLifecycle()
+    val walletState by viewModel.state.collectAsStateWithLifecycle()
     when (appState.initialAppState) {
         AppState.HasProfile -> {
             SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
