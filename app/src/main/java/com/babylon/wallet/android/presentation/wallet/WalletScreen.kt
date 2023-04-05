@@ -32,6 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.AppState
+import com.babylon.wallet.android.MainUiState
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -40,12 +42,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun WalletScreen(
@@ -54,27 +58,49 @@ fun WalletScreen(
     modifier: Modifier = Modifier,
     onAccountClick: (accountId: String, accountName: String) -> Unit = { _, _ -> },
     onAccountCreationClick: () -> Unit,
+    mainUiState: StateFlow<MainUiState>,
+    onNavigateToCreateAccount: () -> Unit,
+    onNavigateToIncompatibleProfile: () -> Unit
 ) {
-    val state by viewModel.walletUiState.collectAsStateWithLifecycle()
-    SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
-    WalletScreenContent(
-        onMenuClick = onMenuClick,
-        onAccountClick = viewModel::onAccountClick,
-        onAccountCreationClick = onAccountCreationClick,
-        isRefreshing = state.isRefreshing,
-        onRefresh = viewModel::refresh,
-        modifier = modifier,
-        isLoading = state.isLoading,
-        accounts = state.resources,
-        error = state.error,
-        onMessageShown = viewModel::onMessageShown
-    )
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
-                is WalletEvent.AccountClick -> onAccountClick(it.address, it.nameEncoded)
+    val appState by mainUiState.collectAsStateWithLifecycle()
+    val walletState by viewModel.walletUiState.collectAsStateWithLifecycle()
+    when (appState.initialAppState) {
+        AppState.HasProfile -> {
+            SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
+            WalletScreenContent(
+                onMenuClick = onMenuClick,
+                onAccountClick = viewModel::onAccountClick,
+                onAccountCreationClick = onAccountCreationClick,
+                isRefreshing = walletState.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = modifier,
+                isLoading = walletState.isLoading,
+                accounts = walletState.resources,
+                error = walletState.error,
+                onMessageShown = viewModel::onMessageShown
+            )
+            LaunchedEffect(Unit) {
+                viewModel.oneOffEvent.collect {
+                    when (it) {
+                        is WalletEvent.AccountClick -> onAccountClick(it.address, it.nameEncoded)
+                    }
+                }
             }
         }
+        AppState.IncompatibleProfile -> {
+            LaunchedEffect(appState.initialAppState) {
+                onNavigateToIncompatibleProfile()
+            }
+        }
+        AppState.Loading -> {
+            FullscreenCircularProgressContent()
+        }
+        AppState.NoProfile -> {
+            LaunchedEffect(appState.initialAppState) {
+                onNavigateToCreateAccount()
+            }
+        }
+        AppState.Onboarding -> {}
     }
 }
 

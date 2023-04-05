@@ -6,13 +6,13 @@ import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.getValue
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -28,7 +28,7 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
-            viewModel.state.value.loading
+            viewModel.state.value.initialAppState == AppState.Loading
         }
         setSplashExitAnimation(splashScreen)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -36,15 +36,14 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                val state by viewModel.state.collectAsStateWithLifecycle()
                 DevelopmentPreviewWrapper {
-                    WalletApp(
-                        appNavigationState = state.initialAppState,
-                        oneOffEvent = viewModel.oneOffEvent
-                    )
+                    WalletApp(mainViewModel = viewModel, onCloseApp = {
+                        finish()
+                    })
                 }
             }
         }
+        lifecycle.addObserver(PeerdroidHandler())
     }
 
     private fun setSplashExitAnimation(splashScreen: SplashScreen) {
@@ -64,5 +63,17 @@ class MainActivity : FragmentActivity() {
 
     companion object {
         private const val splashExitAnimDurationMs = 300L
+    }
+
+    inner class PeerdroidHandler : DefaultLifecycleObserver {
+        override fun onPause(owner: LifecycleOwner) {
+            viewModel.onPause()
+            super.onPause(owner)
+        }
+
+        override fun onResume(owner: LifecycleOwner) {
+            viewModel.onResume()
+            super.onResume(owner)
+        }
     }
 }

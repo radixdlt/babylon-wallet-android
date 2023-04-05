@@ -89,6 +89,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
                     else -> {}
                 }
+            },
+            onProfileDeleted = {
+                navController.popBackStack(Screen.WalletDestination.route, false)
             }
         )
     }

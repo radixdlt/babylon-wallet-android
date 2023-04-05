@@ -16,6 +16,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -41,6 +42,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackClick: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
+    onProfileDeleted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -54,6 +56,13 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
     )
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                SettingsEvent.ProfileDeleted -> onProfileDeleted()
+            }
+        }
+    }
 }
 
 @Composable
