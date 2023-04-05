@@ -78,10 +78,11 @@ fun NavigationHost(
                 },
                 onNavigateToCreateAccount = {
                     navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                },
+                onNavigateToIncompatibleProfile = {
+                    navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
                 }
-            ) {
-                navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
-            }
+            )
         }
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
