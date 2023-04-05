@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -46,7 +47,28 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
     override fun setUp() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_DAPP_ADDRESS) } returns "address1"
-        every { getProfileUseCase() } returns flowOf(profile(personas = samplePersonas))
+        every { getProfileUseCase() } returns flowOf(
+            profile(
+                personas = samplePersonas, dApps = listOf(
+                    Network.AuthorizedDapp(
+                        11, "1", "dApp", listOf(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple(
+                                identityAddress = "address1",
+                                fieldIDs = emptyList(),
+                                lastUsedOn = "2023-01-31T10:28:14Z",
+                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                    listOf("address-acc-1"),
+                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                        1
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
     }
 
     @Test
