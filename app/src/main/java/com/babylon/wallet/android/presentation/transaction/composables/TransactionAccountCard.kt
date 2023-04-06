@@ -40,7 +40,8 @@ fun TransactionAccountCard(
     token: TokenUiModel,
     modifier: Modifier = Modifier,
     appearanceId: Int,
-    accountName: String
+    accountName: String,
+    isTokenAmountVisible: Boolean
 ) {
     Column(
         modifier = modifier
@@ -109,38 +110,24 @@ fun TransactionAccountCard(
                 )
             }
             Text(
-                modifier = Modifier
-                    .weight(0.3f),
+                modifier = Modifier.weight(1f),
                 text = token.symbol.orEmpty(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            // TODO no fiat value for now
-//            Column(
-//                modifier = Modifier.weight(0.7f),
-//                horizontalAlignment = Alignment.End
-//            ) {
-            Text(
-                modifier = Modifier.weight(0.7f),
-                text = token.tokenQuantityToDisplay,
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
-//                Text(
-//                    modifier = Modifier.weight(1f),
-//                    text = token.tokenValue.orEmpty(),
-//                    style = RadixTheme.typography.body2HighImportance,
-//                    color = RadixTheme.colors.gray2,
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Ellipsis,
-//                    textAlign = TextAlign.End
-//                )
-//            }
+            if (isTokenAmountVisible) {
+                Text(
+                    modifier = Modifier,
+                    text = token.tokenQuantityToDisplay,
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
+            }
         }
     }
 }
@@ -165,7 +152,8 @@ fun TransactionAccountCardPreview() {
             ),
             modifier = Modifier,
             appearanceId = 0,
-            accountName = "My main account"
+            accountName = "My main account",
+            isTokenAmountVisible = false
         )
     }
 }

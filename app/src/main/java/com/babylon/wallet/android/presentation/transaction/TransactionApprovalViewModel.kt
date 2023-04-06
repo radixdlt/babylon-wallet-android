@@ -125,11 +125,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                 }
                             } else {
                                 transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
-                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
-                                    val costUnitsConsumed =
-                                        feeSummary.cost_units_consumed.toBigDecimal()
-                                    val networkFee =
-                                        costUnitPrice.multiply(costUnitsConsumed).toString()
+                                    // TODO this will be done properly when backend work comes
+//                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
+//                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
+                                    val networkFee = "10" // TODO this will be done properly when backend work comes
                                     _state.update { it.copy(networkFee = networkFee) }
                                 }
 
@@ -428,7 +427,8 @@ data class TransactionAccountItemUiModel(
     val tokenQuantity: String,
     val fiatAmount: String,
     val appearanceID: Int,
-    val iconUrl: String
+    val iconUrl: String,
+    val isTokenAmountVisible: Boolean
 ) {
     val tokenQuantityDecimal: BigDecimal
         get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal()

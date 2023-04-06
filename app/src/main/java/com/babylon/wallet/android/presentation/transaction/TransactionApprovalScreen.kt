@@ -309,7 +309,8 @@ fun TransactionPreviewContentPreview() {
                     tokenQuantity = "689.203",
                     fiatAmount = "$1234",
                     appearanceID = 1,
-                    iconUrl = ""
+                    iconUrl = "",
+                    isTokenAmountVisible = true
                 )
             ),
             depositingAccounts = persistentListOf(
@@ -320,7 +321,8 @@ fun TransactionPreviewContentPreview() {
                     tokenQuantity = "689.203",
                     fiatAmount = "$1234",
                     appearanceID = 1,
-                    iconUrl = ""
+                    iconUrl = "",
+                    isTokenAmountVisible = true
                 )
             ),
             onApproveTransaction = {},

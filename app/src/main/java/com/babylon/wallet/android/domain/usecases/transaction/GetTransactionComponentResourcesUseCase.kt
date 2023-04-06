@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
+import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_NAME
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import com.radixdlt.toolkit.models.address.EntityAddress
@@ -58,15 +59,32 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
 
             var tokenSymbol = "Unknown"
             var iconUrl = ""
+            var isTokenAmountVisible = true
 
             if (!createdEntity) {
-                val resourceItem = stateEntityDetailsResponse.items.find {
+                val fungibleResourceItem = stateEntityDetailsResponse.items.find {
                     it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
                 }
+                val nonFungibleResourceItem = stateEntityDetailsResponse.items.find {
+                    it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
+                }
 
-                resourceItem?.metadata?.asMetadataStringMap()?.let {
+                // Do not display amount if its empty AND its NFT
+                val amountHidden = nonFungibleResourceItem != null && amount.isEmpty()
+                isTokenAmountVisible = !amountHidden
+
+                fungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
                     if (it.containsKey(KEY_SYMBOL)) {
                         tokenSymbol = it.getValue(KEY_SYMBOL)
+                    }
+                    if (it.containsKey(KEY_ICON)) {
+                        iconUrl = it.getValue(KEY_ICON)
+                    }
+                }
+
+                nonFungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
+                    if (it.containsKey(KEY_NAME)) {
+                        tokenSymbol = it.getValue(KEY_NAME)
                     }
                     if (it.containsKey(KEY_ICON)) {
                         iconUrl = it.getValue(KEY_ICON)
@@ -87,7 +105,8 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                     tokenQuantity = amount,
                     fiatAmount = "$1234.12",
                     appearanceID = accountAppearanceId,
-                    iconUrl = iconUrl
+                    iconUrl = iconUrl,
+                    isTokenAmountVisible = isTokenAmountVisible
                 )
             )
         }
