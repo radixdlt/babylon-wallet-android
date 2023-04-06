@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -86,8 +86,8 @@ fun SelectPersonaScreen(
             }
         }
     }
-    val state by viewModel.state.collectAsState()
-    val sharedState by sharedViewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     BackHandler(enabled = true) {}
     SelectPersonaContent(
         onCancelClick = sharedViewModel::onAbortDappLogin,
@@ -163,7 +163,10 @@ private fun SelectPersonaContent(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(104.dp)
-                                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
+                                    .background(
+                                        RadixTheme.colors.gray3,
+                                        RadixTheme.shapes.roundedRectDefault
+                                    )
                                     .clip(RadixTheme.shapes.roundedRectDefault)
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -199,7 +202,10 @@ private fun SelectPersonaContent(
                             PersonaCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
+                                    .background(
+                                        RadixTheme.colors.gray5,
+                                        shape = RadixTheme.shapes.roundedRectMedium
+                                    )
                                     .clip(RadixTheme.shapes.roundedRectMedium)
                                     .throttleClickable {
                                         onSelectPersona(personaItem.persona)
