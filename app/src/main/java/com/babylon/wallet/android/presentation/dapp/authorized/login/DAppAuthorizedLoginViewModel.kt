@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -17,10 +16,12 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
@@ -30,8 +31,6 @@ import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -61,7 +60,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
-) : ViewModel(), OneOffEventHandler<DAppAuthorizedLoginEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<DAppLoginUiState>(), OneOffEventHandler<DAppAuthorizedLoginEvent> by OneOffEventHandlerImpl() {
 
     private val args = DAppAuthorizedLoginArgs(savedStateHandle)
 
@@ -71,14 +70,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         args.requestId
     )
 
-    private val _state = MutableStateFlow(DAppLoginUiState())
-    val state = _state.asStateFlow()
-
     private var authorizedDapp: Network.AuthorizedDapp? = null
     private var editedDapp: Network.AuthorizedDapp? = null
 
     private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppAuthorizedLoginEvent>()
     val topLevelOneOffEvent by topLevelOneOffEventHandler
+
+    override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
     init {
         viewModelScope.launch {
@@ -668,4 +666,4 @@ data class DAppLoginUiState(
     val selectedOnetimeDataFields: List<Network.Persona.Field> = emptyList(),
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null
-)
+) : UiState

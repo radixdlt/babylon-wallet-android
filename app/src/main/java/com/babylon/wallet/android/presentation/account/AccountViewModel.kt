@@ -2,14 +2,15 @@ package com.babylon.wallet.android.presentation.account
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.AssetUiModel
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
@@ -24,8 +25,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,18 +36,15 @@ class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : BaseViewModel<AccountUiState>() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
     private val accountName: String = savedStateHandle.get<String>(ARG_ACCOUNT_NAME).orEmpty()
 
-    private val _accountUiState = MutableStateFlow(
-        AccountUiState(
-            accountAddressFull = accountId,
-            accountName = accountName.decodeUtf8()
-        )
+    override fun initialState(): AccountUiState = AccountUiState(
+        accountAddressFull = accountId,
+        accountName = accountName.decodeUtf8()
     )
-    val accountUiState = _accountUiState.asStateFlow()
 
     init {
         loadAccountData(isRefreshing = false)
@@ -62,7 +58,7 @@ class AccountViewModel @Inject constructor(
     }
 
     fun refresh() {
-        _accountUiState.update { state ->
+        _state.update { state ->
             state.copy(isRefreshing = true)
         }
         loadAccountData(isRefreshing = true)
@@ -73,7 +69,7 @@ class AccountViewModel @Inject constructor(
             if (accountId.isNotEmpty()) {
                 val result = getAccountResourcesUseCase.getAccount(accountId, isRefreshing)
                 result.onError { e ->
-                    _accountUiState.update { accountUiState ->
+                    _state.update { accountUiState ->
                         accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
                     }
                 }
@@ -86,7 +82,7 @@ class AccountViewModel @Inject constructor(
                         it.token.metadata[MetadataConstants.KEY_SYMBOL] != MetadataConstants.SYMBOL_XRD
                     }
 
-                    _accountUiState.update { accountUiState ->
+                    _state.update { accountUiState ->
                         accountUiState.copy(
                             isRefreshing = false,
                             isLoading = false,
@@ -104,7 +100,7 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onFungibleTokenClick(token: TokenUiModel) {
-        _accountUiState.update { accountUiState ->
+        _state.update { accountUiState ->
             accountUiState.copy(assetDetails = token)
         }
     }
@@ -113,7 +109,7 @@ class AccountViewModel @Inject constructor(
         nftCollectionUiModel: NftCollectionUiModel,
         nftItemUiModel: NftCollectionUiModel.NftItemUiModel
     ) {
-        _accountUiState.update { accountUiState ->
+        _state.update { accountUiState ->
             accountUiState.copy(
                 assetDetails = nftCollectionUiModel,
                 selectedNft = nftItemUiModel
@@ -135,7 +131,7 @@ data class AccountUiState(
     val fungibleTokens: ImmutableList<TokenUiModel> = persistentListOf(),
     val nonFungibleTokens: ImmutableList<NftCollectionUiModel> = persistentListOf(),
     val uiMessage: UiMessage? = null
-)
+) : UiState
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {
     TOKEN_TAB(R.string.account_asset_row_tab_tokens),

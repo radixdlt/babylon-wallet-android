@@ -1,17 +1,16 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
@@ -23,19 +22,16 @@ import javax.inject.Inject
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase
-) : ViewModel(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<ChooseAccountUiState>(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = ChooseAccountsArgs(savedStateHandle)
 
-    private val _state = MutableStateFlow(
-        ChooseAccountUiState(
-            numberOfAccounts = args.numberOfAccounts,
-            isExactAccountsCount = args.isExactAccountsCount,
-            oneTimeRequest = args.oneTime,
-            showBackButton = args.showBack
-        )
+    override fun initialState(): ChooseAccountUiState = ChooseAccountUiState(
+        numberOfAccounts = args.numberOfAccounts,
+        isExactAccountsCount = args.isExactAccountsCount,
+        oneTimeRequest = args.oneTime,
+        showBackButton = args.showBack
     )
-    var state: StateFlow<ChooseAccountUiState> = _state
 
     init {
         viewModelScope.launch {
@@ -133,4 +129,4 @@ data class ChooseAccountUiState(
     val showProgress: Boolean = true,
     val showBackButton: Boolean = false,
     val selectedAccounts: List<AccountItemUiModel> = emptyList()
-)
+) : UiState

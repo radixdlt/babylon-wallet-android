@@ -62,7 +62,7 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier,
     restoreWalletFromBackup: () -> Unit,
 ) {
-    val state by viewModel.onboardingUiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
         restoreWalletFromBackup = restoreWalletFromBackup,

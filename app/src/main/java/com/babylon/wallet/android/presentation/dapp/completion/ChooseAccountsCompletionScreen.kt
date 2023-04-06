@@ -37,10 +37,10 @@ fun ChooseAccountsCompletionScreen(
     viewModel: ChooseAccountsCompletionViewModel,
     onContinueClick: () -> Unit
 ) {
-    val dAppName by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     ChooseAccountsCompletionContent(
-        dAppName = dAppName,
+        dAppName = state.dAppName,
         onContinueClick = onContinueClick
     )
 }

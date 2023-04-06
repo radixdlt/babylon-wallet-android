@@ -1,16 +1,15 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GenerateProfileUseCase
@@ -25,20 +24,18 @@ class CreateAccountViewModel @Inject constructor(
     private val getProfileStateUseCase: GetProfileStateUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
-    deviceSecurityHelper: DeviceSecurityHelper,
-) : ViewModel(), OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+) : BaseViewModel<CreateAccountViewModel.CreateAccountState>(),
+    OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
 
-    private val _state = MutableStateFlow(
-        CreateAccountState(
-            isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
-            firstTime = args.requestSource == CreateAccountRequestSource.FirstTime
-        )
+    override fun initialState(): CreateAccountState = CreateAccountState(
+        isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
+        firstTime = args.requestSource == CreateAccountRequestSource.FirstTime
     )
-    val state: StateFlow<CreateAccountState> = _state
 
     fun onAccountNameChange(accountName: String) {
         savedStateHandle[ACCOUNT_NAME] = accountName.take(ACCOUNT_NAME_MAX_LENGTH)
@@ -90,7 +87,7 @@ class CreateAccountViewModel @Inject constructor(
         val hasProfile: Boolean = false,
         val isDeviceSecure: Boolean = false,
         val firstTime: Boolean = false,
-    )
+    ) : UiState
 
     companion object {
         private const val ACCOUNT_NAME_MAX_LENGTH = 20

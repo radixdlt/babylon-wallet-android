@@ -1,19 +1,18 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
@@ -24,18 +23,15 @@ import javax.inject.Inject
 class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase
-) : ViewModel(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<OneTimeChooseAccountUiState>(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = OneTimeChooseAccountsArgs(savedStateHandle)
 
-    private val _state = MutableStateFlow(
-        OneTimeChooseAccountUiState(
-            numberOfAccounts = args.numberOfAccounts,
-            isExactAccountsCount = args.isExactAccountsCount,
-            isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
-        )
+    override fun initialState(): OneTimeChooseAccountUiState = OneTimeChooseAccountUiState(
+        numberOfAccounts = args.numberOfAccounts,
+        isExactAccountsCount = args.isExactAccountsCount,
+        isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
     )
-    val state: StateFlow<OneTimeChooseAccountUiState> = _state
 
     init {
         viewModelScope.launch {
@@ -122,7 +118,7 @@ data class OneTimeChooseAccountUiState(
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
     val isSingleChoice: Boolean = false,
-) {
+) : UiState {
     fun selectedAccounts(): List<AccountItemUiModel> {
         return availableAccountItems
             .filter { accountItem ->

@@ -1,14 +1,14 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -18,11 +18,12 @@ import javax.inject.Inject
 class CreateAccountConfirmationViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle,
-) : ViewModel(), OneOffEventHandler<CreateAccountConfirmationEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<CreateAccountConfirmationViewModel.AccountConfirmationUiState>(),
+    OneOffEventHandler<CreateAccountConfirmationEvent> by OneOffEventHandlerImpl() {
 
     internal val args = CreateAccountConfirmationArgs(savedStateHandle)
-    private val _state = MutableStateFlow(AccountConfirmationUiState())
-    val state: StateFlow<AccountConfirmationUiState> = _state
+
+    override fun initialState(): AccountConfirmationUiState = AccountConfirmationUiState()
 
     init {
         viewModelScope.launch {
@@ -30,11 +31,13 @@ class CreateAccountConfirmationViewModel @Inject constructor(
             requireNotNull(account) {
                 "account is null"
             }
-            _state.value = AccountConfirmationUiState(
-                accountName = account.displayName,
-                accountAddress = account.address,
-                appearanceId = account.appearanceID
-            )
+            _state.update {
+                AccountConfirmationUiState(
+                    accountName = account.displayName,
+                    accountAddress = account.address,
+                    appearanceId = account.appearanceID
+                )
+            }
         }
     }
 
@@ -51,7 +54,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
         val accountName: String = "",
         val accountAddress: String = "",
         val appearanceId: Int = 0,
-    )
+    ) : UiState
 }
 
 internal sealed interface CreateAccountConfirmationEvent : OneOffEvent {

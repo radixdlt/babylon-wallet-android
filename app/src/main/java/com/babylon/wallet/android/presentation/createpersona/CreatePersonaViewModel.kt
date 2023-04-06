@@ -1,21 +1,20 @@
 package com.babylon.wallet.android.presentation.createpersona
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -26,17 +25,14 @@ import javax.inject.Inject
 class CreatePersonaViewModel @Inject constructor(
     private val createPersonaUseCase: CreatePersonaUseCase,
     private val preferencesManager: PreferencesManager,
-    deviceSecurityHelper: DeviceSecurityHelper,
-) : ViewModel(),
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+) : BaseViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
-    private val _state = MutableStateFlow(
-        CreatePersonaUiState(
-            isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
-        )
+    override fun initialState(): CreatePersonaUiState = CreatePersonaUiState(
+        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
     )
-    val state: StateFlow<CreatePersonaUiState> = _state
 
     init {
         viewModelScope.launch {
@@ -87,7 +83,7 @@ class CreatePersonaViewModel @Inject constructor(
         val continueButtonEnabled: Boolean = false,
         val anyFieldSelected: Boolean = false,
         val isDeviceSecure: Boolean = false
-    )
+    ) : UiState
 }
 
 internal sealed interface CreatePersonaEvent : OneOffEvent {
