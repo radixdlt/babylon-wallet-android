@@ -13,6 +13,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -54,8 +55,9 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
     fun `initial state is correct when free xrd enabled`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.isDeviceSecure)
-        assert(vm.state.canUseFaucet)
+        val state = vm.state.first()
+        assert(state.isDeviceSecure)
+        assert(state.canUseFaucet)
     }
 
     @Test
@@ -63,8 +65,9 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(false) }
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.isDeviceSecure)
-        assert(!vm.state.canUseFaucet)
+        val state = vm.state.first()
+        assert(state.isDeviceSecure)
+        assert(!state.canUseFaucet)
     }
 
     @Test
@@ -72,8 +75,9 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
+        val state = vm.state.first()
         coVerify(exactly = 1) { getFreeXrdUseCase(true, sampleAddress) }
-        assert(vm.state.gotFreeXrd)
+        assert(state.gotFreeXrd)
     }
 
     @Test
@@ -82,8 +86,9 @@ internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPrefere
         val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
+        val state = vm.state.first()
         coVerify(exactly = 1) { getFreeXrdUseCase(true, sampleAddress) }
-        assert(!vm.state.gotFreeXrd)
-        assert(vm.state.error != null)
+        assert(!state.gotFreeXrd)
+        assert(state.error != null)
     }
 }

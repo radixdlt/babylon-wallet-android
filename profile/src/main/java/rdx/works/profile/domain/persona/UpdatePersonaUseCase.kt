@@ -1,16 +1,18 @@
-package rdx.works.profile.domain
+package rdx.works.profile.domain.persona
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.updatePersona
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class UpdatePersonaUseCase @Inject constructor(
-    private val profileDataSource: ProfileDataSource,
+    private val profileRepository: ProfileRepository,
     private val dAppConnectionRepository: DAppConnectionRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -19,12 +21,10 @@ class UpdatePersonaUseCase @Inject constructor(
         updatedPersona: Network.Persona,
     ) {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.readProfile()
-            checkNotNull(profile) {
-                "Profile does not exist"
-            }
+            val profile = profileRepository.profile.first()
+
             val updatedProfile = profile.updatePersona(updatedPersona)
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
             dAppConnectionRepository.ensureAuthorizedPersonasFieldsExist(updatedPersona.address, updatedPersona.fields.map { it.id })
         }
     }

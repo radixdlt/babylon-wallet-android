@@ -11,11 +11,12 @@ import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import com.radixdlt.toolkit.models.address.EntityAddress
 import com.radixdlt.toolkit.models.request.CreatedEntities
-import rdx.works.profile.data.repository.AccountRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
 
 class GetTransactionComponentResourcesUseCase @Inject constructor(
-    private val accountRepository: AccountRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val entityRepository: EntityRepository
 ) {
     @Suppress("LongMethod")
@@ -91,11 +92,10 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                 }
             }
 
-            val accountDisplayName = accountRepository
-                .getAccountByAddress(accountItem?.address.orEmpty())?.displayName.orEmpty()
-
-            val accountAppearanceId = accountRepository
-                .getAccountByAddress(accountItem?.address.orEmpty())?.appearanceID ?: 1
+            val accountOnProfile = getProfileUseCase
+                .accountOnCurrentNetwork(accountItem?.address.orEmpty())
+            val accountDisplayName = accountOnProfile?.displayName.orEmpty()
+            val accountAppearanceId = accountOnProfile?.appearanceID ?: 1
 
             account = Result.Success(
                 TransactionAccountItemUiModel(

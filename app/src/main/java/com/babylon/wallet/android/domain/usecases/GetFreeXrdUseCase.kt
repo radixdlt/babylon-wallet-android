@@ -16,14 +16,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 class GetFreeXrdUseCase @Inject constructor(
     private val transactionClient: TransactionClient,
     private val transactionRepository: TransactionRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val preferencesManager: PreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
@@ -34,7 +34,7 @@ class GetFreeXrdUseCase @Inject constructor(
     ): Result<String> {
         return withContext(ioDispatcher) {
             val manifest = buildFaucetManifest(
-                networkId = profileDataSource.getCurrentNetworkId(),
+                networkId = getCurrentGatewayUseCase().network.networkId(),
                 address = address,
                 includeLockFeeInstruction = includeLockFeeInstruction
             )

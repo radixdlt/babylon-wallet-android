@@ -1,13 +1,14 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.LAST_USED_PERSONA_DATE_FORMAT
 import com.babylon.wallet.android.utils.fromISO8601String
 import com.babylon.wallet.android.utils.toEpochMillis
@@ -15,15 +16,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personasOnCurrentNetwork
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -31,10 +31,10 @@ import javax.inject.Inject
 class SelectPersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val personaRepository: PersonaRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     incomingRequestRepository: IncomingRequestRepository
-) : ViewModel(), OneOffEventHandler<DAppSelectPersonaEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<SelectPersonaUiState>(), OneOffEventHandler<DAppSelectPersonaEvent> by OneOffEventHandlerImpl() {
 
     private val args = SelectPersonaArgs(savedStateHandle)
 
@@ -42,10 +42,9 @@ class SelectPersonaViewModel @Inject constructor(
         args.requestId
     )
 
-    private val _state = MutableStateFlow(SelectPersonaUiState())
-    val state = _state.asStateFlow()
-
     private var authorizedDapp: Network.AuthorizedDapp? = null
+
+    override fun initialState(): SelectPersonaUiState = SelectPersonaUiState()
 
     init {
         viewModelScope.launch {
@@ -72,7 +71,7 @@ class SelectPersonaViewModel @Inject constructor(
 
     private fun observePersonas() {
         viewModelScope.launch {
-            personaRepository.personas.collect { personas ->
+            getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
                 authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     authorizedRequest.requestMetadata.dAppDefinitionAddress
                 )
@@ -145,4 +144,4 @@ data class SelectPersonaUiState(
     val continueButtonEnabled: Boolean = false,
     val firstTimeLogin: Boolean = true,
     val personaListToDisplay: ImmutableList<PersonaUiModel> = persistentListOf()
-)
+) : UiState

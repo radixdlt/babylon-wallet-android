@@ -1,76 +1,70 @@
 package com.babylon.wallet.android.presentation.createpersona
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.CreatePersonaUseCase
+import rdx.works.profile.domain.persona.CreatePersonaUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
     private val createPersonaUseCase: CreatePersonaUseCase,
     private val preferencesManager: PreferencesManager,
-    deviceSecurityHelper: DeviceSecurityHelper,
-) : ViewModel(),
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+) : BaseViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
-    var state by mutableStateOf(
-        CreatePersonaUiState(
-            isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
-        )
+    override fun initialState(): CreatePersonaUiState = CreatePersonaUiState(
+        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
     )
-        private set
 
     init {
         viewModelScope.launch {
             personaEditState.collect { s ->
-                state = state.copy(
-                    anyFieldSelected = s.areThereFieldsSelected,
-                    personaDisplayName = s.personaDisplayName,
-                    continueButtonEnabled = s.inputValid,
-                    currentFields = s.currentFields,
-                    fieldsToAdd = s.fieldsToAdd
-                )
+                _state.update {
+                    it.copy(
+                        anyFieldSelected = s.areThereFieldsSelected,
+                        personaDisplayName = s.personaDisplayName,
+                        continueButtonEnabled = s.inputValid,
+                        currentFields = s.currentFields,
+                        fieldsToAdd = s.fieldsToAdd
+                    )
+                }
             }
         }
         setPersona(null)
     }
 
     fun onPersonaCreateClick() {
-        state = state.copy(
-            loading = true
-        )
+        _state.update { it.copy(loading = true) }
         viewModelScope.launch {
-            val fields = state.currentFields.map {
+            val fields = _state.value.currentFields.map {
                 Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
             }
             val persona = createPersonaUseCase(
-                displayName = state.personaDisplayName.value,
+                displayName = _state.value.personaDisplayName.value,
                 fields = fields
             )
 
             val personaId = persona.address
 
-            state = state.copy(
-                loading = true
-            )
+            _state.update { it.copy(loading = true) }
             preferencesManager.markFirstPersonaCreated()
 
             sendEvent(
@@ -89,7 +83,7 @@ class CreatePersonaViewModel @Inject constructor(
         val continueButtonEnabled: Boolean = false,
         val anyFieldSelected: Boolean = false,
         val isDeviceSecure: Boolean = false
-    )
+    ) : UiState
 }
 
 internal sealed interface CreatePersonaEvent : OneOffEvent {

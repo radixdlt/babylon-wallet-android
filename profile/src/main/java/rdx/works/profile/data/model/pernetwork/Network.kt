@@ -53,6 +53,9 @@ data class Network(
         assert(accounts.isNotEmpty())
     }
 
+    val knownNetworkId: NetworkId?
+        get() = NetworkId.values().find { it.value == networkID }
+
     @Serializable
     data class Account(
         /**
@@ -547,3 +550,6 @@ fun Profile.addPersona(
         )
     )
 }
+
+fun Network.Persona.filterFields(with: List<Network.Persona.Field.Kind>) =
+    fields.filter { with.contains(it.kind) }

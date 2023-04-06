@@ -1,80 +1,81 @@
 package com.babylon.wallet.android
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
-    private val profileDataSource: ProfileDataSource,
+    private val getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
-    private val verifyDappUseCase: VerifyDappUseCase
-) : ViewModel(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
+    private val verifyDappUseCase: VerifyDappUseCase,
+    getProfileStateUseCase: GetProfileStateUseCase
+) : BaseViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var observeP2PLinksJob: Job? = null
     private var incomingRequestsJob: Job? = null
     private var handlingCurrentRequestJob: Job? = null
     private var processingRequestJob: Job? = null
 
-    val state = combine(
-        preferencesManager.showOnboarding,
-        profileDataSource.profileState
-    ) { showOnboarding, profileState ->
-        MainUiState(
-            loading = false,
-            initialAppState = when {
-                profileState.isFailure -> AppNavigationState.IncompatibleProfile
-                showOnboarding -> AppNavigationState.Onboarding
-                profileState.getOrNull() != null -> AppNavigationState.Wallet
-                else -> AppNavigationState.CreateAccount
+    init {
+        viewModelScope.launch {
+            combine(
+                preferencesManager.showOnboarding,
+                getProfileStateUseCase(),
+            ) { showOnboarding, profileState ->
+                MainUiState(
+                    initialAppState = when {
+                        profileState is ProfileState.Incompatible -> AppState.IncompatibleProfile
+                        showOnboarding -> AppState.Onboarding
+                        profileState is ProfileState.Restored -> AppState.HasProfile
+                        else -> AppState.NoProfile
+                    }
+                )
+            }.collectLatest { state ->
+                _state.update { state }
             }
-        )
-    }.onStart {
-        Timber.d("start observing for p2p links")
-        observeForP2PLinks()
-    }.onCompletion {
-        terminatePeerdroid()
-        observeP2PLinksJob?.cancel()
-        Timber.d("terminate main view model state")
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
-        MainUiState()
-    )
+        }
+    }
+
+    override fun initialState(): MainUiState {
+        return MainUiState()
+    }
 
     private fun observeForP2PLinks() {
-        observeP2PLinksJob = profileDataSource.p2pLinks
+        observeP2PLinksJob = getProfileUseCase.p2pLinks
             .map { p2pLinks ->
                 Timber.d("found ${p2pLinks.size} p2p links")
                 p2pLinks.forEach { p2PLink ->
@@ -165,6 +166,19 @@ class MainViewModel @Inject constructor(
         Timber.d("Peerdroid terminated")
     }
 
+    fun onPause() {
+        Timber.d("Peerdroid: MainActivity paused")
+        terminatePeerdroid()
+        observeP2PLinksJob?.cancel()
+    }
+
+    fun onResume() {
+        viewModelScope.launch {
+            Timber.d("Peerdroid test: start observing for p2p links")
+            observeForP2PLinks()
+        }
+    }
+
     companion object {
         private const val REQUEST_HANDLING_DELAY = 500L
     }
@@ -181,14 +195,13 @@ sealed class MainEvent : OneOffEvent {
 }
 
 data class MainUiState(
-    val loading: Boolean = true,
-    val initialAppState: AppNavigationState = AppNavigationState.Init
-)
+    val initialAppState: AppState = AppState.Loading
+) : UiState
 
-sealed interface AppNavigationState {
-    object Onboarding : AppNavigationState
-    object Wallet : AppNavigationState
-    object CreateAccount : AppNavigationState
-    object IncompatibleProfile : AppNavigationState
-    object Init : AppNavigationState
+sealed interface AppState {
+    object Onboarding : AppState
+    object HasProfile : AppState
+    object NoProfile : AppState
+    object IncompatibleProfile : AppState
+    object Loading : AppState
 }

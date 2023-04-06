@@ -1,19 +1,22 @@
-package rdx.works.profile.domain
+package rdx.works.profile.domain.account
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccount
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
-    private val getMnemonicUseCase: GetMnemonicUseCase,
-    private val profileDataSource: ProfileDataSource,
+    private val mnemonicRepository: MnemonicRepository,
+    private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
@@ -23,10 +26,7 @@ class CreateAccountUseCase @Inject constructor(
         switchNetwork: Boolean = false
     ): Network.Account {
         return withContext(defaultDispatcher) {
-            val profile = profileDataSource.readProfile()
-            checkNotNull(profile) {
-                "Profile does not exist"
-            }
+            val profile = profileRepository.profile.first()
 
             var gateway: Radix.Gateway? = null
             if (networkUrl != null && networkName != null) {
@@ -37,14 +37,16 @@ class CreateAccountUseCase @Inject constructor(
                     }
                 )
             }
-            val networkID = gateway?.network?.networkId() ?: profileDataSource.getCurrentNetworkId()
+            val networkID = gateway?.network?.networkId()
+                ?: profile.currentNetwork.knownNetworkId
+                ?: Radix.Gateway.default.network.networkId()
 
             val factorSource = profile.babylonDeviceFactorSource
 
             // Construct new account
             val newAccount = init(
                 displayName = displayName,
-                mnemonicWithPassphrase = getMnemonicUseCase(mnemonicKey = factorSource.id),
+                mnemonicWithPassphrase = mnemonicRepository(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
                 networkId = networkID
             )
@@ -60,7 +62,7 @@ class CreateAccountUseCase @Inject constructor(
                 updatedProfile = updatedProfile.changeGateway(gateway)
             }
             // Save updated profile
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
             // Return new account
             newAccount
         }

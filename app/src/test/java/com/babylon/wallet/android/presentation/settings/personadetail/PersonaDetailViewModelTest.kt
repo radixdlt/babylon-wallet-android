@@ -4,42 +4,38 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaDetailViewModelTest : BaseViewModelTest<PersonaDetailViewModel>() {
 
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
-    private val personaRepository = mockk<PersonaRepository>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 
     override fun initVM(): PersonaDetailViewModel {
-        return PersonaDetailViewModel(dAppConnectionRepository, personaRepository, savedStateHandle)
+        return PersonaDetailViewModel(dAppConnectionRepository, getProfileUseCase, savedStateHandle)
     }
 
     @Before
     override fun setUp() {
         super.setUp()
-        val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
-        coEvery { personaRepository.getPersonaByAddressFlow(capture(addressSlot)) } answers {
-            flow {
-                emit(SampleDataProvider().samplePersona(addressSlot.captured))
-            }
-        }
+        every { getProfileUseCase() } returns flowOf(profile(personas = listOf(
+            SampleDataProvider().samplePersona("1")
+        )))
     }
 
     @Test

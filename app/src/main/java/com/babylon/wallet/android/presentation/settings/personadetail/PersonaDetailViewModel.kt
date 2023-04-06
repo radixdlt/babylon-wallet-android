@@ -16,20 +16,21 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class PersonaDetailViewModel @Inject constructor(
     dAppConnectionRepository: DAppConnectionRepository,
-    personaRepository: PersonaRepository,
+    getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
 
     val state = combine(
-        personaRepository.getPersonaByAddressFlow(args.personaAddress),
+        getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress),
         dAppConnectionRepository.getAuthorizedDappsByPersona(args.personaAddress)
     ) { persona, dapps ->
         PersonaDetailUiState(

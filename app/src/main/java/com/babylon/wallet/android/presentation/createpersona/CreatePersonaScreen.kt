@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -77,11 +78,10 @@ fun CreatePersonaScreen(
         personaId: String
     ) -> Unit = { _: String -> },
 ) {
-    if (viewModel.state.loading) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val state = viewModel.state
-
         CreatePersonaContent(
             onPersonaNameChange = viewModel::onDisplayNameChanged,
             onPersonaCreateClick = viewModel::onPersonaCreateClick,
@@ -307,7 +307,9 @@ private fun CreatePersonaContentList(
         }
         items(currentFields, key = { it.kind }) { field ->
             PersonaPropertyInput(
-                modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItemPlacement(),
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {

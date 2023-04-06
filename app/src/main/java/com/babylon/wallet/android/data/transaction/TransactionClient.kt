@@ -37,16 +37,16 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
-import rdx.works.profile.data.repository.AccountRepository
-import rdx.works.profile.data.repository.ProfileDataSource
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.account.GetAccountSignersUseCase
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.security.SecureRandom
 import javax.inject.Inject
 
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val profileDataSource: ProfileDataSource,
-    private val accountRepository: AccountRepository,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    private val getAccountSignersUseCase: GetAccountSignersUseCase,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val cache: HttpCache
 ) {
@@ -57,12 +57,12 @@ class TransactionClient @Inject constructor(
         manifest: TransactionManifest,
         hasLockFee: Boolean
     ): Result<String> {
-        val networkId = profileDataSource.getCurrentNetworkId().value
+        val networkId = getCurrentGatewayUseCase().network.networkId().value
         return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
 
     suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
-        val networkId = profileDataSource.getCurrentNetworkId().value
+        val networkId = getCurrentGatewayUseCase().network.networkId().value
         val manifestConversionResult = convertManifestInstructionsToJSON(
             manifest = TransactionManifest(
                 instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
@@ -242,7 +242,7 @@ class TransactionClient @Inject constructor(
         networkId: Int,
         addressesNeededToSign: List<String>,
     ): NotaryAndSigners? {
-        val signers = accountRepository.getSignersForAddresses(networkId, addressesNeededToSign)
+        val signers = getAccountSignersUseCase(networkId, addressesNeededToSign)
         return if (signers.isEmpty()) {
             null
         } else {
@@ -253,7 +253,7 @@ class TransactionClient @Inject constructor(
     private suspend fun convertManifestInstructionsToJSON(
         manifest: TransactionManifest
     ): Result<ConvertManifestResponse> {
-        val networkId = profileDataSource.getCurrentNetworkId()
+        val networkId = getCurrentGatewayUseCase().network.networkId()
         return try {
             Result.Success(
                 engine.convertManifest(
@@ -278,7 +278,7 @@ class TransactionClient @Inject constructor(
     private suspend fun convertManifestInstructionsToString(
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
-        val networkId = profileDataSource.getCurrentNetworkId()
+        val networkId = getCurrentGatewayUseCase().network.networkId()
         return try {
             Result.Success(
                 engine.convertManifest(

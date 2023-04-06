@@ -6,22 +6,23 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.utils.isValidUrl
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateway.AddGatewayUseCase
+import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
+import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsEditGatewayViewModelTest {
@@ -30,17 +31,26 @@ class SettingsEditGatewayViewModelTest {
 
     private lateinit var vm: SettingsEditGatewayViewModel
 
-    private val profileDataSource = mockk<ProfileDataSource>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
+    private val addGatewayUseCase = mockk<AddGatewayUseCase>()
+    private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
     private val networkInfoRepository = mockk<NetworkInfoRepository>()
 
     private val profile = SampleDataProvider().sampleProfile()
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(profileDataSource, networkInfoRepository)
-        every { profileDataSource.gateways } returns flow { emit(profile.appPreferences.gateways) }
-        coEvery { profileDataSource.changeGateway(any()) } just Runs
-        coEvery { profileDataSource.addGateway(any()) } just Runs
+        vm = SettingsEditGatewayViewModel(
+            getProfileUseCase = getProfileUseCase,
+            changeGatewayUseCase = changeGatewayUseCase,
+            addGatewayUseCase = addGatewayUseCase,
+            deleteGatewayUseCase = deleteGatewayUseCase,
+            networkInfoRepository = networkInfoRepository
+        )
+        every { getProfileUseCase() } returns flowOf(profile)
+        coEvery { changeGatewayUseCase(any()) } returns true
+        coEvery { addGatewayUseCase(any()) } returns Unit
         coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
@@ -65,7 +75,7 @@ class SettingsEditGatewayViewModelTest {
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
-        coVerify(exactly = 1) { profileDataSource.addGateway(any()) }
+        coVerify(exactly = 1) { addGatewayUseCase(any()) }
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
             assert(item is SettingsEditGatewayEvent.GatewayAdded)
@@ -77,7 +87,7 @@ class SettingsEditGatewayViewModelTest {
         val sampleUrl = Radix.Gateway.hammunet.url
         val gateway = Radix.Gateway(sampleUrl, Radix.Network.hammunet)
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { profileDataSource.hasAccountForGateway(gateway) } returns false
+        coEvery { changeGatewayUseCase(gateway) } returns false
         vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
         advanceUntilIdle()
         vm.oneOffEvent.test {
@@ -91,10 +101,10 @@ class SettingsEditGatewayViewModelTest {
         val sampleUrl = Radix.Gateway.hammunet.url
         val gateway = Radix.Gateway(sampleUrl, Radix.Network.hammunet)
         vm.onNewUrlChanged(sampleUrl)
-        coEvery { profileDataSource.hasAccountForGateway(gateway) } returns true
+        coEvery { changeGatewayUseCase(gateway) } returns true
         vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
         advanceUntilIdle()
-        coVerify(exactly = 1) { profileDataSource.changeGateway(gateway) }
+        coVerify(exactly = 1) { changeGatewayUseCase(gateway) }
     }
 
     @Test
@@ -104,7 +114,7 @@ class SettingsEditGatewayViewModelTest {
         vm.onNewUrlChanged(sampleUrl)
         vm.onGatewayClick(gateway)
         advanceUntilIdle()
-        coVerify(exactly = 0) { profileDataSource.changeGateway(gateway) }
+        coVerify(exactly = 0) { changeGatewayUseCase(gateway) }
         assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.AlreadyExist)
     }
 

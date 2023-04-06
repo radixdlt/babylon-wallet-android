@@ -56,7 +56,7 @@ fun OneTimeChooseAccountsScreen(
     BackHandler {
         sharedViewModel.onRejectRequest()
     }
-    val state = viewModel.state
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     ChooseAccountContent(
         onBackClick = sharedViewModel::onRejectRequest,

@@ -92,7 +92,7 @@ fun AccountScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
 ) {
-    val state by viewModel.accountUiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
     AccountScreenContent(
         accountName = state.accountName,

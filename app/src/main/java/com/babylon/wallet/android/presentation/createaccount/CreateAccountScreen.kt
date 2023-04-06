@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.createaccount
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -48,11 +49,20 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?,
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
+    onCloseApp: () -> Unit
 ) {
-    if (viewModel.state.loading) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val backHandler = {
+        if (state.firstTime) {
+            onCloseApp()
+        } else {
+            onBackClick()
+        }
+    }
+    BackHandler(onBack = backHandler)
+    if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val state = viewModel.state
         val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
         val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
 
@@ -62,7 +72,7 @@ fun CreateAccountScreen(
             accountName = accountName,
             buttonEnabled = buttonEnabled,
             cancelable = cancelable,
-            onBackClick = onBackClick,
+            onBackClick = backHandler,
             modifier = modifier,
             isDeviceSecure = state.isDeviceSecure,
             firstTime = state.firstTime

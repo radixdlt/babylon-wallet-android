@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -32,7 +34,7 @@ fun CreateAccountConfirmationScreen(
     navigateToWallet: () -> Unit,
     finishAccountCreation: () -> Unit,
 ) {
-    val accountState = viewModel.accountUiState
+    val accountState by viewModel.state.collectAsStateWithLifecycle()
     SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     CreateAccountConfirmationContent(
         modifier = modifier,
@@ -63,7 +65,8 @@ fun CreateAccountConfirmationContent(
     requestSource: CreateAccountRequestSource,
 ) {
     Column(
-        modifier = modifier.background(RadixTheme.colors.defaultBackground)
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground)
 //            .systemBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
@@ -82,8 +85,13 @@ fun CreateAccountConfirmationContent(
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        val text = if (requestSource == CreateAccountRequestSource.FirstTime) {
+            stringResource(id = R.string.you_ve_created_your_first_account)
+        } else {
+            stringResource(id = R.string.your_account_has_been_created)
+        }
         Text(
-            text = stringResource(id = R.string.your_account_has_been_created),
+            text = text,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )

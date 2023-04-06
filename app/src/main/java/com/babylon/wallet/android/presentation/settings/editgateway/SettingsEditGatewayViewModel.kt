@@ -1,14 +1,15 @@
 package com.babylon.wallet.android.presentation.settings.editgateway
 
 import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
 import com.babylon.wallet.android.utils.prependHttpsPrefixIfNotPresent
@@ -16,22 +17,26 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateway.AddGatewayUseCase
+import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
+import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
+import rdx.works.profile.domain.gateways
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsEditGatewayViewModel @Inject constructor(
-    private val profileDataSource: ProfileDataSource,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val changeGatewayUseCase: ChangeGatewayUseCase,
+    private val addGatewayUseCase: AddGatewayUseCase,
+    private val deleteGatewayUseCase: DeleteGatewayUseCase,
     private val networkInfoRepository: NetworkInfoRepository,
-) : ViewModel(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
+) : BaseViewModel<SettingsUiState>(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
-    private val _state: MutableStateFlow<SettingsUiState> = MutableStateFlow(SettingsUiState())
-    internal val state = _state.asStateFlow()
+    override fun initialState(): SettingsUiState = SettingsUiState()
 
     init {
         observeProfile()
@@ -39,7 +44,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private fun observeProfile() {
         viewModelScope.launch {
-            profileDataSource.gateways.collect { gateways ->
+            getProfileUseCase.gateways.collect { gateways ->
                 val current = gateways.current()
                 _state.update { state ->
                     state.copy(
@@ -75,7 +80,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
                 val defaultGateway = state.value.gatewayList.first { it.gateway.isDefault }
                 switchGateway(defaultGateway.gateway)
             }
-            profileDataSource.deleteGateway(gateway.gateway)
+            deleteGatewayUseCase(gateway.gateway)
         }
     }
 
@@ -85,7 +90,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
             _state.update { state -> state.copy(addingGateway = true) }
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
-                profileDataSource.addGateway(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))
+                addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }
@@ -110,11 +115,10 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private suspend fun switchGateway(gateway: Radix.Gateway) {
         if (gateway.url == state.value.currentGateway?.url) return
-        if (profileDataSource.hasAccountForGateway(gateway)) {
-            profileDataSource.changeGateway(gateway)
-            _state.update { state ->
-                state.copy(addingGateway = false)
-            }
+
+        val isGatewayChanged = changeGatewayUseCase(gateway)
+        if (isGatewayChanged) {
+            _state.update { state -> state.copy(addingGateway = false) }
         } else {
             val urlEncoded = gateway.url.encodeUtf8()
             sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
@@ -128,16 +132,16 @@ internal sealed interface SettingsEditGatewayEvent : OneOffEvent {
     data class CreateProfileOnNetwork(val newUrl: String, val networkName: String) : SettingsEditGatewayEvent
 }
 
-internal data class SettingsUiState(
+data class SettingsUiState(
     val currentGateway: Radix.Gateway? = null,
     val gatewayList: PersistentList<GatewayWrapper> = persistentListOf(),
     val newUrl: String = "",
     val newUrlValid: Boolean = false,
     val addingGateway: Boolean = false,
     val gatewayAddFailure: GatewayAddFailure? = null
-)
+) : UiState
 
-internal enum class GatewayAddFailure {
+enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding
 }
 

@@ -1,12 +1,11 @@
 package com.babylon.wallet.android.presentation.onboarding
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,19 +14,18 @@ import javax.inject.Inject
 class OnboardingViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-) : ViewModel() {
+) : BaseViewModel<OnboardingViewModel.OnboardingUiState>() {
 
-    private val _onboardingUiState: MutableStateFlow<OnboardingUiState> = MutableStateFlow(OnboardingUiState())
-    val onboardingUiState = _onboardingUiState.asStateFlow()
+    override fun initialState(): OnboardingUiState = OnboardingUiState()
 
     fun onProceedClick() {
         viewModelScope.launch {
             if (deviceSecurityHelper.isDeviceSecure()) {
-                _onboardingUiState.update {
+                _state.update {
                     it.copy(authenticateWithBiometric = true)
                 }
             } else {
-                _onboardingUiState.update {
+                _state.update {
                     it.copy(showWarning = true)
                 }
             }
@@ -38,7 +36,7 @@ class OnboardingViewModel @Inject constructor(
         if (accepted) {
             goNext()
         } else {
-            _onboardingUiState.update {
+            _state.update {
                 it.copy(showWarning = false)
             }
         }
@@ -48,7 +46,7 @@ class OnboardingViewModel @Inject constructor(
         if (authenticated) {
             goNext()
         } else {
-            _onboardingUiState.update {
+            _state.update {
                 it.copy(authenticateWithBiometric = false)
             }
         }
@@ -65,5 +63,5 @@ class OnboardingViewModel @Inject constructor(
         val showButtons: Boolean = false,
         val authenticateWithBiometric: Boolean = false,
         val showWarning: Boolean = false
-    )
+    ) : UiState
 }

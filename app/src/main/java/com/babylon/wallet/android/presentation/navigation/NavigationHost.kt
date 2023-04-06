@@ -9,6 +9,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.MainUiState
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
@@ -39,6 +40,7 @@ import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.pager.ExperimentalPagerApi
+import kotlinx.coroutines.flow.StateFlow
 
 @ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
@@ -46,6 +48,8 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 fun NavigationHost(
     startDestination: String,
     navController: NavHostController,
+    mainUiState: StateFlow<MainUiState>,
+    onCloseApp: () -> Unit,
 ) {
     AnimatedNavHost(
         navController = navController,
@@ -59,6 +63,7 @@ fun NavigationHost(
         }
         composable(route = Screen.WalletDestination.route) {
             WalletScreen(
+                mainUiState = mainUiState,
                 viewModel = hiltViewModel(),
                 onMenuClick = {
                     navController.navigate(Screen.SettingsAllDestination.route)
@@ -70,6 +75,12 @@ fun NavigationHost(
                 },
                 onAccountCreationClick = {
                     navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
+                },
+                onNavigateToCreateAccount = {
+                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                },
+                onNavigateToIncompatibleProfile = {
+                    navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
                 }
             )
         }
@@ -112,7 +123,8 @@ fun NavigationHost(
                     accountId,
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
-            }
+            },
+            onCloseApp = onCloseApp
         )
         createAccountConfirmationScreen(
             onNavigateToWallet = {
@@ -210,7 +222,9 @@ fun NavigationHost(
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
-            IncompatibleProfileContent(hiltViewModel())
+            IncompatibleProfileContent(hiltViewModel(), onProfileDeleted = {
+                navController.popBackStack(Screen.WalletDestination.route, false)
+            })
         }
     }
 }

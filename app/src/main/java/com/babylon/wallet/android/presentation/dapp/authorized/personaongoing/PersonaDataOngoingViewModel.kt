@@ -12,13 +12,14 @@ import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class PersonaDataOngoingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val personaRepository: PersonaRepository
+    private val getProfileUseCase: GetProfileUseCase
 ) : BaseViewModel<PersonaDataOngoingUiState>(), OneOffEventHandler<PersonaDataOngoingEvent> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDataOngoingPermissionArgs(savedStateHandle)
@@ -29,7 +30,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            personaRepository.getPersonaByAddressFlow(args.personaId).collect { persona ->
+            getProfileUseCase.personaOnCurrentNetworkFlow(args.personaId).collect { persona ->
                 val uiModel = PersonaUiModel(persona, requiredFieldKinds = args.requiredFields.toList())
                 _state.update {
                     it.copy(
