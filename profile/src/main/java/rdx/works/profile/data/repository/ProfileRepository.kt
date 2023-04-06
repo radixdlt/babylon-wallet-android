@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -47,7 +48,7 @@ class ProfileRepositoryImpl @Inject constructor(
             val serialised = encryptedPreferencesManager.encryptedProfile.firstOrNull()
 
             if (serialised == null) {
-                profileStateFlow.value = ProfileState.None
+                profileStateFlow.update { ProfileState.None }
                 return@launch
             }
 
@@ -56,10 +57,10 @@ class ProfileRepositoryImpl @Inject constructor(
             ).version < Profile.LATEST_PROFILE_VERSION
 
             if (profileIncompatible) {
-                profileStateFlow.value = ProfileState.Incompatible
+                profileStateFlow.update { ProfileState.Incompatible }
             } else {
                 val snapshot = Json.decodeFromString<ProfileSnapshot>(serialised)
-                profileStateFlow.value = ProfileState.Restored(snapshot.toProfile())
+                profileStateFlow.update { ProfileState.Restored(snapshot.toProfile()) }
             }
         }
     }
@@ -73,12 +74,12 @@ class ProfileRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             val profileContent = Json.encodeToString(profile.snapshot())
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
-            profileStateFlow.value = ProfileState.Restored(profile)
+            profileStateFlow.update { ProfileState.Restored(profile) }
         }
     }
 
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
-        profileStateFlow.value = ProfileState.None
+        profileStateFlow.update { ProfileState.None }
     }
 }
