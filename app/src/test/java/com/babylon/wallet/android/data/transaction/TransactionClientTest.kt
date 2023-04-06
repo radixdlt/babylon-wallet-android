@@ -19,8 +19,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.AccountRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.account.GetAccountSignersUseCase
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
@@ -29,8 +29,8 @@ internal class TransactionClientTest {
     val coroutineRule = TestDispatcherRule()
 
     private val transactionRepository = mockk<TransactionRepository>()
-    private val profileDataSource = mockk<ProfileDataSource>()
-    private val accountRepository = mockk<AccountRepository>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+    private val getAccountSignersUseCase = mockk<GetAccountSignersUseCase>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
     private val cache = mockk<HttpCache>()
 
@@ -40,12 +40,12 @@ internal class TransactionClientTest {
     fun setUp() {
         transactionClient = TransactionClient(
             transactionRepository,
-            profileDataSource,
-            accountRepository,
+            getCurrentGatewayUseCase,
+            getAccountSignersUseCase,
             getAccountResourceUseCase,
             cache
         )
-        coEvery { profileDataSource.getCurrentNetworkId() } returns Radix.Network.nebunet.networkId()
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

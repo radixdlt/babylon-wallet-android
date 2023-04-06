@@ -67,7 +67,7 @@ class AccountViewModelTest {
         // given
         val event = mutableListOf<AccountUiState>()
         vm = AccountViewModel(requestAccountsUseCase, appEventBus, savedStateHandle)
-        vm.accountUiState
+        vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -82,7 +82,7 @@ class AccountViewModelTest {
         // given
         val event = mutableListOf<AccountUiState>()
         vm = AccountViewModel(requestAccountsUseCase, appEventBus, savedStateHandle)
-        vm.accountUiState
+        vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 

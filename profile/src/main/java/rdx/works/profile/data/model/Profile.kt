@@ -62,6 +62,15 @@ data class Profile(
     val version: Int
 ) {
 
+    internal val currentNetwork: Network
+        get() {
+            val currentGateway = appPreferences.gateways.current()
+
+            return networks.find { it.networkID == currentGateway.network.id } ?: error(
+                "No per-network found for gateway: $currentGateway. This should not happen"
+            )
+        }
+
     internal fun snapshot(): ProfileSnapshot {
         return ProfileSnapshot(
             id = id,

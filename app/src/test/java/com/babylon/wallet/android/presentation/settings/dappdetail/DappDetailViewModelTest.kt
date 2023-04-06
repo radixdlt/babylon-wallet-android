@@ -3,21 +3,20 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>() {
@@ -27,8 +26,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
         state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
     }
     private val dappMetadataRepository = DappMetadataRepositoryFake()
-    private val accountRepository = AccountRepositoryFake()
-    private val personaRepository = mockk<PersonaRepository>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val samplePersonas = listOf(
         sampleDataProvider.samplePersona("address1"),
@@ -39,8 +37,7 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
         return DappDetailViewModel(
             dAppConnectionRepository,
             dappMetadataRepository,
-            personaRepository,
-            accountRepository,
+            getProfileUseCase,
             incomingRequestRepository,
             savedStateHandle
         )
@@ -49,14 +46,29 @@ internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>(
     @Before
     override fun setUp() {
         super.setUp()
-        val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_DAPP_ADDRESS) } returns "address1"
-        coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
-            sampleDataProvider.samplePersona(addressSlot.captured)
-        }
-        coEvery { personaRepository.personas } returns flow {
-            emit(samplePersonas)
-        }
+        every { getProfileUseCase() } returns flowOf(
+            profile(
+                personas = samplePersonas, dApps = listOf(
+                    Network.AuthorizedDapp(
+                        11, "1", "dApp", listOf(
+                            Network.AuthorizedDapp.AuthorizedPersonaSimple(
+                                identityAddress = "address1",
+                                fieldIDs = emptyList(),
+                                lastUsedOn = "2023-01-31T10:28:14Z",
+                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                    listOf("address-acc-1"),
+                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
+                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                        1
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
     }
 
     @Test

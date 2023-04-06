@@ -26,18 +26,23 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
-    private val profileDataSource: ProfileDataSource,
+    private val getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
-    private val verifyDappUseCase: VerifyDappUseCase
+    private val verifyDappUseCase: VerifyDappUseCase,
+    getProfileStateUseCase: GetProfileStateUseCase
 ) : BaseViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var observeP2PLinksJob: Job? = null
@@ -49,13 +54,13 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 preferencesManager.showOnboarding,
-                profileDataSource.profileState
+                getProfileStateUseCase(),
             ) { showOnboarding, profileState ->
                 MainUiState(
                     initialAppState = when {
-                        profileState.isFailure -> AppState.IncompatibleProfile
+                        profileState is ProfileState.Incompatible -> AppState.IncompatibleProfile
                         showOnboarding -> AppState.Onboarding
-                        profileState.getOrNull() != null -> AppState.HasProfile
+                        profileState is ProfileState.Restored -> AppState.HasProfile
                         else -> AppState.NoProfile
                     }
                 )
@@ -70,7 +75,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeForP2PLinks() {
-        observeP2PLinksJob = profileDataSource.p2pLinks
+        observeP2PLinksJob = getProfileUseCase.p2pLinks
             .map { p2pLinks ->
                 Timber.d("found ${p2pLinks.size} p2p links")
                 p2pLinks.forEach { p2PLink ->

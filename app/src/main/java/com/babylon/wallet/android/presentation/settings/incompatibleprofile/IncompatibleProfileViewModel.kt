@@ -9,19 +9,19 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.DeleteProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class IncompatibleProfileViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
-    private val profileDataSource: ProfileDataSource,
+    private val deleteProfileUseCase: DeleteProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
 ) : ViewModel(), OneOffEventHandler<IncompatibleProfileEvent> by OneOffEventHandlerImpl() {
 
     fun deleteProfile() {
         viewModelScope.launch {
-            profileDataSource.clear()
+            deleteProfileUseCase()
             preferencesManager.clear()
             peerdroidClient.terminate()
             sendEvent(IncompatibleProfileEvent.ProfileDeleted)

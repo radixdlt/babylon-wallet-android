@@ -27,7 +27,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             fieldIDs = emptyList(),
                             lastUsedOn = "2023-01-31T10:28:14Z",
                             sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
-                                listOf(SampleDataProvider().randomAddress()),
+                                listOf("address-acc-1", SampleDataProvider().randomAddress()),
                                 Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
                                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
                                     1

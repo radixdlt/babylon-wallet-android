@@ -51,18 +51,18 @@ fun CreateAccountScreen(
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
     onCloseApp: () -> Unit
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val backHandler = {
-        if (viewModel.state.firstTime) {
+        if (state.firstTime) {
             onCloseApp()
         } else {
             onBackClick()
         }
     }
     BackHandler(onBack = backHandler)
-    if (viewModel.state.loading) {
+    if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val state = viewModel.state
         val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
         val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
 

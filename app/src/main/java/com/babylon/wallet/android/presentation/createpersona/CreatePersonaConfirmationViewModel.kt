@@ -1,41 +1,33 @@
 package com.babylon.wallet.android.presentation.createpersona
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaConfirmationViewModel @Inject constructor(
-    private val personaRepository: PersonaRepository,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel(), OneOffEventHandler<CreatePersonaConfirmationEvent> by OneOffEventHandlerImpl() {
+    private val getProfileUseCase: GetProfileUseCase
+) : BaseViewModel<CreatePersonaConfirmationViewModel.PersonaConfirmationUiState>(),
+    OneOffEventHandler<CreatePersonaConfirmationEvent> by OneOffEventHandlerImpl() {
 
-    private val args = CreatePersonaConfirmationArgs(savedStateHandle)
+    override fun initialState(): PersonaConfirmationUiState = PersonaConfirmationUiState()
 
     init {
         viewModelScope.launch {
-            val persona = personaRepository.getPersonaByAddress(args.personaId)
-            requireNotNull(persona) {
-                "persona is null"
+            _state.update {
+                it.copy(isFirstPersona = getProfileUseCase.personasOnCurrentNetwork().count() == 1)
             }
-            personaUiState = personaUiState.copy(
-                isFirstPersona = personaRepository.getPersonas().count() == 1
-            )
         }
     }
-
-    var personaUiState by mutableStateOf(PersonaConfirmationUiState())
-        private set
 
     fun personaConfirmed() {
         viewModelScope.launch {
@@ -45,7 +37,7 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
 
     data class PersonaConfirmationUiState(
         val isFirstPersona: Boolean = true
-    )
+    ) : UiState
 }
 
 internal sealed interface CreatePersonaConfirmationEvent : OneOffEvent {

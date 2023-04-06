@@ -32,8 +32,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.PersonaRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,8 +42,8 @@ import javax.inject.Inject
 class DAppUnauthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppMessenger: DappMessenger,
-    private val personaRepository: PersonaRepository,
-    private val profileDataSource: ProfileDataSource,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : BaseViewModel<DAppUnauthorizedLoginUiState>(),
@@ -59,7 +60,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val currentNetworkId = profileDataSource.getCurrentNetwork().networkId().value
+            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
                     DappRequestFailure.WrongNetwork(
@@ -136,7 +137,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         val selectedPersona = checkNotNull(state.value.selectedPersona)
         viewModelScope.launch {
             val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
-            personaRepository.getPersonaByAddress(selectedPersona.persona.address)?.let { updatedPersona ->
+            getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
                 val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
                 _state.update {
                     it.copy(

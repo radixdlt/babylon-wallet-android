@@ -8,10 +8,10 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.fakes.AccountRepositoryFake
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -21,30 +21,29 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUE
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.PersonaRepository
-import rdx.works.profile.data.repository.ProfileDataSource
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val dappMetadataRepository = DappMetadataRepositoryFake()
-    private val profileDataSource = mockk<ProfileDataSource>()
-    private val accountRepository = AccountRepositoryFake()
-    private val personaRepository = mockk<PersonaRepository>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val dAppMessenger = DappMessengerFake()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
-    private val samplePersona = SampleDataProvider().samplePersona()
+    private val samplePersona = SampleDataProvider().samplePersona(personaAddress = "address1")
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = "dappId",
@@ -141,9 +140,8 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
             savedStateHandle,
             dAppMessenger,
             dAppConnectionRepository,
-            personaRepository,
-            accountRepository,
-            profileDataSource,
+            getProfileUseCase,
+            getCurrentGatewayUseCase,
             dappMetadataRepository,
             incomingRequestRepository
         )
@@ -152,15 +150,17 @@ class DAppAuthorizedLoginViewModelTest : BaseViewModelTest<DAppAuthorizedLoginVi
     @Before
     override fun setUp() {
         super.setUp()
-        val addressSlot = slot<String>()
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
-        coEvery { profileDataSource.getCurrentNetwork() } returns Radix.Network.nebunet
-        coEvery { personaRepository.getPersonaByAddress(capture(addressSlot)) } answers {
-            SampleDataProvider().samplePersona(addressSlot.captured)
-        }
-        coEvery { personaRepository.personas } returns flow {
-            emit(listOf(samplePersona))
-        }
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
+        every { getProfileUseCase() } returns flowOf(profile(
+            personas = listOf(samplePersona),
+            dApps = listOf(Network.AuthorizedDapp(
+                networkID = Radix.Gateway.nebunet.network.id,
+                dAppDefinitionAddress = "dapp_address",
+                displayName = "1",
+                referencesToAuthorizedPersonas = emptyList()
+            ))
+        ))
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
 

@@ -28,14 +28,14 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionApprovalViewModel>() {
 
     private val transactionClient = mockk<TransactionClient>()
-    private val profileDataSource = mockk<ProfileDataSource>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
@@ -58,7 +58,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
-        coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Nebunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
@@ -87,7 +87,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             getTransactionComponentResourcesUseCase,
             getTransactionProofResourcesUseCase,
             incomingRequestRepository,
-            profileDataSource,
+            getCurrentGatewayUseCase,
             deviceSecurityHelper,
             dAppMessenger,
             TestScope(),
@@ -100,8 +100,9 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
     fun `init sets state properly`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.manifestData == sampleRequest.transactionManifestData)
-        assert(vm.state.manifestString == sampleManifest.toPrettyString())
+        val state = vm.state.first()
+        assert(state.manifestData == sampleRequest.transactionManifestData)
+        assert(state.manifestString == sampleManifest.toPrettyString())
         coVerify(exactly = 1) { transactionClient.addLockFeeToTransactionManifestData(any()) }
     }
 
@@ -111,7 +112,8 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         vm.approveTransaction()
         advanceUntilIdle()
-        assert(vm.state.approved)
+        val state = vm.state.first()
+        assert(state.approved)
         coVerify(exactly = 1) {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",
@@ -123,7 +125,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { profileDataSource.getCurrentNetworkId() } returns NetworkId.Hammunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.hammunet
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction()
@@ -152,6 +154,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         advanceUntilIdle()
         vm.approveTransaction()
         advanceUntilIdle()
+        val state = vm.state.first()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
@@ -162,6 +165,6 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             )
         }
         assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)
-        assert(vm.state.error != null)
+        assert(state.error != null)
     }
 }

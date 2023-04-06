@@ -1,6 +1,7 @@
 package rdx.works.profile
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -12,6 +13,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
@@ -24,9 +26,9 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addPersona
-import rdx.works.profile.data.repository.ProfileDataSource
-import rdx.works.profile.domain.CreatePersonaUseCase
-import rdx.works.profile.domain.GetMnemonicUseCase
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.domain.persona.CreatePersonaUseCase
+import rdx.works.profile.data.repository.MnemonicRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaUseCaseTest {
@@ -100,16 +102,16 @@ class CreatePersonaUseCaseTest {
                 version = 1
             )
 
-            val getMnemonicUseCase = mock<GetMnemonicUseCase> {
+            val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
                     invoke(profile.babylonDeviceFactorSource.id)
                 } doReturn mnemonicWithPassphrase
             }
 
-            val profileDataSource = Mockito.mock(ProfileDataSource::class.java)
-            whenever(profileDataSource.readProfile()).thenReturn(profile)
+            val profileRepository = Mockito.mock(ProfileRepository::class.java)
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
-            val createPersonaUseCase = CreatePersonaUseCase(getMnemonicUseCase, profileDataSource, testDispatcher)
+            val createPersonaUseCase = CreatePersonaUseCase(mnemonicRepository, profileRepository, testDispatcher)
 
             val newPersona = createPersonaUseCase(
                 displayName = personaName,
@@ -122,7 +124,7 @@ class CreatePersonaUseCaseTest {
                 onNetwork = network.network.networkId()
             )
 
-            verify(profileDataSource).saveProfile(updatedProfile)
+            verify(profileRepository).saveProfile(updatedProfile)
         }
     }
 }

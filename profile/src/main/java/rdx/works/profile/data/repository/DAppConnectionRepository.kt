@@ -1,6 +1,7 @@
 package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.core.mapWhen
@@ -56,41 +57,38 @@ interface DAppConnectionRepository {
 
 @Suppress("TooManyFunctions")
 class DAppConnectionRepositoryImpl @Inject constructor(
-    private val profileDataSource: ProfileDataSource
+    private val profileRepository: ProfileRepository
 ) : DAppConnectionRepository {
 
     override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
-        return profileDataSource.profile.map {
+        return profileRepository.profile.map {
             Timber.d("Authorized dapps $it")
-            it?.getAuthorizedDapp(dAppDefinitionAddress)
+            it.getAuthorizedDapp(dAppDefinitionAddress)
         }
     }
 
     override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
-        return profileDataSource.readProfile()?.getAuthorizedDapp(dAppDefinitionAddress)
+        return profileRepository.profile.first().getAuthorizedDapp(dAppDefinitionAddress)
     }
 
     override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
-        return profileDataSource.profile.map { profile -> profile?.getAuthorizedDapps().orEmpty() }
+        return profileRepository.profile.map { profile -> profile.getAuthorizedDapps() }
     }
 
     override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
-        val profile = profileDataSource.readProfile()
+        val profile = profileRepository.profile.first()
 
-        requireNotNull(profile)
         Timber.d("Authorized dapps updating profile dapp: $authorizedDApp")
         val updatedProfile = profile.createOrUpdateAuthorizedDapp(authorizedDApp)
-        profileDataSource.saveProfile(updatedProfile)
+        profileRepository.saveProfile(updatedProfile)
     }
 
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
-        val profile = profileDataSource.readProfile()
-
-        requireNotNull(profile)
+        val profile = profileRepository.profile.first()
 
         getAuthorizedDapp(dAppDefinitionAddress)?.let {
             val updatedProfile = profile.deleteAuthorizedDapp(it)
-            profileDataSource.saveProfile(updatedProfile)
+            profileRepository.saveProfile(updatedProfile)
         }
     }
 

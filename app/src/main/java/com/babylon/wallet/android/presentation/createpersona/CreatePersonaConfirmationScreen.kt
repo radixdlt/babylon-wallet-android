@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -31,9 +33,10 @@ fun CreatePersonaConfirmationScreen(
     finishPersonaCreation: () -> Unit
 ) {
     SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
+    val state by viewModel.state.collectAsStateWithLifecycle()
     CreatePersonaConfirmationContent(
         modifier = modifier,
-        isFirstPersona = viewModel.personaUiState.isFirstPersona,
+        isFirstPersona = state.isFirstPersona,
         personaConfirmed = viewModel::personaConfirmed
     )
 

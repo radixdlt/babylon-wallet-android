@@ -49,7 +49,7 @@ class OnboardingViewModelTest {
 
         // when
         viewModel.onAlertClicked(false)
-        viewModel.onboardingUiState
+        viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         advanceUntilIdle()
@@ -80,7 +80,7 @@ class OnboardingViewModelTest {
 
         // when
         viewModel.onUserAuthenticated(false)
-        viewModel.onboardingUiState
+        viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -99,7 +99,7 @@ class OnboardingViewModelTest {
 
         // when
         viewModel.onProceedClick()
-        viewModel.onboardingUiState
+        viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
@@ -118,7 +118,7 @@ class OnboardingViewModelTest {
 
         // when
         viewModel.onProceedClick()
-        viewModel.onboardingUiState
+        viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 

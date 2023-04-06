@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.BaseViewModelTest
 import com.babylon.wallet.android.presentation.model.encodeToString
 import io.mockk.coEvery
@@ -11,17 +12,18 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.PersonaRepository
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOnetimeViewModel>() {
 
-    private val personaRepository = mockk<PersonaRepository>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
 
@@ -30,7 +32,7 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
     override fun initVM(): PersonaDataOnetimeViewModel {
         return PersonaDataOnetimeViewModel(
             savedStateHandle,
-            personaRepository,
+            getProfileUseCase,
             preferencesManager
         )
     }
@@ -42,9 +44,9 @@ internal class PersonaDataOnetimeViewModelTest : BaseViewModelTest<PersonaDataOn
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }
-        coEvery { personaRepository.personas } returns flow {
-            emit(listOf(samplePersona))
-        }
+        coEvery { getProfileUseCase() } returns flowOf(
+            profile(personas = listOf(samplePersona))
+        )
     }
 
     @Test

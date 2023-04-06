@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -60,7 +61,7 @@ fun TransactionApprovalScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state = viewModel.state
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     BackHandler(true) {}
 
@@ -253,7 +254,10 @@ private fun RawTransactionContent(
     Dialog(onDismissRequest = finish) {
         Column(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+                .background(
+                    RadixTheme.colors.defaultBackground,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
                 .clip(RadixTheme.shapes.roundedRectSmall),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
