@@ -181,8 +181,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
                                 authRequest.personaAddress,
-                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }
-                                    .encodeToString()
+                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                             )
                         )
                     }
@@ -202,8 +201,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
-                                oneTimePersonaDataRequestItem.fields.map { it.toKind() }
-                                    .encodeToString()
+                                oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                             )
                         )
                     }
