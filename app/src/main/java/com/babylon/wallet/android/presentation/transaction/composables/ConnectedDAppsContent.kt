@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.graphics.drawable.ColorDrawable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,7 +27,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -39,18 +37,15 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transaction.ConnectedDAppUiModel
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.babylon.wallet.android.presentation.transaction.EncounteredAddressesUiModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<ConnectedDAppUiModel>,
+    connectedDApps: ImmutableList<EncounteredAddressesUiModel>,
     modifier: Modifier = Modifier
 ) {
-    if (connectedDApps.isEmpty()) return
-
     var expanded by rememberSaveable { mutableStateOf(true) }
 
     val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
@@ -120,9 +115,9 @@ fun ConnectedDAppsContent(
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                    val placeholder = painterResource(id = R.drawable.ic_unknown_component)
                     AsyncImage(
-                        model = connectedDApp.icon,
+                        model = connectedDApp.iconUrl,
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,
@@ -134,7 +129,7 @@ fun ConnectedDAppsContent(
                     )
                     Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
                     Text(
-                        text = connectedDApp.title,
+                        text = connectedDApp.title.ifEmpty { stringResource(id = R.string.unknown) },
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis
@@ -151,7 +146,7 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            ConnectedDAppUiModel(
+            EncounteredAddressesUiModel(
                 "account_tdx_19jd32jd3928jd3892jd329",
                 "Connected DApp"
             )

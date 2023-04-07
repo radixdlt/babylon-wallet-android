@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import android.graphics.drawable.ColorDrawable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,16 +9,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,24 +41,36 @@ fun PresentingProofsContent(
 
     Column(
         modifier = modifier
+            .padding(top = RadixTheme.dimensions.paddingLarge)
     ) {
-        Text(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.presenting).uppercase(),
-            style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2,
-            overflow = TextOverflow.Ellipsis,
+        Divider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 1.dp,
+            color = RadixTheme.colors.gray4
         )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+        Row(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+        ) {
+            Text(
+                text = stringResource(id = R.string.presenting).uppercase(),
+                style = RadixTheme.typography.body1Link,
+                color = RadixTheme.colors.gray2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
+                contentDescription = null,
+                tint = RadixTheme.colors.gray3
+            )
+        }
 
         Column(
             modifier = Modifier
                 .padding(vertical = RadixTheme.dimensions.paddingMedium)
-                .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
-                .background(
-                    color = Color.White,
-                    shape = RadixTheme.shapes.roundedRectDefault
-                )
         ) {
             presentingProofs.forEachIndexed { index, presentingProof ->
                 val lastItem = index == presentingProofs.size - 1
@@ -99,8 +111,6 @@ fun PresentingProofsContent(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
 }
 

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,15 +34,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import java.math.BigDecimal
 
 @Composable
 fun TransactionAccountCard(
-    token: TokenUiModel,
+    tokens: ImmutableList<TokenUiModel>,
     modifier: Modifier = Modifier,
     appearanceId: Int,
-    accountName: String,
-    isTokenAmountVisible: Boolean
+    accountName: String
 ) {
     Column(
         modifier = modifier
@@ -66,61 +68,64 @@ fun TransactionAccountCard(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             ActionableAddressView(
-                address = token.address,
+                address = tokens.first().address,
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.gray1,
                 iconColor = RadixTheme.colors.gray2
             )
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .height(IntrinsicSize.Min)
-                .background(
-                    color = RadixTheme.colors.gray4,
-                    shape = RadixTheme.shapes.roundedRectBottomMedium
-                )
-                .padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingMedium
-                ),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-        ) {
-            val placeholder = if (token.isXrd()) {
-                painterResource(id = R.drawable.ic_xrd_token)
-            } else {
-                rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-            }
-            Box(
+        tokens.forEachIndexed { index, token ->
+            val lastItem = index == tokens.size - 1
+            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+                    .height(IntrinsicSize.Min)
+                    .background(
+                        color = RadixTheme.colors.gray4,
+                        shape = shape
+                    )
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingMedium
+                    ),
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                AsyncImage(
-                    model = token.iconUrl,
-                    placeholder = placeholder,
-                    fallback = placeholder,
-                    error = placeholder,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                val placeholder = if (token.isXrd()) {
+                    painterResource(id = R.drawable.ic_xrd_token)
+                } else {
+                    rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                }
+                Box(
                     modifier = Modifier
                         .size(44.dp)
-                        .clip(RadixTheme.shapes.circle)
+                        .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+                ) {
+                    AsyncImage(
+                        model = token.iconUrl,
+                        placeholder = placeholder,
+                        fallback = placeholder,
+                        error = placeholder,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RadixTheme.shapes.circle)
+                    )
+                }
+                Text(
+                    modifier = Modifier
+                        .weight(1f),
+                    text = token.symbol.orEmpty(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-            }
-            Text(
-                modifier = Modifier.weight(1f),
-                text = token.symbol.orEmpty(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (isTokenAmountVisible) {
                 Text(
                     modifier = Modifier,
-                    text = token.tokenQuantityToDisplay,
+                    text = if (token.isTokenAmountVisible) token.tokenQuantityToDisplay else "",
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -139,21 +144,23 @@ fun TransactionAccountCard(
 fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
-            token = TokenUiModel(
-                "",
-                "",
-                "",
-                "XRD",
-                BigDecimal(689.203),
-                "1023",
-                "",
-                "d3d3nd32dko3dko3",
-                mapOf()
+            tokens = persistentListOf(
+                TokenUiModel(
+                    "",
+                    "",
+                    "",
+                    "XRD",
+                    BigDecimal(689.203),
+                    "1023",
+                    "",
+                    "d3d3nd32dko3dko3",
+                    mapOf(),
+                    isTokenAmountVisible = true
+                )
             ),
             modifier = Modifier,
             appearanceId = 0,
-            accountName = "My main account",
-            isTokenAmountVisible = false
+            accountName = "My main account"
         )
     }
 }

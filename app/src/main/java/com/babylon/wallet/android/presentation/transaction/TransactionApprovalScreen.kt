@@ -112,9 +112,9 @@ private fun TransactionPreviewContent(
     networkFee: String,
     rawManifestContent: String,
     presentingProofs: ImmutableList<PresentingProofUiModel>,
-    connectedDApps: ImmutableList<ConnectedDAppUiModel>,
-    withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel>,
-    depositingAccounts: ImmutableList<TransactionAccountItemUiModel>,
+    connectedDApps: ImmutableList<EncounteredAddressesUiModel>,
+    withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    depositingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showRawManifest by remember { mutableStateOf(false) }
@@ -176,9 +176,7 @@ private fun TransactionPreviewContent(
 
                         TransactionMessageContent(transactionMessage = transactionMessage)
 
-                        PresentingProofsContent(presentingProofs = presentingProofs)
-
-                        WithdrawAccountContent(withdrawingAccounts = withdrawingAccounts)
+                        WithdrawAccountContent(previewAccounts = withdrawingAccounts)
 
                         StrokeLine(height = 40.dp)
 
@@ -186,9 +184,11 @@ private fun TransactionPreviewContent(
 
                         StrokeLine()
 
-                        DepositAccountContent(depositingAccounts = depositingAccounts)
+                        DepositAccountContent(previewAccounts = depositingAccounts)
 
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                        PresentingProofsContent(presentingProofs = presentingProofs)
+
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                         NetworkFeeContent(
                             networkFee = networkFee,
@@ -215,7 +215,15 @@ private fun TransactionPreviewContent(
                                     showNotSecuredDialog = true
                                 }
                             },
-                            enabled = !isLoading && !isSigning && canApprove
+                            enabled = !isLoading && !isSigning && canApprove,
+                            icon = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock
+                                    ),
+                                    contentDescription = ""
+                                )
+                            }
                         )
                     }
                 }
@@ -298,31 +306,43 @@ fun TransactionPreviewContentPreview() {
                 PresentingProofUiModel("", "Proof")
             ),
             connectedDApps = persistentListOf(
-                ConnectedDAppUiModel("", "DApp"),
-                ConnectedDAppUiModel("", "DApp")
+                EncounteredAddressesUiModel("", "DApp"),
+                EncounteredAddressesUiModel("", "DApp")
             ),
             withdrawingAccounts = persistentListOf(
-                TransactionAccountItemUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    displayName = "My Savings Account",
-                    tokenSymbol = "XRD",
-                    tokenQuantity = "689.203",
-                    fiatAmount = "$1234",
+                PreviewAccountItemsUiModel(
+                    accountName = "My Savings Account",
                     appearanceID = 1,
-                    iconUrl = "",
-                    isTokenAmountVisible = true
+                    accounts = listOf(
+                        TransactionAccountItemUiModel(
+                            address = "account_tdx_19jd32jd3928jd3892jd329",
+                            displayName = "My Savings Account",
+                            tokenSymbol = "XRD",
+                            tokenQuantity = "689.203",
+                            fiatAmount = "$1234",
+                            appearanceID = 1,
+                            iconUrl = "",
+                            isTokenAmountVisible = true
+                        )
+                    )
                 )
             ),
             depositingAccounts = persistentListOf(
-                TransactionAccountItemUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    displayName = "My Savings Account",
-                    tokenSymbol = "XRD",
-                    tokenQuantity = "689.203",
-                    fiatAmount = "$1234",
+                PreviewAccountItemsUiModel(
+                    accountName = "My Savings Account",
                     appearanceID = 1,
-                    iconUrl = "",
-                    isTokenAmountVisible = true
+                    accounts = listOf(
+                        TransactionAccountItemUiModel(
+                            address = "account_tdx_19jd32jd3928jd3892jd329",
+                            displayName = "My Savings Account",
+                            tokenSymbol = "XRD",
+                            tokenQuantity = "689.203",
+                            fiatAmount = "$1234",
+                            appearanceID = 1,
+                            iconUrl = "",
+                            isTokenAmountVisible = true
+                        )
+                    )
                 )
             ),
             onApproveTransaction = {},
