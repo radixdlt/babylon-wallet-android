@@ -7,11 +7,16 @@ import rdx.works.profile.data.model.Profile
 @Serializable
 data class Security(
     @SerialName("isDeveloperModeEnabled")
-    val isDeveloperModeEnabled: Boolean
+    val isDeveloperModeEnabled: Boolean,
+    @SerialName("isCloudProfileSyncEnabled")
+    val isCloudProfileSyncEnabled: Boolean
 ) {
 
     companion object {
-        val default = Security(isDeveloperModeEnabled = true)
+        val default = Security(
+            isDeveloperModeEnabled = true,
+            isCloudProfileSyncEnabled = true
+        )
     }
 }
 

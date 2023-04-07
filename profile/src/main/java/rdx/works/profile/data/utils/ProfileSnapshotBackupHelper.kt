@@ -49,9 +49,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
             Log.d("Backup", "Backup started for snapshot $snapshot")
             FileOutputStream(newState.fileDescriptor).also {
-                DataOutputStream(it).apply {
-                    writeLong(Date().time) // TODO Change that based on the last backup saved on snapshot
-                }
+                DataOutputStream(it).writeLong(Date().time) // TODO Change that based on the last backup saved on snapshot
             }
         }
     }
@@ -89,5 +87,4 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     interface ExampleContentProviderEntryPoint {
         fun encryptedPreferencesManager(): EncryptedPreferencesManager
     }
-
 }

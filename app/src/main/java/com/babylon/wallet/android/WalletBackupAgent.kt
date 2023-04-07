@@ -22,5 +22,4 @@ class WalletBackupAgent : BackupAgentHelper() {
         private const val BACKUP_KEY_SNAPSHOT = "backup_profile_snapshot"
         private const val BACKUP_KEY_PREFERENCES = "backup_preferences"
     }
-
 }

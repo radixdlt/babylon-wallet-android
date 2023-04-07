@@ -292,11 +292,24 @@ class ProfileTest {
             actual.appPreferences.display.fiatCurrencyPriceTarget
         )
 
+        assertEquals(
+            "Currency amount visible is the same",
+            expected.appPreferences.display.isCurrencyAmountVisible,
+            actual.appPreferences.display.isCurrencyAmountVisible
+        )
+
         // Security
         assertEquals(
             "Developer mode is the same",
             expected.appPreferences.security.isDeveloperModeEnabled,
             actual.appPreferences.security.isDeveloperModeEnabled
+        )
+
+        // Security
+        assertEquals(
+            "Cloud profile sync is the same",
+            expected.appPreferences.security.isCloudProfileSyncEnabled,
+            actual.appPreferences.security.isCloudProfileSyncEnabled
         )
 
         // P2P clients
