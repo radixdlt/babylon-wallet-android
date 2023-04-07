@@ -1,5 +1,6 @@
 package rdx.works.profile.data.repository
 
+import android.app.backup.BackupManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,7 @@ val ProfileRepository.profile: Flow<Profile>
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val relaxedJson: Json,
+    private val backupManager: BackupManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
@@ -75,11 +77,13 @@ class ProfileRepositoryImpl @Inject constructor(
             val profileContent = Json.encodeToString(profile.snapshot())
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
             profileStateFlow.update { ProfileState.Restored(profile) }
+            backupManager.dataChanged()
         }
     }
 
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
         profileStateFlow.update { ProfileState.None }
+        backupManager.dataChanged()
     }
 }

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.di
 
+import android.app.backup.BackupManager
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -47,5 +48,13 @@ object ApplicationModule {
         jsonSerializer: Json,
     ): CacheClient {
         return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackupManager(
+        @ApplicationContext applicationContext: Context
+    ): BackupManager {
+        return BackupManager(applicationContext)
     }
 }
