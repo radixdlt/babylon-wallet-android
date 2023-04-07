@@ -19,8 +19,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
 
+    const val PREFERENCES_NAME = "rdx_datastore"
+
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
-        name = "rdx_datastore"
+        name = PREFERENCES_NAME
     )
 
     @Provides
