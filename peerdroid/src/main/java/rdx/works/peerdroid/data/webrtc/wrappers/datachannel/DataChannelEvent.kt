@@ -1,54 +1,83 @@
 package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 
-import rdx.works.peerdroid.domain.BasePackage
+import org.webrtc.DataChannel
+import rdx.works.peerdroid.data.PackageDto
+import rdx.works.peerdroid.domain.DataChannelWrapperEvent.StateChangedForRemoteClient
 
-// wrapper class for the WebRTC DataChannel.Observer events
-// events can be either data channel related (e.g. state changed)
-// or incoming messages from the other peer
-sealed interface DataChannelEvent {
+// Data model that is used for the DataChannel.eventFlow wrapper:
+// 1. it encapsulates the native DataChannel.State
+// 2. it decodes and parses the incoming message to the corresponding type of PackageDto:
+//    metadata, chuck, ReceiveMessageConfirmation, ReceiveMessageError
+internal sealed interface DataChannelMessage {
 
-    // This express the incoming messages from the other peer
-    sealed interface IncomingMessage : DataChannelEvent {
+    data class StateChanged(val state: DataChannel.State) : DataChannelMessage
 
-        // an incoming message that can be metadata or chunk
-        // this will later transformed to DecodedMessage (see below)
-        data class Package(
-            val messageInListOfPackages: List<BasePackage>
-        ) : IncomingMessage
+    sealed interface Message : DataChannelMessage {
 
-        // this data class holds the remote client id (from which dapp comes the message)
-        // and its assembled and decoded message
-        data class DecodedMessage(
-            val remoteClientId: String,
-            val messageInJsonString: String
-        ) : IncomingMessage
+        data class MetaData(val metadataDto: PackageDto.MetaData) : Message
 
-        // a confirmation notification from the other peer to confirm that
-        // message received and assembled successfully
-        data class ConfirmationNotification(
-            val messageId: String
-        ) : IncomingMessage
-
-        // an error notification from the other peer to warn that
-        // message received but failed to assemble it
-        data class ErrorNotification(
-            val messageId: String
-        ) : IncomingMessage
-
-        object MessageHashMismatch : IncomingMessage
+        data class Chunk(val chunkDto: PackageDto.Chunk) : Message
     }
 
-    enum class StateChanged : DataChannelEvent {
-        CONNECTING,
-        OPEN,
-        CLOSING,
-        CLOSE,
-        DELETE_CONNECTION,
-        UNKNOWN
+    // a notification from the other peer to confirm that:
+    sealed interface RemoteClientReceivedMessage : DataChannelMessage {
+        // complete message received and assembled successfully
+        data class Confirmation(val messageId: String) : RemoteClientReceivedMessage
+
+        // failed to assemble complete message
+        data class Error(val messageId: String) : RemoteClientReceivedMessage
     }
 
     // when something unexpected happens ...
     data class UnknownError(
         val message: String? = null
+    ) : DataChannelMessage
+}
+
+// Data model that is used for the DataChannelWrapper only internally!
+// The events are processed and then (some of them) are mapped to the domain model DataChannelWrapperEvent.
+internal sealed interface DataChannelEvent {
+    // it holds the list with all the chunks of the incoming message
+    data class CompleteMessage(
+        val messageId: String, // mostly for debugging reasons
+        val listOfChunks: List<PackageDto.Chunk>
     ) : DataChannelEvent
+
+    sealed interface ReceiveMessage : DataChannelEvent {
+
+        data class Confirmation(val messageId: String) : ReceiveMessage
+
+        data class Error(val messageId: String) : ReceiveMessage
+    }
+
+    data class StateChanged(
+        val state: StateChangedForRemoteClient.State
+    ) : DataChannelEvent
+
+    object Error : DataChannelEvent
+}
+
+internal fun DataChannel.State.toDomainModel(): DataChannelEvent.StateChanged {
+    return when (this) {
+        DataChannel.State.CONNECTING -> {
+            DataChannelEvent.StateChanged(
+                state = StateChangedForRemoteClient.State.CONNECTING
+            )
+        }
+        DataChannel.State.OPEN -> {
+            DataChannelEvent.StateChanged(
+                state = StateChangedForRemoteClient.State.OPEN
+            )
+        }
+        DataChannel.State.CLOSING -> {
+            DataChannelEvent.StateChanged(
+                state = StateChangedForRemoteClient.State.CLOSING
+            )
+        }
+        DataChannel.State.CLOSED -> {
+            DataChannelEvent.StateChanged(
+                state = StateChangedForRemoteClient.State.CLOSED
+            )
+        }
+    }
 }
