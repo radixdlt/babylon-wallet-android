@@ -113,7 +113,7 @@ fun ChooseAccountContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
                 itemsIndexed(accountItems) { index, accountItem ->
-                    val gradientColor = AccountGradientList[accountItem.appearanceID]
+                    val gradientColor = AccountGradientList[accountItem.appearanceID % AccountGradientList.size]
                     AccountSelectionCard(
                         modifier = Modifier
                             .background(

@@ -37,7 +37,7 @@ fun CardStack(
                 .height(singleCardHeight)
                 .zIndex(5f)
                 .background(
-                    Brush.horizontalGradient(AccountGradientList[appearanceId]),
+                    Brush.horizontalGradient(AccountGradientList[appearanceId % AccountGradientList.size]),
                     RadixTheme.shapes.roundedRectSmall
                 )
         ) {

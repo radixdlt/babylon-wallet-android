@@ -162,7 +162,7 @@ private fun WalletAccountList(
             )
         }
         itemsIndexed(accounts) { _, account ->
-            val gradientColors = AccountGradientList[account.appearanceID]
+            val gradientColors = AccountGradientList[account.appearanceID % AccountGradientList.size]
             AccountCardView(
                 address = account.address,
                 accountName = account.displayName,
