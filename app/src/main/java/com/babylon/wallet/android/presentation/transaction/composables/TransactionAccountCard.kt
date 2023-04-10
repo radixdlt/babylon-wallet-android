@@ -51,7 +51,7 @@ fun TransactionAccountCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    brush = Brush.linearGradient(AccountGradientList[appearanceId]),
+                    brush = Brush.linearGradient(AccountGradientList[appearanceId % AccountGradientList.size]),
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .padding(RadixTheme.dimensions.paddingMedium),

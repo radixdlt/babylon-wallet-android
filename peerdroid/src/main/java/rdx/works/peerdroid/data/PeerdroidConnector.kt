@@ -26,7 +26,6 @@ import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.AnswerPayload.Companion.toAnswerPayload
@@ -38,6 +37,7 @@ import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelHolder
+import rdx.works.peerdroid.domain.DataChannelWrapperEvent
 import rdx.works.peerdroid.domain.PeerConnectionHolder
 import rdx.works.peerdroid.domain.RemoteClientHolder
 import rdx.works.peerdroid.domain.WebSocketHolder
@@ -53,7 +53,7 @@ interface PeerdroidConnector {
 
     fun terminateConnectionToConnectorExtension()
 
-    val dataChannelMessagesFromRemoteClients: Flow<DataChannelEvent>
+    val dataChannelMessagesFromRemoteClients: Flow<DataChannelWrapperEvent>
 
     suspend fun sendDataChannelMessageToRemoteClient(remoteClientId: String, message: String): Result<Unit>
 }

@@ -1,60 +1,56 @@
 package rdx.works.peerdroid.messagechunking
 
 import io.ktor.util.encodeBase64
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.sha256Hash
-import rdx.works.peerdroid.domain.BasePackage
+import rdx.works.peerdroid.data.PackageDto
+import timber.log.Timber
 
-suspend fun ByteArray.splitMessage(
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    chunkSize: Int
-): List<BasePackage> {
+fun ByteArray.splitMessage(chunkSize: Int): List<PackageDto> {
     val messageSize = size
-    val packages = mutableListOf<BasePackage>()
+    val packages = mutableListOf<PackageDto>()
     val messageId = UUIDGenerator.uuid().toString()
 
-    withContext(dispatcher) {
-        if (messageSize > chunkSize) {
-            val chunkedSequence = chunkedSequence(chunkSize)
-            chunkedSequence.forEachIndexed { index, bytes ->
-                packages.add(
-                    BasePackage.ChunkPackage(
-                        messageId = messageId,
-                        chunkIndex = index,
-                        chunkData = bytes.encodeBase64()
-                    )
-                )
-            }
+    Timber.d("📯 🧱 ready to split message for byte array size: $messageSize")
+
+    if (messageSize > chunkSize) {
+        val chunkedSequence = chunkedSequence(chunkSize)
+        chunkedSequence.forEachIndexed { index, bytes ->
             packages.add(
-                0,
-                BasePackage.MetadataPackage(
+                PackageDto.Chunk(
                     messageId = messageId,
-                    chunkCount = packages.count(),
-                    hashOfMessage = sha256Hash(),
-                    messageByteCount = messageSize
-                )
-            )
-        } else {
-            packages.add(
-                BasePackage.MetadataPackage(
-                    messageId = messageId,
-                    chunkCount = 1,
-                    hashOfMessage = sha256Hash(),
-                    messageByteCount = messageSize
-                )
-            )
-            packages.add(
-                BasePackage.ChunkPackage(
-                    messageId = messageId,
-                    chunkIndex = 0,
-                    chunkData = encodeBase64()
+                    chunkIndex = index,
+                    chunkData = bytes.encodeBase64()
                 )
             )
         }
+        packages.add(
+            index = 0,
+            PackageDto.MetaData(
+                messageId = messageId,
+                chunkCount = packages.count(),
+                hashOfMessage = sha256().toHexString(),
+                messageByteCount = messageSize
+            )
+        )
+    } else {
+        packages.add(
+            PackageDto.MetaData(
+                messageId = messageId,
+                chunkCount = 1,
+                hashOfMessage = sha256().toHexString(),
+                messageByteCount = messageSize
+            )
+        )
+        packages.add(
+            PackageDto.Chunk(
+                messageId = messageId,
+                chunkIndex = 0,
+                chunkData = encodeBase64()
+            )
+        )
     }
+
+    Timber.d("📯 🧱 split of message completed!")
     return packages
 }
 

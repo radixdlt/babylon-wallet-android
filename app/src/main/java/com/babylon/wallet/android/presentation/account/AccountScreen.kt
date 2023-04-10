@@ -144,7 +144,7 @@ private fun AccountScreenContent(
 ) {
     BoxWithConstraints(
         modifier = modifier
-            .background(Brush.horizontalGradient(AccountGradientList[gradientIndex]))
+            .background(Brush.horizontalGradient(AccountGradientList[gradientIndex % AccountGradientList.size]))
     ) {
         val bottomSheetState =
             rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)

@@ -10,17 +10,15 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import rdx.works.core.sha256Hash
 import rdx.works.peerdroid.data.PeerdroidConnector
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent.IncomingMessage
-import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelEvent.StateChanged
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
+import rdx.works.peerdroid.domain.DataChannelWrapperEvent
 import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
 import javax.inject.Inject
@@ -61,32 +59,17 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     override fun listenForIncomingRequests(): Flow<MessageFromDataChannel> {
-        return peerdroidConnector.dataChannelMessagesFromRemoteClients
-            .filter { dataChannelEvent ->
-                dataChannelEvent is StateChanged || dataChannelEvent is IncomingMessage.DecodedMessage
-            }
-            .map { dataChannelEvent ->
-                when (dataChannelEvent) {
-                    is StateChanged -> { // TODO no need here
-                        parseDataChannelState(dataChannelEvent)
-                    }
-                    is IncomingMessage.DecodedMessage -> {
-                        parseIncomingMessage(
-                            remoteClientId = dataChannelEvent.remoteClientId,
-                            messageInJsonString = dataChannelEvent.messageInJsonString
-                        )
-                    }
-                    else -> {
-                        MessageFromDataChannel.None
-                    }
-                }
+        return peerdroidConnector
+            .dataChannelMessagesFromRemoteClients
+            .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteClient>()
+            .map { messageFromRemoteClient ->
+                parseIncomingMessage(
+                    remoteClientId = messageFromRemoteClient.remoteClientId,
+                    messageInJsonString = messageFromRemoteClient.messageInJsonString
+                )
             }.catch { exception ->
                 Timber.e("caught exception: ${exception.localizedMessage}")
-                if (exception is SerializationException) {
-                    emit(MessageFromDataChannel.ParsingError)
-                } else {
-                    throw exception
-                }
+                // TODO a snackbar message error? close the data channel between wallet and dapp?
             }
             .cancellable()
             .flowOn(ioDispatcher)
@@ -104,29 +87,6 @@ class PeerdroidClientImpl @Inject constructor(
 
     override fun terminate() {
         peerdroidConnector.terminateConnectionToConnectorExtension()
-    }
-
-    private fun parseDataChannelState(stateChanged: StateChanged): MessageFromDataChannel.ConnectionStateChanged {
-        return when (stateChanged) {
-            StateChanged.CONNECTING -> {
-                MessageFromDataChannel.ConnectionStateChanged.CONNECTING
-            }
-            StateChanged.OPEN -> {
-                MessageFromDataChannel.ConnectionStateChanged.OPEN
-            }
-            StateChanged.CLOSING -> {
-                MessageFromDataChannel.ConnectionStateChanged.CLOSING
-            }
-            StateChanged.CLOSE -> {
-                MessageFromDataChannel.ConnectionStateChanged.CLOSE
-            }
-            StateChanged.DELETE_CONNECTION -> {
-                MessageFromDataChannel.ConnectionStateChanged.DELETE_CONNECTION
-            }
-            StateChanged.UNKNOWN -> {
-                MessageFromDataChannel.ConnectionStateChanged.ERROR
-            }
-        }
     }
 
     private fun parseIncomingMessage(

@@ -6,7 +6,7 @@ import org.junit.Assert
 import org.junit.Test
 import rdx.works.core.sha256Hash
 import rdx.works.core.toHexString
-import rdx.works.peerdroid.domain.BasePackage
+import rdx.works.peerdroid.data.PackageDto
 import kotlin.random.Random
 import kotlin.test.assertEquals
 
@@ -25,17 +25,17 @@ class MessageSplitterTest {
         val listOfPackages = splitMessage(textMessageByteArray)
         assertEquals(listOfPackages.size, actualSizeOfPackages)
 
-        assert(listOfPackages[0] is BasePackage.MetadataPackage)
-        val metadataPackage = listOfPackages[0] as BasePackage.MetadataPackage
+        assert(listOfPackages[0] is PackageDto.MetaData)
+        val metadataPackage = listOfPackages[0] as PackageDto.MetaData
 
-        val expectedHashOfMessageInHexString = metadataPackage.hashOfMessage.toHexString()
+        val expectedHashOfMessageInHexString = metadataPackage.hashOfMessage//.toHexString()
         assertEquals(expectedHashOfMessageInHexString, actualHashOfMessageInHexString)
 
         val expectedMessageByteCount = metadataPackage.messageByteCount
         assertEquals(expectedMessageByteCount, actualMessageByteCount)
 
-        assert(listOfPackages[1] is BasePackage.ChunkPackage)
-        val chunkPackage = listOfPackages[1] as BasePackage.ChunkPackage
+        assert(listOfPackages[1] is PackageDto.Chunk)
+        val chunkPackage = listOfPackages[1] as PackageDto.Chunk
 
         val expectedChunkData = chunkPackage.chunkData
         assertEquals(expectedChunkData, actualChunkData)
@@ -53,7 +53,7 @@ class MessageSplitterTest {
         val result = byteArray.splitMessage(chunkSize = chunkSize)
 
         // then
-        val metadataPackage = result.first() as BasePackage.MetadataPackage
+        val metadataPackage = result.first() as PackageDto.MetaData
 
         Assert.assertEquals(metadataPackage.chunkCount, byteArraySize / chunkSize)
     }
@@ -69,9 +69,9 @@ class MessageSplitterTest {
         val result = byteArray.splitMessage(chunkSize = chunkSize)
 
         // then
-        val metadataPackage = result.first() as BasePackage.MetadataPackage
+        val metadataPackage = result.first() as PackageDto.MetaData
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash().toHexString()))
     }
 
     @Test
@@ -85,7 +85,7 @@ class MessageSplitterTest {
         val result = byteArray.splitMessage(chunkSize = chunkSize)
 
         // then
-        val metadataPackage = result.first() as BasePackage.MetadataPackage
+        val metadataPackage = result.first() as PackageDto.MetaData
 
         Assert.assertEquals(metadataPackage.messageByteCount, byteArraySize)
     }
@@ -101,7 +101,7 @@ class MessageSplitterTest {
         val result = byteArray.splitMessage(chunkSize = chunkSize)
 
         // then
-        val metadataPackage = result.first() as BasePackage.MetadataPackage
+        val metadataPackage = result.first() as PackageDto.MetaData
 
         Assert.assertEquals(metadataPackage.chunkCount, 1)
     }
@@ -117,9 +117,9 @@ class MessageSplitterTest {
         val result = byteArray.splitMessage(chunkSize = chunkSize)
 
         // then
-        val metadataPackage = result.first() as BasePackage.MetadataPackage
+        val metadataPackage = result.first() as PackageDto.MetaData
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash().toHexString()))
     }
 
     @Test
@@ -133,7 +133,7 @@ class MessageSplitterTest {
         val result = byteArray.splitMessage(chunkSize = chunkSize)
 
         // then
-        val metadataPackage = result.first() as BasePackage.MetadataPackage
+        val metadataPackage = result.first() as PackageDto.MetaData
 
         Assert.assertEquals(metadataPackage.messageByteCount, byteArraySize)
     }

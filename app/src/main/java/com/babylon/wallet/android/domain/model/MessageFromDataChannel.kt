@@ -121,13 +121,7 @@ sealed interface MessageFromDataChannel {
         )
     }
 
-    object ParsingError : MessageFromDataChannel
-
-    object None : MessageFromDataChannel
-
-    enum class ConnectionStateChanged : MessageFromDataChannel {
-        OPEN, CLOSE, CLOSING, ERROR, CONNECTING, DELETE_CONNECTION
-    }
+    object ParsingError : MessageFromDataChannel // TODO this will be removed
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
