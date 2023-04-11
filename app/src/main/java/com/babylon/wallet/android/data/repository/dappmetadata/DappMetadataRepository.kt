@@ -31,6 +31,11 @@ interface DappMetadataRepository {
         defitnionAddress: String,
         needMostRecentData: Boolean
     ): Result<DappMetadata>
+
+    suspend fun getDappsMetadata(
+        defitnionAddresses: List<String>,
+        needMostRecentData: Boolean
+    ): Result<List<DappMetadata>>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -123,6 +128,31 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     dAppDefinitionAddress = defitnionAddress,
                     metadata = response.items.first().metadata.asMetadataStringMap()
                 )
+            }
+        }
+    }
+
+    override suspend fun getDappsMetadata(
+        defitnionAddresses: List<String>,
+        needMostRecentData: Boolean
+    ): Result<List<DappMetadata>> {
+        return withContext(ioDispatcher) {
+            val dAppsMetadataList = mutableListOf<DappMetadata>()
+            entityRepository.stateEntityDetails(
+                addresses = defitnionAddresses,
+                isRefreshing = needMostRecentData
+            ).map { response ->
+                response.items.forEach { item ->
+                    if (defitnionAddresses.contains(item.address)) {
+                        dAppsMetadataList.add(
+                            DappMetadata(
+                                dAppDefinitionAddress = item.address,
+                                metadata = item.metadata.asMetadataStringMap()
+                            )
+                        )
+                    }
+                }
+                dAppsMetadataList
             }
         }
     }

@@ -13,7 +13,15 @@ object MetadataConstants {
     const val KEY_ACCOUNT_TYPE = "account_type"
     const val KEY_RELATED_DOMAIN_NAME = "related_websites"
     const val KEY_NFT_IMAGE = "nft_image"
+    const val KEY_D_APP_DEFINITION = "dapp_definition"
 
     const val SYMBOL_XRD = "XRD"
-    val SPECIAL_METADATA = listOf(KEY_DESCRIPTION, KEY_NAME, KEY_SYMBOL, KEY_IMAGE_URL, KEY_ACCOUNT_TYPE)
+    val SPECIAL_METADATA = listOf(
+        KEY_DESCRIPTION,
+        KEY_NAME,
+        KEY_SYMBOL,
+        KEY_IMAGE_URL,
+        KEY_ACCOUNT_TYPE,
+        KEY_D_APP_DEFINITION
+    )
 }

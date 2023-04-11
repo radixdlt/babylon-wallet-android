@@ -112,7 +112,7 @@ private fun TransactionPreviewContent(
     networkFee: String,
     rawManifestContent: String,
     presentingProofs: ImmutableList<PresentingProofUiModel>,
-    connectedDApps: ImmutableList<EncounteredAddressesUiModel>,
+    connectedDApps: ImmutableList<ConnectedDAppsUiModel>,
     withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     depositingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
 ) {
@@ -306,8 +306,8 @@ fun TransactionPreviewContentPreview() {
                 PresentingProofUiModel("", "Proof")
             ),
             connectedDApps = persistentListOf(
-                EncounteredAddressesUiModel("", "DApp"),
-                EncounteredAddressesUiModel("", "DApp")
+                ConnectedDAppsUiModel("", "DApp"),
+                ConnectedDAppsUiModel("", "DApp")
             ),
             withdrawingAccounts = persistentListOf(
                 PreviewAccountItemsUiModel(

@@ -29,6 +29,10 @@ data class DappMetadata(
         return getAccountType() == "dapp definition"
     }
 
+    fun getDappDefinition(): String {
+        return metadata[MetadataConstants.KEY_D_APP_DEFINITION].orEmpty()
+    }
+
     fun getDisplayableMetadata(): Map<String, String> {
         return metadata.filterKeys {
             !MetadataConstants.SPECIAL_METADATA.contains(it)

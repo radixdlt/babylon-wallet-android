@@ -37,15 +37,17 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transaction.EncounteredAddressesUiModel
+import com.babylon.wallet.android.presentation.transaction.ConnectedDAppsUiModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<EncounteredAddressesUiModel>,
+    connectedDApps: ImmutableList<ConnectedDAppsUiModel>,
     modifier: Modifier = Modifier
 ) {
+    if (connectedDApps.isEmpty()) return
+
     var expanded by rememberSaveable { mutableStateOf(true) }
 
     val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
@@ -146,7 +148,7 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            EncounteredAddressesUiModel(
+            ConnectedDAppsUiModel(
                 "account_tdx_19jd32jd3928jd3892jd329",
                 "Connected DApp"
             )

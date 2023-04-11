@@ -1,16 +1,13 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_IMAGE_URL
-import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_NAME
 import com.babylon.wallet.android.presentation.transaction.PresentingProofUiModel
 import com.radixdlt.toolkit.models.address.EntityAddress
 import javax.inject.Inject
 
 class GetTransactionProofResourcesUseCase @Inject constructor(
-    private val entityRepository: EntityRepository
+    private val dappMetadataRepository: DappMetadataRepository
 ) {
 
     suspend operator fun invoke(
@@ -34,25 +31,16 @@ class GetTransactionProofResourcesUseCase @Inject constructor(
                 }
             }
         }
-        val proofResults = entityRepository.stateEntityDetails(
-            addresses = proofAddresses,
-            isRefreshing = false
+        val metadataResults = dappMetadataRepository.getDappsMetadata(
+            defitnionAddresses = proofAddresses,
+            needMostRecentData = false
         )
-        proofResults.onValue { proofDetailsResponse ->
-            proofDetailsResponse.items.forEach { proofItem ->
-                var name = ""
-                var iconUrl = ""
-                if (proofItem.metadata.asMetadataStringMap().containsKey(KEY_NAME)) {
-                    name = proofItem.metadata.asMetadataStringMap().getValue(KEY_NAME)
-                }
-                if (proofItem.metadata.asMetadataStringMap().containsKey(KEY_IMAGE_URL)) {
-                    iconUrl = proofItem.metadata.asMetadataStringMap().getValue(KEY_IMAGE_URL)
-                }
-
+        metadataResults.onValue { dAppsMetadata ->
+            dAppsMetadata.forEach { dAppMetadata ->
                 proofs.add(
                     PresentingProofUiModel(
-                        iconUrl = iconUrl,
-                        title = name
+                        iconUrl = dAppMetadata.getIcon().orEmpty(),
+                        title = dAppMetadata.getName().orEmpty()
                     )
                 )
             }

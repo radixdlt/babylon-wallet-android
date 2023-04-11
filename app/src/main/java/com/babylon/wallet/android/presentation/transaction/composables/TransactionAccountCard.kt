@@ -70,8 +70,8 @@ fun TransactionAccountCard(
             ActionableAddressView(
                 address = tokens.first().address,
                 textStyle = RadixTheme.typography.body1Regular,
-                textColor = RadixTheme.colors.gray1,
-                iconColor = RadixTheme.colors.gray2
+                textColor = RadixTheme.colors.white,
+                iconColor = RadixTheme.colors.white
             )
         }
 

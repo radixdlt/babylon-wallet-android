@@ -16,8 +16,8 @@ import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionEncounteredAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
 import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -52,7 +52,7 @@ class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
-    private val getTransactionEncounteredAddressesUseCase: GetTransactionEncounteredAddressesUseCase,
+    private val getValidDAppMetadataUseCase: GetValidDAppMetadataUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
@@ -162,7 +162,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                             .componentAddresses.userApplications
                                             .filterIsInstance<EntityAddress.ComponentAddress>()
 
-                                        val encounteredAddresses = getTransactionEncounteredAddressesUseCase.invoke(
+                                        val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
                                             componentAddresses
                                         )
 
@@ -474,7 +474,7 @@ data class PresentingProofUiModel(
     val title: String
 )
 
-data class EncounteredAddressesUiModel(
+data class ConnectedDAppsUiModel(
     val iconUrl: String,
     val title: String
 )
@@ -499,7 +499,7 @@ data class TransactionUiState(
     val withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
     val depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
-    val connectedDApps: ImmutableList<EncounteredAddressesUiModel> = persistentListOf()
+    val connectedDApps: ImmutableList<ConnectedDAppsUiModel> = persistentListOf()
 ) : UiState
 
 sealed interface TransactionApprovalEvent : OneOffEvent {

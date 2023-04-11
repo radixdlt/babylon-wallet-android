@@ -48,7 +48,7 @@ fun WithdrawAccountContent(
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
             previewAccounts.forEachIndexed { index, previewAccount ->
-                val lastItem = index == previewAccounts.size - 1
+                val lastItem = index == previewAccounts.lastIndex
 
                 val tokens = previewAccount.accounts.map { account ->
                     TokenUiModel(
