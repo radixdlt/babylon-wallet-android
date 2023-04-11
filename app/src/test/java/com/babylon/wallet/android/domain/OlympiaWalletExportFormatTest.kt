@@ -1,23 +1,77 @@
 package com.babylon.wallet.android.domain
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import okio.ByteString.Companion.decodeBase64
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 internal class OlympiaWalletExportFormatTest {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private lateinit var testVectors: List<TestVector>
+
+    @Before
+    fun setUp() {
+        val testVectorsContent = File("src/test/resources/raw/import_olympia_wallet_parse_test.json").readText()
+        testVectors = json.decodeFromString(testVectorsContent)
+    }
+
     @Test
-    fun `payload properly parsed into data`() {
-        val parsedData = olympiaTestPayloadChunks2.parseOlympiaWalletAccountData()
-        assert(parsedData?.mnemonicWordCount == 15)
-        assert(parsedData?.accountData?.size == 50)
+    fun `run tests for test vector`() {
+
+        testVectors.forEach { testVector ->
+            val parsedOlympiaAccountData = testVector.payloads.parseOlympiaWalletAccountData()
+            Assert.assertNotNull(parsedOlympiaAccountData)
+            assert(testVector.olympiaWallet.mnemonic.split(" ").size == parsedOlympiaAccountData!!.mnemonicWordCount)
+            parsedOlympiaAccountData.accountData.forEach { olympiaAccountDetail ->
+                val correspondingTestVector = testVector.olympiaWallet.accounts[olympiaAccountDetail.index]
+                assert(olympiaAccountDetail.accountName == correspondingTestVector.name.orEmpty())
+                val pubKeyUnwrapped = correspondingTestVector.pubKey.decodeBase64()?.hex()
+                assert(olympiaAccountDetail.publicKey == pubKeyUnwrapped)
+            }
+        }
     }
 
     @Test
     fun `incomplete payload parsing return null`() {
-        val parsedData = olympiaTestPayloadChunks2.filterIndexed { index, s -> index == 10 }.parseOlympiaWalletAccountData()
+        val parsedData = testVectors[1].payloads.subList(0, 1).parseOlympiaWalletAccountData()
         Assert.assertNull(parsedData)
     }
 
-
-
 }
+
+@kotlinx.serialization.Serializable
+data class TestVector(
+    @kotlinx.serialization.SerialName("testID")
+    val testID: Int,
+    @kotlinx.serialization.SerialName("payloads")
+    val payloads: List<String>,
+    @kotlinx.serialization.SerialName("numberOfPayloads")
+    val numberOfPayloads: Int,
+    @kotlinx.serialization.SerialName("olympiaWallet")
+    val olympiaWallet: OlympiaWallet
+)
+
+@kotlinx.serialization.Serializable
+data class OlympiaWallet(
+    @kotlinx.serialization.SerialName("accounts")
+    val accounts: List<OlympiaAccountTextVector>,
+    @kotlinx.serialization.SerialName("mnemonic")
+    val mnemonic: String
+)
+
+@kotlinx.serialization.Serializable
+data class OlympiaAccountTextVector(
+    @kotlinx.serialization.SerialName("pubKey")
+    val pubKey: String,
+    @kotlinx.serialization.SerialName("accountType")
+    val accountType: String,
+    @kotlinx.serialization.SerialName("addressIndex")
+    val addressIndex: Int,
+    @kotlinx.serialization.SerialName("name")
+    val name: String? = null
+)
