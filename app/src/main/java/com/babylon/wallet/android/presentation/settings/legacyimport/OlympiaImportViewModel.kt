@@ -4,13 +4,16 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.OlympiaAccountDetails
 import com.babylon.wallet.android.domain.OlympiaAccountType
 import com.babylon.wallet.android.domain.OlympiaWalletData
-import com.babylon.wallet.android.domain.getOlympiaTestAccounts
 import com.babylon.wallet.android.domain.olympiaTestSeedPhrase
+import com.babylon.wallet.android.domain.parseOlympiaWalletAccountData
 import com.babylon.wallet.android.domain.validatePublicKeysOf
+import com.babylon.wallet.android.domain.verifyPayload
+import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -36,19 +39,25 @@ class OlympiaImportViewModel @Inject constructor(
 
     fun onQrCodeScanned(qrData: String) {
         scannedData.add(qrData)
-//        val olympiaWalletData = testPayloadChunks.parseOlympiaWalletAccountData()
-//        olympiaWalletData?.let { data ->
-//            this.olympiaWalletData = data
-        viewModelScope.launch {
+        if (!scannedData.verifyPayload()) {
             _state.update {
-                it.copy(
-                    currentPage = ImportPage.AccountList,
-                    olympiaAccounts = getOlympiaTestAccounts().map { Selectable(it) }.toPersistentList()
-                )
+                it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.ScanNextPayload))
             }
-            sendEvent(OlympiaImportEvent.NextPage(ImportPage.AccountList))
+            return
         }
-//        }
+        val olympiaWalletData = scannedData.parseOlympiaWalletAccountData()
+        olympiaWalletData?.let { data ->
+            this.olympiaWalletData = data
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        currentPage = ImportPage.AccountList,
+                        olympiaAccounts = data.accountData.map { Selectable(it) }.toPersistentList()
+                    )
+                }
+                sendEvent(OlympiaImportEvent.NextPage(ImportPage.AccountList))
+            }
+        }
     }
 
     fun onBackClick() {
@@ -141,9 +150,16 @@ class OlympiaImportViewModel @Inject constructor(
         }.map { it.data }
         val mnemonicWithPassphrase = MnemonicWithPassphrase(_state.value.seedPhrase, _state.value.bip39Passphrase)
         val accountsValid = mnemonicWithPassphrase.validatePublicKeysOf(selectedSoftwareAccounts)
+        if (accountsValid) {
+
+        }
     }
 
     override fun initialState() = OlympiaImportUiState(seedPhrase = olympiaTestSeedPhrase)
+
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
+    }
 
 }
 
@@ -173,9 +189,10 @@ data class OlympiaImportUiState(
     val pages: ImmutableList<ImportPage> = persistentListOf(ImportPage.ScanQr, ImportPage.AccountList),
     val currentPage: ImportPage = ImportPage.ScanQr,
     val importButtonEnabled: Boolean = false,
-    val importSoftwareAccountsEnabled: Boolean = false,
+    val importSoftwareAccountsEnabled: Boolean = true,
     val triggerCameraPermissionPrompt: Boolean = false,
     val olympiaAccounts: ImmutableList<Selectable<OlympiaAccountDetails>> = persistentListOf(),
     val seedPhrase: String = "",
-    val bip39Passphrase: String = ""
+    val bip39Passphrase: String = "",
+    val uiMessage: UiMessage? = null
 ) : UiState

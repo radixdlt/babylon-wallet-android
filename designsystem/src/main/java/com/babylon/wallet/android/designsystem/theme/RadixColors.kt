@@ -82,3 +82,7 @@ val AccountGradientList =
         GradientAccount11,
         GradientAccount12,
     )
+
+fun getAccountGradientColorsFor(index: Int): List<Color> {
+    return AccountGradientList[index % AccountGradientList.size]
+}

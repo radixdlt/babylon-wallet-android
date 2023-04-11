@@ -38,12 +38,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.OlympiaAccountDetails
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -84,7 +86,9 @@ fun OlympiaImportScreen(
         onSeedPhraseChanged = viewModel::onSeedPhraseChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
         importSoftwareAccountsEnabled = state.importSoftwareAccountsEnabled,
-        onImportSoftwareAccounts = viewModel::onImportSoftwareAccounts
+        onImportSoftwareAccounts = viewModel::onImportSoftwareAccounts,
+        uiMessage = state.uiMessage,
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
@@ -107,7 +111,9 @@ private fun OlympiaImportContent(
     onSeedPhraseChanged: (String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     importSoftwareAccountsEnabled: Boolean,
-    onImportSoftwareAccounts: () -> Unit
+    onImportSoftwareAccounts: () -> Unit,
+    uiMessage: UiMessage?,
+    onMessageShown: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -152,57 +158,61 @@ private fun OlympiaImportContent(
         }
     }
 
-    Column(modifier = modifier) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.import_legacy_wallet),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        HorizontalPager(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            pageCount = pages.size,
-            state = pagerState,
-            userScrollEnabled = false
-        ) { page ->
-            when (pages[page]) {
-                ImportPage.ScanQr -> {
-                    ScnQrPage(
-                        cameraPermissionState = cameraPermissionState,
-                        onQrCodeScanned = onQrCodeScanned,
-                        isVisible = cameraVisible,
-                        modifier = Modifier.fillMaxSize()
-                    )
+    Box(modifier = modifier) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.import_legacy_wallet),
+                onBackClick = onBackClick,
+                contentColor = RadixTheme.colors.gray1
+            )
+            Divider(color = RadixTheme.colors.gray5)
+            HorizontalPager(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                pageCount = pages.size,
+                state = pagerState,
+                userScrollEnabled = false
+            ) { page ->
+                when (pages[page]) {
+                    ImportPage.ScanQr -> {
+                        ScnQrPage(
+                            cameraPermissionState = cameraPermissionState,
+                            onQrCodeScanned = onQrCodeScanned,
+                            isVisible = cameraVisible,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    ImportPage.AccountList -> {
+                        AccountListPage(
+                            modifier = Modifier.fillMaxSize(),
+                            olympiaAccounts = legacyAccountDetails,
+                            onAccountSelected = onAccountSelected,
+                            onImportAccounts = onImportAccounts,
+                            importButtonEnabled = importButtonEnabled
+                        )
+                    }
+                    ImportPage.MnemonicInput -> {
+                        InputMnemonicPage(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(RadixTheme.dimensions.paddingDefault),
+                            seedPhrase = seedPhrase,
+                            bip39Passphrase = bip39Passphrase,
+                            onSeedPhraseChanged = onSeedPhraseChanged,
+                            onPassphraseChanged = onPassphraseChanged,
+                            importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
+                            onImportSoftwareAccounts = onImportSoftwareAccounts
+                        )
+                    }
+                    ImportPage.HardwareAccount -> {}
+                    ImportPage.ImportComplete -> {}
                 }
-                ImportPage.AccountList -> {
-                    AccountListPage(
-                        modifier = Modifier.fillMaxSize(),
-                        olympiaAccounts = legacyAccountDetails,
-                        onAccountSelected = onAccountSelected,
-                        onImportAccounts = onImportAccounts,
-                        importButtonEnabled = importButtonEnabled
-                    )
-                }
-                ImportPage.MnemonicInput -> {
-                    InputMnemonicPage(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        seedPhrase = seedPhrase,
-                        bip39Passphrase = bip39Passphrase,
-                        onSeedPhraseChanged = onSeedPhraseChanged,
-                        onPassphraseChanged = onPassphraseChanged,
-                        importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
-                        onImportSoftwareAccounts = onImportSoftwareAccounts
-                    )
-                }
-                ImportPage.HardwareAccount -> {}
-                ImportPage.ImportComplete -> {}
             }
         }
-
+        SnackbarUiMessageHandler(message = uiMessage) {
+            onMessageShown()
+        }
     }
 }
 
@@ -265,7 +275,7 @@ private fun AccountListPage(
                 .weight(1f)
         ) {
             items(olympiaAccounts) { item ->
-                val gradientColor = AccountGradientList[item.data.index % AccountGradientList.size]
+                val gradientColor = getAccountGradientColorsFor(item.data.index)
                 LegacyAccountSelectionCard(
                     modifier = Modifier
                         .background(
@@ -277,6 +287,7 @@ private fun AccountListPage(
                             onAccountSelected(item)
                         },
                     accountName = item.data.accountName,
+                    accountType = item.data.type.name,
                     checked = item.selected,
                     address = item.data.address,
                     path = item.data.derivationPath.path
@@ -349,8 +360,10 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             bip39Passphrase = "test",
             onSeedPhraseChanged = {},
             onPassphraseChanged = {},
+            importSoftwareAccountsEnabled = false,
             onImportSoftwareAccounts = {},
-            importSoftwareAccountsEnabled = false
+            uiMessage = null,
+            onMessageShown = {}
         )
     }
 }

@@ -23,6 +23,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 @Composable
 fun LegacyAccountSelectionCard(
     accountName: String,
+    accountType: String,
     address: String,
     path: String,
     checked: Boolean,
@@ -38,7 +39,21 @@ fun LegacyAccountSelectionCard(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
-
+            Row(horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
+                Text(
+                    text = stringResource(id = R.string.type),
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    style = RadixTheme.typography.body2Header,
+                    color = Color.White
+                )
+                Text(
+                    text = accountType,
+                    textAlign = TextAlign.Start,
+                    style = RadixTheme.typography.body2Regular,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
                 Text(
                     text = stringResource(id = R.string.name),
@@ -54,7 +69,6 @@ fun LegacyAccountSelectionCard(
                     color = Color.White.copy(alpha = 0.8f)
                 )
             }
-
             Column {
                 Text(
                     text = stringResource(id = R.string.olympia_address),
@@ -107,6 +121,7 @@ fun LegacyAccountSelectionCardPreview() {
     RadixWalletTheme {
         LegacyAccountSelectionCard(
             accountName = "Account name",
+            accountType = "Software",
             address = "jf932j9f32o",
             checked = true,
             path = "test/path"

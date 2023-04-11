@@ -5,18 +5,23 @@ import com.radixdlt.bip39.toSeed
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.slip10.toKey
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.crypto.PublicKey
+import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyRequest
+import com.radixdlt.toolkit.models.request.OlympiaNetwork
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.derivation.LegacyOlympiaBIP44LikeDerivationPath
 import timber.log.Timber
 
+
+private val headerSeparator = "]"
+private val innerSeparator = "^"
+private val outerSeparator = "~"
+private val endOfAccountName = "}"
+
 fun Collection<String>.parseOlympiaWalletAccountData(): OlympiaWalletData? {
-    val headerSeparator = "]"
-    val innerSeparator = "^"
-    val outerSeparator = "~"
-    val endOfAccountName = "}"
-    setOf(headerSeparator, innerSeparator, outerSeparator, endOfAccountName)
     val accountNameReplacement = "_"
     val headerToPayloadList = map { payloadChunk ->
         val headerAndPayload = payloadChunk.split(headerSeparator)
@@ -30,19 +35,24 @@ fun Collection<String>.parseOlympiaWalletAccountData(): OlympiaWalletData? {
             val accountData = fullPayload.split(outerSeparator).map { singleAccountData ->
                 val singleAccountDataChunks = singleAccountData.split(innerSeparator)
                 val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
-                val byte64decoded = singleAccountDataChunks[1].decodeBase64()?.hex()
-                val publicKey = requireNotNull(byte64decoded)
+                val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
                 val index = requireNotNull(singleAccountDataChunks[2].toInt())
                 val name = if (singleAccountDataChunks.size == 4) {
                     singleAccountDataChunks[3].replace(endOfAccountName, "").replace(Regex("[]^~]"), accountNameReplacement)
                 } else {
                     ""
                 }
+                val olympiaAddress = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
+                    DeriveOlympiaAddressFromPublicKeyRequest(
+                        OlympiaNetwork.Mainnet,
+                        PublicKey.EcdsaSecp256k1(publicKeyHex)
+                    )
+                ).getOrThrow().olympiaAccountAddress
                 OlympiaAccountDetails(
                     index = index,
                     type = type,
-                    address = "testAddress",
-                    publicKey = publicKey,
+                    address = olympiaAddress,
+                    publicKey = publicKeyHex,
                     accountName = name,
                     derivationPath = LegacyOlympiaBIP44LikeDerivationPath(index)
                 )
@@ -58,8 +68,7 @@ fun Collection<String>.parseOlympiaWalletAccountData(): OlympiaWalletData? {
 }
 
 fun Collection<String>.verifyPayload(): Boolean {
-    val innerSeparator = "|"
-    return firstOrNull()?.split(innerSeparator)?.getOrNull(0)?.toInt() == size
+    return firstOrNull()?.split(headerSeparator)?.getOrNull(0)?.split(innerSeparator)?.getOrNull(0)?.toInt() == size
 }
 
 fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
@@ -117,10 +126,16 @@ fun getOlympiaTestAccounts(): List<OlympiaAccountDetails> {
     val accounts = (0..20).map { index ->
         val derivationPath = LegacyOlympiaBIP44LikeDerivationPath(index)
         val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
+        val address = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
+            DeriveOlympiaAddressFromPublicKeyRequest(
+                OlympiaNetwork.Mainnet,
+                PublicKey.EcdsaSecp256k1(publicKey)
+            )
+        ).getOrThrow().olympiaAccountAddress
         OlympiaAccountDetails(
             index = index,
             type = if (index % 2 == 0) OlympiaAccountType.Software else OlympiaAccountType.Hardware,
-            address = "1",
+            address = address,
             publicKey = publicKey,
             accountName = "Olympia $index",
             derivationPath = derivationPath
@@ -129,4 +144,4 @@ fun getOlympiaTestAccounts(): List<OlympiaAccountDetails> {
     return accounts
 }
 
-val olympiaTestSeedPhrase = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong"
+val olympiaTestSeedPhrase = "private sight rather cloud lock pelican barrel whisper spy more artwork crucial abandon among grow guilt control wrist memory group churn hen program sauce"

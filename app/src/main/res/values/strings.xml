@@ -284,6 +284,8 @@
     <string name="passphrase">Passphrase</string>
     <string name="bip_39_passphrase">BIP39 passphrase</string>
     <string name="import_label">Import</string>
+    <string name="type">Type</string>
+    <string name="scan_next_qr_code">Please scan next qr code</string>
     <string name="unknown">Unknown</string>
     <string name="something_went_wrong">Something went wrong</string>
 </resources>
