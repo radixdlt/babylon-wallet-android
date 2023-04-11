@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -16,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CreatePersonaConfirmationViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
-) : BaseViewModel<CreatePersonaConfirmationViewModel.PersonaConfirmationUiState>(),
+) : StateViewModel<CreatePersonaConfirmationViewModel.PersonaConfirmationUiState>(),
     OneOffEventHandler<CreatePersonaConfirmationEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): PersonaConfirmationUiState = PersonaConfirmationUiState()

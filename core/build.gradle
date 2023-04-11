@@ -30,6 +30,7 @@ android {
 dependencies {
     implementation libs.ket
     implementation libs.slip10
+    implementation libs.ktorCore
 
     testImplementation libs.junit
     androidTestImplementation libs.androidXJunit

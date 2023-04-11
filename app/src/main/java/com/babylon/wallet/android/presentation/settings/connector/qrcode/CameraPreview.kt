@@ -6,7 +6,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -19,32 +18,39 @@ import java.util.concurrent.Executors
 @Composable
 fun CameraPreview(
     modifier: Modifier,
+    disableBack: Boolean = true,
+    isVisible: Boolean = true,
     onQrCodeDetected: (qrCode: String) -> Unit,
 ) {
     BarcodePreviewView(
         modifier = modifier,
-        onQrCodeDetected = onQrCodeDetected
+        onQrCodeDetected = onQrCodeDetected,
+        isVisible = isVisible
     )
-    BackHandler(enabled = true) { }
+    if (disableBack) {
+        BackHandler(enabled = true) { }
+    }
 }
+
 
 @Composable
 private fun BarcodePreviewView(
     onQrCodeDetected: (qrCode: String) -> Unit,
     modifier: Modifier = Modifier,
+    isVisible: Boolean = true
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
-
     AndroidView(
         factory = { context ->
-            val previewView = PreviewView(context)
-
+            PreviewView(context)
+        },
+        update = { previewView ->
             val cameraSelector: CameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build()
             val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
             val cameraProviderFuture: ListenableFuture<ProcessCameraProvider> =
-                ProcessCameraProvider.getInstance(context)
+                ProcessCameraProvider.getInstance(previewView.context)
 
             cameraProviderFuture.addListener({
                 val preview = Preview.Builder().build().also {
@@ -65,18 +71,19 @@ private fun BarcodePreviewView(
                     .also { imageAnalysis ->
                         imageAnalysis.setAnalyzer(cameraExecutor, barcodeAnalyser)
                     }
-
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    lifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalysis
-                )
-            }, ContextCompat.getMainExecutor(context))
-
-            previewView
+                if (isVisible) {
+                    cameraProvider.unbindAll()
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageAnalysis
+                    )
+                } else {
+                    cameraProvider.unbindAll()
+                }
+            }, ContextCompat.getMainExecutor(previewView.context))
         },
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
     )
 }

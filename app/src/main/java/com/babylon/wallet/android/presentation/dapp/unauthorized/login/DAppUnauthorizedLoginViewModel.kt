@@ -13,7 +13,7 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -46,7 +46,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
     private val incomingRequestRepository: IncomingRequestRepository
-) : BaseViewModel<DAppUnauthorizedLoginUiState>(),
+) : StateViewModel<DAppUnauthorizedLoginUiState>(),
     OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)

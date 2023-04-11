@@ -4,11 +4,12 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.AssetUiModel
@@ -36,7 +37,7 @@ class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
-) : BaseViewModel<AccountUiState>() {
+) : StateViewModel<AccountUiState>() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
     private val accountName: String = savedStateHandle.get<String>(ARG_ACCOUNT_NAME).orEmpty()
@@ -89,7 +90,7 @@ class AccountViewModel @Inject constructor(
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
                             nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList(),
-                            gradientIndex = accountResource.appearanceID
+                            gradientIndex = accountResource.appearanceID % AccountGradientList.size
                         )
                     }
                 }

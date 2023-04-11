@@ -17,8 +17,8 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -60,7 +60,7 @@ class TransactionApprovalViewModel @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
-) : BaseViewModel<TransactionUiState>(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<TransactionUiState>(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
     private val args = TransactionApprovalArgs(savedStateHandle)
     private val transactionWriteRequest =

@@ -21,7 +21,7 @@ class MnemonicRepository @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     @Suppress("SwallowedException")
-    private suspend fun readMnemonic(key: FactorSource.ID): MnemonicWithPassphrase? {
+    suspend fun readMnemonic(key: FactorSource.ID): MnemonicWithPassphrase? {
         val serialised = encryptedPreferencesManager.readMnemonic(key.value).orEmpty()
         return try {
             Json.decodeFromString(serialised)
@@ -33,7 +33,7 @@ class MnemonicRepository @Inject constructor(
     /**
      * We save mnemonic under specific key which will be factorSourceId
      */
-    private suspend fun saveMnemonic(
+    suspend fun saveMnemonic(
         key: FactorSource.ID,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) {

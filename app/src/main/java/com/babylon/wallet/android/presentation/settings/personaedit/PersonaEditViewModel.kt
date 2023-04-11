@@ -2,12 +2,12 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
@@ -27,13 +27,13 @@ class PersonaEditViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val updatePersonaUseCase: UpdatePersonaUseCase,
     savedStateHandle: SavedStateHandle
-) : BaseViewModel<PersonaEditUiState>(),
+) : StateViewModel<PersonaEditUiState>(),
     OneOffEventHandler<PersonaEditEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
     private val args = PersonaEditScreenArgs(savedStateHandle)
 
-    override fun initialState(): PersonaEditUiState = PersonaEditUiState()
+    override fun initialState() = PersonaEditUiState()
 
     init {
         viewModelScope.launch {

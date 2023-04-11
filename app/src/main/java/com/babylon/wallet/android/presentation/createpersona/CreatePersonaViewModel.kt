@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -26,7 +26,7 @@ class CreatePersonaViewModel @Inject constructor(
     private val createPersonaUseCase: CreatePersonaUseCase,
     private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-) : BaseViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
+) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 

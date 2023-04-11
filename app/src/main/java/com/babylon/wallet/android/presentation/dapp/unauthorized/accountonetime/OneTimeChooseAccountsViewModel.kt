@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase
-) : BaseViewModel<OneTimeChooseAccountUiState>(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<OneTimeChooseAccountUiState>(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = OneTimeChooseAccountsArgs(savedStateHandle)
 

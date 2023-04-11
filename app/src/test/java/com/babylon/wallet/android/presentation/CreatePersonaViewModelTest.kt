@@ -29,7 +29,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class CreatePersonaViewModelTest : BaseViewModelTest<CreatePersonaViewModel>() {
+class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() {
 
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val createPersonaUseCase = mockk<CreatePersonaUseCase>()

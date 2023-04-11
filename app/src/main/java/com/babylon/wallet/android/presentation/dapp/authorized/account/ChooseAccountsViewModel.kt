@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase
-) : BaseViewModel<ChooseAccountUiState>(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<ChooseAccountUiState>(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = ChooseAccountsArgs(savedStateHandle)
 
