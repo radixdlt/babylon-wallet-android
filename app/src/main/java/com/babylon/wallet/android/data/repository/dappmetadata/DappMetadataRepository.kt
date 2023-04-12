@@ -137,22 +137,18 @@ class DappMetadataRepositoryImpl @Inject constructor(
         needMostRecentData: Boolean
     ): Result<List<DappMetadata>> {
         return withContext(ioDispatcher) {
-            val dAppsMetadataList = mutableListOf<DappMetadata>()
             entityRepository.stateEntityDetails(
                 addresses = defitnionAddresses,
                 isRefreshing = needMostRecentData
             ).map { response ->
-                response.items.forEach { item ->
-                    if (defitnionAddresses.contains(item.address)) {
-                        dAppsMetadataList.add(
-                            DappMetadata(
-                                dAppDefinitionAddress = item.address,
-                                metadata = item.metadata.asMetadataStringMap()
-                            )
-                        )
-                    }
+                response.items.filter { item ->
+                    defitnionAddresses.contains(item.address)
+                }.map {
+                    DappMetadata(
+                        dAppDefinitionAddress = it.address,
+                        metadata = it.metadata.asMetadataStringMap()
+                    )
                 }
-                dAppsMetadataList
             }
         }
     }
