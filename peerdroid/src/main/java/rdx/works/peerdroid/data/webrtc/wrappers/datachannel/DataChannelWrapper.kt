@@ -138,7 +138,7 @@ data class DataChannelWrapper(
                         }
                     }
                     is DataChannelEvent.StateChanged -> {
-                        Timber.d("📯 state fore remote client: $remoteClientId changed: $dataChannelEvent.state 📶️")
+                        Timber.d("📯 state for remote client: $remoteClientId changed: ${dataChannelEvent.state} 📶️")
                         emit(
                             DataChannelWrapperEvent.StateChangedForRemoteClient(
                                 remoteClientId = remoteClientId,

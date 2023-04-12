@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.core.sha256Hash
+import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
@@ -81,7 +81,7 @@ internal class PeerdroidConnectorImpl(
     }
 
     override suspend fun connectToConnectorExtension(encryptionKey: ByteArray): Result<Unit> {
-        val connectionId = encryptionKey.sha256Hash().toHexString()
+        val connectionId = encryptionKey.blake2Hash().toHexString()
 
         return withContext(ioDispatcher) {
             if (mapOfWebSockets.containsKey(ConnectionIdHolder(id = connectionId))) {
