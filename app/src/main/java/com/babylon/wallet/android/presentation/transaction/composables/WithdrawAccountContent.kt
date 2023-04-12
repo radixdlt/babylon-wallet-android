@@ -17,16 +17,18 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun WithdrawAccountContent(
-    withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel>,
+    previewAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     modifier: Modifier = Modifier
 ) {
-    if (withdrawingAccounts.isNotEmpty()) {
+    if (previewAccounts.isNotEmpty()) {
         Text(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -45,12 +47,11 @@ fun WithdrawAccountContent(
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-            withdrawingAccounts.forEachIndexed { index, account ->
-                val lastItem = index == withdrawingAccounts.size - 1
+            previewAccounts.forEachIndexed { index, previewAccount ->
+                val lastItem = index == previewAccounts.lastIndex
 
-                TransactionAccountCard(
-                    appearanceId = account.appearanceID,
-                    token = TokenUiModel(
+                val tokens = previewAccount.accounts.map { account ->
+                    TokenUiModel(
                         iconUrl = "",
                         name = "",
                         description = "",
@@ -59,10 +60,15 @@ fun WithdrawAccountContent(
                         tokenQuantity = account.tokenQuantityDecimal,
                         tokenValue = account.fiatAmount,
                         address = account.address,
-                        metadata = emptyMap()
-                    ),
-                    accountName = account.displayName,
-                    isTokenAmountVisible = account.isTokenAmountVisible
+                        metadata = emptyMap(),
+                        isTokenAmountVisible = account.isTokenAmountVisible
+                    )
+                }.toPersistentList()
+
+                TransactionAccountCard(
+                    appearanceId = previewAccount.appearanceID,
+                    tokens = tokens,
+                    accountName = previewAccount.accountName
                 )
 
                 if (!lastItem) {
@@ -81,15 +87,21 @@ fun WithdrawAccountContent(
 fun WithdrawAccountContentPreview() {
     WithdrawAccountContent(
         persistentListOf(
-            TransactionAccountItemUiModel(
-                "account_tdx_19jd32jd3928jd3892jd329",
+            PreviewAccountItemsUiModel(
                 "My main account",
-                "XRD",
-                "200",
-                "$1234",
-                1,
-                "",
-                isTokenAmountVisible = true
+                appearanceID = 1,
+                accounts = listOf(
+                    TransactionAccountItemUiModel(
+                        "account_tdx_19jd32jd3928jd3892jd329",
+                        "My main account",
+                        "XRD",
+                        "200",
+                        "$1234",
+                        1,
+                        "",
+                        isTokenAmountVisible = true
+                    )
+                )
             )
         )
     )

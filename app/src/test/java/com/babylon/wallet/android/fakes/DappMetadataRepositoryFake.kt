@@ -19,4 +19,15 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
             DappMetadata("dapp_address", mapOf(MetadataConstants.KEY_NAME to "dApp"))
         )
     }
+
+    override suspend fun getDappsMetadata(
+        defitnionAddresses: List<String>,
+        needMostRecentData: Boolean
+    ): Result<List<DappMetadata>> {
+        return Result.Success(
+            listOf(
+                DappMetadata("dapp_address", mapOf(MetadataConstants.KEY_NAME to "dApp"))
+            )
+        )
+    }
 }

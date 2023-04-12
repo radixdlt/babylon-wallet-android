@@ -45,13 +45,13 @@ fun NetworkFeeContent(
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
                 contentDescription = null,
                 tint = RadixTheme.colors.gray3
             )
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = stringResource(id = R.string.xrd_amount, networkFee),
                 style = RadixTheme.typography.body1Link,

@@ -17,6 +17,7 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
 import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.radixdlt.toolkit.models.address.EntityAddress
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.ResourceSpecifier
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,6 +52,7 @@ class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
+    private val getValidDAppMetadataUseCase: GetValidDAppMetadataUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
@@ -154,6 +157,14 @@ class TransactionApprovalViewModel @Inject constructor(
                                             mutableListOf()
                                         val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
                                             mutableListOf()
+
+                                        val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
+                                            .componentAddresses.userApplications
+                                            .filterIsInstance<EntityAddress.ComponentAddress>()
+
+                                        val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
+                                            componentAddresses
+                                        )
 
                                         analyzeManifestWithPreviewResponse.accountDeposits.forEach {
                                             when (it) {
@@ -280,12 +291,36 @@ class TransactionApprovalViewModel @Inject constructor(
                                             analyzeManifestWithPreviewResponse.accountProofResources
                                         )
 
+                                        val withdrawUniqueAccounts = withdrawingAccounts.distinctBy {
+                                            it.address
+                                        }
+
+                                        val depositUniqueAccounts = depositingAccounts.distinctBy {
+                                            it.address
+                                        }
+
+                                        val withdrawPreviewAccounts = withdrawUniqueAccounts.map { uniqueAccount ->
+                                            PreviewAccountItemsUiModel(
+                                                accountName = uniqueAccount.displayName,
+                                                appearanceID = uniqueAccount.appearanceID,
+                                                accounts = withdrawingAccounts.filter { it.address == uniqueAccount.address }
+                                            )
+                                        }.toPersistentList()
+
+                                        val depositPreviewAccounts = depositUniqueAccounts.map { uniqueAccount ->
+                                            PreviewAccountItemsUiModel(
+                                                accountName = uniqueAccount.displayName,
+                                                appearanceID = uniqueAccount.appearanceID,
+                                                accounts = depositingAccounts.filter { it.address == uniqueAccount.address }
+                                            )
+                                        }.toPersistentList()
+
                                         _state.update {
                                             it.copy(
-                                                withdrawingAccounts = withdrawingAccounts.toPersistentList(),
-                                                depositingAccounts = depositingAccounts.toPersistentList(),
+                                                withdrawingAccounts = withdrawPreviewAccounts,
+                                                depositingAccounts = depositPreviewAccounts,
                                                 presentingProofs = proofs.toPersistentList(),
-                                                connectedDApps = persistentListOf(), // TODO something to come later on
+                                                connectedDApps = encounteredAddresses.toPersistentList(),
                                                 manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
                                                 manifestData = transactionWriteRequest.transactionManifestData,
                                                 canApprove = true,
@@ -439,9 +474,15 @@ data class PresentingProofUiModel(
     val title: String
 )
 
-data class ConnectedDAppUiModel(
-    val icon: String,
+data class ConnectedDAppsUiModel(
+    val iconUrl: String,
     val title: String
+)
+
+data class PreviewAccountItemsUiModel(
+    val accountName: String,
+    val appearanceID: Int,
+    val accounts: List<TransactionAccountItemUiModel>
 )
 
 data class TransactionUiState(
@@ -455,10 +496,10 @@ data class TransactionUiState(
     val canApprove: Boolean = false,
     val networkFee: String = "",
     val transactionMessage: String = "",
-    val withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
-    val depositingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
+    val withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
+    val depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
-    val connectedDApps: ImmutableList<ConnectedDAppUiModel> = persistentListOf()
+    val connectedDApps: ImmutableList<ConnectedDAppsUiModel> = persistentListOf()
 ) : UiState
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
