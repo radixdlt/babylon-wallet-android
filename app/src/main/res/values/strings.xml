@@ -76,7 +76,7 @@
     <string name="gateway_api_hint">Enter full URL</string>
     <string name="gateway_updated">Gateway updated!</string>
     <string name="gateway_invalid">Gateway invalid!</string>
-    <string name="approve_transaction">Approve Transaction</string>
+    <string name="approve_transaction">Approve</string>
     <string name="transaction_approved_success">Transaction Approved Successfully!</string>
     <string name="account_preferences">Account Preferences</string>
     <string name="get_free_xrd">Get RCnet XRD Test Tokens</string>
@@ -274,6 +274,6 @@
     <string name="discard">Discard</string>
     <string name="invalid_request">Invalid request</string>
     <string name="you_ve_created_your_first_account">You\'ve created your first Account.</string>
-    <string name="something_went_wrong">Something went wrong</string>
     <string name="unknown">Unknown</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>
