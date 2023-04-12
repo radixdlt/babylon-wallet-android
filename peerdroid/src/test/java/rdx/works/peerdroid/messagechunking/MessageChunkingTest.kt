@@ -3,7 +3,7 @@ package rdx.works.peerdroid.messagechunking
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
-import rdx.works.core.sha256Hash
+import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageDto
 import rdx.works.peerdroid.helpers.Result
@@ -17,7 +17,7 @@ class MessageChunkingTest {
         // given
         val oneMb = 1024 * 1024
         val oneMbByteArray = Random.nextBytes(oneMb)
-        val hashOfMessage = "abc".toByteArray().sha256Hash().toHexString()
+        val hashOfMessage = "abc".toByteArray().blake2Hash().toHexString()
 
         // when
         val chunks = splitMessage(oneMbByteArray)

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
-import rdx.works.core.sha256Hash
+import rdx.works.core.blake2Hash
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
@@ -80,7 +80,7 @@ class PeerdroidClientImpl @Inject constructor(
             connectionPassword = connectionPassword
         )
         encryptionKey?.let {
-            val connectionIdHolder = ConnectionIdHolder(id = it.sha256Hash().toHexString())
+            val connectionIdHolder = ConnectionIdHolder(id = it.blake2Hash().toHexString())
             peerdroidConnector.deleteConnector(connectionIdHolder)
         } ?: Timber.e("Failed to close peer connection because connection password is wrong")
     }

@@ -4,7 +4,7 @@ import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.core.sha256Hash
+import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageDto
 import kotlin.random.Random
@@ -18,7 +18,7 @@ class MessageSplitterTest {
         val textMessageByteArray = textMessage.toByteArray()
 
         val actualSizeOfPackages = 2
-        val actualHashOfMessageInHexString = "4e4aa09b6d80efbd684e80f54a70c1d8605625c3380f4cb012b32644a002b5be"
+        val actualHashOfMessageInHexString = "afa5476b53c5a84d311c3ed8ff8f77e4990fe190e52cfeba745df6f67c83b7c6"
         val actualMessageByteCount = 22
         val actualChunkData = "dGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ=="
 
@@ -71,7 +71,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as PackageDto.MetaData
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash().toHexString()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.blake2Hash().toHexString()))
     }
 
     @Test
@@ -119,7 +119,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as PackageDto.MetaData
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.sha256Hash().toHexString()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.blake2Hash().toHexString()))
     }
 
     @Test

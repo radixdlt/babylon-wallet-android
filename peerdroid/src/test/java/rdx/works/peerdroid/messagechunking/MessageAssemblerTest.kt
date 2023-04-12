@@ -3,7 +3,7 @@ package rdx.works.peerdroid.messagechunking
 import io.ktor.util.encodeBase64
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import rdx.works.core.sha256Hash
+import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageDto
 import rdx.works.peerdroid.helpers.Result
@@ -14,10 +14,10 @@ class MessageAssemblerTest {
     @Test
     fun `verify a text message is properly assembled to package message`() = runBlocking {
         val textMessage = "this is a test message"
-        val actualHashOfMessageInHexString = "4e4aa09b6d80efbd684e80f54a70c1d8605625c3380f4cb012b32644a002b5be"
+        val actualHashOfMessageInHexString = "afa5476b53c5a84d311c3ed8ff8f77e4990fe190e52cfeba745df6f67c83b7c6"
         val actualChunkData = "dGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ=="
 
-        val expectedHashOfMessage = textMessage.toByteArray().sha256Hash().toHexString()
+        val expectedHashOfMessage = textMessage.blake2Hash().toHexString()
         assertEquals(expectedHashOfMessage, actualHashOfMessageInHexString)
 
         val expectedChunkData = textMessage.encodeBase64()
