@@ -61,7 +61,7 @@ class ProfileRepositoryImpl @Inject constructor(
             if (profileIncompatible) {
                 profileStateFlow.update { ProfileState.Incompatible }
             } else {
-                val snapshot = Json.decodeFromString<ProfileSnapshot>(serialised)
+                val snapshot = ProfileSnapshot.fromJson(serialised)
                 profileStateFlow.update { ProfileState.Restored(snapshot.toProfile()) }
             }
         }

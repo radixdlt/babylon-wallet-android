@@ -2,6 +2,7 @@ package com.babylon.wallet.android
 
 import android.app.backup.BackupAgentHelper
 import android.app.backup.FileBackupHelper
+import android.util.Log
 import com.babylon.wallet.android.di.ApplicationModule
 import rdx.works.profile.data.utils.ProfileSnapshotBackupHelper
 
@@ -10,6 +11,7 @@ class WalletBackupAgent : BackupAgentHelper() {
     override fun onCreate() {
         super.onCreate()
 
+        Log.d("Backup", "Backup Agent created")
         ProfileSnapshotBackupHelper(context = this).also {
             addHelper(BACKUP_KEY_SNAPSHOT, it)
         }

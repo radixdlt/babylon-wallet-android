@@ -73,11 +73,16 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(PROFILE_PREFERENCES_KEY, snapshotSerialized)
     }
 
+    suspend fun putProfileSnapshotFromBackup(restoredSnapshotSerialized: String) {
+        putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized)
+    }
+
     suspend fun clear() = preferences.edit { it.clear() }
 
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
+        private const val RESTORED_PROFILE_PREFERENCES_KEY = "restored_preferences_key"
         private const val KEY_ALIAS_DATASTORE = "EncryptedDataStoreAlias"
     }
 }

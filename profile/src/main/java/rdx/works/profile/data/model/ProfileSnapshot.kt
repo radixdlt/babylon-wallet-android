@@ -2,6 +2,8 @@ package rdx.works.profile.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
@@ -62,4 +64,10 @@ internal data class ProfileSnapshot(
         @SerialName("version")
         val version: Int
     )
+
+    companion object {
+
+        fun fromJson(serialised: String) = Json.decodeFromString<ProfileSnapshot>(serialised)
+
+    }
 }

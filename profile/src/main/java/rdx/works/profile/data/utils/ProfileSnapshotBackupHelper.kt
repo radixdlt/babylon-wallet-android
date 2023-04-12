@@ -13,6 +13,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
+import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import java.io.DataOutputStream
 import java.io.FileOutputStream
@@ -33,25 +34,33 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     @SuppressLint("LogNotTimber")
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
         Log.d("Backup", "Backup started")
-        val snapshot = runBlocking {
+        val snapshotSerialised = runBlocking {
             preferencesManager.encryptedProfile.firstOrNull()
         }
 
-        Log.d("Backup", "Snapshot read")
-        if (snapshot != null) {
-            data?.apply {
-                val byteArray = snapshot.toByteArray(Charsets.UTF_8)
-                val len: Int = byteArray.size
-
-                writeEntityHeader("snapshot", len)
-                writeEntityData(byteArray, len)
-            }
-
-            Log.d("Backup", "Backup started for snapshot $snapshot")
-            FileOutputStream(newState.fileDescriptor).also {
-                DataOutputStream(it).writeLong(Date().time) // TODO Change that based on the last backup saved on snapshot
-            }
+        if (snapshotSerialised == null) {
+            Log.d("Backup", "No snapshot exists to backup")
+            return
         }
+
+        if (!isProfileBackupEnabled(snapshotSerialised)) {
+            Log.d("Backup", "Backup is disabled in Profile")
+            return
+        }
+
+        data?.apply {
+            val byteArray = snapshotSerialised.toByteArray(Charsets.UTF_8)
+            val len: Int = byteArray.size
+
+            writeEntityHeader("snapshot", len)
+            writeEntityData(byteArray, len)
+        }
+
+        Log.d("Backup", "Backup started for snapshot $snapshotSerialised")
+        FileOutputStream(newState.fileDescriptor).also {
+            DataOutputStream(it).writeLong(Date().time) // TODO Change that based on the last backup saved on snapshot
+        }
+
     }
 
     @SuppressLint("LogNotTimber")
@@ -63,7 +72,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
             val snapshot = byteArray.toString(Charsets.UTF_8)
 
             runBlocking {
-                preferencesManager.putProfileSnapshot(snapshot)
+                preferencesManager.putProfileSnapshotFromBackup(snapshot)
             }
             Log.d("Backup", "Restored $snapshot")
         } catch (exception: Exception) {
@@ -80,6 +89,16 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 //                }
 //            }
 //        }
+    }
+
+    private fun isProfileBackupEnabled(serialisedSnapshot: String): Boolean {
+        val snapshot = try {
+            ProfileSnapshot.fromJson(serialisedSnapshot)
+        } catch (exception: Exception) {
+            null
+        }
+
+        return snapshot?.toProfile()?.appPreferences?.security?.isCloudProfileSyncEnabled ?: false
     }
 
     @EntryPoint
