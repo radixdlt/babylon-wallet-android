@@ -131,7 +131,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None()))
 
             val profile = generateProfileUseCase("main")
 
@@ -170,7 +170,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None()))
 
             val profile = generateProfileUseCase("main")
 

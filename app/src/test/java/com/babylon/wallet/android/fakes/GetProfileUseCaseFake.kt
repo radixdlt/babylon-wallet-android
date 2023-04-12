@@ -26,7 +26,7 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
     }
 
     override suspend fun clear() {
-        profileStateSource.update { ProfileState.None }
+        profileStateSource.update { ProfileState.None() }
     }
 
 }

@@ -50,20 +50,24 @@ class ProfileRepositoryImpl @Inject constructor(
             val serialised = encryptedPreferencesManager.encryptedProfile.firstOrNull()
 
             if (serialised == null) {
-                profileStateFlow.update { ProfileState.None }
+                // No profile exists, checking for backup data to restore
+                val profileStateFromBackup = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let {
+                    deriveProfileState(it)
+                }
+
+                val restoredProfile = if (profileStateFromBackup is ProfileState.Restored) {
+                    // Profile from backup exists and is compatible.
+                    profileStateFromBackup.profile
+                } else {
+                    null
+                }
+
+                profileStateFlow.update { ProfileState.None(restoredProfile) }
                 return@launch
             }
 
-            val profileIncompatible = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(
-                serialised
-            ).version < Profile.LATEST_PROFILE_VERSION
-
-            if (profileIncompatible) {
-                profileStateFlow.update { ProfileState.Incompatible }
-            } else {
-                val snapshot = ProfileSnapshot.fromJson(serialised)
-                profileStateFlow.update { ProfileState.Restored(snapshot.toProfile()) }
-            }
+            val profileState = deriveProfileState(serialised)
+            profileStateFlow.update { profileState }
         }
     }
 
@@ -83,7 +87,18 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
-        profileStateFlow.update { ProfileState.None }
+        profileStateFlow.update { ProfileState.None() }
         backupManager.dataChanged()
+    }
+
+    private fun deriveProfileState(snapshotSerialised: String): ProfileState {
+        val version = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(snapshotSerialised).version
+
+        return if (version < Profile.LATEST_PROFILE_VERSION) {
+            ProfileState.Incompatible
+        } else {
+            val snapshot = ProfileSnapshot.fromJson(snapshotSerialised)
+            ProfileState.Restored(snapshot.toProfile())
+        }
     }
 }

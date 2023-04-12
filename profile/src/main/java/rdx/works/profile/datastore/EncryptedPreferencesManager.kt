@@ -6,8 +6,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import rdx.works.core.decrypt
@@ -24,39 +26,24 @@ class EncryptedPreferencesManager @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
-    val encryptedProfile = preferences.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }.map { preferences ->
-            val preferencesKey = stringPreferencesKey(PROFILE_PREFERENCES_KEY)
+    val encryptedProfile = preferences.data.catchIOException().map { preferences ->
+        val preferencesKey = stringPreferencesKey(PROFILE_PREFERENCES_KEY)
+        val encryptedValue = preferences[preferencesKey]
+        if (encryptedValue.isNullOrEmpty()) {
+            return@map null
+        }
+        encryptedValue.decrypt(KEY_ALIAS_DATASTORE)
+    }.flowOn(ioDispatcher)
+
+    suspend fun readMnemonic(key: String): String? {
+        return preferences.data.catchIOException().map { preferences ->
+            val preferencesKey = stringPreferencesKey("mnemonic$key")
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null
             }
             encryptedValue.decrypt(KEY_ALIAS_DATASTORE)
-        }
-        .flowOn(ioDispatcher)
-
-    suspend fun readMnemonic(key: String): String? {
-        return preferences.data
-            .catch { exception ->
-                if (exception is IOException) {
-                    emit(emptyPreferences())
-                } else {
-                    throw exception
-                }
-            }.map { preferences ->
-                val preferencesKey = stringPreferencesKey("mnemonic$key")
-                val encryptedValue = preferences[preferencesKey]
-                if (encryptedValue.isNullOrEmpty()) {
-                    return@map null
-                }
-                encryptedValue.decrypt(KEY_ALIAS_DATASTORE)
-            }.first()
+        }.first()
     }
 
     suspend fun putString(key: String, newValue: String?) {
@@ -73,11 +60,30 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(PROFILE_PREFERENCES_KEY, snapshotSerialized)
     }
 
+    suspend fun getProfileSnapshotFromBackup() = preferences.data.catchIOException().map { preferences ->
+        val snapshotEncrypted = preferences[stringPreferencesKey(RESTORED_PROFILE_PREFERENCES_KEY)]
+
+        if (snapshotEncrypted.isNullOrEmpty()) {
+            null
+        } else {
+            snapshotEncrypted.decrypt(KEY_ALIAS_DATASTORE)
+        }
+    }.firstOrNull()
+
     suspend fun putProfileSnapshotFromBackup(restoredSnapshotSerialized: String) {
         putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized)
     }
 
     suspend fun clear() = preferences.edit { it.clear() }
+
+    private fun Flow<Preferences>.catchIOException() = catch { exception ->
+        if (exception is IOException) {
+            emit(emptyPreferences())
+        } else {
+            throw exception
+        }
+    }
+
 
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
