@@ -68,7 +68,7 @@ class EncryptedPreferencesManager @Inject constructor(
         } else {
             snapshotEncrypted.decrypt(KEY_ALIAS_DATASTORE)
         }
-    }.firstOrNull()
+    }.flowOn(ioDispatcher).firstOrNull()
 
     suspend fun putProfileSnapshotFromBackup(restoredSnapshotSerialized: String) {
         putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized)

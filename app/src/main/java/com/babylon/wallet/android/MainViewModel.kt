@@ -18,9 +18,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -52,21 +51,9 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            combine(
-                preferencesManager.showOnboarding,
-                getProfileStateUseCase(),
-            ) { showOnboarding, profileState ->
-                MainUiState(
-                    initialAppState = when {
-                        profileState is ProfileState.Incompatible -> AppState.IncompatibleProfile
-                        showOnboarding -> AppState.Onboarding
-                        profileState is ProfileState.Restored -> AppState.HasProfile
-                        else -> AppState.NoProfile
-                    }
-                )
-            }.collectLatest { state ->
-                _state.update { state }
-            }
+            val state = getProfileStateUseCase().first()
+
+            _state.update { MainUiState(initialAppState = AppState.from(state)) }
         }
     }
 
@@ -199,9 +186,22 @@ data class MainUiState(
 ) : UiState
 
 sealed interface AppState {
-    object Onboarding : AppState
-    object HasProfile : AppState
-    object NoProfile : AppState
+    object OnBoarding : AppState
+    object NewProfile : AppState
+    object Wallet : AppState
     object IncompatibleProfile : AppState
     object Loading : AppState
+
+    companion object {
+        fun from(profileState: ProfileState) = when (profileState) {
+            is ProfileState.Incompatible -> IncompatibleProfile
+            is ProfileState.Restored -> Wallet
+            is ProfileState.None -> if (profileState.profileBackupExists) {
+                OnBoarding
+            } else {
+                NewProfile
+            }
+            else -> NewProfile
+        }
+    }
 }

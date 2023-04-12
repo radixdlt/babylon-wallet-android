@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
 
 package com.babylon.wallet.android.presentation.onboarding
 
@@ -20,18 +20,15 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,11 +42,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
-import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlin.math.absoluteValue
 import kotlin.math.sign
@@ -60,12 +54,13 @@ import kotlin.math.sign
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
-    restoreWalletFromBackup: () -> Unit,
+    onNewUserSelected: () -> Unit,
+    onWalletRestored: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
-        restoreWalletFromBackup = restoreWalletFromBackup,
+        restoreWalletFromBackup = onWalletRestored,
         onProceedClick = viewModel::onProceedClick,
         showWarning = state.showWarning,
         authenticateWithBiometric = state.authenticateWithBiometric,
@@ -86,13 +81,14 @@ private fun OnboardingScreenContent(
     onAlertClicked: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pagerState = rememberPagerState(initialPage = currentPage)
     BoxWithConstraints(
         modifier = modifier
 //            .systemBarsPadding()
             .navigationBarsPadding()
+            .background(White)
             .fillMaxSize()
     ) {
+        val pagerState = rememberPagerState(initialPage = currentPage)
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             val onboardPages = listOf(
@@ -119,49 +115,49 @@ private fun OnboardingScreenContent(
             )
             RadixOnboardingPagerIndicator(
                 pagerState = pagerState,
-                pageCount = onboardPages.size,
+                pageCount = 5,
                 modifier = Modifier
                     .wrapContentSize()
                     .align(Alignment.CenterHorizontally),
                 indicatorWidth = 48.dp,
                 indicatorHeight = 4.dp,
             )
-
-            HorizontalPager(
-                pageCount = onboardPages.size,
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) { page ->
-                OnboardingPageView(page = onboardPages[page])
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // TODO I think this could be triggered outside of composable, maybe in main activity or via view model
-            val context = LocalContext.current
-            LaunchedEffect(authenticateWithBiometric) {
-                if (authenticateWithBiometric) {
-                    context.findFragmentActivity()?.let { activity ->
-                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                            onUserAuthenticated(authenticatedSuccessfully)
-                        }
-                    }
-                }
-            }
-            if (showWarning) {
-                NotSecureAlertDialog(finish = { accepted -> onAlertClicked(accepted) })
-            }
+//
+//            HorizontalPager(
+//                pageCount = onboardPages.size,
+//                state = pagerState,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .weight(1f)
+//            ) { page ->
+//                OnboardingPageView(page = onboardPages[page])
+//            }
+//
+//            Spacer(modifier = Modifier.weight(1f))
+//
+//            // TODO I think this could be triggered outside of composable, maybe in main activity or via view model
+//            val context = LocalContext.current
+//            LaunchedEffect(authenticateWithBiometric) {
+//                if (authenticateWithBiometric) {
+//                    context.findFragmentActivity()?.let { activity ->
+//                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+//                            onUserAuthenticated(authenticatedSuccessfully)
+//                        }
+//                    }
+//                }
+//            }
+//            if (showWarning) {
+//                NotSecureAlertDialog(finish = { accepted -> onAlertClicked(accepted) })
+//            }
         }
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = !pagerState.canScrollForward
+            visible = /*!pagerState.canScrollForward*/true
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 RadixPrimaryButton(
@@ -180,6 +176,7 @@ private fun OnboardingScreenContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RadixOnboardingPagerIndicator(
     pagerState: PagerState,

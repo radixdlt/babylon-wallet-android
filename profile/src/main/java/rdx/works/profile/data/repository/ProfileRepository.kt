@@ -55,14 +55,7 @@ class ProfileRepositoryImpl @Inject constructor(
                     deriveProfileState(it)
                 }
 
-                val restoredProfile = if (profileStateFromBackup is ProfileState.Restored) {
-                    // Profile from backup exists and is compatible.
-                    profileStateFromBackup.profile
-                } else {
-                    null
-                }
-
-                profileStateFlow.update { ProfileState.None(restoredProfile) }
+                profileStateFlow.update { ProfileState.None(profileStateFromBackup is ProfileState.Restored) }
                 return@launch
             }
 

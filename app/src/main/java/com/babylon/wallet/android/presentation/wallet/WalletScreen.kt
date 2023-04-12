@@ -50,6 +50,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.profile.data.model.Profile
 
 @Composable
 fun WalletScreen(
@@ -60,12 +61,14 @@ fun WalletScreen(
     onAccountCreationClick: () -> Unit,
     mainUiState: StateFlow<MainUiState>,
     onNavigateToCreateAccount: () -> Unit,
+    onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit
 ) {
-    val appState by mainUiState.collectAsStateWithLifecycle()
-    val walletState by viewModel.state.collectAsStateWithLifecycle()
-    when (appState.initialAppState) {
-        AppState.HasProfile -> {
+    val state by mainUiState.collectAsStateWithLifecycle()
+    when (val initialAppState = state.initialAppState) {
+        is AppState.Wallet -> {
+            val walletState by viewModel.state.collectAsStateWithLifecycle()
+
             SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
             WalletScreenContent(
                 onMenuClick = onMenuClick,
@@ -87,20 +90,24 @@ fun WalletScreen(
                 }
             }
         }
-        AppState.IncompatibleProfile -> {
-            LaunchedEffect(appState.initialAppState) {
+        is AppState.IncompatibleProfile -> {
+            LaunchedEffect(initialAppState) {
                 onNavigateToIncompatibleProfile()
             }
         }
-        AppState.Loading -> {
+        is AppState.Loading -> {
             FullscreenCircularProgressContent()
         }
-        AppState.NoProfile -> {
-            LaunchedEffect(appState.initialAppState) {
+        is AppState.OnBoarding -> {
+            LaunchedEffect(initialAppState) {
+                onNavigateToOnBoarding()
+            }
+        }
+        is AppState.NewProfile -> {
+            LaunchedEffect(initialAppState) {
                 onNavigateToCreateAccount()
             }
         }
-        AppState.Onboarding -> {}
     }
 }
 

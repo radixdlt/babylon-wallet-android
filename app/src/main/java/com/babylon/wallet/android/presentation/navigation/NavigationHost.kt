@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.navigation
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -57,7 +58,12 @@ fun NavigationHost(
         composable(route = Screen.OnboardingDestination.route) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
-                restoreWalletFromBackup = {}
+                onNewUserSelected = {
+                    Toast.makeText(navController.context, "Go to Create account", Toast.LENGTH_SHORT).show()
+                },
+                onWalletRestored = {
+                    Toast.makeText(navController.context, "Go to Wallet", Toast.LENGTH_SHORT).show()
+                }
             )
         }
         composable(route = Screen.WalletDestination.route) {
@@ -77,6 +83,9 @@ fun NavigationHost(
                 },
                 onNavigateToCreateAccount = {
                     navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                },
+                onNavigateToOnBoarding = {
+                    navController.navigate(Screen.OnboardingDestination.route)
                 },
                 onNavigateToIncompatibleProfile = {
                     navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
