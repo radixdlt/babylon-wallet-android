@@ -24,6 +24,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,27 +55,40 @@ import kotlin.math.sign
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
-    onNewUserSelected: () -> Unit,
-    onWalletRestored: () -> Unit,
+    onNavigateToNewAccount: () -> Unit,
+    onNavigateToWallet: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
-        restoreWalletFromBackup = onWalletRestored,
         onProceedClick = viewModel::onProceedClick,
+        onRestoreWalletClick = viewModel::onRestoreProfileFromBackupClicked,
         showWarning = state.showWarning,
         authenticateWithBiometric = state.authenticateWithBiometric,
         onUserAuthenticated = viewModel::onUserAuthenticated,
         onAlertClicked = viewModel::onAlertClicked,
         modifier = modifier
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is OnboardingViewModel.OnBoardingEvent.NavigateToWallet -> {
+                    onNavigateToWallet()
+                }
+                is OnboardingViewModel.OnBoardingEvent.NavigateToNewAccount -> {
+                    onNavigateToNewAccount()
+                }
+            }
+        }
+    }
 }
 
 @Composable
 private fun OnboardingScreenContent(
     currentPage: Int,
-    restoreWalletFromBackup: () -> Unit,
     onProceedClick: () -> Unit,
+    onRestoreWalletClick: () -> Unit,
     showWarning: Boolean,
     authenticateWithBiometric: Boolean,
     onUserAuthenticated: (Boolean) -> Unit,
@@ -167,8 +181,8 @@ private fun OnboardingScreenContent(
                 )
                 RadixTextButton(
                     text = stringResource(id = R.string.restore_wallet_from_backup),
-                    onClick = restoreWalletFromBackup,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onRestoreWalletClick
                 )
                 Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             }
@@ -249,12 +263,12 @@ fun OnboardingScreenPreview() {
     RadixWalletTheme {
         OnboardingScreenContent(
             currentPage = 0,
-            restoreWalletFromBackup = {},
             onProceedClick = {},
+            onRestoreWalletClick = {},
             showWarning = false,
             authenticateWithBiometric = true,
             onUserAuthenticated = {},
-            {},
+            onAlertClicked = {},
             Modifier.fillMaxSize()
         )
     }

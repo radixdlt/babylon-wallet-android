@@ -44,7 +44,7 @@ class OnboardingViewModelTest {
     @Test
     fun `when alert not accepted, do not show external warning`() = runTest {
         // given
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
@@ -55,7 +55,7 @@ class OnboardingViewModelTest {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(showWarning = false))
+        Assert.assertEquals(event.first(), OnboardingViewModel.OnBoardingUiState(showWarning = false))
     }
 
     @Test
@@ -75,7 +75,7 @@ class OnboardingViewModelTest {
     @Test
     fun `when user not authenticated successfully, do not go next and dismiss`() = runTest {
         // given
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
@@ -87,14 +87,14 @@ class OnboardingViewModelTest {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.first(), OnboardingViewModel.OnboardingUiState(authenticateWithBiometric = false))
+        Assert.assertEquals(event.first(), OnboardingViewModel.OnBoardingUiState(authenticateWithBiometric = false))
     }
 
     @Test
     fun `given device is secure, when proceed button clicked, verify authentication prompt shown`() = runTest {
         // given
         whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(true)
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
@@ -106,14 +106,14 @@ class OnboardingViewModelTest {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.last(), OnboardingViewModel.OnboardingUiState(authenticateWithBiometric = true))
+        Assert.assertEquals(event.last(), OnboardingViewModel.OnBoardingUiState(authenticateWithBiometric = true))
     }
 
     @Test
     fun `given device is not secure, when proceed button clicked, show warning`() = runTest {
         // given
         whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(false)
-        val event = mutableListOf<OnboardingViewModel.OnboardingUiState>()
+        val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(preferencesManager, deviceSecurityHelper)
 
         // when
@@ -125,6 +125,6 @@ class OnboardingViewModelTest {
         advanceUntilIdle()
 
         // then
-        Assert.assertEquals(event.last(), OnboardingViewModel.OnboardingUiState(showWarning = true))
+        Assert.assertEquals(event.last(), OnboardingViewModel.OnBoardingUiState(showWarning = true))
     }
 }

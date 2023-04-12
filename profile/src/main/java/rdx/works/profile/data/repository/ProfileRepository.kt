@@ -30,6 +30,12 @@ interface ProfileRepository {
     suspend fun saveProfile(profile: Profile)
 
     suspend fun clear()
+
+    suspend fun isRestoredProfileFromBackupExists(): Boolean
+
+    suspend fun getRestoredProfileFromBackup(): Profile?
+
+    suspend fun clearBackedUpProfile()
 }
 
 val ProfileRepository.profile: Flow<Profile>
@@ -82,6 +88,22 @@ class ProfileRepositoryImpl @Inject constructor(
         encryptedPreferencesManager.clear()
         profileStateFlow.update { ProfileState.None() }
         backupManager.dataChanged()
+    }
+
+    override suspend fun isRestoredProfileFromBackupExists(): Boolean {
+        return getRestoredProfileFromBackup() != null
+    }
+
+    override suspend fun getRestoredProfileFromBackup(): Profile? {
+        val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let { snapshot ->
+            deriveProfileState(snapshot)
+        }
+
+        return (state as? ProfileState.Restored)?.profile
+    }
+
+    override suspend fun clearBackedUpProfile() {
+        encryptedPreferencesManager.clearProfileSnapshotFromBackup()
     }
 
     private fun deriveProfileState(snapshotSerialised: String): ProfileState {

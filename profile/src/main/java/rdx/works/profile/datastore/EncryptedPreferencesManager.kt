@@ -74,6 +74,12 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized)
     }
 
+    suspend fun clearProfileSnapshotFromBackup() {
+        preferences.edit {
+            it.remove(stringPreferencesKey(RESTORED_PROFILE_PREFERENCES_KEY))
+        }
+    }
+
     suspend fun clear() = preferences.edit { it.clear() }
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->

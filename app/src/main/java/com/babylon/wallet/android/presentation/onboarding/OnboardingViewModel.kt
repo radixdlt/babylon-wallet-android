@@ -3,32 +3,50 @@ package com.babylon.wallet.android.presentation.onboarding
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.domain.backup.ClearRestoredProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
+import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-) : StateViewModel<OnboardingViewModel.OnboardingUiState>() {
+    private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
+    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val clearRestoredProfileFromBackupUseCase: ClearRestoredProfileFromBackupUseCase
+) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(), OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): OnboardingUiState = OnboardingUiState()
+    override fun initialState(): OnBoardingUiState = OnBoardingUiState()
+
+    init {
+        viewModelScope.launch {
+            val profileFromBackupExists = isProfileFromBackupExistsUseCase()
+            _state.update { it.copy(profileFromBackupExists = profileFromBackupExists) }
+        }
+    }
 
     fun onProceedClick() {
         viewModelScope.launch {
-            if (deviceSecurityHelper.isDeviceSecure()) {
-                _state.update {
-                    it.copy(authenticateWithBiometric = true)
-                }
-            } else {
-                _state.update {
-                    it.copy(showWarning = true)
-                }
-            }
+//            if (deviceSecurityHelper.isDeviceSecure()) {
+//                _state.update {
+//                    it.copy(authenticateWithBiometric = true)
+//                }
+//            } else {
+//                _state.update {
+//                    it.copy(showWarning = true)
+//                }
+//            }
+            clearRestoredProfileFromBackupUseCase()
+            sendEvent(OnBoardingEvent.NavigateToNewAccount)
         }
     }
 
@@ -58,10 +76,21 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    data class OnboardingUiState(
+    fun onRestoreProfileFromBackupClicked() = viewModelScope.launch {
+        restoreProfileFromBackupUseCase()
+        sendEvent(OnBoardingEvent.NavigateToWallet)
+    }
+
+    data class OnBoardingUiState(
         val currentPagerPage: Int = 0,
         val showButtons: Boolean = false,
         val authenticateWithBiometric: Boolean = false,
-        val showWarning: Boolean = false
+        val showWarning: Boolean = false,
+        val profileFromBackupExists: Boolean = false
     ) : UiState
+
+    sealed interface OnBoardingEvent : OneOffEvent {
+        object NavigateToWallet: OnBoardingEvent
+        object NavigateToNewAccount: OnBoardingEvent
+    }
 }
