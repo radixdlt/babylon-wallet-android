@@ -275,4 +275,5 @@
     <string name="invalid_request">Invalid request</string>
     <string name="you_ve_created_your_first_account">You\'ve created your first Account.</string>
     <string name="unknown">Unknown</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>

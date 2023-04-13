@@ -13,8 +13,8 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,10 +72,10 @@ fun RadixTextField(
                 value = value,
                 onValueChange = onValueChanged,
                 shape = RadixTheme.shapes.roundedRectSmall,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = RadixTheme.colors.gray5,
-                    placeholderColor = RadixTheme.colors.gray2,
-                    textColor = RadixTheme.colors.gray1,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = RadixTheme.colors.gray5,
+                    focusedPlaceholderColor = RadixTheme.colors.gray2,
+                    focusedTextColor = RadixTheme.colors.gray1,
                     focusedBorderColor = RadixTheme.colors.gray1,
                     unfocusedBorderColor = RadixTheme.colors.gray3,
                     errorBorderColor = RadixTheme.colors.red1,
