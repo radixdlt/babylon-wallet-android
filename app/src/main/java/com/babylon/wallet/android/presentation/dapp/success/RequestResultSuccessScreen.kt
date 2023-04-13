@@ -10,8 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,7 +30,9 @@ fun RequestResultSuccessScreen(
         viewModel.incomingRequestHandled(requestId)
         onBackPress()
     }
-    BottomSheetWrapper(onDismissRequest = dismissHandler, scrimColor = Color.Transparent) {
+    BottomSheetWrapper(
+        onDismissRequest = dismissHandler
+    ) {
         RequestSuccessDialog(
             dAppName = dAppName,
             modifier = modifier
@@ -48,11 +48,7 @@ private fun RequestSuccessDialog(
     Column(
         modifier
             .fillMaxWidth()
-            .background(
-                color = RadixTheme.colors.defaultBackground,
-                shape = RadixTheme.shapes.roundedRectTopDefault
-            )
-            .clip(RadixTheme.shapes.roundedRectTopDefault)
+            .background(color = RadixTheme.colors.defaultBackground)
             .padding(RadixTheme.dimensions.paddingLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)

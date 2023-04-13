@@ -36,14 +36,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
-    scrimColor: Color = Color.Transparent,
     content: @Composable () -> Unit,
 ) {
     ModalBottomSheet(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
         shape = RadixTheme.shapes.roundedRectTopDefault,
-        scrimColor = scrimColor,
         dragHandle = {
             BottomDialogDragHandle(
                 modifier = Modifier
@@ -70,8 +68,7 @@ fun BottomSheetDialogWrapper(
         BottomSheetWrapper(
             modifier = modifier,
             onDismissRequest = onDismissRequest,
-            scrimColor = Color.Transparent,
-            content = content,
+            content = content
         )
     }
 }
