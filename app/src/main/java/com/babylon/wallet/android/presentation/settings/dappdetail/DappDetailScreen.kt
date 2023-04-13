@@ -72,6 +72,7 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -556,7 +557,7 @@ private fun PersonaDetailList(
             }
             items(sharedPersonaAccounts) { account ->
                 GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
-                    PersonaSharedAccountCard(
+                    SimpleAccountCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
@@ -608,31 +609,6 @@ private fun PersonaDetailList(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun PersonaSharedAccountCard(
-    modifier: Modifier = Modifier,
-    account: AccountItemUiModel
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = account.displayName.orEmpty(),
-            style = RadixTheme.typography.body1Header,
-            maxLines = 1,
-            color = RadixTheme.colors.white
-        )
-
-        ActionableAddressView(
-            address = account.address,
-            textStyle = RadixTheme.typography.body2HighImportance,
-            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
-        )
     }
 }
 

@@ -1,13 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.OlympiaAccountDetails
-import com.babylon.wallet.android.domain.OlympiaAccountType
-import com.babylon.wallet.android.domain.OlympiaWalletData
-import com.babylon.wallet.android.domain.olympiaTestSeedPhrase
-import com.babylon.wallet.android.domain.parseOlympiaWalletAccountData
-import com.babylon.wallet.android.domain.validatePublicKeysOf
-import com.babylon.wallet.android.domain.verifyPayload
 import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -15,6 +8,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -26,29 +21,54 @@ import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
+import rdx.works.profile.domain.currentNetworkAccountHashes
+import rdx.works.profile.olympiaimport.ChunkInfo
+import rdx.works.profile.olympiaimport.OlympiaAccountDetails
+import rdx.works.profile.olympiaimport.OlympiaAccountType
+import rdx.works.profile.olympiaimport.OlympiaWalletData
+import rdx.works.profile.olympiaimport.chunkInfo
+import rdx.works.profile.olympiaimport.isProperQrPayload
+import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
+import rdx.works.profile.olympiaimport.parseOlympiaWalletAccountData
+import rdx.works.profile.olympiaimport.validatePublicKeysOf
+import rdx.works.profile.olympiaimport.verifyPayload
 import javax.inject.Inject
 
 @HiltViewModel
 class OlympiaImportViewModel @Inject constructor(
-    private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase
+    private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
+    private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
+    private val getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<OlympiaImportUiState>(),
     OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
+    private var mnemonicWithPassphrase: MnemonicWithPassphrase? = null
     private val scannedData = mutableSetOf<String>()
     private var olympiaWalletData: OlympiaWalletData? = null
 
     fun onQrCodeScanned(qrData: String) {
-        scannedData.add(qrData)
-        if (!scannedData.verifyPayload()) {
+        if (!qrData.isProperQrPayload()) {
             _state.update {
-                it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.ScanNextPayload))
+                it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.InvalidPayload))
             }
             return
         }
-        val olympiaWalletData = scannedData.parseOlympiaWalletAccountData()
-        olympiaWalletData?.let { data ->
-            this.olympiaWalletData = data
-            viewModelScope.launch {
+        scannedData.add(qrData)
+        if (!scannedData.verifyPayload()) {
+            _state.update {
+                it.copy(qrChunkInfo = scannedData.chunkInfo())
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            val olympiaWalletData = scannedData.parseOlympiaWalletAccountData(
+                getProfileUseCase.currentNetworkAccountHashes()
+            )
+            olympiaWalletData?.let { data ->
+                this@OlympiaImportViewModel.olympiaWalletData = data
                 _state.update {
                     it.copy(
                         currentPage = ImportPage.AccountList,
@@ -69,7 +89,7 @@ class OlympiaImportViewModel @Inject constructor(
             delay(300)
             val currentPage = _state.value.currentPage
             _state.value.pages.nextPage(currentPage)?.let { nextPage ->
-                _state.update { it.copy(currentPage = nextPage) }
+                _state.update { it.copy(currentPage = nextPage, hideBack = nextPage == ImportPage.ImportComplete) }
                 sendEvent(OlympiaImportEvent.NextPage(nextPage))
             }
         }
@@ -78,6 +98,10 @@ class OlympiaImportViewModel @Inject constructor(
     private fun previousPage() {
         viewModelScope.launch {
             val newPage = _state.value.pages.previousPage(_state.value.currentPage)
+            if (newPage == ImportPage.ScanQr) {
+                scannedData.clear()
+                _state.update { it.copy(qrChunkInfo = null) }
+            }
             newPage?.let { page -> _state.update { it.copy(currentPage = page) } }
             sendEvent(OlympiaImportEvent.PreviousPage(newPage))
         }
@@ -131,7 +155,7 @@ class OlympiaImportViewModel @Inject constructor(
         _state.update { state ->
             val seedPhrase = _state.value.seedPhrase
             val words = seedPhrase.split(" ")
-            state.copy(importSoftwareAccountsEnabled = words.size > 10)
+            state.copy(importSoftwareAccountsEnabled = olympiaWalletData?.mnemonicWordCount == words.size)
         }
     }
 
@@ -145,13 +169,57 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     fun onImportSoftwareAccounts() {
-        val selectedSoftwareAccounts = _state.value.olympiaAccounts.filter {
-            it.selected && it.data.type == OlympiaAccountType.Software
-        }.map { it.data }
-        val mnemonicWithPassphrase = MnemonicWithPassphrase(_state.value.seedPhrase, _state.value.bip39Passphrase)
-        val accountsValid = mnemonicWithPassphrase.validatePublicKeysOf(selectedSoftwareAccounts)
-        if (accountsValid) {
+        viewModelScope.launch {
+            val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
+                it.selected && it.data.type == OlympiaAccountType.Software
+            }.map { it.data }
+            mnemonicWithPassphrase = MnemonicWithPassphrase(_state.value.seedPhrase, _state.value.bip39Passphrase)
+            val accountsValid = mnemonicWithPassphrase?.validatePublicKeysOf(softwareAccountsToMigrate) == true
+            if (accountsValid) {
+                val nextPage = _state.value.pages.nextPage(_state.value.currentPage)
+                when (nextPage) {
+                    ImportPage.HardwareAccount -> nextPage()
+                    else -> {
+                        importSoftwareAccounts(mnemonicWithPassphrase!!, softwareAccountsToMigrate)
+                        nextPage()
+                    }
+                }
+            } else {
+                _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.InvalidMnemonic)) }
+            }
+        }
+    }
 
+    private suspend fun importSoftwareAccounts(
+        mnemonicWithPassphrase: MnemonicWithPassphrase,
+        softwareAccountsToMigrate: List<OlympiaAccountDetails>
+    ) {
+        val factorSource = addOlympiaFactorSourceUseCase(mnemonicWithPassphrase)
+        val migratedAccounts = migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSource.id)
+        _state.update { state ->
+            state.copy(migratedAccounts = migratedAccounts.map { it.toUiModel() }.toPersistentList())
+        }
+    }
+
+    fun onToggleSelectAll() {
+        val selectedAll = _state.value.olympiaAccounts.filter { !it.data.alreadyImported }.all { it.selected }
+        _state.update { state ->
+            state.copy(olympiaAccounts = state.olympiaAccounts.mapWhen(
+                predicate = { !it.data.alreadyImported }
+            ) { it.copy(selected = !selectedAll) }.toPersistentList()
+            )
+        }
+    }
+
+    fun onHardwareImport() {
+        viewModelScope.launch {
+            mnemonicWithPassphrase?.let { mnemonic ->
+                val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
+                    it.selected && it.data.type == OlympiaAccountType.Software
+                }.map { it.data }
+                importSoftwareAccounts(mnemonic, softwareAccountsToMigrate)
+            }
+            nextPage()
         }
     }
 
@@ -190,9 +258,11 @@ data class OlympiaImportUiState(
     val currentPage: ImportPage = ImportPage.ScanQr,
     val importButtonEnabled: Boolean = false,
     val importSoftwareAccountsEnabled: Boolean = true,
-    val triggerCameraPermissionPrompt: Boolean = false,
     val olympiaAccounts: ImmutableList<Selectable<OlympiaAccountDetails>> = persistentListOf(),
     val seedPhrase: String = "",
     val bip39Passphrase: String = "",
-    val uiMessage: UiMessage? = null
+    val uiMessage: UiMessage? = null,
+    val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
+    val hideBack: Boolean = false,
+    val qrChunkInfo: ChunkInfo? = null
 ) : UiState

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
+import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 
 @Serializable
 data class FactorInstance(
@@ -32,6 +33,15 @@ data class FactorInstance(
                 return PublicKey(
                     compressedData = compressedPublicKey,
                     curve = CURVE_25519
+                )
+            }
+
+            fun curveSecp256k1PublicKey(
+                compressedPublicKey: String
+            ): PublicKey {
+                return PublicKey(
+                    compressedData = compressedPublicKey,
+                    curve = SECP_256K1
                 )
             }
         }

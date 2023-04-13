@@ -76,7 +76,7 @@ internal class TransactionClientTest {
                 transactionClient.selectAccountAddressToLockFee(addressesInvolved)
             manifest =
                 manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
+            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(networkId, manifest)
 
 
             Assert.assertEquals(1, addressesNeededToSign.size)
@@ -144,7 +144,7 @@ internal class TransactionClientTest {
                 transactionClient.selectAccountAddressToLockFee(addressesInvolved)
             manifest =
                 manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(manifest)
+            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(networkId, manifest)
 
             Assert.assertEquals(2, addressesNeededToSign.size)
             Assert.assertEquals(

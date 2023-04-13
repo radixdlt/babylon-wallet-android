@@ -27,7 +27,8 @@ fun LegacyAccountSelectionCard(
     address: String,
     path: String,
     checked: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    alreadyImported: Boolean
 ) {
     Row(
         modifier = modifier
@@ -39,6 +40,15 @@ fun LegacyAccountSelectionCard(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
+            if (alreadyImported) {
+                Text(
+                    text = stringResource(id = R.string.already_imported),
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
                 Text(
                     text = stringResource(id = R.string.type),
@@ -102,16 +112,18 @@ fun LegacyAccountSelectionCard(
             }
 
         }
-        Spacer(modifier = Modifier.weight(0.1f))
-        Checkbox(
-            checked = checked,
-            colors = CheckboxDefaults.colors(
-                checkedColor = RadixTheme.colors.gray1,
-                uncheckedColor = RadixTheme.colors.gray3,
-                checkmarkColor = Color.White
-            ),
-            onCheckedChange = null
-        )
+        if (!alreadyImported) {
+            Spacer(modifier = Modifier.weight(0.1f))
+            Checkbox(
+                checked = checked,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = RadixTheme.colors.gray1,
+                    uncheckedColor = RadixTheme.colors.gray3,
+                    checkmarkColor = Color.White
+                ),
+                onCheckedChange = null
+            )
+        }
     }
 }
 
@@ -123,8 +135,9 @@ fun LegacyAccountSelectionCardPreview() {
             accountName = "Account name",
             accountType = "Software",
             address = "jf932j9f32o",
+            path = "test/path",
             checked = true,
-            path = "test/path"
+            alreadyImported = false
         )
     }
 }

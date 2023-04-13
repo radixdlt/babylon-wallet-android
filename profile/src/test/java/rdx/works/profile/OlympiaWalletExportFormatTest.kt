@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain
+package rdx.works.profile
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -6,6 +6,7 @@ import okio.ByteString.Companion.decodeBase64
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.olympiaimport.parseOlympiaWalletAccountData
 import java.io.File
 
 internal class OlympiaWalletExportFormatTest {

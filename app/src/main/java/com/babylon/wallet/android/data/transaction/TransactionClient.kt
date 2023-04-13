@@ -2,6 +2,8 @@
 
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKey
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEcdsaSecp256k1
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
@@ -19,6 +21,7 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.extensions.removeLeadingZero
@@ -479,12 +482,24 @@ class TransactionClient @Inject constructor(
                     DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                 )
             )
-
-        val notaryPublicKey = PublicKeyEddsaEd25519(
-            keyType = PublicKeyType.eddsaEd25519,
-            keyHex = notaryAndSigners.notarySigner.privateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero().toHexString()
+        val notaryPrivateKey = notaryAndSigners.notarySigner.privateKey
+        val notaryPublicKey: PublicKey = requireNotNull(
+            when (notaryPrivateKey.curveType) {
+                EllipticCurveType.Secp256k1 -> {
+                    PublicKeyEcdsaSecp256k1(
+                        keyType = PublicKeyType.ecdsaSecp256k1,
+                        keyHex = notaryAndSigners.notarySigner.privateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero()
+                            .toHexString()
+                    )
+                }
+                EllipticCurveType.P256 -> null
+                EllipticCurveType.Ed25519 -> PublicKeyEddsaEd25519(
+                    keyType = PublicKeyType.eddsaEd25519,
+                    keyHex = notaryAndSigners.notarySigner.privateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero()
+                        .toHexString()
+                )
+            }
         )
-
         return transactionRepository.getTransactionPreview(
             // TODO things like tipPercentage might change later on
             TransactionPreviewRequest(

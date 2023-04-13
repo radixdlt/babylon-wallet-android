@@ -274,7 +274,7 @@
     <string name="discard">Discard</string>
     <string name="invalid_request">Invalid request</string>
     <string name="you_ve_created_your_first_account">You\'ve created your first Account.</string>
-    <string name="import_from_legacy_wallet">Import from Legacy Wallet</string>
+    <string name="import_from_legacy_wallet">Import from a Legacy Wallet</string>
     <string name="import_legacy_wallet">Import Legacy Wallet</string>
     <string name="name">Name</string>
     <string name="olympia_address">Olympia Address</string>
@@ -285,6 +285,15 @@
     <string name="bip_39_passphrase">BIP39 passphrase</string>
     <string name="import_label">Import</string>
     <string name="type">Type</string>
+    <string name="invalid_mnemonic">Invalid Mnemonic</string>
+    <string name="already_imported">Account already imported</string>
+    <plurals name="imported_x_accounts">
+        <item quantity="zero">No accounts imported.</item>
+        <item quantity="one">Imported %d account.</item>
+        <item quantity="other">Imported %d accounts.</item>
+    </plurals>
+    <string name="scanned_x_out_of_y">Scanned %d/%d</string>
+    <string name="invalid_payload">Invalid QR code</string>
     <string name="scan_next_qr_code">Please scan next qr code</string>
     <string name="unknown">Unknown</string>
     <string name="something_went_wrong">Something went wrong</string>

@@ -13,14 +13,14 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository
 ) {
 
-    suspend operator fun invoke(mnemonic: String, passphrase: String = "") {
-        val mnemonicWithPassphrase = MnemonicWithPassphrase(mnemonic, passphrase)
+    suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): FactorSource {
         val olympiaFactorSource = FactorSource.olympia(mnemonicWithPassphrase)
         val existingMnemonic = mnemonicRepository.readMnemonic(olympiaFactorSource.id)
-        if (existingMnemonic != null) return
+        if (existingMnemonic != null) return olympiaFactorSource
         mnemonicRepository.saveMnemonic(olympiaFactorSource.id, mnemonicWithPassphrase)
         val profile = dataSource.profile.first()
         val updatedProfile = profile.copy(factorSources = profile.factorSources + listOf(olympiaFactorSource))
         dataSource.saveProfile(updatedProfile)
+        return olympiaFactorSource
     }
 }

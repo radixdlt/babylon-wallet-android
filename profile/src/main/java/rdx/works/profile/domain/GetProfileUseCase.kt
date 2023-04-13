@@ -1,5 +1,7 @@
 package rdx.works.profile.domain
 
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.request.DecodeAddressRequest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -24,6 +26,14 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     withAddress: String
 ) = accountsOnCurrentNetwork().firstOrNull { account ->
     account.address == withAddress
+}
+
+suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
+    return accountsOnCurrentNetwork().map {
+        val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(it.address)).getOrThrow().data
+        val result = addressData.takeLast(26).toByteArray()
+        result
+    }.toSet()
 }
 
 /**
