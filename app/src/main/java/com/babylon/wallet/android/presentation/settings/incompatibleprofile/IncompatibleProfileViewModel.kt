@@ -14,7 +14,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class IncompatibleProfileViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
 ) : ViewModel(), OneOffEventHandler<IncompatibleProfileEvent> by OneOffEventHandlerImpl() {
@@ -22,7 +21,6 @@ class IncompatibleProfileViewModel @Inject constructor(
     fun deleteProfile() {
         viewModelScope.launch {
             deleteProfileUseCase()
-            preferencesManager.clear()
             peerdroidClient.terminate()
             sendEvent(IncompatibleProfileEvent.ProfileDeleted)
         }

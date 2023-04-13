@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
-import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.Profile
 import java.time.Instant
 
 sealed interface SettingsItem {
@@ -80,7 +80,10 @@ sealed interface SettingsItem {
     }
 
     sealed class BackupState {
-        data class Open(val lastBackup: Instant?): BackupState() {
+        data class Open(
+            val lastBackup: Instant?,
+            val lastProfileSave: Instant
+        ): BackupState() {
 
             val isWithinWindow: Boolean
                 get() {
@@ -102,9 +105,9 @@ sealed interface SettingsItem {
         object Closed: BackupState()
 
         companion object {
-            fun from(settings: Security, lastBackupInstant: Instant?): BackupState {
-                return if (settings.isCloudProfileSyncEnabled) {
-                    Open(lastBackupInstant)
+            fun from(profile: Profile, lastBackupInstant: Instant?): BackupState {
+                return if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
+                    Open(lastBackup = lastBackupInstant, lastProfileSave = profile.header.lastModified)
                 } else {
                     Closed
                 }

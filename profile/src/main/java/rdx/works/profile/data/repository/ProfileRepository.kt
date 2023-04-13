@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.ProfileSnapshotRelaxed
@@ -47,6 +48,7 @@ val ProfileRepository.profile: Flow<Profile>
 
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val preferencesManager: PreferencesManager,
     private val relaxedJson: Json,
     private val backupManager: BackupManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -97,6 +99,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
+        preferencesManager.clear()
         profileStateFlow.update { ProfileState.None() }
         backupManager.dataChanged()
     }

@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.domain.usecases.GetLastBackupInstantUseCase
@@ -16,23 +15,21 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.p2pLinks
 import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val deleteProfileUseCase: DeleteProfileUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
     private val peerdroidClient: PeerdroidClient,
-    private val getLastBackupInstantUseCase: GetLastBackupInstantUseCase
+    getProfileUseCase: GetProfileUseCase,
+    getLastBackupInstantUseCase: GetLastBackupInstantUseCase
 ) : ViewModel(), OneOffEventHandler<SettingsEvent> by OneOffEventHandlerImpl() {
 
     private val defaultSettings = persistentListOf(
@@ -46,7 +43,7 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state2: StateFlow<SettingsUiState> = combine(
+    val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
         getLastBackupInstantUseCase()
     ) { profile: Profile, lastBackup: Instant? ->
@@ -62,11 +59,20 @@ class SettingsViewModel @Inject constructor(
         } else {
             defaultSettings.filter { settingSectionItem ->
                 settingSectionItem != SettingsItem.TopLevelSettings.Connection
-            }
+            }.toMutableList()
         }
 
-        val isBackupEnabled = profile.appPreferences.security.isCloudProfileSyncEnabled
-
+        val backupState = SettingsItem.BackupState.from(profile = profile, lastBackupInstant = lastBackup)
+        if (visibleSettings.any { it is SettingsItem.TopLevelSettings.Backups }) {
+            visibleSettings.mapWhen(
+                predicate = { it is SettingsItem.TopLevelSettings.Backups },
+                mutation = {
+                    SettingsItem.TopLevelSettings.Backups(backupState)
+                }
+            )
+        } else {
+            visibleSettings.add(visibleSettings.lastIndex - 1, SettingsItem.TopLevelSettings.Backups(backupState))
+        }
 
         SettingsUiState(visibleSettings.toPersistentList())
     }.stateIn(
@@ -75,30 +81,9 @@ class SettingsViewModel @Inject constructor(
         SettingsUiState(defaultSettings)
     )
 
-    val state = getProfileUseCase.p2pLinks
-        .map { p2pLinks ->
-            val updatedSettings = if (p2pLinks.isEmpty()) {
-                defaultSettings.toMutableList().apply {
-                    if (!contains(SettingsItem.TopLevelSettings.Connection)) {
-                        add(0, SettingsItem.TopLevelSettings.Connection)
-                    }
-                }
-            } else {
-                defaultSettings.filter { settingSectionItem ->
-                    settingSectionItem != SettingsItem.TopLevelSettings.Connection
-                }
-            }.toPersistentList()
-            SettingsUiState(updatedSettings)
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
-            SettingsUiState(defaultSettings)
-        )
-
     fun onDeleteWalletClick() {
         viewModelScope.launch {
             deleteProfileUseCase()
-            preferencesManager.clear()
             peerdroidClient.terminate()
             sendEvent(SettingsEvent.ProfileDeleted)
         }

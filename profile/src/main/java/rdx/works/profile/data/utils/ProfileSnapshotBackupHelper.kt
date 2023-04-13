@@ -61,9 +61,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
         }
 
         runBlocking {
-            Log.d("Backup", "Instant save started")
             preferencesManager.updateLastBackupInstant(Instant.now())
-            Log.d("Backup", "Instant saved")
         }
 
         Log.d("Backup", "Backup started for snapshot $snapshotSerialised")
@@ -82,6 +80,9 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
             runBlocking {
                 encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshot)
+                // Update the "backup" time, since when restoring the profile, we are ensured
+                // about the most recent backup time.
+                preferencesManager.updateLastBackupInstant(Instant.now())
             }
             Log.d("Backup", "Restored $snapshot")
         } catch (exception: Exception) {
