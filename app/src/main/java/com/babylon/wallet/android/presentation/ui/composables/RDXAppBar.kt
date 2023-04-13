@@ -27,7 +27,7 @@ fun RDXAppBar(
 ) {
     TopAppBar(
         modifier = modifier,
-        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = RadixTheme.colors.defaultBackground),
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = RadixTheme.colors.defaultBackground),
         title = {
             Text(
                 text = toolbarTitle,
