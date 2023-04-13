@@ -26,22 +26,9 @@ class PreferencesManager @Inject constructor(
             }
         }
 
-    val lastProfileSaveInstant: Flow<Instant?> = dataStore.data
-        .map { preferences ->
-            preferences[KEY_LAST_PROFILE_SAVE_INSTANT]?.let {
-                Instant.parse(it)
-            }
-        }
-
     suspend fun updateLastBackupInstant(backupInstant: Instant) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_BACKUP_INSTANT] = backupInstant.toString()
-        }
-    }
-
-    suspend fun updateProfileSaveInstant(saveInstant: Instant) {
-        dataStore.edit { preferences ->
-            preferences[KEY_LAST_PROFILE_SAVE_INSTANT] = saveInstant.toString()
         }
     }
 
@@ -84,6 +71,5 @@ class PreferencesManager @Inject constructor(
         private val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         private val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
-        private val KEY_LAST_PROFILE_SAVE_INSTANT = stringPreferencesKey("last_profile_save_instant")
     }
 }

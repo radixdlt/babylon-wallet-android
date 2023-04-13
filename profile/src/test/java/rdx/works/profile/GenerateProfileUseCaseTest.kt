@@ -12,6 +12,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.DeviceInfo
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -30,6 +31,7 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
+import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GenerateProfileUseCaseTest {
@@ -52,8 +54,11 @@ class GenerateProfileUseCaseTest {
             }
 
             val profile = Profile(
-                id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                header = Header.init(
+                    id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                    creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                    creationDate = Instant.now()
+                ),
                 appPreferences = AppPreferences(
                     display = Display.default,
                     security = Security.default,
@@ -91,8 +96,7 @@ class GenerateProfileUseCaseTest {
                         networkID = 999,
                         personas = emptyList()
                     )
-                ),
-                version = 1
+                )
             )
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))

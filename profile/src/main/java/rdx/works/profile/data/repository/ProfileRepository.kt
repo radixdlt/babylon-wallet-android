@@ -16,6 +16,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.ProfileState
@@ -47,7 +48,6 @@ val ProfileRepository.profile: Flow<Profile>
 
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val preferencesManager: PreferencesManager,
     private val relaxedJson: Json,
     private val backupManager: BackupManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -79,16 +79,19 @@ class ProfileRepositoryImpl @Inject constructor(
         .filterNot { it is ProfileState.NotInitialised }
 
     override suspend fun saveProfile(profile: Profile) {
+        val profileToSave = profile.copy(
+            header = profile.header.copy(lastModified = Instant.now())
+        )
         withContext(ioDispatcher) {
-            val profileContent = Json.encodeToString(profile.snapshot())
+            val profileContent = Json.encodeToString(profileToSave.snapshot())
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
             // Remove any previous restored profile from backup restoration
             encryptedPreferencesManager.clearProfileSnapshotFromBackup()
 
             // Update the flow and notify Backup Manager that it needs to backup
-            profileStateFlow.update { ProfileState.Restored(profile) }
-            preferencesManager.updateProfileSaveInstant(Instant.now())
+            profileStateFlow.update { ProfileState.Restored(profileToSave) }
+
             backupManager.dataChanged()
         }
     }
@@ -117,9 +120,13 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     private fun deriveProfileState(snapshotSerialised: String): ProfileState {
-        val version = relaxedJson.decodeFromString<ProfileSnapshot.ProfileVersionHolder>(snapshotSerialised).version
+        val header = try {
+            relaxedJson.decodeFromString<Header>(snapshotSerialised)
+        } catch (exception: IllegalArgumentException) {
+            return ProfileState.Incompatible
+        }
 
-        return if (version < Profile.LATEST_PROFILE_VERSION) {
+        return if (header.snapshotVersion < ProfileSnapshot.MINIMUM) {
             ProfileState.Incompatible
         } else {
             val snapshot = ProfileSnapshot.fromJson(snapshotSerialised)

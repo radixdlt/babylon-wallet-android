@@ -19,7 +19,7 @@ sealed class ProfileState {
 
     /**
      * The [ProfileSnapshot]'s version saved in the internal storage is lower than the
-     * [Profile.LATEST_PROFILE_VERSION], so it is incompatible. Currently the user can only
+     * [ProfileSnapshot.MINIMUM], so it is incompatible. Currently the user can only
      * create a new profile.
      */
     object Incompatible : ProfileState()

@@ -10,17 +10,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 
 @Serializable
 internal data class ProfileSnapshot(
-    /**
-     * Locally generated identifier, based on the [Profile]'s id which is based upon.
-     */
-    @SerialName("id")
-    private val id: String,
-
-    /**
-     * The name of the device from which this snapshot was saved from.
-     */
-    @SerialName("creatingDevice")
-    private val creatingDevice: String,
+    @SerialName("header")
+    private val header: Header,
 
     /**
      * Settings for this profile in the app, contains default security configs as well as display settings.
@@ -39,33 +30,23 @@ internal data class ProfileSnapshot(
      * A list of accounts, personas and connected dApps.
      */
     @SerialName("networks")
-    private val networks: List<Network>,
-
-    /**
-     * Incrementing from 1
-     */
-    @SerialName("version")
-    private val version: Int
+    private val networks: List<Network>
 ) {
 
     fun toProfile(): Profile {
         return Profile(
-            id = id,
-            creatingDevice = creatingDevice,
+            header = header,
             appPreferences = appPreferences,
             factorSources = factorSources,
-            networks = networks,
-            version = version
+            networks = networks
         )
     }
 
-    @Serializable
-    internal data class ProfileVersionHolder(
-        @SerialName("version")
-        val version: Int
-    )
-
     companion object {
+        /**
+         * The minimum accepted snapshot version format. Lower versions are currently discarded.
+         */
+        const val MINIMUM = 28
 
         fun fromJson(serialised: String) = Json.decodeFromString<ProfileSnapshot>(serialised)
 

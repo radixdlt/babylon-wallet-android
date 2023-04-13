@@ -15,6 +15,7 @@ import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -28,6 +29,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import java.math.BigDecimal
+import java.time.Instant
 
 class SampleDataProvider {
 
@@ -93,8 +95,13 @@ class SampleDataProvider {
 
     fun sampleProfile(): Profile {
         return Profile(
-            id = "9958f568-8c9b-476a-beeb-017d1f843266",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            header = Header(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                lastModified = Instant.now(),
+                creationDate = Instant.now(),
+                snapshotVersion = 1
+            ),
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
@@ -109,8 +116,7 @@ class SampleDataProvider {
                     )
                 )
             ),
-            networks = emptyList(),
-            version = 1
+            networks = emptyList()
         )
     }
 
