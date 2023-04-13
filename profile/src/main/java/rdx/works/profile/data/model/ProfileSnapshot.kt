@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
@@ -51,4 +52,16 @@ internal data class ProfileSnapshot(
         fun fromJson(serialised: String) = Json.decodeFromString<ProfileSnapshot>(serialised)
 
     }
+}
+
+@Serializable
+internal data class ProfileSnapshotRelaxed(
+    @SerialName("header")
+    private val header: Header
+) {
+
+
+    val isValid: Boolean
+        get() = header.snapshotVersion >= MINIMUM
+
 }

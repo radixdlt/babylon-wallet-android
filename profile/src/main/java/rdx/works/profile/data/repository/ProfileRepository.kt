@@ -15,10 +15,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
+import rdx.works.profile.data.model.ProfileSnapshotRelaxed
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
@@ -120,17 +119,17 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     private fun deriveProfileState(snapshotSerialised: String): ProfileState {
-        val header = try {
-            relaxedJson.decodeFromString<Header>(snapshotSerialised)
+        val snapshotRelaxed = try {
+            relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(snapshotSerialised)
         } catch (exception: IllegalArgumentException) {
             return ProfileState.Incompatible
         }
 
-        return if (header.snapshotVersion < ProfileSnapshot.MINIMUM) {
-            ProfileState.Incompatible
-        } else {
+        return if (snapshotRelaxed.isValid) {
             val snapshot = ProfileSnapshot.fromJson(snapshotSerialised)
             ProfileState.Restored(snapshot.toProfile())
+        } else {
+            ProfileState.Incompatible
         }
     }
 }
