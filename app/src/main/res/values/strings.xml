@@ -190,6 +190,7 @@
     <string name="zip_code_empty">Empty value</string>
     <string name="edit">Edit</string>
     <string name="app_settings">App Settings</string>
+    <string name="backups">Backups</string>
     <string name="customize_the_app_appearance">Customize the app appearance</string>
     <string name="warning_disables_website">Warning: Disables website validity checks</string>
     <string name="remove_connector">Remove Connection</string>

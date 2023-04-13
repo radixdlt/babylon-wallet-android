@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation
 
-import com.babylon.wallet.android.data.PreferencesManager
+import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaViewModel
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper

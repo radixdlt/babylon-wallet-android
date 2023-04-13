@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.PreferencesManager
+import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.data.manifest.addDepositBatchInstruction
 import com.babylon.wallet.android.data.manifest.addFreeXrdInstruction
 import com.babylon.wallet.android.data.manifest.addLockFeeInstruction

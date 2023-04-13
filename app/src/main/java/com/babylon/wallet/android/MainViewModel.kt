@@ -1,7 +1,6 @@
 package com.babylon.wallet.android
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.common.onValue

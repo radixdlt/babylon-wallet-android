@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import rdx.works.profile.data.model.apppreferences.Security
+import java.time.Instant
 
 sealed interface SettingsItem {
 
@@ -17,6 +19,9 @@ sealed interface SettingsItem {
         object ImportFromLegacyWallet : TopLevelSettings
         object DeleteAll : TopLevelSettings
         object Personas : TopLevelSettings
+        data class Backups(
+            val state: BackupState
+        ) : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {
@@ -31,6 +36,7 @@ sealed interface SettingsItem {
                 AppSettings -> R.string.app_settings
                 ShowMnemonic -> R.string.view_mnemonics
                 ImportFromLegacyWallet -> R.string.import_from_legacy_wallet
+                is Backups -> R.string.backups
             }
         }
 
@@ -44,6 +50,7 @@ sealed interface SettingsItem {
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ShowMnemonic -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 else -> null
             }
         }
@@ -69,6 +76,39 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? {
             return null
+        }
+    }
+
+    sealed class BackupState {
+        data class Open(val lastBackup: Instant?): BackupState() {
+
+            val isWithinWindow: Boolean
+                get() {
+//                    val lastBackup = lastBackupInfo.systemBackup ?: return false
+//                    val lastSave = lastBackupInfo.profileSave
+//
+//                    val now = Instant.now()
+//                    val daysDifference = lastBackup.until(now, ChronoUnit.DAYS)
+//
+//                    return daysDifference < OUTSTANDING_NO_BACKUP_TIME_DAYS
+                    return false
+                }
+
+            companion object {
+                private const val OUTSTANDING_NO_BACKUP_TIME_DAYS = 3
+            }
+        }
+
+        object Closed: BackupState()
+
+        companion object {
+            fun from(settings: Security, lastBackupInstant: Instant?): BackupState {
+                return if (settings.isCloudProfileSyncEnabled) {
+                    Open(lastBackupInstant)
+                } else {
+                    Closed
+                }
+            }
         }
     }
 }

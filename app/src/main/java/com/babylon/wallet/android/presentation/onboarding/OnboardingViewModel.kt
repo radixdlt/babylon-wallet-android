@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -18,7 +17,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
@@ -51,29 +49,23 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun onAlertClicked(accepted: Boolean) {
-        if (accepted) {
-            goNext()
-        } else {
-            _state.update {
-                it.copy(showWarning = false)
-            }
-        }
+//        if (accepted) {
+//
+//        } else {
+//            _state.update {
+//                it.copy(showWarning = false)
+//            }
+//        }
     }
 
     fun onUserAuthenticated(authenticated: Boolean) {
-        if (authenticated) {
-            goNext()
-        } else {
-            _state.update {
-                it.copy(authenticateWithBiometric = false)
-            }
-        }
-    }
-
-    private fun goNext() {
-        viewModelScope.launch {
-            preferencesManager.setShowOnboarding(false)
-        }
+//        if (authenticated) {
+//
+//        } else {
+//            _state.update {
+//                it.copy(authenticateWithBiometric = false)
+//            }
+//        }
     }
 
     fun onRestoreProfileFromBackupClicked() = viewModelScope.launch {

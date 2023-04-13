@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.data.PreferencesManager
+import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.model.encodeToString

@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.PreferencesManager
+import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl

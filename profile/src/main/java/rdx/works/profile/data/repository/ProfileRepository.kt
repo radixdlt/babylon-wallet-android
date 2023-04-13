@@ -15,12 +15,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
+import java.time.Instant
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -45,6 +47,7 @@ val ProfileRepository.profile: Flow<Profile>
 
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val preferencesManager: PreferencesManager,
     private val relaxedJson: Json,
     private val backupManager: BackupManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -78,9 +81,14 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun saveProfile(profile: Profile) {
         withContext(ioDispatcher) {
             val profileContent = Json.encodeToString(profile.snapshot())
+            // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
+            // Remove any previous restored profile from backup restoration
             encryptedPreferencesManager.clearProfileSnapshotFromBackup()
+
+            // Update the flow and notify Backup Manager that it needs to backup
             profileStateFlow.update { ProfileState.Restored(profile) }
+            preferencesManager.updateProfileSaveInstant(Instant.now())
             backupManager.dataChanged()
         }
     }
