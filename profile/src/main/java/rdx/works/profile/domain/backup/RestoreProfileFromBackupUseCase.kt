@@ -12,7 +12,6 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
 
         if (profile != null) {
             repository.saveProfile(profile)
-            repository.clearBackedUpProfile()
         }
     }
 }

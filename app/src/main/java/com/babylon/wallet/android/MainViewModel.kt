@@ -19,7 +19,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -35,7 +34,6 @@ import javax.inject.Inject
 @Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager,
     private val getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -51,9 +49,10 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val state = getProfileStateUseCase().first()
-
-            _state.update { MainUiState(initialAppState = AppState.from(state)) }
+            getProfileStateUseCase()
+                .collect { profileState ->
+                    _state.update { MainUiState(initialAppState = AppState.from(profileState)) }
+                }
         }
     }
 

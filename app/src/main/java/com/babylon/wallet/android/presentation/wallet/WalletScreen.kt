@@ -50,7 +50,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.data.model.Profile
 
 @Composable
 fun WalletScreen(
@@ -65,7 +64,7 @@ fun WalletScreen(
     onNavigateToIncompatibleProfile: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
-    when (val initialAppState = state.initialAppState) {
+    when (state.initialAppState) {
         is AppState.Wallet -> {
             val walletState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -91,7 +90,7 @@ fun WalletScreen(
             }
         }
         is AppState.IncompatibleProfile -> {
-            LaunchedEffect(initialAppState) {
+            LaunchedEffect(state.initialAppState) {
                 onNavigateToIncompatibleProfile()
             }
         }
@@ -99,12 +98,12 @@ fun WalletScreen(
             FullscreenCircularProgressContent()
         }
         is AppState.OnBoarding -> {
-            LaunchedEffect(initialAppState) {
+            LaunchedEffect(state.initialAppState) {
                 onNavigateToOnBoarding()
             }
         }
         is AppState.NewProfile -> {
-            LaunchedEffect(initialAppState) {
+            LaunchedEffect(state.initialAppState) {
                 onNavigateToCreateAccount()
             }
         }

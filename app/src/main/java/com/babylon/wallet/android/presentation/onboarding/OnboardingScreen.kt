@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -55,10 +56,13 @@ import kotlin.math.sign
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
-    onNavigateToNewAccount: () -> Unit,
-    onNavigateToWallet: () -> Unit,
+    onOnBoardingEnd: () -> Unit,
+    onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    BackHandler { onBack() }
+
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
         onProceedClick = viewModel::onProceedClick,
@@ -73,11 +77,8 @@ fun OnboardingScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is OnboardingViewModel.OnBoardingEvent.NavigateToWallet -> {
-                    onNavigateToWallet()
-                }
-                is OnboardingViewModel.OnBoardingEvent.NavigateToNewAccount -> {
-                    onNavigateToNewAccount()
+                is OnboardingViewModel.OnBoardingEvent.EndOnBoarding -> {
+                    onOnBoardingEnd()
                 }
             }
         }

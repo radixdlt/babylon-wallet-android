@@ -11,7 +11,7 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.domain.backup.ClearRestoredProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
 import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
@@ -22,7 +22,7 @@ class OnboardingViewModel @Inject constructor(
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
-    private val clearRestoredProfileFromBackupUseCase: ClearRestoredProfileFromBackupUseCase
+    private val discardRestoredProfileFromBackupUseCase: DiscardRestoredProfileFromBackupUseCase
 ) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(), OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): OnBoardingUiState = OnBoardingUiState()
@@ -45,8 +45,8 @@ class OnboardingViewModel @Inject constructor(
 //                    it.copy(showWarning = true)
 //                }
 //            }
-            clearRestoredProfileFromBackupUseCase()
-            sendEvent(OnBoardingEvent.NavigateToNewAccount)
+            discardRestoredProfileFromBackupUseCase()
+            sendEvent(OnBoardingEvent.EndOnBoarding)
         }
     }
 
@@ -78,7 +78,7 @@ class OnboardingViewModel @Inject constructor(
 
     fun onRestoreProfileFromBackupClicked() = viewModelScope.launch {
         restoreProfileFromBackupUseCase()
-        sendEvent(OnBoardingEvent.NavigateToWallet)
+        sendEvent(OnBoardingEvent.EndOnBoarding)
     }
 
     data class OnBoardingUiState(
@@ -90,7 +90,6 @@ class OnboardingViewModel @Inject constructor(
     ) : UiState
 
     sealed interface OnBoardingEvent : OneOffEvent {
-        object NavigateToWallet: OnBoardingEvent
-        object NavigateToNewAccount: OnBoardingEvent
+        object EndOnBoarding: OnBoardingEvent
     }
 }

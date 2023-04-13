@@ -35,7 +35,7 @@ interface ProfileRepository {
 
     suspend fun getRestoredProfileFromBackup(): Profile?
 
-    suspend fun clearBackedUpProfile()
+    suspend fun discardBackedUpProfile()
 }
 
 val ProfileRepository.profile: Flow<Profile>
@@ -79,6 +79,7 @@ class ProfileRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             val profileContent = Json.encodeToString(profile.snapshot())
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
+            encryptedPreferencesManager.clearProfileSnapshotFromBackup()
             profileStateFlow.update { ProfileState.Restored(profile) }
             backupManager.dataChanged()
         }
@@ -102,8 +103,9 @@ class ProfileRepositoryImpl @Inject constructor(
         return (state as? ProfileState.Restored)?.profile
     }
 
-    override suspend fun clearBackedUpProfile() {
+    override suspend fun discardBackedUpProfile() {
         encryptedPreferencesManager.clearProfileSnapshotFromBackup()
+        profileStateFlow.update { ProfileState.None() }
     }
 
     private fun deriveProfileState(snapshotSerialised: String): ProfileState {

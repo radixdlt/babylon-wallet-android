@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.navigation
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -10,7 +9,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.navigation.navOptions
 import com.babylon.wallet.android.MainUiState
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
@@ -59,19 +57,10 @@ fun NavigationHost(
         composable(route = Screen.OnboardingDestination.route) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
-                onNavigateToNewAccount = {
-                    navController.createAccountScreen(
-                        requestSource = CreateAccountRequestSource.AccountsList,
-                        navOptions = navOptions {
-                            popUpTo(Screen.OnboardingDestination.route) {
-                                inclusive = true
-                            }
-                        }
-                    )
-                },
-                onNavigateToWallet = {
+                onOnBoardingEnd = {
                     navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
-                }
+                },
+                onBack = onCloseApp
             )
         }
         composable(route = Screen.WalletDestination.route) {
