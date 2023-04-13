@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -29,6 +28,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
@@ -61,8 +61,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
-        coEvery { transactionClient.addLockFeeToTransactionManifestData(any()) } returns Result.Success(sampleManifest)
+        coEvery { transactionClient.signAndSubmitTransaction(anyString(), any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.pollTransactionStatus(any()) } returns Result.Success("")
         coEvery {
@@ -97,16 +96,6 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
             appEventBus,
             savedStateHandle
         )
-    }
-
-    @Test
-    fun `init sets state properly`() = runTest {
-        val vm = vm.value
-        advanceUntilIdle()
-        val state = vm.state.first()
-        assert(state.manifestData == sampleRequest.transactionManifestData)
-        assert(state.manifestString == sampleManifest.toPrettyString())
-        coVerify(exactly = 1) { transactionClient.addLockFeeToTransactionManifestData(any()) }
     }
 
     @Test
@@ -148,7 +137,7 @@ internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionA
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Error(
+        coEvery { transactionClient.signAndSubmitTransaction(anyString(), any()) } returns Result.Error(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )

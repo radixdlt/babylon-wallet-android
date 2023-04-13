@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -22,8 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.model.TransactionTokenUiModel
 import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
@@ -33,7 +35,8 @@ import kotlinx.collections.immutable.toPersistentList
 @Composable
 fun DepositAccountContent(
     previewAccounts: ImmutableList<PreviewAccountItemsUiModel>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    promptForGuarantees: () -> Unit
 ) {
     if (previewAccounts.isNotEmpty()) {
         Row {
@@ -56,28 +59,26 @@ fun DepositAccountContent(
                     color = Color.White,
                     shape = RadixTheme.shapes.roundedRectDefault
                 )
-                .padding(RadixTheme.dimensions.paddingMedium)
+                .padding(RadixTheme.dimensions.paddingMedium),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             previewAccounts.forEachIndexed { index, previewAccount ->
                 val lastItem = index == previewAccounts.lastIndex
 
                 val tokens = previewAccount.accounts.map { account ->
-                    TokenUiModel(
+                    TransactionTokenUiModel(
                         iconUrl = "",
-                        name = "",
-                        description = "",
-                        id = "",
                         symbol = account.tokenSymbol,
                         tokenQuantity = account.tokenQuantityDecimal,
-                        tokenValue = account.fiatAmount,
                         address = account.address,
-                        metadata = emptyMap(),
-                        isTokenAmountVisible = account.isTokenAmountVisible
+                        isTokenAmountVisible = account.isTokenAmountVisible,
+                        guaranteedQuantity = account.guaranteedQuantityDecimal
                     )
                 }.toPersistentList()
                 TransactionAccountCard(
                     appearanceId = previewAccount.appearanceID,
                     tokens = tokens,
+                    address = previewAccount.address,
                     accountName = previewAccount.accountName
                 )
 
@@ -87,6 +88,19 @@ fun DepositAccountContent(
                             .height(RadixTheme.dimensions.paddingMedium)
                     )
                 }
+            }
+
+            val shouldPromptForGuarantees = previewAccounts.any { previewAccount ->
+                previewAccount.accounts.any { it.shouldPromptForGuarantees }
+            }
+
+            if (shouldPromptForGuarantees) {
+                RadixTextButton(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXSmall),
+                    text = stringResource(id = R.string.customize_guarantees),
+                    onClick = promptForGuarantees
+                )
             }
         }
     }
@@ -125,7 +139,8 @@ fun DepositAccountContentPreview() {
         previewAccounts =
         persistentListOf(
             PreviewAccountItemsUiModel(
-                "My main account",
+                address = "account_tdx_19jd32jd3928jd3892jd329",
+                accountName = "My main account",
                 appearanceID = 1,
                 accounts = listOf(
                     TransactionAccountItemUiModel(
@@ -133,13 +148,15 @@ fun DepositAccountContentPreview() {
                         "My main account",
                         "XRD",
                         "200",
-                        "$1234",
                         1,
                         "",
-                        isTokenAmountVisible = true
+                        isTokenAmountVisible = true,
+                        shouldPromptForGuarantees = false,
+                        guaranteedQuantity = "200"
                     )
                 )
             )
-        )
+        ),
+        promptForGuarantees = {}
     )
 }

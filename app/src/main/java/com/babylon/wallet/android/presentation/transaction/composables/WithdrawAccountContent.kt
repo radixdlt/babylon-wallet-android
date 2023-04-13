@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.model.TransactionTokenUiModel
 import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
@@ -51,23 +51,20 @@ fun WithdrawAccountContent(
                 val lastItem = index == previewAccounts.lastIndex
 
                 val tokens = previewAccount.accounts.map { account ->
-                    TokenUiModel(
+                    TransactionTokenUiModel(
                         iconUrl = "",
-                        name = "",
-                        description = "",
-                        id = "",
                         symbol = account.tokenSymbol,
                         tokenQuantity = account.tokenQuantityDecimal,
-                        tokenValue = account.fiatAmount,
                         address = account.address,
-                        metadata = emptyMap(),
-                        isTokenAmountVisible = account.isTokenAmountVisible
+                        isTokenAmountVisible = account.isTokenAmountVisible,
+                        guaranteedQuantity = account.guaranteedQuantityDecimal
                     )
                 }.toPersistentList()
 
                 TransactionAccountCard(
                     appearanceId = previewAccount.appearanceID,
                     tokens = tokens,
+                    address = previewAccount.address,
                     accountName = previewAccount.accountName
                 )
 
@@ -88,7 +85,8 @@ fun WithdrawAccountContentPreview() {
     WithdrawAccountContent(
         persistentListOf(
             PreviewAccountItemsUiModel(
-                "My main account",
+                address = "account_tdx_19jd32jd3928jd3892jd329",
+                accountName = "My main account",
                 appearanceID = 1,
                 accounts = listOf(
                     TransactionAccountItemUiModel(
@@ -96,10 +94,11 @@ fun WithdrawAccountContentPreview() {
                         "My main account",
                         "XRD",
                         "200",
-                        "$1234",
                         1,
                         "",
-                        isTokenAmountVisible = true
+                        isTokenAmountVisible = true,
+                        shouldPromptForGuarantees = false,
+                        guaranteedQuantity = "200"
                     )
                 )
             )

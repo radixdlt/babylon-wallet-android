@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,7 +33,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.model.TransactionTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
@@ -40,13 +42,15 @@ import java.math.BigDecimal
 
 @Composable
 fun TransactionAccountCard(
-    tokens: ImmutableList<TokenUiModel>,
+    tokens: ImmutableList<TransactionTokenUiModel>,
     modifier: Modifier = Modifier,
     appearanceId: Int,
+    address: String,
     accountName: String
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -57,7 +61,7 @@ fun TransactionAccountCard(
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .padding(RadixTheme.dimensions.paddingMedium),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = CenterVertically
         ) {
             Text(
                 text = accountName,
@@ -68,7 +72,7 @@ fun TransactionAccountCard(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             ActionableAddressView(
-                address = tokens.first().address,
+                address = address,
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white
@@ -79,7 +83,7 @@ fun TransactionAccountCard(
             val lastItem = index == tokens.size - 1
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = CenterVertically,
                 modifier = Modifier
                     .height(IntrinsicSize.Min)
                     .background(
@@ -123,15 +127,57 @@ fun TransactionAccountCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    modifier = Modifier,
-                    text = if (token.isTokenAmountVisible) token.tokenQuantityToDisplay else "",
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
-                )
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Row(
+                        modifier = Modifier,
+                        verticalAlignment = CenterVertically
+                    ) {
+                        if (token.guaranteedQuantity != null) {
+                            Text(
+                                modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
+                                text = stringResource(id = com.babylon.wallet.android.R.string.estimated),
+                                style = RadixTheme.typography.body2Link,
+                                color = RadixTheme.colors.gray1,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.End
+                            )
+                        }
+                        Text(
+                            modifier = Modifier,
+                            text = if (token.isTokenAmountVisible) token.tokenQuantityToDisplay else "",
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                    token.guaranteedQuantity?.let {
+                        Row {
+                            Text(
+                                modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
+                                text = stringResource(id = com.babylon.wallet.android.R.string.guaranteed),
+                                style = RadixTheme.typography.body2Regular,
+                                color = RadixTheme.colors.gray2,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.End
+                            )
+                            Text(
+                                modifier = Modifier,
+                                text = token.guaranteedQuantityToDisplay,
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.gray2,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.End
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -145,21 +191,18 @@ fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
             tokens = persistentListOf(
-                TokenUiModel(
-                    "",
-                    "",
-                    "",
+                TransactionTokenUiModel(
                     "XRD",
                     BigDecimal(689.203),
                     "1023",
-                    "",
                     "d3d3nd32dko3dko3",
-                    mapOf(),
-                    isTokenAmountVisible = true
+                    isTokenAmountVisible = true,
+                    guaranteedQuantity = BigDecimal(689.203)
                 )
             ),
             modifier = Modifier,
             appearanceId = 0,
+            address = "d3d3nd32dko3dko3",
             accountName = "My main account"
         )
     }
