@@ -38,6 +38,8 @@ fun BottomSheetWrapper(
     onDismissRequest: () -> Unit,
     content: @Composable () -> Unit,
 ) {
+    // TODO update dependency when this issue is resolved
+    // https://issuetracker.google.com/issues/268432129
     ModalBottomSheet(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
