@@ -225,6 +225,7 @@ class OlympiaImportViewModel @Inject constructor(
         }
     }
 
+    //TODO added for ease of testing
     override fun initialState() = OlympiaImportUiState(seedPhrase = olympiaTestSeedPhrase)
 
     fun onMessageShown() {
