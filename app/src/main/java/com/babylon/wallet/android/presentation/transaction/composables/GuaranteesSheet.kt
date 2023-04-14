@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transaction.GuaranteesAccountItemUiModel
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import kotlinx.collections.immutable.ImmutableList
@@ -39,6 +41,12 @@ fun GuaranteesSheet(
     Column(
         modifier = modifier
     ) {
+        BottomDialogDragHandle(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
+                .padding(top = RadixTheme.dimensions.paddingDefault)
+        )
         IconButton(onClick = onClose) {
             Icon(
                 painterResource(id = R.drawable.ic_close),

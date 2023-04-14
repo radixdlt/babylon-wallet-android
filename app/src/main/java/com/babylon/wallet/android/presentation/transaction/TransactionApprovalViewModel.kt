@@ -29,7 +29,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.address.EntityAddress
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.ResourceSpecifier
@@ -180,99 +179,90 @@ class TransactionApprovalViewModel @Inject constructor(
                                         componentAddresses
                                     )
 
-                                    analyzeManifestWithPreviewResponse.accountDeposits.forEach { accountDeposit ->
-                                        when (accountDeposit) {
-                                            is AccountDeposit.Estimate -> {
-                                                val amount = when (
-                                                    val resSpecifier =
-                                                        accountDeposit.resourceSpecifier
-                                                ) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        resSpecifier.amount
+                                    analyzeManifestWithPreviewResponse
+                                        .accountDeposits.forEachIndexed { index, accountDeposit ->
+                                            when (accountDeposit) {
+                                                is AccountDeposit.Estimate -> {
+                                                    val amount = when (
+                                                        val resSpecifier =
+                                                            accountDeposit.resourceSpecifier
+                                                    ) {
+                                                        is ResourceSpecifier.Amount -> {
+                                                            resSpecifier.amount
+                                                        }
+                                                        is ResourceSpecifier.Ids -> {
+                                                            ""
+                                                        }
                                                     }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        ""
+                                                    val resourceAddress = when (
+                                                        val resSpecifier =
+                                                            accountDeposit.resourceSpecifier
+                                                    ) {
+                                                        is ResourceSpecifier.Amount -> {
+                                                            resSpecifier.resourceAddress.address
+                                                        }
+                                                        is ResourceSpecifier.Ids -> {
+                                                            resSpecifier.resourceAddress.address
+                                                        }
                                                     }
-                                                }
-                                                val resourceAddress = when (
-                                                    val resSpecifier =
-                                                        accountDeposit.resourceSpecifier
-                                                ) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        resSpecifier.resourceAddress.address
-                                                    }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        resSpecifier.resourceAddress.address
-                                                    }
-                                                }
-                                                val ids = when (
-                                                    val resSpecifier =
-                                                        accountDeposit.resourceSpecifier
-                                                ) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        emptySet<ManifestAstValue.NonFungibleLocalId>()
-                                                    }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        resSpecifier.ids
-                                                    }
-                                                }
 
-                                                val instructionIndex = accountDeposit.instructionIndex.toInt()
+                                                    val instructionIndex = accountDeposit.instructionIndex.toInt()
 
-                                                depositJobs.add(
-                                                    async {
-                                                        getTransactionComponentResourcesUseCase.invoke(
-                                                            componentAddress = accountDeposit
-                                                                .componentAddress.address,
-                                                            resourceAddress = resourceAddress,
-                                                            createdEntities = analyzeManifestWithPreviewResponse
-                                                                .createdEntities,
-                                                            amount = amount,
-                                                            instructionIndex = instructionIndex,
-                                                            includesGuarantees = true
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                            is AccountDeposit.Exact -> {
-                                                val amount = when (
-                                                    val resSpecifier =
-                                                        accountDeposit.resourceSpecifier
-                                                ) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        resSpecifier.amount
-                                                    }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        ""
-                                                    }
+                                                    depositJobs.add(
+                                                        async {
+                                                            getTransactionComponentResourcesUseCase.invoke(
+                                                                componentAddress = accountDeposit
+                                                                    .componentAddress.address,
+                                                                resourceAddress = resourceAddress,
+                                                                createdEntities = analyzeManifestWithPreviewResponse
+                                                                    .createdEntities,
+                                                                amount = amount,
+                                                                instructionIndex = instructionIndex,
+                                                                includesGuarantees = true,
+                                                                index = index
+                                                            )
+                                                        }
+                                                    )
                                                 }
-                                                val resourceAddress = when (
-                                                    val resSpecifier =
-                                                        accountDeposit.resourceSpecifier
-                                                ) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        resSpecifier.resourceAddress.address
+                                                is AccountDeposit.Exact -> {
+                                                    val amount = when (
+                                                        val resSpecifier =
+                                                            accountDeposit.resourceSpecifier
+                                                    ) {
+                                                        is ResourceSpecifier.Amount -> {
+                                                            resSpecifier.amount
+                                                        }
+                                                        is ResourceSpecifier.Ids -> {
+                                                            ""
+                                                        }
                                                     }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        resSpecifier.resourceAddress.address
+                                                    val resourceAddress = when (
+                                                        val resSpecifier =
+                                                            accountDeposit.resourceSpecifier
+                                                    ) {
+                                                        is ResourceSpecifier.Amount -> {
+                                                            resSpecifier.resourceAddress.address
+                                                        }
+                                                        is ResourceSpecifier.Ids -> {
+                                                            resSpecifier.resourceAddress.address
+                                                        }
                                                     }
+                                                    depositJobs.add(
+                                                        async {
+                                                            getTransactionComponentResourcesUseCase.invoke(
+                                                                componentAddress = accountDeposit
+                                                                    .componentAddress.address,
+                                                                resourceAddress = resourceAddress,
+                                                                createdEntities = analyzeManifestWithPreviewResponse
+                                                                    .createdEntities,
+                                                                amount = amount,
+                                                                includesGuarantees = false
+                                                            )
+                                                        }
+                                                    )
                                                 }
-                                                depositJobs.add(
-                                                    async {
-                                                        getTransactionComponentResourcesUseCase.invoke(
-                                                            componentAddress = accountDeposit
-                                                                .componentAddress.address,
-                                                            resourceAddress = resourceAddress,
-                                                            createdEntities = analyzeManifestWithPreviewResponse
-                                                                .createdEntities,
-                                                            amount = amount,
-                                                            includesGuarantees = false
-                                                        )
-                                                    }
-                                                )
                                             }
                                         }
-                                    }
                                     analyzeManifestWithPreviewResponse.accountWithdraws.forEach { accountWithdraw ->
                                         val amount =
                                             when (val resSpecifier = accountWithdraw.resourceSpecifier) {
@@ -558,9 +548,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     accountName = previewAccountUiModel.accountName,
                     appearanceID = previewAccountUiModel.appearanceID,
                     accounts = previewAccountUiModel.accounts.map { tokenUiModel ->
-                        // This is the edge case where maybe the same account may have different tokens with same name ?
-                        // Maybe we should use index of the list in the future
-                        if (tokenUiModel.tokenSymbol == guaranteeAccountItem.tokenSymbol) {
+                        if (tokenUiModel.index == guaranteeAccountItem.index) {
                             tokenUiModel.copy(
                                 address = tokenUiModel.address,
                                 displayName = tokenUiModel.displayName,
@@ -608,7 +596,8 @@ data class TransactionAccountItemUiModel(
     val guaranteedQuantity: String?,
     val guaranteedPercentAmount: String = "100",
     val instructionIndex: Int? = null,
-    val resourceAddress: String? = null
+    val resourceAddress: String? = null,
+    val index: Int? = null
 ) {
     val tokenQuantityDecimal: BigDecimal
         get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal().stripTrailingZeros()
@@ -625,7 +614,8 @@ data class GuaranteesAccountItemUiModel(
     val tokenIconUrl: String,
     val tokenEstimatedQuantity: String,
     val tokenGuaranteedQuantity: String,
-    val guaranteedPercentAmount: String
+    val guaranteedPercentAmount: String,
+    val index: Int? = null
 )
 
 data class PresentingProofUiModel(
@@ -657,7 +647,8 @@ fun List<PreviewAccountItemsUiModel>.toGuaranteesAccountsUiModel() = map { previ
                 tokenIconUrl = account.iconUrl,
                 tokenEstimatedQuantity = account.tokenQuantity,
                 tokenGuaranteedQuantity = account.guaranteedQuantity.orEmpty(),
-                guaranteedPercentAmount = account.guaranteedPercentAmount
+                guaranteedPercentAmount = account.guaranteedPercentAmount,
+                index = account.index
             )
         }
 }.flatten().toPersistentList()

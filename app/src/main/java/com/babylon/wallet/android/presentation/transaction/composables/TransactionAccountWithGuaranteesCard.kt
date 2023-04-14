@@ -201,7 +201,7 @@ fun TransactionAccountWithGuaranteesCard(
                 )
 
                 IconButton(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.8f),
                     onClick = {
                         if (guaranteePercentValue > BigDecimal.ZERO) {
                             onGuaranteeValueChanged(
@@ -220,7 +220,7 @@ fun TransactionAccountWithGuaranteesCard(
                 }
 
                 RadixTextField(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1.0f),
                     onValueChanged = onGuaranteeValueChanged,
                     value = if (guaranteePercentValue.stripTrailingZeros() == BigDecimal.ZERO) {
                         ""
@@ -234,7 +234,7 @@ fun TransactionAccountWithGuaranteesCard(
                 )
 
                 IconButton(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.8f),
                     onClick = {
                         onGuaranteeValueChanged(
                             guaranteePercentValue.plus(BigDecimal("0.1")).toString()

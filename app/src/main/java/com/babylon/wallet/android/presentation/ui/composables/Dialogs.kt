@@ -76,7 +76,7 @@ fun BottomSheetDialogWrapper(
 }
 
 @Composable
-private fun BottomDialogDragHandle(modifier: Modifier = Modifier) {
+fun BottomDialogDragHandle(modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         Box(
             modifier = Modifier

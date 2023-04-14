@@ -26,7 +26,8 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         createdEntities: CreatedEntities,
         amount: String,
         instructionIndex: Int? = null,
-        includesGuarantees: Boolean
+        includesGuarantees: Boolean,
+        index: Int? = null
     ): Result<TransactionAccountItemUiModel> {
         val createdEntitiesAddresses = createdEntities
             .resourceAddresses.filterIsInstance<EntityAddress.ResourceAddress>()
@@ -118,6 +119,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                     guaranteedQuantity = guaranteedQuantity,
                     instructionIndex = instructionIndex,
                     resourceAddress = resourceAddress,
+                    index = index
                 )
             )
         }
