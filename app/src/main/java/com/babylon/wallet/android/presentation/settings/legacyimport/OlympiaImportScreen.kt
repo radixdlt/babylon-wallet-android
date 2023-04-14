@@ -1,3 +1,4 @@
+@file:Suppress("CyclomaticComplexMethod")
 @file:OptIn(ExperimentalPermissionsApi::class, ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
 
 package com.babylon.wallet.android.presentation.settings.legacyimport
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -44,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -52,11 +55,14 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -104,7 +110,9 @@ fun OlympiaImportScreen(
         onHardwareImport = viewModel::onHardwareImport,
         currentPage = state.currentPage,
         onToggleSelectAll = viewModel::onToggleSelectAll,
-        qrChunkInfo = state.qrChunkInfo
+        qrChunkInfo = state.qrChunkInfo,
+        onMnemonicAlreadyImported = viewModel::onMnemonicAlreadyImported,
+        isDeviceSecure = state.isDeviceSecure
     )
 }
 
@@ -134,7 +142,9 @@ private fun OlympiaImportContent(
     onHardwareImport: () -> Unit,
     currentPage: ImportPage,
     onToggleSelectAll: () -> Unit,
-    qrChunkInfo: ChunkInfo?
+    qrChunkInfo: ChunkInfo?,
+    onMnemonicAlreadyImported: () -> Unit,
+    isDeviceSecure: Boolean
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -142,6 +152,8 @@ private fun OlympiaImportContent(
     var cameraVisible by remember {
         mutableStateOf(false)
     }
+    var showNotSecuredDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     BackHandler {
         if (currentPage == ImportPage.ImportComplete || currentPage == ImportPage.ScanQr) {
             onCloseScreen()
@@ -173,10 +185,30 @@ private fun OlympiaImportContent(
                         }
                     }
                 }
+                OlympiaImportEvent.BiometricPrompt -> {
+                    if (isDeviceSecure) {
+                        context.findFragmentActivity()?.let { activity ->
+                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onImportSoftwareAccounts()
+                                }
+                            }
+                        }
+                    } else {
+                        showNotSecuredDialog = true
+                    }
+                }
             }
         }
     }
-
+    if (showNotSecuredDialog) {
+        NotSecureAlertDialog(finish = {
+            showNotSecuredDialog = false
+            if (it) {
+                onImportSoftwareAccounts()
+            }
+        })
+    }
     Box(modifier = modifier) {
         Column(modifier = Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
@@ -236,7 +268,8 @@ private fun OlympiaImportContent(
                             onSeedPhraseChanged = onSeedPhraseChanged,
                             onPassphraseChanged = onPassphraseChanged,
                             importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
-                            onImportSoftwareAccounts = onImportSoftwareAccounts
+                            onImportSoftwareAccounts = onImportSoftwareAccounts,
+                            onMnemonicAlreadyImported = onMnemonicAlreadyImported
                         )
                     }
                     ImportPage.HardwareAccount -> {
@@ -376,7 +409,8 @@ private fun AccountListPage(
                 .padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(R.string.import_olympia_accounts),
             onClick = onImportAccounts,
-            enabled = importButtonEnabled
+            enabled = importButtonEnabled,
+            throttleClicks = true
         )
     }
 }
@@ -395,7 +429,8 @@ private fun HardwareImportScreen(modifier: Modifier = Modifier, onHardwareImport
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.continue_button_title),
-                onClick = onHardwareImport
+                onClick = onHardwareImport,
+                throttleClicks = true
             )
         }
     }
@@ -446,7 +481,8 @@ private fun ImportCompletePage(
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(R.string.continue_button_title),
-            onClick = onContinue
+            onClick = onContinue,
+            throttleClicks = true
         )
     }
 }
@@ -459,7 +495,8 @@ private fun InputMnemonicPage(
     onSeedPhraseChanged: (String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     importSoftwareAccountsEnabled: Boolean,
-    onImportSoftwareAccounts: () -> Unit
+    onImportSoftwareAccounts: () -> Unit,
+    onMnemonicAlreadyImported: () -> Unit
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)) {
         RadixTextField(
@@ -477,12 +514,18 @@ private fun InputMnemonicPage(
             hint = stringResource(id = R.string.passphrase),
         )
         RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.import_label),
             onClick = onImportSoftwareAccounts,
-            enabled = importSoftwareAccountsEnabled
+            enabled = importSoftwareAccountsEnabled,
+            throttleClicks = true
+        )
+        RadixSecondaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.already_imported),
+            onClick = onMnemonicAlreadyImported,
+            enabled = importSoftwareAccountsEnabled,
+            throttleClicks = true
         )
     }
 }
@@ -514,7 +557,9 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             onHardwareImport = {},
             currentPage = ImportPage.ScanQr,
             onToggleSelectAll = {},
-            qrChunkInfo = null
+            qrChunkInfo = null,
+            onMnemonicAlreadyImported = {},
+            isDeviceSecure = true
         )
     }
 }

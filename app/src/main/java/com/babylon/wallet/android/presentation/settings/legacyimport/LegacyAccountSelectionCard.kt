@@ -42,7 +42,7 @@ fun LegacyAccountSelectionCard(
         ) {
             if (alreadyImported) {
                 Text(
-                    text = stringResource(id = R.string.already_imported),
+                    text = stringResource(id = R.string.account_already_imported),
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = RadixTheme.typography.body2Header,

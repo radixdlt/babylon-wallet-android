@@ -1,4 +1,4 @@
-@file:Suppress("TopLevelPropertyNaming", "MagicNumber")
+@file:Suppress("TopLevelPropertyNaming", "MagicNumber", "MaximumLineLength", "MaxLineLength")
 
 package rdx.works.profile.olympiaimport
 
@@ -22,9 +22,9 @@ private const val HeaderSeparator = "]"
 private const val InnerSeparator = "^"
 private const val OuterSeparator = "~"
 private const val EndOfAccountName = "}"
+private const val AccountNameForbiddenCharsReplacement = "_"
 
 fun Collection<String>.parseOlympiaWalletAccountData(existingAccountHashes: Set<ByteArray> = emptySet()): OlympiaWalletData? {
-    val accountNameReplacement = "_"
     val headerToPayloadList = map { payloadChunk ->
         val headerAndPayload = payloadChunk.split(HeaderSeparator)
         val headerChunks = headerAndPayload[0].split(InnerSeparator)
@@ -43,7 +43,7 @@ fun Collection<String>.parseOlympiaWalletAccountData(existingAccountHashes: Set<
                 val name = if (singleAccountDataChunks.size == 4) {
                     singleAccountDataChunks[3]
                         .replace(EndOfAccountName, "")
-                        .replace(Regex("[]^~]"), accountNameReplacement)
+                        .replace(Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"), AccountNameForbiddenCharsReplacement)
                 } else {
                     ""
                 }
@@ -95,15 +95,6 @@ fun String.isProperQrPayload(): Boolean {
 fun Collection<String>.verifyPayload(): Boolean {
     return firstOrNull()?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator)?.getOrNull(0)?.toInt() == size
 }
-
-// fun Collection<String>.verifyPayload(): Boolean {
-//    val headers = map { payloadChunk ->
-//        val headerAndPayload = payloadChunk.split(headerSeparator)
-//        val headerChunks = headerAndPayload[0].split(innerSeparator)
-//        PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), headerChunks[2].toInt())
-//    }.sortedBy { it.payloadIndex }
-//    val
-// }
 
 fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
     val words = MnemonicWords(mnemonic)
@@ -160,6 +151,4 @@ enum class OlympiaAccountType {
 }
 
 var olympiaTestSeedPhrase =
-    """private sight rather cloud lock pelican barrel whisper spy more artwork crucial 
-        abandon among grow guilt control wrist memory group churn hen program sauce
-    """.trimIndent()
+    "private sight rather cloud lock pelican barrel whisper spy more artwork crucial abandon among grow guilt control wrist memory group churn hen program sauce"
