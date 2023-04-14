@@ -9,20 +9,18 @@ import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.decodeUtf8
 import io.mockk.every
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
+import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -30,6 +28,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {
@@ -40,6 +39,7 @@ class AccountViewModelTest {
     private lateinit var vm: AccountViewModel
 
     private val requestAccountsUseCase = Mockito.mock(GetAccountResourcesUseCase::class.java)
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
 
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
@@ -48,25 +48,18 @@ class AccountViewModelTest {
 
     @Before
     fun setUp() = runTest {
+        every { getProfileUseCase() } returns flowOf(SampleDataProvider().sampleProfile())
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
-        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
         whenever(requestAccountsUseCase.getAccount(address = any(), isRefreshing = any()))
             .thenReturn(Result.Success(sampleData))
         whenever(appEventBus.events).thenReturn(MutableSharedFlow<AppEvent>().asSharedFlow())
-        mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
-        every { any<String>().decodeUtf8() } returns accountName
-    }
-
-    @After
-    fun tearDown() {
-        unmockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
     }
 
     @Test
     fun `when viewmodel init, verify loading displayed before loading account ui`() = runTest {
         // given
         val event = mutableListOf<AccountUiState>()
-        vm = AccountViewModel(requestAccountsUseCase, appEventBus, savedStateHandle)
+        vm = AccountViewModel(requestAccountsUseCase, getProfileUseCase, appEventBus, savedStateHandle)
         vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -81,7 +74,7 @@ class AccountViewModelTest {
     fun `when viewmodel init, verify accountUi loaded after loading`() = runTest {
         // given
         val event = mutableListOf<AccountUiState>()
-        vm = AccountViewModel(requestAccountsUseCase, appEventBus, savedStateHandle)
+        vm = AccountViewModel(requestAccountsUseCase, getProfileUseCase, appEventBus, savedStateHandle)
         vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -98,6 +91,5 @@ class AccountViewModelTest {
 
     companion object {
         private val accountId = "1212"
-        private val accountName = "my account"
     }
 }

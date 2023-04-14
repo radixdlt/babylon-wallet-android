@@ -7,6 +7,7 @@ import android.webkit.URLUtil
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import okio.ByteString.Companion.decodeBase64
+import timber.log.Timber
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.DecimalFormat
@@ -71,11 +72,14 @@ fun String.isValidEmail(): Boolean {
 }
 
 fun String.encodeUtf8(): String {
-    return URLEncoder.encode(this, "UTF-8")
+    val encoded = URLEncoder.encode(this, "UTF-8")
+    Timber.d("Encode: input $this, output $encoded")
+    return encoded
 }
 
 fun String.decodeUtf8(): String {
-    return URLDecoder.decode(this, "UTF-8")
+    val decoded = URLDecoder.decode(this, "UTF-8")
+    return decoded
 }
 
 fun String.prependHttpsPrefixIfNotPresent(): String {
