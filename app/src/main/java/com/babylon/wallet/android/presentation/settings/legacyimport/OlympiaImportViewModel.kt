@@ -15,7 +15,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
@@ -36,6 +35,7 @@ import rdx.works.profile.olympiaimport.validatePublicKeysOf
 import rdx.works.profile.olympiaimport.verifyPayload
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class OlympiaImportViewModel @Inject constructor(
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
@@ -69,8 +69,8 @@ class OlympiaImportViewModel @Inject constructor(
             )
             olympiaWalletData?.let { data ->
                 this@OlympiaImportViewModel.olympiaWalletData = data
-                _state.update {
-                    it.copy(
+                _state.update { state ->
+                    state.copy(
                         currentPage = ImportPage.AccountList,
                         olympiaAccounts = data.accountData.map { Selectable(it) }.toPersistentList()
                     )
@@ -86,7 +86,7 @@ class OlympiaImportViewModel @Inject constructor(
 
     private fun nextPage() {
         viewModelScope.launch {
-            delay(300)
+//            delay(300)
             val currentPage = _state.value.currentPage
             _state.value.pages.nextPage(currentPage)?.let { nextPage ->
                 _state.update { it.copy(currentPage = nextPage, hideBack = nextPage == ImportPage.ImportComplete) }
@@ -168,6 +168,7 @@ class OlympiaImportViewModel @Inject constructor(
         nextPage()
     }
 
+    @Suppress("UnsafeCallOnNullableType")
     fun onImportSoftwareAccounts() {
         viewModelScope.launch {
             val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
@@ -204,9 +205,10 @@ class OlympiaImportViewModel @Inject constructor(
     fun onToggleSelectAll() {
         val selectedAll = _state.value.olympiaAccounts.filter { !it.data.alreadyImported }.all { it.selected }
         _state.update { state ->
-            state.copy(olympiaAccounts = state.olympiaAccounts.mapWhen(
-                predicate = { !it.data.alreadyImported }
-            ) { it.copy(selected = !selectedAll) }.toPersistentList()
+            state.copy(
+                olympiaAccounts = state.olympiaAccounts.mapWhen(
+                    predicate = { !it.data.alreadyImported }
+                ) { it.copy(selected = !selectedAll) }.toPersistentList()
             )
         }
     }
@@ -228,7 +230,6 @@ class OlympiaImportViewModel @Inject constructor(
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
-
 }
 
 enum class ImportPage {

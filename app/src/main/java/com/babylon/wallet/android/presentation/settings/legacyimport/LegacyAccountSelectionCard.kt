@@ -110,7 +110,6 @@ fun LegacyAccountSelectionCard(
                     color = Color.White.copy(alpha = 0.8f)
                 )
             }
-
         }
         if (!alreadyImported) {
             Spacer(modifier = Modifier.weight(0.1f))

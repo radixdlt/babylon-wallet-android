@@ -28,13 +28,13 @@ import com.babylon.wallet.android.presentation.dapp.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost

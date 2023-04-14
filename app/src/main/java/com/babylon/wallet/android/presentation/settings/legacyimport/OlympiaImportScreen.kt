@@ -174,7 +174,6 @@ private fun OlympiaImportContent(
                     }
                 }
             }
-
         }
     }
 
@@ -244,14 +243,17 @@ private fun OlympiaImportContent(
                         HardwareImportScreen(
                             Modifier
                                 .fillMaxSize()
-                                .padding(RadixTheme.dimensions.paddingDefault), onHardwareImport = onHardwareImport
+                                .padding(RadixTheme.dimensions.paddingDefault),
+                            onHardwareImport = onHardwareImport
                         )
                     }
                     ImportPage.ImportComplete -> {
                         ImportCompletePage(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(RadixTheme.dimensions.paddingDefault), migratedAccounts = migratedAccounts, onContinue = onContinue
+                                .padding(RadixTheme.dimensions.paddingDefault),
+                            migratedAccounts = migratedAccounts,
+                            onContinue = onContinue
                         )
                     }
                 }

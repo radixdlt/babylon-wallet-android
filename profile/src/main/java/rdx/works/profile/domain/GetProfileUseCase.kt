@@ -28,6 +28,7 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
+@Suppress("MagicNumber")
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(it.address)).getOrThrow().data

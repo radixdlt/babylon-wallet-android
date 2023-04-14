@@ -1,3 +1,5 @@
+@file:Suppress("TopLevelPropertyNaming", "MagicNumber")
+
 package rdx.works.profile.olympiaimport
 
 import com.radixdlt.bip39.model.MnemonicWords
@@ -16,31 +18,32 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.derivation.LegacyOlympiaBIP44LikeDerivationPath
 import timber.log.Timber
 
+private const val HeaderSeparator = "]"
+private const val InnerSeparator = "^"
+private const val OuterSeparator = "~"
+private const val EndOfAccountName = "}"
 
-private val headerSeparator = "]"
-private val innerSeparator = "^"
-private val outerSeparator = "~"
-private val endOfAccountName = "}"
-
-fun Collection<String>.parseOlympiaWalletAccountData(existingAccountHashes: Set<ByteArray>): OlympiaWalletData? {
+fun Collection<String>.parseOlympiaWalletAccountData(existingAccountHashes: Set<ByteArray> = emptySet()): OlympiaWalletData? {
     val accountNameReplacement = "_"
     val headerToPayloadList = map { payloadChunk ->
-        val headerAndPayload = payloadChunk.split(headerSeparator)
-        val headerChunks = headerAndPayload[0].split(innerSeparator)
+        val headerAndPayload = payloadChunk.split(HeaderSeparator)
+        val headerChunks = headerAndPayload[0].split(InnerSeparator)
         PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), headerChunks[2].toInt()) to headerAndPayload[1]
     }.sortedBy { it.first.payloadIndex }
-    val fullPayload = headerToPayloadList.map { it.second }.joinToString(separator = "")
+    val fullPayload = headerToPayloadList.joinToString(separator = "") { it.second }
     val header = headerToPayloadList.first().first
     return if (size == header.payloadCount) {
         try {
-            val accountData = fullPayload.split(outerSeparator).map { singleAccountData ->
-                val singleAccountDataChunks = singleAccountData.split(innerSeparator)
+            val accountData = fullPayload.split(OuterSeparator).map { singleAccountData ->
+                val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
                 val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
                 val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
                 val publicKey = PublicKey.EcdsaSecp256k1(publicKeyHex)
                 val index = requireNotNull(singleAccountDataChunks[2].toInt())
                 val name = if (singleAccountDataChunks.size == 4) {
-                    singleAccountDataChunks[3].replace(endOfAccountName, "").replace(Regex("[]^~]"), accountNameReplacement)
+                    singleAccountDataChunks[3]
+                        .replace(EndOfAccountName, "")
+                        .replace(Regex("[]^~]"), accountNameReplacement)
                 } else {
                     ""
                 }
@@ -73,14 +76,15 @@ fun Collection<ByteArray>.containsWithEqualityCheck(value: ByteArray): Boolean {
 }
 
 fun Collection<String>.chunkInfo(): ChunkInfo? {
-    val headerChunks = firstOrNull()?.split(headerSeparator)?.getOrNull(0)?.split(innerSeparator) ?: return null
+    val headerChunks = firstOrNull()?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator) ?: return null
     return ChunkInfo(size, headerChunks[0].toInt())
 }
 
+@Suppress("SwallowedException")
 fun String.isProperQrPayload(): Boolean {
     return try {
-        val headerAndPayload = split(headerSeparator)
-        val headerChunks = headerAndPayload[0].split(innerSeparator)
+        val headerAndPayload = split(HeaderSeparator)
+        val headerChunks = headerAndPayload[0].split(InnerSeparator)
         PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), headerChunks[2].toInt())
         true
     } catch (e: java.lang.Exception) {
@@ -89,17 +93,17 @@ fun String.isProperQrPayload(): Boolean {
 }
 
 fun Collection<String>.verifyPayload(): Boolean {
-    return firstOrNull()?.split(headerSeparator)?.getOrNull(0)?.split(innerSeparator)?.getOrNull(0)?.toInt() == size
+    return firstOrNull()?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator)?.getOrNull(0)?.toInt() == size
 }
 
-//fun Collection<String>.verifyPayload(): Boolean {
+// fun Collection<String>.verifyPayload(): Boolean {
 //    val headers = map { payloadChunk ->
 //        val headerAndPayload = payloadChunk.split(headerSeparator)
 //        val headerChunks = headerAndPayload[0].split(innerSeparator)
 //        PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), headerChunks[2].toInt())
 //    }.sortedBy { it.payloadIndex }
 //    val
-//}
+// }
 
 fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
     val words = MnemonicWords(mnemonic)
@@ -113,7 +117,6 @@ fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDet
     }
     return true
 }
-
 
 data class OlympiaWalletData(val mnemonicWordCount: Int, val accountData: List<OlympiaAccountDetails>)
 
@@ -156,29 +159,7 @@ enum class OlympiaAccountType {
     }
 }
 
-fun getOlympiaTestAccounts(): List<OlympiaAccountDetails> {
-    val words = MnemonicWords(olympiaTestSeedPhrase)
-    val seed = words.toSeed(passphrase = "")
-    val accounts = (0..20).map { index ->
-        val derivationPath = LegacyOlympiaBIP44LikeDerivationPath(index)
-        val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
-        val address = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
-            DeriveOlympiaAddressFromPublicKeyRequest(
-                OlympiaNetwork.Mainnet,
-                PublicKey.EcdsaSecp256k1(publicKey)
-            )
-        ).getOrThrow().olympiaAccountAddress
-        OlympiaAccountDetails(
-            index = index,
-            type = if (index % 2 == 0) OlympiaAccountType.Software else OlympiaAccountType.Hardware,
-            address = address,
-            publicKey = publicKey,
-            accountName = "Olympia $index",
-            derivationPath = derivationPath
-        )
-    }
-    return accounts
-}
-
-val olympiaTestSeedPhrase =
-    "private sight rather cloud lock pelican barrel whisper spy more artwork crucial abandon among grow guilt control wrist memory group churn hen program sauce"
+var olympiaTestSeedPhrase =
+    """private sight rather cloud lock pelican barrel whisper spy more artwork crucial 
+        abandon among grow guilt control wrist memory group churn hen program sauce
+    """.trimIndent()

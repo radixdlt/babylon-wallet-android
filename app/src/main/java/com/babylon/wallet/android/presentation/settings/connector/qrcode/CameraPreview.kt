@@ -32,7 +32,6 @@ fun CameraPreview(
     }
 }
 
-
 @Composable
 private fun BarcodePreviewView(
     onQrCodeDetected: (qrCode: String) -> Unit,

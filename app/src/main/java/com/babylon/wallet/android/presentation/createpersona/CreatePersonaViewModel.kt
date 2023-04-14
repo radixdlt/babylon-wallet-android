@@ -2,12 +2,12 @@ package com.babylon.wallet.android.presentation.createpersona
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
-import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper

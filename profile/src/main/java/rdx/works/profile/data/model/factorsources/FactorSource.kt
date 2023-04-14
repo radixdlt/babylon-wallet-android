@@ -125,7 +125,7 @@ data class FactorSource(
 
         val supportsOlympia: Boolean
             get() = supportedCurves.contains(SECP_256K1) &&
-                    supportedDerivationPathSchemes.contains(BIP_44_OLYMPIA)
+                supportedDerivationPathSchemes.contains(BIP_44_OLYMPIA)
 
         companion object {
             val babylon = Parameters(

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.navigation.settings
+package com.babylon.wallet.android.presentation.settings
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -9,8 +9,6 @@ import com.babylon.wallet.android.presentation.createaccount.CreateAccountReques
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDappsScreen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
