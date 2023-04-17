@@ -518,11 +518,15 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
-        val guaranteePercentString = guaranteePair.first
+        val guaranteePercentString = guaranteePair.first.trim()
         val guaranteePercentBigDecimal = if (guaranteePercentString.isEmpty()) {
             BigDecimal.ZERO
         } else {
-            guaranteePercentString.toBigDecimal()
+            try {
+                guaranteePercentString.toBigDecimal()
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
+            }
         }
         val guaranteeAccountItem = guaranteePair.second
 
@@ -559,7 +563,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 isTokenAmountVisible = tokenUiModel.isTokenAmountVisible,
                                 shouldPromptForGuarantees = tokenUiModel.shouldPromptForGuarantees,
                                 guaranteedQuantity = updatedGuaranteedQuantity,
-                                guaranteedPercentAmount = guaranteePercentBigDecimal.toPlainString()
+                                guaranteedPercentAmount = guaranteePercentString,
                             )
                         } else {
                             tokenUiModel

@@ -53,7 +53,7 @@ fun TransactionAccountWithGuaranteesCard(
     modifier: Modifier = Modifier,
     appearanceId: Int,
     accountName: String,
-    guaranteePercentValue: BigDecimal,
+    guaranteePercentValue: String,
     onGuaranteeValueChanged: (String) -> Unit
 ) {
     Column(
@@ -203,11 +203,10 @@ fun TransactionAccountWithGuaranteesCard(
                 IconButton(
                     modifier = Modifier.weight(0.8f),
                     onClick = {
-                        if (guaranteePercentValue > BigDecimal.ZERO) {
-                            onGuaranteeValueChanged(
-                                guaranteePercentValue.minus(BigDecimal("0.1")).toString()
-                            )
-                        }
+                        val guaranteePercentDecimal = guaranteePercentValue.toBigDecimal()
+                        onGuaranteeValueChanged(
+                            guaranteePercentDecimal.minus(BigDecimal("0.1")).toString()
+                        )
                     }
                 ) {
                     Icon(
@@ -222,11 +221,7 @@ fun TransactionAccountWithGuaranteesCard(
                 RadixTextField(
                     modifier = Modifier.weight(1.0f),
                     onValueChanged = onGuaranteeValueChanged,
-                    value = if (guaranteePercentValue.stripTrailingZeros() == BigDecimal.ZERO) {
-                        ""
-                    } else {
-                        guaranteePercentValue.stripTrailingZeros().toPlainString()
-                    },
+                    value = guaranteePercentValue,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.None,
                         keyboardType = KeyboardType.Number
@@ -236,8 +231,9 @@ fun TransactionAccountWithGuaranteesCard(
                 IconButton(
                     modifier = Modifier.weight(0.8f),
                     onClick = {
+                        val guaranteePercentDecimal = guaranteePercentValue.toBigDecimal()
                         onGuaranteeValueChanged(
-                            guaranteePercentValue.plus(BigDecimal("0.1")).toString()
+                            guaranteePercentDecimal.plus(BigDecimal("0.1")).toString()
                         )
                     }
                 ) {
@@ -272,7 +268,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
             modifier = Modifier,
             appearanceId = 0,
             accountName = "My main account",
-            guaranteePercentValue = BigDecimal("100"),
+            guaranteePercentValue = "100",
             onGuaranteeValueChanged = {}
         )
     }

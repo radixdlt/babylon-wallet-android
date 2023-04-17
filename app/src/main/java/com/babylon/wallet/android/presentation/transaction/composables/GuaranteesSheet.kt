@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrap
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import java.math.BigDecimal
 
 @Composable
 fun GuaranteesSheet(
@@ -100,7 +102,7 @@ fun GuaranteesSheet(
                         tokenGuaranteedQuantity = guaranteesAccount.tokenGuaranteedQuantity,
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
                         accountName = guaranteesAccount.displayName,
-                        guaranteePercentValue = guaranteesAccount.guaranteedPercentAmount.toBigDecimal(),
+                        guaranteePercentValue = guaranteesAccount.guaranteedPercentAmount,
                         onGuaranteeValueChanged = { percentValue ->
                             onGuaranteeValueChanged(Pair(percentValue, guaranteesAccount))
                         }
@@ -140,7 +142,7 @@ fun GuaranteesSheetPreview() {
                     tokenIconUrl = "",
                     tokenEstimatedQuantity = "1000",
                     tokenGuaranteedQuantity = "1000",
-                    guaranteedPercentAmount = "100",
+                    guaranteedPercentAmount = "100"
                 ),
                 GuaranteesAccountItemUiModel(
                     address = "f43f43f4334",
@@ -150,7 +152,7 @@ fun GuaranteesSheetPreview() {
                     tokenIconUrl = "",
                     tokenEstimatedQuantity = "1000",
                     tokenGuaranteedQuantity = "1000",
-                    guaranteedPercentAmount = "100",
+                    guaranteedPercentAmount = "100"
                 ),
                 GuaranteesAccountItemUiModel(
                     address = "f43f43f4334",
@@ -160,7 +162,7 @@ fun GuaranteesSheetPreview() {
                     tokenIconUrl = "",
                     tokenEstimatedQuantity = "1000",
                     tokenGuaranteedQuantity = "1000",
-                    guaranteedPercentAmount = "100",
+                    guaranteedPercentAmount = "100"
                 )
             ),
             onClose = {},
