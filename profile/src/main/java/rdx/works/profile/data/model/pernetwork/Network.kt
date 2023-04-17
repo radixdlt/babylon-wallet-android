@@ -222,7 +222,7 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
-                    publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.SECP_256K1),
+                    publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = DerivationPath.forIdentity(
                         derivationPath = derivationPath
                     ),

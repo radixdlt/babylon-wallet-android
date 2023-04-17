@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.validatePublicKeysOf
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.CheckIfFactorSourceForAccountsExistUseCase
@@ -31,12 +32,8 @@ import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.OlympiaWalletData
-import rdx.works.profile.olympiaimport.chunkInfo
-import rdx.works.profile.olympiaimport.isProperQrPayload
+import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
-import rdx.works.profile.olympiaimport.parseOlympiaWalletAccountData
-import rdx.works.profile.olympiaimport.validatePublicKeysOf
-import rdx.works.profile.olympiaimport.verifyPayload
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -46,7 +43,8 @@ class OlympiaImportViewModel @Inject constructor(
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
     private val checkIfFactorSourceForAccountsExistUseCase: CheckIfFactorSourceForAccountsExistUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val olympiaWalletDataParser: OlympiaWalletDataParser
 ) : StateViewModel<OlympiaImportUiState>(),
     OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
@@ -57,23 +55,24 @@ class OlympiaImportViewModel @Inject constructor(
     private var existingFactorSourceId: FactorSource.ID? = null
 
     fun onQrCodeScanned(qrData: String) {
-        if (!qrData.isProperQrPayload()) {
+        if (!olympiaWalletDataParser.isProperQrPayload(qrData)) {
             _state.update {
                 it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.InvalidPayload))
             }
             return
         }
         scannedData.add(qrData)
-        if (!scannedData.verifyPayload()) {
+        if (!olympiaWalletDataParser.verifyPayload(scannedData)) {
             _state.update {
-                it.copy(qrChunkInfo = scannedData.chunkInfo())
+                it.copy(qrChunkInfo = olympiaWalletDataParser.chunkInfo(scannedData))
             }
             return
         }
 
         viewModelScope.launch {
-            val olympiaWalletData = scannedData.parseOlympiaWalletAccountData(
-                getProfileUseCase.currentNetworkAccountHashes()
+            val olympiaWalletData = olympiaWalletDataParser.parseOlympiaWalletAccountData(
+                olympiaWalletDataChunks = scannedData,
+                existingAccountHashes = getProfileUseCase.currentNetworkAccountHashes()
             )
             olympiaWalletData?.let { data ->
                 this@OlympiaImportViewModel.olympiaWalletData = data
