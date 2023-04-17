@@ -33,7 +33,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TransactionTokenUiModel
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
@@ -42,7 +42,7 @@ import java.math.BigDecimal
 
 @Composable
 fun TransactionAccountCard(
-    tokens: ImmutableList<TransactionTokenUiModel>,
+    tokens: ImmutableList<TokenUiModel>,
     modifier: Modifier = Modifier,
     appearanceId: Int,
     address: String,
@@ -147,7 +147,7 @@ fun TransactionAccountCard(
                         }
                         Text(
                             modifier = Modifier,
-                            text = if (token.isTokenAmountVisible) token.tokenQuantityToDisplay else "",
+                            text = if (token.isTokenAmountVisible == true) token.tokenQuantityToDisplay else "",
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -191,11 +191,12 @@ fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
             tokens = persistentListOf(
-                TransactionTokenUiModel(
-                    "XRD",
-                    BigDecimal(689.203),
-                    "1023",
-                    "d3d3nd32dko3dko3",
+                TokenUiModel(
+                    id = "d3d3nd32dko3dko3",
+                    tokenQuantity = BigDecimal(689.203),
+                    address = "d3d3nd32dko3dko3",
+                    symbol = "XRD",
+                    iconUrl = "",
                     isTokenAmountVisible = true,
                     guaranteedQuantity = BigDecimal(689.203)
                 )

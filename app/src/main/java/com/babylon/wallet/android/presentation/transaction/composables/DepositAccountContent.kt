@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.TransactionTokenUiModel
+import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
@@ -66,7 +66,8 @@ fun DepositAccountContent(
                 val lastItem = index == previewAccounts.lastIndex
 
                 val tokens = previewAccount.accounts.map { account ->
-                    TransactionTokenUiModel(
+                    TokenUiModel(
+                        id = account.address,
                         iconUrl = "",
                         symbol = account.tokenSymbol,
                         tokenQuantity = account.tokenQuantityDecimal,

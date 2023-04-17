@@ -140,12 +140,12 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                 }
                             } else {
-                                transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
+                                transactionPreviewResponse.receipt.fee_summary.let {
                                     // TODO this will be done properly when backend work comes
 //                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
 //                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
                                     val networkFee = "10" // TODO this will be done properly when backend work comes
-                                    _state.update { it.copy(networkFee = networkFee) }
+                                    _state.update { state -> state.copy(networkFee = networkFee) }
                                 }
 
                                 val manifestPreview = transactionClient.analyzeManifest(
@@ -519,23 +519,18 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
         val guaranteePercentString = guaranteePair.first.trim()
-        val guaranteePercentBigDecimal = if (guaranteePercentString.isEmpty()) {
+        val guaranteePercentBigDecimal = try {
+            guaranteePercentString.toBigDecimal()
+        } catch (e: NumberFormatException) {
             BigDecimal.ZERO
-        } else {
-            try {
-                guaranteePercentString.toBigDecimal()
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
         }
-        val guaranteeAccountItem = guaranteePair.second
 
         if (guaranteePercentBigDecimal > BigDecimal("100") || guaranteePercentBigDecimal < BigDecimal.ZERO) {
             return
         }
 
         val updatedGuaranteedQuantity = guaranteePercentBigDecimal.divide(BigDecimal("100")).multiply(
-            guaranteeAccountItem.tokenEstimatedQuantity.toBigDecimal().stripTrailingZeros()
+            guaranteePair.second.tokenEstimatedQuantity.toBigDecimal().stripTrailingZeros()
         ).toPlainString()
 
         val currentDepositingAccounts =
@@ -546,13 +541,13 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
         currentDepositingAccounts.map { previewAccountUiModel ->
-            if (previewAccountUiModel.address == guaranteeAccountItem.address) {
+            if (previewAccountUiModel.address == guaranteePair.second.address) {
                 previewAccountUiModel.copy(
                     address = previewAccountUiModel.address,
                     accountName = previewAccountUiModel.accountName,
                     appearanceID = previewAccountUiModel.appearanceID,
                     accounts = previewAccountUiModel.accounts.map { tokenUiModel ->
-                        if (tokenUiModel.index == guaranteeAccountItem.index) {
+                        if (tokenUiModel.index == guaranteePair.second.index) {
                             tokenUiModel.copy(
                                 address = tokenUiModel.address,
                                 displayName = tokenUiModel.displayName,

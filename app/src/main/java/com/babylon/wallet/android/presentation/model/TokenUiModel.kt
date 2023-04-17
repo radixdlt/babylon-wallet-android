@@ -10,14 +10,15 @@ import java.util.Locale
 
 data class TokenUiModel(
     val id: String,
-    val name: String?,
-    val description: String?,
+    val name: String? = null,
+    val description: String? = null,
     val symbol: String?, // short capitalized name
     val tokenQuantity: BigDecimal, // the amount of the token held
-    val tokenValue: String?, // the current value in currency the user has selected for the wallet
     val iconUrl: String?,
     val address: String,
-    val metadata: Map<String, String> = emptyMap()
+    val metadata: Map<String, String> = emptyMap(),
+    val isTokenAmountVisible: Boolean? = null,
+    val guaranteedQuantity: BigDecimal? = null
 ) : AssetUiModel() {
     /**
      * The title to show in the token list item of the Account screen.
@@ -78,6 +79,10 @@ data class TokenUiModel(
             decimalFormat.format(tokenQuantity)
         }
 
+    // token guaranteed amount to display on token card
+    val guaranteedQuantityToDisplay: String
+        get() = guaranteedQuantity?.toPlainString().orEmpty()
+
     fun isXrd(): Boolean {
         return symbol == MetadataConstants.SYMBOL_XRD
     }
@@ -93,7 +98,6 @@ fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
         name = ownedFungibleToken.token.getTokenName(),
         symbol = ownedFungibleToken.token.getTokenSymbol(),
         tokenQuantity = ownedFungibleToken.amount,
-        tokenValue = "",
         iconUrl = ownedFungibleToken.token.getImageUrl(),
         description = ownedFungibleToken.token.getTokenDescription(),
         metadata = ownedFungibleToken.token.getDisplayableMetadata(),
@@ -107,7 +111,6 @@ fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
         name = token.getTokenName(),
         symbol = token.getTokenSymbol(),
         tokenQuantity = amount,
-        tokenValue = "",
         iconUrl = token.getImageUrl(),
         description = token.getTokenDescription(),
         metadata = token.getDisplayableMetadata(),

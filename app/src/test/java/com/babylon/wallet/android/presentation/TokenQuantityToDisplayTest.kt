@@ -21,7 +21,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -39,7 +38,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(123456789012345.4),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -57,7 +55,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(120073000000123.92),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -75,7 +72,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(1000.500),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -93,7 +89,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(0.1234567),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -111,7 +106,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(0.005000000000002),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -129,7 +123,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(3959.8617984),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -147,7 +140,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(12345678901.1000),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -165,7 +157,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(12345.12345),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -183,7 +174,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(0.001000000000001),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -201,7 +191,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(12345.0029999),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -219,7 +208,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234567890.01),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -237,7 +225,6 @@ class TokenQuantityToDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234567.19),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""

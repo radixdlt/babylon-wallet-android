@@ -14,7 +14,6 @@ class TokenItemTitleDisplayTest {
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -30,7 +29,6 @@ class TokenItemTitleDisplayTest {
             name = null,
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -46,7 +44,6 @@ class TokenItemTitleDisplayTest {
             name = "name",
             symbol = null,
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -62,7 +59,6 @@ class TokenItemTitleDisplayTest {
             name = null,
             symbol = null,
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -78,7 +74,6 @@ class TokenItemTitleDisplayTest {
             name = "name",
             symbol = " ",
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
@@ -94,7 +89,6 @@ class TokenItemTitleDisplayTest {
             name = "",
             symbol = " ",
             tokenQuantity = BigDecimal(1234.5678),
-            tokenValue = "token value",
             iconUrl = "icon url",
             description = null,
             address = ""
