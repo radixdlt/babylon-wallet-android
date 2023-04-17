@@ -30,7 +30,6 @@ import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrap
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import java.math.BigDecimal
 
 @Composable
 fun GuaranteesSheet(
@@ -42,6 +41,7 @@ fun GuaranteesSheet(
 ) {
     Column(
         modifier = modifier
+            .imePadding()
     ) {
         BottomDialogDragHandle(
             modifier = Modifier

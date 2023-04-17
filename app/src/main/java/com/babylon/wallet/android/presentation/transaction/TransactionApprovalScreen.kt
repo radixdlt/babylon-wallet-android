@@ -180,7 +180,8 @@ private fun TransactionPreviewContent(
             ) {
                 TransactionPreviewHeader(
                     onBackClick = onBackClick,
-                    onRawManifestClick = { showRawManifest = !showRawManifest }
+                    onRawManifestClick = { showRawManifest = !showRawManifest },
+                    onBackEnabled = !isSigning
                 )
                 Column(
                     modifier = Modifier
