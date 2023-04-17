@@ -218,9 +218,12 @@ class OlympiaImportViewModel @Inject constructor(
         val selectedAll = _state.value.olympiaAccounts.filter { !it.data.alreadyImported }.all { it.selected }
         _state.update { state ->
             state.copy(
-                olympiaAccounts = state.olympiaAccounts.mapWhen(
-                    predicate = { !it.data.alreadyImported }
-                ) { it.copy(selected = !selectedAll) }.toPersistentList(), importButtonEnabled = !selectedAll
+                olympiaAccounts = state.olympiaAccounts.mapWhen(predicate = {
+                    !it.data.alreadyImported
+                }) {
+                    it.copy(selected = !selectedAll)
+                }.toPersistentList(),
+                importButtonEnabled = !selectedAll
             )
         }
     }

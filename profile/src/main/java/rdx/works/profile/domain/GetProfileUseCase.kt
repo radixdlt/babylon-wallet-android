@@ -32,8 +32,7 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(it.address)).getOrThrow().data
-        val result = addressData.takeLast(26).toByteArray()
-        result
+        addressData.takeLast(26).toByteArray()
     }.toSet()
 }
 

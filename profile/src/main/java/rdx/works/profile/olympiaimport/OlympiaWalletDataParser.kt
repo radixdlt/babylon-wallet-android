@@ -18,7 +18,6 @@ private const val OuterSeparator = "~"
 private const val EndOfAccountName = "}"
 private const val AccountNameForbiddenCharsReplacement = "_"
 
-
 class OlympiaWalletDataParser @Inject constructor() {
 
     fun parseOlympiaWalletAccountData(

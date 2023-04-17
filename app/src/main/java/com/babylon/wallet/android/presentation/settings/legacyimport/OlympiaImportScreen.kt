@@ -22,9 +22,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,7 +64,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.collections.immutable.ImmutableList
@@ -242,7 +241,7 @@ private fun OlympiaImportContent(
                 when (pages[page]) {
                     ImportPage.ScanQr -> {
                         ScanQrPage(
-                            cameraPermissionState = cameraPermissionState,
+                            cameraPermissionGranted = cameraPermissionState.status.isGranted,
                             onQrCodeScanned = onQrCodeScanned,
                             isVisible = cameraVisible,
                             modifier = Modifier.fillMaxSize(),
@@ -314,9 +313,8 @@ private fun CameraVisibilityEffect(
 }
 
 @Composable
-@OptIn(ExperimentalPermissionsApi::class)
 private fun ScanQrPage(
-    cameraPermissionState: PermissionState,
+    cameraPermissionGranted: Boolean,
     onQrCodeScanned: (String) -> Unit,
     isVisible: Boolean,
     modifier: Modifier = Modifier,
@@ -325,7 +323,7 @@ private fun ScanQrPage(
     Box(
         modifier = modifier
     ) {
-        if (cameraPermissionState.status.isGranted) {
+        if (cameraPermissionGranted) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
