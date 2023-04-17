@@ -202,6 +202,10 @@ class OlympiaImportViewModel @Inject constructor(
     @Suppress("UnsafeCallOnNullableType")
     private suspend fun internalImportSoftwareAccounts() {
         val softwareAccountsToMigrate = softwareAccountsToMigrate()
+        if (softwareAccountsToMigrate.isEmpty()) {
+            nextPage()
+            return
+        }
         val factorSourceID = existingFactorSourceId ?: addOlympiaFactorSourceUseCase(mnemonicWithPassphrase!!)
         val migratedAccounts = migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSourceID)
         _state.update { state ->
@@ -216,7 +220,7 @@ class OlympiaImportViewModel @Inject constructor(
             state.copy(
                 olympiaAccounts = state.olympiaAccounts.mapWhen(
                     predicate = { !it.data.alreadyImported }
-                ) { it.copy(selected = !selectedAll) }.toPersistentList()
+                ) { it.copy(selected = !selectedAll) }.toPersistentList(), importButtonEnabled = !selectedAll
             )
         }
     }
@@ -244,7 +248,7 @@ class OlympiaImportViewModel @Inject constructor(
 
     private fun softwareAccountsToMigrate(): List<OlympiaAccountDetails> {
         val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
-            it.selected && it.data.type == OlympiaAccountType.Software
+            it.selected && it.data.type == OlympiaAccountType.Software && !it.data.alreadyImported
         }.map { it.data }
         return softwareAccountsToMigrate
     }
