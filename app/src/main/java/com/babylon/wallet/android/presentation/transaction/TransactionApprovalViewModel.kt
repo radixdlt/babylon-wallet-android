@@ -594,9 +594,10 @@ data class TransactionAccountItemUiModel(
     val shouldPromptForGuarantees: Boolean,
     val guaranteedQuantity: String?,
     val guaranteedPercentAmount: String = "100",
-    val instructionIndex: Int? = null,
+    val instructionIndex: Int? = null, // Index that instruction will be inserted at in the manifest
     val resourceAddress: String? = null,
-    val index: Int? = null
+    val index: Int? = null // Unique to identify which item state we are changing as addresses might be the same for
+    // nested elements using the same address
 ) {
     val tokenQuantityDecimal: BigDecimal
         get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal().stripTrailingZeros()

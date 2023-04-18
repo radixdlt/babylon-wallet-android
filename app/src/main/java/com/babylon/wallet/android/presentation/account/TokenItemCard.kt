@@ -90,7 +90,6 @@ fun TokenItemCardPreview() {
     RadixWalletTheme {
         TokenItemCard(
             token = TokenUiModel(
-                id = "id",
                 name = "name",
                 symbol = "symbol",
                 tokenQuantity = BigDecimal(1234.5678),
@@ -109,7 +108,6 @@ fun TokenItemCardWithLongNameAndLongValuesPreview() {
     RadixWalletTheme {
         TokenItemCard(
             token = TokenUiModel(
-                id = "id",
                 name = "a very long name that might cause troubles",
                 symbol = "XRD",
                 tokenQuantity = BigDecimal(1234567.890123),

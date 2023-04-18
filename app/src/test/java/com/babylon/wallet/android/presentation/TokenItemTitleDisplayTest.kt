@@ -10,7 +10,6 @@ class TokenItemTitleDisplayTest {
     @Test
     fun `given a token ui model, when not null symbol and not null name, then tokenItemTitle has the symbol value`() {
         val tokenUi = TokenUiModel(
-            id = "id",
             name = "name",
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
@@ -25,7 +24,6 @@ class TokenItemTitleDisplayTest {
     @Test
     fun `given a token ui model, when not null symbol and null name, then tokenItemTitle has the symbol value`() {
         val tokenUi = TokenUiModel(
-            id = "id",
             name = null,
             symbol = "symbol",
             tokenQuantity = BigDecimal(1234.5678),
@@ -40,7 +38,6 @@ class TokenItemTitleDisplayTest {
     @Test
     fun `given a token ui model, when null symbol and not null name, then tokenItemTitle has the name value`() {
         val tokenUi = TokenUiModel(
-            id = "id",
             name = "name",
             symbol = null,
             tokenQuantity = BigDecimal(1234.5678),
@@ -55,7 +52,6 @@ class TokenItemTitleDisplayTest {
     @Test
     fun `given a token ui model, when null symbol and null name, then tokenItemTitle has empty value`() {
         val tokenUi = TokenUiModel(
-            id = "id",
             name = null,
             symbol = null,
             tokenQuantity = BigDecimal(1234.5678),
@@ -70,7 +66,6 @@ class TokenItemTitleDisplayTest {
     @Test
     fun `given a token ui model, when blank symbol and not null name or blank, then tokenItemTitle has name value`() {
         val tokenUi = TokenUiModel(
-            id = "id",
             name = "name",
             symbol = " ",
             tokenQuantity = BigDecimal(1234.5678),
@@ -85,7 +80,6 @@ class TokenItemTitleDisplayTest {
     @Test
     fun `given a token ui model, when blank symbol and empty name, then tokenItemTitle has empty value`() {
         val tokenUi = TokenUiModel(
-            id = "id",
             name = "",
             symbol = " ",
             tokenQuantity = BigDecimal(1234.5678),

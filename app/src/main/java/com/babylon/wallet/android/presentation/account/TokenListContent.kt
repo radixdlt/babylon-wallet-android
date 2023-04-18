@@ -60,7 +60,7 @@ fun TokenListContent(
         itemsIndexed(
             items = tokenItems,
             key = { _, item: TokenUiModel ->
-                item.id
+                item.address
             },
             itemContent = { index, item ->
                 val lastItem = index == tokenItems.size - 1

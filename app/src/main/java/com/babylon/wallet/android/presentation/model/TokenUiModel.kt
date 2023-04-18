@@ -9,7 +9,6 @@ import java.text.DecimalFormat
 import java.util.Locale
 
 data class TokenUiModel(
-    val id: String,
     val name: String? = null,
     val description: String? = null,
     val symbol: String?, // short capitalized name
@@ -94,7 +93,6 @@ data class TokenUiModel(
 
 fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
     TokenUiModel(
-        id = ownedFungibleToken.address,
         name = ownedFungibleToken.token.getTokenName(),
         symbol = ownedFungibleToken.token.getTokenSymbol(),
         tokenQuantity = ownedFungibleToken.amount,
@@ -107,7 +105,6 @@ fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
 
 fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
     return TokenUiModel(
-        id = address,
         name = token.getTokenName(),
         symbol = token.getTokenSymbol(),
         tokenQuantity = amount,
