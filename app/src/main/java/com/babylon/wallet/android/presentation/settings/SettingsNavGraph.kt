@@ -54,7 +54,9 @@ fun NavGraphBuilder.settingsNavGraph(
             }
         )
         settingsGatewayEdit(navController)
-        settingsShowMnemonic(onBackClick = {})
+        settingsShowMnemonic(onBackClick = {
+            navController.popBackStack()
+        })
         settingsImportOlympiaAccounts(
             onBackClick = {
                 navController.popBackStack()
