@@ -1,19 +1,5 @@
-package com.babylon.wallet.android.data.ce
+package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.data.ce.dapp.model.AuthLoginRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthLoginWithChallengeRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthUsePersonaRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.WalletAuthorizedRequestResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionFailureResponse
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionResponse
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.ce.dapp.model.WalletTransactionResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.WalletUnauthorizedRequestResponseItems
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer

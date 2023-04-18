@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.ce.dapp.model
+package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import kotlinx.serialization.SerialName

@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.ce.dapp.DappMessenger
-import com.babylon.wallet.android.data.ce.IncomingRequestRepository
-import com.babylon.wallet.android.data.ce.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.ce.dapp.model.toKind
+import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure

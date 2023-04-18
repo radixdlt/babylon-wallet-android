@@ -1,15 +1,5 @@
-package com.babylon.wallet.android.data.ce
+package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.data.ce.dapp.model.AuthLoginRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthUsePersonaRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.OneTimeAccountsRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.OneTimePersonaDataRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.OngoingAccountsRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.OngoingPersonaDataRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.ResetRequestItem
-import com.babylon.wallet.android.data.ce.dapp.model.SendTransactionItem
-import com.babylon.wallet.android.data.ce.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

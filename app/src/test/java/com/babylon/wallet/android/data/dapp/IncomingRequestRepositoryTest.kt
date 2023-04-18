@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.ce.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi

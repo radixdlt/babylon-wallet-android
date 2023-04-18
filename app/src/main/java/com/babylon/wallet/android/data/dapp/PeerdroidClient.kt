@@ -1,5 +1,10 @@
-package com.babylon.wallet.android.data.ce
+package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
+import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import com.radixdlt.hex.extensions.toHexString

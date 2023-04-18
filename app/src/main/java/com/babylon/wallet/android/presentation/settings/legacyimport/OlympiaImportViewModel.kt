@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.ce.PeerdroidClient
-import com.babylon.wallet.android.data.ce.ledger.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.InfoMessageType
@@ -215,6 +215,7 @@ class OlympiaImportViewModel @Inject constructor(
             !it.data.alreadyImported && it.selected
         }.map { it.data }
         val pages = buildPages(selectedAccounts)
+        updateHardwareAccountLeftToMigrateCount()
         _state.update { state ->
             state.copy(pages = pages)
         }

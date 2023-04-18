@@ -1,13 +1,12 @@
 @file:Suppress("LongParameterList")
 
-package com.babylon.wallet.android.data.ce.ledger
+package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.ce.DerivePublicKeyRequest
-import com.babylon.wallet.android.data.ce.GetDeviceInfoRequest
-import com.babylon.wallet.android.data.ce.ImportOlympiaDeviceRequest
-import com.babylon.wallet.android.data.ce.LedgerInteraction
-import com.babylon.wallet.android.data.ce.PeerdroidClient
-import com.babylon.wallet.android.data.ce.peerdroidRequestJson
+import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
+import com.babylon.wallet.android.data.dapp.model.GetDeviceInfoRequest
+import com.babylon.wallet.android.data.dapp.model.ImportOlympiaDeviceRequest
+import com.babylon.wallet.android.data.dapp.model.LedgerInteraction
+import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.encodeToString
 import rdx.works.core.UUIDGenerator

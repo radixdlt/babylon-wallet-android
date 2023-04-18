@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.ce.dapp.model.PersonaDataField
+import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {

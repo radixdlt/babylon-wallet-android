@@ -1,27 +1,26 @@
 @file:Suppress("LongParameterList")
 
-package com.babylon.wallet.android.data.ce.dapp
+package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.ce.PeerdroidClient
-import com.babylon.wallet.android.data.ce.dapp.model.AccountDto
-import com.babylon.wallet.android.data.ce.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.OneTimePersonaDataRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.OngoingAccountsWithoutProofOfOwnershipRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.OngoingPersonaDataRequestResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.PersonaData
-import com.babylon.wallet.android.data.ce.dapp.model.PersonaDto
-import com.babylon.wallet.android.data.ce.dapp.model.SendTransactionResponseItem
-import com.babylon.wallet.android.data.ce.dapp.model.WalletAuthorizedRequestResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionFailureResponse
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionResponse
-import com.babylon.wallet.android.data.ce.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.ce.dapp.model.WalletTransactionResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.WalletUnauthorizedRequestResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.toDataModel
-import com.babylon.wallet.android.data.ce.dapp.model.toPersonaDataField
+import com.babylon.wallet.android.data.dapp.model.AccountDto
+import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OneTimePersonaDataRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OngoingAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OngoingPersonaDataRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.PersonaData
+import com.babylon.wallet.android.data.dapp.model.PersonaDto
+import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
+import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
+import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
+import com.babylon.wallet.android.data.dapp.model.toDataModel
+import com.babylon.wallet.android.data.dapp.model.toPersonaDataField
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.serialization.encodeToString

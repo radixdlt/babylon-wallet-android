@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.ce.dapp.model
+package com.babylon.wallet.android.data.dapp.model
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName

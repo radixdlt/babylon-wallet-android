@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.connector
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.ce.PeerdroidClient
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
