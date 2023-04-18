@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import com.babylon.wallet.android.data.ce.dapp.model.PersonaDataField
 import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {
@@ -25,7 +25,7 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
@@ -46,14 +46,14 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null &&
-                    ongoingPersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null &&
-                    oneTimePersonaDataRequestItem == null
+                        ongoingPersonaDataRequestItem == null &&
+                        oneTimeAccountsRequestItem == null &&
+                        oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -121,11 +121,60 @@ sealed interface MessageFromDataChannel {
         )
     }
 
-    object ParsingError : MessageFromDataChannel // TODO this will be removed
+    sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
+
+        enum class LedgerDeviceModel {
+            NanoS, NanoSPlus, NanoX;
+        }
+
+        data class GetDeviceInfoResponse(
+            val interactionId: String,
+            val model: LedgerDeviceModel,
+            val deviceId: String
+        ) : LedgerResponse(interactionId)
+
+        data class DerivePublicKeyResponse(
+            val interactionId: String,
+            val publicKeyHex: String
+        ) : LedgerResponse(interactionId)
+
+        data class ImportOlympiaDeviceResponse(
+            val interactionId: String,
+            val model: LedgerDeviceModel,
+            val deviceId: String,
+            val derivedPublicKeys: List<DerivedPublicKey>
+        ) : LedgerResponse(interactionId) {
+
+            data class DerivedPublicKey(
+                val publicKeyHex: String,
+                val derivationPath: String
+            )
+        }
+
+        data class SignTransactionResponse(
+            val interactionId: String,
+            val signature: String,
+            val publicKeyHex: String
+        ) : LedgerResponse(interactionId)
+
+        data class SignChallengeResponse(
+            val interactionId: String,
+            val signature: String,
+            val publicKeyHex: String
+        ) : LedgerResponse(interactionId)
+
+        data class LedgerErrorResponse(
+            val interactionId: String,
+            val code: Int,
+            val message: String
+        ) : LedgerResponse(interactionId)
+    }
+
+
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
-    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
+        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly

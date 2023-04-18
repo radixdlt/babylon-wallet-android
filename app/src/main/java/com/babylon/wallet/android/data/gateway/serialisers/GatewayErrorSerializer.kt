@@ -15,7 +15,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 object GatewayErrorSerializer : JsonContentPolymorphicSerializer<GatewayError>(GatewayError::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out GatewayError> {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<GatewayError> {
         return when (element.jsonObject["type"]?.jsonPrimitive?.content) {
             "TransactionNotFoundError" -> TransactionNotFoundError.serializer()
             "InvalidEntityError" -> InvalidEntityError.serializer()

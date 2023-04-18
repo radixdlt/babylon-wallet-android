@@ -1,5 +1,8 @@
 @file:Suppress("CyclomaticComplexMethod")
-@file:OptIn(ExperimentalPermissionsApi::class, ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
+@file:OptIn(
+    ExperimentalPermissionsApi::class, ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class
+)
 
 package com.babylon.wallet.android.presentation.settings.legacyimport
 
@@ -51,6 +54,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
@@ -111,7 +115,10 @@ fun OlympiaImportScreen(
         onToggleSelectAll = viewModel::onToggleSelectAll,
         qrChunkInfo = state.qrChunkInfo,
         onMnemonicAlreadyImported = viewModel::onMnemonicAlreadyImported,
-        isDeviceSecure = state.isDeviceSecure
+        isDeviceSecure = state.isDeviceSecure,
+        onSkipRemainingHardwareAccounts = viewModel::onSkipRemainingHardwareAccounts,
+        accountsLeft = state.hardwareAccountsLeftToImport,
+        waitingForLedgerResponse = state.waitingForLedgerResponse
     )
 }
 
@@ -143,7 +150,10 @@ private fun OlympiaImportContent(
     onToggleSelectAll: () -> Unit,
     qrChunkInfo: ChunkInfo?,
     onMnemonicAlreadyImported: () -> Unit,
-    isDeviceSecure: Boolean
+    isDeviceSecure: Boolean,
+    onSkipRemainingHardwareAccounts: () -> Unit,
+    accountsLeft: Int,
+    waitingForLedgerResponse: Boolean
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -276,7 +286,10 @@ private fun OlympiaImportContent(
                             Modifier
                                 .fillMaxSize()
                                 .padding(RadixTheme.dimensions.paddingDefault),
-                            onHardwareImport = onHardwareImport
+                            onHardwareImport = onHardwareImport,
+                            onSkipRemainingHardwareAccounts = onSkipRemainingHardwareAccounts,
+                            accountsLeft = accountsLeft,
+                            waitingForLedgerResponse = waitingForLedgerResponse
                         )
                     }
                     ImportPage.ImportComplete -> {
@@ -414,22 +427,42 @@ private fun AccountListPage(
 }
 
 @Composable
-private fun HardwareImportScreen(modifier: Modifier = Modifier, onHardwareImport: () -> Unit) {
+private fun HardwareImportScreen(
+    modifier: Modifier = Modifier,
+    onHardwareImport: () -> Unit,
+    accountsLeft: Int,
+    onSkipRemainingHardwareAccounts: () -> Unit,
+    waitingForLedgerResponse: Boolean
+) {
     Box(modifier = modifier) {
-        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Stub for Ledger import",
+                text = pluralStringResource(id = R.plurals.accounts_left_to_import, accountsLeft, accountsLeft),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
+            Spacer(modifier = Modifier.weight(1f))
             RadixPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.continue_button_title),
+                text = stringResource(R.string.send_add_ledger_request),
                 onClick = onHardwareImport,
+                enabled = !waitingForLedgerResponse,
                 throttleClicks = true
             )
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                text = stringResource(R.string.skip_remaining_accounts),
+                onClick = onSkipRemainingHardwareAccounts,
+                enabled = !waitingForLedgerResponse,
+                throttleClicks = true
+            )
+        }
+        if (waitingForLedgerResponse) {
+            FullscreenCircularProgressContent()
         }
     }
 }
@@ -557,7 +590,10 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             onToggleSelectAll = {},
             qrChunkInfo = null,
             onMnemonicAlreadyImported = {},
-            isDeviceSecure = true
+            isDeviceSecure = true,
+            onSkipRemainingHardwareAccounts = {},
+            accountsLeft = 5,
+            waitingForLedgerResponse = false
         )
     }
 }

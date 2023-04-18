@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.transaction
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.ce.dapp.model.WalletErrorType
 
 @Suppress("CyclomaticComplexMethod")
 sealed interface DappRequestFailure {

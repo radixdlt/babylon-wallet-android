@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.dapp
+package com.babylon.wallet.android.data.ce
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import kotlinx.coroutines.flow.Flow

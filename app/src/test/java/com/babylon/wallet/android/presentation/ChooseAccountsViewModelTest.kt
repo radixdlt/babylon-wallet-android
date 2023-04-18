@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.data.ce.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.fakeGetProfileUseCase
 import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
 import com.babylon.wallet.android.mockdata.accountsRequestExact

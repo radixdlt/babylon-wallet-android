@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.data.ce.dapp.DappMessenger
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.domain.common.Result

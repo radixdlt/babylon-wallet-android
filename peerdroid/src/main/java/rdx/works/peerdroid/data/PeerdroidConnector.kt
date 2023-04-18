@@ -196,6 +196,20 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
+//    override suspend fun sendDataChannelMessageToRemoteClients(
+//        message: String
+//    ): Result<Unit> {
+//        return flow {
+//            dataChannelMessagesFromRemoteClients.collect {
+//            }
+//        }
+//        return withContext(ioDispatcher) {
+//            mapOfDataChannels.values.forEach { channel ->
+//                channel.dataChannel.sendMessage(message)
+//            }
+//        }
+//    }
+
     private fun listenForMessagesFromRemoteClients(
         connectionIdHolder: ConnectionIdHolder,
         webSocketClient: WebSocketClient

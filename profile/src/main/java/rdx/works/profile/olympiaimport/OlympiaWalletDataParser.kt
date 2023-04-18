@@ -21,8 +21,7 @@ private const val AccountNameForbiddenCharsReplacement = "_"
 class OlympiaWalletDataParser @Inject constructor() {
 
     fun parseOlympiaWalletAccountData(
-        olympiaWalletDataChunks: Collection<String>,
-        existingAccountHashes: Set<ByteArray> = emptySet()
+        olympiaWalletDataChunks: Collection<String>, existingAccountHashes: Set<ByteArray> = emptySet()
     ): OlympiaWalletData? {
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
@@ -40,8 +39,7 @@ class OlympiaWalletDataParser @Inject constructor() {
                     val publicKey = PublicKey.EcdsaSecp256k1(publicKeyHex)
                     val index = requireNotNull(singleAccountDataChunks[2].toInt())
                     val name = if (singleAccountDataChunks.size == 4) {
-                        singleAccountDataChunks[3]
-                            .replace(EndOfAccountName, "")
+                        singleAccountDataChunks[3].replace(EndOfAccountName, "")
                             .replace(Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"), AccountNameForbiddenCharsReplacement)
                     } else {
                         ""
@@ -71,8 +69,7 @@ class OlympiaWalletDataParser @Inject constructor() {
     }
 
     fun chunkInfo(olympiaWalletDataChunks: Collection<String>): ChunkInfo? {
-        val headerChunks = olympiaWalletDataChunks.firstOrNull()
-            ?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator) ?: return null
+        val headerChunks = olympiaWalletDataChunks.firstOrNull()?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator) ?: return null
         return ChunkInfo(olympiaWalletDataChunks.size, headerChunks[0].toInt())
     }
 
@@ -89,8 +86,8 @@ class OlympiaWalletDataParser @Inject constructor() {
     }
 
     fun verifyPayload(olympiaWalletDataChunks: Collection<String>): Boolean {
-        return olympiaWalletDataChunks.firstOrNull()
-            ?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator)?.getOrNull(0)?.toInt() == olympiaWalletDataChunks.size
+        return olympiaWalletDataChunks.firstOrNull()?.split(HeaderSeparator)?.getOrNull(0)?.split(InnerSeparator)?.getOrNull(0)
+            ?.toInt() == olympiaWalletDataChunks.size
     }
 }
 
@@ -101,14 +98,11 @@ fun Collection<ByteArray>.containsWithEqualityCheck(value: ByteArray): Boolean {
 data class OlympiaWalletData(val mnemonicWordCount: Int, val accountData: List<OlympiaAccountDetails>)
 
 data class PayloadHeader(
-    val payloadCount: Int,
-    val payloadIndex: Int,
-    val mnemonicWordCount: Int
+    val payloadCount: Int, val payloadIndex: Int, val mnemonicWordCount: Int
 )
 
 data class ChunkInfo(
-    val scanned: Int,
-    val total: Int
+    val scanned: Int, val total: Int
 )
 
 data class OlympiaAccountDetails(
@@ -139,5 +133,4 @@ enum class OlympiaAccountType {
     }
 }
 
-var olympiaTestSeedPhrase =
-    "private sight rather cloud lock pelican barrel whisper spy more artwork crucial abandon among grow guilt control wrist memory group churn hen program sauce"
+var olympiaTestSeedPhrase = "bridge easily outer film record undo turtle method knife quarter promote arch"

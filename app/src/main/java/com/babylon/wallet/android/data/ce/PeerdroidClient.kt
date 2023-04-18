@@ -1,8 +1,5 @@
-package com.babylon.wallet.android.data.dapp
+package com.babylon.wallet.android.data.ce
 
-import com.babylon.wallet.android.data.dapp.model.WalletInteraction
-import com.babylon.wallet.android.data.dapp.model.toDomainModel
-import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import com.radixdlt.hex.extensions.toHexString
@@ -92,8 +89,11 @@ class PeerdroidClientImpl @Inject constructor(
     private fun parseIncomingMessage(
         remoteClientId: String,
         messageInJsonString: String
-    ): MessageFromDataChannel.IncomingRequest {
-        val request = walletRequestJson.decodeFromString<WalletInteraction>(messageInJsonString)
-        return request.toDomainModel(dappId = remoteClientId)
+    ): MessageFromDataChannel {
+        val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
+        return when (payload) {
+            is WalletInteraction -> payload.toDomainModel(dappId = remoteClientId)
+            else -> (payload as LedgerInteractionResponse).toDomainModel()
+        }
     }
 }

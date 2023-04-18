@@ -1,11 +1,18 @@
-package com.babylon.wallet.android.data.dapp.model
+package com.babylon.wallet.android.data.ce
 
+import com.babylon.wallet.android.data.ce.dapp.model.AuthLoginRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.AuthRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.AuthUsePersonaRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.OneTimeAccountsRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.OneTimePersonaDataRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.OngoingAccountsRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.OngoingPersonaDataRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.ResetRequestItem
+import com.babylon.wallet.android.data.ce.dapp.model.SendTransactionItem
+import com.babylon.wallet.android.data.ce.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
 
 @Serializable
 data class WalletInteraction(
@@ -15,7 +22,7 @@ data class WalletInteraction(
     val items: WalletInteractionItems,
     @SerialName("metadata")
     val metadata: Metadata,
-) {
+) : ConnectorExtensionInteraction {
 
     @Serializable
     data class Metadata(
@@ -64,46 +71,6 @@ data class WalletAuthorizedRequestItems(
     @SerialName("reset")
     val reset: ResetRequestItem? = null
 ) : WalletInteractionItems()
-
-private val walletRequestSerializersModule = SerializersModule {
-    polymorphic(WalletInteractionResponseItems::class) {
-        subclass(WalletUnauthorizedRequestResponseItems::class, WalletUnauthorizedRequestResponseItems.serializer())
-        subclass(WalletAuthorizedRequestResponseItems::class, WalletAuthorizedRequestResponseItems.serializer())
-        subclass(WalletTransactionResponseItems::class, WalletTransactionResponseItems.serializer())
-    }
-    polymorphic(AuthRequestItem::class) {
-        subclass(AuthUsePersonaRequestItem::class, AuthUsePersonaRequestItem.serializer())
-        subclass(AuthLoginRequestItem::class, AuthLoginRequestItem.serializer())
-    }
-    polymorphic(AuthRequestResponseItem::class) {
-        subclass(
-            AuthLoginWithChallengeRequestResponseItem::class,
-            AuthLoginWithChallengeRequestResponseItem.serializer()
-        )
-        subclass(
-            AuthLoginWithoutChallengeRequestResponseItem::class,
-            AuthLoginWithoutChallengeRequestResponseItem.serializer()
-        )
-        subclass(
-            AuthUsePersonaRequestResponseItem::class,
-            AuthUsePersonaRequestResponseItem.serializer()
-        )
-    }
-    polymorphic(WalletInteractionItems::class) {
-        subclass(WalletUnauthorizedRequestItems::class, WalletUnauthorizedRequestItems.serializer())
-        subclass(WalletAuthorizedRequestItems::class, WalletAuthorizedRequestItems.serializer())
-        subclass(WalletTransactionItems::class, WalletTransactionItems.serializer())
-    }
-    polymorphic(WalletInteractionResponse::class) {
-        subclass(WalletInteractionSuccessResponse::class, WalletInteractionSuccessResponse.serializer())
-        subclass(WalletInteractionFailureResponse::class, WalletInteractionFailureResponse.serializer())
-    }
-}
-
-val walletRequestJson = Json {
-    serializersModule = walletRequestSerializersModule
-    classDiscriminator = "discriminator"
-}
 
 fun WalletInteraction.toDomainModel(dappId: String): MessageFromDataChannel.IncomingRequest {
     val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(

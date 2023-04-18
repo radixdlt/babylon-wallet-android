@@ -1,6 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.ce.PeerdroidClient
+import com.babylon.wallet.android.data.ce.ledger.LedgerMessenger
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -17,6 +21,8 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
@@ -34,11 +40,15 @@ import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.OlympiaWalletData
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
+import timber.log.Timber
+import java.util.Collections
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 @HiltViewModel
 class OlympiaImportViewModel @Inject constructor(
+    private val peerdroidClient: PeerdroidClient,
+    private val ledgerMessenger: LedgerMessenger,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
     private val checkOlympiaFactorSourceForAccountsExistUseCase: CheckOlympiaFactorSourceForAccountsExistUseCase,
@@ -53,6 +63,34 @@ class OlympiaImportViewModel @Inject constructor(
     private var olympiaWalletData: OlympiaWalletData? = null
     private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList)
     private var existingFactorSourceId: FactorSource.ID? = null
+    private var validatedHardwareAccounts = mutableListOf<OlympiaAccountDetails>()
+    private var sentRequestIds = Collections.synchronizedList(mutableListOf<String>())
+
+    init {
+        viewModelScope.launch {
+            peerdroidClient
+                .listenForIncomingRequests()
+                .filterIsInstance<MessageFromDataChannel.LedgerResponse>()
+                .cancellable()
+                .collect { ledgerResponse ->
+                    Timber.d("📯 wallet received incoming ledger response, interactionId: ${ledgerResponse.id}")
+                    processIncomingLedgerResponse(ledgerResponse)
+                }
+        }
+    }
+
+    private fun processIncomingLedgerResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse) {
+        when (ledgerResponse) {
+            is MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse -> {
+                Timber.d("Got ledger response")
+            }
+            is MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse -> TODO()
+            is MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse -> TODO()
+            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> TODO()
+            is MessageFromDataChannel.LedgerResponse.SignChallengeResponse -> TODO()
+            is MessageFromDataChannel.LedgerResponse.SignTransactionResponse -> TODO()
+        }
+    }
 
     fun onQrCodeScanned(qrData: String) {
         if (!olympiaWalletDataParser.isProperQrPayload(qrData)) {
@@ -230,6 +268,19 @@ class OlympiaImportViewModel @Inject constructor(
 
     fun onHardwareImport() {
         viewModelScope.launch {
+            _state.update { it.copy(waitingForLedgerResponse = true) }
+
+            when (val result = ledgerMessenger.sendDeviceInfoRequest()) {
+                is Result.Error -> {
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(result.exception), waitingForLedgerResponse = false) }
+                }
+                is Result.Success -> {}
+            }
+        }
+    }
+
+    fun onSkipRemainingHardwareAccounts() {
+        viewModelScope.launch {
             internalImportSoftwareAccounts()
         }
     }
@@ -252,6 +303,13 @@ class OlympiaImportViewModel @Inject constructor(
     private fun softwareAccountsToMigrate(): List<OlympiaAccountDetails> {
         val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
             it.selected && it.data.type == OlympiaAccountType.Software && !it.data.alreadyImported
+        }.map { it.data }
+        return softwareAccountsToMigrate
+    }
+
+    private fun hardwareAccountsToMigrate(): List<OlympiaAccountDetails> {
+        val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
+            it.selected && it.data.type == OlympiaAccountType.Hardware && !it.data.alreadyImported
         }.map { it.data }
         return softwareAccountsToMigrate
     }
@@ -305,5 +363,7 @@ data class OlympiaImportUiState(
     val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val hideBack: Boolean = false,
     val qrChunkInfo: ChunkInfo? = null,
-    val isDeviceSecure: Boolean = true
+    val isDeviceSecure: Boolean = true,
+    val hardwareAccountsLeftToImport: Int = 0,
+    val waitingForLedgerResponse: Boolean = false
 ) : UiState

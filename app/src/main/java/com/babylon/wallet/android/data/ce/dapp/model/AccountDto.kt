@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.dapp.model
+package com.babylon.wallet.android.data.ce.dapp.model
 
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.serialization.SerialName

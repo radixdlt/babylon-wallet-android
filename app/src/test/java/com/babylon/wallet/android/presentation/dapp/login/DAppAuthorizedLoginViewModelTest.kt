@@ -4,8 +4,8 @@ package com.babylon.wallet.android.presentation.dapp.login
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import com.babylon.wallet.android.data.ce.IncomingRequestRepository
+import com.babylon.wallet.android.data.ce.dapp.model.PersonaDataField
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
