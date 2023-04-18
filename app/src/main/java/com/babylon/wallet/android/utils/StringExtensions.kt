@@ -6,7 +6,6 @@ import android.util.Patterns
 import android.webkit.URLUtil
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import okio.ByteString.Companion.decodeBase64
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.DecimalFormat
@@ -21,7 +20,6 @@ fun String.truncatedHash(): String {
 }
 
 fun String.setSpanForPlaceholder(placeholder: String, spanStyle: SpanStyle): AnnotatedString {
-    decodeBase64()
     val index = indexOf(placeholder)
     if (index == -1) return AnnotatedString(this)
     val spans = listOf(

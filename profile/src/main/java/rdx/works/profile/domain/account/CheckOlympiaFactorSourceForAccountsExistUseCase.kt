@@ -13,7 +13,7 @@ import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import javax.inject.Inject
 
-class CheckIfFactorSourceForAccountsExistUseCase @Inject constructor(
+class CheckOlympiaFactorSourceForAccountsExistUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher

@@ -25,7 +25,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.validatePublicKeysOf
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.account.CheckIfFactorSourceForAccountsExistUseCase
+import rdx.works.profile.domain.account.CheckOlympiaFactorSourceForAccountsExistUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.domain.currentNetworkAccountHashes
 import rdx.works.profile.olympiaimport.ChunkInfo
@@ -41,7 +41,7 @@ import javax.inject.Inject
 class OlympiaImportViewModel @Inject constructor(
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
-    private val checkIfFactorSourceForAccountsExistUseCase: CheckIfFactorSourceForAccountsExistUseCase,
+    private val checkOlympiaFactorSourceForAccountsExistUseCase: CheckOlympiaFactorSourceForAccountsExistUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val olympiaWalletDataParser: OlympiaWalletDataParser
@@ -237,7 +237,7 @@ class OlympiaImportViewModel @Inject constructor(
     fun onMnemonicAlreadyImported() {
         val softwareAccountsToMigrate = softwareAccountsToMigrate()
         viewModelScope.launch {
-            val factorSourceId = checkIfFactorSourceForAccountsExistUseCase(softwareAccountsToMigrate)
+            val factorSourceId = checkOlympiaFactorSourceForAccountsExistUseCase(softwareAccountsToMigrate)
             if (factorSourceId == null) {
                 _state.update { state ->
                     state.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoMnemonicForAccounts))
