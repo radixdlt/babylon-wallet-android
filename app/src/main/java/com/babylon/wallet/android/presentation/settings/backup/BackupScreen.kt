@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.backup
 
-import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -84,23 +83,8 @@ private fun BackupScreenContent(
             modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val subtitle = when (val backupState = state.backupState) {
-                is BackupState.Closed -> {
-                    "Back up is turned off"
-                }
-                is BackupState.Open -> {
-                    val lastBackupRelativeTime = remember(backupState) { backupState.lastBackupTimeRelative }
-
-                    if (lastBackupRelativeTime != null) {
-                        "Last Backed up: $lastBackupRelativeTime"
-                    } else {
-                        "Not backed up yet"
-                    }
-                }
-            }
-
             Text(
-                text = subtitle,
+                text = backupMessage(state = state.backupState),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.defaultText
             )
@@ -115,9 +99,25 @@ private fun BackupScreenContent(
         }
 
         RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "System Backup Settings",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = stringResource(id = R.string.open_system_backup_settings),
             onClick = onSystemBackupSettingsClick
         )
+    }
+}
+
+@Composable
+fun backupMessage(state: BackupState) = when (state) {
+    is BackupState.Closed -> stringResource(id = R.string.backup_disabled)
+    is BackupState.Open -> {
+        val lastBackupRelativeTime = remember(state) { state.lastBackupTimeRelative }
+
+        if (lastBackupRelativeTime != null) {
+            stringResource(id = R.string.last_backed_up, lastBackupRelativeTime)
+        } else {
+            stringResource(id = R.string.no_last_backup)
+        }
     }
 }

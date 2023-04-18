@@ -19,7 +19,7 @@ sealed interface SettingsItem {
         object DeleteAll : TopLevelSettings
         object Personas : TopLevelSettings
         data class Backups(
-            val state: BackupState
+            val backupState: BackupState
         ) : TopLevelSettings
 
         @StringRes

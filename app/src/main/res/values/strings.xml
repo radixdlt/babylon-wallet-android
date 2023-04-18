@@ -193,6 +193,10 @@
     <string name="backups">Backups</string>
     <string name="backup_wallet_data">Backup Wallet Data</string>
     <string name="backup_wallet_data_message">Warning: If disabled you might lose access to accounts/personas.</string>
+    <string name="backup_disabled">Back up is turned off</string>
+    <string name="last_backed_up">Last Backed up: %1$s</string>
+    <string name="no_last_backup">Not Backed up yet</string>
+    <string name="open_system_backup_settings">Open System Backup Settings</string>
     <string name="customize_the_app_appearance">Customize the app appearance</string>
     <string name="warning_disables_website">Warning: Disables website validity checks</string>
     <string name="remove_connector">Remove Connection</string>

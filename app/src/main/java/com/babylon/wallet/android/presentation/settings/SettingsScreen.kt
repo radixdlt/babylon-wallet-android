@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -35,7 +33,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.Orange1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import rdx.works.profile.data.model.BackupState
+import com.babylon.wallet.android.presentation.settings.backup.backupMessage
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -216,28 +214,13 @@ private fun BackupSettingsItem(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val subtitle = when (val backupState = backupSettingsItem.state) {
-                    is BackupState.Closed -> {
-                        "Back up is turned off"
-                    }
-                    is BackupState.Open -> {
-                        val lastBackupRelativeTime = remember(backupState) { backupState.lastBackupTimeRelative }
-
-                        if (lastBackupRelativeTime != null) {
-                            "Last Backed up: $lastBackupRelativeTime"
-                        } else {
-                            "Not backed up yet"
-                        }
-                    }
-                }
-
                 Text(
-                    text = subtitle,
+                    text = backupMessage(state = backupSettingsItem.backupState),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
                 )
 
-                if (backupSettingsItem.state.isWarningVisible) {
+                if (backupSettingsItem.backupState.isWarningVisible) {
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
                         contentDescription = null,
