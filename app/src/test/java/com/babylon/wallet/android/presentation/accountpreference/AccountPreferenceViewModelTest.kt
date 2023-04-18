@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.accountpreference
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import io.mockk.Runs
@@ -22,7 +22,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class AccountPreferenceViewModelTest : BaseViewModelTest<AccountPreferenceViewModel>() {
+internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPreferenceViewModel>() {
 
     private val getFreeXrdUseCase = mockk<GetFreeXrdUseCase>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()

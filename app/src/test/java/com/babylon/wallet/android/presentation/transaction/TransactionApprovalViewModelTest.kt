@@ -16,7 +16,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextResponse
@@ -40,7 +40,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class TransactionApprovalViewModelTest : BaseViewModelTest<TransactionApprovalViewModel>() {
+internal class TransactionApprovalViewModelTest : StateViewModelTest<TransactionApprovalViewModel>() {
 
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()

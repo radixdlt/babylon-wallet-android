@@ -12,7 +12,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,14 +33,26 @@ fun RadixPrimaryButton(
     onClick: () -> Unit,
     enabled: Boolean = true,
     icon: (@Composable () -> Unit)? = null,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    throttleClicks: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    var lastClickMs by remember { mutableStateOf(0L) }
 
     Button(
         modifier = modifier,
-        onClick = onClick,
+        onClick = {
+            if (throttleClicks) {
+                val now = System.currentTimeMillis()
+                if (now - lastClickMs > 500) {
+                    onClick()
+                    lastClickMs = now
+                }
+            } else {
+                onClick()
+            }
+        },
         shape = RadixTheme.shapes.roundedRectSmall,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(

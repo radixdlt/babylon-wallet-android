@@ -34,6 +34,7 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.Gateways,
         SettingsItem.TopLevelSettings.AuthorizedDapps,
         SettingsItem.TopLevelSettings.Personas,
+        SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
         SettingsItem.TopLevelSettings.AppSettings,
         SettingsItem.TopLevelSettings.DeleteAll
     )

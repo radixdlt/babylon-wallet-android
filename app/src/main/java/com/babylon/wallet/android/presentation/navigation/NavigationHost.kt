@@ -27,14 +27,13 @@ import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCom
 import com.babylon.wallet.android.presentation.dapp.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
-import com.babylon.wallet.android.presentation.navigation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -68,9 +67,9 @@ fun NavigationHost(
                 onMenuClick = {
                     navController.navigate(Screen.SettingsAllDestination.route)
                 },
-                onAccountClick = { accountId, accountName ->
+                onAccountClick = { accountId ->
                     navController.navigate(
-                        Screen.AccountDestination.routeWithArgs(accountId, accountName)
+                        Screen.AccountDestination.routeWithArgs(accountId)
                     )
                 },
                 onAccountCreationClick = {
@@ -85,10 +84,9 @@ fun NavigationHost(
             )
         }
         composable(
-            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}/{$ARG_ACCOUNT_NAME}",
+            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
             arguments = listOf(
-                navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
-                navArgument(ARG_ACCOUNT_NAME) { type = NavType.StringType },
+                navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType }
             ),
             enterTransition = {
                 slideIntoContainer(AnimatedContentScope.SlideDirection.Left)

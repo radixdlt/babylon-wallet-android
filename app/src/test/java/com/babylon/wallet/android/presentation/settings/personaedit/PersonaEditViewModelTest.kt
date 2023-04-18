@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.isValidEmail
 import io.mockk.Runs
@@ -29,7 +29,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.persona.UpdatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class PersonaEditViewModelTest : BaseViewModelTest<PersonaEditViewModel>() {
+internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewModel>() {
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()

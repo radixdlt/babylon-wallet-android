@@ -27,13 +27,16 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 }
 
 enum class InfoMessageType {
-    GatewayUpdated, GatewayInvalid;
+    GatewayUpdated, GatewayInvalid, InvalidMnemonic, InvalidPayload, NoMnemonicForAccounts;
 
     @StringRes
     fun userFriendlyDescriptionRes(): Int {
         return when (this) {
             GatewayUpdated -> R.string.gateway_updated
             GatewayInvalid -> R.string.gateway_invalid
+            InvalidMnemonic -> R.string.invalid_mnemonic
+            InvalidPayload -> R.string.invalid_payload
+            NoMnemonicForAccounts -> R.string.no_mnemonic_for_accounts
         }
     }
 }

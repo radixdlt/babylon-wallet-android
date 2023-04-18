@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.appsettings
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem.AppSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class AppSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
-) : BaseViewModel<SettingsUiState>() {
+) : StateViewModel<SettingsUiState>() {
 
     override fun initialState(): SettingsUiState = SettingsUiState.default
 

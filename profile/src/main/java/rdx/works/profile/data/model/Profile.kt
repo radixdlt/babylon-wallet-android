@@ -132,7 +132,6 @@ data class Profile(
                     val extendedKey = mnemonicWithPassphrase.deriveExtendedKey(
                         factorInstance = factorInstance
                     )
-
                     if (
                         extendedKey.keyPair
                             .getCompressedPublicKey()
@@ -160,6 +159,11 @@ data class Profile(
      * NOTE that this factor source will always be used when creating the first account.
      */
     val babylonDeviceFactorSource: FactorSource
+        get() = factorSources.first {
+            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(CURVE_25519)
+        }
+
+    val olympiaDeviceFactorSource: FactorSource
         get() = factorSources.first {
             it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(CURVE_25519)
         }

@@ -1,0 +1,139 @@
+package rdx.works.profile.domain.account
+
+import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.bip39.toSeed
+import com.radixdlt.crypto.ec.EllipticCurveType
+import com.radixdlt.crypto.getCompressedPublicKey
+import com.radixdlt.slip10.toKey
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.crypto.PublicKey
+import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyRequest
+import com.radixdlt.toolkit.models.request.OlympiaNetwork
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.slot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
+import org.junit.Test
+import rdx.works.core.toHexString
+import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.data.model.apppreferences.AppPreferences
+import rdx.works.profile.data.model.apppreferences.Display
+import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.derivation.LegacyOlympiaBIP44LikeDerivationPath
+import rdx.works.profile.olympiaimport.OlympiaAccountDetails
+import rdx.works.profile.olympiaimport.OlympiaAccountType
+import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
+
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class MigrateOlympiaAccountsUseCaseTest {
+
+    private val profileRepository = mockk<ProfileRepository>()
+    private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val testDispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+
+    @Test
+    fun `migrate and add accounts to profile`() = testScope.runTest {
+        val olympiaMnemonic = MnemonicWithPassphrase(
+            mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+            bip39Passphrase = ""
+        )
+
+        val network = Radix.Gateway.hammunet
+        val profile = Profile(
+            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            appPreferences = AppPreferences(
+                display = Display.default,
+                security = Security.default,
+                gateways = Gateways(network.url, listOf(network)),
+                p2pLinks = listOf(
+                    P2PLink.init(
+                        connectionPassword = "My password",
+                        displayName = "Browser name test"
+                    )
+                )
+            ),
+            factorSources = listOf(FactorSource.olympia(mnemonicWithPassphrase = olympiaMnemonic)),
+            networks = listOf(
+                Network(
+                    accounts = listOf(
+                        Network.Account(
+                            address = "fj3489fj348f",
+                            appearanceID = 123,
+                            displayName = "my account",
+                            networkID = network.network.networkId().value,
+                            securityState = SecurityState.Unsecured(
+                                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                    genesisFactorInstance = FactorInstance(
+                                        derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                        publicKey = FactorInstance.PublicKey.curveSecp256k1PublicKey("")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    authorizedDapps = emptyList(),
+                    networkID = network.network.networkId().value,
+                    personas = emptyList()
+                )
+            ),
+            version = 1
+        )
+
+        coEvery { mnemonicRepository.readMnemonic(any()) } returns olympiaMnemonic
+        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+        coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
+        coEvery { profileRepository.saveProfile(any()) } just Runs
+
+        val usecase = MigrateOlympiaAccountsUseCase(mnemonicRepository, profileRepository, testDispatcher)
+        val capturedProfile = slot<Profile>()
+        usecase(getOlympiaTestAccounts(), FactorSource.ID("1"))
+        coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
+        assert(capturedProfile.captured.currentNetwork.accounts.size == 12)
+    }
+
+    private fun getOlympiaTestAccounts(): List<OlympiaAccountDetails> {
+        val words = MnemonicWords(olympiaTestSeedPhrase)
+        val seed = words.toSeed(passphrase = "")
+        val accounts = (0..10).map { index ->
+            val derivationPath = LegacyOlympiaBIP44LikeDerivationPath(index)
+            val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
+            val address = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
+                DeriveOlympiaAddressFromPublicKeyRequest(
+                    OlympiaNetwork.Mainnet,
+                    PublicKey.EcdsaSecp256k1(publicKey)
+                )
+            ).getOrThrow().olympiaAccountAddress
+            OlympiaAccountDetails(
+                index = index,
+                type = if (index % 2 == 0) OlympiaAccountType.Software else OlympiaAccountType.Hardware,
+                address = address,
+                publicKey = publicKey,
+                accountName = "Olympia $index",
+                derivationPath = derivationPath
+            )
+        }
+        return accounts
+    }
+}

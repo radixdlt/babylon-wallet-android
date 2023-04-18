@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.decodeUtf8
@@ -25,7 +25,7 @@ class CreateAccountViewModel @Inject constructor(
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val createAccountUseCase: CreateAccountUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-) : BaseViewModel<CreateAccountViewModel.CreateAccountState>(),
+) : StateViewModel<CreateAccountViewModel.CreateAccountState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)

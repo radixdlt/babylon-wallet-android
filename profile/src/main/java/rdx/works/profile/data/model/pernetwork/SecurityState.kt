@@ -1,6 +1,5 @@
 package rdx.works.profile.data.model.pernetwork
 
-import com.radixdlt.hex.extensions.toHexString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -34,7 +33,7 @@ sealed class SecurityState {
     companion object {
 
         fun unsecured(
-            compressedPublicKey: ByteArray,
+            publicKey: FactorInstance.PublicKey,
             derivationPath: DerivationPath,
             factorSourceId: FactorSource.ID
         ): Unsecured = Unsecured(
@@ -42,9 +41,7 @@ sealed class SecurityState {
                 genesisFactorInstance = FactorInstance(
                     derivationPath = derivationPath,
                     factorSourceId = factorSourceId,
-                    publicKey = FactorInstance.PublicKey.curve25519PublicKey(
-                        compressedPublicKey = compressedPublicKey.toHexString()
-                    )
+                    publicKey = publicKey
                 )
             )
         )

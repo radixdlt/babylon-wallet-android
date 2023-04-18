@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.connector
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +29,7 @@ class SettingsConnectorViewModel @Inject constructor(
     private val addP2PLinkUseCase: AddP2PLinkUseCase,
     private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
     savedStateHandle: SavedStateHandle,
-) : BaseViewModel<SettingsConnectorUiState>() {
+) : StateViewModel<SettingsConnectorUiState>() {
 
     private var currentConnectionPassword: String = ""
 
@@ -94,11 +94,10 @@ class SettingsConnectorViewModel @Inject constructor(
     }
 
     fun onConnectorDisplayNameChanged(name: String) {
-        val displayNameChanged = name.trim()
         _state.update {
             it.copy(
-                editedConnectorDisplayName = displayNameChanged,
-                buttonEnabled = displayNameChanged.isNotEmpty()
+                editedConnectorDisplayName = name,
+                buttonEnabled = name.trim().isNotEmpty()
             )
         }
     }

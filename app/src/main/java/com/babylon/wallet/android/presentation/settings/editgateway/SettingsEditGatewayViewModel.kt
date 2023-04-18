@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
@@ -34,7 +34,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
     private val addGatewayUseCase: AddGatewayUseCase,
     private val deleteGatewayUseCase: DeleteGatewayUseCase,
     private val networkInfoRepository: NetworkInfoRepository,
-) : BaseViewModel<SettingsUiState>(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<SettingsUiState>(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): SettingsUiState = SettingsUiState()
 

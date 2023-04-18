@@ -25,7 +25,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
-class CreateAccountConfirmationViewModelTest : BaseViewModelTest<CreateAccountConfirmationViewModel>() {
+class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountConfirmationViewModel>() {
 
     private val savedStateHandle = mock(SavedStateHandle::class.java)
     private val getProfileUseCase = mock(GetProfileUseCase::class.java)

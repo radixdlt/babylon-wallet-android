@@ -9,10 +9,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
+import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
 import rdx.works.profile.data.repository.AccountDerivationPath
 import rdx.works.profile.data.repository.IdentityDerivationPath
@@ -132,7 +134,7 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
-                    compressedPublicKey = compressedPublicKey,
+                    publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = DerivationPath.forAccount(
                         derivationPath = derivationPath
                     ),
@@ -220,7 +222,7 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
-                    compressedPublicKey = compressedPublicKey,
+                    publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = DerivationPath.forIdentity(
                         derivationPath = derivationPath
                     ),
@@ -442,23 +444,20 @@ data class Network(
 fun Profile.addAccount(
     account: Network.Account,
     withFactorSourceId: FactorSource.ID,
-    onNetwork: NetworkId
+    onNetwork: NetworkId,
+    shouldUpdateFactorSourceNextDerivationIndex: Boolean = true
 ): Profile {
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
     val newNetworks = if (networkExist) {
-        this.networks.map { network ->
-            if (network.networkID == onNetwork.value) {
-                val updatedAccounts = network.accounts.toMutableList()
-                updatedAccounts.add(account)
-                Network(
-                    accounts = updatedAccounts.toList(),
-                    authorizedDapps = network.authorizedDapps,
-                    networkID = network.networkID,
-                    personas = network.personas
-                )
-            } else {
-                network
-            }
+        this.networks.mapWhen(predicate = { network -> network.networkID == onNetwork.value }) { network ->
+            val updatedAccounts = network.accounts.toMutableList()
+            updatedAccounts.add(account)
+            Network(
+                accounts = updatedAccounts.toList(),
+                authorizedDapps = network.authorizedDapps,
+                networkID = network.networkID,
+                personas = network.personas
+            )
         }
     } else {
         this.networks + Network(
@@ -468,13 +467,16 @@ fun Profile.addAccount(
             personas = listOf()
         )
     }
-
-    return copy(
+    var updatedProfile = copy(
         networks = newNetworks,
-    ).incrementFactorSourceNextAccountIndex(
-        forNetwork = onNetwork,
-        factorSourceId = withFactorSourceId
     )
+    if (shouldUpdateFactorSourceNextDerivationIndex) {
+        updatedProfile = updatedProfile.incrementFactorSourceNextAccountIndex(
+            forNetwork = onNetwork,
+            factorSourceId = withFactorSourceId
+        )
+    }
+    return updatedProfile
 }
 
 fun Profile.incrementFactorSourceNextAccountIndex(
@@ -482,17 +484,15 @@ fun Profile.incrementFactorSourceNextAccountIndex(
     factorSourceId: FactorSource.ID
 ): Profile {
     return copy(
-        factorSources = factorSources.map { factorSource ->
-            if (factorSource.id == factorSourceId) {
-                val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
-                    ?: throw WasNotDeviceFactorSource()
+        factorSources = factorSources.mapWhen(predicate = { factorSource ->
+            factorSource.id == factorSourceId
+        }) { factorSource ->
+            val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
+                ?: throw WasNotDeviceFactorSource()
 
-                factorSource.copy(
-                    storage = deviceStorage.incrementAccount(forNetworkId = forNetwork)
-                )
-            } else {
-                factorSource
-            }
+            factorSource.copy(
+                storage = deviceStorage.incrementAccount(forNetworkId = forNetwork)
+            )
         }
     )
 }

@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.encodeToString
@@ -20,7 +20,7 @@ import javax.inject.Inject
 class PersonaDataOngoingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase
-) : BaseViewModel<PersonaDataOngoingUiState>(), OneOffEventHandler<PersonaDataOngoingEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<PersonaDataOngoingUiState>(), OneOffEventHandler<PersonaDataOngoingEvent> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDataOngoingPermissionArgs(savedStateHandle)
 

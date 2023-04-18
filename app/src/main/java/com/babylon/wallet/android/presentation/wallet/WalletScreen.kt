@@ -56,7 +56,7 @@ fun WalletScreen(
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAccountClick: (accountId: String, accountName: String) -> Unit = { _, _ -> },
+    onAccountClick: (accountId: String) -> Unit = { },
     onAccountCreationClick: () -> Unit,
     mainUiState: StateFlow<MainUiState>,
     onNavigateToCreateAccount: () -> Unit,
@@ -82,7 +82,7 @@ fun WalletScreen(
             LaunchedEffect(Unit) {
                 viewModel.oneOffEvent.collect {
                     when (it) {
-                        is WalletEvent.AccountClick -> onAccountClick(it.address, it.nameEncoded)
+                        is WalletEvent.AccountClick -> onAccountClick(it.address)
                     }
                 }
             }
@@ -108,7 +108,7 @@ fun WalletScreen(
 @Composable
 private fun WalletScreenContent(
     onMenuClick: () -> Unit,
-    onAccountClick: (accountId: String, accountName: String) -> Unit,
+    onAccountClick: (accountId: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
@@ -170,7 +170,7 @@ private fun WalletScreenContent(
 @Suppress("UnstableCollections")
 @Composable
 private fun WalletAccountList(
-    onAccountClick: (accountId: String, accountName: String) -> Unit,
+    onAccountClick: (accountId: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
@@ -199,7 +199,7 @@ private fun WalletAccountList(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
-                        onAccountClick(account.address, account.displayName)
+                        onAccountClick(account.address)
                     }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -225,7 +225,7 @@ fun WalletContentPreview() {
         with(SampleDataProvider()) {
             WalletScreenContent(
                 onMenuClick = {},
-                onAccountClick = { _, _ -> },
+                onAccountClick = {},
                 onAccountCreationClick = { },
                 isRefreshing = false,
                 onRefresh = { },

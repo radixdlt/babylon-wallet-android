@@ -5,7 +5,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,7 +19,7 @@ import org.junit.Test
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class PersonaDetailViewModelTest : BaseViewModelTest<PersonaDetailViewModel>() {
+internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailViewModel>() {
 
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
     private val getProfileUseCase = mockk<GetProfileUseCase>()

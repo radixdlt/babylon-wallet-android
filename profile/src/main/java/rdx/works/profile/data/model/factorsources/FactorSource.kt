@@ -9,7 +9,7 @@ import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.BIP_44_OLYMPIA
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.CAP_26
 import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.babylon
-import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.olympiaBackwardsCompatible
+import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.olympia
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 import rdx.works.profile.data.model.pernetwork.Network
@@ -133,9 +133,9 @@ data class FactorSource(
                 supportedDerivationPathSchemes = linkedSetOf(CAP_26)
             )
 
-            val olympiaBackwardsCompatible = Parameters(
-                supportedCurves = linkedSetOf(CURVE_25519, SECP_256K1),
-                supportedDerivationPathSchemes = linkedSetOf(CAP_26, BIP_44_OLYMPIA)
+            val olympia = Parameters(
+                supportedCurves = linkedSetOf(SECP_256K1),
+                supportedDerivationPathSchemes = linkedSetOf(BIP_44_OLYMPIA)
             )
         }
     }
@@ -229,7 +229,7 @@ data class FactorSource(
             kind = FactorSourceKind.DEVICE,
             id = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase),
             hint = hint,
-            parameters = if (olympiaCompatible) olympiaBackwardsCompatible else babylon,
+            parameters = if (olympiaCompatible) olympia else babylon,
             storage = Storage.Device(nextDerivationIndicesPerNetwork = listOf()),
             addedOn = Instant.now(),
             lastUsedOn = Instant.now()

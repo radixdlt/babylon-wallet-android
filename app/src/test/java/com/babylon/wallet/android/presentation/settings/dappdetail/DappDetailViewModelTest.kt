@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,7 +19,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class DappDetailViewModelTest : BaseViewModelTest<DappDetailViewModel>() {
+internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>() {
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
