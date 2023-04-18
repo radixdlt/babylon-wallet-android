@@ -6,7 +6,7 @@ import okio.ByteString.Companion.decodeBase64
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.olympiaimport.parseOlympiaWalletAccountData
+import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import java.io.File
 
 internal class OlympiaWalletExportFormatTest {
@@ -14,6 +14,8 @@ internal class OlympiaWalletExportFormatTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     private lateinit var testVectors: List<TestVector>
+
+    private val parser = OlympiaWalletDataParser()
 
     @Before
     fun setUp() {
@@ -25,7 +27,7 @@ internal class OlympiaWalletExportFormatTest {
     fun `run tests for test vector`() {
 
         testVectors.forEach { testVector ->
-            val parsedOlympiaAccountData = testVector.payloads.parseOlympiaWalletAccountData()
+            val parsedOlympiaAccountData = parser.parseOlympiaWalletAccountData(testVector.payloads)
             Assert.assertNotNull(parsedOlympiaAccountData)
             assert(testVector.olympiaWallet.mnemonic.split(" ").size == parsedOlympiaAccountData!!.mnemonicWordCount)
             parsedOlympiaAccountData.accountData.forEach { olympiaAccountDetail ->
@@ -39,7 +41,7 @@ internal class OlympiaWalletExportFormatTest {
 
     @Test
     fun `incomplete payload parsing return null`() {
-        val parsedData = testVectors[1].payloads.subList(0, 1).parseOlympiaWalletAccountData()
+        val parsedData = parser.parseOlympiaWalletAccountData(testVectors[1].payloads.subList(0, 1))
         Assert.assertNull(parsedData)
     }
 

@@ -27,9 +27,7 @@ fun CameraPreview(
         onQrCodeDetected = onQrCodeDetected,
         isVisible = isVisible
     )
-    if (disableBack) {
-        BackHandler(enabled = true) { }
-    }
+    BackHandler(enabled = disableBack) { }
 }
 
 @Composable
