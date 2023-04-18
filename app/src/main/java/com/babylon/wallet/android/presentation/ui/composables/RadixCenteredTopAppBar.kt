@@ -56,6 +56,7 @@ fun RadixCenteredTopAppBar(
                         onClick = onBackClick
                     )
                 }
+                BackIconType.None -> {}
             }
         },
         title = {
@@ -81,5 +82,5 @@ fun RadixCenteredTopAppBarPreview() {
 }
 
 enum class BackIconType {
-    Back, Close, Cancel
+    Back, Close, Cancel, None
 }

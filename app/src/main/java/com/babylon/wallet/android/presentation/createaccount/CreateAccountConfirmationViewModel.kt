@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class CreateAccountConfirmationViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle,
-) : BaseViewModel<CreateAccountConfirmationViewModel.AccountConfirmationUiState>(),
+) : StateViewModel<CreateAccountConfirmationViewModel.AccountConfirmationUiState>(),
     OneOffEventHandler<CreateAccountConfirmationEvent> by OneOffEventHandlerImpl() {
 
     internal val args = CreateAccountConfirmationArgs(savedStateHandle)

@@ -4,11 +4,12 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.AssetUiModel
@@ -17,10 +18,8 @@ import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toNftUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_NAME
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -28,25 +27,33 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
-) : BaseViewModel<AccountUiState>() {
+) : StateViewModel<AccountUiState>() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
-    private val accountName: String = savedStateHandle.get<String>(ARG_ACCOUNT_NAME).orEmpty()
 
     override fun initialState(): AccountUiState = AccountUiState(
-        accountAddressFull = accountId,
-        accountName = accountName.decodeUtf8()
+        accountAddressFull = accountId
     )
 
     init {
+        viewModelScope.launch {
+            getProfileUseCase.accountOnCurrentNetwork(accountId)?.let { account ->
+                _state.update { state ->
+                    state.copy(accountName = account.displayName)
+                }
+            }
+        }
         loadAccountData(isRefreshing = false)
         viewModelScope.launch {
             appEventBus.events.filter { event ->
@@ -89,7 +96,7 @@ class AccountViewModel @Inject constructor(
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
                             nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList(),
-                            gradientIndex = accountResource.appearanceID
+                            gradientIndex = accountResource.appearanceID % AccountGradientList.size
                         )
                     }
                 }

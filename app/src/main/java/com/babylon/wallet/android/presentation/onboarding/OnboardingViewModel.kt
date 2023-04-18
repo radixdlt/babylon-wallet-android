@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +14,7 @@ import javax.inject.Inject
 class OnboardingViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-) : BaseViewModel<OnboardingViewModel.OnboardingUiState>() {
+) : StateViewModel<OnboardingViewModel.OnboardingUiState>() {
 
     override fun initialState(): OnboardingUiState = OnboardingUiState()
 

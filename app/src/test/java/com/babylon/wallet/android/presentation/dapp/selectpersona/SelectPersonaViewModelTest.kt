@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
 import io.mockk.coEvery
@@ -24,7 +24,7 @@ import org.junit.Test
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class SelectPersonaViewModelTest : BaseViewModelTest<SelectPersonaViewModel>() {
+internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()

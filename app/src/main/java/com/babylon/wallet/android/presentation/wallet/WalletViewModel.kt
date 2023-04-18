@@ -6,13 +6,12 @@ import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.toDomainModel
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.encodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -31,9 +30,9 @@ class WalletViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
     private val getProfileUseCase: GetProfileUseCase
-) : BaseViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): WalletUiState = WalletUiState()
+    override fun initialState() = WalletUiState()
 
     init {
         viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
@@ -80,15 +79,15 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
-    fun onAccountClick(address: String, name: String) {
+    fun onAccountClick(address: String) {
         viewModelScope.launch {
-            sendEvent(WalletEvent.AccountClick(address, name.encodeUtf8()))
+            sendEvent(WalletEvent.AccountClick(address))
         }
     }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
-    data class AccountClick(val address: String, val nameEncoded: String) : WalletEvent
+    data class AccountClick(val address: String) : WalletEvent
 }
 
 data class WalletUiState(

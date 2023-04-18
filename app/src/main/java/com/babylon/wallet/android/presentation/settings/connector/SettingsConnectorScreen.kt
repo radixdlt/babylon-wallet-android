@@ -102,6 +102,14 @@ private fun SettingsLinkConnectorContent(
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
 ) {
+    val backHandler = {
+        if (settingsMode == SettingsConnectorMode.ScanQr) {
+            cancelQrScan()
+        } else {
+            onBackClick()
+        }
+    }
+    BackHandler(onBack = backHandler)
     var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
@@ -120,13 +128,7 @@ private fun SettingsLinkConnectorContent(
             } else {
                 stringResource(R.string.link_to_connector)
             },
-            onBackClick = {
-                if (settingsMode == SettingsConnectorMode.ScanQr) {
-                    cancelQrScan()
-                } else {
-                    onBackClick()
-                }
-            },
+            onBackClick = backHandler,
             contentColor = RadixTheme.colors.gray1
         )
         Divider(color = RadixTheme.colors.gray5)
@@ -153,11 +155,10 @@ private fun SettingsLinkConnectorContent(
                 SettingsConnectorMode.ScanQr -> {
                     if (cameraPermissionState.status.isGranted) {
                         CameraPreview(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             onConnectionPasswordDecoded(it)
                         }
-                        BackHandler(enabled = true) { }
                     }
                 }
             }

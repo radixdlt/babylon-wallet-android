@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.presentation.BaseViewModelTest
+import com.babylon.wallet.android.presentation.StateViewModelTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class AuthorizedDappsViewModelTest : BaseViewModelTest<AuthorizedDappsViewModel>() {
+internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDappsViewModel>() {
 
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 

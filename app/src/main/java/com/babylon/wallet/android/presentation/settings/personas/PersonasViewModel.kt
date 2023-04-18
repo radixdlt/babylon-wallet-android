@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.settings.personas
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.PreferencesManager
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class PersonasViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager
-) : BaseViewModel<PersonasViewModel.PersonasUiState>(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<PersonasViewModel.PersonasUiState>(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): PersonasUiState = PersonasUiState()
 

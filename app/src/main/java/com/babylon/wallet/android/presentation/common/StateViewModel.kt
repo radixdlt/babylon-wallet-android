@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 interface UiState
 
 @Suppress("VariableNaming")
-abstract class BaseViewModel<T : UiState> : ViewModel() {
+abstract class StateViewModel<T : UiState> : ViewModel() {
     protected val _state: MutableStateFlow<T> by lazy { MutableStateFlow(initialState()) }
     val state: StateFlow<T>
         get() = _state.asStateFlow()
