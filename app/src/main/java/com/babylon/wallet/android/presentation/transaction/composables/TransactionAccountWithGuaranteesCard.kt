@@ -190,7 +190,6 @@ fun TransactionAccountWithGuaranteesCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -201,7 +200,7 @@ fun TransactionAccountWithGuaranteesCard(
                 )
 
                 IconButton(
-                    modifier = Modifier.weight(0.8f),
+                    modifier = Modifier.weight(0.7f),
                     onClick = {
                         val guaranteePercentDecimal = guaranteePercentValue.toBigDecimal()
                         onGuaranteeValueChanged(
@@ -219,9 +218,10 @@ fun TransactionAccountWithGuaranteesCard(
                 }
 
                 RadixTextField(
-                    modifier = Modifier.weight(1.0f),
+                    modifier = Modifier.weight(1.1f),
                     onValueChanged = onGuaranteeValueChanged,
                     value = guaranteePercentValue,
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.None,
                         keyboardType = KeyboardType.Number
@@ -229,7 +229,7 @@ fun TransactionAccountWithGuaranteesCard(
                 )
 
                 IconButton(
-                    modifier = Modifier.weight(0.8f),
+                    modifier = Modifier.weight(0.7f),
                     onClick = {
                         val guaranteePercentDecimal = guaranteePercentValue.toBigDecimal()
                         onGuaranteeValueChanged(
