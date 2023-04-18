@@ -94,11 +94,10 @@ class SettingsConnectorViewModel @Inject constructor(
     }
 
     fun onConnectorDisplayNameChanged(name: String) {
-        val displayNameChanged = name.trim()
         _state.update {
             it.copy(
-                editedConnectorDisplayName = displayNameChanged,
-                buttonEnabled = displayNameChanged.isNotEmpty()
+                editedConnectorDisplayName = name,
+                buttonEnabled = name.trim().isNotEmpty()
             )
         }
     }
