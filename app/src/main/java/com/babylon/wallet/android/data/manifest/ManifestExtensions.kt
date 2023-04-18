@@ -71,6 +71,32 @@ fun TransactionManifest.addLockFeeInstructionToManifest(
     return copy(updatedInstructions, blobs)
 }
 
+fun TransactionManifest.addGuaranteeInstructionToManifest(
+    address: String,
+    guaranteedAmount: String,
+    index: Int
+): TransactionManifest {
+    val instructions = instructions
+    var updatedManifestInstructions = instructions
+    when (instructions) {
+        is ManifestInstructions.ParsedInstructions -> {
+            val guaranteeInstruction = guaranteeInstruction(
+                resourceAddress = address,
+                guaranteedAmount = guaranteedAmount
+            )
+
+            val updatedInstructions = instructions.instructions.toMutableList()
+            updatedInstructions.add(index, guaranteeInstruction)
+
+            updatedManifestInstructions = instructions.copy(
+                instructions = updatedInstructions.toTypedArray()
+            )
+        }
+        is ManifestInstructions.StringInstructions -> {}
+    }
+    return copy(updatedManifestInstructions, blobs)
+}
+
 private fun lockFeeInstruction(
     addressToLockFee: String
 ): Instruction {
@@ -82,6 +108,16 @@ private fun lockFeeInstruction(
                 BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
             )
         )
+    )
+}
+
+private fun guaranteeInstruction(
+    resourceAddress: String,
+    guaranteedAmount: String
+): Instruction {
+    return Instruction.AssertWorktopContainsByAmount(
+        resourceAddress = ManifestAstValue.Address(resourceAddress),
+        amount = ManifestAstValue.Decimal(guaranteedAmount)
     )
 }
 

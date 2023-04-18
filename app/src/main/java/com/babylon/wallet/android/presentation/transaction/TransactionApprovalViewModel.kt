@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.readInstructions
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.Result
@@ -30,9 +32,12 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.toolkit.models.address.EntityAddress
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.ResourceSpecifier
+import com.radixdlt.toolkit.models.transaction.ManifestInstructions
+import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -43,6 +48,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -71,6 +77,8 @@ class TransactionApprovalViewModel @Inject constructor(
 
     private var approvalJob: Job? = null
 
+    private var depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf()
+
     init {
         viewModelScope.launch {
             _state.update {
@@ -79,8 +87,13 @@ class TransactionApprovalViewModel @Inject constructor(
                     transactionMessage = transactionWriteRequest.transactionManifestData.message.orEmpty()
                 )
             }
-            val manifestResult = transactionClient.addLockFeeToTransactionManifestData(
-                transactionWriteRequest.transactionManifestData
+            val manifestResult = transactionClient.convertManifestInstructionsToJSON(
+                manifest = TransactionManifest(
+                    instructions = ManifestInstructions.StringInstructions(
+                        transactionWriteRequest.transactionManifestData.instructions
+                    ),
+                    blobs = transactionWriteRequest.transactionManifestData.blobs.toTypedArray()
+                )
             )
 
             manifestResult.onValue { manifestWithLockFee ->
@@ -127,12 +140,12 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                 }
                             } else {
-                                transactionPreviewResponse.receipt.fee_summary.let { feeSummary ->
+                                transactionPreviewResponse.receipt.fee_summary.let {
                                     // TODO this will be done properly when backend work comes
 //                                    val costUnitPrice = feeSummary.cost_unit_price.toBigDecimal()
 //                                    val costUnitsConsumed = feeSummary.cost_units_consumed.toBigDecimal()
                                     val networkFee = "10" // TODO this will be done properly when backend work comes
-                                    _state.update { it.copy(networkFee = networkFee) }
+                                    _state.update { state -> state.copy(networkFee = networkFee) }
                                 }
 
                                 val manifestPreview = transactionClient.analyzeManifest(
@@ -150,28 +163,29 @@ class TransactionApprovalViewModel @Inject constructor(
                                     }
                                 }
 
-                                manifestPreview.getOrNull()
-                                    ?.let { analyzeManifestWithPreviewResponse ->
+                                manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
 
-                                        val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
-                                            mutableListOf()
-                                        val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
-                                            mutableListOf()
+                                    Timber.d("Manifest : $analyzeManifestWithPreviewResponse")
+                                    val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
+                                        mutableListOf()
+                                    val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
+                                        mutableListOf()
 
-                                        val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
-                                            .componentAddresses.userApplications
-                                            .filterIsInstance<EntityAddress.ComponentAddress>()
+                                    val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
+                                        .componentAddresses.userApplications
+                                        .filterIsInstance<EntityAddress.ComponentAddress>()
 
-                                        val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
-                                            componentAddresses
-                                        )
+                                    val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
+                                        componentAddresses
+                                    )
 
-                                        analyzeManifestWithPreviewResponse.accountDeposits.forEach {
-                                            when (it) {
+                                    analyzeManifestWithPreviewResponse
+                                        .accountDeposits.forEachIndexed { index, accountDeposit ->
+                                            when (accountDeposit) {
                                                 is AccountDeposit.Estimate -> {
                                                     val amount = when (
                                                         val resSpecifier =
-                                                            it.resourceSpecifier
+                                                            accountDeposit.resourceSpecifier
                                                     ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.amount
@@ -182,7 +196,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                                     }
                                                     val resourceAddress = when (
                                                         val resSpecifier =
-                                                            it.resourceSpecifier
+                                                            accountDeposit.resourceSpecifier
                                                     ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.resourceAddress.address
@@ -191,14 +205,21 @@ class TransactionApprovalViewModel @Inject constructor(
                                                             resSpecifier.resourceAddress.address
                                                         }
                                                     }
+
+                                                    val instructionIndex = accountDeposit.instructionIndex.toInt()
+
                                                     depositJobs.add(
                                                         async {
                                                             getTransactionComponentResourcesUseCase.invoke(
-                                                                componentAddress = it.componentAddress.address,
+                                                                componentAddress = accountDeposit
+                                                                    .componentAddress.address,
                                                                 resourceAddress = resourceAddress,
                                                                 createdEntities = analyzeManifestWithPreviewResponse
                                                                     .createdEntities,
-                                                                amount = amount
+                                                                amount = amount,
+                                                                instructionIndex = instructionIndex,
+                                                                includesGuarantees = true,
+                                                                index = index
                                                             )
                                                         }
                                                     )
@@ -206,7 +227,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                                 is AccountDeposit.Exact -> {
                                                     val amount = when (
                                                         val resSpecifier =
-                                                            it.resourceSpecifier
+                                                            accountDeposit.resourceSpecifier
                                                     ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.amount
@@ -217,7 +238,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                                     }
                                                     val resourceAddress = when (
                                                         val resSpecifier =
-                                                            it.resourceSpecifier
+                                                            accountDeposit.resourceSpecifier
                                                     ) {
                                                         is ResourceSpecifier.Amount -> {
                                                             resSpecifier.resourceAddress.address
@@ -229,105 +250,112 @@ class TransactionApprovalViewModel @Inject constructor(
                                                     depositJobs.add(
                                                         async {
                                                             getTransactionComponentResourcesUseCase.invoke(
-                                                                componentAddress = it.componentAddress.address,
+                                                                componentAddress = accountDeposit
+                                                                    .componentAddress.address,
                                                                 resourceAddress = resourceAddress,
                                                                 createdEntities = analyzeManifestWithPreviewResponse
                                                                     .createdEntities,
-                                                                amount = amount
+                                                                amount = amount,
+                                                                includesGuarantees = false
                                                             )
                                                         }
                                                     )
                                                 }
                                             }
                                         }
-                                        analyzeManifestWithPreviewResponse.accountWithdraws.forEach {
-                                            val amount =
-                                                when (val resSpecifier = it.resourceSpecifier) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        resSpecifier.amount
-                                                    }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        ""
-                                                    }
+                                    analyzeManifestWithPreviewResponse.accountWithdraws.forEach { accountWithdraw ->
+                                        val amount =
+                                            when (val resSpecifier = accountWithdraw.resourceSpecifier) {
+                                                is ResourceSpecifier.Amount -> {
+                                                    resSpecifier.amount
                                                 }
-                                            val resourceAddress =
-                                                when (val resSpecifier = it.resourceSpecifier) {
-                                                    is ResourceSpecifier.Amount -> {
-                                                        resSpecifier.resourceAddress.address
-                                                    }
-                                                    is ResourceSpecifier.Ids -> {
-                                                        resSpecifier.resourceAddress.address
-                                                    }
+                                                is ResourceSpecifier.Ids -> {
+                                                    ""
                                                 }
-                                            withdrawJobs.add(
-                                                async {
-                                                    getTransactionComponentResourcesUseCase.invoke(
-                                                        componentAddress = it.componentAddress.address,
-                                                        resourceAddress = resourceAddress,
-                                                        createdEntities = analyzeManifestWithPreviewResponse
-                                                            .createdEntities,
-                                                        amount = amount
-                                                    )
-                                                }
-                                            )
-                                        }
-
-                                        val depositResults = depositJobs.awaitAll()
-                                        val withdrawResults = withdrawJobs.awaitAll()
-
-                                        val withdrawingAccounts = withdrawResults
-                                            .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
-                                            .map {
-                                                it.data
                                             }
-
-                                        val depositingAccounts = depositResults
-                                            .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
-                                            .map {
-                                                it.data
+                                        val resourceAddress =
+                                            when (val resSpecifier = accountWithdraw.resourceSpecifier) {
+                                                is ResourceSpecifier.Amount -> {
+                                                    resSpecifier.resourceAddress.address
+                                                }
+                                                is ResourceSpecifier.Ids -> {
+                                                    resSpecifier.resourceAddress.address
+                                                }
                                             }
-
-                                        val proofs = getTransactionProofResourcesUseCase(
-                                            analyzeManifestWithPreviewResponse.accountProofResources
+                                        withdrawJobs.add(
+                                            async {
+                                                getTransactionComponentResourcesUseCase.invoke(
+                                                    componentAddress = accountWithdraw.componentAddress.address,
+                                                    resourceAddress = resourceAddress,
+                                                    createdEntities = analyzeManifestWithPreviewResponse
+                                                        .createdEntities,
+                                                    amount = amount,
+                                                    includesGuarantees = false
+                                                )
+                                            }
                                         )
-
-                                        val withdrawUniqueAccounts = withdrawingAccounts.distinctBy {
-                                            it.address
-                                        }
-
-                                        val depositUniqueAccounts = depositingAccounts.distinctBy {
-                                            it.address
-                                        }
-
-                                        val withdrawPreviewAccounts = withdrawUniqueAccounts.map { uniqueAccount ->
-                                            PreviewAccountItemsUiModel(
-                                                accountName = uniqueAccount.displayName,
-                                                appearanceID = uniqueAccount.appearanceID,
-                                                accounts = withdrawingAccounts.filter { it.address == uniqueAccount.address }
-                                            )
-                                        }.toPersistentList()
-
-                                        val depositPreviewAccounts = depositUniqueAccounts.map { uniqueAccount ->
-                                            PreviewAccountItemsUiModel(
-                                                accountName = uniqueAccount.displayName,
-                                                appearanceID = uniqueAccount.appearanceID,
-                                                accounts = depositingAccounts.filter { it.address == uniqueAccount.address }
-                                            )
-                                        }.toPersistentList()
-
-                                        _state.update {
-                                            it.copy(
-                                                withdrawingAccounts = withdrawPreviewAccounts,
-                                                depositingAccounts = depositPreviewAccounts,
-                                                presentingProofs = proofs.toPersistentList(),
-                                                connectedDApps = encounteredAddresses.toPersistentList(),
-                                                manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
-                                                manifestData = transactionWriteRequest.transactionManifestData,
-                                                canApprove = true,
-                                                isLoading = false
-                                            )
-                                        }
                                     }
+
+                                    val depositResults = depositJobs.awaitAll()
+                                    val withdrawResults = withdrawJobs.awaitAll()
+
+                                    val withdrawingAccounts = withdrawResults
+                                        .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                        .map {
+                                            it.data
+                                        }
+
+                                    val depositingAccounts = depositResults
+                                        .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
+                                        .map {
+                                            it.data
+                                        }
+
+                                    val proofs = getTransactionProofResourcesUseCase(
+                                        analyzeManifestWithPreviewResponse.accountProofResources
+                                    )
+
+                                    val withdrawUniqueAccounts = withdrawingAccounts.distinctBy {
+                                        it.address
+                                    }
+
+                                    val depositUniqueAccounts = depositingAccounts.distinctBy {
+                                        it.address
+                                    }
+
+                                    val withdrawPreviewAccounts = withdrawUniqueAccounts.map { uniqueAccount ->
+                                        PreviewAccountItemsUiModel(
+                                            address = uniqueAccount.address,
+                                            accountName = uniqueAccount.displayName,
+                                            appearanceID = uniqueAccount.appearanceID,
+                                            accounts = withdrawingAccounts.filter { it.address == uniqueAccount.address }
+                                        )
+                                    }.toPersistentList()
+
+                                    val depositPreviewAccounts = depositUniqueAccounts.map { uniqueAccount ->
+                                        PreviewAccountItemsUiModel(
+                                            address = uniqueAccount.address,
+                                            accountName = uniqueAccount.displayName,
+                                            appearanceID = uniqueAccount.appearanceID,
+                                            accounts = depositingAccounts.filter { it.address == uniqueAccount.address }
+                                        )
+                                    }.toPersistentList()
+
+                                    val guaranteesAccounts = depositPreviewAccounts.toGuaranteesAccountsUiModel()
+
+                                    _state.update {
+                                        it.copy(
+                                            withdrawingAccounts = withdrawPreviewAccounts,
+                                            depositingAccounts = depositPreviewAccounts,
+                                            guaranteesAccounts = guaranteesAccounts,
+                                            presentingProofs = proofs.toPersistentList(),
+                                            connectedDApps = encounteredAddresses.toPersistentList(),
+                                            manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
+                                            canApprove = true,
+                                            isLoading = false
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -368,25 +396,74 @@ class TransactionApprovalViewModel @Inject constructor(
                     approvalJob = null
                 } else {
                     _state.update { it.copy(isSigning = true) }
-                    _state.value.manifestData?.let { manifest ->
-                        val result = transactionClient.signAndSubmitTransaction(manifest)
-                        result.onValue { txId ->
-                            // Send confirmation to the dApp that tx was submitted before status polling
-                            dAppMessenger.sendTransactionWriteResponseSuccess(
-                                dappId = transactionWriteRequest.dappId,
-                                requestId = args.requestId,
-                                txId = txId
+
+                    val txManifest = TransactionManifest(
+                        instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
+                        blobs = manifestData.blobs.toTypedArray()
+                    )
+
+                    transactionClient.convertManifestInstructionsToJSON(
+                        txManifest
+                    ).onValue { manifestJsonResponse ->
+                        var manifestJson = manifestJsonResponse
+                        _state.value.depositingAccounts.map { previewAccountItemsUiModel ->
+                            previewAccountItemsUiModel.accounts.map { accountItemUiModel ->
+                                accountItemUiModel.guaranteedQuantity?.let { guaranteedAmount ->
+                                    manifestJson = manifestJson.addGuaranteeInstructionToManifest(
+                                        address = accountItemUiModel.resourceAddress.orEmpty(),
+                                        guaranteedAmount = guaranteedAmount,
+                                        index = accountItemUiModel.instructionIndex ?: 0
+                                    )
+                                }
+                            }
+                        }
+
+                        transactionClient.convertManifestInstructionsToString(
+                            manifestJson
+                        ).onValue { manifestStringResponse ->
+                            val result = transactionClient.signAndSubmitTransaction(
+                                instructions = manifestStringResponse.readInstructions(),
+                                blobs = manifestStringResponse.blobs
                             )
 
-                            val transactionStatus = transactionClient.pollTransactionStatus(txId)
-                            transactionStatus.onValue { _ ->
-                                _state.update { it.copy(isSigning = false, approved = true) }
-                                approvalJob = null
-                                appEventBus.sendEvent(AppEvent.ApprovedTransaction)
-                                sendEvent(TransactionApprovalEvent.NavigateBack)
-                                incomingRequestRepository.requestHandled(args.requestId)
+                            result.onValue { txId ->
+                                // Send confirmation to the dApp that tx was submitted before status polling
+                                dAppMessenger.sendTransactionWriteResponseSuccess(
+                                    dappId = transactionWriteRequest.dappId,
+                                    requestId = args.requestId,
+                                    txId = txId
+                                )
+
+                                val transactionStatus = transactionClient.pollTransactionStatus(txId)
+                                transactionStatus.onValue { _ ->
+                                    _state.update { it.copy(isSigning = false, approved = true) }
+                                    approvalJob = null
+                                    appEventBus.sendEvent(AppEvent.ApprovedTransaction)
+                                    sendEvent(TransactionApprovalEvent.NavigateBack)
+                                    incomingRequestRepository.requestHandled(args.requestId)
+                                }
+                                transactionStatus.onError { error ->
+                                    _state.update {
+                                        it.copy(
+                                            isSigning = false,
+                                            error = UiMessage.ErrorMessage(error = error)
+                                        )
+                                    }
+                                    val exception = error as? DappRequestException
+                                    if (exception != null) {
+                                        dAppMessenger.sendWalletInteractionResponseFailure(
+                                            dappId = transactionWriteRequest.dappId,
+                                            requestId = args.requestId,
+                                            error = exception.failure.toWalletErrorType(),
+                                            message = exception.failure.getDappMessage()
+                                        )
+                                        approvalJob = null
+                                        sendEvent(TransactionApprovalEvent.NavigateBack)
+                                        incomingRequestRepository.requestHandled(args.requestId)
+                                    }
+                                }
                             }
-                            transactionStatus.onError { error ->
+                            result.onError { error ->
                                 _state.update {
                                     it.copy(
                                         isSigning = false,
@@ -405,26 +482,6 @@ class TransactionApprovalViewModel @Inject constructor(
                                     sendEvent(TransactionApprovalEvent.NavigateBack)
                                     incomingRequestRepository.requestHandled(args.requestId)
                                 }
-                            }
-                        }
-                        result.onError { error ->
-                            _state.update {
-                                it.copy(
-                                    isSigning = false,
-                                    error = UiMessage.ErrorMessage(error = error)
-                                )
-                            }
-                            val exception = error as? DappRequestException
-                            if (exception != null) {
-                                dAppMessenger.sendWalletInteractionResponseFailure(
-                                    dappId = transactionWriteRequest.dappId,
-                                    requestId = args.requestId,
-                                    error = exception.failure.toWalletErrorType(),
-                                    message = exception.failure.getDappMessage()
-                                )
-                                approvalJob = null
-                                sendEvent(TransactionApprovalEvent.NavigateBack)
-                                incomingRequestRepository.requestHandled(args.requestId)
                             }
                         }
                     }
@@ -450,6 +507,77 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
+    fun onGuaranteesApplyClick() {
+        _state.update {
+            it.copy(
+                depositingAccounts = depositingAccounts
+            )
+        }
+        // Reset local depositing accounts
+        depositingAccounts = persistentListOf()
+    }
+
+    fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
+        val guaranteePercentString = guaranteePair.first.trim()
+        val guaranteePercentBigDecimal = try {
+            guaranteePercentString.toBigDecimal()
+        } catch (e: NumberFormatException) {
+            BigDecimal.ZERO
+        }
+
+        if (guaranteePercentBigDecimal > BigDecimal("100") || guaranteePercentBigDecimal < BigDecimal.ZERO) {
+            return
+        }
+
+        val updatedGuaranteedQuantity = guaranteePercentBigDecimal.divide(BigDecimal("100")).multiply(
+            guaranteePair.second.tokenEstimatedQuantity.toBigDecimal().stripTrailingZeros()
+        ).toPlainString()
+
+        val currentDepositingAccounts =
+            if (depositingAccounts.isEmpty()) {
+                _state.value.depositingAccounts
+            } else {
+                depositingAccounts
+            }
+
+        currentDepositingAccounts.map { previewAccountUiModel ->
+            if (previewAccountUiModel.address == guaranteePair.second.address) {
+                previewAccountUiModel.copy(
+                    address = previewAccountUiModel.address,
+                    accountName = previewAccountUiModel.accountName,
+                    appearanceID = previewAccountUiModel.appearanceID,
+                    accounts = previewAccountUiModel.accounts.map { tokenUiModel ->
+                        if (tokenUiModel.index == guaranteePair.second.index) {
+                            tokenUiModel.copy(
+                                address = tokenUiModel.address,
+                                displayName = tokenUiModel.displayName,
+                                tokenSymbol = tokenUiModel.tokenSymbol,
+                                tokenQuantity = tokenUiModel.tokenQuantity,
+                                appearanceID = tokenUiModel.appearanceID,
+                                iconUrl = tokenUiModel.iconUrl,
+                                isTokenAmountVisible = tokenUiModel.isTokenAmountVisible,
+                                shouldPromptForGuarantees = tokenUiModel.shouldPromptForGuarantees,
+                                guaranteedQuantity = updatedGuaranteedQuantity,
+                                guaranteedPercentAmount = guaranteePercentString,
+                            )
+                        } else {
+                            tokenUiModel
+                        }
+                    }
+                )
+            } else {
+                previewAccountUiModel
+            }
+        }.toImmutableList().apply {
+            depositingAccounts = this
+            _state.update {
+                it.copy(
+                    guaranteesAccounts = toGuaranteesAccountsUiModel()
+                )
+            }
+        }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(error = null) }
     }
@@ -460,14 +588,35 @@ data class TransactionAccountItemUiModel(
     val displayName: String,
     val tokenSymbol: String,
     val tokenQuantity: String,
-    val fiatAmount: String,
     val appearanceID: Int,
     val iconUrl: String,
-    val isTokenAmountVisible: Boolean
+    val isTokenAmountVisible: Boolean,
+    val shouldPromptForGuarantees: Boolean,
+    val guaranteedQuantity: String?,
+    val guaranteedPercentAmount: String = "100",
+    val instructionIndex: Int? = null, // Index that instruction will be inserted at in the manifest
+    val resourceAddress: String? = null,
+    val index: Int? = null // Unique to identify which item state we are changing as addresses might be the same for
+    // nested elements using the same address
 ) {
     val tokenQuantityDecimal: BigDecimal
-        get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal()
+        get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal().stripTrailingZeros()
+
+    val guaranteedQuantityDecimal: BigDecimal?
+        get() = if (guaranteedQuantity.isNullOrEmpty()) null else guaranteedQuantity.toBigDecimal().stripTrailingZeros()
 }
+
+data class GuaranteesAccountItemUiModel(
+    val address: String,
+    val appearanceID: Int,
+    val displayName: String,
+    val tokenSymbol: String,
+    val tokenIconUrl: String,
+    val tokenEstimatedQuantity: String,
+    val tokenGuaranteedQuantity: String,
+    val guaranteedPercentAmount: String,
+    val index: Int? = null
+)
 
 data class PresentingProofUiModel(
     val iconUrl: String,
@@ -480,10 +629,29 @@ data class ConnectedDAppsUiModel(
 )
 
 data class PreviewAccountItemsUiModel(
+    val address: String,
     val accountName: String,
     val appearanceID: Int,
     val accounts: List<TransactionAccountItemUiModel>
 )
+
+fun List<PreviewAccountItemsUiModel>.toGuaranteesAccountsUiModel() = map { previewAccountItemsUiModel ->
+    previewAccountItemsUiModel.accounts
+        .filter { it.shouldPromptForGuarantees }
+        .map { account ->
+            GuaranteesAccountItemUiModel(
+                address = account.address,
+                appearanceID = previewAccountItemsUiModel.appearanceID,
+                displayName = account.displayName,
+                tokenSymbol = account.tokenSymbol,
+                tokenIconUrl = account.iconUrl,
+                tokenEstimatedQuantity = account.tokenQuantity,
+                tokenGuaranteedQuantity = account.guaranteedQuantity.orEmpty(),
+                guaranteedPercentAmount = account.guaranteedPercentAmount,
+                index = account.index
+            )
+        }
+}.flatten().toPersistentList()
 
 data class TransactionUiState(
     val manifestData: TransactionManifestData? = null,
@@ -498,8 +666,10 @@ data class TransactionUiState(
     val transactionMessage: String = "",
     val withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
     val depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
+    val guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
-    val connectedDApps: ImmutableList<ConnectedDAppsUiModel> = persistentListOf()
+    val connectedDApps: ImmutableList<ConnectedDAppsUiModel> = persistentListOf(),
+    val guaranteePercent: BigDecimal = BigDecimal("100")
 ) : UiState
 
 sealed interface TransactionApprovalEvent : OneOffEvent {

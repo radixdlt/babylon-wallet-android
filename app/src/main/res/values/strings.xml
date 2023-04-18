@@ -298,5 +298,12 @@
     <string name="scan_next_qr_code">Please scan next qr code</string>
     <string name="unknown">Unknown</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="customize_guarantees">Customize Guarantees</string>
+    <string name="how_do_guarantees_work">How do Guarantees work</string>
+    <string name="guarantees_sheet_body_text">Protect yourself by setting guaranteed minimums for estimated deposits</string>
+    <string name="estimated">Estimated</string>
+    <string name="guaranteed">Guaranteed</string>
+    <string name="apply">Apply</string>
+    <string name="set_guaranteed_minimum">Set guaranteed minimum %</string>
     <string name="no_mnemonic_for_accounts">No mnemonic found for accounts</string>
 </resources>

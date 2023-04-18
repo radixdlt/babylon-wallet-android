@@ -19,12 +19,15 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val entityRepository: EntityRepository
 ) {
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "LongParameterList")
     suspend fun invoke(
         componentAddress: String,
         resourceAddress: String,
         createdEntities: CreatedEntities,
-        amount: String
+        amount: String,
+        instructionIndex: Int? = null,
+        includesGuarantees: Boolean,
+        index: Int? = null
     ): Result<TransactionAccountItemUiModel> {
         val createdEntitiesAddresses = createdEntities
             .resourceAddresses.filterIsInstance<EntityAddress.ResourceAddress>()
@@ -97,16 +100,26 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
             val accountDisplayName = accountOnProfile?.displayName.orEmpty()
             val accountAppearanceId = accountOnProfile?.appearanceID ?: 1
 
+            // If its newlyCreatedEntity do not ask for guarantees
+            val shouldPromptForGuarantees = if (createdEntity) false else includesGuarantees
+
+            // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
+            val guaranteedQuantity = if (createdEntity || !includesGuarantees) null else amount
+
             account = Result.Success(
                 TransactionAccountItemUiModel(
                     address = accountItem?.address.orEmpty(),
                     displayName = accountDisplayName,
                     tokenSymbol = tokenSymbol,
                     tokenQuantity = amount,
-                    fiatAmount = "$1234.12",
                     appearanceID = accountAppearanceId,
                     iconUrl = iconUrl,
-                    isTokenAmountVisible = isTokenAmountVisible
+                    isTokenAmountVisible = isTokenAmountVisible,
+                    shouldPromptForGuarantees = shouldPromptForGuarantees,
+                    guaranteedQuantity = guaranteedQuantity,
+                    instructionIndex = instructionIndex,
+                    resourceAddress = resourceAddress,
+                    index = index
                 )
             )
         }

@@ -189,7 +189,7 @@ private fun AccountScreenContent(
                                 }
                             }, modifier = Modifier.fillMaxSize())
                         }
-                        null -> {}
+                        else -> {}
                     }
                 }
             },

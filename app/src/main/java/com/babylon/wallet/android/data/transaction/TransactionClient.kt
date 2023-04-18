@@ -18,7 +18,6 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.radixdlt.crypto.ec.EllipticCurveType
@@ -64,12 +63,15 @@ class TransactionClient @Inject constructor(
         return signAndSubmitTransaction(manifest, networkId, hasLockFee)
     }
 
-    suspend fun signAndSubmitTransaction(manifestData: TransactionManifestData): Result<String> {
+    suspend fun signAndSubmitTransaction(
+        instructions: String,
+        blobs: Array<ByteArray>?
+    ): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
         val manifestConversionResult = convertManifestInstructionsToJSON(
             manifest = TransactionManifest(
-                instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
-                blobs = manifestData.blobs.toTypedArray()
+                instructions = ManifestInstructions.StringInstructions(instructions),
+                blobs = blobs
             )
         )
         val jsonTransactionManifest = when (manifestConversionResult) {
@@ -80,32 +82,6 @@ class TransactionClient @Inject constructor(
             jsonTransactionManifest = jsonTransactionManifest,
             networkId = networkId,
             hasLockFeeInstruction = false
-        )
-    }
-
-    suspend fun addLockFeeToTransactionManifestData(
-        manifestData: TransactionManifestData
-    ): Result<TransactionManifest> {
-        val manifestConversionResult = convertManifestInstructionsToJSON(
-            manifest = TransactionManifest(
-                instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
-                blobs = manifestData.blobs.toTypedArray()
-            )
-        )
-        val jsonTransactionManifest = when (manifestConversionResult) {
-            is Result.Error -> return manifestConversionResult
-            is Result.Success -> manifestConversionResult.data
-        }
-        val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
-        val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
-            ?: return Result.Error(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
-                )
-            )
-
-        return Result.Success(
-            jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         )
     }
 
@@ -253,7 +229,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private suspend fun convertManifestInstructionsToJSON(
+    suspend fun convertManifestInstructionsToJSON(
         manifest: TransactionManifest
     ): Result<ConvertManifestResponse> {
         val networkId = getCurrentGatewayUseCase().network.networkId()
@@ -278,7 +254,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private suspend fun convertManifestInstructionsToString(
+    suspend fun convertManifestInstructionsToString(
         manifest: TransactionManifest,
     ): Result<ConvertManifestResponse> {
         val networkId = getCurrentGatewayUseCase().network.networkId()

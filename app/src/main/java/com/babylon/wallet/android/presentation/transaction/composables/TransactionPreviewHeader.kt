@@ -17,10 +17,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 fun TransactionPreviewHeader(
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBackEnabled: Boolean
 ) {
     Row(modifier) {
-        IconButton(onClick = onBackClick) {
+        IconButton(
+            onClick = onBackClick,
+            enabled = onBackEnabled
+        ) {
             Icon(
                 painterResource(
                     id = R.drawable.ic_close
@@ -54,6 +58,7 @@ fun TransactionPreviewHeader(
 fun TransactionPreviewHeaderPreview() {
     TransactionPreviewHeader(
         {},
-        {}
+        {},
+        onBackEnabled = true
     )
 }
