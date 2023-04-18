@@ -7,8 +7,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapMerge
@@ -19,6 +22,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.blake2Hash
@@ -53,9 +57,10 @@ interface PeerdroidConnector {
 
     fun terminateConnectionToConnectorExtension()
 
-    val dataChannelMessagesFromRemoteClients: Flow<DataChannelWrapperEvent>
+    val dataChannelMessagesFromRemoteClients: SharedFlow<DataChannelWrapperEvent>
 
     suspend fun sendDataChannelMessageToRemoteClient(remoteClientId: String, message: String): Result<Unit>
+    suspend fun sendDataChannelMessageToRemoteClients(message: String): Result<Unit>
 }
 
 internal class PeerdroidConnectorImpl(
@@ -179,7 +184,7 @@ internal class PeerdroidConnectorImpl(
             .onCompletion {
                 dataChannelObserver.value = null
             }
-    ).flowOn(ioDispatcher)
+    ).flowOn(ioDispatcher).shareIn(scope = applicationScope, started = SharingStarted.WhileSubscribed())
 
     override suspend fun sendDataChannelMessageToRemoteClient(
         remoteClientId: String,
@@ -196,19 +201,21 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-//    override suspend fun sendDataChannelMessageToRemoteClients(
-//        message: String
-//    ): Result<Unit> {
-//        return flow {
-//            dataChannelMessagesFromRemoteClients.collect {
-//            }
-//        }
-//        return withContext(ioDispatcher) {
-//            mapOfDataChannels.values.forEach { channel ->
-//                channel.dataChannel.sendMessage(message)
-//            }
-//        }
-//    }
+    override suspend fun sendDataChannelMessageToRemoteClients(
+        message: String
+    ): Result<Unit> {
+        return withContext(ioDispatcher) {
+            val jobs = mapOfDataChannels.values.map { channel ->
+                async { channel.dataChannel.sendMessage(message) }
+            }
+            val results = jobs.awaitAll()
+            if (results.any { it is Result.Success }) {
+                Result.Success(Unit)
+            } else {
+                Result.Error("failed to send message to remote client")
+            }
+        }
+    }
 
     private fun listenForMessagesFromRemoteClients(
         connectionIdHolder: ConnectionIdHolder,

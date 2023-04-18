@@ -28,9 +28,10 @@ class LedgerMessengerImpl @Inject constructor(
 ) : LedgerMessenger {
 
     override suspend fun sendDeviceInfoRequest(): Result<String> {
+
         val interactionId = UUIDGenerator.uuid().toString()
         val ledgerRequest: LedgerInteraction = GetDeviceInfoRequest(interactionId)
-        return when (peerdroidClient.sendMessage(interactionId, peerdroidRequestJson.encodeToString(ledgerRequest))) {
+        return when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(interactionId)
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
@@ -39,7 +40,7 @@ class LedgerMessengerImpl @Inject constructor(
     override suspend fun sendImportOlympiaDeviceRequest(derivationPaths: List<String>): Result<String> {
         val interactionId = UUIDGenerator.uuid().toString()
         val request: LedgerInteraction = ImportOlympiaDeviceRequest(interactionId, derivationPaths)
-        return when (peerdroidClient.sendMessage(interactionId, peerdroidRequestJson.encodeToString(request))) {
+        return when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(interactionId)
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
@@ -51,7 +52,7 @@ class LedgerMessengerImpl @Inject constructor(
     ): Result<String> {
         val interactionId = UUIDGenerator.uuid().toString()
         val ledgerRequest: LedgerInteraction = DerivePublicKeyRequest(interactionId, keyParameters, ledgerDevice)
-        return when (peerdroidClient.sendMessage(interactionId, peerdroidRequestJson.encodeToString(ledgerRequest))) {
+        return when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(interactionId)
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }

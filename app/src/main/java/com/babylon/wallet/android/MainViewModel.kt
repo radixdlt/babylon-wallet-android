@@ -19,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
@@ -127,7 +126,6 @@ class MainViewModel @Inject constructor(
         incomingRequestsJob = viewModelScope.launch {
             peerdroidClient
                 .listenForIncomingRequests()
-                .filterIsInstance<IncomingRequest>()
                 .cancellable()
                 .collect { incomingRequest ->
                     val remoteClient = incomingRequest.remoteClientId

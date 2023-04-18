@@ -29,11 +29,16 @@ interface PeerdroidClient {
         message: String
     ): Result<Unit>
 
-    fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
+    suspend fun sendMessage(
+        message: String
+    ): Result<Unit>
+
+    fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest>
 
     suspend fun deleteLink(connectionPassword: String)
 
     fun terminate()
+    fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -55,7 +60,11 @@ class PeerdroidClientImpl @Inject constructor(
         )
     }
 
-    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel> {
+    override suspend fun sendMessage(message: String): Result<Unit> {
+        return peerdroidConnector.sendDataChannelMessageToRemoteClients(message)
+    }
+
+    private fun listenForIncomingMessages(): Flow<MessageFromDataChannel> {
         return peerdroidConnector
             .dataChannelMessagesFromRemoteClients
             .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteClient>()
@@ -70,6 +79,14 @@ class PeerdroidClientImpl @Inject constructor(
             }
             .cancellable()
             .flowOn(ioDispatcher)
+    }
+
+    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest> {
+        return listenForIncomingMessages().filterIsInstance()
+    }
+
+    override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
+        return listenForIncomingMessages().filterIsInstance()
     }
 
     override suspend fun deleteLink(connectionPassword: String) {
