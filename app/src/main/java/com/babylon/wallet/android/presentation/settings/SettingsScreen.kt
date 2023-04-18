@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -30,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.theme.Orange1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -114,7 +117,7 @@ private fun SettingsContent(
                         item {
                             if (settingsItem is SettingsItem.TopLevelSettings.Backups) {
                                 BackupSettingsItem(
-                                    settingsItem = settingsItem,
+                                    backupSettingsItem = settingsItem,
                                     onClick = {
                                         onSettingClick(settingsItem)
                                     }
@@ -186,7 +189,7 @@ private fun DefaultSettingsItem(
 
 @Composable
 private fun BackupSettingsItem(
-    settingsItem: SettingsItem.TopLevelSettings.Backups,
+    backupSettingsItem: SettingsItem.TopLevelSettings.Backups,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -200,21 +203,51 @@ private fun BackupSettingsItem(
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        settingsItem.getIcon()?.let {
+        backupSettingsItem.getIcon()?.let {
             Icon(painter = painterResource(id = it), contentDescription = null)
         }
+
         Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
             Text(
-                text = stringResource(id = settingsItem.descriptionRes()),
+                text = stringResource(id = backupSettingsItem.descriptionRes()),
                 style = RadixTheme.typography.body2Header,
                 color = RadixTheme.colors.gray1
             )
 
-            Text(
-                text = "Last backup: 2 hours ago",
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val subtitle = when (val backupState = backupSettingsItem.state) {
+                    is SettingsItem.BackupState.Closed -> {
+                        "Back up is turned off"
+                    }
+                    is SettingsItem.BackupState.Open -> {
+                        val lastBackupRelativeTime = remember(backupState.lastBackup) {
+                            backupState.lastBackup?.toEpochMilli()?.let { timeInMilliseconds ->
+                                DateUtils.getRelativeTimeSpanString(timeInMilliseconds)
+                            }
+                        }
+
+                        if (lastBackupRelativeTime != null) {
+                            "Last Backed up: $lastBackupRelativeTime"
+                        } else {
+                            "Not backed up yet"
+                        }
+                    }
+                }
+
+                Text(
+                    text = subtitle,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
+                )
+
+                if (backupSettingsItem.state.isWarningVisible) {
+                    Icon(
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
+                        contentDescription = null,
+                        tint = Orange1
+                    )
+                }
+            }
         }
         Spacer(modifier = Modifier.weight(1f))
         Icon(

@@ -34,6 +34,10 @@ interface ProfileRepository {
 
     suspend fun clear()
 
+    suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean
+
+    suspend fun getSnapshotForBackup(): String?
+
     suspend fun isRestoredProfileFromBackupExists(): Boolean
 
     suspend fun getRestoredProfileFromBackup(): Profile?
@@ -102,6 +106,33 @@ class ProfileRepositoryImpl @Inject constructor(
         preferencesManager.clear()
         profileStateFlow.update { ProfileState.None() }
         backupManager.dataChanged()
+    }
+
+    override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean =
+        if (deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
+            encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshotSerialised)
+            preferencesManager.updateLastBackupInstant(Instant.now())
+            true
+        } else {
+            false
+        }
+
+    override suspend fun getSnapshotForBackup(): String? {
+        val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull() ?: return null
+
+        val isBackupEnabled = try {
+            val snapshot = ProfileSnapshot.fromJson(serialisedSnapshot)
+            snapshot.toProfile().appPreferences.security.isCloudProfileSyncEnabled
+        } catch (exception: Exception) {
+            false
+        }
+
+        return if (isBackupEnabled) {
+            preferencesManager.updateLastBackupInstant(Instant.now())
+            serialisedSnapshot
+        } else {
+            null
+        }
     }
 
     override suspend fun isRestoredProfileFromBackupExists(): Boolean {

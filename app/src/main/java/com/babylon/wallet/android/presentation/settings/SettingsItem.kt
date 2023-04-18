@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import rdx.works.profile.data.model.Profile
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 sealed interface SettingsItem {
 
@@ -87,14 +88,12 @@ sealed interface SettingsItem {
 
             val isWithinWindow: Boolean
                 get() {
-//                    val lastBackup = lastBackupInfo.systemBackup ?: return false
-//                    val lastSave = lastBackupInfo.profileSave
-//
-//                    val now = Instant.now()
-//                    val daysDifference = lastBackup.until(now, ChronoUnit.DAYS)
-//
-//                    return daysDifference < OUTSTANDING_NO_BACKUP_TIME_DAYS
-                    return false
+                    if (lastBackup == null) return false
+
+                    if (lastProfileSave.epochSecond > lastBackup.epochSecond) return true
+
+                    val daysDifference = lastBackup.until(lastProfileSave, ChronoUnit.DAYS)
+                    return daysDifference < OUTSTANDING_NO_BACKUP_TIME_DAYS
                 }
 
             companion object {
@@ -103,6 +102,9 @@ sealed interface SettingsItem {
         }
 
         object Closed: BackupState()
+
+        val isWarningVisible: Boolean
+            get() = this is Closed || (this is Open && !isWithinWindow)
 
         companion object {
             fun from(profile: Profile, lastBackupInstant: Instant?): BackupState {
