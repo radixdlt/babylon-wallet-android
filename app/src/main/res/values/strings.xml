@@ -298,6 +298,13 @@
     <string name="scan_next_qr_code">Please scan next qr code</string>
     <string name="unknown">Unknown</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="view_mnemonics">View Mnemonics</string>
+    <string name="mnemonics">Mnemonics</string>
+    <string name="here_are_all_your_mnemonics">Here are all your Mnemonics. Click one to display</string>
+    <string name="what_is_a_mnemonic">What is a Mnemonic</string>
+    <string name="mnemonic">Mnemonic</string>
+    <string name="mnemonic_and_passphrase">Mnemonic: %s\nPasphrase: %s</string>
+    <string name="none">None</string>
     <string name="customize_guarantees">Customize Guarantees</string>
     <string name="how_do_guarantees_work">How do Guarantees work</string>
     <string name="guarantees_sheet_body_text">Protect yourself by setting guaranteed minimums for estimated deposits</string>

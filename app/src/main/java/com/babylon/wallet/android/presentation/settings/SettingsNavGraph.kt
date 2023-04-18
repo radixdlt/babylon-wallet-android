@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScr
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.babylon.wallet.android.presentation.settings.legacyimport.settingsImportOlympiaAccounts
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 
@@ -53,6 +54,7 @@ fun NavGraphBuilder.settingsNavGraph(
             }
         )
         settingsGatewayEdit(navController)
+        settingsShowMnemonic(onBackClick = {})
         settingsImportOlympiaAccounts(
             onBackClick = {
                 navController.popBackStack()
@@ -90,6 +92,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
                     SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()
+                    }
+                    SettingsItem.TopLevelSettings.ShowMnemonic -> {
+                        navController.settingsShowMnemonic()
                     }
                     SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
                         navController.settingsImportOlympiaAccounts()
