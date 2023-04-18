@@ -1,13 +1,19 @@
 package rdx.works.profile.data.model
 
+import android.text.format.DateUtils
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 sealed class BackupState {
+
     data class Open(
         val lastBackup: Instant?,
-        val lastProfileSave: Instant
+        val lastProfileSave: Instant,
+        private val lastCheck: Instant
     ): BackupState() {
+
+        val lastBackupTimeRelative: String?
+            get() = lastBackup?.let { DateUtils.getRelativeTimeSpanString(it.toEpochMilli()) }?.toString()
 
         val isWithinWindow: Boolean
             get() {
@@ -30,9 +36,16 @@ sealed class BackupState {
         get() = this is Closed || (this is Open && !isWithinWindow)
 
     companion object {
-        fun from(profile: Profile, lastBackupInstant: Instant?): BackupState {
+        fun from(
+            profile: Profile,
+            lastBackupInstant: Instant?
+        ): BackupState {
             return if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
-                Open(lastBackup = lastBackupInstant, lastProfileSave = profile.header.lastModified)
+                Open(
+                    lastBackup = lastBackupInstant,
+                    lastProfileSave = profile.header.lastModified,
+                    lastCheck = Instant.now()
+                )
             } else {
                 Closed
             }

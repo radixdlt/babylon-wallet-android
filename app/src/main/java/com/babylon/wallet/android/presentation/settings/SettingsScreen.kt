@@ -221,11 +221,7 @@ private fun BackupSettingsItem(
                         "Back up is turned off"
                     }
                     is BackupState.Open -> {
-                        val lastBackupRelativeTime = remember(backupState.lastBackup) {
-                            backupState.lastBackup?.toEpochMilli()?.let { timeInMilliseconds ->
-                                DateUtils.getRelativeTimeSpanString(timeInMilliseconds)
-                            }
-                        }
+                        val lastBackupRelativeTime = remember(backupState) { backupState.lastBackupTimeRelative }
 
                         if (lastBackupRelativeTime != null) {
                             "Last Backed up: $lastBackupRelativeTime"
