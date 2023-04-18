@@ -35,6 +35,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.Orange1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import rdx.works.profile.data.model.BackupState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -216,10 +217,10 @@ private fun BackupSettingsItem(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val subtitle = when (val backupState = backupSettingsItem.state) {
-                    is SettingsItem.BackupState.Closed -> {
+                    is BackupState.Closed -> {
                         "Back up is turned off"
                     }
-                    is SettingsItem.BackupState.Open -> {
+                    is BackupState.Open -> {
                         val lastBackupRelativeTime = remember(backupState.lastBackup) {
                             backupState.lastBackup?.toEpochMilli()?.let { timeInMilliseconds ->
                                 DateUtils.getRelativeTimeSpanString(timeInMilliseconds)

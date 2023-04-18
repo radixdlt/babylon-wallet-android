@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.AppConstants
-import com.babylon.wallet.android.domain.usecases.GetLastBackupInstantUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -18,10 +17,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import java.time.Instant
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +29,7 @@ class SettingsViewModel @Inject constructor(
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     getProfileUseCase: GetProfileUseCase,
-    getLastBackupInstantUseCase: GetLastBackupInstantUseCase
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : ViewModel(), OneOffEventHandler<SettingsEvent> by OneOffEventHandlerImpl() {
 
     private val defaultSettings = persistentListOf(
@@ -45,8 +45,8 @@ class SettingsViewModel @Inject constructor(
 
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
-        getLastBackupInstantUseCase()
-    ) { profile: Profile, lastBackup: Instant? ->
+        getBackupStateUseCase()
+    ) { profile: Profile, backupState: BackupState ->
         val showConnectionSetting = profile.appPreferences.p2pLinks.isEmpty()
 
         // Update connection settings based on p2p links
@@ -62,7 +62,6 @@ class SettingsViewModel @Inject constructor(
             }.toMutableList()
         }
 
-        val backupState = SettingsItem.BackupState.from(profile = profile, lastBackupInstant = lastBackup)
         if (visibleSettings.any { it is SettingsItem.TopLevelSettings.Backups }) {
             visibleSettings.mapWhen(
                 predicate = { it is SettingsItem.TopLevelSettings.Backups },

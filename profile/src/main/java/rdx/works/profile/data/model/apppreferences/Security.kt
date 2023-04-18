@@ -27,3 +27,11 @@ fun Profile.updateDeveloperMode(isEnabled: Boolean): Profile = copy(
         )
     )
 )
+
+fun Profile.updateCloudSyncEnabled(isEnabled: Boolean) = copy(
+    appPreferences = appPreferences.copy(
+        security = appPreferences.security.copy(
+            isCloudProfileSyncEnabled = isEnabled
+        )
+    )
+)
