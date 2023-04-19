@@ -77,7 +77,8 @@
     <string name="gateway_updated">Gateway updated!</string>
     <string name="gateway_invalid">Gateway invalid!</string>
     <string name="approve_transaction">Approve</string>
-    <string name="transaction_approved_success">Transaction Approved Successfully!</string>
+    <string name="completing_transaction">Completing Transaction…</string>
+    <string name="transaction_approved_success">Your transaction was successful</string>
     <string name="account_preferences">Account Preferences</string>
     <string name="get_free_xrd">Get RCnet XRD Test Tokens</string>
     <string name="ok">Ok</string>
