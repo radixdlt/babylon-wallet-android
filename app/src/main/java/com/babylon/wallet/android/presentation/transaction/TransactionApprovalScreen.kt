@@ -56,6 +56,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.WithdrawA
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.resultdialog.completing.CompletingBottomDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
@@ -64,9 +65,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TransactionApprovalScreen(
+    modifier: Modifier = Modifier,
     viewModel: TransactionApprovalViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    showSuccessDialog: (requestId: String) -> Unit,
+    showErrorDialog: (requestId: String, errorTextRes: Int) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -78,7 +81,6 @@ fun TransactionApprovalScreen(
         isLoading = state.isLoading,
         isSigning = state.isSigning,
         onApproveTransaction = viewModel::approveTransaction,
-        approved = state.approved,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
         isDeviceSecure = state.isDeviceSecure,
@@ -96,10 +98,18 @@ fun TransactionApprovalScreen(
     )
 
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
                 TransactionApprovalEvent.NavigateBack -> {
                     onBackClick()
+                }
+                is TransactionApprovalEvent.FlowCompletedWithSuccess -> {
+                    onBackClick()
+                    showSuccessDialog(event.requestId)
+                }
+                is TransactionApprovalEvent.FlowCompletedWithError -> {
+                    onBackClick()
+                    showErrorDialog(event.requestId, event.errorTextRes)
                 }
             }
         }
@@ -113,7 +123,6 @@ private fun TransactionPreviewContent(
     isLoading: Boolean,
     isSigning: Boolean,
     onApproveTransaction: () -> Unit,
-    approved: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
@@ -191,21 +200,7 @@ private fun TransactionPreviewContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
                 ) {
-                    AnimatedVisibility(visible = approved) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                        ) {
-                            Icon(painter = painterResource(id = R.drawable.img_dapp_complete), contentDescription = null)
-                            Text(
-                                text = stringResource(R.string.transaction_approved_success),
-                                style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray2,
-                            )
-                        }
-                    }
-                    AnimatedVisibility(visible = !approved && !isLoading) {
+                    AnimatedVisibility(visible = !isLoading) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize(),
@@ -286,8 +281,11 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
-            if (isLoading || isSigning) {
+            if (isLoading) {
                 FullscreenCircularProgressContent()
+            }
+            if (isSigning) {
+                CompletingBottomDialog()
             }
             SnackbarUiMessageHandler(message = error) {
                 onMessageShown()
@@ -456,7 +454,7 @@ fun TransactionPreviewContentPreview() {
                 )
             ).toGuaranteesAccountsUiModel(),
             onApproveTransaction = {},
-            approved = false,
+//            approved = false,
             error = null,
             onMessageShown = {},
             isDeviceSecure = false,

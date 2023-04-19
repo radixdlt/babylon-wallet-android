@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
@@ -98,10 +99,9 @@ class TransactionApprovalViewModel @Inject constructor(
 
             manifestResult.onValue { manifestWithLockFee ->
                 when (
-                    val manifestInStringFormatConversionResult =
-                        transactionClient.manifestInStringFormat(
-                            manifestWithLockFee
-                        )
+                    val manifestInStringFormatConversionResult = transactionClient.manifestInStringFormat(
+                        manifest = manifestWithLockFee
+                    )
                 ) {
                     is Result.Error -> {
                         _state.update {
@@ -383,8 +383,7 @@ class TransactionApprovalViewModel @Inject constructor(
             _state.value.manifestData?.let { manifestData ->
                 val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
                 if (currentNetworkId != manifestData.networkId) {
-                    val failure =
-                        DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
+                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         dappId = transactionWriteRequest.dappId,
                         requestId = args.requestId,
@@ -421,12 +420,11 @@ class TransactionApprovalViewModel @Inject constructor(
                         transactionClient.convertManifestInstructionsToString(
                             manifestJson
                         ).onValue { manifestStringResponse ->
-                            val result = transactionClient.signAndSubmitTransaction(
+                            val signAndSubmitResult = transactionClient.signAndSubmitTransaction(
                                 instructions = manifestStringResponse.readInstructions(),
                                 blobs = manifestStringResponse.blobs
                             )
-
-                            result.onValue { txId ->
+                            signAndSubmitResult.onValue { txId ->
                                 // Send confirmation to the dApp that tx was submitted before status polling
                                 dAppMessenger.sendTransactionWriteResponseSuccess(
                                     dappId = transactionWriteRequest.dappId,
@@ -436,11 +434,10 @@ class TransactionApprovalViewModel @Inject constructor(
 
                                 val transactionStatus = transactionClient.pollTransactionStatus(txId)
                                 transactionStatus.onValue { _ ->
-                                    _state.update { it.copy(isSigning = false, approved = true) }
+                                    _state.update { it.copy(isSigning = false) } // , approved = true) }
                                     approvalJob = null
                                     appEventBus.sendEvent(AppEvent.ApprovedTransaction)
-                                    sendEvent(TransactionApprovalEvent.NavigateBack)
-                                    incomingRequestRepository.requestHandled(args.requestId)
+                                    sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                                 }
                                 transactionStatus.onError { error ->
                                     _state.update {
@@ -458,12 +455,16 @@ class TransactionApprovalViewModel @Inject constructor(
                                             message = exception.failure.getDappMessage()
                                         )
                                         approvalJob = null
-                                        sendEvent(TransactionApprovalEvent.NavigateBack)
-                                        incomingRequestRepository.requestHandled(args.requestId)
+                                        sendEvent(
+                                            TransactionApprovalEvent.FlowCompletedWithError(
+                                                requestId = args.requestId,
+                                                errorTextRes = exception.failure.toDescriptionRes()
+                                            )
+                                        )
                                     }
                                 }
                             }
-                            result.onError { error ->
+                            signAndSubmitResult.onError { error ->
                                 _state.update {
                                     it.copy(
                                         isSigning = false,
@@ -479,8 +480,12 @@ class TransactionApprovalViewModel @Inject constructor(
                                         message = exception.failure.getDappMessage()
                                     )
                                     approvalJob = null
-                                    sendEvent(TransactionApprovalEvent.NavigateBack)
-                                    incomingRequestRepository.requestHandled(args.requestId)
+                                    sendEvent(
+                                        TransactionApprovalEvent.FlowCompletedWithError(
+                                            requestId = args.requestId,
+                                            errorTextRes = exception.failure.toDescriptionRes()
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -493,7 +498,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onBackClick() {
         // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
-            if (approvalJob != null || _state.value.approved) {
+            if (approvalJob != null) {
                 sendEvent(TransactionApprovalEvent.NavigateBack)
             } else {
                 dAppMessenger.sendWalletInteractionResponseFailure(
@@ -658,7 +663,7 @@ data class TransactionUiState(
     val manifestString: String = "",
     val isLoading: Boolean = true,
     val isSigning: Boolean = false,
-    val approved: Boolean = false,
+//    val approved: Boolean = false,
     val isDeviceSecure: Boolean = false,
     val error: UiMessage? = null,
     val canApprove: Boolean = false,
@@ -674,4 +679,9 @@ data class TransactionUiState(
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
     object NavigateBack : TransactionApprovalEvent
+    data class FlowCompletedWithSuccess(val requestId: String) : TransactionApprovalEvent
+    data class FlowCompletedWithError(
+        val requestId: String,
+        @StringRes val errorTextRes: Int
+    ) : TransactionApprovalEvent
 }
