@@ -37,8 +37,8 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.Gateways,
         SettingsItem.TopLevelSettings.AuthorizedDapps,
         SettingsItem.TopLevelSettings.Personas,
-        SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
         SettingsItem.TopLevelSettings.AppSettings,
+        SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
         SettingsItem.TopLevelSettings.ShowMnemonic,
         SettingsItem.TopLevelSettings.DeleteAll
     )
@@ -70,7 +70,7 @@ class SettingsViewModel @Inject constructor(
                 }
             )
         } else {
-            visibleSettings.add(visibleSettings.lastIndex, SettingsItem.TopLevelSettings.Backups(backupState))
+            visibleSettings.add(visibleSettings.lastIndex - 1, SettingsItem.TopLevelSettings.Backups(backupState))
         }
 
         SettingsUiState(visibleSettings.toPersistentList())
