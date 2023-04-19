@@ -434,7 +434,7 @@ class TransactionApprovalViewModel @Inject constructor(
 
                                 val transactionStatus = transactionClient.pollTransactionStatus(txId)
                                 transactionStatus.onValue { _ ->
-                                    _state.update { it.copy(isSigning = false) } // , approved = true) }
+                                    _state.update { it.copy(isSigning = false) }
                                     approvalJob = null
                                     appEventBus.sendEvent(AppEvent.ApprovedTransaction)
                                     sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
@@ -663,7 +663,6 @@ data class TransactionUiState(
     val manifestString: String = "",
     val isLoading: Boolean = true,
     val isSigning: Boolean = false,
-//    val approved: Boolean = false,
     val isDeviceSecure: Boolean = false,
     val error: UiMessage? = null,
     val canApprove: Boolean = false,

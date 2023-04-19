@@ -454,7 +454,6 @@ fun TransactionPreviewContentPreview() {
                 )
             ).toGuaranteesAccountsUiModel(),
             onApproveTransaction = {},
-//            approved = false,
             error = null,
             onMessageShown = {},
             isDeviceSecure = false,
