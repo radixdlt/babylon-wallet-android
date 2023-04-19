@@ -77,5 +77,4 @@ sealed interface SettingsItem {
             return null
         }
     }
-
 }

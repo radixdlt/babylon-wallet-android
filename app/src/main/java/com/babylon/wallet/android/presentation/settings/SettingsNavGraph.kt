@@ -112,7 +112,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.settingsImportOlympiaAccounts()
                     }
                     is SettingsItem.TopLevelSettings.Backups -> {
-                       navController.backupScreen()
+                        navController.backupScreen()
                     }
                     else -> {}
                 }

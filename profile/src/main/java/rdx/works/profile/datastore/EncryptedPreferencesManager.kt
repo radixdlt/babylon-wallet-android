@@ -90,7 +90,6 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
-
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"

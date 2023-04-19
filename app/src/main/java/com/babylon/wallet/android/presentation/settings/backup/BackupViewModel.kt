@@ -15,7 +15,7 @@ import javax.inject.Inject
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
-): StateViewModel<BackupViewModel.State>() {
+) : StateViewModel<BackupViewModel.State>() {
 
     override fun initialState(): State = State(backupState = BackupState.Closed)
 
@@ -33,5 +33,5 @@ class BackupViewModel @Inject constructor(
 
     data class State(
         val backupState: BackupState
-    ): UiState
+    ) : UiState
 }

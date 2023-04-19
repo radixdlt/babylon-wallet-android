@@ -45,7 +45,6 @@ import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
-import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlin.math.absoluteValue
 import kotlin.math.sign
@@ -67,10 +66,10 @@ fun OnboardingScreen(
         currentPage = state.currentPagerPage,
         onProceedClick = viewModel::onProceedClick,
         onRestoreWalletClick = viewModel::onRestoreProfileFromBackupClicked,
-        showWarning = state.showWarning,
-        authenticateWithBiometric = state.authenticateWithBiometric,
-        onUserAuthenticated = viewModel::onUserAuthenticated,
-        onAlertClicked = viewModel::onAlertClicked,
+//        showWarning = state.showWarning,
+//        authenticateWithBiometric = state.authenticateWithBiometric,
+//        onUserAuthenticated = viewModel::onUserAuthenticated,
+//        onAlertClicked = viewModel::onAlertClicked,
         modifier = modifier
     )
 
@@ -90,10 +89,10 @@ private fun OnboardingScreenContent(
     currentPage: Int,
     onProceedClick: () -> Unit,
     onRestoreWalletClick: () -> Unit,
-    showWarning: Boolean,
-    authenticateWithBiometric: Boolean,
-    onUserAuthenticated: (Boolean) -> Unit,
-    onAlertClicked: (Boolean) -> Unit,
+//    showWarning: Boolean,
+//    authenticateWithBiometric: Boolean,
+//    onUserAuthenticated: (Boolean) -> Unit,
+//    onAlertClicked: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(
@@ -106,28 +105,28 @@ private fun OnboardingScreenContent(
         val pagerState = rememberPagerState(initialPage = currentPage)
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            val onboardPages = listOf(
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_1),
-                    description = stringResource(id = R.string.onboarding_body_1),
-                    R.drawable.img_carousel_asset
-                ),
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_2),
-                    description = stringResource(id = R.string.onboarding_body_2),
-                    R.drawable.img_carousel_asset
-                ),
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_3),
-                    description = stringResource(id = R.string.onboarding_body_3),
-                    R.drawable.img_carousel_asset
-                ),
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_4),
-                    description = "",
-                    R.drawable.img_carousel_asset
-                )
-            )
+//            val onboardPages = listOf(
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_1),
+//                    description = stringResource(id = R.string.onboarding_body_1),
+//                    R.drawable.img_carousel_asset
+//                ),
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_2),
+//                    description = stringResource(id = R.string.onboarding_body_2),
+//                    R.drawable.img_carousel_asset
+//                ),
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_3),
+//                    description = stringResource(id = R.string.onboarding_body_3),
+//                    R.drawable.img_carousel_asset
+//                ),
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_4),
+//                    description = "",
+//                    R.drawable.img_carousel_asset
+//                )
+//            )
             RadixOnboardingPagerIndicator(
                 pagerState = pagerState,
                 pageCount = 5,
@@ -266,10 +265,10 @@ fun OnboardingScreenPreview() {
             currentPage = 0,
             onProceedClick = {},
             onRestoreWalletClick = {},
-            showWarning = false,
-            authenticateWithBiometric = true,
-            onUserAuthenticated = {},
-            onAlertClicked = {},
+//            showWarning = false,
+//            authenticateWithBiometric = true,
+//            onUserAuthenticated = {},
+//            onAlertClicked = {},
             Modifier.fillMaxSize()
         )
     }

@@ -13,7 +13,6 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
-import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.repository.ProfileRepository
 import java.io.DataOutputStream
 import java.io.FileOutputStream
@@ -80,16 +79,6 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 //                }
 //            }
 //        }
-    }
-
-    private fun isProfileBackupEnabled(serialisedSnapshot: String): Boolean {
-        val snapshot = try {
-            ProfileSnapshot.fromJson(serialisedSnapshot)
-        } catch (exception: Exception) {
-            null
-        }
-
-        return snapshot?.toProfile()?.appPreferences?.security?.isCloudProfileSyncEnabled ?: false
     }
 
     @SuppressLint("LogNotTimber")

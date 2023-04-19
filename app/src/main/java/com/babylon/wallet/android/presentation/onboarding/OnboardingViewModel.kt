@@ -1,12 +1,11 @@
 package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -17,11 +16,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val deviceSecurityHelper: DeviceSecurityHelper,
+//    private val deviceSecurityHelper: DeviceSecurityHelper,
     private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardRestoredProfileFromBackupUseCase: DiscardRestoredProfileFromBackupUseCase
-) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(), OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
+    OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): OnBoardingUiState = OnBoardingUiState()
 
@@ -49,23 +49,19 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun onAlertClicked(accepted: Boolean) {
-//        if (accepted) {
-//
-//        } else {
-//            _state.update {
-//                it.copy(showWarning = false)
-//            }
-//        }
+        if (!accepted) {
+            _state.update {
+                it.copy(showWarning = false)
+            }
+        }
     }
 
     fun onUserAuthenticated(authenticated: Boolean) {
-//        if (authenticated) {
-//
-//        } else {
-//            _state.update {
-//                it.copy(authenticateWithBiometric = false)
-//            }
-//        }
+        if (!authenticated) {
+            _state.update {
+                it.copy(authenticateWithBiometric = false)
+            }
+        }
     }
 
     fun onRestoreProfileFromBackupClicked() = viewModelScope.launch {
@@ -82,6 +78,6 @@ class OnboardingViewModel @Inject constructor(
     ) : UiState
 
     sealed interface OnBoardingEvent : OneOffEvent {
-        object EndOnBoarding: OnBoardingEvent
+        object EndOnBoarding : OnBoardingEvent
     }
 }

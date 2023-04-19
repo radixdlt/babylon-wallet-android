@@ -65,5 +65,4 @@ data class Header(
             snapshotVersion = ProfileSnapshot.MINIMUM
         )
     }
-
 }

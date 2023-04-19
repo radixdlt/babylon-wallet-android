@@ -10,7 +10,7 @@ sealed class BackupState {
         val lastBackup: Instant?,
         val lastProfileSave: Instant,
         private val lastCheck: Instant
-    ): BackupState() {
+    ) : BackupState() {
 
         val lastBackupTimeRelative: String?
             get() = lastBackup?.let { DateUtils.getRelativeTimeSpanString(it.toEpochMilli()) }?.toString()
@@ -30,7 +30,7 @@ sealed class BackupState {
         }
     }
 
-    object Closed: BackupState()
+    object Closed : BackupState()
 
     val isWarningVisible: Boolean
         get() = this is Closed || (this is Open && !isWithinWindow)

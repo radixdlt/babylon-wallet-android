@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.incompatibleprofile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler

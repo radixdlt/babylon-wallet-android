@@ -117,6 +117,7 @@ class ProfileRepositoryImpl @Inject constructor(
             false
         }
 
+    @Suppress("SwallowedException")
     override suspend fun getSnapshotForBackup(): String? {
         val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull() ?: return null
 
@@ -152,6 +153,7 @@ class ProfileRepositoryImpl @Inject constructor(
         profileStateFlow.update { ProfileState.None() }
     }
 
+    @Suppress("SwallowedException")
     private fun deriveProfileState(snapshotSerialised: String): ProfileState {
         val snapshotRelaxed = try {
             relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(snapshotSerialised)

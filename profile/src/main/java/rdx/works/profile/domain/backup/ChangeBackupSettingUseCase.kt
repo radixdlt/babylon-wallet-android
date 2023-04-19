@@ -16,6 +16,4 @@ class ChangeBackupSettingUseCase @Inject constructor(
             val mutated = profile.updateCloudSyncEnabled(isChecked)
             profileRepository.saveProfile(mutated)
         }
-
-
 }

@@ -50,7 +50,6 @@ internal data class ProfileSnapshot(
         const val MINIMUM = 28
 
         fun fromJson(serialised: String) = Json.decodeFromString<ProfileSnapshot>(serialised)
-
     }
 }
 
@@ -60,8 +59,6 @@ internal data class ProfileSnapshotRelaxed(
     private val header: Header
 ) {
 
-
     val isValid: Boolean
         get() = header.snapshotVersion >= MINIMUM
-
 }

@@ -27,7 +27,11 @@ class GetBackupStateUseCase @Inject constructor(
     private fun minuteUpdateFlow() = flow {
         while (currentCoroutineContext().isActive) {
             emit(Unit)
-            delay(60000)
+            delay(MINUTE_MS)
         }
+    }
+
+    companion object {
+        private const val MINUTE_MS = 60_000L
     }
 }

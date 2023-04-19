@@ -31,13 +31,14 @@ import rdx.works.profile.data.model.BackupState
 @Composable
 fun BackupScreen(
     viewModel: BackupViewModel,
+    modifier: Modifier = Modifier,
     onSystemBackupSettingsClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     BackupScreenContent(
-        modifier = Modifier
+        modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),

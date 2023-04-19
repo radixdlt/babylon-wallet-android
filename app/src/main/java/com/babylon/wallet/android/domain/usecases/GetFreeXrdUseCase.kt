@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.data.manifest.addDepositBatchInstruction
 import com.babylon.wallet.android.data.manifest.addFreeXrdInstruction
 import com.babylon.wallet.android.data.manifest.addLockFeeInstruction
@@ -16,6 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
