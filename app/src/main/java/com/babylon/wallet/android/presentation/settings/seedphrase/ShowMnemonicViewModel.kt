@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.seedphrase
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class ShowMnemonicViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository
-) : BaseViewModel<ShowMnemonicViewModel.SeedPhraseUiState>(), OneOffEventHandler<ShowMnemonicEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<ShowMnemonicViewModel.SeedPhraseUiState>(), OneOffEventHandler<ShowMnemonicEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState() = SeedPhraseUiState()
 
