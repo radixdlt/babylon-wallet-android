@@ -1,10 +1,12 @@
-package com.babylon.wallet.android.presentation.dapp.success
+package com.babylon.wallet.android.presentation.ui.composables.resultdialog.completing
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,36 +15,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.R
+import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 
 @Composable
-fun RequestResultSuccessScreen(
-    viewModel: RequestResultSuccessViewModel,
-    requestId: String,
-    dAppName: String,
-    onBackPress: () -> Unit,
+fun CompletingBottomDialog(
     modifier: Modifier = Modifier
 ) {
-    val dismissHandler = {
-        viewModel.incomingRequestHandled(requestId)
-        onBackPress()
-    }
     BottomSheetWrapper(
-        onDismissRequest = dismissHandler
+        onDismissRequest = { }
     ) {
-        RequestSuccessDialog(
-            dAppName = dAppName,
+        CompletingBottomDialogContent(
             modifier = modifier
         )
     }
 }
 
 @Composable
-private fun RequestSuccessDialog(
-    dAppName: String,
+private fun CompletingBottomDialogContent(
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -55,27 +48,24 @@ private fun RequestSuccessDialog(
     ) {
         Image(
             painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
+                id = R.drawable.check_circle_outline
             ),
+            alpha = 0.2F,
             contentDescription = null
         )
         Text(
-            text = stringResource(id = R.string.success),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
-        )
-        Text(
-            text = stringResource(id = R.string.request_complete, dAppName),
+            text = stringResource(com.babylon.wallet.android.R.string.completing_transaction),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
+        Spacer(Modifier.height(36.dp))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun RequestResultSuccessScreenPreview() {
+fun CompletingBottomDialogPreview() {
     RadixWalletTheme {
-        RequestSuccessDialog("dApp")
+        CompletingBottomDialogContent()
     }
 }
