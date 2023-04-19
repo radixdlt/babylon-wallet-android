@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.backup
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.BaseViewModel
+import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -15,7 +15,7 @@ import javax.inject.Inject
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
-): BaseViewModel<BackupViewModel.State>() {
+): StateViewModel<BackupViewModel.State>() {
 
     override fun initialState(): State = State(backupState = BackupState.Closed)
 

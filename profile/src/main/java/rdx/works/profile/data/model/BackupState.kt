@@ -1,8 +1,8 @@
 package rdx.works.profile.data.model
 
 import android.text.format.DateUtils
+import java.time.Duration
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 sealed class BackupState {
 
@@ -19,10 +19,10 @@ sealed class BackupState {
             get() {
                 if (lastBackup == null) return false
 
-                if (lastProfileSave.epochSecond > lastBackup.epochSecond) return true
+                if (lastProfileSave.epochSecond < lastBackup.epochSecond) return true
 
-                val daysDifference = lastBackup.until(lastProfileSave, ChronoUnit.DAYS)
-                return daysDifference < OUTSTANDING_NO_BACKUP_TIME_DAYS
+                val duration = Duration.between(lastBackup, lastProfileSave)
+                return duration.toDays() < OUTSTANDING_NO_BACKUP_TIME_DAYS
             }
 
         companion object {
