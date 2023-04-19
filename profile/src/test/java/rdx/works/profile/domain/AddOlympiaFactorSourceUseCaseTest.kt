@@ -10,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -26,6 +27,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
+import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class AddOlympiaFactorSourceUseCaseTest {
@@ -46,8 +48,11 @@ internal class AddOlympiaFactorSourceUseCaseTest {
 
         val network = Radix.Gateway.hammunet
         val profile = Profile(
-            id = "9958f568-8c9b-476a-beeb-017d1f843266",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            header = Header.init(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                creationDate = Instant.now()
+            ),
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
@@ -83,8 +88,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                     networkID = network.network.networkId().value,
                     personas = emptyList()
                 )
-            ),
-            version = 1
+            )
         )
 
         coEvery { mnemonicRepository.readMnemonic(any()) } returns null
