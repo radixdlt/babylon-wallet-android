@@ -1,11 +1,10 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
@@ -20,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -134,26 +134,37 @@ fun NotSecureAlertDialog(
 }
 
 @Composable
-fun SomethingWentWrongDialog(modifier: Modifier = Modifier, onDismissRequest: () -> Unit) {
+fun SomethingWentWrongDialog(
+    modifier: Modifier = Modifier,
+    onDismissRequest: () -> Unit,
+    title: String = stringResource(id = R.string.something_went_wrong),
+    subtitle: String = stringResource(id = R.string.please_confirm_dialog_body)
+) {
     BottomSheetWrapper(onDismissRequest = onDismissRequest) {
         SomethingWentWrongDialogContent(
-            title = stringResource(id = R.string.something_went_wrong),
-            subtitle = stringResource(id = R.string.please_confirm_dialog_body),
+            title = title,
+            subtitle = subtitle,
             modifier = modifier
         )
     }
 }
 
 @Composable
-private fun SomethingWentWrongDialogContent(title: String, subtitle: String, modifier: Modifier = Modifier) {
+private fun SomethingWentWrongDialogContent(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String
+) {
     Column(
         modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .padding(vertical = 40.dp, horizontal = RadixTheme.dimensions.paddingLarge),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth()
+            .background(color = RadixTheme.colors.defaultBackground)
+            .padding(RadixTheme.dimensions.paddingLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         Icon(
-            modifier = Modifier.size(90.dp),
+            modifier = Modifier.size(104.dp),
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             ),
@@ -163,9 +174,10 @@ private fun SomethingWentWrongDialogContent(title: String, subtitle: String, mod
         Text(
             text = title,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Text(
             text = subtitle,
             style = RadixTheme.typography.body1Regular,
@@ -178,6 +190,6 @@ private fun SomethingWentWrongDialogContent(title: String, subtitle: String, mod
 @Preview
 fun SomethingWentWrongDialogPreview() {
     RadixWalletTheme {
-        SomethingWentWrongDialogContent("Title", "Subtitle")
+        SomethingWentWrongDialogContent(title = "Title", subtitle = "Subtitle")
     }
 }
