@@ -5,11 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
-import com.babylon.wallet.android.presentation.dapp.success.requestResultSuccess
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
+import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 
@@ -47,7 +47,8 @@ fun WalletApp(
                     }
                 }
                 is MainEvent.HandledUsePersonaAuthRequest -> {
-                    navController.requestResultSuccess(
+                    navController.successBottomDialog(
+                        isFromTransaction = false,
                         requestId = event.requestId,
                         dAppName = event.dAppName
                     )
