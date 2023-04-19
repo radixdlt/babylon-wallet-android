@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.exists
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,7 +30,8 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState() = WalletUiState()
@@ -40,27 +42,31 @@ class WalletViewModel @Inject constructor(
                 loadResourceData(isRefreshing = false)
             }
         }
+
+        viewModelScope.launch {
+            getBackupStateUseCase().collect { backupState ->
+                _state.update { it.copy(isBackupWarningVisible = backupState.isWarningVisible) }
+            }
+        }
     }
 
     private suspend fun loadResourceData(isRefreshing: Boolean) {
-        viewModelScope.launch {
+        _state.update { state ->
+            state.copy(
+                resources = getProfileUseCase.accountsOnCurrentNetwork()
+                    .map { it.toDomainModel() }
+                    .toPersistentList(),
+                isLoading = false
+            )
+        }
+        val result = getAccountResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
+        result.onError { error ->
+            Timber.w(error)
+            _state.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
+        }
+        result.onValue { resourceList ->
             _state.update { state ->
-                state.copy(
-                    resources = getProfileUseCase.accountsOnCurrentNetwork()
-                        .map { it.toDomainModel() }
-                        .toPersistentList(),
-                    isLoading = false
-                )
-            }
-            val result = getAccountResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
-            result.onError { error ->
-                Timber.w(error)
-                _state.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
-            }
-            result.onValue { resourceList ->
-                _state.update { state ->
-                    state.copy(resources = resourceList.toPersistentList(), isLoading = false)
-                }
+                state.copy(resources = resourceList.toPersistentList(), isLoading = false)
             }
         }
     }
@@ -95,4 +101,5 @@ data class WalletUiState(
     val isRefreshing: Boolean = false,
     val resources: ImmutableList<AccountResources> = persistentListOf(),
     val error: UiMessage? = null,
+    val isBackupWarningVisible: Boolean = false
 ) : UiState
