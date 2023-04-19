@@ -9,14 +9,14 @@ import com.babylon.wallet.android.data.dapp.model.LedgerInteraction
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.encodeToString
-import rdx.works.core.UUIDGenerator
 import javax.inject.Inject
 
 interface LedgerMessenger {
 
-    suspend fun sendDeviceInfoRequest(): Result<String>
-    suspend fun sendImportOlympiaDeviceRequest(derivationPaths: List<String>): Result<String>
+    suspend fun sendDeviceInfoRequest(interactionId: String): Result<String>
+    suspend fun sendImportOlympiaDeviceRequest(interactionId: String, derivationPaths: List<String>): Result<String>
     suspend fun sendDerivePublicKeyRequest(
+        interactionId: String,
         keyParameters: DerivePublicKeyRequest.KeyParameters,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice
     ): Result<String>
@@ -26,9 +26,7 @@ class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
 ) : LedgerMessenger {
 
-    override suspend fun sendDeviceInfoRequest(): Result<String> {
-
-        val interactionId = UUIDGenerator.uuid().toString()
+    override suspend fun sendDeviceInfoRequest(interactionId: String): Result<String> {
         val ledgerRequest: LedgerInteraction = GetDeviceInfoRequest(interactionId)
         return when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(interactionId)
@@ -36,8 +34,7 @@ class LedgerMessengerImpl @Inject constructor(
         }
     }
 
-    override suspend fun sendImportOlympiaDeviceRequest(derivationPaths: List<String>): Result<String> {
-        val interactionId = UUIDGenerator.uuid().toString()
+    override suspend fun sendImportOlympiaDeviceRequest(interactionId: String, derivationPaths: List<String>): Result<String> {
         val request: LedgerInteraction = ImportOlympiaDeviceRequest(interactionId, derivationPaths)
         return when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(interactionId)
@@ -46,10 +43,10 @@ class LedgerMessengerImpl @Inject constructor(
     }
 
     override suspend fun sendDerivePublicKeyRequest(
+        interactionId: String,
         keyParameters: DerivePublicKeyRequest.KeyParameters,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice
     ): Result<String> {
-        val interactionId = UUIDGenerator.uuid().toString()
         val ledgerRequest: LedgerInteraction = DerivePublicKeyRequest(interactionId, keyParameters, ledgerDevice)
         return when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(interactionId)

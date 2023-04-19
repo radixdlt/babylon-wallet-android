@@ -114,7 +114,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
 
-        val usecase = MigrateOlympiaAccountsUseCase(mnemonicRepository, profileRepository, testDispatcher)
+        val usecase = MigrateOlympiaAccountsUseCase(profileRepository, testDispatcher)
         val capturedProfile = slot<Profile>()
         usecase(getOlympiaTestAccounts(), FactorSource.ID("1"))
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }

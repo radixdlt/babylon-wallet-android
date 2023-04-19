@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -118,7 +119,11 @@ fun OlympiaImportScreen(
         isDeviceSecure = state.isDeviceSecure,
         onSkipRemainingHardwareAccounts = viewModel::onSkipRemainingHardwareAccounts,
         accountsLeft = state.hardwareAccountsLeftToImport,
-        waitingForLedgerResponse = state.waitingForLedgerResponse
+        waitingForLedgerResponse = state.waitingForLedgerResponse,
+        addLedgerName = state.addLedgerName,
+        onSkipLedgerName = viewModel::onSkipLedgerName,
+        onConfirmLedgerName = viewModel::onConfirmLedgerName,
+        ledgerDevices = state.ledgerDevices
     )
 }
 
@@ -153,7 +158,11 @@ private fun OlympiaImportContent(
     isDeviceSecure: Boolean,
     onSkipRemainingHardwareAccounts: () -> Unit,
     accountsLeft: Int,
-    waitingForLedgerResponse: Boolean
+    waitingForLedgerResponse: Boolean,
+    addLedgerName: Boolean,
+    onConfirmLedgerName: (String) -> Unit,
+    onSkipLedgerName: () -> Unit,
+    ledgerDevices: Map<LedgerDeviceUiModel, Int>
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -287,9 +296,13 @@ private fun OlympiaImportContent(
                                 .fillMaxSize()
                                 .padding(RadixTheme.dimensions.paddingDefault),
                             onHardwareImport = onHardwareImport,
-                            onSkipRemainingHardwareAccounts = onSkipRemainingHardwareAccounts,
                             accountsLeft = accountsLeft,
-                            waitingForLedgerResponse = waitingForLedgerResponse
+                            onSkipRemainingHardwareAccounts = onSkipRemainingHardwareAccounts,
+                            waitingForLedgerResponse = waitingForLedgerResponse,
+                            addLedgerName = addLedgerName,
+                            onConfirmLedgerName = onConfirmLedgerName,
+                            onSkipLedgerName = onSkipLedgerName,
+                            ledgerDevices = ledgerDevices
                         )
                     }
                     ImportPage.ImportComplete -> {
@@ -432,34 +445,86 @@ private fun HardwareImportScreen(
     onHardwareImport: () -> Unit,
     accountsLeft: Int,
     onSkipRemainingHardwareAccounts: () -> Unit,
-    waitingForLedgerResponse: Boolean
+    waitingForLedgerResponse: Boolean,
+    addLedgerName: Boolean,
+    onConfirmLedgerName: (String) -> Unit,
+    onSkipLedgerName: () -> Unit,
+    ledgerDevices: Map<LedgerDeviceUiModel, Int>
 ) {
+    var ledgerNameValue by remember {
+        mutableStateOf("")
+    }
     Box(modifier = modifier) {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
             Text(
                 text = pluralStringResource(id = R.plurals.accounts_left_to_import, accountsLeft, accountsLeft),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.weight(1f))
-            RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.send_add_ledger_request),
-                onClick = onHardwareImport,
-                enabled = !waitingForLedgerResponse,
-                throttleClicks = true
-            )
-            RadixSecondaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.skip_remaining_accounts),
-                onClick = onSkipRemainingHardwareAccounts,
-                enabled = !waitingForLedgerResponse,
-                throttleClicks = true
-            )
+            if (addLedgerName) {
+                Spacer(modifier = Modifier.weight(1f))
+                RadixTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    onValueChanged = { ledgerNameValue = it },
+                    value = ledgerNameValue,
+                    leftLabel = stringResource(id = R.string.name_this_ledger),
+                    hint = stringResource(id = R.string.ledger_hint),
+                    optionalHint = stringResource(id = R.string.ledger_name_bottom_hint)
+                )
+                RadixPrimaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.confirm_name),
+                    onClick = {
+                        onConfirmLedgerName(ledgerNameValue)
+                        ledgerNameValue = ""
+                    },
+                    throttleClicks = true
+                )
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth().imePadding(),
+                    text = stringResource(R.string.skip),
+                    onClick = onSkipLedgerName,
+                    throttleClicks = true
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f), verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                ) {
+                    items(ledgerDevices.entries.toList()) { entry ->
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = pluralStringResource(
+                                id = R.plurals.accounts_per_device,
+                                count = entry.value,
+                                entry.key.name ?: entry.key.model.name,
+                                entry.value
+                            ),
+                            style = RadixTheme.typography.body1Header,
+                            color = RadixTheme.colors.gray1
+                        )
+                    }
+                }
+                RadixPrimaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.send_add_ledger_request),
+                    onClick = onHardwareImport,
+                    enabled = !waitingForLedgerResponse,
+                    throttleClicks = true
+                )
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.skip_remaining_accounts),
+                    onClick = onSkipRemainingHardwareAccounts,
+                    enabled = !waitingForLedgerResponse,
+                    throttleClicks = true
+                )
+            }
         }
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
@@ -593,7 +658,11 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             isDeviceSecure = true,
             onSkipRemainingHardwareAccounts = {},
             accountsLeft = 5,
-            waitingForLedgerResponse = false
+            waitingForLedgerResponse = false,
+            addLedgerName = false,
+            onConfirmLedgerName = {},
+            onSkipLedgerName = {},
+            ledgerDevices = emptyMap()
         )
     }
 }

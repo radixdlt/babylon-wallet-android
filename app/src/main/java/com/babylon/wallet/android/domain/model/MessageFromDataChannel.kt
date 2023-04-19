@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {
@@ -182,5 +184,13 @@ fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuan
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
         }
+    }
+}
+
+fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): FactorSource.LedgerHardwareWallet.DeviceModel {
+    return when (this) {
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> FactorSource.LedgerHardwareWallet.DeviceModel.nanoS
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> FactorSource.LedgerHardwareWallet.DeviceModel.nanoSPlus
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> FactorSource.LedgerHardwareWallet.DeviceModel.nanoX
     }
 }
