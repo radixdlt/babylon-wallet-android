@@ -70,17 +70,12 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
         }
     }
 
-    // TODO Check that
-    override fun writeNewStateDescription(newState: ParcelFileDescriptor?) {
-//        newState?.let { new ->
-//            FileOutputStream(new.fileDescriptor).also {
-//                DataOutputStream(it).apply {
-//                    writeLong(Date().time)
-//                }
-//            }
-//        }
-    }
+    override fun writeNewStateDescription(newState: ParcelFileDescriptor?) {}
 
+    // Timber will not work here, since this helper is initiated with a sandboxed
+    // application context. When a backup operation is started, the system creates the BackupAgent and starts the
+    // parent Application class and not the BabylonApplication.
+    // Check the warning in https://developer.android.com/guide/topics/data/autobackup#ImplementingBackupAgent
     @SuppressLint("LogNotTimber")
     private fun log(message: String) {
         if (BuildConfig.DEBUG) {
