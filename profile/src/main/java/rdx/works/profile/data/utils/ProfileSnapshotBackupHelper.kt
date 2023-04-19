@@ -70,6 +70,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
         }
     }
 
+    @Suppress("EmptyFunctionBlock")
     override fun writeNewStateDescription(newState: ParcelFileDescriptor?) {}
 
     // Timber will not work here, since this helper is initiated with a sandboxed
