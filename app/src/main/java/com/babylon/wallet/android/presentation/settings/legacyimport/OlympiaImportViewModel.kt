@@ -91,19 +91,18 @@ class OlympiaImportViewModel @Inject constructor(
                 _state.update { it.copy(waitingForLedgerResponse = false) }
                 val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
                 val derivedKeys = ledgerResponse.derivedPublicKeys.map { it.publicKeyHex }.toSet()
+                if (derivedKeys.isEmpty()) {
+                    _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
+                    return
+                }
                 val ledgerDeviceModel = LedgerDeviceUiModel(ledgerResponse.deviceId, ledgerResponse.model)
                 validatedHardwareAccounts[ledgerDeviceModel] = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
                 currentlyProcessedDevice = ledgerDeviceModel
-                val accountsLeftToMigrate = updateHardwareAccountLeftToMigrateCount()
+                updateHardwareAccountLeftToMigrateCount()
                 _state.update { state ->
                     state.copy(addLedgerName = true, ledgerDevices = validatedHardwareAccounts.entries.associate {
                         it.key to it.value.size
                     })
-                }
-                if (accountsLeftToMigrate == 0) {
-                    viewModelScope.launch {
-                        internalImportOlympiaAccounts()
-                    }
                 }
             }
             else -> {}
@@ -258,21 +257,26 @@ class OlympiaImportViewModel @Inject constructor(
 
     @Suppress("UnsafeCallOnNullableType")
     private suspend fun internalImportOlympiaAccounts() {
+        var migratedSoftwareAccounts = emptyList<Network.Account>()
+        var migratedHardwareAccounts = emptyList<Network.Account>()
         val softwareAccountsToMigrate = softwareAccountsToMigrate()
-        if (softwareAccountsToMigrate.isEmpty()) {
+        if (softwareAccountsToMigrate.isEmpty() && validatedHardwareAccounts.isEmpty()) {
             nextPage()
             return
         }
-        val factorSourceID = existingFactorSourceId ?: addOlympiaFactorSourceUseCase(mnemonicWithPassphrase!!)
-        val migratedSoftwareAccounts = migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSourceID)
-        var migratedHardwareAccounts = emptyList<Network.Account>()
-        validatedHardwareAccounts.entries.forEach { entry ->
-            val ledgerFactorSourceId = addLedgerFactorSourceUseCase(
-                id = FactorSource.ID(entry.key.id),
-                model = entry.key.model.toProfileLedgerDeviceModel(),
-                name = entry.key.name
-            )
-            migratedHardwareAccounts = migratedHardwareAccounts + migrateOlympiaAccountsUseCase(entry.value, ledgerFactorSourceId)
+        if (softwareAccountsToMigrate.isNotEmpty()) {
+            val factorSourceID = existingFactorSourceId ?: addOlympiaFactorSourceUseCase(mnemonicWithPassphrase!!)
+            migratedSoftwareAccounts = migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSourceID)
+        }
+        if (validatedHardwareAccounts.isNotEmpty()) {
+            validatedHardwareAccounts.entries.forEach { entry ->
+                val ledgerFactorSourceId = addLedgerFactorSourceUseCase(
+                    id = FactorSource.ID(entry.key.id),
+                    model = entry.key.model.toProfileLedgerDeviceModel(),
+                    name = entry.key.name
+                )
+                migratedHardwareAccounts = migratedHardwareAccounts + migrateOlympiaAccountsUseCase(entry.value, ledgerFactorSourceId)
+            }
         }
         _state.update { state ->
             state.copy(migratedAccounts = (migratedSoftwareAccounts + migratedHardwareAccounts).map { it.toUiModel() }.toPersistentList())
@@ -330,6 +334,12 @@ class OlympiaImportViewModel @Inject constructor(
 
     fun onSkipLedgerName() {
         _state.update { it.copy(addLedgerName = false) }
+        val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
+        if (hardwareAccountsLeftToMigrate.isEmpty()) {
+            viewModelScope.launch {
+                internalImportOlympiaAccounts()
+            }
+        }
     }
 
     fun onConfirmLedgerName(name: String) {
@@ -341,6 +351,12 @@ class OlympiaImportViewModel @Inject constructor(
                 state.copy(addLedgerName = false, ledgerDevices = validatedHardwareAccounts.entries.associate {
                     it.key to it.value.size
                 })
+            }
+            val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
+            if (hardwareAccountsLeftToMigrate.isEmpty()) {
+                viewModelScope.launch {
+                    internalImportOlympiaAccounts()
+                }
             }
         }
     }
