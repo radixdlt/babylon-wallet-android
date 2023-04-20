@@ -20,6 +20,9 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
 val GetProfileUseCase.accountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts }
 
+val GetProfileUseCase.factorSources
+    get() = invoke().map { it.factorSources }
+
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
 
 suspend fun GetProfileUseCase.accountOnCurrentNetwork(

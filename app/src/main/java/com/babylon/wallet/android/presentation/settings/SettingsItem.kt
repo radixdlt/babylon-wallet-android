@@ -13,6 +13,7 @@ sealed interface SettingsItem {
         object Gateways : TopLevelSettings
         object AuthorizedDapps : TopLevelSettings
         object AppSettings : TopLevelSettings
+        object ShowMnemonic : TopLevelSettings
         object ImportFromLegacyWallet : TopLevelSettings
         object DeleteAll : TopLevelSettings
         object Personas : TopLevelSettings
@@ -28,6 +29,7 @@ sealed interface SettingsItem {
                 Personas -> R.string.settings_personas
                 AuthorizedDapps -> R.string.authorized_dapps
                 AppSettings -> R.string.app_settings
+                ShowMnemonic -> R.string.view_mnemonics
                 ImportFromLegacyWallet -> R.string.import_from_legacy_wallet
             }
         }
@@ -41,6 +43,7 @@ sealed interface SettingsItem {
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                ShowMnemonic -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 else -> null
             }
         }
