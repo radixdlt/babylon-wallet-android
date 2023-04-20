@@ -70,7 +70,7 @@ class SettingsViewModel @Inject constructor(
                 }
             )
         } else {
-            visibleSettings.add(visibleSettings.lastIndex - 1, SettingsItem.TopLevelSettings.Backups(backupState))
+            visibleSettings.add(visibleSettings.lastIndex - 2, SettingsItem.TopLevelSettings.Backups(backupState))
         }
 
         SettingsUiState(visibleSettings.toPersistentList())
