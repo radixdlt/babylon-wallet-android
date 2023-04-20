@@ -124,9 +124,7 @@ data class Network(
                     keyType = KeyType.TRANSACTION_SIGNING
                 )
 
-                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
-                    derivationPath = derivationPath.path
-                ).removeLeadingZero()
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
 
                 val address = deriveAccountAddress(
                     networkID = networkId,
@@ -211,9 +209,7 @@ data class Network(
                     keyType = KeyType.TRANSACTION_SIGNING
                 )
 
-                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
-                    derivationPath = derivationPath.path
-                ).removeLeadingZero()
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
 
                 val address = deriveIdentityAddress(
                     networkID = networkId,

@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.toEllipticCurveType
+import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 
@@ -37,12 +38,12 @@ fun MnemonicWithPassphrase.Companion.generate(
 
 fun MnemonicWithPassphrase.compressedPublicKey(
     curve: Slip10Curve = Slip10Curve.CURVE_25519,
-    derivationPath: String,
+    derivationPath: DerivationPath,
 ): ByteArray {
     val words = MnemonicWords(mnemonic)
     val seed = words.toSeed(passphrase = bip39Passphrase)
 
-    val derivedKey = seed.toKey(derivationPath, curve.toEllipticCurveType())
+    val derivedKey = seed.toKey(derivationPath.path, curve.toEllipticCurveType())
 
     return derivedKey.keyPair.getCompressedPublicKey()
 }

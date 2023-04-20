@@ -238,7 +238,7 @@ data class FactorSource(
         fun factorSourceId(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             curve: Slip10Curve = CURVE_25519,
-            derivationPath: String = DerivationPath.forFactorSource().path,
+            derivationPath: DerivationPath = DerivationPath.forFactorSource(),
         ): ID {
             return ID(
                 mnemonicWithPassphrase.compressedPublicKey(

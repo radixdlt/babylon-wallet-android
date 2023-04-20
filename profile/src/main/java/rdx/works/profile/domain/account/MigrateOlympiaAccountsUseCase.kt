@@ -42,7 +42,10 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                         olympiaAccount.address
                     )
                 ).getOrThrow().babylonAccountAddress.address
-                val publicKey = mnemonic.compressedPublicKey(curve = Slip10Curve.SECP_256K1, olympiaAccount.derivationPath.path)
+                val publicKey = mnemonic.compressedPublicKey(
+                    curve = Slip10Curve.SECP_256K1,
+                    derivationPath = olympiaAccount.derivationPath
+                )
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },
                     address = babylonAddress,
