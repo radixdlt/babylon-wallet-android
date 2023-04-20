@@ -16,6 +16,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
@@ -626,7 +627,9 @@ data class GuaranteesAccountItemUiModel(
     val tokenGuaranteedQuantity: String,
     val guaranteedPercentAmount: String,
     val index: Int? = null
-)
+) {
+    fun isXrd(): Boolean = tokenSymbol == MetadataConstants.SYMBOL_XRD
+}
 
 data class PresentingProofUiModel(
     val iconUrl: String,
