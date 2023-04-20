@@ -36,30 +36,31 @@ fun MnemonicWithPassphrase.Companion.generate(
     bip39Passphrase = ""
 )
 
-fun MnemonicWithPassphrase.compressedPublicKey(
+fun MnemonicWithPassphrase.toExtendedKey(
     curve: Slip10Curve = Slip10Curve.CURVE_25519,
     derivationPath: DerivationPath,
-): ByteArray {
+): ExtendedKey {
     val words = MnemonicWords(mnemonic)
     val seed = words.toSeed(passphrase = bip39Passphrase)
 
-    val derivedKey = seed.toKey(derivationPath.path, curve.toEllipticCurveType())
-
-    return derivedKey.keyPair.getCompressedPublicKey()
+    return seed.toKey(derivationPath.path, curve.toEllipticCurveType())
 }
+
+fun MnemonicWithPassphrase.compressedPublicKey(
+    curve: Slip10Curve = Slip10Curve.CURVE_25519,
+    derivationPath: DerivationPath,
+): ByteArray = toExtendedKey(
+    curve = curve,
+    derivationPath = derivationPath
+).keyPair.getCompressedPublicKey()
 
 @Suppress("UnsafeCallOnNullableType")
 fun MnemonicWithPassphrase.deriveExtendedKey(
     factorInstance: FactorInstance
-): ExtendedKey {
-    val mnemonic = MnemonicWords(phrase = mnemonic)
-    val seed = mnemonic.toSeed(passphrase = bip39Passphrase)
-
-    return seed.toKey(
-        factorInstance.derivationPath!!.path,
-        factorInstance.publicKey.curve.toEllipticCurveType()
-    )
-}
+): ExtendedKey = toExtendedKey(
+    curve = factorInstance.publicKey.curve,
+    derivationPath = factorInstance.derivationPath!!
+)
 
 fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
     val words = MnemonicWords(mnemonic)

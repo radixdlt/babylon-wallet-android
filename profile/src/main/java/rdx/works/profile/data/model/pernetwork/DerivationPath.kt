@@ -46,7 +46,6 @@ data class DerivationPath(
             accountIndex = accountIndex
         ).build()
     }
-
 }
 
 /**
@@ -123,8 +122,8 @@ private object FactorSourceIdDerivationPathBuilder : DerivationPathBuilder {
  * [contrary to the BIP44 standard](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#user-content-Path_levels).
  * The path looks like this: `m/44'/1022'/2'/1/3'`
  *
- * It was a mistake when the Radix Olympia wallet was written, see
- * [Typescript SDK](https://github.com/radixdlt/radixdlt-javascript/blob/main/packages/crypto/src/elliptic-curve/hd/bip32/bip44/bip44.ts#L81),
+ * It was a mistake when the Radix Olympia wallet was written, see Typescript
+ * [SDK](https://github.com/radixdlt/radixdlt-javascript/blob/main/packages/crypto/src/elliptic-curve/hd/bip32/bip44/bip44.ts#L81),
  * to harden the `address_index`.
  */
 private data class LegacyOlympiaBIP44LikeDerivationPathBuilder(
