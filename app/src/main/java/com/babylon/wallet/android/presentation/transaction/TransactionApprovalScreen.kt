@@ -92,6 +92,7 @@ fun TransactionApprovalScreen(
         depositingAccounts = state.depositingAccounts,
         guaranteesAccounts = state.guaranteesAccounts,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
+        onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged
     )
 
@@ -128,6 +129,7 @@ private fun TransactionPreviewContent(
     depositingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
     onGuaranteesApplyClick: () -> Unit,
+    onGuaranteesCloseClick: () -> Unit,
     onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
@@ -157,6 +159,7 @@ private fun TransactionPreviewContent(
                     scope.launch {
                         bottomSheetState.hide()
                     }
+                    onGuaranteesCloseClick()
                 },
                 onApplyClick = { ->
                     scope.launch {
@@ -462,6 +465,7 @@ fun TransactionPreviewContentPreview() {
             isDeviceSecure = false,
             canApprove = true,
             onGuaranteesApplyClick = {},
+            onGuaranteesCloseClick = {},
             onGuaranteeValueChanged = {}
         )
     }

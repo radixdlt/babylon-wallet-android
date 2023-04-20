@@ -343,6 +343,8 @@ class TransactionApprovalViewModel @Inject constructor(
 
                                     val guaranteesAccounts = depositPreviewAccounts.toGuaranteesAccountsUiModel()
 
+                                    this@TransactionApprovalViewModel.depositingAccounts = depositPreviewAccounts
+
                                     _state.update {
                                         it.copy(
                                             withdrawingAccounts = withdrawPreviewAccounts,
@@ -513,8 +515,16 @@ class TransactionApprovalViewModel @Inject constructor(
                 depositingAccounts = depositingAccounts
             )
         }
-        // Reset local depositing accounts
-        depositingAccounts = persistentListOf()
+    }
+
+    fun onGuaranteesCloseClick() {
+        // Reset local depositing accounts to initial values
+        depositingAccounts = _state.value.depositingAccounts
+        _state.update {
+            it.copy(
+                guaranteesAccounts = depositingAccounts.toGuaranteesAccountsUiModel()
+            )
+        }
     }
 
     fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
