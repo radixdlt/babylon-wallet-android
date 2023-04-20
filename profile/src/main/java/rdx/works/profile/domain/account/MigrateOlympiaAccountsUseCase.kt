@@ -10,7 +10,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
-import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
@@ -51,9 +50,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                     networkID = networkId.value,
                     securityState = SecurityState.unsecured(
                         publicKey = FactorInstance.PublicKey(publicKey.toHexString(), Slip10Curve.SECP_256K1),
-                        derivationPath = DerivationPath.forAccount(
-                            derivationPath = olympiaAccount.derivationPath.path
-                        ),
+                        derivationPath = olympiaAccount.derivationPath,
                         factorSourceId = factorSourceId
                     )
                 )

@@ -8,7 +8,7 @@ import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyRequ
 import com.radixdlt.toolkit.models.request.OlympiaNetwork
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.blake2Hash
-import rdx.works.profile.derivation.LegacyOlympiaBIP44LikeDerivationPath
+import rdx.works.profile.data.model.pernetwork.DerivationPath
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -56,7 +56,7 @@ class OlympiaWalletDataParser @Inject constructor() {
                         address = olympiaAddress,
                         publicKey = publicKeyHex,
                         accountName = name,
-                        derivationPath = LegacyOlympiaBIP44LikeDerivationPath(index),
+                        derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index),
                         alreadyImported = existingAccountHashes.containsWithEqualityCheck(publicKeyHash)
                     )
                 }
@@ -117,7 +117,7 @@ data class OlympiaAccountDetails(
     val address: String,
     val publicKey: String,
     val accountName: String,
-    val derivationPath: LegacyOlympiaBIP44LikeDerivationPath,
+    val derivationPath: DerivationPath,
     val alreadyImported: Boolean = false
 )
 

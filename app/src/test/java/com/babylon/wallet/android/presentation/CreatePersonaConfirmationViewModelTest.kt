@@ -19,11 +19,13 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
@@ -37,12 +39,16 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
     private val persona =  Network.Persona(
         address = personaId,
         displayName = personaName,
-        networkID = 10,
+        networkID = Radix.Gateway.default.network.id,
         fields = emptyList(),
         securityState = SecurityState.Unsecured(
             unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                 genesisFactorInstance = FactorInstance(
-                    derivationPath = DerivationPath.forIdentity("few"),
+                    derivationPath = DerivationPath.forIdentity(
+                        networkId = Radix.Gateway.default.network.networkId(),
+                        identityIndex = 0,
+                        keyType = KeyType.TRANSACTION_SIGNING
+                    ),
                     factorSourceId = FactorSource.ID("IDIDDIIDD"),
                     publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                 )

@@ -12,10 +12,10 @@ import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Compan
 import rdx.works.profile.data.model.factorsources.FactorSource.Parameters.Companion.olympia
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
+import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.utils.hashToFactorId
-import rdx.works.profile.derivation.CustomHDDerivationPath
 import rdx.works.profile.derivation.model.NetworkId
 import java.time.Instant
 
@@ -238,7 +238,7 @@ data class FactorSource(
         fun factorSourceId(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             curve: Slip10Curve = CURVE_25519,
-            derivationPath: String = CustomHDDerivationPath.getId.path,
+            derivationPath: String = DerivationPath.forFactorSource().path,
         ): ID {
             return ID(
                 mnemonicWithPassphrase.compressedPublicKey(
