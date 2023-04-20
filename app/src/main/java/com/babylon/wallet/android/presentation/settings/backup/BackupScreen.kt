@@ -99,13 +99,15 @@ private fun BackupScreenContent(
             }
         }
 
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.open_system_backup_settings),
-            onClick = onSystemBackupSettingsClick
-        )
+        if (isBackupScreenNavigationSupported()) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.open_system_backup_settings),
+                onClick = onSystemBackupSettingsClick
+            )
+        }
     }
 }
 
