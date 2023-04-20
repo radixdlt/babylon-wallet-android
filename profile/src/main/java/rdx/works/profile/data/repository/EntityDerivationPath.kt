@@ -18,7 +18,7 @@ class AccountDerivationPath(
         return AccountHDDerivationPath(
             networkId = networkId,
             accountIndex = entityIndex,
-            keyType = KeyType.SignTransaction
+            keyType = KeyType.TRANSACTION_SIGNING
         ).path
     }
 }
@@ -32,7 +32,7 @@ class IdentityDerivationPath(
         return IdentityHDDerivationPath(
             networkId = networkId,
             identityIndex = entityIndex,
-            keyType = KeyType.SignTransaction
+            keyType = KeyType.TRANSACTION_SIGNING
         ).path
     }
 }
