@@ -17,8 +17,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +58,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.WithdrawA
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.resultdialog.completing.CompletingBottomDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
@@ -64,9 +67,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TransactionApprovalScreen(
+    modifier: Modifier = Modifier,
     viewModel: TransactionApprovalViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    showSuccessDialog: (requestId: String) -> Unit,
+    showErrorDialog: (requestId: String, errorTextRes: Int) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -78,7 +83,6 @@ fun TransactionApprovalScreen(
         isLoading = state.isLoading,
         isSigning = state.isSigning,
         onApproveTransaction = viewModel::approveTransaction,
-        approved = state.approved,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
         isDeviceSecure = state.isDeviceSecure,
@@ -96,10 +100,18 @@ fun TransactionApprovalScreen(
     )
 
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
                 TransactionApprovalEvent.NavigateBack -> {
                     onBackClick()
+                }
+                is TransactionApprovalEvent.FlowCompletedWithSuccess -> {
+                    onBackClick()
+                    showSuccessDialog(event.requestId)
+                }
+                is TransactionApprovalEvent.FlowCompletedWithError -> {
+                    onBackClick()
+                    showErrorDialog(event.requestId, event.errorTextRes)
                 }
             }
         }
@@ -107,13 +119,12 @@ fun TransactionApprovalScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
     isSigning: Boolean,
     onApproveTransaction: () -> Unit,
-    approved: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
@@ -133,8 +144,12 @@ private fun TransactionPreviewContent(
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showRawManifest by remember { mutableStateOf(false) }
 
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    // this is for the result bottom slide-up dialog
+    val resultBottomSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
     BackHandler(enabled = bottomSheetState.isVisible) {
@@ -191,21 +206,7 @@ private fun TransactionPreviewContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
                 ) {
-                    AnimatedVisibility(visible = approved) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                        ) {
-                            Icon(painter = painterResource(id = R.drawable.img_dapp_complete), contentDescription = null)
-                            Text(
-                                text = stringResource(R.string.transaction_approved_success),
-                                style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray2,
-                            )
-                        }
-                    }
-                    AnimatedVisibility(visible = !approved && !isLoading) {
+                    AnimatedVisibility(visible = !isLoading) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize(),
@@ -286,8 +287,18 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
-            if (isLoading || isSigning) {
+            if (isLoading) {
                 FullscreenCircularProgressContent()
+            }
+            if (isSigning) {
+                CompletingBottomDialog(
+                    onDismissDialogClick = {
+                        scope.launch {
+                            resultBottomSheetState.hide()
+                        }
+                    },
+                    bottomSheetState = resultBottomSheetState
+                )
             }
             SnackbarUiMessageHandler(message = error) {
                 onMessageShown()
@@ -456,7 +467,6 @@ fun TransactionPreviewContentPreview() {
                 )
             ).toGuaranteesAccountsUiModel(),
             onApproveTransaction = {},
-            approved = false,
             error = null,
             onMessageShown = {},
             isDeviceSecure = false,

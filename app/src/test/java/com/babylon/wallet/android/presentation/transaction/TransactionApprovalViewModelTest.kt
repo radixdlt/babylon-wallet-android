@@ -125,8 +125,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         advanceUntilIdle()
         vm.approveTransaction()
         advanceUntilIdle()
-        val state = vm.state.first()
-        assert(state.approved)
         coVerify(exactly = 1) {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",

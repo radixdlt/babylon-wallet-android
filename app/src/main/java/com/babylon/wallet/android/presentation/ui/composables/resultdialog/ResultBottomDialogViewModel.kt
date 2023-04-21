@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.success
+package com.babylon.wallet.android.presentation.ui.composables.resultdialog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RequestResultSuccessViewModel @Inject constructor(
+class ResultBottomDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository
 ) : ViewModel() {
 

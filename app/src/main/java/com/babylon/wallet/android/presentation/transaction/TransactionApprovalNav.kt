@@ -24,7 +24,11 @@ fun NavController.transactionApproval(requestId: String) {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.transactionApprovalScreen(
+    onBackClick: () -> Unit,
+    showSuccessDialog: (requestId: String) -> Unit,
+    showErrorDialog: (requestId: String, errorTextRes: Int) -> Unit
+) {
     composable(
         route = "transaction_approval_route/{$ARG_TRANSACTION_REQUEST_ID}",
         arguments = listOf(
@@ -34,6 +38,8 @@ fun NavGraphBuilder.transactionApprovalScreen(onBackClick: () -> Unit) {
         TransactionApprovalScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
+            showSuccessDialog = showSuccessDialog,
+            showErrorDialog = showErrorDialog
         )
     }
 }

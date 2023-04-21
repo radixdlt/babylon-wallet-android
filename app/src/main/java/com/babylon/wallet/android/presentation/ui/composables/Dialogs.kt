@@ -1,18 +1,22 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -36,12 +41,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
+    newBottomSheetState: SheetState? = null,
     content: @Composable () -> Unit,
 ) {
+    val bottomSheetState = rememberModalBottomSheetState()
     // TODO update dependency when this issue is resolved
     // https://issuetracker.google.com/issues/268432129
     ModalBottomSheet(
         modifier = modifier,
+        sheetState = newBottomSheetState ?: bottomSheetState,
         onDismissRequest = onDismissRequest,
         shape = RadixTheme.shapes.roundedRectTopDefault,
         dragHandle = {
@@ -49,7 +57,8 @@ fun BottomSheetWrapper(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                    .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                onDismissRequest = onDismissRequest
             )
         }
     ) {
@@ -60,6 +69,7 @@ fun BottomSheetWrapper(
 /**
  * use this if you want AlertDialog style usage, like BasicPromptAlertDialog - not using new route
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
@@ -70,19 +80,31 @@ fun BottomSheetDialogWrapper(
         BottomSheetWrapper(
             modifier = modifier,
             onDismissRequest = onDismissRequest,
-            content = content
+            content = content,
         )
     }
 }
 
 @Composable
-fun BottomDialogDragHandle(modifier: Modifier = Modifier) {
+fun BottomDialogDragHandle(
+    modifier: Modifier = Modifier,
+    onDismissRequest: () -> Unit
+) {
     Box(modifier = modifier) {
+        IconButton(
+            onClick = onDismissRequest
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Clear,
+                tint = RadixTheme.colors.gray1,
+                contentDescription = "clear"
+            )
+        }
         Box(
             modifier = Modifier
+                .align(alignment = Alignment.TopCenter)
                 .size(38.dp, 4.dp)
                 .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
-                .align(Alignment.Center)
         )
     }
 }
@@ -133,27 +155,39 @@ fun NotSecureAlertDialog(
         })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SomethingWentWrongDialog(modifier: Modifier = Modifier, onDismissRequest: () -> Unit) {
+fun SomethingWentWrongDialog(
+    modifier: Modifier = Modifier,
+    onDismissRequest: () -> Unit,
+    title: String = stringResource(id = R.string.something_went_wrong),
+    subtitle: String = stringResource(id = R.string.please_confirm_dialog_body)
+) {
     BottomSheetWrapper(onDismissRequest = onDismissRequest) {
         SomethingWentWrongDialogContent(
-            title = stringResource(id = R.string.something_went_wrong),
-            subtitle = stringResource(id = R.string.please_confirm_dialog_body),
+            title = title,
+            subtitle = subtitle,
             modifier = modifier
         )
     }
 }
 
 @Composable
-private fun SomethingWentWrongDialogContent(title: String, subtitle: String, modifier: Modifier = Modifier) {
+private fun SomethingWentWrongDialogContent(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String
+) {
     Column(
         modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .padding(vertical = 40.dp, horizontal = RadixTheme.dimensions.paddingLarge),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth()
+            .background(color = RadixTheme.colors.defaultBackground)
+            .padding(RadixTheme.dimensions.paddingLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         Icon(
-            modifier = Modifier.size(90.dp),
+            modifier = Modifier.size(104.dp),
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             ),
@@ -163,9 +197,10 @@ private fun SomethingWentWrongDialogContent(title: String, subtitle: String, mod
         Text(
             text = title,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Text(
             text = subtitle,
             style = RadixTheme.typography.body1Regular,
@@ -178,6 +213,6 @@ private fun SomethingWentWrongDialogContent(title: String, subtitle: String, mod
 @Preview
 fun SomethingWentWrongDialogPreview() {
     RadixWalletTheme {
-        SomethingWentWrongDialogContent("Title", "Subtitle")
+        SomethingWentWrongDialogContent(title = "Title", subtitle = "Subtitle")
     }
 }
