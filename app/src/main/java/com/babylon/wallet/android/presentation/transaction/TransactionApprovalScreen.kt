@@ -17,8 +17,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -117,7 +119,7 @@ fun TransactionApprovalScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
@@ -142,8 +144,12 @@ private fun TransactionPreviewContent(
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showRawManifest by remember { mutableStateOf(false) }
 
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    // this is for the result bottom slide-up dialog
+    val resultBottomSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
     BackHandler(enabled = bottomSheetState.isVisible) {
@@ -285,7 +291,14 @@ private fun TransactionPreviewContent(
                 FullscreenCircularProgressContent()
             }
             if (isSigning) {
-                CompletingBottomDialog()
+                CompletingBottomDialog(
+                    onDismissDialogClick = {
+                        scope.launch {
+                            resultBottomSheetState.hide()
+                        }
+                    },
+                    bottomSheetState = resultBottomSheetState
+                )
             }
             SnackbarUiMessageHandler(message = error) {
                 onMessageShown()

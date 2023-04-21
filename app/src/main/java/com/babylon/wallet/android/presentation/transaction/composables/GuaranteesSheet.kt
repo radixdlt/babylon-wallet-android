@@ -10,17 +10,13 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -47,16 +43,9 @@ fun GuaranteesSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                .padding(top = RadixTheme.dimensions.paddingDefault)
+                .padding(top = RadixTheme.dimensions.paddingDefault),
+            onDismissRequest = onClose
         )
-        IconButton(onClick = onClose) {
-            Icon(
-                painterResource(id = R.drawable.ic_close),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = null
-            )
-        }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier
                 .fillMaxWidth()

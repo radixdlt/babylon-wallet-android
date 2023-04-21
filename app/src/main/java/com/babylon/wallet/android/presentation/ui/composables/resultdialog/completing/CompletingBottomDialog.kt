@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,12 +23,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompletingBottomDialog(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDismissDialogClick: () -> Unit,
+    bottomSheetState: SheetState
 ) {
     BottomSheetWrapper(
-        onDismissRequest = { }
+        onDismissRequest = onDismissDialogClick,
+        newBottomSheetState = bottomSheetState
     ) {
         CompletingBottomDialogContent(
             modifier = modifier

@@ -8,10 +8,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,20 +33,20 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
-/**
- * use this as a Root composable of new dialog composable
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
+    newBottomSheetState: SheetState? = null,
     content: @Composable () -> Unit,
 ) {
+    val bottomSheetState = rememberModalBottomSheetState()
     // TODO update dependency when this issue is resolved
     // https://issuetracker.google.com/issues/268432129
     ModalBottomSheet(
         modifier = modifier,
+        sheetState = newBottomSheetState ?: bottomSheetState,
         onDismissRequest = onDismissRequest,
         shape = RadixTheme.shapes.roundedRectTopDefault,
         dragHandle = {
@@ -49,7 +54,8 @@ fun BottomSheetWrapper(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                    .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                onDismissRequest = onDismissRequest
             )
         }
     ) {
@@ -60,6 +66,7 @@ fun BottomSheetWrapper(
 /**
  * use this if you want AlertDialog style usage, like BasicPromptAlertDialog - not using new route
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
@@ -70,19 +77,31 @@ fun BottomSheetDialogWrapper(
         BottomSheetWrapper(
             modifier = modifier,
             onDismissRequest = onDismissRequest,
-            content = content
+            content = content,
         )
     }
 }
 
 @Composable
-fun BottomDialogDragHandle(modifier: Modifier = Modifier) {
+fun BottomDialogDragHandle(
+    modifier: Modifier = Modifier,
+    onDismissRequest: () -> Unit
+) {
     Box(modifier = modifier) {
+        IconButton(
+            onClick = onDismissRequest
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Clear,
+                tint = RadixTheme.colors.gray1,
+                contentDescription = "clear"
+            )
+        }
         Box(
             modifier = Modifier
+                .align(alignment = Alignment.TopCenter)
                 .size(38.dp, 4.dp)
                 .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
-                .align(Alignment.Center)
         )
     }
 }
@@ -133,6 +152,7 @@ fun NotSecureAlertDialog(
         })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SomethingWentWrongDialog(
     modifier: Modifier = Modifier,
