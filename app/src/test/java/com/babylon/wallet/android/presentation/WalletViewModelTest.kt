@@ -23,6 +23,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest {
@@ -32,6 +33,7 @@ class WalletViewModelTest {
 
     private lateinit var vm: WalletViewModel
     private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
+    private val getBackupStateUseCase = mock(GetBackupStateUseCase::class.java)
     private val getProfileUseCase = mock<GetProfileUseCase>()
     private val getProfileStateUseCase = mock<GetProfileStateUseCase>()
 
@@ -42,7 +44,8 @@ class WalletViewModelTest {
         vm = WalletViewModel(
             requestAccountsUseCase,
             getProfileStateUseCase,
-            getProfileUseCase
+            getProfileUseCase,
+            getBackupStateUseCase
         )
         whenever(getProfileStateUseCase()).thenReturn(flowOf(ProfileState.Restored(profile())))
         whenever(getProfileUseCase()).thenReturn(flowOf(profile()))

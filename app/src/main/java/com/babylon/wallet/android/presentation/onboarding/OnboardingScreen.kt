@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,11 +44,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.OnboardingPage
-import com.babylon.wallet.android.presentation.ui.composables.OnboardingPageView
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
+import com.babylon.wallet.android.designsystem.theme.White
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlin.math.absoluteValue
 import kotlin.math.sign
@@ -60,108 +55,123 @@ import kotlin.math.sign
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
-    restoreWalletFromBackup: () -> Unit,
+    onOnBoardingEnd: () -> Unit,
+    onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    BackHandler { onBack() }
+
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
-        restoreWalletFromBackup = restoreWalletFromBackup,
         onProceedClick = viewModel::onProceedClick,
-        showWarning = state.showWarning,
-        authenticateWithBiometric = state.authenticateWithBiometric,
-        onUserAuthenticated = viewModel::onUserAuthenticated,
-        onAlertClicked = viewModel::onAlertClicked,
+        onRestoreWalletClick = viewModel::onRestoreProfileFromBackupClicked,
+//        showWarning = state.showWarning,
+//        authenticateWithBiometric = state.authenticateWithBiometric,
+//        onUserAuthenticated = viewModel::onUserAuthenticated,
+//        onAlertClicked = viewModel::onAlertClicked,
         modifier = modifier
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is OnboardingViewModel.OnBoardingEvent.EndOnBoarding -> {
+                    onOnBoardingEnd()
+                }
+            }
+        }
+    }
 }
 
 @Composable
 private fun OnboardingScreenContent(
     currentPage: Int,
-    restoreWalletFromBackup: () -> Unit,
     onProceedClick: () -> Unit,
-    showWarning: Boolean,
-    authenticateWithBiometric: Boolean,
-    onUserAuthenticated: (Boolean) -> Unit,
-    onAlertClicked: (Boolean) -> Unit,
+    onRestoreWalletClick: () -> Unit,
+//    showWarning: Boolean,
+//    authenticateWithBiometric: Boolean,
+//    onUserAuthenticated: (Boolean) -> Unit,
+//    onAlertClicked: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pagerState = rememberPagerState(initialPage = currentPage)
     BoxWithConstraints(
         modifier = modifier
 //            .systemBarsPadding()
             .navigationBarsPadding()
+            .background(White)
             .fillMaxSize()
     ) {
+        val pagerState = rememberPagerState(initialPage = currentPage)
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            val onboardPages = listOf(
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_1),
-                    description = stringResource(id = R.string.onboarding_body_1),
-                    R.drawable.img_carousel_asset
-                ),
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_2),
-                    description = stringResource(id = R.string.onboarding_body_2),
-                    R.drawable.img_carousel_asset
-                ),
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_3),
-                    description = stringResource(id = R.string.onboarding_body_3),
-                    R.drawable.img_carousel_asset
-                ),
-                OnboardingPage(
-                    title = stringResource(id = R.string.onboarding_title_4),
-                    description = "",
-                    R.drawable.img_carousel_asset
-                )
-            )
+//            val onboardPages = listOf(
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_1),
+//                    description = stringResource(id = R.string.onboarding_body_1),
+//                    R.drawable.img_carousel_asset
+//                ),
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_2),
+//                    description = stringResource(id = R.string.onboarding_body_2),
+//                    R.drawable.img_carousel_asset
+//                ),
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_3),
+//                    description = stringResource(id = R.string.onboarding_body_3),
+//                    R.drawable.img_carousel_asset
+//                ),
+//                OnboardingPage(
+//                    title = stringResource(id = R.string.onboarding_title_4),
+//                    description = "",
+//                    R.drawable.img_carousel_asset
+//                )
+//            )
             RadixOnboardingPagerIndicator(
                 pagerState = pagerState,
-                pageCount = onboardPages.size,
+                pageCount = 5,
                 modifier = Modifier
                     .wrapContentSize()
                     .align(Alignment.CenterHorizontally),
                 indicatorWidth = 48.dp,
                 indicatorHeight = 4.dp,
             )
-
-            HorizontalPager(
-                pageCount = onboardPages.size,
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) { page ->
-                OnboardingPageView(page = onboardPages[page])
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // TODO I think this could be triggered outside of composable, maybe in main activity or via view model
-            val context = LocalContext.current
-            LaunchedEffect(authenticateWithBiometric) {
-                if (authenticateWithBiometric) {
-                    context.findFragmentActivity()?.let { activity ->
-                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                            onUserAuthenticated(authenticatedSuccessfully)
-                        }
-                    }
-                }
-            }
-            if (showWarning) {
-                NotSecureAlertDialog(finish = { accepted -> onAlertClicked(accepted) })
-            }
+//
+//            HorizontalPager(
+//                pageCount = onboardPages.size,
+//                state = pagerState,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .weight(1f)
+//            ) { page ->
+//                OnboardingPageView(page = onboardPages[page])
+//            }
+//
+//            Spacer(modifier = Modifier.weight(1f))
+//
+//            // TODO I think this could be triggered outside of composable, maybe in main activity or via view model
+//            val context = LocalContext.current
+//            LaunchedEffect(authenticateWithBiometric) {
+//                if (authenticateWithBiometric) {
+//                    context.findFragmentActivity()?.let { activity ->
+//                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+//                            onUserAuthenticated(authenticatedSuccessfully)
+//                        }
+//                    }
+//                }
+//            }
+//            if (showWarning) {
+//                NotSecureAlertDialog(finish = { accepted -> onAlertClicked(accepted) })
+//            }
         }
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = !pagerState.canScrollForward
+            visible = /*!pagerState.canScrollForward*/true
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 RadixPrimaryButton(
@@ -171,8 +181,8 @@ private fun OnboardingScreenContent(
                 )
                 RadixTextButton(
                     text = stringResource(id = R.string.restore_wallet_from_backup),
-                    onClick = restoreWalletFromBackup,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onRestoreWalletClick
                 )
                 Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             }
@@ -180,6 +190,7 @@ private fun OnboardingScreenContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RadixOnboardingPagerIndicator(
     pagerState: PagerState,
@@ -252,12 +263,12 @@ fun OnboardingScreenPreview() {
     RadixWalletTheme {
         OnboardingScreenContent(
             currentPage = 0,
-            restoreWalletFromBackup = {},
             onProceedClick = {},
-            showWarning = false,
-            authenticateWithBiometric = true,
-            onUserAuthenticated = {},
-            {},
+            onRestoreWalletClick = {},
+//            showWarning = false,
+//            authenticateWithBiometric = true,
+//            onUserAuthenticated = {},
+//            onAlertClicked = {},
             Modifier.fillMaxSize()
         )
     }

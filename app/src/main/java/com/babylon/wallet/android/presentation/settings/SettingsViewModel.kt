@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.PreferencesManager
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -13,20 +12,24 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.BackupState
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.p2pLinks
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val deleteProfileUseCase: DeleteProfileUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
+    getProfileUseCase: GetProfileUseCase,
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : ViewModel(), OneOffEventHandler<SettingsEvent> by OneOffEventHandlerImpl() {
 
     private val defaultSettings = persistentListOf(
@@ -34,36 +37,52 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.Gateways,
         SettingsItem.TopLevelSettings.AuthorizedDapps,
         SettingsItem.TopLevelSettings.Personas,
-        SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
         SettingsItem.TopLevelSettings.AppSettings,
+        SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
         SettingsItem.TopLevelSettings.ShowMnemonic,
         SettingsItem.TopLevelSettings.DeleteAll
     )
 
-    val state = getProfileUseCase.p2pLinks
-        .map { p2pLinks ->
-            val updatedSettings = if (p2pLinks.isEmpty()) {
-                defaultSettings.toMutableList().apply {
-                    if (!contains(SettingsItem.TopLevelSettings.Connection)) {
-                        add(0, SettingsItem.TopLevelSettings.Connection)
-                    }
+    val state: StateFlow<SettingsUiState> = combine(
+        getProfileUseCase(),
+        getBackupStateUseCase()
+    ) { profile: Profile, backupState: BackupState ->
+        val showConnectionSetting = profile.appPreferences.p2pLinks.isEmpty()
+
+        // Update connection settings based on p2p links
+        val visibleSettings = if (showConnectionSetting) {
+            defaultSettings.toMutableList().apply {
+                if (!contains(SettingsItem.TopLevelSettings.Connection)) {
+                    add(0, SettingsItem.TopLevelSettings.Connection)
                 }
-            } else {
-                defaultSettings.filter { settingSectionItem ->
-                    settingSectionItem != SettingsItem.TopLevelSettings.Connection
+            }
+        } else {
+            defaultSettings.filter { settingSectionItem ->
+                settingSectionItem != SettingsItem.TopLevelSettings.Connection
+            }.toMutableList()
+        }
+
+        if (visibleSettings.any { it is SettingsItem.TopLevelSettings.Backups }) {
+            visibleSettings.mapWhen(
+                predicate = { it is SettingsItem.TopLevelSettings.Backups },
+                mutation = {
+                    SettingsItem.TopLevelSettings.Backups(backupState)
                 }
-            }.toPersistentList()
-            SettingsUiState(updatedSettings)
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
-            SettingsUiState(defaultSettings)
-        )
+            )
+        } else {
+            visibleSettings.add(visibleSettings.lastIndex - 2, SettingsItem.TopLevelSettings.Backups(backupState))
+        }
+
+        SettingsUiState(visibleSettings.toPersistentList())
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
+        SettingsUiState(defaultSettings)
+    )
 
     fun onDeleteWalletClick() {
         viewModelScope.launch {
             deleteProfileUseCase()
-            preferencesManager.clear()
             peerdroidClient.terminate()
             sendEvent(SettingsEvent.ProfileDeleted)
         }

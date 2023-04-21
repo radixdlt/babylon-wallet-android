@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.animation.AnimatedVisibility
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,20 +18,28 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.Badge
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,11 +51,11 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.ui.composables.RDXAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -60,12 +71,14 @@ fun WalletScreen(
     onAccountCreationClick: () -> Unit,
     mainUiState: StateFlow<MainUiState>,
     onNavigateToCreateAccount: () -> Unit,
+    onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit
 ) {
-    val appState by mainUiState.collectAsStateWithLifecycle()
-    val walletState by viewModel.state.collectAsStateWithLifecycle()
-    when (appState.initialAppState) {
-        AppState.HasProfile -> {
+    val state by mainUiState.collectAsStateWithLifecycle()
+    when (state.initialAppState) {
+        is AppState.Wallet -> {
+            val walletState by viewModel.state.collectAsStateWithLifecycle()
+
             SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
             WalletScreenContent(
                 onMenuClick = onMenuClick,
@@ -74,6 +87,7 @@ fun WalletScreen(
                 isRefreshing = walletState.isRefreshing,
                 onRefresh = viewModel::refresh,
                 modifier = modifier,
+                isBackupWarningVisible = walletState.isBackupWarningVisible,
                 isLoading = walletState.isLoading,
                 accounts = walletState.resources,
                 error = walletState.error,
@@ -87,20 +101,24 @@ fun WalletScreen(
                 }
             }
         }
-        AppState.IncompatibleProfile -> {
-            LaunchedEffect(appState.initialAppState) {
+        is AppState.IncompatibleProfile -> {
+            LaunchedEffect(state.initialAppState) {
                 onNavigateToIncompatibleProfile()
             }
         }
-        AppState.Loading -> {
+        is AppState.Loading -> {
             FullscreenCircularProgressContent()
         }
-        AppState.NoProfile -> {
-            LaunchedEffect(appState.initialAppState) {
+        is AppState.OnBoarding -> {
+            LaunchedEffect(state.initialAppState) {
+                onNavigateToOnBoarding()
+            }
+        }
+        is AppState.NewProfile -> {
+            LaunchedEffect(state.initialAppState) {
                 onNavigateToCreateAccount()
             }
         }
-        AppState.Onboarding -> {}
     }
 }
 
@@ -115,6 +133,7 @@ private fun WalletScreenContent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     accounts: ImmutableList<AccountResources>,
+    isBackupWarningVisible: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
 ) {
@@ -122,10 +141,42 @@ private fun WalletScreenContent(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                RDXAppBar(
+                TopAppBar(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    toolbarTitle = stringResource(id = R.string.home_toolbar_title),
-                    onMenuClick = onMenuClick
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = RadixTheme.colors.defaultBackground),
+                    title = {
+                        Text(
+                            text = stringResource(id = R.string.home_toolbar_title),
+                            style = RadixTheme.typography.title,
+                            color = RadixTheme.colors.gray1
+                        )
+                    },
+                    actions = {
+                        Box {
+                            IconButton(onClick = onMenuClick) {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(
+                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
+                                    ),
+                                    contentDescription = null,
+                                    tint = RadixTheme.colors.gray1
+                                )
+                            }
+
+                            if (isBackupWarningVisible) {
+                                Badge(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(
+                                            top = RadixTheme.dimensions.paddingSmall,
+                                            end = RadixTheme.dimensions.paddingSmall
+                                        ),
+                                    backgroundColor = Red1
+                                )
+                            }
+                        }
+                    },
+                    windowInsets = WindowInsets(0.dp)
                 )
             },
             contentColor = RadixTheme.colors.defaultText,
@@ -231,6 +282,7 @@ fun WalletContentPreview() {
                 onRefresh = { },
                 modifier = Modifier.fillMaxSize(),
                 isLoading = false,
+                isBackupWarningVisible = true,
                 accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),
                 error = null
             ) {}

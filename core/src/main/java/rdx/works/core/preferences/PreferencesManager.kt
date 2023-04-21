@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data
+package rdx.works.core.preferences
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,16 +19,18 @@ class PreferencesManager @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
 
-    suspend fun setShowOnboarding(showOnboarding: Boolean) {
+    val lastBackupInstant: Flow<Instant?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_LAST_BACKUP_INSTANT]?.let {
+                Instant.parse(it)
+            }
+        }
+
+    suspend fun updateLastBackupInstant(backupInstant: Instant) {
         dataStore.edit { preferences ->
-            preferences[KEY_SHOW_ONBOARDING] = showOnboarding
+            preferences[KEY_LAST_BACKUP_INSTANT] = backupInstant.toString()
         }
     }
-
-    val showOnboarding: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[KEY_SHOW_ONBOARDING] ?: false
-        }
 
     val firstPersonaCreated: Flow<Boolean> = dataStore.data
         .map { preferences ->
@@ -65,8 +68,8 @@ class PreferencesManager @Inject constructor(
     suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
-        private val KEY_SHOW_ONBOARDING = booleanPreferencesKey("show_onboarding")
         private val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
+        private val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
     }
 }

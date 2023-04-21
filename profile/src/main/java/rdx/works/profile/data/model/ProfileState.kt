@@ -12,12 +12,14 @@ sealed class ProfileState {
     /**
      * The repository has tried to query the [ProfileSnapshot] from internal storage, but
      * there is nothing there. The user has not created a [Profile] yet.
+     *
+     * If a restored profile from backup exists, it will be stored in [profileBackupExists]
      */
-    object None : ProfileState()
+    data class None(val profileBackupExists: Boolean = false) : ProfileState()
 
     /**
      * The [ProfileSnapshot]'s version saved in the internal storage is lower than the
-     * [Profile.LATEST_PROFILE_VERSION], so it is incompatible. Currently the user can only
+     * [ProfileSnapshot.MINIMUM], so it is incompatible. Currently the user can only
      * create a new profile.
      */
     object Incompatible : ProfileState()

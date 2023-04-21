@@ -57,7 +57,10 @@ fun NavigationHost(
         composable(route = Screen.OnboardingDestination.route) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
-                restoreWalletFromBackup = {}
+                onOnBoardingEnd = {
+                    navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                },
+                onBack = onCloseApp
             )
         }
         composable(route = Screen.WalletDestination.route) {
@@ -77,6 +80,9 @@ fun NavigationHost(
                 },
                 onNavigateToCreateAccount = {
                     navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                },
+                onNavigateToOnBoarding = {
+                    navController.navigate(Screen.OnboardingDestination.route)
                 },
                 onNavigateToIncompatibleProfile = {
                     navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)

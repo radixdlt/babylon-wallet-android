@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.toHexString
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -42,6 +43,7 @@ import rdx.works.profile.derivation.LegacyOlympiaBIP44LikeDerivationPath
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
+import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class MigrateOlympiaAccountsUseCaseTest {
@@ -60,8 +62,11 @@ internal class MigrateOlympiaAccountsUseCaseTest {
 
         val network = Radix.Gateway.hammunet
         val profile = Profile(
-            id = "9958f568-8c9b-476a-beeb-017d1f843266",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            header = Header.init(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                creationDate = Instant.now()
+            ),
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
@@ -97,8 +102,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                     networkID = network.network.networkId().value,
                     personas = emptyList()
                 )
-            ),
-            version = 1
+            )
         )
 
         coEvery { mnemonicRepository.readMnemonic(any()) } returns olympiaMnemonic

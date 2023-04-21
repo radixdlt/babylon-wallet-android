@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import rdx.works.profile.data.model.BackupState
 
 sealed interface SettingsItem {
 
@@ -17,6 +18,9 @@ sealed interface SettingsItem {
         object ImportFromLegacyWallet : TopLevelSettings
         object DeleteAll : TopLevelSettings
         object Personas : TopLevelSettings
+        data class Backups(
+            val backupState: BackupState
+        ) : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {
@@ -31,6 +35,7 @@ sealed interface SettingsItem {
                 AppSettings -> R.string.app_settings
                 ShowMnemonic -> R.string.view_mnemonics
                 ImportFromLegacyWallet -> R.string.import_from_legacy_wallet
+                is Backups -> R.string.backups
             }
         }
 
@@ -44,6 +49,7 @@ sealed interface SettingsItem {
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ShowMnemonic -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 else -> null
             }
         }

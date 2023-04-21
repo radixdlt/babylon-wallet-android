@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
@@ -47,6 +48,7 @@ fun NavController.createAccountScreen(
     networkUrl: String? = null,
     networkName: String? = null,
     switchNetwork: Boolean? = null,
+    navOptions: NavOptions? = null
 ) {
     var route = "create_account_route?$ARG_REQUEST_SOURCE=$requestSource"
     networkUrl?.let {
@@ -58,7 +60,10 @@ fun NavController.createAccountScreen(
     switchNetwork?.let {
         route += "&$ARG_SWITCH_NETWORK=$it"
     }
-    navigate(route)
+    navigate(
+        route = route,
+        navOptions = navOptions
+    )
 }
 
 @OptIn(ExperimentalAnimationApi::class)

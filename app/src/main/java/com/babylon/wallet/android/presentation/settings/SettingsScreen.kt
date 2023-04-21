@@ -30,8 +30,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.theme.Orange1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.settings.backup.backupMessage
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -112,15 +114,21 @@ private fun SettingsContent(
                     }
                     else -> {
                         item {
-                            DefaultSettingsItem(
-                                settingsItem = settingsItem,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp)
-                                    .background(RadixTheme.colors.defaultBackground)
-                                    .throttleClickable { onSettingClick(settingsItem) }
-                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                            )
+                            if (settingsItem is SettingsItem.TopLevelSettings.Backups) {
+                                BackupSettingsItem(
+                                    backupSettingsItem = settingsItem,
+                                    onClick = {
+                                        onSettingClick(settingsItem)
+                                    }
+                                )
+                            } else {
+                                DefaultSettingsItem(
+                                    settingsItem = settingsItem,
+                                    onClick = {
+                                        onSettingClick(settingsItem)
+                                    }
+                                )
+                            }
                         }
                         item {
                             Divider(color = RadixTheme.colors.gray5)
@@ -148,10 +156,16 @@ private fun SettingsContent(
 @Composable
 private fun DefaultSettingsItem(
     settingsItem: SettingsItem.TopLevelSettings,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(RadixTheme.colors.defaultBackground)
+            .throttleClickable(onClick = onClick)
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
@@ -163,6 +177,58 @@ private fun DefaultSettingsItem(
             style = RadixTheme.typography.body2Header,
             color = RadixTheme.colors.gray1
         )
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = RadixTheme.colors.gray1
+        )
+    }
+}
+
+@Composable
+private fun BackupSettingsItem(
+    backupSettingsItem: SettingsItem.TopLevelSettings.Backups,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(RadixTheme.colors.defaultBackground)
+            .throttleClickable(onClick = onClick)
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+        verticalAlignment = CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        backupSettingsItem.getIcon()?.let {
+            Icon(painter = painterResource(id = it), contentDescription = null)
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            Text(
+                text = stringResource(id = backupSettingsItem.descriptionRes()),
+                style = RadixTheme.typography.body2Header,
+                color = RadixTheme.colors.gray1
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = backupMessage(state = backupSettingsItem.backupState),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
+                )
+
+                if (backupSettingsItem.backupState.isWarningVisible) {
+                    Icon(
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
+                        contentDescription = null,
+                        tint = Orange1
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),

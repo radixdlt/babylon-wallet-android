@@ -11,6 +11,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -29,6 +30,7 @@ import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.account.CreateAccountUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
+import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateAccountUseCaseTest {
@@ -47,8 +49,11 @@ class CreateAccountUseCaseTest {
             val accountName = "First account"
             val network = Radix.Gateway.hammunet
             val profile = Profile(
-                id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                header = Header.init(
+                    id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                    creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                    creationDate = Instant.now()
+                ),
                 appPreferences = AppPreferences(
                     display = Display.default,
                     security = Security.default,
@@ -84,8 +89,7 @@ class CreateAccountUseCaseTest {
                         networkID = network.network.networkId().value,
                         personas = emptyList()
                     )
-                ),
-                version = 1
+                )
             )
 
             val mnemonicRepository = mock<MnemonicRepository> {

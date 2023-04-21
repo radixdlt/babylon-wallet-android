@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -31,6 +32,13 @@ dependencies {
     implementation libs.ket
     implementation libs.slip10
     implementation libs.ktorCore
+
+    // Datastore
+    implementation libs.datastorePreferences
+
+    // Hilt
+    implementation libs.hilt
+    kapt libs.hiltCompiler
 
     testImplementation libs.junit
     androidTestImplementation libs.androidXJunit

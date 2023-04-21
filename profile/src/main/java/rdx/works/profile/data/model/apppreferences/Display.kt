@@ -6,11 +6,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 class Display private constructor(
     @SerialName("fiatCurrencyPriceTarget")
-    val fiatCurrencyPriceTarget: String
+    val fiatCurrencyPriceTarget: String,
+    @SerialName("isCurrencyAmountVisible")
+    val isCurrencyAmountVisible: Boolean
 ) {
     companion object {
         val default = Display(
-            fiatCurrencyPriceTarget = "usd"
+            fiatCurrencyPriceTarget = "usd",
+            isCurrencyAmountVisible = true
         )
     }
 }

@@ -6,6 +6,7 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -16,6 +17,7 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
+import java.time.Instant
 import kotlin.test.Ignore
 
 class AddP2PLinkUseCaseTest {
@@ -31,8 +33,11 @@ class AddP2PLinkUseCaseTest {
         )
 
         val initialProfile = Profile(
-            id = "9958f568-8c9b-476a-beeb-017d1f843266",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            header = Header.init(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                creationDate = Instant.now()
+            ),
             appPreferences = AppPreferences(
                 display = Display.default,
                 security = Security.default,
@@ -40,8 +45,7 @@ class AddP2PLinkUseCaseTest {
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(),
-            networks = emptyList(),
-            version = 1
+            networks = emptyList()
         )
         whenever(profileRepository.profile).thenReturn(flowOf(initialProfile))
 
@@ -51,15 +55,9 @@ class AddP2PLinkUseCaseTest {
         )
 
         val updatedProfile = initialProfile.copy(
-            appPreferences = AppPreferences(
-                display = initialProfile.appPreferences.display,
-                security = initialProfile.appPreferences.security,
-                gateways = initialProfile.appPreferences.gateways,
+            appPreferences = initialProfile.appPreferences.copy(
                 p2pLinks = listOf(expectedP2PLink)
-            ),
-            factorSources = initialProfile.factorSources,
-            networks = initialProfile.networks,
-            version = initialProfile.version
+            )
         )
         verify(profileRepository).saveProfile(updatedProfile)
     }

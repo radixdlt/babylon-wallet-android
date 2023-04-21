@@ -1,13 +1,11 @@
 package rdx.works.profile
 
-import io.mockk.every
-import io.mockk.mockkObject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -22,9 +20,8 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
-import rdx.works.profile.derivation.model.NetworkId
 import java.io.File
-import java.util.UUID
+import java.time.Instant
 
 class ProfileTest {
 
@@ -39,7 +36,11 @@ class ProfileTest {
         val profile = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             firstAccountDisplayName = "First",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)"
+            header = Header.init(
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                creationDate = Instant.now()
+            )
         )
 
         val defaultNetwork = Radix.Gateway.default.network
@@ -118,7 +119,7 @@ class ProfileTest {
 
         assertEquals(updatedProfile.appPreferences.p2pLinks.count(), 1)
 
-        Assert.assertTrue(profile.id.isNotBlank())
+        Assert.assertTrue(profile.header.id.isNotBlank())
     }
 
     @Test
@@ -136,16 +137,14 @@ class ProfileTest {
         val gateway = Radix.Gateway.nebunet
         val networkId = gateway.network.networkId()
 
-        // Need to mock the generation of the id, so to test it against the stored vector
-        println(UUIDGenerator.uuid())
-        mockkObject(UUIDGenerator)
-        every { UUIDGenerator.uuid() } returns UUID.fromString("9958f568-8c9b-476a-beeb-017d1f843266")
-
-
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             firstAccountDisplayName = "First",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            header = Header.init(
+                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                id = "9958f568-8c9b-476a-beeb-017d1f843266",
+                creationDate = Instant.parse("2023-03-07T10:48:21Z")
+            ),
             gateway = gateway
         )
 
@@ -292,11 +291,24 @@ class ProfileTest {
             actual.appPreferences.display.fiatCurrencyPriceTarget
         )
 
+        assertEquals(
+            "Currency amount visible is the same",
+            expected.appPreferences.display.isCurrencyAmountVisible,
+            actual.appPreferences.display.isCurrencyAmountVisible
+        )
+
         // Security
         assertEquals(
             "Developer mode is the same",
             expected.appPreferences.security.isDeveloperModeEnabled,
             actual.appPreferences.security.isDeveloperModeEnabled
+        )
+
+        // Security
+        assertEquals(
+            "Cloud profile sync is the same",
+            expected.appPreferences.security.isCloudProfileSyncEnabled,
+            actual.appPreferences.security.isCloudProfileSyncEnabled
         )
 
         // P2P clients
@@ -583,25 +595,11 @@ class ProfileTest {
             )
         }
 
-        // Profile version
+        // Profile header
         assertEquals(
-            "Profile version is the same",
-            expected.version,
-            actual.version
-        )
-
-        // Profile id
-        assertEquals(
-            "Profile id is the same",
-            expected.id,
-            actual.id
-        )
-
-        // Device name
-        assertEquals(
-            "Profile creating device is the same",
-            expected.creatingDevice,
-            actual.creatingDevice
+            "Profile header is the same",
+            expected.header,
+            actual.header
         )
     }
 }

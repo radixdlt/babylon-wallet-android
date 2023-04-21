@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.di
 
+import android.app.backup.BackupManager
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -19,8 +20,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
 
+    const val PREFERENCES_NAME = "rdx_datastore"
+
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
-        name = "rdx_datastore"
+        name = PREFERENCES_NAME
     )
 
     @Provides
@@ -45,5 +48,13 @@ object ApplicationModule {
         jsonSerializer: Json,
     ): CacheClient {
         return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackupManager(
+        @ApplicationContext applicationContext: Context
+    ): BackupManager {
+        return BackupManager(applicationContext)
     }
 }

@@ -1,41 +1,55 @@
 package com.babylon.wallet.android.presentation.onboarding
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.PreferencesManager
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
+import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
-) : StateViewModel<OnboardingViewModel.OnboardingUiState>() {
+//    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
+    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val discardRestoredProfileFromBackupUseCase: DiscardRestoredProfileFromBackupUseCase
+) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
+    OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): OnboardingUiState = OnboardingUiState()
+    override fun initialState(): OnBoardingUiState = OnBoardingUiState()
+
+    init {
+        viewModelScope.launch {
+            val profileFromBackupExists = isProfileFromBackupExistsUseCase()
+            _state.update { it.copy(profileFromBackupExists = profileFromBackupExists) }
+        }
+    }
 
     fun onProceedClick() {
         viewModelScope.launch {
-            if (deviceSecurityHelper.isDeviceSecure()) {
-                _state.update {
-                    it.copy(authenticateWithBiometric = true)
-                }
-            } else {
-                _state.update {
-                    it.copy(showWarning = true)
-                }
-            }
+//            if (deviceSecurityHelper.isDeviceSecure()) {
+//                _state.update {
+//                    it.copy(authenticateWithBiometric = true)
+//                }
+//            } else {
+//                _state.update {
+//                    it.copy(showWarning = true)
+//                }
+//            }
+            discardRestoredProfileFromBackupUseCase()
+            sendEvent(OnBoardingEvent.EndOnBoarding)
         }
     }
 
     fun onAlertClicked(accepted: Boolean) {
-        if (accepted) {
-            goNext()
-        } else {
+        if (!accepted) {
             _state.update {
                 it.copy(showWarning = false)
             }
@@ -43,25 +57,27 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun onUserAuthenticated(authenticated: Boolean) {
-        if (authenticated) {
-            goNext()
-        } else {
+        if (!authenticated) {
             _state.update {
                 it.copy(authenticateWithBiometric = false)
             }
         }
     }
 
-    private fun goNext() {
-        viewModelScope.launch {
-            preferencesManager.setShowOnboarding(false)
-        }
+    fun onRestoreProfileFromBackupClicked() = viewModelScope.launch {
+        restoreProfileFromBackupUseCase()
+        sendEvent(OnBoardingEvent.EndOnBoarding)
     }
 
-    data class OnboardingUiState(
+    data class OnBoardingUiState(
         val currentPagerPage: Int = 0,
         val showButtons: Boolean = false,
         val authenticateWithBiometric: Boolean = false,
-        val showWarning: Boolean = false
+        val showWarning: Boolean = false,
+        val profileFromBackupExists: Boolean = false
     ) : UiState
+
+    sealed interface OnBoardingEvent : OneOffEvent {
+        object EndOnBoarding : OnBoardingEvent
+    }
 }

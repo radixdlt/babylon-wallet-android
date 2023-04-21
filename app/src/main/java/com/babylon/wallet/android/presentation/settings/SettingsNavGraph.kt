@@ -11,6 +11,8 @@ import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDappsScreen
+import com.babylon.wallet.android.presentation.settings.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
@@ -33,6 +35,14 @@ fun NavGraphBuilder.settingsNavGraph(
             navController.popBackStack()
         })
         appSettingsScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        backupScreen(
+            onSystemBackupSettingsClick = {
+                navController.systemBackupSettingsScreen()
+            },
             onBackClick = {
                 navController.popBackStack()
             }
@@ -100,6 +110,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
                     SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
                         navController.settingsImportOlympiaAccounts()
+                    }
+                    is SettingsItem.TopLevelSettings.Backups -> {
+                        navController.backupScreen()
                     }
                     else -> {}
                 }
