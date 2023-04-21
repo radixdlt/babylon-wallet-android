@@ -98,7 +98,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     }
 
     companion object {
-        const val TAG = "Backup"
+        private const val TAG = "Backup"
         private const val ENTITY_HEADER = "snapshot"
     }
 }
