@@ -33,6 +33,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
+/**
+ * use this as a Root composable of new dialog composable
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetWrapper(
