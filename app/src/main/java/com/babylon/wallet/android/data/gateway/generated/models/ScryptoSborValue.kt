@@ -32,8 +32,19 @@ data class ScryptoSborValue (
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
-//    @Contextual @SerialName(value = "raw_json")
-//    val rawJson: kotlin.Any
+    @Contextual @SerialName(value = "raw_json")
+    val rawJson: RawJson
 
 )
 
+@Serializable
+data class RawJson(
+    val elements: List<RawJsonElement>,
+    val type: String
+)
+
+@Serializable
+data class RawJsonElement(
+    val type: String,
+    val value: String
+)

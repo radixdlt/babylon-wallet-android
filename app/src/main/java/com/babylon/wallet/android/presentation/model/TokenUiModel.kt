@@ -96,7 +96,7 @@ fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
         name = ownedFungibleToken.token.getTokenName(),
         symbol = ownedFungibleToken.token.getTokenSymbol(),
         tokenQuantity = ownedFungibleToken.amount,
-        iconUrl = ownedFungibleToken.token.getImageUrl(),
+        iconUrl = ownedFungibleToken.token.getIconUrl(),
         description = ownedFungibleToken.token.getTokenDescription(),
         metadata = ownedFungibleToken.token.getDisplayableMetadata(),
         address = ownedFungibleToken.address
@@ -108,7 +108,7 @@ fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
         name = token.getTokenName(),
         symbol = token.getTokenSymbol(),
         tokenQuantity = amount,
-        iconUrl = token.getImageUrl(),
+        iconUrl = token.getIconUrl(),
         description = token.getTokenDescription(),
         metadata = token.getDisplayableMetadata(),
         address = token.address

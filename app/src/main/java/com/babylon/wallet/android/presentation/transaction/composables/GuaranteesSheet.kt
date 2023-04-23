@@ -85,7 +85,7 @@ fun GuaranteesSheet(
                         appearanceId = guaranteesAccount.appearanceID,
                         tokenAddress = guaranteesAccount.address,
                         isTokenXrd = true,
-                        tokenIconUrl = "",
+                        tokenIconUrl = guaranteesAccount.tokenIconUrl,
                         tokenSymbol = guaranteesAccount.tokenSymbol,
                         tokenEstimatedQuantity = guaranteesAccount.tokenEstimatedQuantity,
                         tokenGuaranteedQuantity = guaranteesAccount.tokenGuaranteedQuantity,

@@ -2,18 +2,14 @@ package com.babylon.wallet.android.domain.model
 
 data class NonFungibleToken(
     val address: String,
-    val nonFungibleIdContainer: NonFungibleTokenIdContainer? = null,
+    val tokenItems: List<NonFungibleTokenItemContainer>,
     val metadataContainer: NonFungibleMetadataContainer? = null
 ) {
     fun getTokenName(): String? {
         return metadataContainer?.metadata?.get(MetadataConstants.KEY_NAME)
     }
 
-    fun getTokenSymbol(): String? {
-        return metadataContainer?.metadata?.get(MetadataConstants.KEY_SYMBOL)
-    }
-
-    fun getImageUrl(): String? {
-        return metadataContainer?.metadata?.get(MetadataConstants.KEY_NFT_IMAGE)
+    fun getIconUrl(): String? {
+        return metadataContainer?.metadata?.get(MetadataConstants.KEY_ICON)
     }
 }

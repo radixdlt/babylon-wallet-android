@@ -39,7 +39,7 @@ class GetValidDAppMetadataUseCase @Inject constructor(
                     dAppsMetadata.forEach { metadata ->
                         encounteredAddresses.add(
                             ConnectedDAppsUiModel(
-                                iconUrl = metadata.getIcon().orEmpty(),
+                                iconUrl = metadata.getImageUrl().orEmpty(),
                                 title = metadata.getName().orEmpty()
                             )
                         )

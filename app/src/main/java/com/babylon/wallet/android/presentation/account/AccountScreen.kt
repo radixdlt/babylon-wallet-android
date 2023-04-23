@@ -557,7 +557,7 @@ fun AssetsContent(
                                 remember(nonFungibleTokens) { nonFungibleTokens.map { true }.toMutableStateList() }
                             NftListContent(
                                 collapsedState = collapsedState,
-                                item = nonFungibleTokens,
+                                items = nonFungibleTokens,
                                 modifier = Modifier.fillMaxSize(),
                                 onNftClick = onNftClick
                             )

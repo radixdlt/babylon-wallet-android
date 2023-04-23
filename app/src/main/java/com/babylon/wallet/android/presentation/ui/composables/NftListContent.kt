@@ -24,27 +24,27 @@ import com.babylon.wallet.android.presentation.model.toNftUiModel
 @Composable
 fun NftListContent(
     collapsedState: SnapshotStateList<Boolean>, // TODO use an immutable object!
-    item: List<NftCollectionUiModel>,
+    items: List<NftCollectionUiModel>,
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier) {
-        item.forEachIndexed { i, dataItem ->
+        items.forEachIndexed { i, dataItem ->
             val collapsed = collapsedState[i]
             item(key = "header_$i") {
                 NftTokenHeaderItem(
                     nftImageUrl = dataItem.iconUrl,
                     nftName = dataItem.name,
                     nftsInCirculation = "?",
-                    nftsInPossession = dataItem.nft.size.toString(),
-                    nftChildCount = dataItem.nft.size,
+                    nftsInPossession = dataItem.nfts.size.toString(),
+                    nftChildCount = dataItem.nfts.size,
                     collapsed = collapsed
                 ) {
                     collapsedState[i] = !collapsed
                 }
             }
             items(
-                dataItem.nft,
+                dataItem.nfts,
                 key = { nft -> nft.displayId }
             ) { item ->
                 AnimatedVisibility(
@@ -53,16 +53,16 @@ fun NftListContent(
                     exit = shrinkVertically(animationSpec = tween(150))
                 ) {
                     var bottomCornersRounded = false
-                    if (dataItem.nft.last() == item) {
+                    if (dataItem.nfts.last() == item) {
                         bottomCornersRounded = true
                     }
                     NftTokenDetailItem(
                         nftId = item.id,
-                        imageUrl = null, // TODO do we have image per ntf?
+                        imageUrl = item.nftImage.orEmpty(),
                         bottomCornersRounded = bottomCornersRounded,
                         nftMetadata = item.nftsMetadata,
                         onNftClick = { nftId ->
-                            onNftClick(dataItem, dataItem.nft.first { it.id == nftId })
+                            onNftClick(dataItem, dataItem.nfts.first { it.id == nftId })
                         }
                     )
                 }
@@ -80,7 +80,7 @@ fun NftTokenListEmpty() {
     RadixWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
         NftListContent(
-            item = emptyList(),
+            items = emptyList(),
             collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() },
             onNftClick = { _, _ -> }
         )
@@ -93,7 +93,7 @@ fun NftTokenListPreview() {
     RadixWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
         NftListContent(
-            item = mockNftUiList.toNftUiModel(),
+            items = mockNftUiList.toNftUiModel(),
             collapsedState = remember(mockNftUiList) { mockNftUiList.map { true }.toMutableStateList() },
             onNftClick = { _, _ -> }
         )
@@ -106,7 +106,7 @@ fun NftTokenListExpandedPreview() {
     RadixWalletTheme {
         val mockNftUiList = SampleDataProvider().mockNftUiList
         NftListContent(
-            item = mockNftUiList.toNftUiModel(),
+            items = mockNftUiList.toNftUiModel(),
             collapsedState = remember(mockNftUiList) { mockNftUiList.map { false }.toMutableStateList() },
             onNftClick = { _, _ -> }
         )

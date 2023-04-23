@@ -13,7 +13,7 @@ data class DappMetadata(
         return metadata[MetadataConstants.KEY_DESCRIPTION]
     }
 
-    fun getIcon(): String? {
+    fun getImageUrl(): String? {
         return metadata[MetadataConstants.KEY_IMAGE_URL]
     }
 

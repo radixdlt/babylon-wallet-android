@@ -53,6 +53,7 @@ android {
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "GATEWAY_API_URL", '"https://betanet.radixdlt.com"'
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
+        buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://images-service.extratools.works"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

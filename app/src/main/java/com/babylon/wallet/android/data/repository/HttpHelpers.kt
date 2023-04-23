@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.data.repository
 
+import android.content.Context
+import coil.request.ImageRequest
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.RadixGatewayException
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
@@ -63,4 +66,24 @@ inline fun tryParseServerError(
         errorResponse?.message
     )
     return Result.Error(exception = exception)
+}
+
+fun Context.buildSmallImageRequest(imageUrl: String?): ImageRequest {
+    return buildImageRequest("${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=$imageUrl&imageSize=112x112")
+}
+
+fun Context.buildMediumImageRequest(imageUrl: String?): ImageRequest {
+    return buildImageRequest("${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=$imageUrl&imageSize=256x256")
+}
+
+fun Context.buildLargeImageRequest(imageUrl: String?): ImageRequest {
+    return buildImageRequest("${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=$imageUrl&imageSize=512x512")
+}
+
+// For some reason Coil library requires this header to be added when using with cloudflare service. Otherwise it fails
+private fun Context.buildImageRequest(imageUrl: String?): ImageRequest {
+    return ImageRequest.Builder(this)
+        .data(imageUrl)
+        .addHeader("accept", "text/html")
+        .build()
 }

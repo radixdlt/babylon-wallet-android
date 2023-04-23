@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.repository.buildMediumImageRequest
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -124,7 +126,7 @@ private fun LoginPermissionContent(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             AsyncImage(
-                model = dappMetadata?.getIcon(),
+                model = LocalContext.current.buildMediumImageRequest(dappMetadata?.getImageUrl()),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 fallback = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder),

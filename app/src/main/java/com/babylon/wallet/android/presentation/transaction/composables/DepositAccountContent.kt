@@ -67,7 +67,7 @@ fun DepositAccountContent(
 
                 val tokens = previewAccount.accounts.map { account ->
                     TokenUiModel(
-                        iconUrl = "",
+                        iconUrl = account.iconUrl,
                         symbol = account.tokenSymbol,
                         tokenQuantity = account.tokenQuantityDecimal,
                         address = account.address,
