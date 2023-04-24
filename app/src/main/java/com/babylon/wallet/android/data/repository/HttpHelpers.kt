@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository
 
 import android.content.Context
+import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.RadixGatewayException
@@ -84,6 +85,7 @@ fun Context.buildLargeImageRequest(imageUrl: String?): ImageRequest {
 private fun Context.buildImageRequest(imageUrl: String?): ImageRequest {
     return ImageRequest.Builder(this)
         .data(imageUrl)
+        .decoderFactory(SvgDecoder.Factory())
         .addHeader("accept", "text/html")
         .build()
 }

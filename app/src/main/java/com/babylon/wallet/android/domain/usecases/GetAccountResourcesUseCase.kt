@@ -168,7 +168,12 @@ class GetAccountResourcesUseCase @Inject constructor(
             // Temporary hack to loop through all elements and search for a link until
             // we have solid solution with backend support
             val nftImage = nftDetailItem.mutableData.rawJson.elements.find { element ->
-                element.value.contains("https") && element.value.contains(".jpg")
+                element.value.contains("https") &&
+                    (
+                        element.value.contains(".jpg") ||
+                            element.value.contains(".png") ||
+                            element.value.contains(".svg")
+                        )
             }
             NonFungibleTokenItemContainer(
                 id = nftDetailItem.nonFungibleId,

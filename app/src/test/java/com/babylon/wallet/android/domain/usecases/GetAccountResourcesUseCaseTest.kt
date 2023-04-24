@@ -4,11 +4,16 @@ import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCo
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemGloballyAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleIdType
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItemGloballyAggregated
+import com.babylon.wallet.android.data.gateway.generated.models.RawJson
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
+import com.babylon.wallet.android.data.gateway.generated.models.ScryptoSborValue
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
 import com.babylon.wallet.android.domain.common.Result
@@ -19,6 +24,7 @@ import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.mockdata.account
@@ -166,6 +172,12 @@ class GetAccountResourcesUseCaseTest {
             expectedNonFungibleIdContainer
         )
 
+        coEvery {
+            nonFungibleRepositoryMock.nonFungibleData(address = expectedResource.resourceAddress, any(), isRefreshing = true)
+        } returns Result.Success(
+            expectedNonFungibleData(expectedResource.resourceAddress)
+        )
+
         val accountResourcesResult = testedClass.getAccountsFromProfile(isRefreshing = true)
 
         Assert.assertEquals(
@@ -182,8 +194,8 @@ class GetAccountResourcesUseCaseTest {
                             tokenResourceAddress = expectedResource.resourceAddress,
                             token = NonFungibleToken(
                                 address = expectedResource.resourceAddress,
-                                nonFungibleIdContainer = NonFungibleTokenIdContainer(
-                                    ids = expectedNonFungibleIdContainer.ids
+                                tokenItems = listOf(
+                                    NonFungibleTokenItemContainer(id = "1", nftImage = "")
                                 ),
                                 metadataContainer = NonFungibleMetadataContainer()
                             )
@@ -253,6 +265,33 @@ class GetAccountResourcesUseCaseTest {
             StateEntityDetailsResponseItem(
                 address = resourceAddress,
                 metadata = EntityMetadataCollection(items = listOf())
+            )
+        )
+    )
+
+    private fun expectedNonFungibleData(
+        resourceAddress: String
+    ) = StateNonFungibleDataResponse(
+        ledgerState = LedgerState(
+            network = Radix.Network.hammunet.name,
+            stateVersion = 0,
+            proposerRoundTimestamp = "0",
+            epoch = 0L,
+            round = 0L
+        ),
+        resourceAddress = "",
+        nonFungibleIdType = NonFungibleIdType.string,
+        nonFungibleIds = listOf(
+            StateNonFungibleDetailsResponseItem(
+                nonFungibleId = "1",
+                mutableData = ScryptoSborValue(
+                    "",
+                    RawJson(
+                        elements = listOf(),
+                        type = ""
+                    )
+                ),
+                lastUpdatedAtStateVersion = 0L
             )
         )
     )

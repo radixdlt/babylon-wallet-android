@@ -178,6 +178,7 @@ dependencies {
 
     // Coil
     implementation libs.coilCompose
+    implementation libs.coilComposeSvg
 
     // KotlinX serialization
     implementation libs.kotlinxSerialization

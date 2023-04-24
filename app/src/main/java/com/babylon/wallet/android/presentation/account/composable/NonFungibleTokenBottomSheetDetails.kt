@@ -27,7 +27,6 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    asset: NftCollectionUiModel,
     selectedNft: NftCollectionUiModel.NftItemUiModel,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -49,7 +48,7 @@ fun NonFungibleTokenBottomSheetDetails(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
-                model = LocalContext.current.buildLargeImageRequest(asset.iconUrl),
+                model = LocalContext.current.buildLargeImageRequest(selectedNft.nftImage),
                 placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
                 fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
                 contentDescription = null,
