@@ -300,13 +300,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                     val depositResults = depositJobs.awaitAll()
                                     val withdrawResults = withdrawJobs.awaitAll()
 
-                                    val withdrawingAccounts = withdrawResults
+                                    val withdrawingAccountsResults = withdrawResults
                                         .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
                                         .map {
                                             it.data
                                         }
 
-                                    val depositingAccounts = depositResults
+                                    val depositingAccountsResults = depositResults
                                         .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
                                         .map {
                                             it.data
@@ -316,11 +316,11 @@ class TransactionApprovalViewModel @Inject constructor(
                                         analyzeManifestWithPreviewResponse.accountProofResources
                                     )
 
-                                    val withdrawUniqueAccounts = withdrawingAccounts.distinctBy {
+                                    val withdrawUniqueAccounts = withdrawingAccountsResults.distinctBy {
                                         it.address
                                     }
 
-                                    val depositUniqueAccounts = depositingAccounts.distinctBy {
+                                    val depositUniqueAccounts = depositingAccountsResults.distinctBy {
                                         it.address
                                     }
 
@@ -329,7 +329,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                             address = uniqueAccount.address,
                                             accountName = uniqueAccount.displayName,
                                             appearanceID = uniqueAccount.appearanceID,
-                                            accounts = withdrawingAccounts.filter { it.address == uniqueAccount.address }
+                                            accounts = withdrawingAccountsResults.filter { it.address == uniqueAccount.address }
                                         )
                                     }.toPersistentList()
 
@@ -338,13 +338,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                             address = uniqueAccount.address,
                                             accountName = uniqueAccount.displayName,
                                             appearanceID = uniqueAccount.appearanceID,
-                                            accounts = depositingAccounts.filter { it.address == uniqueAccount.address }
+                                            accounts = depositingAccountsResults.filter { it.address == uniqueAccount.address }
                                         )
                                     }.toPersistentList()
 
                                     val guaranteesAccounts = depositPreviewAccounts.toGuaranteesAccountsUiModel()
 
-                                    this@TransactionApprovalViewModel.depositingAccounts = depositPreviewAccounts
+                                    depositingAccounts = depositPreviewAccounts
 
                                     _state.update {
                                         it.copy(
