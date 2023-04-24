@@ -159,7 +159,7 @@ private fun resolveActions(
     }
 
     return remember(address) {
-        if (address.type == Address.Type.ACCOUNT) {
+        if (address.isCopyPrimaryAction) {
             ActionableAddressActions(
                 primary = copyAction,
                 secondary = openExternalAction

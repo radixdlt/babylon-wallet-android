@@ -8,6 +8,9 @@ data class Address(
     val type: Type
 ) {
 
+    val isCopyPrimaryAction: Boolean
+        get() = type != Type.TRANSACTION
+
     private val isNft: Boolean
         get() = type == Type.RESOURCE && address.split(":").size > 1
 
