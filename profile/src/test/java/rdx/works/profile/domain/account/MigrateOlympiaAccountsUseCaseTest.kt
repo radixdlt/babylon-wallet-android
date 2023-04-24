@@ -39,7 +39,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.derivation.LegacyOlympiaBIP44LikeDerivationPath
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
@@ -90,7 +90,11 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                     genesisFactorInstance = FactorInstance(
-                                        derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                                        derivationPath = DerivationPath.forAccount(
+                                            networkId = network.network.networkId(),
+                                            accountIndex = 0,
+                                            keyType = KeyType.TRANSACTION_SIGNING
+                                        ),
                                         factorSourceId = FactorSource.ID("IDIDDIIDD"),
                                         publicKey = FactorInstance.PublicKey.curveSecp256k1PublicKey("")
                                     )
@@ -121,7 +125,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val words = MnemonicWords(olympiaTestSeedPhrase)
         val seed = words.toSeed(passphrase = "")
         val accounts = (0..10).map { index ->
-            val derivationPath = LegacyOlympiaBIP44LikeDerivationPath(index)
+            val derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index)
             val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
             val address = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
                 DeriveOlympiaAddressFromPublicKeyRequest(

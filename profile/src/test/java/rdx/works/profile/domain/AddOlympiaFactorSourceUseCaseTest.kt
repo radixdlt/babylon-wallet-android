@@ -27,6 +27,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.derivation.model.KeyType
 import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -76,7 +77,11 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                     genesisFactorInstance = FactorInstance(
-                                        derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                                        derivationPath = DerivationPath.forAccount(
+                                            networkId = network.network.networkId(),
+                                            accountIndex = 0,
+                                            keyType = KeyType.TRANSACTION_SIGNING
+                                        ),
                                         factorSourceId = FactorSource.ID("IDIDDIIDD"),
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )

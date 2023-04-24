@@ -28,9 +28,10 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.derivation.model.KeyType
+import rdx.works.profile.domain.GenerateProfileUseCase
 import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -80,11 +81,15 @@ class GenerateProfileUseCaseTest {
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
                                 displayName = "my account",
-                                networkID = 999,
+                                networkID = Radix.Gateway.hammunet.network.id,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                         genesisFactorInstance = FactorInstance(
-                                            derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                                            derivationPath = DerivationPath.forAccount(
+                                                networkId = Radix.Gateway.hammunet.network.networkId(),
+                                                accountIndex = 0,
+                                                keyType = KeyType.TRANSACTION_SIGNING
+                                            ),
                                             factorSourceId = FactorSource.ID("IDIDDIIDD"),
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )

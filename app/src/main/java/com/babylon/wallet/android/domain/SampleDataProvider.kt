@@ -28,6 +28,8 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.derivation.model.KeyType
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -38,11 +40,15 @@ class SampleDataProvider {
             address = address,
             appearanceID = 123,
             displayName = "my account",
-            networkID = 999,
+            networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath.forAccount("m/1'/1'/1'/1'/1'/1'"),
+                        derivationPath = DerivationPath.forAccount(
+                            networkId = Radix.Gateway.default.network.networkId(),
+                            accountIndex = 0,
+                            keyType = KeyType.TRANSACTION_SIGNING
+                        ),
                         factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
@@ -64,7 +70,7 @@ class SampleDataProvider {
         return Network.Persona(
             address = personaAddress,
             displayName = personaName,
-            networkID = 11,
+            networkID = NetworkId.Nebunet.value,
             fields = listOf(
                 Network.Persona.Field("1", Network.Persona.Field.Kind.EmailAddress, "test@test.pl"),
                 Network.Persona.Field("2", Network.Persona.Field.Kind.GivenName, "John")
@@ -72,7 +78,11 @@ class SampleDataProvider {
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath.forIdentity("few"),
+                        derivationPath = DerivationPath.forIdentity(
+                            networkId = NetworkId.Nebunet,
+                            identityIndex = 0,
+                            keyType = KeyType.TRANSACTION_SIGNING
+                        ),
                         factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )

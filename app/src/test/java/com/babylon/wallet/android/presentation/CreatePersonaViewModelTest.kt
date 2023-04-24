@@ -21,11 +21,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -53,12 +55,16 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         coEvery { createPersonaUseCase.invoke(any(), any()) } returns Network.Persona(
             address = personaId,
             displayName = personaName.value,
-            networkID = 10,
+            networkID = Radix.Gateway.default.network.id,
             fields = emptyList(),
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     genesisFactorInstance = FactorInstance(
-                        derivationPath = DerivationPath.forIdentity("m/1'/1'/1'/1'/1'/1'"),
+                        derivationPath = DerivationPath.forIdentity(
+                            networkId = Radix.Gateway.default.network.networkId(),
+                            identityIndex = 0,
+                            keyType = KeyType.TRANSACTION_SIGNING
+                        ),
                         factorSourceId = FactorSource.ID("IDIDDIIDD"),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
