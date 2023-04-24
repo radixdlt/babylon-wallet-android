@@ -52,17 +52,18 @@ fun ActionableAddressView(
     val actions = resolveActions(address = addressWithType)
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
 
-    Box {
+    Box(modifier = modifier) {
         Row(
-            modifier = modifier.combinedClickable(
-                onClick = { actions.primary.onAction() },
-                onLongClick = { isDropdownMenuExpanded = true }
-            ),
+            modifier = Modifier
+                .combinedClickable(
+                    onClick = { actions.primary.onAction() },
+                    onLongClick = { isDropdownMenuExpanded = true }
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
         ) {
             Text(
-                text = addressWithType.truncated,
+                text = addressWithType.displayAddress,
                 color = textColor,
                 maxLines = 1,
                 style = textStyle
