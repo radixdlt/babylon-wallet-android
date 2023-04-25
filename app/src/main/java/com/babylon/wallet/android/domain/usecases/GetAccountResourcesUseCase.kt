@@ -8,7 +8,6 @@ import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAdd
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.value
@@ -27,7 +26,6 @@ import javax.inject.Inject
 
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
-    private val nonFungibleRepository: NonFungibleRepository,
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
@@ -108,7 +106,7 @@ class GetAccountResourcesUseCase @Inject constructor(
     ) = map { it.nonFungibleResourceAddresses }
         .flatten()
         .associateWith { address ->
-            nonFungibleRepository.nonFungibleIds(
+            entityRepository.getNonFungibleIds(
                 address = address,
                 isRefreshing = isRefreshing
             ).value()

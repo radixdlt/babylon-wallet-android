@@ -16,8 +16,7 @@ import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
-import rdx.works.profile.data.repository.AccountDerivationPath
-import rdx.works.profile.data.repository.IdentityDerivationPath
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import java.util.*
 
@@ -119,14 +118,13 @@ data class Network(
                 networkId: NetworkId
             ): Account {
                 val index = factorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
-                val derivationPath = AccountDerivationPath(
-                    entityIndex = index,
-                    networkId = networkId
-                ).path()
+                val derivationPath = DerivationPath.forAccount(
+                    networkId = networkId,
+                    accountIndex = index,
+                    keyType = KeyType.TRANSACTION_SIGNING
+                )
 
-                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
-                    derivationPath = derivationPath
-                ).removeLeadingZero()
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
 
                 val address = deriveAccountAddress(
                     networkID = networkId,
@@ -135,9 +133,7 @@ data class Network(
 
                 val unsecuredSecurityState = SecurityState.unsecured(
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
-                    derivationPath = DerivationPath.forAccount(
-                        derivationPath = derivationPath
-                    ),
+                    derivationPath = derivationPath,
                     factorSourceId = factorSource.id
                 )
 
@@ -207,14 +203,13 @@ data class Network(
             ): Persona {
                 val index = factorSource.getNextIdentityDerivationIndex(forNetworkId = networkId)
 
-                val derivationPath = IdentityDerivationPath(
-                    entityIndex = index,
-                    networkId = networkId
-                ).path()
+                val derivationPath = DerivationPath.forIdentity(
+                    networkId = networkId,
+                    identityIndex = index,
+                    keyType = KeyType.TRANSACTION_SIGNING
+                )
 
-                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(
-                    derivationPath = derivationPath
-                ).removeLeadingZero()
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
 
                 val address = deriveIdentityAddress(
                     networkID = networkId,
@@ -223,9 +218,7 @@ data class Network(
 
                 val unsecuredSecurityState = SecurityState.unsecured(
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
-                    derivationPath = DerivationPath.forIdentity(
-                        derivationPath = derivationPath
-                    ),
+                    derivationPath = derivationPath,
                     factorSourceId = factorSource.id
                 )
 

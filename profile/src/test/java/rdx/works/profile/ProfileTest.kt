@@ -235,7 +235,7 @@ class ProfileTest {
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "identity_tdx_b_1psauxn0kkttjn3xhw6lvjudnrx48mu0jaxt0crp09d4smx5gv5",
+                    identityAddress = firstPersona.address,
                     fieldIDs = listOf(
                         "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
                         "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
@@ -243,8 +243,8 @@ class ProfileTest {
                     sharedAccounts =
                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
-                            "account_tdx_b_1p93amtza2ys6xrq7saycsrh97pdwm0atuf7xthpxyexsjnczsg",
-                            "account_tdx_b_1p8afjm9e5exmj0sxltq4my53rtzm6e4vqskj2znx27qq6xnnxf"
+                            secondAccount.address,
+                            thirdAccount.address
                         ),
                         request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
@@ -254,7 +254,7 @@ class ProfileTest {
                     lastUsedOn = "some date"
                 ),
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                    identityAddress = "identity_tdx_b_1pnec3phquyel59q39v3kcyc6z3ljy9jv40mdwf4dgxps5y05k2",
+                    identityAddress = secondPersona.address,
                     fieldIDs = listOf(
                         "FAD199A5-D6A8-425D-8807-C1561C2425C8",
                         "AC37E346-32EF-4670-9097-1AC27B20D394"
@@ -262,7 +262,7 @@ class ProfileTest {
                     sharedAccounts =
                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         accountsReferencedByAddress = listOf(
-                            "account_tdx_b_1p93amtza2ys6xrq7saycsrh97pdwm0atuf7xthpxyexsjnczsg"
+                            secondAccount.address
                         ),
                         request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
