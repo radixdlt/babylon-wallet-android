@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.data.repository.nonfungible
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -21,14 +19,6 @@ interface NonFungibleRepository {
         limit: Int? = null,
         isRefreshing: Boolean
     ): Result<NonFungibleTokenIdContainer>
-
-    suspend fun nonFungibleData(
-        address: String,
-        nonFungibleIds: List<String>,
-        page: String? = null,
-        limit: Int? = null,
-        isRefreshing: Boolean
-    ): Result<StateNonFungibleDataResponse>
 }
 
 class NonFungibleRepositoryImpl @Inject constructor(
@@ -54,27 +44,6 @@ class NonFungibleRepositoryImpl @Inject constructor(
                     previousCursor = response.nonFungibleIds.previousCursor
                 )
             }
-        )
-    }
-
-    override suspend fun nonFungibleData(
-        address: String,
-        nonFungibleIds: List<String>,
-        page: String?,
-        limit: Int?,
-        isRefreshing: Boolean
-    ): Result<StateNonFungibleDataResponse> {
-        return stateApi.nonFungibleData(
-            StateNonFungibleDataRequest(
-                resourceAddress = address,
-                nonFungibleIds = nonFungibleIds
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = httpCache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else FIVE_MINUTES
-            ),
-            map = { it }
         )
     }
 }

@@ -13,16 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.repository.buildLargeImageRequest
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.imageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -48,7 +48,7 @@ fun NonFungibleTokenBottomSheetDetails(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
-                model = LocalContext.current.buildLargeImageRequest(selectedNft.nftImage),
+                model = imageUrl(fromUrl = selectedNft.nftImage, size = ImageSize.LARGE),
                 placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
                 fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
                 contentDescription = null,

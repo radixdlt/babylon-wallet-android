@@ -19,15 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.repository.buildSmallImageRequest
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.imageUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -91,7 +91,7 @@ fun NftTokenHeaderItem(
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(
-                        model = LocalContext.current.buildSmallImageRequest(nftImageUrl),
+                        model = imageUrl(fromUrl = nftImageUrl, size = ImageSize.SMALL),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder)
                     ),

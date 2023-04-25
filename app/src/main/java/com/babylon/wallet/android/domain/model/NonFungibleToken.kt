@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.model
 
 data class NonFungibleToken(
     val address: String,
-    val tokenItems: List<NonFungibleTokenItemContainer>,
+    val nfts: List<NonFungibleTokenItemContainer>,
     val metadataContainer: NonFungibleMetadataContainer? = null
 ) {
     fun getTokenName(): String? {

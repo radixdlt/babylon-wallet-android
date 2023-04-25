@@ -170,7 +170,7 @@ class SampleDataProvider {
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
-                tokenItems = listOf(
+                nfts = listOf(
                     NonFungibleTokenItemContainer("#1#", "")
                 ),
                 metadataContainer = NonFungibleMetadataContainer(
@@ -189,7 +189,7 @@ class SampleDataProvider {
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
-                tokenItems = listOf(
+                nfts = listOf(
                     NonFungibleTokenItemContainer("#1#", "")
                 ),
                 metadataContainer = NonFungibleMetadataContainer(

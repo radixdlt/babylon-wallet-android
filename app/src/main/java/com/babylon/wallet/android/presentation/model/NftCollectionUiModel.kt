@@ -20,7 +20,7 @@ fun List<OwnedNonFungibleToken>.toNftUiModel() = map { ownedNonFungibleToken ->
     NftCollectionUiModel(
         name = ownedNonFungibleToken.token?.getTokenName().orEmpty(),
         iconUrl = ownedNonFungibleToken.token?.getIconUrl().orEmpty(),
-        nfts = ownedNonFungibleToken.token?.tokenItems?.map { nftItemContainer ->
+        nfts = ownedNonFungibleToken.token?.nfts?.map { nftItemContainer ->
             NftCollectionUiModel.NftItemUiModel(
                 id = nftItemContainer.id,
                 displayId = (ownedNonFungibleToken.tokenResourceAddress + nftItemContainer.id).hashCode(),

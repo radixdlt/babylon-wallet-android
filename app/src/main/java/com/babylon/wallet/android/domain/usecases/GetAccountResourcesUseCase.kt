@@ -120,7 +120,7 @@ class GetAccountResourcesUseCase @Inject constructor(
     ) = map { it.nonFungibleResourceAddresses }
         .flatten()
         .associateWith { address ->
-            nonFungibleRepository.nonFungibleData(
+            entityRepository.nonFungibleData(
                 address = address,
                 nonFungibleIds = nonFungibleIds,
                 isRefreshing = isRefreshing
@@ -164,7 +164,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             resource.address == it.resourceAddress
         } ?: error("Resource ${it.resourceAddress} not found")
 
-        val tokenItems = nonFungiblesWithData[it.resourceAddress]?.nonFungibleIds?.map { nftDetailItem ->
+        val nfts = nonFungiblesWithData[it.resourceAddress]?.nonFungibleIds?.map { nftDetailItem ->
             // Temporary hack to loop through all elements and search for a link until
             // we have solid solution with backend support
             val nftImage = nftDetailItem.mutableData.rawJson.elements.find { element ->
@@ -186,7 +186,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             tokenResourceAddress = it.resourceAddress,
             token = NonFungibleToken(
                 address = tokenResource.address,
-                tokenItems = tokenItems,
+                nfts = nfts,
                 metadataContainer = NonFungibleMetadataContainer(
                     metadata = tokenResource.metadata.asMetadataStringMap()
                 )

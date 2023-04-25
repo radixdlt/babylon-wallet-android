@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -35,13 +34,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.repository.buildMediumImageRequest
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.imageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 
@@ -83,7 +83,7 @@ fun ChooseAccountContent(
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     AsyncImage(
-                        model = LocalContext.current.buildMediumImageRequest(dappMetadata?.getImageUrl()),
+                        model = imageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         fallback = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder),
