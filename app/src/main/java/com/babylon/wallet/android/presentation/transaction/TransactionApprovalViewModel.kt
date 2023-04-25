@@ -17,6 +17,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
@@ -299,13 +300,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                     val depositResults = depositJobs.awaitAll()
                                     val withdrawResults = withdrawJobs.awaitAll()
 
-                                    val withdrawingAccounts = withdrawResults
+                                    val withdrawingAccountsResults = withdrawResults
                                         .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
                                         .map {
                                             it.data
                                         }
 
-                                    val depositingAccounts = depositResults
+                                    val depositingAccountsResults = depositResults
                                         .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
                                         .map {
                                             it.data
@@ -315,11 +316,11 @@ class TransactionApprovalViewModel @Inject constructor(
                                         analyzeManifestWithPreviewResponse.accountProofResources
                                     )
 
-                                    val withdrawUniqueAccounts = withdrawingAccounts.distinctBy {
+                                    val withdrawUniqueAccounts = withdrawingAccountsResults.distinctBy {
                                         it.address
                                     }
 
-                                    val depositUniqueAccounts = depositingAccounts.distinctBy {
+                                    val depositUniqueAccounts = depositingAccountsResults.distinctBy {
                                         it.address
                                     }
 
@@ -328,7 +329,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                             address = uniqueAccount.address,
                                             accountName = uniqueAccount.displayName,
                                             appearanceID = uniqueAccount.appearanceID,
-                                            accounts = withdrawingAccounts.filter { it.address == uniqueAccount.address }
+                                            accounts = withdrawingAccountsResults.filter { it.address == uniqueAccount.address }
                                         )
                                     }.toPersistentList()
 
@@ -337,11 +338,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                             address = uniqueAccount.address,
                                             accountName = uniqueAccount.displayName,
                                             appearanceID = uniqueAccount.appearanceID,
-                                            accounts = depositingAccounts.filter { it.address == uniqueAccount.address }
+                                            accounts = depositingAccountsResults.filter { it.address == uniqueAccount.address }
                                         )
                                     }.toPersistentList()
 
                                     val guaranteesAccounts = depositPreviewAccounts.toGuaranteesAccountsUiModel()
+
+                                    depositingAccounts = depositPreviewAccounts
 
                                     _state.update {
                                         it.copy(
@@ -518,8 +521,16 @@ class TransactionApprovalViewModel @Inject constructor(
                 depositingAccounts = depositingAccounts
             )
         }
-        // Reset local depositing accounts
-        depositingAccounts = persistentListOf()
+    }
+
+    fun onGuaranteesCloseClick() {
+        // Reset local depositing accounts to initial values
+        depositingAccounts = _state.value.depositingAccounts
+        _state.update {
+            it.copy(
+                guaranteesAccounts = depositingAccounts.toGuaranteesAccountsUiModel()
+            )
+        }
     }
 
     fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
@@ -621,7 +632,9 @@ data class GuaranteesAccountItemUiModel(
     val tokenGuaranteedQuantity: String,
     val guaranteedPercentAmount: String,
     val index: Int? = null
-)
+) {
+    fun isXrd(): Boolean = tokenSymbol == MetadataConstants.SYMBOL_XRD
+}
 
 data class PresentingProofUiModel(
     val iconUrl: String,
