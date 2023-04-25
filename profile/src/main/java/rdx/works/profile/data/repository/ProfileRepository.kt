@@ -150,6 +150,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun discardBackedUpProfile() {
         encryptedPreferencesManager.clearProfileSnapshotFromBackup()
+        preferencesManager.removeLastBackupInstant()
         profileStateFlow.update { ProfileState.None() }
     }
 
