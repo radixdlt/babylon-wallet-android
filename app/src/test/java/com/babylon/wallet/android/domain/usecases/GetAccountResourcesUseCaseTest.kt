@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregat
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.data.repository.nonfungible.NonFungibleRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountAddress
@@ -39,12 +38,10 @@ import java.math.BigDecimal
 class GetAccountResourcesUseCaseTest {
 
     private val entityRepositoryMock = mockk<EntityRepository>()
-    private val nonFungibleRepositoryMock = mockk<NonFungibleRepository>()
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
 
     private val testedClass = GetAccountResourcesUseCase(
         entityRepository = entityRepositoryMock,
-        nonFungibleRepository = nonFungibleRepositoryMock,
         getProfileUseCase = getProfileUseCaseMock
     )
 
@@ -161,7 +158,7 @@ class GetAccountResourcesUseCaseTest {
             expectedNonFungibleResource(expectedResource.resourceAddress)
         )
         coEvery {
-            nonFungibleRepositoryMock.nonFungibleIds(address = expectedResource.resourceAddress, isRefreshing = true)
+            entityRepositoryMock.getNonFungibleIds(address = expectedResource.resourceAddress, isRefreshing = true)
         } returns Result.Success(
             expectedNonFungibleIdContainer
         )
