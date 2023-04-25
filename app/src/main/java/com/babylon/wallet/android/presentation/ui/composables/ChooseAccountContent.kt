@@ -41,7 +41,7 @@ import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.imageUrl
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 
@@ -83,7 +83,7 @@ fun ChooseAccountContent(
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     AsyncImage(
-                        model = imageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
+                        model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         fallback = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder),

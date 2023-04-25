@@ -51,7 +51,7 @@ private fun Context.buildImageRequest(imageUrl: String?): ImageRequest {
 }
 
 @Composable
-fun imageUrl(fromUrl: String?, size: ImageSize = ImageSize.SMALL): ImageRequest {
+fun rememberImageUrl(fromUrl: String?, size: ImageSize = ImageSize.SMALL): ImageRequest {
     val context = LocalContext.current
     val url = "${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=$fromUrl&imageSize=${size.toSizeString()}"
     return remember(url) {

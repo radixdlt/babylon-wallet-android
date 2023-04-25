@@ -30,7 +30,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.imageUrl
+import com.babylon.wallet.android.utils.rememberImageUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
@@ -61,7 +61,7 @@ fun NftTokenDetailItem(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             AsyncImage(
-                model = imageUrl(fromUrl = imageUrl, size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = imageUrl, size = ImageSize.LARGE),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder),
                 contentDescription = "Nft image",

@@ -33,7 +33,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.imageUrl
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.util.Locale
 
@@ -67,7 +67,7 @@ fun FungibleTokenBottomSheetDetails(
                 rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
             }
             AsyncImage(
-                model = imageUrl(fromUrl = token.iconUrl, size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.LARGE),
                 placeholder = placeholder,
                 fallback = placeholder,
                 error = placeholder,

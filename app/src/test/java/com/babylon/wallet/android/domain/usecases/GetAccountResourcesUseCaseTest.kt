@@ -170,7 +170,7 @@ class GetAccountResourcesUseCaseTest {
         )
 
         coEvery {
-            nonFungibleRepositoryMock.nonFungibleData(address = expectedResource.resourceAddress, any(), isRefreshing = true)
+            entityRepositoryMock.nonFungibleData(address = expectedResource.resourceAddress, any(), isRefreshing = true)
         } returns Result.Success(
             expectedNonFungibleData(expectedResource.resourceAddress)
         )
@@ -191,7 +191,7 @@ class GetAccountResourcesUseCaseTest {
                             tokenResourceAddress = expectedResource.resourceAddress,
                             token = NonFungibleToken(
                                 address = expectedResource.resourceAddress,
-                                tokenItems = listOf(
+                                nfts = listOf(
                                     NonFungibleTokenItemContainer(id = "1", nftImage = "")
                                 ),
                                 metadataContainer = NonFungibleMetadataContainer()

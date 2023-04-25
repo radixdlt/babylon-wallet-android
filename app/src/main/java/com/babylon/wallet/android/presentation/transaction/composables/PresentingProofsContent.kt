@@ -29,7 +29,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.PresentingProofUiModel
 import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.imageUrl
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -85,7 +85,7 @@ fun PresentingProofsContent(
                     val placeholder =
                         rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
                     AsyncImage(
-                        model = imageUrl(fromUrl = presentingProof.iconUrl, size = ImageSize.SMALL),
+                        model = rememberImageUrl(fromUrl = presentingProof.iconUrl, size = ImageSize.SMALL),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,
