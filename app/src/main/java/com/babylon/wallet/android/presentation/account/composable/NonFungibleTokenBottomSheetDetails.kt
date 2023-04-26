@@ -21,11 +21,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    asset: NftCollectionUiModel,
     selectedNft: NftCollectionUiModel.NftItemUiModel,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -47,7 +48,7 @@ fun NonFungibleTokenBottomSheetDetails(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
-                model = asset.iconUrl,
+                model = rememberImageUrl(fromUrl = selectedNft.nftImage, size = ImageSize.LARGE),
                 placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
                 fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
                 contentDescription = null,

@@ -39,6 +39,8 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.math.BigDecimal
 
@@ -113,7 +115,7 @@ fun TransactionAccountWithGuaranteesCard(
                         .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
                 ) {
                     AsyncImage(
-                        model = tokenIconUrl,
+                        model = rememberImageUrl(fromUrl = tokenIconUrl, size = ImageSize.LARGE),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,

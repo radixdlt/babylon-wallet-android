@@ -45,6 +45,8 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 
 @Composable
@@ -124,7 +126,7 @@ private fun LoginPermissionContent(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             AsyncImage(
-                model = dappMetadata?.getIcon(),
+                model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 fallback = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder),

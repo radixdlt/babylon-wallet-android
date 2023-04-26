@@ -48,6 +48,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 
 @Composable
@@ -138,7 +140,7 @@ private fun PersonaDataOngoingPermissionContent(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             AsyncImage(
-                model = dappMetadata?.getIcon(),
+                model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 fallback = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder),

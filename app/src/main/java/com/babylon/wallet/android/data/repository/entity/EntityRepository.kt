@@ -4,6 +4,8 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -20,6 +22,14 @@ interface EntityRepository {
         addresses: List<String>,
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
+
+    suspend fun nonFungibleData(
+        address: String,
+        nonFungibleIds: List<String>,
+        page: String? = null,
+        limit: Int? = null,
+        isRefreshing: Boolean
+    ): Result<StateNonFungibleDataResponse>
 
     suspend fun getNonFungibleIds(
         address: String,
@@ -70,6 +80,27 @@ class EntityRepositoryImpl @Inject constructor(
                     previousCursor = response.nonFungibleIds.previousCursor
                 )
             }
+        )
+    }
+
+    override suspend fun nonFungibleData(
+        address: String,
+        nonFungibleIds: List<String>,
+        page: String?,
+        limit: Int?,
+        isRefreshing: Boolean
+    ): Result<StateNonFungibleDataResponse> {
+        return stateApi.nonFungibleData(
+            StateNonFungibleDataRequest(
+                resourceAddress = address,
+                nonFungibleIds = nonFungibleIds
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+            ),
+            map = { it }
         )
     }
 }

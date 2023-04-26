@@ -51,6 +51,8 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnaut
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.rememberImageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -141,7 +143,7 @@ private fun PersonaDataOnetimeContent(
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 AsyncImage(
-                    model = dappMetadata?.getIcon(),
+                    model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     fallback = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder),

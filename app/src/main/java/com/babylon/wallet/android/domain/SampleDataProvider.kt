@@ -7,10 +7,9 @@ import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import com.babylon.wallet.android.domain.model.SimpleOwnedFungibleToken
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
@@ -171,27 +170,6 @@ class SampleDataProvider {
         ownedFungibleToken.toTokenUiModel()
     }
 
-    fun sampleSimpleFungibleTokens(address: String = randomAddress()): List<SimpleOwnedFungibleToken> {
-        val tokenAddress = randomAddress()
-        return listOf(
-            SimpleOwnedFungibleToken(
-                AccountAddress(address),
-                BigDecimal.valueOf(100000),
-                tokenAddress,
-            ),
-            SimpleOwnedFungibleToken(
-                AccountAddress(address),
-                BigDecimal.valueOf(100000),
-                tokenAddress,
-            ),
-            SimpleOwnedFungibleToken(
-                AccountAddress(address),
-                BigDecimal.valueOf(100000),
-                tokenAddress,
-            )
-        )
-    }
-
     val mockNftUiList = listOf(
         OwnedNonFungibleToken(
             owner = AccountAddress(
@@ -202,10 +180,8 @@ class SampleDataProvider {
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
-                nonFungibleIdContainer = NonFungibleTokenIdContainer(
-                    ids = listOf("id1", "id2", "id3"),
-                    nextCursor = "next cursor",
-                    previousCursor = "previous cursor"
+                nfts = listOf(
+                    NonFungibleTokenItemContainer("#1#", "")
                 ),
                 metadataContainer = NonFungibleMetadataContainer(
                     metadata = emptyMap(),
@@ -223,10 +199,8 @@ class SampleDataProvider {
             tokenResourceAddress = "token resource address",
             token = NonFungibleToken(
                 address = "non fungible token address",
-                nonFungibleIdContainer = NonFungibleTokenIdContainer(
-                    ids = listOf("id1", "id2", "id3"),
-                    nextCursor = "next cursor",
-                    previousCursor = "previous cursor"
+                nfts = listOf(
+                    NonFungibleTokenItemContainer("#1#", "")
                 ),
                 metadataContainer = NonFungibleMetadataContainer(
                     metadata = emptyMap(),

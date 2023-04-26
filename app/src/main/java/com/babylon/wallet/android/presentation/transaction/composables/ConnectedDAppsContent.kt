@@ -38,6 +38,8 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.ConnectedDAppsUiModel
+import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.rememberImageUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -119,7 +121,7 @@ fun ConnectedDAppsContent(
                 ) {
                     val placeholder = painterResource(id = R.drawable.ic_unknown_component)
                     AsyncImage(
-                        model = connectedDApp.iconUrl,
+                        model = rememberImageUrl(fromUrl = connectedDApp.iconUrl, size = ImageSize.SMALL),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,

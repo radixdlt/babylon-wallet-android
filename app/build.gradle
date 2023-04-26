@@ -53,6 +53,7 @@ android {
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "GATEWAY_API_URL", '"https://betanet.radixdlt.com"'
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
+        buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -85,6 +86,7 @@ android {
         releasePreview {
             initWith release
             buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             signingConfig signingConfigs.releasePreview
             applicationIdSuffix ".preview"
             minifyEnabled true
@@ -95,6 +97,7 @@ android {
         release {
             minifyEnabled true
             buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -177,6 +180,7 @@ dependencies {
 
     // Coil
     implementation libs.coilCompose
+    implementation libs.coilComposeSvg
 
     // KotlinX serialization
     implementation libs.kotlinxSerialization

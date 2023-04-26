@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
@@ -15,7 +16,7 @@ import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import rdx.works.profile.data.model.pernetwork.Network
@@ -73,6 +74,11 @@ class GetAccountResourcesUseCase @Inject constructor(
         // and associate them with the resource address
         val nonFungiblesWithIds = accountsOnGateway.associateWithNonFungibleIds(isRefreshing)
 
+        val nonFungiblesWithData = accountsOnGateway.associateWithNonFungibleData(
+            nonFungibleIds = nonFungiblesWithIds.values.map { nf -> nf?.ids.orEmpty() }.flatten(),
+            isRefreshing = isRefreshing
+        )
+
         // For every Account stored in the profile, map it to AccountResources
         this.mapNotNull { profileAccount ->
             val accountOnGateway = accountsOnGateway.find {
@@ -82,7 +88,7 @@ class GetAccountResourcesUseCase @Inject constructor(
             val fungibleTokens = accountOnGateway.resolveFungibleTokens(allResources)
             val nonFungibleTokens = accountOnGateway.resolveNonFungibleTokens(
                 allResources,
-                nonFungiblesWithIds
+                nonFungiblesWithData
             )
 
             AccountResources(
@@ -102,6 +108,19 @@ class GetAccountResourcesUseCase @Inject constructor(
         .associateWith { address ->
             entityRepository.getNonFungibleIds(
                 address = address,
+                isRefreshing = isRefreshing
+            ).value()
+        }
+
+    private suspend fun List<StateEntityDetailsResponseItem>.associateWithNonFungibleData(
+        nonFungibleIds: List<String>,
+        isRefreshing: Boolean
+    ) = map { it.nonFungibleResourceAddresses }
+        .flatten()
+        .associateWith { address ->
+            entityRepository.nonFungibleData(
+                address = address,
+                nonFungibleIds = nonFungibleIds,
                 isRefreshing = isRefreshing
             ).value()
         }
@@ -137,19 +156,35 @@ class GetAccountResourcesUseCase @Inject constructor(
 
     private fun StateEntityDetailsResponseItem.resolveNonFungibleTokens(
         allResources: List<StateEntityDetailsResponseItem>,
-        nonFungiblesWithIds: Map<String, NonFungibleTokenIdContainer?>
+        nonFungiblesWithData: Map<String, StateNonFungibleDataResponse?>
     ) = nonFungibleResources?.items?.map {
         val tokenResource = allResources.find { resource ->
             resource.address == it.resourceAddress
         } ?: error("Resource ${it.resourceAddress} not found")
 
+        val nfts = nonFungiblesWithData[it.resourceAddress]?.nonFungibleIds?.map { nftDetailItem ->
+            // Temporary hack to loop through all elements and search for a link until
+            // we have solid solution with backend support
+            val nftImage = nftDetailItem.mutableData.rawJson.elements.find { element ->
+                element.value.contains("https") &&
+                    (
+                        element.value.contains(".jpg") ||
+                            element.value.contains(".png") ||
+                            element.value.contains(".svg")
+                        )
+            }
+            NonFungibleTokenItemContainer(
+                id = nftDetailItem.nonFungibleId,
+                nftImage = nftImage?.value.orEmpty()
+            )
+        }.orEmpty()
         OwnedNonFungibleToken(
             owner = AccountAddress(address),
             amount = it.amount,
             tokenResourceAddress = it.resourceAddress,
             token = NonFungibleToken(
                 address = tokenResource.address,
-                nonFungibleIdContainer = nonFungiblesWithIds[it.resourceAddress],
+                nfts = nfts,
                 metadataContainer = NonFungibleMetadataContainer(
                     metadata = tokenResource.metadata.asMetadataStringMap()
                 )

@@ -175,7 +175,7 @@ private fun AccountScreenContent(
                     when (assetDetails) {
                         is NftCollectionUiModel -> {
                             selectedNft?.let { selectedNft ->
-                                NonFungibleTokenBottomSheetDetails(asset = assetDetails, onCloseClick = {
+                                NonFungibleTokenBottomSheetDetails(onCloseClick = {
                                     scope.launch {
                                         bottomSheetState.hide()
                                     }
@@ -557,7 +557,7 @@ fun AssetsContent(
                                 remember(nonFungibleTokens) { nonFungibleTokens.map { true }.toMutableStateList() }
                             NftListContent(
                                 collapsedState = collapsedState,
-                                item = nonFungibleTokens,
+                                items = nonFungibleTokens,
                                 modifier = Modifier.fillMaxSize(),
                                 onNftClick = onNftClick
                             )

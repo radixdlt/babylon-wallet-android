@@ -39,7 +39,7 @@ class GetTransactionProofResourcesUseCase @Inject constructor(
             dAppsMetadata.forEach { dAppMetadata ->
                 proofs.add(
                     PresentingProofUiModel(
-                        iconUrl = dAppMetadata.getIcon().orEmpty(),
+                        iconUrl = dAppMetadata.getImageUrl().orEmpty(),
                         title = dAppMetadata.getName().orEmpty()
                     )
                 )

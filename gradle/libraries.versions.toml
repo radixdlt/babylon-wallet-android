@@ -87,6 +87,7 @@ hiltNavigation = { module = "androidx.hilt:hilt-navigation-compose", version.ref
 hiltCompiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 biometricKtx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometricKtx" }
 coilCompose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coilComposeSvg = { module = "io.coil-kt:coil-svg", version.ref = "coilCompose" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 ket = { module = "com.radixdlt:kotlin-engine-toolkit", version.ref = "ket" }
 slip10 = { module = "com.radixdlt:slip10-android", version.ref = "slip10" }
