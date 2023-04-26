@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -22,19 +23,14 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param type 
- * @param valueHex Hex-encoded binary blob.
+ * @param explicitMetadata 
  */
 @Serializable
 
-data class TransactionCommittedDetailsRequestIdentifier (
+data class StateEntityFungiblesPageRequestOptIns (
 
-    @Contextual @SerialName(value = "type")
-    val type: TransactionCommittedDetailsRequestIdentifierType,
-
-    /* Hex-encoded binary blob. */
-    @SerialName(value = "value_hex")
-    val valueHex: kotlin.String
+    @SerialName(value = "explicit_metadata")
+    val explicitMetadata: kotlin.collections.List<kotlin.String>? = null
 
 )
 

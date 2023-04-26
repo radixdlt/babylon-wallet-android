@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
  * 
  *
  * @param nonFungibleId String-encoded non-fungible ID.
- * @param mutableData 
+ * @param `data` 
  * @param lastUpdatedAtStateVersion TBD
  */
 @Serializable
@@ -33,8 +33,8 @@ data class StateNonFungibleDetailsResponseItem (
     @SerialName(value = "non_fungible_id")
     val nonFungibleId: kotlin.String,
 
-    @SerialName(value = "mutable_data")
-    val mutableData: ScryptoSborValue,
+    @SerialName(value = "data")
+    val `data`: ScryptoSborValue,
 
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")

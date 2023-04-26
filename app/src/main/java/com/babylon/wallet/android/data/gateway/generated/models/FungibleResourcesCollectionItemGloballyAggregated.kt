@@ -29,6 +29,7 @@ import kotlinx.serialization.Contextual
  * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
  * @param amount String-encoded decimal representing the amount of a related fungible resource.
  * @param lastUpdatedAtStateVersion TBD
+ * @param explicitMetadata 
  */
 @Serializable
 
@@ -47,7 +48,10 @@ data class FungibleResourcesCollectionItemGloballyAggregated (
 
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")
-    val lastUpdatedAtStateVersion: kotlin.Long
+    val lastUpdatedAtStateVersion: kotlin.Long,
+
+    @SerialName(value = "explicit_metadata")
+    override val explicitMetadata: EntityMetadataCollection? = null
 
 ) : FungibleResourcesCollectionItem()
 

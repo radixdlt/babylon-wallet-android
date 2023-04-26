@@ -24,6 +24,7 @@ import kotlinx.serialization.SerialName
  *
  * @param releaseVersion The release that is currently deployed to the Gateway API.
  * @param openApiSchemaVersion The Open API Schema version that was used to generate the API models.
+ * @param imageTag Image tag that is currently deployed to the Gateway API.
  */
 @Serializable
 
@@ -35,7 +36,11 @@ data class GatewayInfoResponseReleaseInfo (
 
     /* The Open API Schema version that was used to generate the API models. */
     @SerialName(value = "open_api_schema_version")
-    val openApiSchemaVersion: kotlin.String
+    val openApiSchemaVersion: kotlin.String,
+
+    /* Image tag that is currently deployed to the Gateway API. */
+    @SerialName(value = "image_tag")
+    val imageTag: kotlin.String
 
 )
 
