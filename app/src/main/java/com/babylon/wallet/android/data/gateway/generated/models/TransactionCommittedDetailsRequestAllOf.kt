@@ -21,14 +21,19 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param transactionIdentifier 
+ * @param intentHashHex Hex-encoded SHA-256 hash.
+ * @param optIns 
  */
 @Serializable
 
 data class TransactionCommittedDetailsRequestAllOf (
 
-    @SerialName(value = "transaction_identifier")
-    val transactionIdentifier: TransactionCommittedDetailsRequestIdentifier
+    /* Hex-encoded SHA-256 hash. */
+    @SerialName(value = "intent_hash_hex")
+    val intentHashHex: kotlin.String,
+
+    @SerialName(value = "opt_ins")
+    val optIns: TransactionCommittedDetailsOptIns? = null
 
 )
 

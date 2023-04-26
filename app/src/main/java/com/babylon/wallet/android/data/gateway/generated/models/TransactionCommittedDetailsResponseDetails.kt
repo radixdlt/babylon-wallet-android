@@ -23,24 +23,24 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param rawHex Hex-encoded binary blob.
  * @param receipt 
  * @param referencedGlobalEntities 
+ * @param rawHex Hex-encoded binary blob.
  * @param messageHex Hex-encoded binary blob.
  */
 @Serializable
 
 data class TransactionCommittedDetailsResponseDetails (
 
-    /* Hex-encoded binary blob. */
-    @SerialName(value = "raw_hex")
-    val rawHex: kotlin.String,
-
-//    @Contextual @SerialName(value = "receipt")
-//    val receipt: kotlin.Any,
+    @SerialName(value = "receipt")
+    val receipt: TransactionReceipt,
 
     @SerialName(value = "referenced_global_entities")
     val referencedGlobalEntities: kotlin.collections.List<kotlin.String>,
+
+    /* Hex-encoded binary blob. */
+    @SerialName(value = "raw_hex")
+    val rawHex: kotlin.String? = null,
 
     /* Hex-encoded binary blob. */
     @SerialName(value = "message_hex")
