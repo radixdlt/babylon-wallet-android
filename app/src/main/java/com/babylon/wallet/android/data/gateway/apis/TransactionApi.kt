@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.data.gateway.apis
 
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionConstructionResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
@@ -8,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatu
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
