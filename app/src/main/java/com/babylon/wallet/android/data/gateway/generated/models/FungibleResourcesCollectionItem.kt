@@ -20,18 +20,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * 
  *
- *
- * @param aggregationLevel
+ * @param aggregationLevel 
  * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param explicitMetadata 
  */
 @Serializable(with = FungibleResourcesCollectionItemSerializer::class)
 abstract class FungibleResourcesCollectionItem {
+
     @SerialName(value = "aggregation_level")
     abstract val aggregationLevel: ResourceAggregationLevel
 
     /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
     @SerialName(value = "resource_address")
     abstract val resourceAddress: kotlin.String
+
+    @SerialName(value = "explicit_metadata")
+    abstract val explicitMetadata: EntityMetadataCollection?
 }
 

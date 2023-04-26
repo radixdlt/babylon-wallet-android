@@ -25,6 +25,7 @@ import kotlinx.serialization.Contextual
  * @param aggregationLevel 
  * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
  * @param vaults 
+ * @param explicitMetadata 
  */
 @Serializable
 
@@ -38,7 +39,10 @@ data class FungibleResourcesCollectionItemVaultAggregated (
     override val resourceAddress: kotlin.String,
 
     @SerialName(value = "vaults")
-    val vaults: FungibleResourcesCollectionItemVaultAggregatedVault
+    val vaults: FungibleResourcesCollectionItemVaultAggregatedVault,
+
+    @SerialName(value = "explicit_metadata")
+    override val explicitMetadata: EntityMetadataCollection? = null
 
 ) : FungibleResourcesCollectionItem()
 

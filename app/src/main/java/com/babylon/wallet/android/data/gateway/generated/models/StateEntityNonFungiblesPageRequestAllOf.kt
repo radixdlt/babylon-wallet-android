@@ -15,6 +15,9 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequestOptIns
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -28,7 +31,7 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class StateEntityFungiblesPageRequestAllOf (
+data class StateEntityNonFungiblesPageRequestAllOf (
 
     /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
     @SerialName(value = "address")
@@ -38,7 +41,7 @@ data class StateEntityFungiblesPageRequestAllOf (
     val aggregationLevel: ResourceAggregationLevel? = null,
 
     @SerialName(value = "opt_ins")
-    val optIns: StateEntityFungiblesPageRequestOptIns? = null
+    val optIns: StateEntityNonFungiblesPageRequestOptIns? = null
 
 )
 

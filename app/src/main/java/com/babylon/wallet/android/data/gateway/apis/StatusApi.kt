@@ -7,6 +7,14 @@ import retrofit2.http.Url
 
 interface StatusApi {
 
+    /**
+     * Get Gateway Status
+     * Returns the Gateway API version and current ledger state.
+     * Responses:
+     *  - 200: Network Gateway Information
+     *
+     * @return [GatewayStatusResponse]
+     */
     @POST
     fun gatewayStatus(@Url gatewayUrl: String): Call<GatewayStatusResponse>
 

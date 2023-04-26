@@ -24,6 +24,7 @@ import kotlinx.serialization.Contextual
  *
  * @param addresses 
  * @param atLedgerState 
+ * @param optIns 
  * @param aggregationLevel 
  */
 @Serializable
@@ -35,6 +36,9 @@ data class StateEntityDetailsRequest (
 
     @SerialName(value = "at_ledger_state")
     val atLedgerState: LedgerStateSelector? = null,
+
+    @SerialName(value = "opt_ins")
+    val optIns: StateEntityDetailsOptIns? = null,
 
     @Contextual @SerialName(value = "aggregation_level")
     val aggregationLevel: ResourceAggregationLevel? = null
