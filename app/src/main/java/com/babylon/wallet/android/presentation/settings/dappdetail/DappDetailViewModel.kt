@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -182,7 +182,7 @@ sealed interface DappDetailEvent : OneOffEvent {
 data class DappDetailUiState(
     val loading: Boolean = true,
     val dapp: Network.AuthorizedDapp? = null,
-    val dappMetadata: DappWithMetadata? = null,
+    val dappMetadata: DappMetadata? = null,
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),

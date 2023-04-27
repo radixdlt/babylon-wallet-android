@@ -37,7 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.utils.ImageSize
@@ -54,7 +54,7 @@ fun ChooseAccountContent(
     onAccountSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
-    dappMetadata: DappWithMetadata?,
+    dappMetadata: DappMetadata?,
     isOneTime: Boolean,
     isSingleChoice: Boolean,
     numberOfAccounts: Int,

@@ -41,7 +41,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
@@ -112,7 +112,7 @@ private fun SelectPersonaContent(
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
     onSelectPersona: (Network.Persona) -> Unit,
-    dappMetadata: DappWithMetadata?,
+    dappMetadata: DappMetadata?,
     firstTimeLogin: Boolean,
     continueButtonEnabled: Boolean,
     personas: ImmutableList<PersonaUiModel>,
@@ -270,8 +270,7 @@ fun SelectPersonaPreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappMetadata = DappWithMetadata(
-                dAppDefinitionAddress = "address",
+            dappMetadata = DappMetadata(
                 nameItem = NameMetadataItem("Collabo.fi")
             ),
             firstTimeLogin = false,
@@ -292,8 +291,7 @@ fun SelectPersonaFirstTimePreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappMetadata = DappWithMetadata(
-                dAppDefinitionAddress = "address",
+            dappMetadata = DappMetadata(
                 nameItem = NameMetadataItem("Collabo.fi")
             ),
             firstTimeLogin = true,

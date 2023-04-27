@@ -3,8 +3,9 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
 class DappMetadataRepositoryFake : DappMetadataRepository {
@@ -17,11 +18,11 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata> {
+    ): Result<DappMetadata> {
         return Result.Success(
-            DappWithMetadata(
-                dAppDefinitionAddress = "dapp_address",
-                nameItem = NameMetadataItem(name = "dApp")
+            DappMetadata(
+                nameItem = NameMetadataItem(name = "dApp"),
+                dAppDefinitionMetadataItem = DAppDefinitionMetadataItem(address = "dapp_address")
             )
         )
     }
@@ -30,12 +31,12 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> {
+    ): Result<List<DappMetadata>> {
         return Result.Success(
             listOf(
-                DappWithMetadata(
-                    dAppDefinitionAddress = "dapp_address",
-                    nameItem = NameMetadataItem(name = "dApp")
+                DappMetadata(
+                    nameItem = NameMetadataItem(name = "dApp"),
+                    dAppDefinitionMetadataItem = DAppDefinitionMetadataItem(address = "dapp_address")
                 )
             )
         )

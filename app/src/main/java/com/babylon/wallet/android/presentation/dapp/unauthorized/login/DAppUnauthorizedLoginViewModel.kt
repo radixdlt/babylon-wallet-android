@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -214,7 +214,7 @@ sealed interface DAppUnauthorizedLoginEvent : OneOffEvent {
 }
 
 data class DAppUnauthorizedLoginUiState(
-    val dappMetadata: DappWithMetadata? = null,
+    val dappMetadata: DappMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
     val selectedOnetimeDataFields: ImmutableList<Network.Persona.Field> = persistentListOf(),

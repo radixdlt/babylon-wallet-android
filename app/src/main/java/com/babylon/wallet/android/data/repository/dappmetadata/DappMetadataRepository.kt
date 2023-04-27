@@ -19,7 +19,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -37,13 +37,13 @@ interface DappMetadataRepository {
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey> = emptySet(),
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata>
+    ): Result<DappMetadata>
 
     suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey> = emptySet(),
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>>
+    ): Result<List<DappMetadata>>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -90,7 +90,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata> = getDAppsMetadata(
+    ): Result<DappMetadata> = getDAppsMetadata(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
@@ -102,7 +102,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> = withContext(ioDispatcher) {
+    ): Result<List<DappMetadata>> = withContext(ioDispatcher) {
         val optIns = if (explicitMetadata.isNotEmpty()) {
             StateEntityDetailsOptIns(
                 explicitMetadata = explicitMetadata.map { it.key }
@@ -123,8 +123,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
             ),
             map = { response ->
                 response.items.map { dAppResponse ->
-                    DappWithMetadata.from(
-                        address = dAppResponse.address,
+                    DappMetadata.from(
                         metadataItems = dAppResponse.explicitMetadata?.asMetadataItems().orEmpty()
                     )
                 }
@@ -145,9 +144,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     httpCache = cache,
                     timeoutDuration = TimeoutDuration.FIVE_MINUTES
                 ),
-                map = { response ->
-                    response.dAppMetadata.map { it.dAppDefinitionAddress }
-                },
+                map = { response -> response.dApps.map { it.dAppDefinitionAddress } },
                 error = {
                     DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
