@@ -57,7 +57,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
@@ -129,7 +129,7 @@ private fun DappDetailContent(
     modifier: Modifier = Modifier,
     dappName: String,
     personaList: ImmutableList<Network.Persona>,
-    dappMetadata: DappWithMetadata?,
+    dappMetadata: DappMetadata?,
     onPersonaClick: (Network.Persona) -> Unit,
     selectedPersona: PersonaUiModel?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
@@ -247,7 +247,7 @@ private fun DappDetails(
     modifier: Modifier,
     dappName: String,
     onBackClick: () -> Unit,
-    dappMetadata: DappWithMetadata?,
+    dappMetadata: DappMetadata?,
     personaList: ImmutableList<Network.Persona>,
     onPersonaClick: (Network.Persona) -> Unit,
     onDeleteDapp: () -> Unit
@@ -291,7 +291,7 @@ private fun DappDetails(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dappMetadata?.dAppDefinitionAddress?.let { dappDefinitionAddress ->
+            dappMetadata?.definitionAddress?.let { dappDefinitionAddress ->
                 item {
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                     DappDefinitionAddressRow(
@@ -621,8 +621,7 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             dappName = "Dapp",
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappMetadata = DappWithMetadata(
-                dAppDefinitionAddress = "address",
+            dappMetadata = DappMetadata(
                 nameItem = NameMetadataItem("Dapp"),
                 descriptionItem = DescriptionMetadataItem("Description")
             ),

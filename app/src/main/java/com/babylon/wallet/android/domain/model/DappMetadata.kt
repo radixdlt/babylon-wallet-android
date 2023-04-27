@@ -10,8 +10,7 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 
-data class DappWithMetadata(
-    val dAppDefinitionAddress: String,
+data class DappMetadata(
     private val nameItem: NameMetadataItem? = null,
     private val descriptionItem: DescriptionMetadataItem? = null,
     private val iconMetadataItem: IconUrlMetadataItem? = null,
@@ -44,11 +43,10 @@ data class DappWithMetadata(
     }
 
     companion object {
-        fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DappWithMetadata {
+        fun from(metadataItems: List<MetadataItem> = listOf()): DappMetadata {
             val remainingItems = metadataItems.toMutableList()
 
-            return DappWithMetadata(
-                dAppDefinitionAddress = address,
+            return DappMetadata(
                 nameItem = remainingItems.consume(),
                 descriptionItem = remainingItems.consume(),
                 iconMetadataItem = remainingItems.consume(),
