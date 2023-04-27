@@ -37,15 +37,6 @@ data class Profile(
     val networks: List<Network>,
 ) {
 
-    internal val currentNetwork: Network
-        get() {
-            val currentGateway = appPreferences.gateways.current()
-
-            return networks.find { it.networkID == currentGateway.network.id } ?: error(
-                "No per-network found for gateway: $currentGateway. This should not happen"
-            )
-        }
-
     internal fun snapshot(): ProfileSnapshot {
         return ProfileSnapshot(
             header = header,
@@ -186,3 +177,15 @@ data class Profile(
         }
     }
 }
+
+val Profile.currentGateway: Radix.Gateway
+    get() = appPreferences.gateways.current()
+
+internal val Profile.currentNetwork: Network
+    get() {
+        val currentGateway = currentGateway
+
+        return networks.find { it.networkID == currentGateway.network.id } ?: error(
+            "No per-network found for gateway: $currentGateway. This should not happen"
+        )
+    }

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.repository.dappmetadata
 
-import com.babylon.wallet.android.BuildConfig
-import com.babylon.wallet.android.data.gateway.apis.DynamicUrlApi
+import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
@@ -11,6 +10,9 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.di.JsonConverterFactory
+import com.babylon.wallet.android.di.SimpleHttpClient
+import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
@@ -19,6 +21,8 @@ import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import retrofit2.Converter
 import javax.inject.Inject
 
 interface DappMetadataRepository {
@@ -39,7 +43,8 @@ interface DappMetadataRepository {
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
-    private val dynamicUrlApi: DynamicUrlApi,
+    @SimpleHttpClient private val okHttpClient: OkHttpClient,
+    @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     private val entityRepository: EntityRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val cache: HttpCache
@@ -98,9 +103,11 @@ class DappMetadataRepositoryImpl @Inject constructor(
         origin: String
     ): Result<List<DappMetadata>> {
         return withContext(ioDispatcher) {
-            dynamicUrlApi.wellKnownDappDefinition(
-                "$origin/${BuildConfig.WELL_KNOWN_URL_SUFFIX}"
-            ).execute(
+            buildApi<DAppDefinitionApi>(
+                baseUrl = origin,
+                okHttpClient = okHttpClient,
+                jsonConverterFactory = jsonConverterFactory
+            ).wellKnownDAppDefinition().execute(
                 cacheParameters = CacheParameters(
                     httpCache = cache,
                     timeoutDuration = TimeoutDuration.FIVE_MINUTES

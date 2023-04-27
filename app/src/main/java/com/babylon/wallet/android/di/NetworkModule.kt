@@ -3,9 +3,7 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
-import com.babylon.wallet.android.data.gateway.apis.DynamicUrlApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.apis.StatusApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -14,20 +12,59 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.repository.ProfileRepository
+import retrofit2.Converter.Factory
 import retrofit2.Retrofit
 import timber.log.Timber
 import java.net.URL
+import javax.inject.Inject
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class JsonConverterFactory
+
+/**
+ * An [OkHttpClient] that can dynamically change the base url of the network,
+ * even if the [Retrofit] builder has already created the api class,
+ * based on the current gateway
+ */
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class CurrentGatewayHttpClient
+
+/**
+ * A simple [OkHttpClient] **without** dynamic change of the base url.
+ */
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class SimpleHttpClient
+
+/**
+ * A helper method to build an API class
+ */
+inline fun <reified T> buildApi(
+    baseUrl: String,
+    okHttpClient: OkHttpClient,
+    jsonConverterFactory: Factory
+): T = Retrofit.Builder()
+    .client(okHttpClient)
+    .baseUrl(baseUrl)
+    .addConverterFactory(jsonConverterFactory)
+    .build()
+    .create(T::class.java)
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,25 +72,40 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(getCurrentGatewayUseCase: GetCurrentGatewayUseCase): OkHttpClient {
-        val loggingInterceptor = HttpLoggingInterceptor { message ->
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor { message ->
             Timber.d(message)
-        }
-        val baseUrlInterceptor = Interceptor { chain ->
-            runBlocking {
-                val baseUrl = getCurrentGatewayUseCase().url
-                val url = URL(baseUrl)
-                val updatedUrl = chain.request().url.newBuilder().host(url.host).scheme(url.protocol).build()
-                val request = chain.request().newBuilder().url(updatedUrl).build()
-                chain.proceed(request)
+        }.apply {
+            level = if (BuildConfig.DEBUG_MODE) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
             }
         }
-        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
-            HttpLoggingInterceptor.Level.BODY
-        } else {
-            HttpLoggingInterceptor.Level.NONE
-        }
-        return OkHttpClient.Builder().addInterceptor(baseUrlInterceptor).addInterceptor(loggingInterceptor).build()
+    }
+
+    @Provides
+    @Singleton
+    @SimpleHttpClient
+    fun provideSimpleHttpClient(
+        httpLoggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(httpLoggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @CurrentGatewayHttpClient
+    fun provideCurrentGatewayHttpClient(
+        baseUrlInterceptor: BaseUrlInterceptor,
+        httpLoggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(baseUrlInterceptor)
+            .addInterceptor(httpLoggingInterceptor)
+            .build()
     }
 
     @Provides
@@ -64,63 +116,9 @@ object NetworkModule {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
-    @Singleton
-    fun provideStateApi(okHttpClient: OkHttpClient, json: Json): StateApi {
-        val retrofitBuilder = Retrofit.Builder().client(okHttpClient)
-            .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
-            .build()
-        return retrofitBuilder.create(StateApi::class.java)
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    @Provides
-    @Singleton
-    fun provideTransactionApi(okHttpClient: OkHttpClient, json: Json): TransactionApi {
-        val retrofitBuilder = Retrofit.Builder().client(okHttpClient)
-            .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
-            .build()
-        return retrofitBuilder.create(TransactionApi::class.java)
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    @Provides
-    @Singleton
-    fun provideStatusApi(json: Json): StatusApi {
-        val loggingInterceptor = HttpLoggingInterceptor { message ->
-            Timber.d(message)
-        }
-        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
-            HttpLoggingInterceptor.Level.BODY
-        } else {
-            HttpLoggingInterceptor.Level.NONE
-        }
-        val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
-        val retrofitBuilder = Retrofit.Builder().client(httpClient)
-            .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
-            .build()
-        return retrofitBuilder.create(StatusApi::class.java)
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    @Provides
-    fun provideDynamicUrlApi(json: Json): DynamicUrlApi {
-        val loggingInterceptor = HttpLoggingInterceptor { message ->
-            Timber.d(message)
-        }
-        loggingInterceptor.level = if (BuildConfig.DEBUG_MODE) {
-            HttpLoggingInterceptor.Level.BODY
-        } else {
-            HttpLoggingInterceptor.Level.NONE
-        }
-        val httpClient = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
-        val retrofitBuilder = Retrofit.Builder().client(httpClient)
-            .baseUrl(BuildConfig.GATEWAY_API_URL)
-            .addConverterFactory(json.asConverterFactory(Serializer.MIME_TYPE.toMediaType()))
-            .build()
-        return retrofitBuilder.create(DynamicUrlApi::class.java)
+    @JsonConverterFactory
+    fun provideJsonConverterFactory(json: Json): Factory {
+        return json.asConverterFactory(Serializer.MIME_TYPE.toMediaType())
     }
 
     @Provides
@@ -132,4 +130,45 @@ object NetworkModule {
         peerdroidConnector = peerdroidConnector,
         ioDispatcher = ioDispatcher
     )
+
+    @Provides
+    fun provideStateApi(
+        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory,
+        profileRepository: ProfileRepository
+    ): StateApi = buildApi(
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    fun provideTransactionApi(
+        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory,
+        profileRepository: ProfileRepository
+    ): TransactionApi = buildApi(
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    class BaseUrlInterceptor @Inject constructor(
+        private val profileRepository: ProfileRepository
+    ) : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val url = URL(profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url)
+            val updatedUrl = chain.request().url
+                .newBuilder()
+                .host(url.host)
+                .scheme(url.protocol)
+                .build()
+
+            val request = chain.request().newBuilder()
+                .url(updatedUrl)
+                .build()
+
+            return chain.proceed(request)
+        }
+    }
 }

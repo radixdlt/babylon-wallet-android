@@ -30,6 +30,8 @@ interface ProfileRepository {
 
     val profileState: Flow<ProfileState>
 
+    val inMemoryProfileOrNull: Profile?
+
     suspend fun saveProfile(profile: Profile)
 
     suspend fun clear()
@@ -82,6 +84,12 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override val profileState = profileStateFlow
         .filterNot { it is ProfileState.NotInitialised }
+
+    override val inMemoryProfileOrNull: Profile?
+        get() = when (val state = profileStateFlow.value) {
+            is ProfileState.Restored -> state.profile
+            else -> null
+        }
 
     override suspend fun saveProfile(profile: Profile) {
         val profileToSave = profile.copy(
