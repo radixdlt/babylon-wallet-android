@@ -3,6 +3,7 @@ package rdx.works.profile.domain.persona
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addPersona
@@ -25,7 +26,7 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
 
-            val networkID = profile.appPreferences.gateways.current().network.networkId()
+            val networkID = profile.currentGateway.network.networkId()
 
             val factorSource = profile.babylonDeviceFactorSource
 

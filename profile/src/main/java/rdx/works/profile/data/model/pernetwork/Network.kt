@@ -12,6 +12,7 @@ import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
@@ -507,7 +508,7 @@ fun Profile.incrementFactorSourceNextAccountIndex(
 fun Profile.updatePersona(
     persona: Network.Persona
 ): Profile {
-    val networkId = appPreferences.gateways.current().network.networkId()
+    val networkId = currentGateway.network.networkId()
 
     return copy(
         networks = networks.mapWhen(
