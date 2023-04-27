@@ -77,8 +77,8 @@ class MainViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            dappMetadataRepository.getMetadataFor(
-                dAppDefinitionAddresses = listOf("account_tdx_c_1p9v4tvz7uske6ts02hpjqr9q8enatw3wfw6mcmf699nqz3wfdl"),
+            dappMetadataRepository.getDAppMetadata(
+                definitionAddress = "account_tdx_c_1p9v4tvz7uske6ts02hpjqr9q8enatw3wfw6mcmf699nqz3wfdl",
                 explicitMetadata = ExplicitMetadataKey.dAppExplicitMetadata,
                 needMostRecentData = true
             )

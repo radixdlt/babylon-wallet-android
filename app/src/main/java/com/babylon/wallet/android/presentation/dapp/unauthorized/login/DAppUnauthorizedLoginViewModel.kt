@@ -74,8 +74,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 handleRequestError(DappRequestFailure.InvalidRequest)
                 return@launch
             }
-            val result = dappMetadataRepository.getDappMetadata(
-                defitnionAddress = request.metadata.dAppDefinitionAddress,
+            val result = dappMetadataRepository.getDAppMetadata(
+                definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
             result.onValue { dappMetadata ->

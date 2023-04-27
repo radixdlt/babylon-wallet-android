@@ -98,8 +98,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            val result = dappMetadataRepository.getDappMetadata(
-                defitnionAddress = request.metadata.dAppDefinitionAddress,
+            val result = dappMetadataRepository.getDAppMetadata(
+                definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
             result.onValue { dappMetadata ->

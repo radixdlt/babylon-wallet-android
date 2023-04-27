@@ -36,7 +36,6 @@ data class NameMetadataItem(
     override val key: String = ExplicitMetadataKey.NAME.key
 }
 
-
 data class DomainMetadataItem(
     val domain: Uri
 ) : StandardMetadataItem {
@@ -64,7 +63,6 @@ data class AccountTypeMetadataItem(
     enum class AccountType(val asString: String) {
         DAPP_DEFINITION("dapp definition")
     }
-
 }
 
 data class IconUrlMetadataItem(
