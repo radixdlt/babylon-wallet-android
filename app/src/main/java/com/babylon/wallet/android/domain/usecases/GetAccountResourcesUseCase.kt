@@ -165,7 +165,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         val nfts = nonFungiblesWithData[it.resourceAddress]?.nonFungibleIds?.map { nftDetailItem ->
             // Temporary hack to loop through all elements and search for a link until
             // we have solid solution with backend support
-            val nftImage = nftDetailItem.mutableData.rawJson.elements.find { element ->
+            val nftImage = nftDetailItem.data.rawJson.elements.find { element ->
                 element.value.contains("https") &&
                     (
                         element.value.contains(".jpg") ||
