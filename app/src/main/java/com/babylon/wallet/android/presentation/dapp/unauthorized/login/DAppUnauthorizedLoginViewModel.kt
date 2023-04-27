@@ -191,7 +191,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         sendEvent(
             DAppUnauthorizedLoginEvent.LoginFlowCompleted(
                 requestId = request.id,
-                dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
+                dAppName = state.value.dappMetadata?.name ?: "Unknown dApp"
             )
         )
     }

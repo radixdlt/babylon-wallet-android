@@ -22,8 +22,8 @@ class GetValidDAppMetadataUseCase @Inject constructor(
             defitnionAddresses = componentAddresses.map { it.address },
             needMostRecentData = false
         ).map { metadataList ->
-            val dAppDefinitionAddresses = metadataList.map { metadata ->
-                metadata.getDappDefinition()
+            val dAppDefinitionAddresses = metadataList.mapNotNull { metadata ->
+                metadata.definitionAddress
             }
 
             val validEncounteredAddresses = dAppDefinitionAddresses.filter { it.isNotEmpty() }
@@ -39,8 +39,8 @@ class GetValidDAppMetadataUseCase @Inject constructor(
                     dAppsMetadata.forEach { metadata ->
                         encounteredAddresses.add(
                             ConnectedDAppsUiModel(
-                                iconUrl = metadata.getImageUrl().orEmpty(),
-                                title = metadata.getName().orEmpty()
+                                iconUrl = metadata.iconUrl?.toString().orEmpty(),
+                                title = metadata.name.orEmpty()
                             )
                         )
                     }

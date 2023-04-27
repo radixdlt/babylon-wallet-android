@@ -1,7 +1,12 @@
 package com.babylon.wallet.android.data.repository.dappmetadata
 
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
+import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.gateway.model.toDomainModel
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -40,12 +45,18 @@ interface DappMetadataRepository {
         defitnionAddresses: List<String>,
         needMostRecentData: Boolean
     ): Result<List<DappWithMetadata>>
+
+    suspend fun getMetadataFor(
+        dAppDefinitionAddresses: List<String>,
+        explicitMetadata: Set<ExplicitMetadataKey>,
+        needMostRecentData: Boolean
+    ): Result<List<DappWithMetadata>>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
     @SimpleHttpClient private val okHttpClient: OkHttpClient,
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
-    private val entityRepository: EntityRepository,
+    private val stateApi: StateApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val cache: HttpCache
 ) : DappMetadataRepository {
@@ -61,14 +72,14 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     needMostRecentData = false
                 ).switchMap { gatewayMetadata ->
                     when {
-                        !gatewayMetadata.isDappDefinition() -> {
+                        !gatewayMetadata.isDappDefinition -> {
                             Result.Error(
                                 DappRequestException(
                                     DappRequestFailure.DappVerificationFailure.WrongAccountType
                                 )
                             )
                         }
-                        gatewayMetadata.getRelatedDomainName() != origin -> {
+                        !gatewayMetadata.isRelatedWith(origin) -> {
                             Result.Error(
                                 DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
                             )
@@ -126,37 +137,73 @@ class DappMetadataRepositoryImpl @Inject constructor(
         defitnionAddress: String,
         needMostRecentData: Boolean
     ): Result<DappWithMetadata> {
-        return withContext(ioDispatcher) {
-            entityRepository.stateEntityDetails(
-                addresses = listOf(defitnionAddress),
-                isRefreshing = needMostRecentData
-            ).map { response ->
-                DappWithMetadata(
-                    dAppDefinitionAddress = defitnionAddress,
-                    metadata = response.items.first().metadata.asMetadataStringMap()
-                )
-            }
-        }
+        return Result.Success(DappWithMetadata(""))
+//        return withContext(ioDispatcher) {
+//            entityRepository.stateEntityDetails(
+//                addresses = listOf(defitnionAddress),
+//                isRefreshing = needMostRecentData
+//            ).map { response ->
+//                DappWithMetadata(
+//                    dAppDefinitionAddress = defitnionAddress,
+//                    metadata = response.items.first().metadata.asMetadataStringMap()
+//                )
+//            }
+//        }
     }
 
     override suspend fun getDappsMetadata(
         defitnionAddresses: List<String>,
         needMostRecentData: Boolean
     ): Result<List<DappWithMetadata>> {
-        return withContext(ioDispatcher) {
-            entityRepository.stateEntityDetails(
-                addresses = defitnionAddresses,
-                isRefreshing = needMostRecentData
-            ).map { response ->
-                response.items.filter { item ->
-                    defitnionAddresses.contains(item.address)
-                }.map {
-                    DappWithMetadata(
-                        dAppDefinitionAddress = it.address,
-                        metadata = it.metadata.asMetadataStringMap()
+        return Result.Success(listOf())
+//        return withContext(ioDispatcher) {
+//            entityRepository.stateEntityDetails(
+//                addresses = defitnionAddresses,
+//                isRefreshing = needMostRecentData
+//            ).map { response ->
+//                response.items.filter { item ->
+//                    defitnionAddresses.contains(item.address)
+//                }.map {
+//                    DappWithMetadata(
+//                        dAppDefinitionAddress = it.address,
+//                        metadata = it.metadata.asMetadataStringMap()
+//                    )
+//                }
+//            }
+//        }
+    }
+
+    override suspend fun getMetadataFor(
+        dAppDefinitionAddresses: List<String>,
+        explicitMetadata: Set<ExplicitMetadataKey>,
+        needMostRecentData: Boolean
+    ): Result<List<DappWithMetadata>> = withContext(ioDispatcher) {
+        val optIns = if (explicitMetadata.isNotEmpty()) {
+            StateEntityDetailsOptIns(
+                explicitMetadata = explicitMetadata.map { it.key }
+            )
+        } else {
+            null
+        }
+
+        stateApi.entityDetails(
+            StateEntityDetailsRequest(
+                addresses = dAppDefinitionAddresses,
+                optIns = optIns
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (needMostRecentData) TimeoutDuration.NO_CACHE else TimeoutDuration.FIVE_MINUTES
+            ),
+            map = { response ->
+                response.items.map { dAppResponse ->
+                    DappWithMetadata.from(
+                        address = dAppResponse.address,
+                        metadataItems = dAppResponse.explicitMetadata?.asMetadataItems() ?: emptyList()
                     )
                 }
-            }
-        }
+            },
+        )
     }
 }

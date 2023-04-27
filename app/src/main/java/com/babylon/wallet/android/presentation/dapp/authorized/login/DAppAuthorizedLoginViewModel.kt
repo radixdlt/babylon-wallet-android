@@ -473,7 +473,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            val dAppName = state.value.dappMetadata?.getName().orEmpty().ifEmpty { "Unknown dApp" }
+            val dAppName = state.value.dappMetadata?.name.orEmpty().ifEmpty { "Unknown dApp" }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,
@@ -617,7 +617,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
                 requestId = request.requestId,
-                dAppName = state.value.dappMetadata?.getName().orEmpty(),
+                dAppName = state.value.dappMetadata?.name.orEmpty(),
                 showSuccessDialog = !request.isInternalRequest()
             )
         )
