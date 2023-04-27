@@ -99,7 +99,7 @@ interface StateApi {
         @Body stateEntityNonFungiblesPageRequest: StateEntityNonFungiblesPageRequest
     ): Call<StateEntityNonFungiblesPageResponse>
 
-    @POST("state/non-fungible/data") // TODO
+    @POST("state/non-fungible/data")
     fun nonFungibleData(
         @Body stateNonFungibleDataRequest: StateNonFungibleDataRequest
     ): Call<StateNonFungibleDataResponse>
