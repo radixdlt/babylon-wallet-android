@@ -5,6 +5,7 @@ import com.radixdlt.toolkit.models.request.DecodeAddressRequest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject

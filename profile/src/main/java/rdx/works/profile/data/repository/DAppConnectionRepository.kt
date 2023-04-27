@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import javax.inject.Inject
@@ -191,7 +192,7 @@ private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: String): Network.Au
 }
 
 private fun Profile.getAuthorizedDapps(): List<Network.AuthorizedDapp> {
-    val networkId = appPreferences.gateways.current().network.networkId().value
+    val networkId = currentGateway.network.networkId().value
     return networks.firstOrNull { it.networkID == networkId }?.authorizedDapps.orEmpty()
 }
 
