@@ -9,4 +9,4 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 data class StringMetadataItem(
     override val key: String,
     val value: String
-): MetadataItem
+) : MetadataItem

@@ -31,8 +31,8 @@ class GetTransactionProofResourcesUseCase @Inject constructor(
                 }
             }
         }
-        val metadataResults = dappMetadataRepository.getDappsMetadata(
-            defitnionAddresses = proofAddresses,
+        val metadataResults = dappMetadataRepository.getDAppsMetadata(
+            definitionAddresses = proofAddresses,
             needMostRecentData = false
         )
         metadataResults.onValue { dAppsMetadata ->

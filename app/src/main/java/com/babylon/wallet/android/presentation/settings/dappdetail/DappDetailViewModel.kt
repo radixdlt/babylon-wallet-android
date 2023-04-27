@@ -48,8 +48,8 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val metadataResult = dappMetadataRepository.getDappMetadata(
-                defitnionAddress = args.dappDefinitionAddress,
+            val metadataResult = dappMetadataRepository.getDAppMetadata(
+                definitionAddress = args.dappDefinitionAddress,
                 needMostRecentData = false
             )
             metadataResult.onValue { metadata ->

@@ -13,8 +13,9 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         return Result.Success(true)
     }
 
-    override suspend fun getDappMetadata(
-        defitnionAddress: String,
+    override suspend fun getDAppMetadata(
+        definitionAddress: String,
+        explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
     ): Result<DappWithMetadata> {
         return Result.Success(
@@ -25,8 +26,9 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         )
     }
 
-    override suspend fun getDappsMetadata(
-        defitnionAddresses: List<String>,
+    override suspend fun getDAppsMetadata(
+        definitionAddresses: List<String>,
+        explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
     ): Result<List<DappWithMetadata>> {
         return Result.Success(
@@ -37,13 +39,5 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
                 )
             )
         )
-    }
-
-    override suspend fun getMetadataFor(
-        dAppDefinitionAddresses: List<String>,
-        explicitMetadata: Set<ExplicitMetadataKey>,
-        needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> {
-        TODO("Not yet implemented")
     }
 }
