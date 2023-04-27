@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.FeeSummary
-import com.babylon.wallet.android.data.gateway.generated.models.Receipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.TransactionClient
@@ -181,8 +181,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     private fun previewResponse() = TransactionPreviewResponse(
         encodedReceipt = "",
-        receipt = Receipt(
-            FeeSummary(
+        receipt = TransactionReceipt(
+            status = "i dont know",
+            feeSummary = FeeSummary(
                 1,
                 "",
                 1,
@@ -191,9 +192,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 "",
                 "",
                 "",
-            ),
-            "",
-            ""
+            )
         ),
         logs = emptyList()
     )
