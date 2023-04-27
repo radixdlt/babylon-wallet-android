@@ -10,6 +10,7 @@ import org.webrtc.DataChannel
 import org.webrtc.MediaConstraints
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
+import rdx.works.peerdroid.BuildConfig
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -28,6 +29,10 @@ private val STUN_SERVERS_LIST = listOf(
     "stun:stun2.l.google.com:19302",
     "stun:stun3.l.google.com:19302",
     "stun:stun4.l.google.com:19302"
+)
+private val TURN_DEV_SERVERS_LIST = listOf(
+    "turn:turn-dev-udp.rdx-works-main.extratools.works",
+    "turn:turn-dev-tcp.rdx-works-main.extratools.works"
 )
 private val TURN_SERVERS_LIST = listOf(
     "turn:turn-rcnet-udp.radixdlt.com:80?transport=udp",
@@ -53,7 +58,13 @@ internal class WebRtcManager(applicationContext: Context) {
     // if STUN servers fail, then a TURN server is used instead as a proxy fallback
     private val turnUrls = PeerConnection
         .IceServer
-        .builder(TURN_SERVERS_LIST)
+        .builder(
+            if (BuildConfig.DEBUG_MODE) {
+                TURN_DEV_SERVERS_LIST
+            } else {
+                TURN_SERVERS_LIST
+            }
+        )
         .setUsername(TURN_SERVER_USERNAME)
         .setPassword(TURN_SERVER_PASSWORD)
         .createIceServer()
@@ -139,6 +150,7 @@ internal class WebRtcManager(applicationContext: Context) {
                 Timber.d("🔌 added successfully ice candidate")
                 Result.Success(Unit)
             }
+
             is Result.Error -> {
                 Timber.e("🔌 failed to add ice candidate with error: ${result.message}")
                 Result.Error("failed to add ice candidate")
