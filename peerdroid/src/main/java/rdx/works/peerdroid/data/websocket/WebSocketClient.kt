@@ -28,6 +28,7 @@ import okio.ByteString.Companion.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.core.toHexString
+import rdx.works.peerdroid.BuildConfig
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -82,7 +83,7 @@ internal class WebSocketClient(applicationContext: Context) {
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
             socket = httpClientEntryPoint.provideHttpClient().webSocketSession {
-                url("$BASE_URL$connectionId?source=wallet&target=extension")
+                url("${BuildConfig.SIGNALING_SERVER_URL}$connectionId?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
                 Timber.d("🛰 successfully connected to signaling server")
@@ -290,9 +291,5 @@ internal class WebSocketClient(applicationContext: Context) {
             requestId = iceCandidatePayload.requestId,
             remoteIceCandidate = remoteIceCandidate
         )
-    }
-
-    companion object {
-        private const val BASE_URL = "wss://signaling-server-rcnet.radixdlt.com/"
     }
 }
