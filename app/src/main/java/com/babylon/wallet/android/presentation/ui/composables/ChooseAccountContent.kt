@@ -81,7 +81,7 @@ fun ChooseAccountContent(
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     AsyncImage(
-                        model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
+                        model = rememberImageUrl(fromUrl = dappMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         fallback = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder),
@@ -105,7 +105,7 @@ fun ChooseAccountContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     ChooseAccountsSubtitle(
-                        dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                        dappName = dappMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                         isOneTime = isOneTime,
                         numberOfAccounts = numberOfAccounts,
                         isExactAccountsCount = isExactAccountsCount

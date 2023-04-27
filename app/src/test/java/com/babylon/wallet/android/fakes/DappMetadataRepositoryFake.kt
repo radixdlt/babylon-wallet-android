@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.fakes
 
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
 class DappMetadataRepositoryFake : DappMetadataRepository {
 
@@ -16,7 +18,10 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         needMostRecentData: Boolean
     ): Result<DappWithMetadata> {
         return Result.Success(
-            DappWithMetadata("dapp_address", mapOf(MetadataConstants.KEY_NAME to "dApp"))
+            DappWithMetadata(
+                dAppDefinitionAddress = "dapp_address",
+                nameItem = NameMetadataItem(name = "dApp")
+            )
         )
     }
 
@@ -26,8 +31,19 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
     ): Result<List<DappWithMetadata>> {
         return Result.Success(
             listOf(
-                DappWithMetadata("dapp_address", mapOf(MetadataConstants.KEY_NAME to "dApp"))
+                DappWithMetadata(
+                    dAppDefinitionAddress = "dapp_address",
+                    nameItem = NameMetadataItem(name = "dApp")
+                )
             )
         )
+    }
+
+    override suspend fun getMetadataFor(
+        dAppDefinitionAddresses: List<String>,
+        explicitMetadata: Set<ExplicitMetadataKey>,
+        needMostRecentData: Boolean
+    ): Result<List<DappWithMetadata>> {
+        TODO("Not yet implemented")
     }
 }

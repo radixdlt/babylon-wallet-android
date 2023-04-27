@@ -43,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
@@ -157,7 +158,7 @@ private fun SelectPersonaContent(
                         item {
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             AsyncImage(
-                                model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
+                                model = rememberImageUrl(fromUrl = dappMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                                 placeholder = painterResource(id = R.drawable.img_placeholder),
                                 fallback = painterResource(id = R.drawable.img_placeholder),
                                 error = painterResource(id = R.drawable.img_placeholder),
@@ -186,7 +187,7 @@ private fun SelectPersonaContent(
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             LoginRequestHeader(
-                                dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                                dappName = dappMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                                 firstTimeLogin = firstTimeLogin,
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                             )
@@ -270,7 +271,10 @@ fun SelectPersonaPreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappMetadata = DappWithMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappMetadata = DappWithMetadata(
+                dAppDefinitionAddress = "address",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             firstTimeLogin = false,
             continueButtonEnabled = false,
             personas = persistentListOf(),
@@ -289,7 +293,10 @@ fun SelectPersonaFirstTimePreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappMetadata = DappWithMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappMetadata = DappWithMetadata(
+                dAppDefinitionAddress = "address",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             firstTimeLogin = true,
             continueButtonEnabled = false,
             personas = persistentListOf(),

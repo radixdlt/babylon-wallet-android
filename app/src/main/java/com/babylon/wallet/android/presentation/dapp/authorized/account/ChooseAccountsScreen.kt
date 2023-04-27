@@ -16,6 +16,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
@@ -140,7 +141,10 @@ fun ChooseAccountContentPreview() {
             ),
             onAccountSelect = {},
             onCreateNewAccount = {},
-            dappMetadata = DappWithMetadata("", mapOf(MetadataConstants.KEY_NAME to "dApp")),
+            dappMetadata = DappWithMetadata(
+                dAppDefinitionAddress = "",
+                nameItem = NameMetadataItem("dApp")
+            ),
             isOneTime = false,
             isSingleChoice = false,
             numberOfAccounts = 1,

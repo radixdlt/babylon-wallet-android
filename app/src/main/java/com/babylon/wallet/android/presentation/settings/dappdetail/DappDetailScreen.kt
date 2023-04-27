@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -59,6 +60,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -275,7 +278,7 @@ private fun DappDetails(
                     color = RadixTheme.colors.gray5
                 )
             }
-            dappMetadata?.getDescription()?.let { description ->
+            dappMetadata?.description?.let { description ->
                 item {
                     Divider(color = RadixTheme.colors.gray5)
                     Text(
@@ -302,7 +305,7 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappMetadata?.getDisplayableMetadata()?.let { metadata ->
+            dappMetadata?.displayableMetadata?.let { metadata ->
                 item {
                     metadata.forEach { mapEntry ->
                         AssetMetadataRow(
@@ -620,7 +623,11 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             dappName = "Dapp",
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappMetadata = DappWithMetadata("account_tdx_abcd", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
+            dappMetadata = DappWithMetadata(
+                dAppDefinitionAddress = "address",
+                nameItem = NameMetadataItem("Dapp"),
+                descriptionItem = DescriptionMetadataItem("Description")
+            ),
             onPersonaClick = {},
             selectedPersona = PersonaUiModel(SampleDataProvider().samplePersona()),
             selectedPersonaSharedAccounts = persistentListOf(

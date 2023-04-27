@@ -3,6 +3,8 @@ package com.babylon.wallet.android
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
@@ -41,6 +43,7 @@ class MainViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDappUseCase,
+    private val dappMetadataRepository: DappMetadataRepository,
     getProfileStateUseCase: GetProfileStateUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
@@ -71,6 +74,14 @@ class MainViewModel @Inject constructor(
                 .collect { profileState ->
                     _state.update { MainUiState(initialAppState = AppState.from(profileState)) }
                 }
+        }
+
+        viewModelScope.launch {
+            dappMetadataRepository.getMetadataFor(
+                dAppDefinitionAddresses = listOf("account_tdx_c_1p9v4tvz7uske6ts02hpjqr9q8enatw3wfw6mcmf699nqz3wfdl"),
+                explicitMetadata = ExplicitMetadataKey.dAppExplicitMetadata,
+                needMostRecentData = true
+            )
         }
     }
 
