@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-data class DappMetadata(
+data class DappWithMetadata(
     val dAppDefinitionAddress: String,
     val metadata: Map<String, String> = emptyMap()
 ) {
