@@ -57,7 +57,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -128,7 +128,7 @@ private fun DappDetailContent(
     modifier: Modifier = Modifier,
     dappName: String,
     personaList: ImmutableList<Network.Persona>,
-    dappMetadata: DappMetadata?,
+    dappMetadata: DappWithMetadata?,
     onPersonaClick: (Network.Persona) -> Unit,
     selectedPersona: PersonaUiModel?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
@@ -246,7 +246,7 @@ private fun DappDetails(
     modifier: Modifier,
     dappName: String,
     onBackClick: () -> Unit,
-    dappMetadata: DappMetadata?,
+    dappMetadata: DappWithMetadata?,
     personaList: ImmutableList<Network.Persona>,
     onPersonaClick: (Network.Persona) -> Unit,
     onDeleteDapp: () -> Unit
@@ -620,7 +620,7 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             dappName = "Dapp",
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappMetadata = DappMetadata("account_tdx_abcd", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
+            dappMetadata = DappWithMetadata("account_tdx_abcd", mapOf(MetadataConstants.KEY_DESCRIPTION to "Description")),
             onPersonaClick = {},
             selectedPersona = PersonaUiModel(SampleDataProvider().samplePersona()),
             selectedPersonaSharedAccounts = persistentListOf(

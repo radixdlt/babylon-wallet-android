@@ -17,7 +17,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -34,12 +34,12 @@ interface DappMetadataRepository {
     suspend fun getDappMetadata(
         defitnionAddress: String,
         needMostRecentData: Boolean
-    ): Result<DappMetadata>
+    ): Result<DappWithMetadata>
 
     suspend fun getDappsMetadata(
         defitnionAddresses: List<String>,
         needMostRecentData: Boolean
-    ): Result<List<DappMetadata>>
+    ): Result<List<DappWithMetadata>>
 }
 
 class DappMetadataRepositoryImpl @Inject constructor(
@@ -101,7 +101,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
 
     private suspend fun wellKnownFileMetadata(
         origin: String
-    ): Result<List<DappMetadata>> {
+    ): Result<List<DappWithMetadata>> {
         return withContext(ioDispatcher) {
             buildApi<DAppDefinitionApi>(
                 baseUrl = origin,
@@ -125,13 +125,13 @@ class DappMetadataRepositoryImpl @Inject constructor(
     override suspend fun getDappMetadata(
         defitnionAddress: String,
         needMostRecentData: Boolean
-    ): Result<DappMetadata> {
+    ): Result<DappWithMetadata> {
         return withContext(ioDispatcher) {
             entityRepository.stateEntityDetails(
                 addresses = listOf(defitnionAddress),
                 isRefreshing = needMostRecentData
             ).map { response ->
-                DappMetadata(
+                DappWithMetadata(
                     dAppDefinitionAddress = defitnionAddress,
                     metadata = response.items.first().metadata.asMetadataStringMap()
                 )
@@ -142,7 +142,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
     override suspend fun getDappsMetadata(
         defitnionAddresses: List<String>,
         needMostRecentData: Boolean
-    ): Result<List<DappMetadata>> {
+    ): Result<List<DappWithMetadata>> {
         return withContext(ioDispatcher) {
             entityRepository.stateEntityDetails(
                 addresses = defitnionAddresses,
@@ -151,7 +151,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 response.items.filter { item ->
                     defitnionAddresses.contains(item.address)
                 }.map {
-                    DappMetadata(
+                    DappWithMetadata(
                         dAppDefinitionAddress = it.address,
                         metadata = it.metadata.asMetadataStringMap()
                     )

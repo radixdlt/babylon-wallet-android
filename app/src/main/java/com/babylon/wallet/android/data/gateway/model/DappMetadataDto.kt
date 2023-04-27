@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.gateway.model
 
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -10,6 +10,6 @@ data class DappMetadataDto(
     val dAppDefinitionAddress: String
 )
 
-fun DappMetadataDto.toDomainModel(): DappMetadata {
-    return DappMetadata(dAppDefinitionAddress)
+fun DappMetadataDto.toDomainModel(): DappWithMetadata {
+    return DappWithMetadata(dAppDefinitionAddress)
 }
