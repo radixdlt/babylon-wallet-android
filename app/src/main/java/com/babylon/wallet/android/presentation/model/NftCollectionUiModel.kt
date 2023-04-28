@@ -9,11 +9,15 @@ data class NftCollectionUiModel(
 ) : AssetUiModel() {
 
     data class NftItemUiModel(
-        val id: String,
-        val displayId: Int,
+        val localId: String,
+        val resourceAddress: String,
         val nftImage: String? = null,
         val nftsMetadata: List<Pair<String, String>> = emptyList()
-    )
+    ) {
+
+        val displayAddress: String
+            get() = "$resourceAddress:$localId"
+    }
 }
 
 fun List<OwnedNonFungibleToken>.toNftUiModel() = map { ownedNonFungibleToken ->
@@ -22,8 +26,8 @@ fun List<OwnedNonFungibleToken>.toNftUiModel() = map { ownedNonFungibleToken ->
         iconUrl = ownedNonFungibleToken.token?.getIconUrl().orEmpty(),
         nfts = ownedNonFungibleToken.token?.nfts?.map { nftItemContainer ->
             NftCollectionUiModel.NftItemUiModel(
-                id = nftItemContainer.id,
-                displayId = (ownedNonFungibleToken.tokenResourceAddress + nftItemContainer.id).hashCode(),
+                localId = nftItemContainer.id,
+                resourceAddress = ownedNonFungibleToken.tokenResourceAddress,
                 nftImage = nftItemContainer.nftImage,
                 nftsMetadata = emptyList()
             )

@@ -32,6 +32,12 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun removeLastBackupInstant() {
+        dataStore.edit { preferences ->
+            preferences.remove(KEY_LAST_BACKUP_INSTANT)
+        }
+    }
+
     val firstPersonaCreated: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_FIRST_PERSONA_CREATED] ?: false

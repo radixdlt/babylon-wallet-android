@@ -4,12 +4,18 @@ import com.babylon.wallet.android.utils.truncatedHash
 
 data class Address(
     val address: String,
-    val truncated: String,
     val type: Type
 ) {
 
-    private val isNft: Boolean
-        get() = type == Type.RESOURCE && address.split(":").size > 1
+    private val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
+
+    val isCopyPrimaryAction: Boolean = type != Type.TRANSACTION
+
+    val displayAddress: String = if (isNft) {
+        address.split(NFT_DELIMITER)[1]
+    } else {
+        address.truncatedHash()
+    }
 
     fun toDashboardUrl(): String {
         val suffix = when {
@@ -44,11 +50,11 @@ data class Address(
         }
     }
     companion object {
+        private const val NFT_DELIMITER = ":"
         private const val DASHBOARD_BASE_URL = "https://rcnet-dashboard.radixdlt.com"
 
         fun from(address: String) = Address(
             address = address,
-            truncated = address.truncatedHash(),
             type = Type.from(address)
         )
     }

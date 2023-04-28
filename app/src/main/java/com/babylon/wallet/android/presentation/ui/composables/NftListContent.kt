@@ -45,7 +45,7 @@ fun NftListContent(
             }
             items(
                 dataItem.nfts,
-                key = { nft -> nft.displayId }
+                key = { nft -> nft.displayAddress }
             ) { item ->
                 AnimatedVisibility(
                     visible = !collapsed,
@@ -57,12 +57,12 @@ fun NftListContent(
                         bottomCornersRounded = true
                     }
                     NftTokenDetailItem(
-                        nftId = item.id,
+                        nftId = item.localId,
                         imageUrl = item.nftImage.orEmpty(),
                         bottomCornersRounded = bottomCornersRounded,
                         nftMetadata = item.nftsMetadata,
                         onNftClick = { nftId ->
-                            onNftClick(dataItem, dataItem.nfts.first { it.id == nftId })
+                            onNftClick(dataItem, dataItem.nfts.first { it.localId == nftId })
                         }
                     )
                 }

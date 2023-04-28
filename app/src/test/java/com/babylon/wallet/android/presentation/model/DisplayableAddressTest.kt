@@ -6,14 +6,14 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-internal class AddressTruncateTest(
+internal class DisplayableAddressTest(
     private val address: String,
-    private val truncated: String
+    private val displayed: String
 ) {
 
     @Test
     fun `convert of address to dashboard url`() {
-        assertEquals(truncated, Address.from(address).truncated)
+        assertEquals(displayed, Address.from(address).displayAddress)
     }
 
 
@@ -23,7 +23,7 @@ internal class AddressTruncateTest(
         fun data() : Collection<Array<Any>> {
             return listOf(
                 arrayOf(RESOURCE_ADDRESS, "reso...8z96qp"),
-                arrayOf(RESOURCE_NFT_ADDRESS, "reso...:#1%23"),
+                arrayOf(RESOURCE_NFT_ADDRESS, "#1%23"),
                 arrayOf(ACCOUNT_ADDRESS, "acco...8z96qp"),
                 arrayOf(PACKAGE_ADDRESS, "pack...8z96qp"),
                 arrayOf(TRANSACTION_ADDRESS, "tran...8z96qp"),

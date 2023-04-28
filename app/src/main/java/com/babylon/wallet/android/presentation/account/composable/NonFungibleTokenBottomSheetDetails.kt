@@ -19,6 +19,7 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.utils.ImageSize
@@ -62,9 +63,14 @@ fun NonFungibleTokenBottomSheetDetails(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             AssetMetadataRow(
                 modifier = Modifier.fillMaxWidth(),
-                key = stringResource(id = R.string.nft_id),
-                value = selectedNft.id
-            )
+                key = stringResource(id = R.string.nft_id)
+            ) {
+                ActionableAddressView(
+                    address = selectedNft.displayAddress,
+                    textStyle = RadixTheme.typography.body1Regular,
+                    textColor = RadixTheme.colors.gray1
+                )
+            }
             selectedNft.nftsMetadata.forEach {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 AssetMetadataRow(
