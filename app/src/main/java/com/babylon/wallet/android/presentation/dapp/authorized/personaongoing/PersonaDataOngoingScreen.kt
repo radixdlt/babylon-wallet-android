@@ -41,7 +41,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
@@ -92,7 +92,7 @@ fun PersonaDataOngoingScreen(
     }
     PersonaDataOngoingPermissionContent(
         onContinueClick = sharedViewModel::onGrantedPersonaDataOngoing,
-        dappMetadata = sharedState.dappMetadata,
+        dappWithMetadata = sharedState.dappWithMetadata,
         onBackClick = {
             if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
                 sharedViewModel.onAbortDappLogin()
@@ -110,7 +110,7 @@ fun PersonaDataOngoingScreen(
 @Composable
 private fun PersonaDataOngoingPermissionContent(
     onContinueClick: () -> Unit,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
@@ -140,7 +140,7 @@ private fun PersonaDataOngoingPermissionContent(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             AsyncImage(
-                model = rememberImageUrl(fromUrl = dappMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
+                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 fallback = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder),
@@ -161,7 +161,7 @@ private fun PersonaDataOngoingPermissionContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             PermissionRequestHeader(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                dappName = dappMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) }
+                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) }
             )
             persona?.let {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -228,7 +228,8 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOngoingPermissionContent(
             onContinueClick = {},
-            dappMetadata = DappMetadata(
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),
             onBackClick = {},

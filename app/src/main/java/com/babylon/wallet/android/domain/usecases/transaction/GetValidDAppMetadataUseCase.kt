@@ -22,8 +22,8 @@ class GetValidDAppMetadataUseCase @Inject constructor(
             definitionAddresses = componentAddresses.map { it.address },
             needMostRecentData = false
         ).map { metadataList ->
-            val dAppDefinitionAddresses = metadataList.mapNotNull { metadata ->
-                metadata.definitionAddress
+            val dAppDefinitionAddresses = metadataList.map { metadata ->
+                metadata.definitionAddress.orEmpty()
             }
 
             val validEncounteredAddresses = dAppDefinitionAddresses.filter { it.isNotEmpty() }

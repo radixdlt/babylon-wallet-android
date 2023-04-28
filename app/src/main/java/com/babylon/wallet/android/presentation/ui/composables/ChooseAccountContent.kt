@@ -37,7 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
@@ -52,7 +52,7 @@ fun ChooseAccountContent(
     onAccountSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     isOneTime: Boolean,
     isSingleChoice: Boolean,
     numberOfAccounts: Int,
@@ -81,7 +81,7 @@ fun ChooseAccountContent(
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     AsyncImage(
-                        model = rememberImageUrl(fromUrl = dappMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
+                        model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         fallback = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder),
@@ -105,7 +105,7 @@ fun ChooseAccountContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     ChooseAccountsSubtitle(
-                        dappName = dappMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                        dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                         isOneTime = isOneTime,
                         numberOfAccounts = numberOfAccounts,
                         isExactAccountsCount = isExactAccountsCount
