@@ -7,10 +7,11 @@ import kotlinx.serialization.Serializable
 data class WellKnownDAppDefinitionResponse(
     @SerialName(value = "dApps")
     val dApps: List<WellKnownDAppDefinitionAddress>
-)
+) {
 
-@Serializable
-data class WellKnownDAppDefinitionAddress(
-    @SerialName(value = "dAppDefinitionAddress")
-    val dAppDefinitionAddress: String
-)
+    @Serializable
+    data class WellKnownDAppDefinitionAddress(
+        @SerialName(value = "dAppDefinitionAddress")
+        val dAppDefinitionAddress: String
+    )
+}
