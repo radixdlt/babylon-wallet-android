@@ -21,7 +21,8 @@ private const val AccountNameForbiddenCharsReplacement = "_"
 class OlympiaWalletDataParser @Inject constructor() {
 
     fun parseOlympiaWalletAccountData(
-        olympiaWalletDataChunks: Collection<String>, existingAccountHashes: Set<ByteArray> = emptySet()
+        olympiaWalletDataChunks: Collection<String>,
+        existingAccountHashes: Set<ByteArray> = emptySet()
     ): OlympiaWalletData? {
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
@@ -98,11 +99,14 @@ fun Collection<ByteArray>.containsWithEqualityCheck(value: ByteArray): Boolean {
 data class OlympiaWalletData(val mnemonicWordCount: Int, val accountData: List<OlympiaAccountDetails>)
 
 data class PayloadHeader(
-    val payloadCount: Int, val payloadIndex: Int, val mnemonicWordCount: Int
+    val payloadCount: Int,
+    val payloadIndex: Int,
+    val mnemonicWordCount: Int
 )
 
 data class ChunkInfo(
-    val scanned: Int, val total: Int
+    val scanned: Int,
+    val total: Int
 )
 
 data class OlympiaAccountDetails(

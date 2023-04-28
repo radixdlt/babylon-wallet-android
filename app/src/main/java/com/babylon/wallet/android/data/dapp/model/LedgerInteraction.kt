@@ -41,7 +41,6 @@ data class DerivePublicKeyRequest(
         @SerialName("id")
         val id: String
     )
-
 }
 
 @Serializable

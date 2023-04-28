@@ -8,14 +8,14 @@ import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestResponse
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
-import com.babylon.wallet.android.data.ce.dapp.model.walletRequestJson
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionItems
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestItems
+import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.junit.Assert
@@ -46,8 +46,8 @@ class WalletInteractionModelsTest {
                 )
             )
 
-        val string1 = walletRequestJson.encodeToString(responseItem1)
-        val string2 = walletRequestJson.encodeToString(responseItem2)
+        val string1 = peerdroidRequestJson.encodeToString(responseItem1)
+        val string2 = peerdroidRequestJson.encodeToString(responseItem2)
         assert(string1.isNotEmpty())
         assert(string2.isNotEmpty())
     }
@@ -74,7 +74,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletUnauthorizedRequestItems)
         val item = result.items as WalletUnauthorizedRequestItems
         assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
@@ -98,7 +98,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletUnauthorizedRequestItems)
         val item = result.items as WalletUnauthorizedRequestItems
         assert(item.oneTimePersonaData?.fields?.size == 2)
@@ -130,7 +130,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthUsePersonaRequestItem)
@@ -163,7 +163,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthUsePersonaRequestItem)
@@ -192,7 +192,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.oneTimePersonaData?.fields?.size == 2)
@@ -220,7 +220,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.ongoingPersonaData?.fields?.size == 2)
@@ -251,7 +251,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthLoginRequestItem)
@@ -284,7 +284,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthLoginRequestItem)
@@ -312,7 +312,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthLoginRequestItem)
@@ -341,7 +341,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthLoginRequestItem)
@@ -369,7 +369,7 @@ class WalletInteractionModelsTest {
                }
             }
         """
-        val result = walletRequestJson.decodeFromString<WalletInteraction>(request)
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletTransactionItems)
         val item = result.items as WalletTransactionItems
         assert(item.send.transactionManifest == "manifest")
@@ -381,7 +381,7 @@ class WalletInteractionModelsTest {
         val response: WalletInteractionResponse = WalletInteractionSuccessResponse(
             interactionId = "1", items = WalletTransactionResponseItems(SendTransactionResponseItem("1"))
         )
-        val result = walletRequestJson.encodeToString(response)
+        val result = peerdroidRequestJson.encodeToString(response)
         Assert.assertEquals(expected, result)
     }
 

@@ -53,5 +53,4 @@ class LedgerMessengerImpl @Inject constructor(
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
     }
-
 }

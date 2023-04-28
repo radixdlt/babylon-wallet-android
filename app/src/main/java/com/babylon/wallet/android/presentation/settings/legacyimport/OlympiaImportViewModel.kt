@@ -1,3 +1,5 @@
+@file:Suppress("LongParameterList")
+
 package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import androidx.lifecycle.viewModelScope
@@ -18,9 +20,13 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toPersistentHashMap
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.update
@@ -67,8 +73,8 @@ class OlympiaImportViewModel @Inject constructor(
     private var olympiaWalletData: OlympiaWalletData? = null
     private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList)
     private var existingFactorSourceId: FactorSource.ID? = null
-    private var validatedHardwareAccounts = mutableMapOf<LedgerDeviceUiModel, List<OlympiaAccountDetails>>()
-    private var sentRequestIds = Collections.synchronizedList(mutableListOf<String>())
+    private val validatedHardwareAccounts = mutableMapOf<LedgerDeviceUiModel, List<OlympiaAccountDetails>>()
+    private val sentRequestIds = Collections.synchronizedList(mutableListOf<String>())
     private var currentlyProcessedDevice: LedgerDeviceUiModel? = null
 
     init {
@@ -100,9 +106,12 @@ class OlympiaImportViewModel @Inject constructor(
                 currentlyProcessedDevice = ledgerDeviceModel
                 updateHardwareAccountLeftToMigrateCount()
                 _state.update { state ->
-                    state.copy(addLedgerName = true, ledgerDevices = validatedHardwareAccounts.entries.associate {
-                        it.key to it.value.size
-                    })
+                    state.copy(
+                        addLedgerName = true,
+                        ledgerDevices = validatedHardwareAccounts.entries.associate {
+                            it.key to it.value.size
+                        }.toPersistentHashMap()
+                    )
                 }
             }
             else -> {}
@@ -305,10 +314,12 @@ class OlympiaImportViewModel @Inject constructor(
             val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
             val interactionId = UUIDGenerator.uuid().toString()
             sentRequestIds.add(interactionId)
-            when (val result = ledgerMessenger.sendImportOlympiaDeviceRequest(
-                interactionId = interactionId,
-                derivationPaths = hardwareAccountsDerivationPaths
-            )) {
+            when (
+                val result = ledgerMessenger.sendImportOlympiaDeviceRequest(
+                    interactionId = interactionId,
+                    derivationPaths = hardwareAccountsDerivationPaths
+                )
+            ) {
                 is Result.Error -> {
                     sentRequestIds.remove(interactionId)
                     _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(result.exception), waitingForLedgerResponse = false) }
@@ -348,9 +359,12 @@ class OlympiaImportViewModel @Inject constructor(
             validatedHardwareAccounts.remove(device)
             validatedHardwareAccounts[device.copy(name = name)] = accounts
             _state.update { state ->
-                state.copy(addLedgerName = false, ledgerDevices = validatedHardwareAccounts.entries.associate {
-                    it.key to it.value.size
-                })
+                state.copy(
+                    addLedgerName = false,
+                    ledgerDevices = validatedHardwareAccounts.entries.associate {
+                        it.key to it.value.size
+                    }.toPersistentMap()
+                )
             }
             val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
             if (hardwareAccountsLeftToMigrate.isEmpty()) {
@@ -386,7 +400,9 @@ class OlympiaImportViewModel @Inject constructor(
     private fun hardwareAccountsLeftToMigrate(): List<OlympiaAccountDetails> {
         val alreadyValidatedKeys = validatedHardwareAccounts.values.flatten().map { it.publicKey }
         val hardwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
-            it.selected && it.data.type == OlympiaAccountType.Hardware && !it.data.alreadyImported && !alreadyValidatedKeys.contains(it.data.publicKey)
+            it.selected && it.data.type == OlympiaAccountType.Hardware && !it.data.alreadyImported && !alreadyValidatedKeys.contains(
+                it.data.publicKey
+            )
         }.map { it.data }
         return hardwareAccountsToMigrate
     }
@@ -444,7 +460,7 @@ data class OlympiaImportUiState(
     val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
     val addLedgerName: Boolean = false,
-    val ledgerDevices: Map<LedgerDeviceUiModel, Int> = emptyMap()
+    val ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int> = persistentMapOf()
 ) : UiState
 
 data class LedgerDeviceUiModel(

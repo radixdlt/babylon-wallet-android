@@ -1,6 +1,8 @@
 @file:Suppress("CyclomaticComplexMethod")
 @file:OptIn(
-    ExperimentalPermissionsApi::class, ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
+    ExperimentalPermissionsApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class
 )
 
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -72,7 +75,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
@@ -162,7 +167,7 @@ private fun OlympiaImportContent(
     addLedgerName: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onSkipLedgerName: () -> Unit,
-    ledgerDevices: Map<LedgerDeviceUiModel, Int>
+    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -449,7 +454,7 @@ private fun HardwareImportScreen(
     addLedgerName: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onSkipLedgerName: () -> Unit,
-    ledgerDevices: Map<LedgerDeviceUiModel, Int>
+    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>
 ) {
     var ledgerNameValue by remember {
         mutableStateOf("")
@@ -485,7 +490,9 @@ private fun HardwareImportScreen(
                     throttleClicks = true
                 )
                 RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth().imePadding(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding(),
                     text = stringResource(R.string.skip),
                     onClick = onSkipLedgerName,
                     throttleClicks = true
@@ -494,19 +501,20 @@ private fun HardwareImportScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f), verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                 ) {
                     items(ledgerDevices.entries.toList()) { entry ->
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = pluralStringResource(
-                                id = R.plurals.accounts_per_device,
-                                count = entry.value,
-                                entry.key.name ?: entry.key.model.name,
-                                entry.value
-                            ),
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1
+                        ImportedHardwareAccountsRow(
+                            deviceName = entry.key.name ?: entry.key.model.name,
+                            importedAccountsCount = entry.value,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    RadixTheme.colors.gray5,
+                                    shape = RadixTheme.shapes.roundedRectMedium
+                                )
+                                .padding(RadixTheme.dimensions.paddingDefault)
                         )
                     }
                 }
@@ -529,6 +537,27 @@ private fun HardwareImportScreen(
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
         }
+    }
+}
+
+@Composable
+private fun ImportedHardwareAccountsRow(deviceName: String, importedAccountsCount: Int, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
+        Text(
+            text = deviceName,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = pluralStringResource(
+                id = R.plurals.accounts_per_device,
+                count = importedAccountsCount,
+                importedAccountsCount
+            ),
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
     }
 }
 
@@ -662,7 +691,7 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             addLedgerName = false,
             onConfirmLedgerName = {},
             onSkipLedgerName = {},
-            ledgerDevices = emptyMap()
+            ledgerDevices = persistentMapOf()
         )
     }
 }

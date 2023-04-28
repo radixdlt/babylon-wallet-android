@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
@@ -27,7 +26,7 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
@@ -48,14 +47,14 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null &&
-                        ongoingPersonaDataRequestItem == null &&
-                        oneTimeAccountsRequestItem == null &&
-                        oneTimePersonaDataRequestItem == null
+                    ongoingPersonaDataRequestItem == null &&
+                    oneTimeAccountsRequestItem == null &&
+                    oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -171,12 +170,10 @@ sealed interface MessageFromDataChannel {
             val message: String
         ) : LedgerResponse(interactionId)
     }
-
-
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
-        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
+    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
     return when (this) {
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly
@@ -189,8 +186,8 @@ fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuan
 
 fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): FactorSource.LedgerHardwareWallet.DeviceModel {
     return when (this) {
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> FactorSource.LedgerHardwareWallet.DeviceModel.nanoS
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> FactorSource.LedgerHardwareWallet.DeviceModel.nanoSPlus
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> FactorSource.LedgerHardwareWallet.DeviceModel.nanoX
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoS
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoSPlus
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoX
     }
 }

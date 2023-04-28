@@ -204,7 +204,15 @@ data class FactorSource(
 
     sealed class LedgerHardwareWallet {
         enum class DeviceModel {
-            nanoS, nanoSPlus, nanoX
+            NanoS, NanoSPlus, NanoX;
+
+            fun description(): String {
+                return when (this) {
+                    NanoS -> "nanoS"
+                    NanoSPlus -> "nanoS+"
+                    NanoX -> "nanoX"
+                }
+            }
         }
     }
 
@@ -233,7 +241,7 @@ data class FactorSource(
             name: String?,
             olympiaCompatible: Boolean = true
         ): FactorSource {
-            val hint = name?.let { it + " (${model.name})" } ?: model.name
+            val hint = name?.let { it + " (${model.description()})" } ?: model.description()
             return FactorSource(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 id = id,

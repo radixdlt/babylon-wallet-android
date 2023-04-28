@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.LedgerResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -121,44 +122,44 @@ data class LedgerInteractionErrorResponse(
 
 fun LedgerDeviceModel.toDomainModel(): MessageFromDataChannel.LedgerResponse.LedgerDeviceModel {
     return when (this) {
-        LedgerDeviceModel.NanoS -> MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS
-        LedgerDeviceModel.NanoSPlus -> MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus
+        LedgerDeviceModel.NanoS -> LedgerResponse.LedgerDeviceModel.NanoS
+        LedgerDeviceModel.NanoSPlus -> LedgerResponse.LedgerDeviceModel.NanoSPlus
         LedgerDeviceModel.NanoX -> MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX
     }
 }
 
-fun ImportOlympiaDeviceResponse.Success.DerivedPublicKey.toDomainModel(): MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse.DerivedPublicKey {
-    return MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse.DerivedPublicKey(publicKey, path)
+fun ImportOlympiaDeviceResponse.Success.DerivedPublicKey.toDomainModel(): LedgerResponse.ImportOlympiaDeviceResponse.DerivedPublicKey {
+    return LedgerResponse.ImportOlympiaDeviceResponse.DerivedPublicKey(publicKey, path)
 }
 
 fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
     return when (this) {
-        is DerivePublicKeyResponse -> MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse(
+        is DerivePublicKeyResponse -> LedgerResponse.DerivePublicKeyResponse(
             interactionId,
             success.publicKeyHex
         )
-        is GetDeviceInfoResponse -> MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
+        is GetDeviceInfoResponse -> LedgerResponse.GetDeviceInfoResponse(
             interactionId,
-            success.model?.toDomainModel() ?: MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
+            success.model?.toDomainModel() ?: LedgerResponse.LedgerDeviceModel.NanoS,
             success.id
         )
-        is ImportOlympiaDeviceResponse -> MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse(
+        is ImportOlympiaDeviceResponse -> LedgerResponse.ImportOlympiaDeviceResponse(
             interactionId,
             success.model.toDomainModel(),
             success.id,
             success.derivedPublicKeys.map { it.toDomainModel() }
         )
-        is LedgerInteractionErrorResponse -> MessageFromDataChannel.LedgerResponse.LedgerErrorResponse(
+        is LedgerInteractionErrorResponse -> LedgerResponse.LedgerErrorResponse(
             interactionId,
             error.code,
             error.message
         )
-        is SignChallengeResponse -> MessageFromDataChannel.LedgerResponse.SignChallengeResponse(
+        is SignChallengeResponse -> LedgerResponse.SignChallengeResponse(
             interactionId,
             success.signatureHex,
             success.publixKeyHex
         )
-        is SignTransactionResponse -> MessageFromDataChannel.LedgerResponse.SignTransactionResponse(
+        is SignTransactionResponse -> LedgerResponse.SignTransactionResponse(
             interactionId,
             success.signatureHex,
             success.publixKeyHex

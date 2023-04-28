@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.peerdroid.data
 
 import android.content.Context
