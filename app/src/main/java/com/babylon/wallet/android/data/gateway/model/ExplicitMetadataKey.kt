@@ -38,7 +38,7 @@ enum class ExplicitMetadataKey(val key: String) {
     }
 
     companion object {
-        val dAppExplicitMetadata: Set<ExplicitMetadataKey>
+        val forDapp: Set<ExplicitMetadataKey>
             get() = setOf(
                 NAME,
                 DESCRIPTION,

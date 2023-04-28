@@ -35,13 +35,13 @@ interface DappMetadataRepository {
 
     suspend fun getDAppMetadata(
         definitionAddress: String,
-        explicitMetadata: Set<ExplicitMetadataKey> = emptySet(),
+        explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
     ): Result<DappMetadata>
 
     suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
-        explicitMetadata: Set<ExplicitMetadataKey> = emptySet(),
+        explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
     ): Result<List<DappMetadata>>
 }
@@ -61,7 +61,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
         if (origin.isValidHttpsUrl()) {
             getDAppMetadata(
                 definitionAddress = dAppDefinitionAddress,
-                explicitMetadata = ExplicitMetadataKey.dAppExplicitMetadata,
+                explicitMetadata = ExplicitMetadataKey.forDapp,
                 needMostRecentData = false
             ).switchMap { gatewayMetadata ->
                 when {
