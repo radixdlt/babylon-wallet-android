@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,15 +26,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.utils.ImageSize
+import com.babylon.wallet.android.utils.applyImageAspectRatio
 import com.babylon.wallet.android.utils.rememberImageUrl
-
-private const val IMAGE_RATIO = 9 / 16f
 
 @OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
@@ -79,16 +76,7 @@ fun NftTokenDetailItem(
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(
-                        (painter.state as? AsyncImagePainter.State.Success)
-                            ?.painter?.intrinsicSize?.let { intrinsicSize ->
-                                if (intrinsicSize.width / intrinsicSize.height < IMAGE_RATIO) {
-                                    Modifier.aspectRatio(IMAGE_RATIO)
-                                } else {
-                                    Modifier
-                                }
-                            } ?: Modifier
-                    )
+                    .applyImageAspectRatio(painter = painter)
                     .clip(RadixTheme.shapes.roundedRectMedium)
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )

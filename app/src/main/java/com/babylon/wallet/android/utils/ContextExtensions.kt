@@ -3,6 +3,7 @@ package com.babylon.wallet.android.utils
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,9 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
+import coil.compose.AsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.babylon.wallet.android.BuildConfig
+
+private const val IMAGE_RATIO = 9 / 16f
 
 fun Context.findFragmentActivity(): FragmentActivity? {
     var context = this
@@ -39,6 +43,21 @@ inline fun Modifier.throttleClickable(
             }
         }
     }
+}
+
+fun Modifier.applyImageAspectRatio(
+    painter: AsyncImagePainter
+): Modifier {
+    return then(
+        (painter.state as? AsyncImagePainter.State.Success)
+            ?.painter?.intrinsicSize?.let { intrinsicSize ->
+                if (intrinsicSize.width / intrinsicSize.height < IMAGE_RATIO) {
+                    Modifier.aspectRatio(IMAGE_RATIO)
+                } else {
+                    Modifier
+                }
+            } ?: Modifier
+    )
 }
 
 // For some reason Coil library requires this header to be added when using with cloudflare service. Otherwise it fails
