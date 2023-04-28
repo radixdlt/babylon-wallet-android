@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace 'rdx.works.mylibrary'
+    namespace 'rdx.works.peerdroid'
     compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
@@ -15,12 +15,18 @@ android {
         targetSdk rootProject.ext.targetSdk
 
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField "boolean", "DEBUG_MODE", "true"
+        buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server-dev.rdx-works-main.extratools.works/"'
     }
 
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server-rcnet.radixdlt.com/"'
         }
     }
     compileOptions {
