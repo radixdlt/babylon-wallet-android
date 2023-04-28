@@ -57,7 +57,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
@@ -109,7 +109,7 @@ fun DappDetailScreen(
             .background(RadixTheme.colors.defaultBackground),
         dappName = state.dapp?.displayName.orEmpty(),
         personaList = state.personas,
-        dappMetadata = state.dappMetadata,
+        dappWithMetadata = state.dappWithMetadata,
         onPersonaClick = viewModel::onPersonaClick,
         selectedPersona = state.selectedPersona,
         selectedPersonaSharedAccounts = state.sharedPersonaAccounts,
@@ -129,7 +129,7 @@ private fun DappDetailContent(
     modifier: Modifier = Modifier,
     dappName: String,
     personaList: ImmutableList<Network.Persona>,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     onPersonaClick: (Network.Persona) -> Unit,
     selectedPersona: PersonaUiModel?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
@@ -196,7 +196,7 @@ private fun DappDetailContent(
                         modifier = Modifier.fillMaxSize(),
                         dappName = dappName,
                         onBackClick = onBackClick,
-                        dappMetadata = dappMetadata,
+                        dappWithMetadata = dappWithMetadata,
                         personaList = personaList,
                         onPersonaClick = { persona ->
                             onPersonaClick(persona)
@@ -247,7 +247,7 @@ private fun DappDetails(
     modifier: Modifier,
     dappName: String,
     onBackClick: () -> Unit,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     personaList: ImmutableList<Network.Persona>,
     onPersonaClick: (Network.Persona) -> Unit,
     onDeleteDapp: () -> Unit
@@ -276,7 +276,7 @@ private fun DappDetails(
                     color = RadixTheme.colors.gray5
                 )
             }
-            dappMetadata?.description?.let { description ->
+            dappWithMetadata?.description?.let { description ->
                 item {
                     Divider(color = RadixTheme.colors.gray5)
                     Text(
@@ -291,7 +291,7 @@ private fun DappDetails(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dappMetadata?.definitionAddress?.let { dappDefinitionAddress ->
+            dappWithMetadata?.dAppAddress?.let { dappDefinitionAddress ->
                 item {
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                     DappDefinitionAddressRow(
@@ -303,7 +303,7 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappMetadata?.displayableMetadata?.let { metadata ->
+            dappWithMetadata?.displayableMetadata?.let { metadata ->
                 item {
                     metadata.forEach { mapEntry ->
                         AssetMetadataRow(
@@ -621,7 +621,8 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             dappName = "Dapp",
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappMetadata = DappMetadata(
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Dapp"),
                 descriptionItem = DescriptionMetadataItem("Description")
             ),
