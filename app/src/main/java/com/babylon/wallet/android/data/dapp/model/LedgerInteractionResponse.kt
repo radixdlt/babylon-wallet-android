@@ -9,6 +9,18 @@ import kotlinx.serialization.Serializable
 sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
 
 @Serializable
+data class SignatureOfSigner(
+    @SerialName("curve")
+    val curve: Curve,
+    @SerialName("derivationPath")
+    val derivationPath: String,
+    @SerialName("signature")
+    val signature: String,
+    @SerialName("publicKey")
+    val publicKeyHex: String
+)
+
+@Serializable
 @SerialName("getDeviceInfo")
 data class GetDeviceInfoResponse(
     @SerialName("interactionId")
@@ -74,17 +86,8 @@ data class SignTransactionResponse(
     @SerialName("interactionId")
     val interactionId: String,
     @SerialName("success")
-    val success: Success,
-) : LedgerInteractionResponse {
-
-    @Serializable
-    data class Success(
-        @SerialName("signature")
-        val signatureHex: String,
-        @SerialName("publicKey")
-        val publixKeyHex: String
-    )
-}
+    val success: List<SignatureOfSigner>,
+) : LedgerInteractionResponse
 
 @Serializable
 @SerialName("signChallenge")
@@ -92,16 +95,8 @@ data class SignChallengeResponse(
     @SerialName("interactionId")
     val interactionId: String,
     @SerialName("success")
-    val success: Success
-) : LedgerInteractionResponse {
-    @Serializable
-    data class Success(
-        @SerialName("signature")
-        val signatureHex: String,
-        @SerialName("publicKey")
-        val publixKeyHex: String
-    )
-}
+    val success: List<SignatureOfSigner>
+) : LedgerInteractionResponse
 
 @Serializable
 @SerialName("error")
@@ -120,11 +115,27 @@ data class LedgerInteractionErrorResponse(
     )
 }
 
-fun LedgerDeviceModel.toDomainModel(): MessageFromDataChannel.LedgerResponse.LedgerDeviceModel {
+fun Curve.toDomainModel(): LedgerResponse.Curve {
+    return when (this) {
+        Curve.Curve25519 -> LedgerResponse.Curve.Curve25519
+        Curve.Secp256k1 -> LedgerResponse.Curve.Secp256k1
+    }
+}
+
+fun SignatureOfSigner.toDomainModel(): LedgerResponse.SignatureOfSigner {
+    return LedgerResponse.SignatureOfSigner(
+        curve.toDomainModel(),
+        derivationPath,
+        signature,
+        publicKeyHex
+    )
+}
+
+fun LedgerDeviceModel.toDomainModel(): LedgerResponse.LedgerDeviceModel {
     return when (this) {
         LedgerDeviceModel.NanoS -> LedgerResponse.LedgerDeviceModel.NanoS
         LedgerDeviceModel.NanoSPlus -> LedgerResponse.LedgerDeviceModel.NanoSPlus
-        LedgerDeviceModel.NanoX -> MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX
+        LedgerDeviceModel.NanoX -> LedgerResponse.LedgerDeviceModel.NanoX
     }
 }
 
@@ -156,13 +167,11 @@ fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
         )
         is SignChallengeResponse -> LedgerResponse.SignChallengeResponse(
             interactionId,
-            success.signatureHex,
-            success.publixKeyHex
+            success.map { it.toDomainModel() }
         )
         is SignTransactionResponse -> LedgerResponse.SignTransactionResponse(
             interactionId,
-            success.signatureHex,
-            success.publixKeyHex
+            success.map { it.toDomainModel() }
         )
     }
 }

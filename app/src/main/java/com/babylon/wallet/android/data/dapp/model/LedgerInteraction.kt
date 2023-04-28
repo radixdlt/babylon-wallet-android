@@ -7,6 +7,15 @@ import kotlinx.serialization.Serializable
 sealed interface LedgerInteraction
 
 @Serializable
+enum class Curve {
+    @SerialName("curve25519")
+    Curve25519,
+
+    @SerialName("secp256k1")
+    Secp256k1
+}
+
+@Serializable
 @SerialName("getDeviceInfo")
 data class GetDeviceInfoRequest(
     @SerialName("interactionId")
@@ -27,7 +36,7 @@ data class DerivePublicKeyRequest(
     @Serializable
     data class KeyParameters(
         @SerialName("curve")
-        val curve: String,
+        val curve: Curve,
         @SerialName("derivationPath")
         val derivationPath: String
     )
@@ -57,8 +66,8 @@ data class ImportOlympiaDeviceRequest(
 data class SignTransactionRequest(
     @SerialName("interactionId")
     val interactionId: String,
-    @SerialName("keyParameters")
-    val keyParameters: DerivePublicKeyRequest.KeyParameters,
+    @SerialName("signers")
+    val signers: DerivePublicKeyRequest.KeyParameters,
     @SerialName("ledgerDevice")
     val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
     @SerialName("compiledTransactionIntent")
@@ -82,8 +91,8 @@ data class SignTransactionRequest(
 data class SignChallengeRequest(
     @SerialName("interactionId")
     val interactionId: String,
-    @SerialName("keyParameters")
-    val keyParameters: DerivePublicKeyRequest.KeyParameters,
+    @SerialName("signers")
+    val signers: DerivePublicKeyRequest.KeyParameters,
     @SerialName("ledgerDevice")
     val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
     @SerialName("challenge")
