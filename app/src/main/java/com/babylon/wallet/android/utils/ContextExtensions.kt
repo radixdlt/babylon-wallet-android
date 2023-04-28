@@ -46,6 +46,7 @@ private fun Context.buildImageRequest(imageUrl: String?): ImageRequest {
     return ImageRequest.Builder(this)
         .data(imageUrl)
         .decoderFactory(SvgDecoder.Factory())
+        .allowHardware(false)
         .addHeader("accept", "text/html")
         .build()
 }

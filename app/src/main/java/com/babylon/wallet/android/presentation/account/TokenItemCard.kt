@@ -55,7 +55,7 @@ fun TokenItemCard(
                     .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
             ) {
                 AsyncImage(
-                    model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.SMALL),
+                    model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.MEDIUM),
                     placeholder = placeholder,
                     fallback = placeholder,
                     error = placeholder,
