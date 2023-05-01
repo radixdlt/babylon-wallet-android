@@ -31,11 +31,15 @@ import com.babylon.wallet.android.mockdata.profile
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import java.math.BigDecimal
@@ -45,11 +49,18 @@ class GetAccountResourcesUseCaseTest {
 
     private val entityRepositoryMock = mockk<EntityRepository>()
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
+    private val preferencesManager = mockk<PreferencesManager>()
 
     private val testedClass = GetAccountResourcesUseCase(
         entityRepository = entityRepositoryMock,
-        getProfileUseCase = getProfileUseCaseMock
+        getProfileUseCase = getProfileUseCaseMock,
+        preferencesManager = preferencesManager
     )
+
+    @Before
+    fun setUp() {
+        coEvery { preferencesManager.getBackedUpFactorSourceIds() } returns flow { emit(emptySet()) }
+    }
 
     @Test
     fun `account in profile with no resources`() = runTest {
@@ -77,8 +88,8 @@ class GetAccountResourcesUseCaseTest {
                     address = expectedProfileAccountAddress,
                     displayName = expectedProfileAccountName,
                     appearanceID = 1,
-                    fungibleTokens = listOf(),
-                    nonFungibleTokens = listOf(),
+                    fungibleTokens = persistentListOf(),
+                    nonFungibleTokens = persistentListOf(),
                 )
             ),
             accountResourcesResult.value()
@@ -121,7 +132,7 @@ class GetAccountResourcesUseCaseTest {
                     address = expectedProfileAccountAddress,
                     displayName = expectedProfileAccountName,
                     appearanceID = 1,
-                    fungibleTokens = listOf(
+                    fungibleTokens = persistentListOf(
                         OwnedFungibleToken(
                             owner = AccountAddress(expectedProfileAccountAddress),
                             amount = BigDecimal("1000"),
@@ -129,7 +140,7 @@ class GetAccountResourcesUseCaseTest {
                             token = FungibleToken(address = expectedResource.resourceAddress)
                         )
                     ),
-                    nonFungibleTokens = listOf(),
+                    nonFungibleTokens = persistentListOf(),
                 )
             ),
             accountResourcesResult.value()
@@ -172,7 +183,7 @@ class GetAccountResourcesUseCaseTest {
         coEvery {
             entityRepositoryMock.nonFungibleData(address = expectedResource.resourceAddress, any(), isRefreshing = true)
         } returns Result.Success(
-            expectedNonFungibleData(expectedResource.resourceAddress)
+            expectedNonFungibleData()
         )
 
         val accountResourcesResult = testedClass.getAccountsFromProfile(isRefreshing = true)
@@ -183,8 +194,8 @@ class GetAccountResourcesUseCaseTest {
                     address = expectedProfileAccountAddress,
                     displayName = expectedProfileAccountName,
                     appearanceID = 1,
-                    fungibleTokens = listOf(),
-                    nonFungibleTokens = listOf(
+                    fungibleTokens = persistentListOf(),
+                    nonFungibleTokens = persistentListOf(
                         OwnedNonFungibleToken(
                             owner = AccountAddress(expectedProfileAccountAddress),
                             amount = 10,
@@ -266,9 +277,7 @@ class GetAccountResourcesUseCaseTest {
         )
     )
 
-    private fun expectedNonFungibleData(
-        resourceAddress: String
-    ) = StateNonFungibleDataResponse(
+    private fun expectedNonFungibleData() = StateNonFungibleDataResponse(
         ledgerState = LedgerState(
             network = Radix.Network.hammunet.name,
             stateVersion = 0,

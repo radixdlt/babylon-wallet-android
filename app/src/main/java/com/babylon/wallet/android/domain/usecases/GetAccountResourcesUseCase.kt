@@ -19,13 +19,18 @@ import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountFactorSourceIDOfDeviceKind
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
+    private val preferencesManager: PreferencesManager,
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
@@ -60,6 +65,7 @@ class GetAccountResourcesUseCase @Inject constructor(
         addresses = this.map { it.address },
         isRefreshing = isRefreshing
     ).map { result ->
+        val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().first()
         val accountsOnGateway = result.items
 
         // Compile a list of all accounts' fungible and non fungible resources
@@ -90,13 +96,16 @@ class GetAccountResourcesUseCase @Inject constructor(
                 allResources,
                 nonFungiblesWithData
             )
+            val accountFactorSourceIDOfDeviceKind = getProfileUseCase.accountFactorSourceIDOfDeviceKind(profileAccount.address)
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
                 isOlympiaAccount = profileAccount.isOlympiaAccount(),
                 appearanceID = profileAccount.appearanceID,
-                fungibleTokens = fungibleTokens,
-                nonFungibleTokens = nonFungibleTokens
+                showSecurityPrompt = accountFactorSourceIDOfDeviceKind != null &&
+                    !backedUpFactorSourceIds.contains(accountFactorSourceIDOfDeviceKind.value),
+                fungibleTokens = fungibleTokens.toPersistentList(),
+                nonFungibleTokens = nonFungibleTokens.toPersistentList()
             )
         }
     }

@@ -14,11 +14,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,9 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Composable
@@ -47,24 +41,7 @@ fun ShowMnemonicScreen(
     viewModel: ShowMnemonicViewModel,
     onBackClick: () -> Unit
 ) {
-    val context = LocalContext.current
-    var mnemonicToDisplay by remember { mutableStateOf<MnemonicWithPassphrase?>(null) }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is ShowMnemonicEvent.ShowMnemonic -> {
-                    context.findFragmentActivity()?.let { activity ->
-                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                mnemonicToDisplay = event.mnemonic
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
     SeedPhraseContent(
         factorSources = state.factorSources,
         modifier = modifier
@@ -74,35 +51,39 @@ fun ShowMnemonicScreen(
         onBackClick = onBackClick,
         onShowMnemonic = viewModel::onShowMnemonic,
     )
-    if (mnemonicToDisplay != null) {
-        BasicPromptAlertDialog(
-            finish = {
-                mnemonicToDisplay = null
-            },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.mnemonic),
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.mnemonic_and_passphrase,
-                        mnemonicToDisplay?.mnemonic.orEmpty(),
-                        mnemonicToDisplay?.bip39Passphrase.orEmpty().ifEmpty {
-                            stringResource(
-                                id = R.string.none
-                            )
-                        }
-                    ),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            confirmText = stringResource(id = R.string.ok)
-        )
+    when (val dialogState = state.visibleMnemonic) {
+        is VisibleMnemonic.Shown -> {
+            val mnemonic = dialogState.mnemonic
+            BasicPromptAlertDialog(
+                finish = { confirmed ->
+                    viewModel.closeMnemonicDialog(if (confirmed) dialogState.factorSourceID else null)
+                },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.mnemonic),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(
+                            id = R.string.mnemonic_and_passphrase,
+                            mnemonic.mnemonic,
+                            mnemonic.bip39Passphrase.ifEmpty {
+                                stringResource(
+                                    id = R.string.none
+                                )
+                            }
+                        ),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                confirmText = stringResource(id = R.string.backed_up_mnemonic)
+            )
+        }
+        else -> {}
     }
 }
 
@@ -113,6 +94,7 @@ private fun SeedPhraseContent(
     onBackClick: () -> Unit,
     onShowMnemonic: (FactorSource.ID) -> Unit
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -147,7 +129,11 @@ private fun SeedPhraseContent(
                         .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                         .clip(RadixTheme.shapes.roundedRectMedium)
                         .throttleClickable {
-                            onShowMnemonic(factorSource.id)
+                            context.biometricAuthenticate { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onShowMnemonic(factorSource.id)
+                                }
+                            }
                         }
                         .fillMaxWidth()
                         .background(

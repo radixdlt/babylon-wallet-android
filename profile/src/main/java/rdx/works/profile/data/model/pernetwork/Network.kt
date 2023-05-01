@@ -100,6 +100,10 @@ data class Network(
                 ?.genesisFactorInstance?.publicKey?.curve == Slip10Curve.SECP_256K1
         }
 
+        fun accountFactorSourceId(): FactorSource.ID? {
+            return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
+        }
+
         enum class AppearanceIdGradient {
             Gradient1,
             Gradient2,

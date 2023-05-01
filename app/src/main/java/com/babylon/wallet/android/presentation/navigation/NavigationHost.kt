@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.settings.incompatibleprofile.Inco
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.failed.failedBottomDialog
@@ -87,6 +88,9 @@ fun NavigationHost(
                 },
                 onNavigateToIncompatibleProfile = {
                     navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+                },
+                onApplySecuritySettingsClick = { factorSourceIDString ->
+                    navController.settingsShowMnemonic(factorSourceIDString)
                 }
             )
         }
