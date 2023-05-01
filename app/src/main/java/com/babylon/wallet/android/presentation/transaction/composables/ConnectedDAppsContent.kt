@@ -38,8 +38,8 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.ConnectedDAppsUiModel
-import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

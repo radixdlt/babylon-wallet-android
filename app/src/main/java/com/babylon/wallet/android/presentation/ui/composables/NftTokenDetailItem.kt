@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -25,12 +26,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.rememberImageUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
@@ -60,15 +59,21 @@ fun NftTokenDetailItem(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            AsyncImage(
-                model = rememberImageUrl(fromUrl = imageUrl, size = ImageSize.LARGE),
+            val painter = rememberAsyncImagePainter(
+                model = rememberImageUrl(
+                    fromUrl = imageUrl,
+                    size = ImageSize.LARGE
+                ),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder),
+                error = painterResource(id = R.drawable.img_placeholder)
+            )
+            Image(
+                painter = painter,
                 contentDescription = "Nft image",
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .applyImageAspectRatio(painter = painter)
                     .clip(RadixTheme.shapes.roundedRectMedium)
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )

@@ -25,8 +25,8 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.math.BigDecimal
 
@@ -55,7 +55,7 @@ fun TokenItemCard(
                     .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
             ) {
                 AsyncImage(
-                    model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.SMALL),
+                    model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.MEDIUM),
                     placeholder = placeholder,
                     fallback = placeholder,
                     error = placeholder,
