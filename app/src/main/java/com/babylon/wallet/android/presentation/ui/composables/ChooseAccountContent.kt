@@ -40,8 +40,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DappMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
-import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.rememberImageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 

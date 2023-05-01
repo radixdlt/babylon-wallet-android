@@ -45,8 +45,8 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
-import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.setSpanForPlaceholder
 
 @Composable

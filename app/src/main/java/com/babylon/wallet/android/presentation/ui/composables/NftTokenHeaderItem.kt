@@ -28,8 +28,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.utils.ImageSize
-import com.babylon.wallet.android.utils.rememberImageUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
