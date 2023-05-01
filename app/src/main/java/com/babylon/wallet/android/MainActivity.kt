@@ -11,8 +11,6 @@ import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -43,7 +41,6 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
-        lifecycle.addObserver(PeerdroidHandler())
     }
 
     private fun setSplashExitAnimation(splashScreen: SplashScreen) {
@@ -63,17 +60,5 @@ class MainActivity : FragmentActivity() {
 
     companion object {
         private const val splashExitAnimDurationMs = 300L
-    }
-
-    inner class PeerdroidHandler : DefaultLifecycleObserver {
-        override fun onPause(owner: LifecycleOwner) {
-            viewModel.onPause()
-            super.onPause(owner)
-        }
-
-        override fun onResume(owner: LifecycleOwner) {
-            viewModel.onResume()
-            super.onResume(owner)
-        }
     }
 }

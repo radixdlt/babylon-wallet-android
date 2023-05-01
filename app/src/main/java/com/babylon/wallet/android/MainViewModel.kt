@@ -16,10 +16,13 @@ import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
@@ -29,11 +32,12 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @Suppress("LongParameterList")
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase,
+    getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
@@ -41,10 +45,26 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
-    private var observeP2PLinksJob: Job? = null
     private var incomingRequestsJob: Job? = null
     private var handlingCurrentRequestJob: Job? = null
     private var processingRequestJob: Job? = null
+
+    val observeP2PLinks = getProfileUseCase
+        .p2pLinks
+        .map { p2pLinks ->
+            Timber.d("found ${p2pLinks.size} p2p links")
+            p2pLinks.forEach { p2PLink ->
+                establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
+            }
+        }
+        .onCompletion {
+            Timber.d("Peerdroid is terminating")
+            terminatePeerdroid()
+        }
+        .shareIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT) // TODO https://radixdlt.atlassian.net/browse/ABW-1421
+        )
 
     init {
         viewModelScope.launch {
@@ -57,18 +77,6 @@ class MainViewModel @Inject constructor(
 
     override fun initialState(): MainUiState {
         return MainUiState()
-    }
-
-    private fun observeForP2PLinks() {
-        observeP2PLinksJob = getProfileUseCase.p2pLinks
-            .map { p2pLinks ->
-                Timber.d("found ${p2pLinks.size} p2p links")
-                p2pLinks.forEach { p2PLink ->
-                    establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
-                }
-                p2pLinks
-            }
-            .launchIn(viewModelScope)
     }
 
     private suspend fun establishLinkConnection(connectionPassword: String) {
@@ -151,20 +159,8 @@ class MainViewModel @Inject constructor(
         Timber.d("Peerdroid terminated")
     }
 
-    fun onPause() {
-        Timber.d("Peerdroid: MainActivity paused")
-        terminatePeerdroid()
-        observeP2PLinksJob?.cancel()
-    }
-
-    fun onResume() {
-        viewModelScope.launch {
-            Timber.d("Peerdroid test: start observing for p2p links")
-            observeForP2PLinks()
-        }
-    }
-
     companion object {
+        private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private const val REQUEST_HANDLING_DELAY = 500L
     }
 }
