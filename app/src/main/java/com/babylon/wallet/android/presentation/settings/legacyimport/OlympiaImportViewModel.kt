@@ -330,12 +330,11 @@ class OlympiaImportViewModel @Inject constructor(
         }
     }
 
-    private fun updateHardwareAccountLeftToMigrateCount(): Int {
+    private fun updateHardwareAccountLeftToMigrateCount() {
         val hardwareAccountsLeftToImport = hardwareAccountsLeftToMigrate().map {
             it.address
         }.toSet().minus(validatedHardwareAccounts.values.flatten().map { it.address }.toSet()).size
         _state.update { it.copy(hardwareAccountsLeftToImport = hardwareAccountsLeftToImport) }
-        return hardwareAccountsLeftToImport
     }
 
     fun onSkipRemainingHardwareAccounts() {
