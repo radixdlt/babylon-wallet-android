@@ -115,10 +115,10 @@ data class LedgerInteractionErrorResponse(
     )
 }
 
-fun Curve.toDomainModel(): LedgerResponse.Curve {
+fun Curve.toDomainModel(): LedgerResponse.SignatureOfSigner.Curve {
     return when (this) {
-        Curve.Curve25519 -> LedgerResponse.Curve.Curve25519
-        Curve.Secp256k1 -> LedgerResponse.Curve.Secp256k1
+        Curve.Curve25519 -> LedgerResponse.SignatureOfSigner.Curve.Curve25519
+        Curve.Secp256k1 -> LedgerResponse.SignatureOfSigner.Curve.Secp256k1
     }
 }
 

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
@@ -21,8 +22,8 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
 val GetProfileUseCase.accountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts }
 
-val GetProfileUseCase.factorSources
-    get() = invoke().map { it.factorSources }
+val GetProfileUseCase.deviceFactorSources
+    get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE } }
 
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
 

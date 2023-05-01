@@ -66,7 +66,7 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(message: String): Result<Unit> {
-        return peerdroidConnector.sendDataChannelMessageToRemoteClients(message)
+        return peerdroidConnector.sendDataChannelMessageToAllRemoteClients(message)
     }
 
     private fun listenForIncomingMessages(): Flow<MessageFromDataChannel> {

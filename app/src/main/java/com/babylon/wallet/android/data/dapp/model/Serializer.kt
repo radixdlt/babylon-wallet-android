@@ -41,7 +41,7 @@ private val peerdroidSerializersModule = SerializersModule {
         subclass(WalletInteractionSuccessResponse::class, WalletInteractionSuccessResponse.serializer())
         subclass(WalletInteractionFailureResponse::class, WalletInteractionFailureResponse.serializer())
     }
-    polymorphic(LedgerInteraction::class) {
+    polymorphic(LedgerInteractionRequest::class) {
         subclass(GetDeviceInfoRequest::class, GetDeviceInfoRequest.serializer())
         subclass(DerivePublicKeyRequest::class, DerivePublicKeyRequest.serializer())
         subclass(ImportOlympiaDeviceRequest::class, ImportOlympiaDeviceRequest.serializer())

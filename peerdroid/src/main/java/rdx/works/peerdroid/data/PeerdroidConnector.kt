@@ -62,7 +62,7 @@ interface PeerdroidConnector {
     val dataChannelMessagesFromRemoteClients: SharedFlow<DataChannelWrapperEvent>
 
     suspend fun sendDataChannelMessageToRemoteClient(remoteClientId: String, message: String): Result<Unit>
-    suspend fun sendDataChannelMessageToRemoteClients(message: String): Result<Unit>
+    suspend fun sendDataChannelMessageToAllRemoteClients(message: String): Result<Unit>
 }
 
 internal class PeerdroidConnectorImpl(
@@ -203,7 +203,7 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-    override suspend fun sendDataChannelMessageToRemoteClients(
+    override suspend fun sendDataChannelMessageToAllRemoteClients(
         message: String
     ): Result<Unit> {
         return withContext(ioDispatcher) {
@@ -214,7 +214,8 @@ internal class PeerdroidConnectorImpl(
             if (results.any { it is Result.Success }) {
                 Result.Success(Unit)
             } else {
-                Result.Error("failed to send message to remote client")
+                Timber.e("📯 failed to send message to all remote clients")
+                Result.Error("failed to send message to all remote clients")
             }
         }
     }

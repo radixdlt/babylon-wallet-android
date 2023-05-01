@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
-import com.babylon.wallet.android.data.dapp.model.SignatureOfSigner
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -130,16 +128,16 @@ sealed interface MessageFromDataChannel {
             NanoS, NanoSPlus, NanoX;
         }
 
-        enum class Curve {
-            Curve25519, Secp256k1
-        }
-
         data class SignatureOfSigner(
             val curve: Curve,
             val derivationPath: String,
             val signature: String,
             val publicKeyHex: String
-        )
+        ) {
+            enum class Curve {
+                Curve25519, Secp256k1
+            }
+        }
 
         data class GetDeviceInfoResponse(
             val interactionId: String,

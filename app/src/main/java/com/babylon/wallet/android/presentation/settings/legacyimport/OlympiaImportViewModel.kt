@@ -97,12 +97,13 @@ class OlympiaImportViewModel @Inject constructor(
                 _state.update { it.copy(waitingForLedgerResponse = false) }
                 val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
                 val derivedKeys = ledgerResponse.derivedPublicKeys.map { it.publicKeyHex }.toSet()
-                if (derivedKeys.isEmpty()) {
+                val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
+                if (validatedAccounts.isEmpty()) {
                     _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
                     return
                 }
                 val ledgerDeviceModel = LedgerDeviceUiModel(ledgerResponse.deviceId, ledgerResponse.model)
-                validatedHardwareAccounts[ledgerDeviceModel] = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
+                validatedHardwareAccounts[ledgerDeviceModel] = validatedAccounts
                 currentlyProcessedDevice = ledgerDeviceModel
                 updateHardwareAccountLeftToMigrateCount()
                 _state.update { state ->

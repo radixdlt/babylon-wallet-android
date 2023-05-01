@@ -1,8 +1,6 @@
 @file:Suppress("CyclomaticComplexMethod")
 @file:OptIn(
     ExperimentalPermissionsApi::class,
-    ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class
 )
 
