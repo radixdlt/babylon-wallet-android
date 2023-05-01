@@ -333,6 +333,7 @@
     <string name="ledger_hint">My Ledger</string>
     <string name="ledger_name_bottom_hint">Displayed when you are prompted to sign with this device.</string>
     <string name="no_accounts_for_ledger">No Accounts found to import on this device</string>
+    <string name="legacy_label">" "\u2022 Legacy</string>
     <plurals name="accounts_per_device">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>

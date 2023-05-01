@@ -95,6 +95,11 @@ data class Network(
         val securityState: SecurityState
     ) {
 
+        fun isOlympiaAccount(): Boolean {
+            return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
+                ?.genesisFactorInstance?.publicKey?.curve == Slip10Curve.SECP_256K1
+        }
+
         enum class AppearanceIdGradient {
             Gradient1,
             Gradient2,

@@ -90,10 +90,10 @@ class GetAccountResourcesUseCase @Inject constructor(
                 allResources,
                 nonFungiblesWithData
             )
-
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
+                isOlympiaAccount = profileAccount.isOlympiaAccount(),
                 appearanceID = profileAccount.appearanceID,
                 fungibleTokens = fungibleTokens,
                 nonFungibleTokens = nonFungibleTokens

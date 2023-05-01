@@ -7,6 +7,7 @@ data class AccountResources(
     val address: String,
     val displayName: String,
     val appearanceID: Int,
+    val isOlympiaAccount: Boolean = false,
     val fungibleTokens: List<OwnedFungibleToken> = emptyList(),
     val nonFungibleTokens: List<OwnedNonFungibleToken> = emptyList()
 ) {
@@ -32,6 +33,7 @@ fun Network.Account.toDomainModel(): AccountResources {
     return AccountResources(
         address = this.address,
         displayName = displayName,
-        appearanceID = this.appearanceID
+        appearanceID = this.appearanceID,
+        isOlympiaAccount = isOlympiaAccount()
     )
 }

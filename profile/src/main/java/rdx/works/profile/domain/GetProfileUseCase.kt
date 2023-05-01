@@ -12,7 +12,6 @@ import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
-
     operator fun invoke() = profileRepository.profile
 }
 
