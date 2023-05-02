@@ -2,25 +2,22 @@ package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 /**
  * Instruction to add free xrd from given address
  */
 fun ManifestBuilder.addFreeXrdInstruction(
-    networkId: NetworkId
+    faucetComponentAddress: String
 ): ManifestBuilder {
     return addInstruction(
         Instruction.CallMethod(
-            componentAddress = faucetComponentAddress(networkId.value.toUByte()),
+            componentAddress = ManifestAstValue.String(faucetComponentAddress),
             methodName = ManifestAstValue.String(MethodName.Free.stringValue),
             arguments = arrayOf()
         )
@@ -119,15 +116,4 @@ private fun guaranteeInstruction(
         resourceAddress = ManifestAstValue.Address(resourceAddress),
         amount = ManifestAstValue.Decimal(guaranteedAmount)
     )
-}
-
-fun faucetComponentAddress(
-    networkId: UByte
-): ManifestAstValue.Address {
-    val faucetComponentAddress = RadixEngineToolkit.knownEntityAddresses(
-        request = KnownEntityAddressesRequest(
-            networkId = networkId
-        )
-    ).getOrThrow().faucetComponentAddress
-    return ManifestAstValue.Address(faucetComponentAddress.toString())
 }

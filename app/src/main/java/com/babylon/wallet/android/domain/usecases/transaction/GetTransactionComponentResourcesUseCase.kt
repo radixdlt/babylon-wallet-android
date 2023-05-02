@@ -9,7 +9,6 @@ import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_NAME
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import com.radixdlt.toolkit.models.address.EntityAddress
 import com.radixdlt.toolkit.models.request.CreatedEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -29,14 +28,8 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         includesGuarantees: Boolean,
         index: Int? = null
     ): Result<TransactionAccountItemUiModel> {
-        val createdEntitiesAddresses = createdEntities
-            .resourceAddresses.filterIsInstance<EntityAddress.ResourceAddress>()
-            .map { resAddress ->
-                resAddress.address
-            }
-
         // do not ask gateway for it, lets skip this address
-        val createdEntity = createdEntitiesAddresses.contains(resourceAddress)
+        val createdEntity = createdEntities.resourceAddresses.toList().contains(resourceAddress)
 
         val validatedAddresses = if (createdEntity) {
             listOf(

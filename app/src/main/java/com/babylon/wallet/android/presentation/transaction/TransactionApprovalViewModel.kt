@@ -188,10 +188,9 @@ class TransactionApprovalViewModel @Inject constructor(
 
                                     val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
                                         .componentAddresses.userApplications
-                                        .filterIsInstance<EntityAddress.ComponentAddress>()
 
                                     val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
-                                        componentAddresses
+                                        componentAddresses.toList()
                                     )
 
                                     analyzeManifestWithPreviewResponse
@@ -214,10 +213,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                                             accountDeposit.resourceSpecifier
                                                     ) {
                                                         is ResourceSpecifier.Amount -> {
-                                                            resSpecifier.resourceAddress.address
+                                                            resSpecifier.resourceAddress
                                                         }
                                                         is ResourceSpecifier.Ids -> {
-                                                            resSpecifier.resourceAddress.address
+                                                            resSpecifier.resourceAddress
                                                         }
                                                     }
 
@@ -226,8 +225,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                                     depositJobs.add(
                                                         async {
                                                             getTransactionComponentResourcesUseCase.invoke(
-                                                                componentAddress = accountDeposit
-                                                                    .componentAddress.address,
+                                                                componentAddress = accountDeposit.componentAddress,
                                                                 resourceAddress = resourceAddress,
                                                                 createdEntities = analyzeManifestWithPreviewResponse
                                                                     .createdEntities,
@@ -256,17 +254,16 @@ class TransactionApprovalViewModel @Inject constructor(
                                                             accountDeposit.resourceSpecifier
                                                     ) {
                                                         is ResourceSpecifier.Amount -> {
-                                                            resSpecifier.resourceAddress.address
+                                                            resSpecifier.resourceAddress
                                                         }
                                                         is ResourceSpecifier.Ids -> {
-                                                            resSpecifier.resourceAddress.address
+                                                            resSpecifier.resourceAddress
                                                         }
                                                     }
                                                     depositJobs.add(
                                                         async {
                                                             getTransactionComponentResourcesUseCase.invoke(
-                                                                componentAddress = accountDeposit
-                                                                    .componentAddress.address,
+                                                                componentAddress = accountDeposit.componentAddress,
                                                                 resourceAddress = resourceAddress,
                                                                 createdEntities = analyzeManifestWithPreviewResponse
                                                                     .createdEntities,
@@ -291,16 +288,16 @@ class TransactionApprovalViewModel @Inject constructor(
                                         val resourceAddress =
                                             when (val resSpecifier = accountWithdraw.resourceSpecifier) {
                                                 is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.resourceAddress.address
+                                                    resSpecifier.resourceAddress
                                                 }
                                                 is ResourceSpecifier.Ids -> {
-                                                    resSpecifier.resourceAddress.address
+                                                    resSpecifier.resourceAddress
                                                 }
                                             }
                                         withdrawJobs.add(
                                             async {
                                                 getTransactionComponentResourcesUseCase.invoke(
-                                                    componentAddress = accountWithdraw.componentAddress.address,
+                                                    componentAddress = accountWithdraw.componentAddress,
                                                     resourceAddress = resourceAddress,
                                                     createdEntities = analyzeManifestWithPreviewResponse
                                                         .createdEntities,
