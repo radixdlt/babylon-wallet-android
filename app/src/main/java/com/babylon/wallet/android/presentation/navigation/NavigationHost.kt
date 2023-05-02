@@ -55,7 +55,11 @@ fun NavigationHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable(route = Screen.OnboardingDestination.route) {
+        composable(
+            route = Screen.OnboardingDestination.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
                 onOnBoardingEnd = {
