@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.model
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.utils.isOlympiaAccount
 import java.math.BigDecimal
 
 data class AccountResources(

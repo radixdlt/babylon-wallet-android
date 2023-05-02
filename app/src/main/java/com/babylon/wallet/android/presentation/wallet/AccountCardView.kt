@@ -18,8 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.AccountAddress
@@ -67,7 +65,7 @@ fun AccountCardView(
                 )
                 if (isLegacyAccount) {
                     Text(
-                        text = stringResource(id = R.string.legacy_label),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.legacy_label),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.white
                     )
@@ -84,14 +82,14 @@ fun AccountCardView(
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onApplySecuritySettings,
-                    text = stringResource(id = R.string.apply_security_settings)
+                    text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings)
                 )
             }
             AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onMnemonicRecovery,
-                    text = stringResource(id = R.string.recover_mnemonic)
+                    text = stringResource(id = com.babylon.wallet.android.R.string.recover_mnemonic)
                 )
             }
             AnimatedVisibility(visible = false) {

@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.utils.isOlympiaAccount
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountFactorSourceIDOfDeviceKind
 import rdx.works.profile.domain.accountsOnCurrentNetwork
