@@ -119,6 +119,9 @@ fun NavigationHost(
                 },
                 onBackClick = {
                     navController.navigateUp()
+                },
+                onApplySecuritySettingsClick = { factorSourceIDString ->
+                    navController.settingsShowMnemonic(factorSourceIDString)
                 }
             )
         }

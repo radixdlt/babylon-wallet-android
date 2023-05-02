@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,15 +10,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Badge
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,20 +22,15 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.math.BigDecimal
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 
 @Composable
 fun AccountCardView(
@@ -94,36 +86,6 @@ fun AccountCardView(
                 AssetIconRowView(assets = assets)
             }
         }
-    }
-}
-
-@Composable
-private fun ApplySecuritySettingsLabel(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Row(
-        modifier = modifier
-            .background(RadixTheme.colors.white.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectSmall)
-            .clip(RadixTheme.shapes.roundedRectSmall)
-            .throttleClickable {
-                onClick()
-            }
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingSmall),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-    ) {
-        Icon(
-            modifier = Modifier.size(14.dp),
-            painter = painterResource(id = R.drawable.ic_security),
-            contentDescription = null,
-            tint = RadixTheme.colors.white
-        )
-        Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings),
-            style = RadixTheme.typography.body2HighImportance,
-            maxLines = 1,
-            modifier = Modifier.weight(1f),
-            color = RadixTheme.colors.white
-        )
-        Badge(backgroundColor = Red1)
     }
 }
 

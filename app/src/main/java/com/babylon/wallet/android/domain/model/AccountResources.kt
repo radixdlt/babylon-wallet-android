@@ -11,6 +11,7 @@ data class AccountResources(
     val appearanceID: Int,
     val isOlympiaAccount: Boolean = false,
     val showSecurityPrompt: Boolean = false,
+    val mnemonicExistAndBackedUp: Boolean = false,
     val fungibleTokens: ImmutableList<OwnedFungibleToken> = persistentListOf(),
     val nonFungibleTokens: ImmutableList<OwnedNonFungibleToken> = persistentListOf()
 ) {
@@ -28,7 +29,7 @@ data class AccountResources(
     }
 
     fun showApplySecuritySettingsPrompt(): Boolean {
-        return hasXrdWithEnoughBalance(1L) && showSecurityPrompt
+        return hasXrdWithEnoughBalance(1L) && mnemonicExistAndBackedUp
     }
 }
 

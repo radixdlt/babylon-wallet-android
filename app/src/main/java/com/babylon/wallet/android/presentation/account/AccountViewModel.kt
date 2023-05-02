@@ -9,6 +9,9 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -24,9 +27,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
@@ -36,9 +41,10 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
+    private val preferencesManager: PreferencesManager,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
-) : StateViewModel<AccountUiState>() {
+) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
 
     private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
 
@@ -62,6 +68,15 @@ class AccountViewModel @Inject constructor(
                 refresh()
             }
         }
+        observeBackedUpMnemonics()
+    }
+
+    private fun observeBackedUpMnemonics() {
+        viewModelScope.launch {
+            preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged().collect {
+                loadAccountData(isRefreshing = false)
+            }
+        }
     }
 
     fun refresh() {
@@ -80,23 +95,24 @@ class AccountViewModel @Inject constructor(
                         accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
                     }
                 }
-                result.onValue { accountResource ->
-                    val xrdToken = accountResource.fungibleTokens.find {
+                result.onValue { accountResources ->
+                    val xrdToken = accountResources.fungibleTokens.find {
                         it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
                     }
 
-                    val fungibleTokens = accountResource.fungibleTokens.filter {
+                    val fungibleTokens = accountResources.fungibleTokens.filter {
                         it.token.metadata[MetadataConstants.KEY_SYMBOL] != MetadataConstants.SYMBOL_XRD
                     }
 
                     _state.update { accountUiState ->
                         accountUiState.copy(
+                            showSecurityPrompt = accountResources.showApplySecuritySettingsPrompt(),
                             isRefreshing = false,
                             isLoading = false,
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
-                            nonFungibleTokens = accountResource.nonFungibleTokens.toNftUiModel().toPersistentList(),
-                            gradientIndex = accountResource.appearanceID % AccountGradientList.size
+                            nonFungibleTokens = accountResources.nonFungibleTokens.toNftUiModel().toPersistentList(),
+                            gradientIndex = accountResources.appearanceID % AccountGradientList.size
                         )
                     }
                 }
@@ -123,9 +139,22 @@ class AccountViewModel @Inject constructor(
             )
         }
     }
+
+    fun onApplySecuritySettings() {
+        viewModelScope.launch {
+            getProfileUseCase.accountOnCurrentNetwork(state.value.accountAddressFull)?.accountFactorSourceId()?.let {
+                sendEvent(AccountEvent.ApplySecuritySettingsClick(it.value))
+            }
+        }
+    }
+}
+
+internal sealed interface AccountEvent : OneOffEvent {
+    data class ApplySecuritySettingsClick(val factorSourceIdString: String) : AccountEvent
 }
 
 data class AccountUiState(
+    val showSecurityPrompt: Boolean = false,
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,

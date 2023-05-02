@@ -102,7 +102,7 @@ class GetAccountResourcesUseCase @Inject constructor(
                 displayName = profileAccount.displayName,
                 isOlympiaAccount = profileAccount.isOlympiaAccount(),
                 appearanceID = profileAccount.appearanceID,
-                showSecurityPrompt = accountFactorSourceIDOfDeviceKind != null &&
+                mnemonicExistAndBackedUp = accountFactorSourceIDOfDeviceKind != null &&
                     !backedUpFactorSourceIds.contains(accountFactorSourceIDOfDeviceKind.value),
                 fungibleTokens = fungibleTokens.toPersistentList(),
                 nonFungibleTokens = nonFungibleTokens.toPersistentList()
