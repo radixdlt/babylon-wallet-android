@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.utils.accountFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
@@ -106,8 +107,8 @@ class AccountViewModel @Inject constructor(
 
                     _state.update { accountUiState ->
                         accountUiState.copy(
-                            showSecurityPrompt = accountResources.showApplySecuritySettingsPrompt(),
-                            needMnemonicRecovery = accountResources.needMnemonicRecovery,
+                            showSecurityPrompt = accountResources.needMnemonicBackup(),
+                            needMnemonicRecovery = accountResources.needMnemonicRecovery(),
                             isRefreshing = false,
                             isLoading = false,
                             xrdToken = xrdToken?.toTokenUiModel(),

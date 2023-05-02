@@ -103,13 +103,17 @@ class GetAccountResourcesUseCase @Inject constructor(
             val needMnemonicRecovery = accountFactorSourceIDOfDeviceKind != null && mnemonic == null
             val needMnemonicBackup = accountFactorSourceIDOfDeviceKind != null && mnemonic != null &&
                 !backedUpFactorSourceIds.contains(accountFactorSourceIDOfDeviceKind.value)
+            val factorSourceState = when {
+                needMnemonicRecovery -> AccountResources.FactorSourceState.NeedMnemonicRecovery
+                needMnemonicBackup -> AccountResources.FactorSourceState.NeedMnemonicBackup
+                else -> AccountResources.FactorSourceState.Valid
+            }
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
                 isOlympiaAccount = profileAccount.isOlympiaAccount(),
                 appearanceID = profileAccount.appearanceID,
-                needMnemonicBackup = needMnemonicBackup,
-                needMnemonicRecovery = needMnemonicRecovery,
+                factorSourceState = factorSourceState,
                 fungibleTokens = fungibleTokens.toPersistentList(),
                 nonFungibleTokens = nonFungibleTokens.toPersistentList()
             )

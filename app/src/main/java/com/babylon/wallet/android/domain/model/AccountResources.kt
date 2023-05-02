@@ -10,10 +10,7 @@ data class AccountResources(
     val displayName: String,
     val appearanceID: Int,
     val isOlympiaAccount: Boolean = false,
-    val showSecurityPrompt: Boolean = false,
-    val mnemonicExistAndBackedUp: Boolean = false,
-    val needMnemonicBackup: Boolean = false,
-    val needMnemonicRecovery: Boolean = false,
+    private val factorSourceState: FactorSourceState = FactorSourceState.Valid,
     val fungibleTokens: ImmutableList<OwnedFungibleToken> = persistentListOf(),
     val nonFungibleTokens: ImmutableList<OwnedNonFungibleToken> = persistentListOf()
 ) {
@@ -30,8 +27,16 @@ data class AccountResources(
         }
     }
 
-    fun showApplySecuritySettingsPrompt(): Boolean {
-        return hasXrdWithEnoughBalance(1L) && needMnemonicBackup
+    fun needMnemonicBackup(): Boolean {
+        return hasXrdWithEnoughBalance(1L) && factorSourceState == FactorSourceState.NeedMnemonicBackup
+    }
+
+    fun needMnemonicRecovery(): Boolean {
+        return factorSourceState == FactorSourceState.NeedMnemonicRecovery
+    }
+
+    enum class FactorSourceState {
+        NeedMnemonicRecovery, NeedMnemonicBackup, Valid
     }
 }
 

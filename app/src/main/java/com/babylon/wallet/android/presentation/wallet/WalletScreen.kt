@@ -265,7 +265,7 @@ private fun WalletAccountList(
                     .throttleClickable {
                         onAccountClick(account.address)
                     },
-                showApplySecuritySettings = account.showApplySecuritySettingsPrompt(),
+                showApplySecuritySettings = account.needMnemonicBackup(),
                 onApplySecuritySettings = {
                     context.biometricAuthenticate { authenticatedSuccessfully ->
                         if (authenticatedSuccessfully) {
@@ -273,7 +273,7 @@ private fun WalletAccountList(
                         }
                     }
                 },
-                needMnemonicRecovery = account.needMnemonicRecovery,
+                needMnemonicRecovery = account.needMnemonicRecovery(),
                 onMnemonicRecovery = {
                     onMnemonicRecovery(account.address)
                 }

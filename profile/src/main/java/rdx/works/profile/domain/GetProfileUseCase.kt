@@ -10,6 +10,8 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.utils.accountFactorSourceId
+import rdx.works.profile.data.utils.personaFactorSourceId
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
