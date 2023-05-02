@@ -3,6 +3,7 @@ package com.babylon.wallet.android
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
@@ -56,4 +57,5 @@ fun WalletApp(
             }
         }
     }
+    mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
 }
