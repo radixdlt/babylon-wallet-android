@@ -202,6 +202,20 @@ data class FactorSource(
         }
     }
 
+    sealed class LedgerHardwareWallet {
+        enum class DeviceModel {
+            NanoS, NanoSPlus, NanoX;
+
+            fun description(): String {
+                return when (this) {
+                    NanoS -> "nanoS"
+                    NanoSPlus -> "nanoS+"
+                    NanoX -> "nanoX"
+                }
+            }
+        }
+    }
+
     companion object {
         fun babylon(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
@@ -220,6 +234,24 @@ data class FactorSource(
             hint = hint,
             olympiaCompatible = true
         )
+
+        fun ledger(
+            id: ID,
+            model: LedgerHardwareWallet.DeviceModel,
+            name: String?,
+            olympiaCompatible: Boolean = true
+        ): FactorSource {
+            val hint = name?.let { it + " (${model.description()})" } ?: model.description()
+            return FactorSource(
+                kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                id = id,
+                hint = hint,
+                parameters = if (olympiaCompatible) olympia else babylon,
+                storage = null,
+                addedOn = Instant.now(),
+                lastUsedOn = Instant.now()
+            )
+        }
 
         private fun device(
             mnemonicWithPassphrase: MnemonicWithPassphrase,

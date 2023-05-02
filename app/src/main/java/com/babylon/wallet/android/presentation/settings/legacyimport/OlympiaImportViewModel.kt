@@ -1,6 +1,13 @@
+@file:Suppress("LongParameterList")
+
 package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -13,16 +20,24 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toPersistentHashMap
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.validatePublicKeysOf
+import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.CheckOlympiaFactorSourceForAccountsExistUseCase
@@ -34,12 +49,17 @@ import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.OlympiaWalletData
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
+import timber.log.Timber
+import java.util.Collections
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 @HiltViewModel
 class OlympiaImportViewModel @Inject constructor(
+    private val peerdroidClient: PeerdroidClient,
+    private val ledgerMessenger: LedgerMessenger,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
+    private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
     private val checkOlympiaFactorSourceForAccountsExistUseCase: CheckOlympiaFactorSourceForAccountsExistUseCase,
     private val getProfileUseCase: GetProfileUseCase,
@@ -53,6 +73,51 @@ class OlympiaImportViewModel @Inject constructor(
     private var olympiaWalletData: OlympiaWalletData? = null
     private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList)
     private var existingFactorSourceId: FactorSource.ID? = null
+    private val validatedHardwareAccounts = mutableMapOf<LedgerDeviceUiModel, List<OlympiaAccountDetails>>()
+    private val sentRequestIds = Collections.synchronizedList(mutableListOf<String>())
+    private var currentlyProcessedDevice: LedgerDeviceUiModel? = null
+
+    init {
+        viewModelScope.launch {
+            peerdroidClient
+                .listenForLedgerResponses()
+//                .filter { sentRequestIds.contains(it.id) }
+                .cancellable()
+                .collect { ledgerResponse ->
+                    sentRequestIds.remove(ledgerResponse.id)
+                    Timber.d("📯 wallet received incoming ledger response, interactionId: ${ledgerResponse.id}")
+                    processIncomingLedgerResponse(ledgerResponse)
+                }
+        }
+    }
+
+    private fun processIncomingLedgerResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse) {
+        when (ledgerResponse) {
+            is MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse -> {
+                _state.update { it.copy(waitingForLedgerResponse = false) }
+                val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
+                val derivedKeys = ledgerResponse.derivedPublicKeys.map { it.publicKeyHex }.toSet()
+                val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
+                if (validatedAccounts.isEmpty()) {
+                    _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
+                    return
+                }
+                val ledgerDeviceModel = LedgerDeviceUiModel(ledgerResponse.deviceId, ledgerResponse.model)
+                validatedHardwareAccounts[ledgerDeviceModel] = validatedAccounts
+                currentlyProcessedDevice = ledgerDeviceModel
+                updateHardwareAccountLeftToMigrateCount()
+                _state.update { state ->
+                    state.copy(
+                        addLedgerName = true,
+                        ledgerDevices = validatedHardwareAccounts.entries.associate {
+                            it.key to it.value.size
+                        }.toPersistentHashMap()
+                    )
+                }
+            }
+            else -> {}
+        }
+    }
 
     fun onQrCodeScanned(qrData: String) {
         if (!olympiaWalletDataParser.isProperQrPayload(qrData)) {
@@ -172,6 +237,7 @@ class OlympiaImportViewModel @Inject constructor(
             !it.data.alreadyImported && it.selected
         }.map { it.data }
         val pages = buildPages(selectedAccounts)
+        updateHardwareAccountLeftToMigrateCount()
         _state.update { state ->
             state.copy(pages = pages)
         }
@@ -189,7 +255,7 @@ class OlympiaImportViewModel @Inject constructor(
                 when (_state.value.pages.nextPage(_state.value.currentPage)) {
                     ImportPage.HardwareAccount -> nextPage()
                     else -> {
-                        internalImportSoftwareAccounts()
+                        internalImportOlympiaAccounts()
                         nextPage()
                     }
                 }
@@ -200,16 +266,30 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     @Suppress("UnsafeCallOnNullableType")
-    private suspend fun internalImportSoftwareAccounts() {
+    private suspend fun internalImportOlympiaAccounts() {
+        var migratedSoftwareAccounts = emptyList<Network.Account>()
+        var migratedHardwareAccounts = emptyList<Network.Account>()
         val softwareAccountsToMigrate = softwareAccountsToMigrate()
-        if (softwareAccountsToMigrate.isEmpty()) {
+        if (softwareAccountsToMigrate.isEmpty() && validatedHardwareAccounts.isEmpty()) {
             nextPage()
             return
         }
-        val factorSourceID = existingFactorSourceId ?: addOlympiaFactorSourceUseCase(mnemonicWithPassphrase!!)
-        val migratedAccounts = migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSourceID)
+        if (softwareAccountsToMigrate.isNotEmpty()) {
+            val factorSourceID = existingFactorSourceId ?: addOlympiaFactorSourceUseCase(mnemonicWithPassphrase!!)
+            migratedSoftwareAccounts = migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSourceID)
+        }
+        if (validatedHardwareAccounts.isNotEmpty()) {
+            validatedHardwareAccounts.entries.forEach { entry ->
+                val ledgerFactorSourceId = addLedgerFactorSourceUseCase(
+                    id = FactorSource.ID(entry.key.id),
+                    model = entry.key.model.toProfileLedgerDeviceModel(),
+                    name = entry.key.name
+                )
+                migratedHardwareAccounts = migratedHardwareAccounts + migrateOlympiaAccountsUseCase(entry.value, ledgerFactorSourceId)
+            }
+        }
         _state.update { state ->
-            state.copy(migratedAccounts = migratedAccounts.map { it.toUiModel() }.toPersistentList())
+            state.copy(migratedAccounts = (migratedSoftwareAccounts + migratedHardwareAccounts).map { it.toUiModel() }.toPersistentList())
         }
         nextPage()
     }
@@ -229,8 +309,69 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     fun onHardwareImport() {
+        updateHardwareAccountLeftToMigrateCount()
         viewModelScope.launch {
-            internalImportSoftwareAccounts()
+            _state.update { it.copy(waitingForLedgerResponse = true) }
+            val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
+            val interactionId = UUIDGenerator.uuid().toString()
+            sentRequestIds.add(interactionId)
+            when (
+                val result = ledgerMessenger.sendImportOlympiaDeviceRequest(
+                    interactionId = interactionId,
+                    derivationPaths = hardwareAccountsDerivationPaths
+                )
+            ) {
+                is Result.Error -> {
+                    sentRequestIds.remove(interactionId)
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(result.exception), waitingForLedgerResponse = false) }
+                }
+                is Result.Success -> {}
+            }
+        }
+    }
+
+    private fun updateHardwareAccountLeftToMigrateCount() {
+        val hardwareAccountsLeftToImport = hardwareAccountsLeftToMigrate().map {
+            it.address
+        }.toSet().minus(validatedHardwareAccounts.values.flatten().map { it.address }.toSet()).size
+        _state.update { it.copy(hardwareAccountsLeftToImport = hardwareAccountsLeftToImport) }
+    }
+
+    fun onSkipRemainingHardwareAccounts() {
+        viewModelScope.launch {
+            internalImportOlympiaAccounts()
+        }
+    }
+
+    fun onSkipLedgerName() {
+        _state.update { it.copy(addLedgerName = false) }
+        val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
+        if (hardwareAccountsLeftToMigrate.isEmpty()) {
+            viewModelScope.launch {
+                internalImportOlympiaAccounts()
+            }
+        }
+    }
+
+    fun onConfirmLedgerName(name: String) {
+        currentlyProcessedDevice?.let { device ->
+            val accounts = validatedHardwareAccounts[device].orEmpty()
+            validatedHardwareAccounts.remove(device)
+            validatedHardwareAccounts[device.copy(name = name)] = accounts
+            _state.update { state ->
+                state.copy(
+                    addLedgerName = false,
+                    ledgerDevices = validatedHardwareAccounts.entries.associate {
+                        it.key to it.value.size
+                    }.toPersistentMap()
+                )
+            }
+            val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
+            if (hardwareAccountsLeftToMigrate.isEmpty()) {
+                viewModelScope.launch {
+                    internalImportOlympiaAccounts()
+                }
+            }
         }
     }
 
@@ -254,6 +395,16 @@ class OlympiaImportViewModel @Inject constructor(
             it.selected && it.data.type == OlympiaAccountType.Software && !it.data.alreadyImported
         }.map { it.data }
         return softwareAccountsToMigrate
+    }
+
+    private fun hardwareAccountsLeftToMigrate(): List<OlympiaAccountDetails> {
+        val alreadyValidatedKeys = validatedHardwareAccounts.values.flatten().map { it.publicKey }
+        val hardwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
+            it.selected && it.data.type == OlympiaAccountType.Hardware && !it.data.alreadyImported && !alreadyValidatedKeys.contains(
+                it.data.publicKey
+            )
+        }.map { it.data }
+        return hardwareAccountsToMigrate
     }
 
     // TODO mnemonic added for ease of testing
@@ -305,5 +456,15 @@ data class OlympiaImportUiState(
     val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val hideBack: Boolean = false,
     val qrChunkInfo: ChunkInfo? = null,
-    val isDeviceSecure: Boolean = true
+    val isDeviceSecure: Boolean = true,
+    val hardwareAccountsLeftToImport: Int = 0,
+    val waitingForLedgerResponse: Boolean = false,
+    val addLedgerName: Boolean = false,
+    val ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int> = persistentMapOf()
 ) : UiState
+
+data class LedgerDeviceUiModel(
+    val id: String,
+    val model: MessageFromDataChannel.LedgerResponse.LedgerDeviceModel,
+    val name: String? = null
+)

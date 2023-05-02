@@ -243,6 +243,7 @@ private fun WalletAccountList(
             AccountCardView(
                 address = account.address,
                 accountName = account.displayName,
+                isLegacyAccount = account.isOlympiaAccount,
                 assets = account.fungibleTokens,
                 modifier = Modifier
                     .fillMaxWidth()

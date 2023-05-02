@@ -16,7 +16,7 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.factorSources
+import rdx.works.profile.domain.deviceFactorSources
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +29,7 @@ class ShowMnemonicViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.factorSources.collect { factorSources ->
+            getProfileUseCase.deviceFactorSources.collect { factorSources ->
                 _state.update { it.copy(factorSources = factorSources.toPersistentList()) }
             }
         }

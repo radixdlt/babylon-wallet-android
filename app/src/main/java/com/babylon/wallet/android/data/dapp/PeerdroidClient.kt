@@ -1,8 +1,10 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
-import com.babylon.wallet.android.data.dapp.model.walletRequestJson
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import com.radixdlt.hex.extensions.toHexString
@@ -32,11 +34,16 @@ interface PeerdroidClient {
         message: String
     ): Result<Unit>
 
-    fun listenForIncomingRequests(): Flow<MessageFromDataChannel>
+    suspend fun sendMessage(
+        message: String
+    ): Result<Unit>
+
+    fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest>
 
     suspend fun deleteLink(connectionPassword: String)
 
     fun terminate()
+    fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -58,7 +65,11 @@ class PeerdroidClientImpl @Inject constructor(
         )
     }
 
-    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel> {
+    override suspend fun sendMessage(message: String): Result<Unit> {
+        return peerdroidConnector.sendDataChannelMessageToAllRemoteClients(message)
+    }
+
+    private fun listenForIncomingMessages(): Flow<MessageFromDataChannel> {
         return peerdroidConnector
             .dataChannelMessagesFromRemoteClients
             .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteClient>()
@@ -73,6 +84,14 @@ class PeerdroidClientImpl @Inject constructor(
             }
             .cancellable()
             .flowOn(ioDispatcher)
+    }
+
+    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest> {
+        return listenForIncomingMessages().filterIsInstance()
+    }
+
+    override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
+        return listenForIncomingMessages().filterIsInstance()
     }
 
     override suspend fun deleteLink(connectionPassword: String) {
@@ -92,8 +111,11 @@ class PeerdroidClientImpl @Inject constructor(
     private fun parseIncomingMessage(
         remoteClientId: String,
         messageInJsonString: String
-    ): MessageFromDataChannel.IncomingRequest {
-        val request = walletRequestJson.decodeFromString<WalletInteraction>(messageInJsonString)
-        return request.toDomainModel(dappId = remoteClientId)
+    ): MessageFromDataChannel {
+        val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
+        return when (payload) {
+            is WalletInteraction -> payload.toDomainModel(dappId = remoteClientId)
+            else -> (payload as LedgerInteractionResponse).toDomainModel()
+        }
     }
 }

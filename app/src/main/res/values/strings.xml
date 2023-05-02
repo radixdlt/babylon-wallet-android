@@ -301,6 +301,10 @@
         <item quantity="one">Imported %d account.</item>
         <item quantity="other">Imported %d accounts.</item>
     </plurals>
+    <plurals name="accounts_left_to_import">
+        <item quantity="one">%d account left to import.</item>
+        <item quantity="other">%d accounts left to import.</item>
+    </plurals>
     <string name="scanned_x_out_of_y">Scanned %d/%d</string>
     <string name="invalid_payload">Invalid QR code</string>
     <string name="scan_next_qr_code">Please scan next qr code</string>
@@ -321,4 +325,17 @@
     <string name="apply">Apply</string>
     <string name="set_guaranteed_minimum">Set guaranteed minimum %</string>
     <string name="no_mnemonic_for_accounts">No mnemonic found for accounts</string>
+    <string name="skip_remaining_accounts">Skip remaining accounts</string>
+    <string name="send_add_ledger_request">Send Add Ledger Request</string>
+    <string name="confirm_name">Confirm Name</string>
+    <string name="skip">Skip</string>
+    <string name="name_this_ledger">Name this Ledger</string>
+    <string name="ledger_hint">My Ledger</string>
+    <string name="ledger_name_bottom_hint">Displayed when you are prompted to sign with this device.</string>
+    <string name="no_accounts_for_ledger">No Accounts found to import on this device</string>
+    <string name="legacy_label">" "\u2022 Legacy</string>
+    <plurals name="accounts_per_device">
+        <item quantity="one">%d account</item>
+        <item quantity="other">%d accounts</item>
+    </plurals>
 </resources>

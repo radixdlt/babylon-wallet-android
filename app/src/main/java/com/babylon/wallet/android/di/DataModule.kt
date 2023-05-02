@@ -4,6 +4,8 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.DappMessengerImpl
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
@@ -48,6 +50,11 @@ interface DataModule {
     fun bindDAppMessenger(
         dAppMessenger: DappMessengerImpl
     ): DappMessenger
+
+    @Binds
+    fun bindLedgerMessenger(
+        ledgerMessenger: LedgerMessengerImpl
+    ): LedgerMessenger
 
     @Binds
     @Singleton

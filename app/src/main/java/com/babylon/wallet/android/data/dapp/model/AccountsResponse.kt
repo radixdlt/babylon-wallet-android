@@ -45,7 +45,7 @@ object OneTimeAccountsRequestResponseItemSerializer :
     JsonContentPolymorphicSerializer<OneTimeAccountsRequestResponseItem>(OneTimeAccountsRequestResponseItem::class) {
     override fun selectDeserializer(
         element: JsonElement
-    ): DeserializationStrategy<out OneTimeAccountsRequestResponseItem> {
+    ): DeserializationStrategy<OneTimeAccountsRequestResponseItem> {
         val isResponseWithProof = try {
             element.jsonObject["accounts"]?.jsonArray?.get(0)?.jsonObject?.get("account") != null
         } catch (e: Exception) {
@@ -64,7 +64,7 @@ object OngoingAccountsRequestResponseItemSerializer :
     JsonContentPolymorphicSerializer<OngoingAccountsRequestResponseItem>(OngoingAccountsRequestResponseItem::class) {
     override fun selectDeserializer(
         element: JsonElement
-    ): DeserializationStrategy<out OngoingAccountsRequestResponseItem> {
+    ): DeserializationStrategy<OngoingAccountsRequestResponseItem> {
         val isResponseWithProof = try {
             element.jsonObject["accounts"]?.jsonArray?.get(0)?.jsonObject?.get("account") != null
         } catch (e: Exception) {

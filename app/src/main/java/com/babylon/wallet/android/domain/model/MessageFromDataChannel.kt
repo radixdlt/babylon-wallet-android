@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {
@@ -121,7 +122,63 @@ sealed interface MessageFromDataChannel {
         )
     }
 
-    object ParsingError : MessageFromDataChannel // TODO this will be removed
+    sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
+
+        enum class LedgerDeviceModel {
+            NanoS, NanoSPlus, NanoX;
+        }
+
+        data class SignatureOfSigner(
+            val curve: Curve,
+            val derivationPath: String,
+            val signature: String,
+            val publicKeyHex: String
+        ) {
+            enum class Curve {
+                Curve25519, Secp256k1
+            }
+        }
+
+        data class GetDeviceInfoResponse(
+            val interactionId: String,
+            val model: LedgerDeviceModel,
+            val deviceId: String
+        ) : LedgerResponse(interactionId)
+
+        data class DerivePublicKeyResponse(
+            val interactionId: String,
+            val publicKeyHex: String
+        ) : LedgerResponse(interactionId)
+
+        data class ImportOlympiaDeviceResponse(
+            val interactionId: String,
+            val model: LedgerDeviceModel,
+            val deviceId: String,
+            val derivedPublicKeys: List<DerivedPublicKey>
+        ) : LedgerResponse(interactionId) {
+
+            data class DerivedPublicKey(
+                val publicKeyHex: String,
+                val derivationPath: String
+            )
+        }
+
+        data class SignTransactionResponse(
+            val interactionId: String,
+            val signatures: List<SignatureOfSigner>
+        ) : LedgerResponse(interactionId)
+
+        data class SignChallengeResponse(
+            val interactionId: String,
+            val signatures: List<SignatureOfSigner>
+        ) : LedgerResponse(interactionId)
+
+        data class LedgerErrorResponse(
+            val interactionId: String,
+            val code: Int,
+            val message: String
+        ) : LedgerResponse(interactionId)
+    }
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
@@ -133,5 +190,13 @@ fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuan
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
         }
+    }
+}
+
+fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): FactorSource.LedgerHardwareWallet.DeviceModel {
+    return when (this) {
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoS
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoSPlus
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoX
     }
 }
