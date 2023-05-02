@@ -33,15 +33,12 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import java.math.BigDecimal
 
@@ -50,20 +47,17 @@ class GetAccountResourcesUseCaseTest {
 
     private val entityRepositoryMock = mockk<EntityRepository>()
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
-    private val preferencesManager = mockk<PreferencesManager>()
-    private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val getFactorSourceStateForAccountUseCase = mockk<GetFactorSourceStateForAccountUseCase>()
 
     private val testedClass = GetAccountResourcesUseCase(
         entityRepository = entityRepositoryMock,
         getProfileUseCase = getProfileUseCaseMock,
-        preferencesManager = preferencesManager,
-        mnemonicRepository = mnemonicRepository
+        getFactorSourceStateForAccountUseCase = getFactorSourceStateForAccountUseCase
     )
 
     @Before
     fun setUp() {
-        coEvery { preferencesManager.getBackedUpFactorSourceIds() } returns flow { emit(emptySet()) }
-        coEvery { mnemonicRepository.readMnemonic(any()) } returns null
+        coEvery { getFactorSourceStateForAccountUseCase.invoke(any()) } returns AccountResources.FactorSourceState.Valid
     }
 
     @Test
