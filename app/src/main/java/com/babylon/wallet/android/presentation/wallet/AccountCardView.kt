@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,24 +18,29 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import java.math.BigDecimal
 
-@Suppress("UnstableCollections")
 @Composable
 fun AccountCardView(
     address: String,
     accountName: String,
     isLegacyAccount: Boolean,
-    assets: List<OwnedFungibleToken>, // at the moment we pass only the tokens
+    showApplySecuritySettings: Boolean,
+    needMnemonicRecovery: Boolean,
+    assets: ImmutableList<OwnedFungibleToken>, // at the moment we pass only the tokens
     modifier: Modifier = Modifier,
+    onApplySecuritySettings: () -> Unit,
+    onMnemonicRecovery: () -> Unit,
 ) {
     Box(modifier = modifier) {
         Column(
@@ -58,7 +65,7 @@ fun AccountCardView(
                 )
                 if (isLegacyAccount) {
                     Text(
-                        text = stringResource(id = R.string.legacy_label),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.legacy_label),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.white
                     )
@@ -70,6 +77,21 @@ fun AccountCardView(
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
+            Spacer(modifier = Modifier.weight(1f))
+            AnimatedVisibility(visible = showApplySecuritySettings, enter = fadeIn(), exit = fadeOut()) {
+                ApplySecuritySettingsLabel(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onApplySecuritySettings,
+                    text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings)
+                )
+            }
+            AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
+                ApplySecuritySettingsLabel(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onMnemonicRecovery,
+                    text = stringResource(id = com.babylon.wallet.android.R.string.recover_mnemonic)
+                )
+            }
             AnimatedVisibility(visible = false) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 AssetIconRowView(assets = assets)
@@ -88,7 +110,7 @@ fun AccountCardPreview() {
             address = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
             accountName = "My main account",
             isLegacyAccount = true,
-            assets = listOf(
+            assets = persistentListOf(
                 OwnedFungibleToken(
                     AccountAddress("123"),
                     BigDecimal.valueOf(100000),
@@ -99,7 +121,11 @@ fun AccountCardPreview() {
                     )
                 )
             ),
-            modifier = Modifier.padding(bottom = 20.dp)
+            modifier = Modifier.padding(bottom = 20.dp),
+            onApplySecuritySettings = {},
+            showApplySecuritySettings = true,
+            needMnemonicRecovery = true,
+            onMnemonicRecovery = {}
         )
     }
 }

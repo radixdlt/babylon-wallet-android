@@ -325,6 +325,9 @@
     <string name="apply">Apply</string>
     <string name="set_guaranteed_minimum">Set guaranteed minimum %</string>
     <string name="no_mnemonic_for_accounts">No mnemonic found for accounts</string>
+    <string name="apply_security_settings">Apply Security Settings</string>
+    <string name="backed_up_mnemonic">I have backed up this mnemonic</string>
+    <string name="recover_mnemonic">Recover Mnemonic</string>
     <string name="skip_remaining_accounts">Skip remaining accounts</string>
     <string name="send_add_ledger_request">Send Add Ledger Request</string>
     <string name="confirm_name">Confirm Name</string>

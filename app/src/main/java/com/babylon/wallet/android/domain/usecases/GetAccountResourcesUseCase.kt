@@ -19,14 +19,17 @@ import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.utils.isOlympiaAccount
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val getFactorSourceStateForAccountUseCase: GetFactorSourceStateForAccountUseCase
 ) {
 
     /**
@@ -95,8 +98,9 @@ class GetAccountResourcesUseCase @Inject constructor(
                 displayName = profileAccount.displayName,
                 isOlympiaAccount = profileAccount.isOlympiaAccount(),
                 appearanceID = profileAccount.appearanceID,
-                fungibleTokens = fungibleTokens,
-                nonFungibleTokens = nonFungibleTokens
+                factorSourceState = getFactorSourceStateForAccountUseCase(profileAccount.address),
+                fungibleTokens = fungibleTokens.toPersistentList(),
+                nonFungibleTokens = nonFungibleTokens.toPersistentList()
             )
         }
     }

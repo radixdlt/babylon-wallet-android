@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,6 +59,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
@@ -68,6 +70,7 @@ fun WalletScreen(
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAccountClick: (accountId: String) -> Unit = { },
+    onApplySecuritySettingsClick: (String) -> Unit,
     onAccountCreationClick: () -> Unit,
     mainUiState: StateFlow<MainUiState>,
     onNavigateToCreateAccount: () -> Unit,
@@ -87,16 +90,19 @@ fun WalletScreen(
                 isRefreshing = walletState.isRefreshing,
                 onRefresh = viewModel::refresh,
                 modifier = modifier,
-                isBackupWarningVisible = walletState.isBackupWarningVisible,
                 isLoading = walletState.isLoading,
                 accounts = walletState.resources,
+                isBackupWarningVisible = walletState.isBackupWarningVisible,
                 error = walletState.error,
-                onMessageShown = viewModel::onMessageShown
+                onMessageShown = viewModel::onMessageShown,
+                onApplySecuritySettings = viewModel::onApplySecuritySettings,
+                onMnemonicRecovery = viewModel::onMnemonicRecovery
             )
             LaunchedEffect(Unit) {
                 viewModel.oneOffEvent.collect {
                     when (it) {
                         is WalletEvent.AccountClick -> onAccountClick(it.address)
+                        is WalletEvent.ApplySecuritySettingsClick -> onApplySecuritySettingsClick(it.factorSourceIdString)
                     }
                 }
             }
@@ -136,6 +142,8 @@ private fun WalletScreenContent(
     isBackupWarningVisible: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
+    onApplySecuritySettings: (String) -> Unit,
+    onMnemonicRecovery: (String) -> Unit,
 ) {
     Box(modifier = modifier.navigationBarsPadding()) {
         Scaffold(
@@ -202,7 +210,8 @@ private fun WalletScreenContent(
                         onAccountClick = onAccountClick,
                         onAccountCreationClick = onAccountCreationClick,
                         accounts = accounts,
-                        modifier = Modifier
+                        onApplySecuritySettings = onApplySecuritySettings,
+                        onMnemonicRecovery = onMnemonicRecovery
                     )
                     PullRefreshIndicator(
                         refreshing = isRefreshing,
@@ -223,9 +232,12 @@ private fun WalletScreenContent(
 private fun WalletAccountList(
     onAccountClick: (accountId: String) -> Unit,
     onAccountCreationClick: () -> Unit,
+    onApplySecuritySettings: (String) -> Unit,
+    onMnemonicRecovery: (String) -> Unit,
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
             Text(
@@ -252,7 +264,20 @@ private fun WalletAccountList(
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
                         onAccountClick(account.address)
+                    },
+                showApplySecuritySettings = account.needMnemonicBackup(),
+                onApplySecuritySettings = {
+                    context.biometricAuthenticate { authenticatedSuccessfully ->
+                        if (authenticatedSuccessfully) {
+                            onApplySecuritySettings(account.address)
+                        }
                     }
+                },
+                needMnemonicRecovery = account.needMnemonicRecovery(),
+                onMnemonicRecovery = {
+                    onMnemonicRecovery(account.address)
+                }
+
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -283,10 +308,13 @@ fun WalletContentPreview() {
                 onRefresh = { },
                 modifier = Modifier.fillMaxSize(),
                 isLoading = false,
-                isBackupWarningVisible = true,
                 accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),
-                error = null
-            ) {}
+                isBackupWarningVisible = true,
+                error = null,
+                onMessageShown = {},
+                onApplySecuritySettings = {},
+                onMnemonicRecovery = {}
+            )
         }
     }
 }

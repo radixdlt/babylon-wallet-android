@@ -1,10 +1,11 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 
 package com.babylon.wallet.android.presentation.account
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,6 +40,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,6 +72,7 @@ import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.NftListContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
@@ -91,9 +94,19 @@ fun AccountScreen(
     onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
+    onApplySecuritySettingsClick: (String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is AccountEvent.ApplySecuritySettingsClick -> {
+                    onApplySecuritySettingsClick(it.factorSourceIdString)
+                }
+            }
+        }
+    }
     AccountScreenContent(
         accountName = state.accountName,
         onAccountPreferenceClick = {
@@ -115,7 +128,11 @@ fun AccountScreen(
         onNftClick = viewModel::onNonFungibleTokenClick,
         selectedNft = state.selectedNft,
         walletFiatBalance = state.walletFiatBalance,
-        modifier = modifier
+        modifier = modifier,
+        showSecurityPrompt = state.showSecurityPrompt,
+        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        needMnemonicRecovery = state.needMnemonicRecovery,
+        onMnemonicRecovery = viewModel::onMnemonicRecovery
     )
 }
 
@@ -141,6 +158,10 @@ private fun AccountScreenContent(
     selectedNft: NftCollectionUiModel.NftItemUiModel?,
     walletFiatBalance: String?,
     modifier: Modifier = Modifier,
+    showSecurityPrompt: Boolean,
+    onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -261,7 +282,11 @@ private fun AccountScreenContent(
                                 },
                                 walletFiatBalance = walletFiatBalance,
                                 modifier = Modifier.fillMaxSize(),
-                                isLoading = isLoading
+                                isLoading = isLoading,
+                                showSecurityPrompt = showSecurityPrompt,
+                                onApplySecuritySettings = onApplySecuritySettings,
+                                needMnemonicRecovery = needMnemonicRecovery,
+                                onMnemonicRecovery = onMnemonicRecovery
                             )
 //                        PullRefreshIndicator(
 //                            refreshing = isRefreshing,
@@ -327,6 +352,10 @@ fun AccountContentWithScrollableHeader(
     isLoading: Boolean,
     isRefreshing: Boolean,
     modifier: Modifier = Modifier,
+    showSecurityPrompt: Boolean,
+    onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
     Box(
@@ -358,7 +387,11 @@ fun AccountContentWithScrollableHeader(
                         modifier = Modifier.fillMaxWidth(),
                         accountAddress = accountAddress,
                         walletFiatBalance = walletFiatBalance,
-                        onTransferClick = onTransferClick
+                        onTransferClick = onTransferClick,
+                        showSecurityPrompt = showSecurityPrompt,
+                        onApplySecuritySettings = onApplySecuritySettings,
+                        needMnemonicRecovery = needMnemonicRecovery,
+                        onMnemonicRecovery = onMnemonicRecovery
                     )
                 }
             },
@@ -404,16 +437,26 @@ private fun AccountContent(
     walletFiatBalance: String?,
     modifier: Modifier = Modifier,
     isLoading: Boolean,
+    showSecurityPrompt: Boolean,
+    onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AccountSummaryContent(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             accountAddress = accountAddress,
             walletFiatBalance = walletFiatBalance,
-            onTransferClick = onTransferClick
+            onTransferClick = onTransferClick,
+            showSecurityPrompt = showSecurityPrompt,
+            onApplySecuritySettings = onApplySecuritySettings,
+            needMnemonicRecovery = needMnemonicRecovery,
+            onMnemonicRecovery = onMnemonicRecovery
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         AssetsContent(
@@ -440,6 +483,10 @@ private fun AccountSummaryContent(
     accountAddress: String,
     walletFiatBalance: String?,
     onTransferClick: () -> Unit,
+    showSecurityPrompt: Boolean,
+    onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -473,6 +520,22 @@ private fun AccountSummaryContent(
                     contentDescription = null
                 )
             }
+        }
+        AnimatedVisibility(visible = showSecurityPrompt, enter = fadeIn(), exit = fadeOut()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            ApplySecuritySettingsLabel(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onApplySecuritySettings,
+                text = stringResource(id = R.string.apply_security_settings)
+            )
+        }
+        AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            ApplySecuritySettingsLabel(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onMnemonicRecovery,
+                text = stringResource(id = R.string.recover_mnemonic)
+            )
         }
     }
 }
@@ -593,7 +656,11 @@ fun AccountContentPreview() {
                 onNftClick = { _, _ -> },
                 selectedNft = null,
                 walletFiatBalance = "1000",
-                modifier = Modifier
+                modifier = Modifier,
+                showSecurityPrompt = true,
+                onApplySecuritySettings = {},
+                needMnemonicRecovery = false,
+                onMnemonicRecovery = {}
             )
         }
     }
@@ -623,7 +690,11 @@ fun AccountContentDarkPreview() {
                 onNftClick = { _, _ -> },
                 selectedNft = null,
                 walletFiatBalance = "1000",
-                modifier = Modifier
+                modifier = Modifier,
+                showSecurityPrompt = true,
+                onApplySecuritySettings = {},
+                needMnemonicRecovery = false,
+                onMnemonicRecovery = {}
             )
         }
     }

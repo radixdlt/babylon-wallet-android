@@ -1,9 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.seedphrase
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +10,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -22,8 +21,12 @@ import javax.inject.Inject
 @HiltViewModel
 class ShowMnemonicViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val mnemonicRepository: MnemonicRepository
-) : StateViewModel<ShowMnemonicViewModel.SeedPhraseUiState>(), OneOffEventHandler<ShowMnemonicEvent> by OneOffEventHandlerImpl() {
+    private val mnemonicRepository: MnemonicRepository,
+    private val preferencesManager: PreferencesManager,
+    savedStateHandle: SavedStateHandle
+) : StateViewModel<ShowMnemonicViewModel.SeedPhraseUiState>() {
+
+    private val args = ShowMnemonicArgs(savedStateHandle)
 
     override fun initialState() = SeedPhraseUiState()
 
@@ -33,21 +36,35 @@ class ShowMnemonicViewModel @Inject constructor(
                 _state.update { it.copy(factorSources = factorSources.toPersistentList()) }
             }
         }
+        args.factorSourceId?.let { factorSourceIdString ->
+            onShowMnemonic(FactorSource.ID(factorSourceIdString))
+        }
     }
 
     fun onShowMnemonic(factorSourceID: FactorSource.ID) {
         viewModelScope.launch {
             mnemonicRepository.readMnemonic(factorSourceID)?.let { mnemonic ->
-                sendEvent(ShowMnemonicEvent.ShowMnemonic(mnemonic))
+                _state.update { it.copy(visibleMnemonic = VisibleMnemonic.Shown(mnemonic = mnemonic, factorSourceID = factorSourceID)) }
             }
         }
     }
 
+    fun closeMnemonicDialog(backedUpFactorSourceId: FactorSource.ID?) {
+        viewModelScope.launch {
+            if (backedUpFactorSourceId != null) {
+                preferencesManager.markFactorSourceBackedUp(backedUpFactorSourceId.value)
+            }
+            _state.update { it.copy(visibleMnemonic = VisibleMnemonic.None) }
+        }
+    }
+
     data class SeedPhraseUiState(
-        val factorSources: ImmutableList<FactorSource> = persistentListOf()
+        val factorSources: ImmutableList<FactorSource> = persistentListOf(),
+        val visibleMnemonic: VisibleMnemonic = VisibleMnemonic.None
     ) : UiState
 }
 
-sealed interface ShowMnemonicEvent : OneOffEvent {
-    data class ShowMnemonic(val mnemonic: MnemonicWithPassphrase?) : ShowMnemonicEvent
+sealed interface VisibleMnemonic {
+    object None : VisibleMnemonic
+    data class Shown(val mnemonic: MnemonicWithPassphrase, val factorSourceID: FactorSource.ID) : VisibleMnemonic
 }

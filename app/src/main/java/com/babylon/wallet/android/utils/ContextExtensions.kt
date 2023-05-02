@@ -11,6 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.fragment.app.FragmentActivity
 
+fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) -> Unit) {
+    findFragmentActivity()?.let { activity ->
+        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+            authenticationCallback(authenticatedSuccessfully)
+        }
+    }
+}
+
 fun Context.findFragmentActivity(): FragmentActivity? {
     var context = this
     while (context is ContextWrapper) {

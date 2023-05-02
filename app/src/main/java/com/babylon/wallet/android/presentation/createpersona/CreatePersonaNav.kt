@@ -98,7 +98,8 @@ fun NavGraphBuilder.createPersonaScreen(
 fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
     createPersonaScreen: (Boolean) -> Unit,
-    onPersonaClick: (String) -> Unit
+    onPersonaClick: (String) -> Unit,
+    onApplySecuritySettings: (String) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONAS,
@@ -119,7 +120,8 @@ fun NavGraphBuilder.personasScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             createNewPersona = createPersonaScreen,
-            onPersonaClick = onPersonaClick
+            onPersonaClick = onPersonaClick,
+            onApplySecuritySettings = onApplySecuritySettings
         )
     }
 }

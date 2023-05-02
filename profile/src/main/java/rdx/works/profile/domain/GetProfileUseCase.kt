@@ -6,9 +6,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.utils.accountFactorSourceId
+import rdx.works.profile.data.utils.personaFactorSourceId
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -30,6 +33,20 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     withAddress: String
 ) = accountsOnCurrentNetwork().firstOrNull { account ->
     account.address == withAddress
+}
+
+suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
+    accountAddress: String,
+): FactorSource.ID? {
+    val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.accountFactorSourceId()
+    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
+}
+
+suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(
+    personaAddress: String,
+): FactorSource.ID? {
+    val accountFactorSourceID = personaOnCurrentNetwork(personaAddress)?.personaFactorSourceId()
+    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
 }
 
 @Suppress("MagicNumber")
