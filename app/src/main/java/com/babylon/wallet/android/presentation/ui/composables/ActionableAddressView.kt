@@ -128,8 +128,11 @@ private fun resolveActions(
 
     val copyAction = ActionableAddressAction(
         name = stringResource(
-            id = R.string.action_copy,
-            address.type.localisedName()
+            id = when {
+                address.type == Address.Type.TRANSACTION -> R.string.copy_transaction_id
+                address.isNft -> R.string.copy_nft_id
+                else -> R.string.copy_address
+            }
         ),
         icon = R.drawable.ic_copy
     ) {
@@ -142,10 +145,7 @@ private fun resolveActions(
     }
 
     val openExternalAction = ActionableAddressAction(
-        name = stringResource(
-            id = R.string.action_open_in_dashboard,
-            address.type.localisedName()
-        ),
+        name = stringResource(id = R.string.action_open_in_dashboard),
         icon = R.drawable.ic_external_link
     ) {
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -172,17 +172,6 @@ private fun resolveActions(
             )
         }
     }
-}
-
-@Composable
-private fun Address.Type.localisedName(): String = when (this) {
-    Address.Type.PACKAGE -> stringResource(id = R.string.address_package)
-    Address.Type.RESOURCE -> stringResource(id = R.string.address_resource)
-    Address.Type.ACCOUNT -> stringResource(id = R.string.address_account)
-    Address.Type.TRANSACTION -> stringResource(id = R.string.address_transaction)
-    Address.Type.COMPONENT -> stringResource(id = R.string.address_component)
-}.replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 
 private data class ActionableAddressActions(

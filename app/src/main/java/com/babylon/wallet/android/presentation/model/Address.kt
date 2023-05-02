@@ -7,7 +7,7 @@ data class Address(
     val type: Type
 ) {
 
-    private val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
+    val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
 
     val isCopyPrimaryAction: Boolean = type != Type.TRANSACTION
 
