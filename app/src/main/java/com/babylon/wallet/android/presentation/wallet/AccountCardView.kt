@@ -38,9 +38,11 @@ fun AccountCardView(
     accountName: String,
     isLegacyAccount: Boolean,
     showApplySecuritySettings: Boolean,
+    needMnemonicRecovery: Boolean,
     assets: ImmutableList<OwnedFungibleToken>, // at the moment we pass only the tokens
     modifier: Modifier = Modifier,
     onApplySecuritySettings: () -> Unit,
+    onMnemonicRecovery: () -> Unit,
 ) {
     Box(modifier = modifier) {
         Column(
@@ -79,7 +81,18 @@ fun AccountCardView(
             )
             Spacer(modifier = Modifier.weight(1f))
             AnimatedVisibility(visible = showApplySecuritySettings, enter = fadeIn(), exit = fadeOut()) {
-                ApplySecuritySettingsLabel(modifier = Modifier.fillMaxWidth(), onClick = onApplySecuritySettings)
+                ApplySecuritySettingsLabel(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onApplySecuritySettings,
+                    text = stringResource(id = R.string.apply_security_settings)
+                )
+            }
+            AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
+                ApplySecuritySettingsLabel(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onMnemonicRecovery,
+                    text = stringResource(id = R.string.recover_mnemonic)
+                )
             }
             AnimatedVisibility(visible = false) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -112,7 +125,9 @@ fun AccountCardPreview() {
             ),
             modifier = Modifier.padding(bottom = 20.dp),
             onApplySecuritySettings = {},
-            showApplySecuritySettings = true
+            showApplySecuritySettings = true,
+            needMnemonicRecovery = true,
+            onMnemonicRecovery = {}
         )
     }
 }

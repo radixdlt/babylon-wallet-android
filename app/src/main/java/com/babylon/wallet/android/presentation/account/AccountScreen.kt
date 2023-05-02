@@ -130,7 +130,9 @@ fun AccountScreen(
         walletFiatBalance = state.walletFiatBalance,
         modifier = modifier,
         showSecurityPrompt = state.showSecurityPrompt,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings
+        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        needMnemonicRecovery = state.needMnemonicRecovery,
+        onMnemonicRecovery = viewModel::onMnemonicRecovery
     )
 }
 
@@ -158,6 +160,8 @@ private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     showSecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -280,7 +284,9 @@ private fun AccountScreenContent(
                                 modifier = Modifier.fillMaxSize(),
                                 isLoading = isLoading,
                                 showSecurityPrompt = showSecurityPrompt,
-                                onApplySecuritySettings = onApplySecuritySettings
+                                onApplySecuritySettings = onApplySecuritySettings,
+                                needMnemonicRecovery = needMnemonicRecovery,
+                                onMnemonicRecovery = onMnemonicRecovery
                             )
 //                        PullRefreshIndicator(
 //                            refreshing = isRefreshing,
@@ -348,6 +354,8 @@ fun AccountContentWithScrollableHeader(
     modifier: Modifier = Modifier,
     showSecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
     Box(
@@ -381,7 +389,9 @@ fun AccountContentWithScrollableHeader(
                         walletFiatBalance = walletFiatBalance,
                         onTransferClick = onTransferClick,
                         showSecurityPrompt = showSecurityPrompt,
-                        onApplySecuritySettings = onApplySecuritySettings
+                        onApplySecuritySettings = onApplySecuritySettings,
+                        needMnemonicRecovery = needMnemonicRecovery,
+                        onMnemonicRecovery = onMnemonicRecovery
                     )
                 }
             },
@@ -429,18 +439,24 @@ private fun AccountContent(
     isLoading: Boolean,
     showSecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AccountSummaryContent(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             accountAddress = accountAddress,
             walletFiatBalance = walletFiatBalance,
             onTransferClick = onTransferClick,
             showSecurityPrompt = showSecurityPrompt,
-            onApplySecuritySettings = onApplySecuritySettings
+            onApplySecuritySettings = onApplySecuritySettings,
+            needMnemonicRecovery = needMnemonicRecovery,
+            onMnemonicRecovery = onMnemonicRecovery
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         AssetsContent(
@@ -469,6 +485,8 @@ private fun AccountSummaryContent(
     onTransferClick: () -> Unit,
     showSecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit,
+    needMnemonicRecovery: Boolean,
+    onMnemonicRecovery: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -505,7 +523,19 @@ private fun AccountSummaryContent(
         }
         AnimatedVisibility(visible = showSecurityPrompt, enter = fadeIn(), exit = fadeOut()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            ApplySecuritySettingsLabel(modifier = Modifier.fillMaxWidth(), onClick = onApplySecuritySettings)
+            ApplySecuritySettingsLabel(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onApplySecuritySettings,
+                text = stringResource(id = R.string.apply_security_settings)
+            )
+        }
+        AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            ApplySecuritySettingsLabel(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onMnemonicRecovery,
+                text = stringResource(id = R.string.recover_mnemonic)
+            )
         }
     }
 }
@@ -628,7 +658,9 @@ fun AccountContentPreview() {
                 walletFiatBalance = "1000",
                 modifier = Modifier,
                 showSecurityPrompt = true,
-                onApplySecuritySettings = {}
+                onApplySecuritySettings = {},
+                needMnemonicRecovery = false,
+                onMnemonicRecovery = {}
             )
         }
     }
@@ -660,7 +692,9 @@ fun AccountContentDarkPreview() {
                 walletFiatBalance = "1000",
                 modifier = Modifier,
                 showSecurityPrompt = true,
-                onApplySecuritySettings = {}
+                onApplySecuritySettings = {},
+                needMnemonicRecovery = false,
+                onMnemonicRecovery = {}
             )
         }
     }

@@ -121,6 +121,13 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    fun onMnemonicRecovery(address: String) {
+        viewModelScope.launch {
+            getProfileUseCase.accountOnCurrentNetwork(address)?.accountFactorSourceId()?.let {
+            }
+        }
+    }
+
     fun onAccountClick(address: String) {
         viewModelScope.launch {
             sendEvent(WalletEvent.AccountClick(address))

@@ -23,6 +23,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountFactorSourceIDOfDeviceKind
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -31,7 +32,8 @@ import javax.inject.Inject
 class GetAccountResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val preferencesManager: PreferencesManager,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val mnemonicRepository: MnemonicRepository
 ) {
 
     /**
@@ -97,13 +99,17 @@ class GetAccountResourcesUseCase @Inject constructor(
                 nonFungiblesWithData
             )
             val accountFactorSourceIDOfDeviceKind = getProfileUseCase.accountFactorSourceIDOfDeviceKind(profileAccount.address)
+            val mnemonic = accountFactorSourceIDOfDeviceKind?.let { mnemonicRepository.readMnemonic(it) }
+            val needMnemonicRecovery = accountFactorSourceIDOfDeviceKind != null && mnemonic == null
+            val needMnemonicBackup = accountFactorSourceIDOfDeviceKind != null && mnemonic != null &&
+                !backedUpFactorSourceIds.contains(accountFactorSourceIDOfDeviceKind.value)
             AccountResources(
                 address = profileAccount.address,
                 displayName = profileAccount.displayName,
                 isOlympiaAccount = profileAccount.isOlympiaAccount(),
                 appearanceID = profileAccount.appearanceID,
-                mnemonicExistAndBackedUp = accountFactorSourceIDOfDeviceKind != null &&
-                    !backedUpFactorSourceIds.contains(accountFactorSourceIDOfDeviceKind.value),
+                needMnemonicBackup = needMnemonicBackup,
+                needMnemonicRecovery = needMnemonicRecovery,
                 fungibleTokens = fungibleTokens.toPersistentList(),
                 nonFungibleTokens = nonFungibleTokens.toPersistentList()
             )

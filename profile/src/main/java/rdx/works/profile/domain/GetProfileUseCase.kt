@@ -37,7 +37,14 @@ suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
     accountAddress: String,
 ): FactorSource.ID? {
     val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.accountFactorSourceId()
-    return factorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
+    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
+}
+
+suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(
+    personaAddress: String,
+): FactorSource.ID? {
+    val accountFactorSourceID = personaOnCurrentNetwork(personaAddress)?.personaFactorSourceId()
+    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
 }
 
 @Suppress("MagicNumber")

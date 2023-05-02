@@ -201,6 +201,10 @@ data class Network(
         val securityState: SecurityState
     ) {
 
+        fun personaFactorSourceId(): FactorSource.ID? {
+            return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
+        }
+
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
             fun init(

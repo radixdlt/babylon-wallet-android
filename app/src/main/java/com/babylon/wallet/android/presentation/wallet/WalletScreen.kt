@@ -95,7 +95,8 @@ fun WalletScreen(
                 isBackupWarningVisible = walletState.isBackupWarningVisible,
                 error = walletState.error,
                 onMessageShown = viewModel::onMessageShown,
-                onApplySecuritySettings = viewModel::onApplySecuritySettings
+                onApplySecuritySettings = viewModel::onApplySecuritySettings,
+                onMnemonicRecovery = viewModel::onMnemonicRecovery
             )
             LaunchedEffect(Unit) {
                 viewModel.oneOffEvent.collect {
@@ -142,6 +143,7 @@ private fun WalletScreenContent(
     error: UiMessage?,
     onMessageShown: () -> Unit,
     onApplySecuritySettings: (String) -> Unit,
+    onMnemonicRecovery: (String) -> Unit,
 ) {
     Box(modifier = modifier.navigationBarsPadding()) {
         Scaffold(
@@ -208,7 +210,8 @@ private fun WalletScreenContent(
                         onAccountClick = onAccountClick,
                         onAccountCreationClick = onAccountCreationClick,
                         accounts = accounts,
-                        onApplySecuritySettings = onApplySecuritySettings
+                        onApplySecuritySettings = onApplySecuritySettings,
+                        onMnemonicRecovery = onMnemonicRecovery
                     )
                     PullRefreshIndicator(
                         refreshing = isRefreshing,
@@ -230,6 +233,7 @@ private fun WalletAccountList(
     onAccountClick: (accountId: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettings: (String) -> Unit,
+    onMnemonicRecovery: (String) -> Unit,
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
 ) {
@@ -268,7 +272,12 @@ private fun WalletAccountList(
                             onApplySecuritySettings(account.address)
                         }
                     }
+                },
+                needMnemonicRecovery = account.needMnemonicRecovery,
+                onMnemonicRecovery = {
+                    onMnemonicRecovery(account.address)
                 }
+
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -303,7 +312,8 @@ fun WalletContentPreview() {
                 isBackupWarningVisible = true,
                 error = null,
                 onMessageShown = {},
-                onApplySecuritySettings = {}
+                onApplySecuritySettings = {},
+                onMnemonicRecovery = {}
             )
         }
     }

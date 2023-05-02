@@ -167,6 +167,9 @@ fun NavigationHost(
             },
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
+            },
+            onApplySecuritySettings = { factorSoruceIDString ->
+                navController.settingsShowMnemonic(factorSoruceIDString)
             }
         )
         personaDetailScreen(

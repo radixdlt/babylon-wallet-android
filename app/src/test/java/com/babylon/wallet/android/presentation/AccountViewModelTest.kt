@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +29,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,6 +42,7 @@ class AccountViewModelTest {
 
     private val requestAccountsUseCase = Mockito.mock(GetAccountResourcesUseCase::class.java)
     private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val preferencesManager = mockk<PreferencesManager>()
 
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
@@ -48,6 +51,7 @@ class AccountViewModelTest {
 
     @Before
     fun setUp() = runTest {
+        coEvery { preferencesManager.getBackedUpFactorSourceIds() } returns flowOf(emptySet())
         every { getProfileUseCase() } returns flowOf(SampleDataProvider().sampleProfile())
         whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
         whenever(requestAccountsUseCase.getAccount(address = any(), isRefreshing = any()))
@@ -59,7 +63,7 @@ class AccountViewModelTest {
     fun `when viewmodel init, verify loading displayed before loading account ui`() = runTest {
         // given
         val event = mutableListOf<AccountUiState>()
-        vm = AccountViewModel(requestAccountsUseCase, getProfileUseCase, appEventBus, savedStateHandle)
+        vm = AccountViewModel(requestAccountsUseCase, getProfileUseCase, preferencesManager, appEventBus, savedStateHandle)
         vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -74,7 +78,7 @@ class AccountViewModelTest {
     fun `when viewmodel init, verify accountUi loaded after loading`() = runTest {
         // given
         val event = mutableListOf<AccountUiState>()
-        vm = AccountViewModel(requestAccountsUseCase, getProfileUseCase, appEventBus, savedStateHandle)
+        vm = AccountViewModel(requestAccountsUseCase, getProfileUseCase, preferencesManager, appEventBus, savedStateHandle)
         vm.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

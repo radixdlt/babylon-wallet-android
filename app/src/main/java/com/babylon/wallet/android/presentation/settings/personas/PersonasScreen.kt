@@ -20,19 +20,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonasScreen(
@@ -40,7 +44,8 @@ fun PersonasScreen(
     viewModel: PersonasViewModel,
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onPersonaClick: (String) -> Unit
+    onPersonaClick: (String) -> Unit,
+    onApplySecuritySettings: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -48,6 +53,7 @@ fun PersonasScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is PersonasViewModel.PersonasEvent.CreatePersona -> createNewPersona(it.firstPersonaCreated)
+                is PersonasViewModel.PersonasEvent.ApplySecuritySettings -> onApplySecuritySettings(it.factorSourceIdString)
             }
         }
     }
@@ -59,18 +65,23 @@ fun PersonasScreen(
             .background(RadixTheme.colors.defaultBackground),
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
-        onPersonaClick = onPersonaClick
+        onPersonaClick = onPersonaClick,
+        displaySecurityPrompt = state.displaySecurityPrompt,
+        onApplySecuritySettings = viewModel::onApplySecuritySettings
     )
 }
 
 @Composable
 fun PersonasContent(
-    personas: ImmutableList<Network.Persona>,
+    personas: ImmutableList<PersonaUiModel>,
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
-    onPersonaClick: (String) -> Unit
+    onPersonaClick: (String) -> Unit,
+    displaySecurityPrompt: Boolean,
+    onApplySecuritySettings: () -> Unit
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -95,7 +106,24 @@ fun PersonasContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 InfoLink(stringResource(R.string.what_is_persona), modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                if (displaySecurityPrompt) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                    ApplySecuritySettingsLabel(
+                        modifier = Modifier.fillMaxWidth(),
+                        labelColor = Color.Black.copy(alpha = 0.2f),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings),
+                        onClick = {
+                            context.biometricAuthenticate { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onApplySecuritySettings()
+                                }
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                } else {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
             }
             itemsIndexed(items = personas) { _, personaItem ->
                 StandardOneLineCard(

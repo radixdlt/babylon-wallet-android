@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -21,10 +21,15 @@ import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
-fun ApplySecuritySettingsLabel(modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun ApplySecuritySettingsLabel(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    text: String,
+    labelColor: Color = RadixTheme.colors.white.copy(alpha = 0.3f)
+) {
     Row(
         modifier = modifier
-            .background(RadixTheme.colors.white.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectSmall)
+            .background(labelColor, RadixTheme.shapes.roundedRectSmall)
             .clip(RadixTheme.shapes.roundedRectSmall)
             .throttleClickable {
                 onClick()
@@ -40,7 +45,7 @@ fun ApplySecuritySettingsLabel(modifier: Modifier = Modifier, onClick: () -> Uni
             tint = RadixTheme.colors.white
         )
         Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings),
+            text = text,
             style = RadixTheme.typography.body2HighImportance,
             maxLines = 1,
             modifier = Modifier.weight(1f),

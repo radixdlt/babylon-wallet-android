@@ -107,6 +107,7 @@ class AccountViewModel @Inject constructor(
                     _state.update { accountUiState ->
                         accountUiState.copy(
                             showSecurityPrompt = accountResources.showApplySecuritySettingsPrompt(),
+                            needMnemonicRecovery = accountResources.needMnemonicRecovery,
                             isRefreshing = false,
                             isLoading = false,
                             xrdToken = xrdToken?.toTokenUiModel(),
@@ -147,6 +148,13 @@ class AccountViewModel @Inject constructor(
             }
         }
     }
+
+    fun onMnemonicRecovery() {
+        viewModelScope.launch {
+            getProfileUseCase.accountOnCurrentNetwork(state.value.accountAddressFull)?.accountFactorSourceId()?.let {
+            }
+        }
+    }
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
@@ -155,6 +163,7 @@ internal sealed interface AccountEvent : OneOffEvent {
 
 data class AccountUiState(
     val showSecurityPrompt: Boolean = false,
+    val needMnemonicRecovery: Boolean = false,
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val gradientIndex: Int = 0,
