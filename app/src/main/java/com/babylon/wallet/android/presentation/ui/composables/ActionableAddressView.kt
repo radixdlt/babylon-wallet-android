@@ -163,12 +163,12 @@ private fun resolveActions(
         if (address.isCopyPrimaryAction) {
             ActionableAddressActions(
                 primary = copyAction,
-                secondary = openExternalAction
+                secondary = listOf(openExternalAction)
             )
         } else {
             ActionableAddressActions(
                 primary = openExternalAction,
-                secondary = copyAction
+                secondary = listOf(copyAction)
             )
         }
     }
@@ -176,10 +176,10 @@ private fun resolveActions(
 
 private data class ActionableAddressActions(
     val primary: ActionableAddressAction,
-    val secondary: ActionableAddressAction
+    val secondary: List<ActionableAddressAction>
 ) {
 
-    val all = listOf(primary, secondary)
+    val all = listOf(primary) + secondary
 }
 
 private data class ActionableAddressAction(
