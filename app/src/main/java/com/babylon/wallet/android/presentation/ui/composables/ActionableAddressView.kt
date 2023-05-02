@@ -12,16 +12,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,12 +40,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.Address
-import java.util.Locale
+import kotlinx.coroutines.launch
+import rdx.works.core.qr.QRCodeGenerator
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ActionableAddressView(
     modifier: Modifier = Modifier,
@@ -51,12 +59,25 @@ fun ActionableAddressView(
     val addressWithType = resolveAddress(address = address)
     val actions = resolveActions(address = addressWithType)
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
+    var onAction: OnAction? by remember { mutableStateOf(null) }
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(onAction) {
+        if (onAction == null) {
+            scope.launch { sheetState.hide() }
+        } else if (onAction?.isPresentedInModal == true) {
+            scope.launch { sheetState.show() }
+        }
+    }
 
     Box(modifier = modifier) {
         Row(
             modifier = Modifier
                 .combinedClickable(
-                    onClick = { actions.primary.onAction() },
+                    onClick = {
+                        onAction = actions.primary.onAction()
+                    },
                     onLongClick = { isDropdownMenuExpanded = true }
                 ),
             verticalAlignment = Alignment.CenterVertically,
@@ -101,13 +122,27 @@ fun ActionableAddressView(
                     },
                     onClick = {
                         isDropdownMenuExpanded = false
-                        it.onAction()
+                        onAction = it.onAction()
                     },
                     contentPadding = PaddingValues(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingXSmall
                     )
                 )
+            }
+        }
+
+        onAction?.let { actionData ->
+            if (actionData.isPresentedInModal) {
+                BottomSheetWrapper(
+                    onDismissRequest = { onAction = null },
+                    newBottomSheetState = sheetState
+                ) {
+                    actionData.ActionView()
+                }
+            } else {
+                actionData.ActionView()
+                onAction = null
             }
         }
     }
@@ -122,11 +157,8 @@ private fun resolveAddress(
 @Composable
 private fun resolveActions(
     address: Address
-): ActionableAddressActions {
-    val clipboardManager = LocalClipboardManager.current
-    val context = LocalContext.current
-
-    val copyAction = ActionableAddressAction(
+): PopupActions {
+    val copyAction = PopupActionItem(
         name = stringResource(
             id = when {
                 address.type == Address.Type.TRANSACTION -> R.string.copy_transaction_id
@@ -135,38 +167,32 @@ private fun resolveActions(
             }
         ),
         icon = R.drawable.ic_copy
-    ) {
-        clipboardManager.setText(AnnotatedString(address.address))
+    ) { OnAction.CopyToClipboard(address) }
 
-        // From Android 13, the system handles the copy confirmation
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    val openExternalAction = ActionableAddressAction(
+    val openExternalAction = PopupActionItem(
         name = stringResource(id = R.string.action_open_in_dashboard),
         icon = R.drawable.ic_external_link
-    ) {
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = address.toDashboardUrl().toUri()
-        }
+    ) { OnAction.OpenExternalWebView(address) }
 
-        try {
-            context.startActivity(intent)
-        } catch (activityNotFound: ActivityNotFoundException) {
-            Toast.makeText(context, R.string.no_web_browser_installed, Toast.LENGTH_SHORT).show()
-        }
-    }
+    val qrAction = PopupActionItem(
+        name = stringResource(id = R.string.action_show_qr_code),
+        icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
+    ) { OnAction.QRCode(address) }
 
     return remember(address) {
         if (address.isCopyPrimaryAction) {
-            ActionableAddressActions(
+            val secondaryActions = if (address.type == Address.Type.ACCOUNT) {
+                listOf(qrAction, openExternalAction)
+            } else {
+                listOf(openExternalAction)
+            }
+
+            PopupActions(
                 primary = copyAction,
-                secondary = listOf(openExternalAction)
+                secondary = secondaryActions
             )
         } else {
-            ActionableAddressActions(
+            PopupActions(
                 primary = openExternalAction,
                 secondary = listOf(copyAction)
             )
@@ -174,16 +200,92 @@ private fun resolveActions(
     }
 }
 
-private data class ActionableAddressActions(
-    val primary: ActionableAddressAction,
-    val secondary: List<ActionableAddressAction>
+private data class PopupActions(
+    val primary: PopupActionItem,
+    val secondary: List<PopupActionItem>
 ) {
 
     val all = listOf(primary) + secondary
 }
 
-private data class ActionableAddressAction(
+private data class PopupActionItem(
     val name: String,
     @DrawableRes val icon: Int,
-    val onAction: () -> Unit
+    val onAction: () -> OnAction
 )
+
+/**
+ * An action that will be presented to the user when clicked
+ * on the PopupMenu
+ */
+private sealed class OnAction {
+
+    abstract val isPresentedInModal: Boolean
+
+    /**
+     * This view will appear when the user has clicked on the corresponding [PopupActionItem]
+     */
+    @Composable
+    abstract fun ActionView()
+
+    data class CopyToClipboard(val addressWithType: Address): OnAction() {
+
+        override val isPresentedInModal: Boolean = false
+
+        @Composable
+        override fun ActionView() {
+            val clipboardManager = LocalClipboardManager.current
+            val context = LocalContext.current
+
+            clipboardManager.setText(AnnotatedString(addressWithType.address))
+
+            // From Android 13, the system handles the copy confirmation
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    data class OpenExternalWebView(val addressWithType: Address): OnAction() {
+
+        override val isPresentedInModal: Boolean = false
+
+        @Composable
+        override fun ActionView() {
+            val context = LocalContext.current
+
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = addressWithType.toDashboardUrl().toUri()
+            }
+
+            try {
+                context.startActivity(intent)
+            } catch (activityNotFound: ActivityNotFoundException) {
+                Toast.makeText(context, R.string.no_web_browser_installed, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+    data class QRCode(val addressWithType: Address) : OnAction() {
+
+        override val isPresentedInModal: Boolean = true
+
+        @Composable
+        override fun ActionView() {
+            Box(
+                modifier = Modifier
+                    .background(RadixTheme.colors.defaultBackground)
+            ) {
+                AsyncImage(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth()
+                        .aspectRatio(ratio = 1f),
+                    model = QRCodeGenerator.forAccount(addressWithType.address),
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}

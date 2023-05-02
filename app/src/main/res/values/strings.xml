@@ -244,6 +244,7 @@
     <string name="copy_nft_id">Copy NFT ID</string>
     <string name="copy_transaction_id">Copy Transaction ID</string>
     <string name="action_open_in_dashboard">View on Radix Dashboard</string>
+    <string name="action_show_qr_code">Show QR Code</string>
     <string name="no_web_browser_installed">There is no web browser installed in this device</string>
     <string name="learn_about_personas">Learn about Personas</string>
     <string name="a_persona_is_an_identity">A Persona is an identity that you own and control. You can have as many as you like.</string>
