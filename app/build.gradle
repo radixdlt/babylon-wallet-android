@@ -64,6 +64,7 @@ android {
     buildTypes {
         debug {
             testCoverageEnabled true
+            resValue "string", "app_name", "Radix Wallet Dev"
         }
         debugAlpha {
             initWith debug
