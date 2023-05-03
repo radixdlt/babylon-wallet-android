@@ -153,7 +153,6 @@ private fun resolveAddress(
     address: String
 ): Address = remember(address) { Address.from(address) }
 
-@Suppress("SwallowedException")
 @Composable
 private fun resolveActions(
     address: Address
@@ -228,7 +227,7 @@ private sealed class OnAction {
     @Composable
     abstract fun ActionView()
 
-    data class CopyToClipboard(val addressWithType: Address): OnAction() {
+    data class CopyToClipboard(val addressWithType: Address) : OnAction() {
 
         override val isPresentedInModal: Boolean = false
 
@@ -246,10 +245,11 @@ private sealed class OnAction {
         }
     }
 
-    data class OpenExternalWebView(val addressWithType: Address): OnAction() {
+    data class OpenExternalWebView(val addressWithType: Address) : OnAction() {
 
         override val isPresentedInModal: Boolean = false
 
+        @Suppress("SwallowedException")
         @Composable
         override fun ActionView() {
             val context = LocalContext.current
@@ -264,7 +264,6 @@ private sealed class OnAction {
                 Toast.makeText(context, R.string.no_web_browser_installed, Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
     data class QRCode(val addressWithType: Address) : OnAction() {
