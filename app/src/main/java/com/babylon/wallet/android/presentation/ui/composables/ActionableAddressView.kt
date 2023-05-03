@@ -136,7 +136,7 @@ fun ActionableAddressView(
             if (actionData.isPresentedInModal) {
                 BottomSheetWrapper(
                     onDismissRequest = { onAction = null },
-                    newBottomSheetState = sheetState
+                    bottomSheetState = sheetState
                 ) {
                     actionData.ActionView()
                 }
@@ -277,12 +277,16 @@ private sealed class OnAction {
                 modifier = Modifier
                     .background(RadixTheme.colors.defaultBackground)
             ) {
+                val qrCode = remember(addressWithType.address) {
+                    QRCodeGenerator.forAccount(addressWithType.address)
+                }
+
                 AsyncImage(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .fillMaxWidth()
                         .aspectRatio(ratio = 1f),
-                    model = QRCodeGenerator.forAccount(addressWithType.address),
+                    model = qrCode,
                     contentDescription = null
                 )
             }

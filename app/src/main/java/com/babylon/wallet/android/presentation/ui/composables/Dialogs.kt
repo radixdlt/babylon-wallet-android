@@ -41,15 +41,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
-    newBottomSheetState: SheetState? = null,
+    bottomSheetState: SheetState = rememberModalBottomSheetState(),
     content: @Composable () -> Unit,
 ) {
-    val bottomSheetState = rememberModalBottomSheetState()
     // TODO update dependency when this issue is resolved
     // https://issuetracker.google.com/issues/268432129
     ModalBottomSheet(
         modifier = modifier,
-        sheetState = newBottomSheetState ?: bottomSheetState,
+        sheetState = bottomSheetState,
         onDismissRequest = onDismissRequest,
         shape = RadixTheme.shapes.roundedRectTopDefault,
         dragHandle = {
@@ -74,12 +73,14 @@ fun BottomSheetWrapper(
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
+    bottomSheetState: SheetState = rememberModalBottomSheetState(),
     content: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         BottomSheetWrapper(
             modifier = modifier,
             onDismissRequest = onDismissRequest,
+            bottomSheetState = bottomSheetState,
             content = content,
         )
     }
