@@ -27,6 +27,8 @@ import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCom
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonic
+import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
@@ -80,9 +82,10 @@ fun NavigationHost(
                     navController.navigate(Screen.SettingsAllDestination.route)
                 },
                 onAccountClick = { accountId ->
-                    navController.navigate(
-                        Screen.AccountDestination.routeWithArgs(accountId)
-                    )
+//                    navController.navigate(
+//                        Screen.AccountDestination.routeWithArgs(accountId)
+//                    )
+                    navController.restoreMnemonic(accountId)
                 },
                 onAccountCreationClick = {
                     navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
@@ -157,6 +160,9 @@ fun NavigationHost(
             onFinishAccountCreation = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
             }
+        )
+        restoreMnemonicScreen(
+            onBackClick = { navController.navigateUp() }
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() },
