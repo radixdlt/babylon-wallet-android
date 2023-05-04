@@ -40,7 +40,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
             "",
             "address"
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest(),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             true, false, 1,

@@ -3,6 +3,8 @@ package com.babylon.wallet.android.data.dapp
 import com.babylon.wallet.android.data.dapp.model.AccountDto
 import com.babylon.wallet.android.data.dapp.model.AccountWithProofOfOwnership
 import com.babylon.wallet.android.data.dapp.model.AuthLoginRequestItem
+import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestItem
+import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestResponseItem
@@ -16,6 +18,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletTransactionItems
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
+import junit.framework.TestCase.assertEquals
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.junit.Assert
@@ -233,7 +236,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"authorizedRequest",
                   "auth":{
-                    "discriminator":"login"                   
+                    "discriminator":"loginWithoutChallenge"                   
                   }
                   "oneTimeAccounts":{
                      "requiresProofOfOwnership":false,
@@ -254,7 +257,7 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
-        assert(item.auth is AuthLoginRequestItem)
+        assertEquals(AuthLoginWithoutChallengeRequestItem, item.auth)
         assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
     }
 
@@ -265,7 +268,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"authorizedRequest",
                   "auth":{
-                    "discriminator":"login",
+                    "discriminator":"loginWithChallenge",
                     "challenge":"randomChallenge"
                   }
                   "ongoingAccounts":{
@@ -287,7 +290,7 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
-        assert(item.auth is AuthLoginRequestItem)
+        assertEquals(AuthLoginWithChallengeRequestItem("randomChallenge"), item.auth)
         assert(item.ongoingAccounts?.requiresProofOfOwnership == false)
     }
 
@@ -298,7 +301,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"authorizedRequest",
                    "auth":{
-                    "discriminator":"login"                   
+                    "discriminator":"loginWithoutChallenge"                   
                   }
                   "oneTimePersonaData":{
                     "fields":["givenName", "emailAddress"]
@@ -315,7 +318,7 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
-        assert(item.auth is AuthLoginRequestItem)
+        assertEquals(AuthLoginWithoutChallengeRequestItem, item.auth)
         assert(item.oneTimePersonaData?.fields?.size == 2)
     }
 
@@ -326,7 +329,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"authorizedRequest",
                    "auth":{
-                    "discriminator":"login",
+                    "discriminator":"loginWithChallenge",
                     "challenge":"randomChallenge"
                   }
                   "ongoingPersonaData":{
@@ -344,7 +347,7 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
-        assert(item.auth is AuthLoginRequestItem)
+        assertEquals(AuthLoginWithChallengeRequestItem("randomChallenge"), item.auth)
         assert(item.ongoingPersonaData?.fields?.size == 2)
     }
 

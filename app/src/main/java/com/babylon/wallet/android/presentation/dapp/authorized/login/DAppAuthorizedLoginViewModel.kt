@@ -115,28 +115,28 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRoute() {
-        val isLoginRequest = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest
-        val usePersonaRequest = request.isUsePersonaAuth()
-        if (isLoginRequest) {
-            _state.update {
-                it.copy(
-                    initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
-                        args.requestId
+        when (val request = request.authRequest) {
+            is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
+                // TODO temporary until flow with challenge is implemented
+                onAbortDappLogin()
+            }
+            is AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
+                _state.update {
+                    it.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
+                            args.requestId
+                        )
                     )
-                )
+                }
             }
-        } else if (usePersonaRequest) {
-            val dapp = authorizedDapp
-            if (dapp != null) {
-                setInitialDappLoginRouteForUsePersonaRequest(
-                    dapp,
-                    request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
-                )
-            } else {
-                onAbortDappLogin(WalletErrorType.InvalidPersona)
+            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+                val dapp = authorizedDapp
+                if (dapp != null) {
+                    setInitialDappLoginRouteForUsePersonaRequest(dapp, request)
+                } else {
+                    onAbortDappLogin(WalletErrorType.InvalidPersona)
+                }
             }
-        } else {
-            onAbortDappLogin()
         }
     }
 

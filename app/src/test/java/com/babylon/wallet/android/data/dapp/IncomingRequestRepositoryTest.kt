@@ -24,7 +24,7 @@ class IncomingRequestRepositoryTest {
         dappId = "dappId",
         requestId = UUIDGenerator.uuid().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest(),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
             requiresProofOfOwnership = false,
