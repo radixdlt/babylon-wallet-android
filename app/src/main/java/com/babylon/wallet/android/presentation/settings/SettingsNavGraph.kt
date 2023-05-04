@@ -83,7 +83,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
         SettingsScreen(
             viewModel = hiltViewModel(),
             onBackClick = {
-                navController.popBackStack()
+                navController.navigateUp()
             },
             onSettingClick = { item ->
                 when (item) {
