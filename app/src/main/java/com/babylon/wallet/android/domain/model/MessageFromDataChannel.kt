@@ -58,7 +58,10 @@ sealed interface MessageFromDataChannel {
             }
 
             sealed interface AuthRequest {
-                data class LoginRequest(val challenge: String? = null) : AuthRequest
+                sealed class LoginRequest : AuthRequest {
+                    data class WithChallenge(val challenge: String) : LoginRequest()
+                    object WithoutChallenge : LoginRequest()
+                }
                 data class UsePersonaRequest(val personaAddress: String) : AuthRequest
             }
         }

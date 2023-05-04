@@ -19,11 +19,19 @@ data class AuthLoginWithChallengeRequestResponseItem(
     val persona: PersonaDto,
     @SerialName("challenge")
     val challenge: String,
+    @SerialName("proof")
+    val proofDto: ProofDto
+) : AuthLoginRequestResponseItem()
+
+@Serializable
+data class ProofDto(
     @SerialName("publicKey")
     val publicKey: String,
     @SerialName("signature")
-    val signature: String
-) : AuthLoginRequestResponseItem()
+    val signature: String,
+    @SerialName("curve")
+    val curve: String
+)
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
