@@ -43,7 +43,7 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.Address
+import com.babylon.wallet.android.presentation.model.ActionableAddress
 import kotlinx.coroutines.launch
 import rdx.works.core.qr.QRCodeGenerator
 
@@ -56,8 +56,8 @@ fun ActionableAddressView(
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val addressWithType = resolveAddress(address = address)
-    val actions = resolveActions(address = addressWithType)
+    val actionableAddress = resolveAddress(address = address)
+    val actions = resolveActions(actionableAddress = actionableAddress)
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
     var onAction: OnAction? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
@@ -84,7 +84,7 @@ fun ActionableAddressView(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
         ) {
             Text(
-                text = addressWithType.displayAddress,
+                text = actionableAddress.displayAddress,
                 color = textColor,
                 maxLines = 1,
                 style = textStyle
@@ -151,36 +151,36 @@ fun ActionableAddressView(
 @Composable
 private fun resolveAddress(
     address: String
-): Address = remember(address) { Address.from(address) }
+): ActionableAddress = remember(address) { ActionableAddress.from(address) }
 
 @Composable
 private fun resolveActions(
-    address: Address
+    actionableAddress: ActionableAddress
 ): PopupActions {
     val copyAction = PopupActionItem(
         name = stringResource(
             id = when {
-                address.type == Address.Type.TRANSACTION -> R.string.copy_transaction_id
-                address.isNft -> R.string.copy_nft_id
+                actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.copy_transaction_id
+                actionableAddress.isNft -> R.string.copy_nft_id
                 else -> R.string.copy_address
             }
         ),
         icon = R.drawable.ic_copy
-    ) { OnAction.CopyToClipboard(address) }
+    ) { OnAction.CopyToClipboard(actionableAddress) }
 
     val openExternalAction = PopupActionItem(
         name = stringResource(id = R.string.action_open_in_dashboard),
         icon = R.drawable.ic_external_link
-    ) { OnAction.OpenExternalWebView(address) }
+    ) { OnAction.OpenExternalWebView(actionableAddress) }
 
     val qrAction = PopupActionItem(
         name = stringResource(id = R.string.action_show_qr_code),
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-    ) { OnAction.QRCode(address) }
+    ) { OnAction.QRCode(actionableAddress) }
 
-    return remember(address) {
-        if (address.isCopyPrimaryAction) {
-            val secondaryActions = if (address.type == Address.Type.ACCOUNT) {
+    return remember(actionableAddress) {
+        if (actionableAddress.isCopyPrimaryAction) {
+            val secondaryActions = if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
                 listOf(qrAction, openExternalAction)
             } else {
                 listOf(openExternalAction)
@@ -227,7 +227,7 @@ private sealed class OnAction {
     @Composable
     abstract fun ActionView()
 
-    data class CopyToClipboard(val addressWithType: Address) : OnAction() {
+    data class CopyToClipboard(val actionableAddress: ActionableAddress) : OnAction() {
 
         override val isPresentedInModal: Boolean = false
 
@@ -236,7 +236,7 @@ private sealed class OnAction {
             val clipboardManager = LocalClipboardManager.current
             val context = LocalContext.current
 
-            clipboardManager.setText(AnnotatedString(addressWithType.address))
+            clipboardManager.setText(AnnotatedString(actionableAddress.address))
 
             // From Android 13, the system handles the copy confirmation
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
@@ -245,7 +245,7 @@ private sealed class OnAction {
         }
     }
 
-    data class OpenExternalWebView(val addressWithType: Address) : OnAction() {
+    data class OpenExternalWebView(val actionableAddress: ActionableAddress) : OnAction() {
 
         override val isPresentedInModal: Boolean = false
 
@@ -255,7 +255,7 @@ private sealed class OnAction {
             val context = LocalContext.current
 
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = addressWithType.toDashboardUrl().toUri()
+                data = actionableAddress.toDashboardUrl().toUri()
             }
 
             try {
@@ -266,7 +266,7 @@ private sealed class OnAction {
         }
     }
 
-    data class QRCode(val addressWithType: Address) : OnAction() {
+    data class QRCode(val actionableAddress: ActionableAddress) : OnAction() {
 
         override val isPresentedInModal: Boolean = true
 
@@ -276,8 +276,8 @@ private sealed class OnAction {
                 modifier = Modifier
                     .background(RadixTheme.colors.defaultBackground)
             ) {
-                val qrCode = remember(addressWithType.address) {
-                    QRCodeGenerator.forAccount(addressWithType.address)
+                val qrCode = remember(actionableAddress.address) {
+                    QRCodeGenerator.forAccount(actionableAddress.address)
                 }
 
                 AsyncImage(
