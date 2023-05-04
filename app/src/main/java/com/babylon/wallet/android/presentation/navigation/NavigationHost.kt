@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.navigation
 
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -35,6 +34,8 @@ import com.babylon.wallet.android.presentation.settings.personaedit.personaEditS
 import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.transfer.transfer
+import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.failed.failedBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
@@ -102,19 +103,7 @@ fun NavigationHost(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
             arguments = listOf(
                 navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType }
-            ),
-            enterTransition = {
-                slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
-            },
-            exitTransition = {
-                slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-            },
-            popEnterTransition = {
-                EnterTransition.None
-            },
-            popExitTransition = {
-                ExitTransition.None
-            }
+            )
         ) {
             AccountScreen(
                 viewModel = hiltViewModel(),
@@ -126,6 +115,9 @@ fun NavigationHost(
                 },
                 onApplySecuritySettingsClick = { factorSourceIDString ->
                     navController.settingsShowMnemonic(factorSourceIDString)
+                },
+                onTransferClick = { accountId ->
+                    navController.transfer(accountId = accountId)
                 }
             )
         }
@@ -206,6 +198,12 @@ fun NavigationHost(
                     errorTextRes = errorTextRes
                 )
             }
+        )
+        transferScreen(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onSendTransferClick = {}
         )
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()

@@ -20,7 +20,8 @@ fun RadixTextButton(
     modifier: Modifier = Modifier,
     textStyle: TextStyle = RadixTheme.typography.body1Header,
     contentColor: Color = RadixTheme.colors.blue2,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    icon: (@Composable () -> Unit)? = null
 ) {
     TextButton(
         modifier = modifier,
@@ -32,6 +33,7 @@ fun RadixTextButton(
             disabledContentColor = RadixTheme.colors.gray3,
         )
     ) {
+        icon?.invoke()
         Text(text = text, style = textStyle)
     }
 }
