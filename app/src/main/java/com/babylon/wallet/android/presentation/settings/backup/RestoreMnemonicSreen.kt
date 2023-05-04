@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
 package com.babylon.wallet.android.presentation.settings.backup
 
 import androidx.compose.foundation.layout.Arrangement
@@ -11,11 +9,12 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
@@ -45,6 +44,14 @@ fun RestoreMnemonicScreen(
         onPassphraseTyped = viewModel::onPassphraseTyped,
         onRestore = viewModel::onRestore
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is RestoreMnemonicViewModel.Effect.FinishRestoration -> onBackClick()
+            }
+        }
+    }
 }
 
 @Composable
@@ -69,7 +76,7 @@ private fun RestoreMnemonicContent(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Restore Mnemonic",
+                title = stringResource(id = R.string.recover_mnemonic),
                 onBackClick = onBackClick
             )
         },
@@ -78,7 +85,7 @@ private fun RestoreMnemonicContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(all = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.import_label),
+                text = stringResource(R.string.continue_button_title),
                 onClick = onRestore,
                 enabled = state.isSubmitButtonEnabled,
                 throttleClicks = true
@@ -99,6 +106,13 @@ private fun RestoreMnemonicContent(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             val focusManager = LocalFocusManager.current
+
+            Text(
+                text = state.factorSourceHint,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onMnemonicWordsTyped,

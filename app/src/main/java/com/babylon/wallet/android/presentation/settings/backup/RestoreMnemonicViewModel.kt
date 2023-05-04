@@ -3,6 +3,9 @@ package com.babylon.wallet.android.presentation.settings.backup
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.InfoMessageType
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -31,7 +34,7 @@ class RestoreMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     getProfileUseCase: GetProfileUseCase,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase
-): StateViewModel<RestoreMnemonicViewModel.State>() {
+): StateViewModel<RestoreMnemonicViewModel.State>(), OneOffEventHandler<RestoreMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
 
     private val args = RestoreMnemonicArgs(savedStateHandle)
 
@@ -40,13 +43,23 @@ class RestoreMnemonicViewModel @Inject constructor(
         mnemonicWords = "",
         passphrase = "",
         accountOnNetwork = null,
-        isWordCountValid = false
+        factorSourceHint = ""
     )
 
     init {
         viewModelScope.launch {
-            val account = getProfileUseCase.accountsOnCurrentNetwork.first().find { it.address == args.accountAddress }
-            _state.update { it.copy(accountOnNetwork = account) }
+            val profile = getProfileUseCase().first()
+            val account = profile.currentNetwork.accounts.find { it.address == args.accountAddress }
+            val factorSourceId = (account?.securityState as? SecurityState.Unsecured)
+                ?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
+            val factorSource = profile.factorSources.find { it.id == factorSourceId }
+
+            _state.update {
+                it.copy(
+                    accountOnNetwork = account,
+                    factorSourceHint = factorSource?.hint.orEmpty()
+                )
+            }
         }
     }
 
@@ -55,12 +68,8 @@ class RestoreMnemonicViewModel @Inject constructor(
     }
 
     fun onMnemonicWordsTyped(words: String) {
-        val count = words.trim().split(" ").size
         _state.update {
-            it.copy(
-                mnemonicWords = words,
-                isWordCountValid = validWordCounts.contains(count)
-            )
+            it.copy(mnemonicWords = words)
         }
     }
 
@@ -74,7 +83,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         val derivationPath = factorInstance.derivationPath ?: return
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = _state.value.mnemonicWords,
+            mnemonic = _state.value.mnemonicWords.trim(),
             bip39Passphrase = _state.value.passphrase
         )
 
@@ -90,27 +99,10 @@ class RestoreMnemonicViewModel @Inject constructor(
             _state.update { it.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.InvalidMnemonic)) }
         } else {
             viewModelScope.launch {
-                Timber.d("Restoring mnemonic for ${factorInstance.factorSourceId} with $mnemonicWithPassphrase")
-                //restoreMnemonicUseCase(factorSourceId = factorInstance.factorSourceId, mnemonicWithPassphrase = mnemonicWithPassphrase)
+                restoreMnemonicUseCase(factorSourceId = factorInstance.factorSourceId, mnemonicWithPassphrase = mnemonicWithPassphrase)
+                sendEvent(Effect.FinishRestoration)
             }
         }
-    }
-
-    private fun isMnemonicValid(accountOnNetwork: Network.Account): Boolean {
-        val factorInstance = (accountOnNetwork.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance
-            ?: return false
-        val derivationPath = factorInstance.derivationPath ?: return false
-
-        val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = _state.value.mnemonicWords,
-            bip39Passphrase = _state.value.passphrase
-        )
-
-        val publicKey = mnemonicWithPassphrase.toExtendedKey(derivationPath = derivationPath).keyPair.getCompressedPublicKey()
-        val isFactorSourceIdValid = publicKey.hashToFactorId() == factorInstance.factorSourceId.value
-        val isPublicKeyValid = publicKey.removeLeadingZero().toHexString() == factorInstance.publicKey.compressedData
-
-        return isFactorSourceIdValid && isPublicKeyValid
     }
 
     data class State(
@@ -118,12 +110,19 @@ class RestoreMnemonicViewModel @Inject constructor(
         val mnemonicWords: String,
         val passphrase: String,
         val accountOnNetwork: Network.Account?,
-        private val isWordCountValid: Boolean,
+        val factorSourceHint: String,
         val uiMessage: UiMessage? = null,
     ): UiState {
 
+        private val isWordCountValid: Boolean
+            get() = validWordCounts.contains(mnemonicWords.trim().split("\\s+".toRegex()).size)
+
         val isSubmitButtonEnabled: Boolean
             get() = isWordCountValid && accountOnNetwork != null
+    }
+
+    sealed class Effect: OneOffEvent {
+        object FinishRestoration: Effect()
     }
 
     private companion object {
