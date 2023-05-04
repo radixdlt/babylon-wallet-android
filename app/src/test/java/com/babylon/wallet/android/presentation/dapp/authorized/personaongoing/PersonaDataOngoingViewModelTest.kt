@@ -40,7 +40,7 @@ internal class PersonaDataOngoingViewModelTest {
     @Before
     fun setUp() {
         every { savedStateHandle.get<String>(ARG_PERSONA_ID) } returns samplePersona.address
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.ID.GivenName).encodeToString()
         every { getProfileUseCase() } returns flowOf(profile(personas = listOf(samplePersona)))
     }
 
@@ -57,7 +57,7 @@ internal class PersonaDataOngoingViewModelTest {
 
     @Test
     fun `initial state is set up properly when fields are missing`() = runTest {
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.PhoneNumber).encodeToString()
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.ID.PhoneNumber).encodeToString()
         val vm = initVM()
         advanceUntilIdle()
         vm.state.test {

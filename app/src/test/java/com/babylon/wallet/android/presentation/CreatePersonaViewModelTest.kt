@@ -28,13 +28,13 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.domain.persona.CreatePersonaUseCase
+import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() {
 
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
-    private val createPersonaUseCase = mockk<CreatePersonaUseCase>()
+    private val createPersonaWithDeviceFactorSourceUseCase = mockk<CreatePersonaWithDeviceFactorSourceUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
 
     private val personaId = "fj3489fj348f"
@@ -52,7 +52,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
         coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
 
-        coEvery { createPersonaUseCase.invoke(any(), any()) } returns Network.Persona(
+        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns Network.Persona(
             address = personaId,
             displayName = personaName.value,
             networkID = Radix.Gateway.default.network.id,
@@ -76,7 +76,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
+        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
         advanceUntilIdle()
 
         // then
@@ -91,7 +91,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         runTest {
 
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
+            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
 
             viewModel.onDisplayNameChanged(personaName.value)
 
@@ -116,6 +116,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaUseCase, preferencesManager, deviceSecurityHelper)
+        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
     }
 }

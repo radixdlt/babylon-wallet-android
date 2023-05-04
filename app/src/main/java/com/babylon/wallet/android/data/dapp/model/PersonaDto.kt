@@ -31,20 +31,20 @@ enum class PersonaDataField {
     PhoneNumber
 }
 
-fun PersonaDataField.toKind(): Network.Persona.Field.Kind {
+fun PersonaDataField.toKind(): Network.Persona.Field.ID {
     return when (this) {
-        PersonaDataField.GivenName -> Network.Persona.Field.Kind.GivenName
-        PersonaDataField.FamilyName -> Network.Persona.Field.Kind.FamilyName
-        PersonaDataField.EmailAddress -> Network.Persona.Field.Kind.EmailAddress
-        PersonaDataField.PhoneNumber -> Network.Persona.Field.Kind.PhoneNumber
+        PersonaDataField.GivenName -> Network.Persona.Field.ID.GivenName
+        PersonaDataField.FamilyName -> Network.Persona.Field.ID.FamilyName
+        PersonaDataField.EmailAddress -> Network.Persona.Field.ID.EmailAddress
+        PersonaDataField.PhoneNumber -> Network.Persona.Field.ID.PhoneNumber
     }
 }
 
-fun Network.Persona.Field.Kind.toPersonaDataField(): PersonaDataField {
+fun Network.Persona.Field.ID.toPersonaDataField(): PersonaDataField {
     return when (this) {
-        Network.Persona.Field.Kind.GivenName -> PersonaDataField.GivenName
-        Network.Persona.Field.Kind.FamilyName -> PersonaDataField.FamilyName
-        Network.Persona.Field.Kind.EmailAddress -> PersonaDataField.EmailAddress
-        Network.Persona.Field.Kind.PhoneNumber -> PersonaDataField.PhoneNumber
+        Network.Persona.Field.ID.GivenName -> PersonaDataField.GivenName
+        Network.Persona.Field.ID.FamilyName -> PersonaDataField.FamilyName
+        Network.Persona.Field.ID.EmailAddress -> PersonaDataField.EmailAddress
+        Network.Persona.Field.ID.PhoneNumber -> PersonaDataField.PhoneNumber
     }
 }

@@ -138,7 +138,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
             getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
-                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
+                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.id) }
                 _state.update {
                     it.copy(
                         selectedPersona = updatedPersona.toUiModel(),

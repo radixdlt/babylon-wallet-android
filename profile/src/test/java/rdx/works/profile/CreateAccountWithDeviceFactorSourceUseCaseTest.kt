@@ -26,41 +26,29 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.addPersona
+import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.domain.persona.CreatePersonaUseCase
+import rdx.works.profile.domain.account.CreateAccountWithDeviceFactorSourceUseCase
 import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class CreatePersonaUseCaseTest {
+class CreateAccountWithDeviceFactorSourceUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
     @Test
-    fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() {
-        // given
-        val personaName = "First persona"
-        val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
-            bip39Passphrase = ""
-        )
-        val personaFields = listOf(
-            Network.Persona.Field(
-                id = "ID213",
-                kind = Network.Persona.Field.Kind.GivenName,
-                value = "Emily"
-            ),
-            Network.Persona.Field(
-                id = "ID0921",
-                kind = Network.Persona.Field.Kind.FamilyName,
-                value = "Jacobs"
-            )
-        )
-        val network = Radix.Gateway.hammunet
+    fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() {
         testScope.runTest {
+            // given
+            val mnemonicWithPassphrase = MnemonicWithPassphrase(
+                mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+                bip39Passphrase = ""
+            )
+            val accountName = "First account"
+            val network = Radix.Gateway.hammunet
             val profile = Profile(
                 header = Header.init(
                     id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -78,9 +66,7 @@ class CreatePersonaUseCaseTest {
                         )
                     )
                 ),
-                factorSources = listOf(
-                    FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
-                ),
+                factorSources = listOf(FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
                 networks = listOf(
                     Network(
                         accounts = listOf(
@@ -120,15 +106,18 @@ class CreatePersonaUseCaseTest {
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
 
-            val createPersonaUseCase = CreatePersonaUseCase(mnemonicRepository, profileRepository, testDispatcher)
-
-            val newPersona = createPersonaUseCase(
-                displayName = personaName,
-                fields = personaFields
+            val createAccountWithDeviceFactorSourceUseCase = CreateAccountWithDeviceFactorSourceUseCase(
+                mnemonicRepository = mnemonicRepository,
+                profileRepository = profileRepository,
+                testDispatcher
             )
 
-            val updatedProfile = profile.addPersona(
-                persona = newPersona,
+            val account = createAccountWithDeviceFactorSourceUseCase(
+                displayName = accountName
+            )
+
+            val updatedProfile = profile.addAccount(
+                account = account,
                 withFactorSourceId = profile.babylonDeviceFactorSource.id,
                 onNetwork = network.network.networkId()
             )

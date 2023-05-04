@@ -55,7 +55,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
                             Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
                                 fieldIDs = emptyList(),
-                                lastUsedOn = "2023-01-31T10:28:14Z",
+                                lastLogin = "2023-01-31T10:28:14Z",
                                 sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                     listOf("address-acc-1"),
                                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(

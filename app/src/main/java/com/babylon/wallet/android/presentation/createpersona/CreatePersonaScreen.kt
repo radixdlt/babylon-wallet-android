@@ -126,11 +126,11 @@ fun CreatePersonaContent(
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
     anyFieldSelected: Boolean,
-    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     onAddFields: () -> Unit,
-    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
-    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
-    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onDeleteField: (Network.Persona.Field.ID) -> Unit,
+    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
+    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -238,13 +238,13 @@ private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
     personaName: PersonaDisplayNameFieldWrapper,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
-    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
-    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
+    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
+    onDeleteField: (Network.Persona.Field.ID) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
     onEditAvatar: () -> Unit,
-    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     LazyColumn(
@@ -305,21 +305,21 @@ private fun CreatePersonaContentList(
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
         }
-        items(currentFields, key = { it.kind }) { field ->
+        items(currentFields, key = { it.id }) { field ->
             PersonaPropertyInput(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateItemPlacement(),
-                label = stringResource(id = field.kind.toDisplayResource()),
+                label = stringResource(id = field.id.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {
-                    onValueChanged(field.kind, it)
+                    onValueChanged(field.id, it)
                 },
                 onDeleteField = {
-                    onDeleteField(field.kind)
+                    onDeleteField(field.id)
                 },
                 onFocusChanged = {
-                    onFieldFocusChanged(field.kind, it.hasFocus)
+                    onFieldFocusChanged(field.id, it.hasFocus)
                 },
                 required = field.required,
                 error = if (field.shouldDisplayValidationError && field.valid == false) {

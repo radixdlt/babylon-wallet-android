@@ -337,6 +337,17 @@
     <string name="ledger_name_bottom_hint">Displayed when you are prompted to sign with this device.</string>
     <string name="no_accounts_for_ledger">No Accounts found to import on this device</string>
     <string name="legacy_label">" "\u2022 Legacy</string>
+    <string name="create_with_ledger_hardware_wallet">Create with Ledger hardware wallet</string>
+    <string name="requires_you_to_sign_transactions">Requires you to sign transactions using your Ledger</string>
+    <string name="create_ledger_account">Create Ledger Account</string>
+    <string name="add_new_ledger">Add new Ledger</string>
+    <string name="use_ledger">Use Ledger</string>
+    <string name="you_have_no_ledgers_added">You have no Ledgers added, add a ledger to get started...</string>
+    <string name="add_new_p2p_link">Add New P2P Link</string>
+    <string name="found_no_radix_connect_connections">Found no open RadixConnect connections.</string>
+    <string name="connect_the_ledger_device">Connect the Ledger device you wanna add to a computer on which you have a Browser you have RadixConnect linked to. Unlock your Ledger and open the Radix Babylon Ledger App on your ledger. Look for a new tab in your linked Browser and follow the instructions on the screen.</string>
+    <string name="selected_ledger_description">%s | added on: %s</string>
+    <string name="select_ledger_device">Select Ledger Device</string>
     <plurals name="accounts_per_device">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>

@@ -22,7 +22,7 @@ internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
 const val ROUTE_EDIT_PERSONA = "persona_edit/{$ARG_PERSONA_ADDRESS}?$ARG_REQUIRED_FIELDS={$ARG_REQUIRED_FIELDS}"
 
-internal class PersonaEditScreenArgs(val personaAddress: String, val requiredFields: Array<Network.Persona.Field.Kind> = emptyArray()) {
+internal class PersonaEditScreenArgs(val personaAddress: String, val requiredFields: Array<Network.Persona.Field.ID> = emptyArray()) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ADDRESS]) as String,
         savedStateHandle.get<String>(ARG_REQUIRED_FIELDS)?.decodePersonaDataKinds().orEmpty().toTypedArray()

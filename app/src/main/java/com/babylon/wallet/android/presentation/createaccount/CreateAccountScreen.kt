@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,13 +33,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 
 @Composable
 fun CreateAccountScreen(
@@ -49,6 +52,7 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?,
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
+    onAddLedgerDevice: () -> Unit,
     onCloseApp: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -75,7 +79,9 @@ fun CreateAccountScreen(
             onBackClick = backHandler,
             modifier = modifier,
             isDeviceSecure = state.isDeviceSecure,
-            firstTime = state.firstTime
+            firstTime = state.firstTime,
+            useLedgerSelected = state.useLedgerSelected,
+            onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged
         )
     }
 
@@ -86,6 +92,7 @@ fun CreateAccountScreen(
                     event.accountId,
                     event.requestSource
                 )
+                CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
             }
         }
     }
@@ -102,6 +109,8 @@ fun CreateAccountContent(
     isDeviceSecure: Boolean,
     modifier: Modifier,
     firstTime: Boolean,
+    useLedgerSelected: Boolean,
+    onUseLedgerSelectionChanged: (Boolean) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -147,6 +156,12 @@ fun CreateAccountContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(30.dp))
+            UseLedgerSwitch(
+                useLedgerSelected = useLedgerSelected,
+                onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(30.dp))
             Column(modifier = Modifier.fillMaxWidth()) {
                 RadixTextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -168,20 +183,19 @@ fun CreateAccountContent(
                     .fillMaxWidth()
                     .imePadding(),
                 onClick = {
-                    if (isDeviceSecure) {
-                        context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onAccountCreateClick()
-                                }
+                    when {
+                        useLedgerSelected -> onAccountCreateClick()
+                        isDeviceSecure -> context.biometricAuthenticate { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onAccountCreateClick()
                             }
                         }
-                    } else {
-                        showNotSecuredDialog = true
+                        else -> showNotSecuredDialog = true
                     }
                 },
                 enabled = buttonEnabled,
-                text = stringResource(id = R.string.create_account)
+                text = stringResource(id = R.string.create_account),
+                throttleClicks = true
             )
         }
 
@@ -193,6 +207,29 @@ fun CreateAccountContent(
                 }
             })
         }
+    }
+}
+
+@Composable
+private fun UseLedgerSwitch(useLedgerSelected: Boolean, onUseLedgerSelectionChanged: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(id = R.string.create_with_ledger_hardware_wallet),
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1
+            )
+            Text(
+                text = stringResource(id = R.string.requires_you_to_sign_transactions),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1
+            )
+        }
+        RadixSwitch(checked = useLedgerSelected, onCheckedChange = onUseLedgerSelectionChanged)
     }
 }
 
@@ -210,7 +247,9 @@ fun CreateAccountContentPreview() {
             cancelable = true,
             isDeviceSecure = true,
             modifier = Modifier,
-            firstTime = false
+            firstTime = false,
+            useLedgerSelected = false,
+            onUseLedgerSelectionChanged = {}
         )
     }
 }

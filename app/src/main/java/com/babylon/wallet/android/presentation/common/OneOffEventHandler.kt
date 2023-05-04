@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.common
 
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlin.reflect.KProperty
@@ -22,6 +23,6 @@ class OneOffEventHandlerImpl<T : OneOffEvent> : OneOffEventHandler<T> {
     }
 
     override suspend fun sendEvent(event: T) {
-        eventChannel.send(event)
+        eventChannel.trySendBlocking(event)
     }
 }

@@ -525,7 +525,7 @@ private fun PersonaDetailList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
-                    label = stringResource(id = field.kind.toDisplayResource()),
+                    label = stringResource(id = field.id.toDisplayResource()),
                     value = field.value
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingLarge))

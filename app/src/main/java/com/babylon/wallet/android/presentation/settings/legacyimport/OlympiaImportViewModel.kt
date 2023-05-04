@@ -4,8 +4,7 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.InfoMessageType
@@ -28,7 +27,7 @@ import kotlinx.collections.immutable.toPersistentHashMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -49,14 +48,11 @@ import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.OlympiaWalletData
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
-import timber.log.Timber
-import java.util.Collections
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 @HiltViewModel
 class OlympiaImportViewModel @Inject constructor(
-    private val peerdroidClient: PeerdroidClient,
     private val ledgerMessenger: LedgerMessenger,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
@@ -65,8 +61,7 @@ class OlympiaImportViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val olympiaWalletDataParser: OlympiaWalletDataParser
-) : StateViewModel<OlympiaImportUiState>(),
-    OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<OlympiaImportUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private var mnemonicWithPassphrase: MnemonicWithPassphrase? = null
     private val scannedData = mutableSetOf<String>()
@@ -74,48 +69,28 @@ class OlympiaImportViewModel @Inject constructor(
     private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList)
     private var existingFactorSourceId: FactorSource.ID? = null
     private val validatedHardwareAccounts = mutableMapOf<LedgerDeviceUiModel, List<OlympiaAccountDetails>>()
-    private val sentRequestIds = Collections.synchronizedList(mutableListOf<String>())
     private var currentlyProcessedDevice: LedgerDeviceUiModel? = null
 
-    init {
-        viewModelScope.launch {
-            peerdroidClient
-                .listenForLedgerResponses()
-//                .filter { sentRequestIds.contains(it.id) }
-                .cancellable()
-                .collect { ledgerResponse ->
-                    sentRequestIds.remove(ledgerResponse.id)
-                    Timber.d("📯 wallet received incoming ledger response, interactionId: ${ledgerResponse.id}")
-                    processIncomingLedgerResponse(ledgerResponse)
-                }
+    private fun processIncomingLedgerResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse) {
+        _state.update { it.copy(waitingForLedgerResponse = false) }
+        val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
+        val derivedKeys = ledgerResponse.derivedPublicKeys.map { it.publicKeyHex }.toSet()
+        val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
+        if (validatedAccounts.isEmpty()) {
+            _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
+            return
         }
-    }
-
-    private fun processIncomingLedgerResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse) {
-        when (ledgerResponse) {
-            is MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse -> {
-                _state.update { it.copy(waitingForLedgerResponse = false) }
-                val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
-                val derivedKeys = ledgerResponse.derivedPublicKeys.map { it.publicKeyHex }.toSet()
-                val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
-                if (validatedAccounts.isEmpty()) {
-                    _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
-                    return
-                }
-                val ledgerDeviceModel = LedgerDeviceUiModel(ledgerResponse.deviceId, ledgerResponse.model)
-                validatedHardwareAccounts[ledgerDeviceModel] = validatedAccounts
-                currentlyProcessedDevice = ledgerDeviceModel
-                updateHardwareAccountLeftToMigrateCount()
-                _state.update { state ->
-                    state.copy(
-                        addLedgerName = true,
-                        ledgerDevices = validatedHardwareAccounts.entries.associate {
-                            it.key to it.value.size
-                        }.toPersistentHashMap()
-                    )
-                }
-            }
-            else -> {}
+        val ledgerDeviceModel = LedgerDeviceUiModel(ledgerResponse.deviceId, ledgerResponse.model)
+        validatedHardwareAccounts[ledgerDeviceModel] = validatedAccounts
+        currentlyProcessedDevice = ledgerDeviceModel
+        updateHardwareAccountLeftToMigrateCount()
+        _state.update { state ->
+            state.copy(
+                addLedgerName = true,
+                ledgerDevices = validatedHardwareAccounts.entries.associate {
+                    it.key to it.value.size
+                }.toPersistentHashMap()
+            )
         }
     }
 
@@ -314,18 +289,13 @@ class OlympiaImportViewModel @Inject constructor(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
             val interactionId = UUIDGenerator.uuid().toString()
-            sentRequestIds.add(interactionId)
-            when (
-                val result = ledgerMessenger.sendImportOlympiaDeviceRequest(
-                    interactionId = interactionId,
-                    derivationPaths = hardwareAccountsDerivationPaths
-                )
-            ) {
-                is Result.Error -> {
-                    sentRequestIds.remove(interactionId)
-                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(result.exception), waitingForLedgerResponse = false) }
-                }
-                is Result.Success -> {}
+            ledgerMessenger.sendImportOlympiaDeviceRequest(
+                interactionId = interactionId,
+                derivationPaths = hardwareAccountsDerivationPaths
+            ).catch { error ->
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error.cause), waitingForLedgerResponse = false) }
+            }.collect { response ->
+                processIncomingLedgerResponse(response)
             }
         }
     }
@@ -462,9 +432,3 @@ data class OlympiaImportUiState(
     val addLedgerName: Boolean = false,
     val ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int> = persistentMapOf()
 ) : UiState
-
-data class LedgerDeviceUiModel(
-    val id: String,
-    val model: MessageFromDataChannel.LedgerResponse.LedgerDeviceModel,
-    val name: String? = null
-)

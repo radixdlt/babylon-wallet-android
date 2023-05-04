@@ -148,7 +148,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         val updatedDapp = authorizedDapp.updateAuthorizedDappPersonas(
             authorizedDapp.referencesToAuthorizedPersonas.map { ref ->
                 if (ref.identityAddress == personaAddress) {
-                    ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                    ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
                 } else {
                     ref
                 }
@@ -231,7 +231,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         val requestedFieldsCount = requestItem.fields.size
         val requestedFieldKinds = requestItem.fields.map { it.toKind() }
         val personaFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)?.fields.orEmpty()
-        val requestedFieldsIds = personaFields.filter { requestedFieldKinds.contains(it.kind) }.map { it.id }
+        val requestedFieldsIds = personaFields.filter { requestedFieldKinds.contains(it.id) }.map { it.id }
         return requestedFieldsCount == requestedFieldsIds.size && dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
             dApp.dAppDefinitionAddress,
             personaAddress,

@@ -3,9 +3,9 @@ package com.babylon.wallet.android.presentation.dapp.authorized
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
-import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
@@ -106,7 +106,9 @@ fun DappAuthorizedLoginNavigationHost(
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
             },
-            onCloseApp = {}
+            onCloseApp = {},
+            onAddLedgerDevice = {
+            }
         )
         createAccountConfirmationScreen(
             onNavigateToWallet = {

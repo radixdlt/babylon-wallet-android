@@ -11,3 +11,8 @@ class GetProfileStateUseCase @Inject constructor(private val dataSource: Profile
 }
 
 suspend fun GetProfileStateUseCase.exists() = invoke().first() is ProfileState.Restored
+
+suspend fun GetProfileStateUseCase.existsAndHasAtLeastOneAccount(): Boolean {
+    val profileState = invoke().first()
+    return profileState is ProfileState.Restored && profileState.profile.currentNetwork.accounts.isNotEmpty()
+}

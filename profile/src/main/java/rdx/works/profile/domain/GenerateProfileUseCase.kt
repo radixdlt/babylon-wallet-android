@@ -21,7 +21,7 @@ class GenerateProfileUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend operator fun invoke(accountDisplayName: String): Profile {
+    suspend operator fun invoke(): Profile {
         return when (val state = profileRepository.profileState.first()) {
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
@@ -29,7 +29,6 @@ class GenerateProfileUseCase @Inject constructor(
 
                 val profile = Profile.init(
                     mnemonicWithPassphrase = mnemonicWithPassphrase,
-                    firstAccountDisplayName = accountDisplayName,
                     header = Header.init(
                         id = UUIDGenerator.uuid().toString(),
                         creatingDevice = deviceInfoRepository.getDeviceInfo().displayName,

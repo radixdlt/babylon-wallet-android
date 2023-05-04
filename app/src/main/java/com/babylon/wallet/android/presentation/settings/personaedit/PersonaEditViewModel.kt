@@ -45,7 +45,7 @@ class PersonaEditViewModel @Inject constructor(
                         addFieldButtonEnabled = s.areThereFieldsSelected,
                         currentFields = s.currentFields,
                         fieldsToAdd = s.fieldsToAdd,
-                        dappContextEdit = s.requiredFieldKinds.isNotEmpty(),
+                        dappContextEdit = s.requiredFieldIDS.isNotEmpty(),
                         wasEdited = s.currentFields.any { it.wasEdited } || state.currentFields.size != s.currentFields.size
                     )
                 }
@@ -53,7 +53,7 @@ class PersonaEditViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress).collect { persona ->
-                setPersona(persona = persona, requiredFieldKinds = args.requiredFields.toList())
+                setPersona(persona = persona, requiredFieldIDS = args.requiredFields.toList())
                 _state.update { state ->
                     state.copy(
                         persona = persona,
@@ -70,7 +70,7 @@ class PersonaEditViewModel @Inject constructor(
         viewModelScope.launch {
             state.value.persona?.let { persona ->
                 val fields = state.value.currentFields.map {
-                    Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
+                    Network.Persona.Field.init(id = it.id, value = it.value.trim())
                 }
                 val updatedPersona =
                     persona.copy(displayName = state.value.personaDisplayName.value.trim(), fields = fields)

@@ -8,21 +8,21 @@ import com.babylon.wallet.android.utils.encodeUtf8
 import rdx.works.profile.data.model.pernetwork.Network
 
 @StringRes
-fun Network.Persona.Field.Kind.toDisplayResource(): Int {
+fun Network.Persona.Field.ID.toDisplayResource(): Int {
     return when (this) {
-        Network.Persona.Field.Kind.GivenName -> R.string.given_name
-        Network.Persona.Field.Kind.FamilyName -> R.string.family_name
-        Network.Persona.Field.Kind.EmailAddress -> R.string.email
-        Network.Persona.Field.Kind.PhoneNumber -> R.string.phone
+        Network.Persona.Field.ID.GivenName -> R.string.given_name
+        Network.Persona.Field.ID.FamilyName -> R.string.family_name
+        Network.Persona.Field.ID.EmailAddress -> R.string.email
+        Network.Persona.Field.ID.PhoneNumber -> R.string.phone
     }
 }
 
-fun List<Network.Persona.Field.Kind>.encodeToString(): String {
+fun List<Network.Persona.Field.ID>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun String.decodePersonaDataKinds(): List<Network.Persona.Field.Kind> {
-    return decodeUtf8().split(",").filter { it.isNotEmpty() }.map { Network.Persona.Field.Kind.valueOf(it) }
+fun String.decodePersonaDataKinds(): List<Network.Persona.Field.ID> {
+    return decodeUtf8().split(",").filter { it.isNotEmpty() }.map { Network.Persona.Field.ID.valueOf(it) }
 }
 
 fun Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.toQuantifierUsedInRequest():
@@ -38,11 +38,11 @@ fun Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccoun
 }
 
 @StringRes
-fun Network.Persona.Field.Kind.toValidationError(): Int {
+fun Network.Persona.Field.ID.toValidationError(): Int {
     return when (this) {
-        Network.Persona.Field.Kind.GivenName -> R.string.first_name_empty
-        Network.Persona.Field.Kind.FamilyName -> R.string.last_name_empty
-        Network.Persona.Field.Kind.EmailAddress -> R.string.email_wrong
-        Network.Persona.Field.Kind.PhoneNumber -> R.string.empty_phone
+        Network.Persona.Field.ID.GivenName -> R.string.first_name_empty
+        Network.Persona.Field.ID.FamilyName -> R.string.last_name_empty
+        Network.Persona.Field.ID.EmailAddress -> R.string.email_wrong
+        Network.Persona.Field.ID.PhoneNumber -> R.string.empty_phone
     }
 }

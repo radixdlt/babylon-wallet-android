@@ -72,8 +72,8 @@ class SampleDataProvider {
             displayName = personaName,
             networkID = NetworkId.Nebunet.value,
             fields = listOf(
-                Network.Persona.Field("1", Network.Persona.Field.Kind.EmailAddress, "test@test.pl"),
-                Network.Persona.Field("2", Network.Persona.Field.Kind.GivenName, "John")
+                Network.Persona.Field(Network.Persona.Field.ID.EmailAddress, "test@test.pl"),
+                Network.Persona.Field(Network.Persona.Field.ID.GivenName, "John")
             ),
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(

@@ -33,7 +33,7 @@ interface DAppConnectionRepository {
     suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<String>
+        fieldIds: List<Network.Persona.Field.ID>
     ): Boolean
 
     suspend fun updateDappAuthorizedPersonaSharedAccounts(
@@ -52,7 +52,7 @@ interface DAppConnectionRepository {
     fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?>
     suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String)
 
-    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>)
+    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>)
 }
 
 @Suppress("TooManyFunctions")
@@ -122,7 +122,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<String>
+        fieldIds: List<Network.Persona.Field.ID>
     ): Boolean {
         val alreadyGrantedIds = getAuthorizedDapp(
             dAppDefinitionAddress
@@ -164,7 +164,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>) {
         getAuthorizedDappsByPersona(personaAddress).firstOrNull()?.forEach { dapp ->
             val updatedDapp = dapp.copy(
                 referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.mapWhen(
@@ -268,10 +268,12 @@ fun Network.AuthorizedDapp.updateAuthorizedDappPersonas(
 
 fun Network.AuthorizedDapp.updateAuthorizedDappPersonaFields(
     personaAddress: String,
-    allExistingFieldIds: List<String>,
-    requestedFieldIds: List<String>
+    allExistingFieldIds: List<Network.Persona.Field.ID>,
+    requestedFieldIds: List<Network.Persona.Field.ID>
 ): Network.AuthorizedDapp {
-    val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = { it.identityAddress == personaAddress }) { persona ->
+    val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = {
+        it.identityAddress == personaAddress
+    }) { persona ->
         persona.copy(fieldIDs = (persona.fieldIDs.filter { allExistingFieldIds.contains(it) } + requestedFieldIds).distinct())
     }
     return copy(
@@ -292,7 +294,7 @@ fun Network.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
             val index = indexOf(existing)
             if (index != -1) {
                 removeAt(index)
-                add(index, existing.copy(lastUsedOn = lastUsed))
+                add(index, existing.copy(lastLogin = lastUsed))
             }
         }
     } else {
@@ -301,7 +303,7 @@ fun Network.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = persona.address,
                     fieldIDs = emptyList(),
-                    lastUsedOn = lastUsed,
+                    lastLogin = lastUsed,
                     sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                         emptyList(),
                         request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
