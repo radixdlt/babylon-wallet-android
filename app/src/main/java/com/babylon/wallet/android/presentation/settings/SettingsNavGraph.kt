@@ -70,6 +70,9 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsImportOlympiaAccounts(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onAddP2PLink = {
+                navController.settingsConnectorScreen(scanQr = true)
             }
         )
     }

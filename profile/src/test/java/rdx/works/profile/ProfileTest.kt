@@ -45,12 +45,12 @@ class ProfileTest {
         val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
         assertEquals(profile.networks.first().networkID, defaultNetwork.id)
-        assertEquals(profile.networks.first().accounts.count(), 1)
+        assertEquals(profile.networks.first().accounts.count(), 0)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
             "Next derivation index for second account",
             profile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
-            1
+            0
         )
 
         println("Profile generated $profile")
@@ -69,11 +69,11 @@ class ProfileTest {
             onNetwork = defaultNetwork.networkId()
         )
 
-        assertEquals(updatedProfile.networks.first().accounts.count(), 2)
+        assertEquals(updatedProfile.networks.first().accounts.count(), 1)
         assertEquals(
             "Next derivation index for third account",
             updatedProfile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
-            2
+            1
         )
 
         val firstPersona = init(
@@ -144,6 +144,18 @@ class ProfileTest {
             gateway = gateway
         )
         expected = expected.copy(factorSources = expected.factorSources + listOf(FactorSource.olympia(mnemonicWithPassphrase)))
+
+        val firstAccount = initAccountWithDeviceFactorSource(
+            displayName = "First",
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
+            deviceFactorSource = expected.babylonDeviceFactorSource,
+            networkId = networkId
+        )
+        expected = expected.addAccount(
+            account = firstAccount,
+            withFactorSourceId = expected.babylonDeviceFactorSource.id,
+            onNetwork = networkId
+        )
 
         val secondAccount = initAccountWithDeviceFactorSource(
             displayName = "Second",

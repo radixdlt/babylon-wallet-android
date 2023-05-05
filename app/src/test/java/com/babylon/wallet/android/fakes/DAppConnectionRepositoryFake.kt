@@ -106,7 +106,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<String>
+        fieldIds: List<Network.Persona.Field.ID>
     ): Boolean {
         return false
     }
@@ -135,7 +135,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>) {
     }
 
 }

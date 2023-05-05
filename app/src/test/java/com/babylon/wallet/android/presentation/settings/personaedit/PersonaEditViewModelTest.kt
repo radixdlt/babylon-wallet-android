@@ -118,8 +118,8 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()
-                assert(item.currentFields.firstOrNull { it.ID == Network.Persona.Field.ID.EmailAddress }?.value == "jakub@jakub.pl")
-                assert(item.currentFields.firstOrNull { it.ID == Network.Persona.Field.ID.GivenName }?.value == "jakub")
+                assert(item.currentFields.firstOrNull { it.id == Network.Persona.Field.ID.EmailAddress }?.value == "jakub@jakub.pl")
+                assert(item.currentFields.firstOrNull { it.id == Network.Persona.Field.ID.GivenName }?.value == "jakub")
             }
         }
     }

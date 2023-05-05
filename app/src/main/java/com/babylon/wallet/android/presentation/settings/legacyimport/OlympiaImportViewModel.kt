@@ -42,6 +42,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.CheckOlympiaFactorSourceForAccountsExistUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.domain.currentNetworkAccountHashes
+import rdx.works.profile.domain.p2pLinks
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
@@ -70,6 +71,14 @@ class OlympiaImportViewModel @Inject constructor(
     private var existingFactorSourceId: FactorSource.ID? = null
     private val validatedHardwareAccounts = mutableMapOf<LedgerDeviceUiModel, List<OlympiaAccountDetails>>()
     private var currentlyProcessedDevice: LedgerDeviceUiModel? = null
+
+    init {
+        viewModelScope.launch {
+            getProfileUseCase.p2pLinks.collect { p2pLinks ->
+                _state.update { it.copy(hasP2pLinks = p2pLinks.isNotEmpty()) }
+            }
+        }
+    }
 
     private fun processIncomingLedgerResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
@@ -430,5 +439,6 @@ data class OlympiaImportUiState(
     val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
     val addLedgerName: Boolean = false,
+    val hasP2pLinks: Boolean = false,
     val ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int> = persistentMapOf()
 ) : UiState
