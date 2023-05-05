@@ -28,7 +28,8 @@ fun NavController.settingsShowMnemonic(factorSourceId: String? = null) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsShowMnemonic(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNavigateToRecoverMnemonic: (String) -> Unit
 ) {
     composable(
         route = ROUTE_SETTINGS_SHOW_MNEMONIC,
@@ -48,6 +49,7 @@ fun NavGraphBuilder.settingsShowMnemonic(
         ShowMnemonicScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
+            onNavigateToRecoverMnemonic = onNavigateToRecoverMnemonic
         )
     }
 }

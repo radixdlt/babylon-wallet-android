@@ -40,7 +40,8 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 fun ShowMnemonicScreen(
     modifier: Modifier = Modifier,
     viewModel: ShowMnemonicViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNavigateToRecoverMnemonic: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SeedPhraseContent(
@@ -97,6 +98,9 @@ fun ShowMnemonicScreen(
                             viewModel.onAuthenticationGrantedToShowMnemonic(it.factorSourceID)
                         }
                     }
+                }
+                is ShowMnemonicViewModel.Effect.OnRequestToRecoverMnemonic -> {
+                    onNavigateToRecoverMnemonic(it.accountAddress)
                 }
             }
         }

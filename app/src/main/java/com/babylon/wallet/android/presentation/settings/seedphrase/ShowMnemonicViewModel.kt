@@ -11,12 +11,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.utils.accountFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.deviceFactorSources
 import javax.inject.Inject
@@ -53,8 +55,14 @@ class ShowMnemonicViewModel @Inject constructor(
 
     fun onAuthenticationGrantedToShowMnemonic(factorSourceID: FactorSource.ID) {
         viewModelScope.launch {
-            mnemonicRepository.readMnemonic(factorSourceID)?.let { mnemonic ->
+            val mnemonic = mnemonicRepository.readMnemonic(factorSourceID)
+            if (mnemonic != null) {
                 _state.update { it.copy(visibleMnemonic = VisibleMnemonic.Shown(mnemonic = mnemonic, factorSourceID = factorSourceID)) }
+            } else {
+                val account = getProfileUseCase().first().currentNetwork.accounts.find { it.accountFactorSourceId() == factorSourceID }
+                if (account != null) {
+                    sendEvent(Effect.OnRequestToRecoverMnemonic(account.address))
+                }
             }
         }
     }
@@ -75,6 +83,7 @@ class ShowMnemonicViewModel @Inject constructor(
 
     sealed interface Effect: OneOffEvent {
         data class OnRequestToShowMnemonic(val factorSourceID: FactorSource.ID): Effect
+        data class OnRequestToRecoverMnemonic(val accountAddress: String): Effect
     }
 }
 
