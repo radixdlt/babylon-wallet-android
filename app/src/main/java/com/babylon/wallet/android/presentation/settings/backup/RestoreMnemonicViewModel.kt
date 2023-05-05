@@ -46,6 +46,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         mnemonicWords = "",
         passphrase = "",
         accountOnNetwork = null,
+        acceptedSeedPhraseLength = SeedPhraseLength.TWENTY_FOUR,
         factorSourceHint = ""
     )
 
@@ -74,6 +75,10 @@ class RestoreMnemonicViewModel @Inject constructor(
         _state.update {
             it.copy(mnemonicWords = words)
         }
+    }
+
+    fun onChangeSeedPhraseLength(length: SeedPhraseLength) {
+        _state.update { it.copy(acceptedSeedPhraseLength = length) }
     }
 
     fun onPassphraseTyped(passphrase: String) {
@@ -115,11 +120,18 @@ class RestoreMnemonicViewModel @Inject constructor(
         val passphrase: String,
         val accountOnNetwork: Network.Account?,
         val factorSourceHint: String,
+        val acceptedSeedPhraseLength: SeedPhraseLength,
         val uiMessage: UiMessage? = null,
     ): UiState {
 
+        private val words: Int
+            get() = mnemonicWords.trim().split("\\s+".toRegex()).size
+
+        val wordsHint: String
+            get() = "$words/${acceptedSeedPhraseLength.words}"
+
         private val isWordCountValid: Boolean
-            get() = validWordCounts.contains(mnemonicWords.trim().split("\\s+".toRegex()).size)
+            get() = words == acceptedSeedPhraseLength.words
 
         val isSubmitButtonEnabled: Boolean
             get() = isWordCountValid && accountOnNetwork != null
@@ -128,8 +140,10 @@ class RestoreMnemonicViewModel @Inject constructor(
     sealed class Effect: OneOffEvent {
         object FinishRestoration: Effect()
     }
+}
 
-    private companion object {
-        private val validWordCounts = setOf(12, 18, 24)
-    }
+enum class SeedPhraseLength(val words: Int) {
+    TWELVE(12),
+    EIGHTEEN(18),
+    TWENTY_FOUR(24)
 }

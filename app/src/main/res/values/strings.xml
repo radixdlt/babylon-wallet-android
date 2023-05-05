@@ -289,6 +289,8 @@
     <string name="path">Path</string>
     <string name="import_olympia_accounts">Import Olympia Accounts</string>
     <string name="seed_phrase">Seed phrase</string>
+    <string name="change_seed_phrase_length">Change seed phrase length</string>
+    <string name="word_seed_phrase">%1$s word seed phrase</string>
     <string name="passphrase">Passphrase</string>
     <string name="bip_39_passphrase">BIP39 passphrase</string>
     <string name="import_label">Import</string>
