@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Composable
 fun PersonasScreen(
@@ -45,7 +46,7 @@ fun PersonasScreen(
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
     onPersonaClick: (String) -> Unit,
-    onApplySecuritySettings: (String) -> Unit
+    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -53,7 +54,7 @@ fun PersonasScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is PersonasViewModel.PersonasEvent.CreatePersona -> createNewPersona(it.firstPersonaCreated)
-                is PersonasViewModel.PersonasEvent.ApplySecuritySettings -> onApplySecuritySettings(it.factorSourceIdString)
+                is PersonasViewModel.PersonasEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
             }
         }
     }

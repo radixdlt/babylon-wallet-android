@@ -63,6 +63,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Composable
 fun WalletScreen(
@@ -70,7 +71,8 @@ fun WalletScreen(
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAccountClick: (accountId: String) -> Unit = { },
-    onApplySecuritySettingsClick: (String) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
+    onNavigateToMnemonicRestore: (String) -> Unit,
     onAccountCreationClick: () -> Unit,
     mainUiState: StateFlow<MainUiState>,
     onNavigateToCreateAccount: () -> Unit,
@@ -95,14 +97,14 @@ fun WalletScreen(
                 isBackupWarningVisible = walletState.isBackupWarningVisible,
                 error = walletState.error,
                 onMessageShown = viewModel::onMessageShown,
-                onApplySecuritySettings = viewModel::onApplySecuritySettings,
-                onMnemonicRecovery = viewModel::onMnemonicRecovery
+                onApplySecuritySettings = viewModel::onApplyMnemonicBackup,
+                onMnemonicRecovery = onNavigateToMnemonicRestore
             )
             LaunchedEffect(Unit) {
                 viewModel.oneOffEvent.collect {
                     when (it) {
                         is WalletEvent.AccountClick -> onAccountClick(it.address)
-                        is WalletEvent.ApplySecuritySettingsClick -> onApplySecuritySettingsClick(it.factorSourceIdString)
+                        is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                     }
                 }
             }

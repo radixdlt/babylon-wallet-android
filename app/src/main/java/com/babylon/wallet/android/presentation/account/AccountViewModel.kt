@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.utils.accountFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -62,6 +63,7 @@ class AccountViewModel @Inject constructor(
             }
         }
         loadAccountData(isRefreshing = false)
+
         viewModelScope.launch {
             appEventBus.events.filter { event ->
                 event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
@@ -69,6 +71,14 @@ class AccountViewModel @Inject constructor(
                 refresh()
             }
         }
+        viewModelScope.launch {
+            appEventBus.events.filter { event ->
+                event is AppEvent.RestoredMnemonic
+            }.collect {
+                loadAccountData(isRefreshing = false)
+            }
+        }
+
         observeBackedUpMnemonics()
     }
 
@@ -145,21 +155,14 @@ class AccountViewModel @Inject constructor(
     fun onApplySecuritySettings() {
         viewModelScope.launch {
             getProfileUseCase.accountOnCurrentNetwork(state.value.accountAddressFull)?.accountFactorSourceId()?.let {
-                sendEvent(AccountEvent.ApplySecuritySettingsClick(it.value))
-            }
-        }
-    }
-
-    fun onMnemonicRecovery() {
-        viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(state.value.accountAddressFull)?.accountFactorSourceId()?.let {
+                sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
             }
         }
     }
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
-    data class ApplySecuritySettingsClick(val factorSourceIdString: String) : AccountEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : AccountEvent
 }
 
 data class AccountUiState(

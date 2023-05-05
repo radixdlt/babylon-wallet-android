@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +35,8 @@ import javax.inject.Inject
 class RestoreMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     getProfileUseCase: GetProfileUseCase,
-    private val restoreMnemonicUseCase: RestoreMnemonicUseCase
+    private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
+    private val appEventBus: AppEventBus
 ): StateViewModel<RestoreMnemonicViewModel.State>(), OneOffEventHandler<RestoreMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
 
     private val args = RestoreMnemonicArgs(savedStateHandle)
@@ -100,6 +103,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 restoreMnemonicUseCase(factorSourceId = factorInstance.factorSourceId, mnemonicWithPassphrase = mnemonicWithPassphrase)
+                appEventBus.sendEvent(AppEvent.RestoredMnemonic)
                 sendEvent(Effect.FinishRestoration)
             }
         }

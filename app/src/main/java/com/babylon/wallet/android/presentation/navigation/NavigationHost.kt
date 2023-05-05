@@ -82,10 +82,9 @@ fun NavigationHost(
                     navController.navigate(Screen.SettingsAllDestination.route)
                 },
                 onAccountClick = { accountId ->
-//                    navController.navigate(
-//                        Screen.AccountDestination.routeWithArgs(accountId)
-//                    )
-                    navController.restoreMnemonic(accountId)
+                    navController.navigate(
+                        Screen.AccountDestination.routeWithArgs(accountId)
+                    )
                 },
                 onAccountCreationClick = {
                     navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
@@ -99,8 +98,11 @@ fun NavigationHost(
                 onNavigateToIncompatibleProfile = {
                     navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
                 },
-                onApplySecuritySettingsClick = { factorSourceIDString ->
-                    navController.settingsShowMnemonic(factorSourceIDString)
+                onNavigateToMnemonicBackup = { factorSourceID ->
+                    navController.settingsShowMnemonic(factorSourceID.value)
+                },
+                onNavigateToMnemonicRestore = { accountAddress ->
+                    navController.restoreMnemonic(accountAddress)
                 }
             )
         }
@@ -118,8 +120,11 @@ fun NavigationHost(
                 onBackClick = {
                     navController.navigateUp()
                 },
-                onApplySecuritySettingsClick = { factorSourceIDString ->
-                    navController.settingsShowMnemonic(factorSourceIDString)
+                onNavigateToMnemonicBackup = { factorSourceID ->
+                    navController.settingsShowMnemonic(factorSourceID.value)
+                },
+                onNavigateToMnemonicRestore = { accountAddress ->
+                    navController.restoreMnemonic(accountAddress)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -186,8 +191,8 @@ fun NavigationHost(
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
             },
-            onApplySecuritySettings = { factorSourceIDString ->
-                navController.settingsShowMnemonic(factorSourceIDString)
+            onNavigateToMnemonicBackup = { factorSourceId ->
+                navController.settingsShowMnemonic(factorSourceId.value)
             }
         )
         personaDetailScreen(

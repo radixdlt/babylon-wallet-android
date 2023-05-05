@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.utils.personaFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -73,7 +74,7 @@ class PersonasViewModel @Inject constructor(
         viewModelScope.launch {
             personaAddressThatNeedBackup?.let { address ->
                 getProfileUseCase.personaOnCurrentNetwork(address)?.personaFactorSourceId()?.let {
-                    sendEvent(PersonasEvent.ApplySecuritySettings(it.value))
+                    sendEvent(PersonasEvent.NavigateToMnemonicBackup(it))
                 }
             }
         }
@@ -86,6 +87,6 @@ class PersonasViewModel @Inject constructor(
 
     sealed interface PersonasEvent : OneOffEvent {
         data class CreatePersona(val firstPersonaCreated: Boolean) : PersonasEvent
-        data class ApplySecuritySettings(val factorSourceIdString: String) : PersonasEvent
+        data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : PersonasEvent
     }
 }
