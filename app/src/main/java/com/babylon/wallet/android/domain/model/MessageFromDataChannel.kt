@@ -26,7 +26,7 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
@@ -47,14 +47,14 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null &&
-                    ongoingPersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null &&
-                    oneTimePersonaDataRequestItem == null
+                        ongoingPersonaDataRequestItem == null &&
+                        oneTimeAccountsRequestItem == null &&
+                        oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -62,6 +62,7 @@ sealed interface MessageFromDataChannel {
                     data class WithChallenge(val challenge: String) : LoginRequest()
                     object WithoutChallenge : LoginRequest()
                 }
+
                 data class UsePersonaRequest(val personaAddress: String) : AuthRequest
             }
         }
@@ -182,6 +183,8 @@ sealed interface MessageFromDataChannel {
             val message: String
         ) : LedgerResponse(interactionId)
     }
+
+    object ParsingError : MessageFromDataChannel
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
