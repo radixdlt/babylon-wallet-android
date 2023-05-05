@@ -96,7 +96,7 @@ fun TransferContent(
             RadixTextButton(
                 text = stringResource(id = R.string.add_message),
                 onClick = { showMessageContent = true },
-                icon = {
+                leadingIcon = {
                     Icon(
                         painter = painterResource(
                             id = R.drawable.ic_add_message
@@ -168,7 +168,7 @@ fun TransferContent(
             RadixTextButton(
                 text = stringResource(id = R.string.add_account),
                 onClick = { showMessageContent = true },
-                icon = {
+                leadingIcon = {
                     Icon(
                         painter = painterResource(
                             id = R.drawable.ic_add_account

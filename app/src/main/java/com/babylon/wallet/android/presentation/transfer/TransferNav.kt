@@ -20,7 +20,7 @@ internal class TransferArgs(val accountId: String) {
 }
 
 fun NavController.transfer(accountId: String) {
-    navigate("transfer_route/$accountId")
+    navigate("transfer/$accountId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -29,7 +29,7 @@ fun NavGraphBuilder.transferScreen(
     onSendTransferClick: () -> Unit
 ) {
     composable(
-        route = "transfer_route/{$ARG_ACCOUNT_ID}",
+        route = "transfer/{$ARG_ACCOUNT_ID}",
         arguments = listOf(
             navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
         )
