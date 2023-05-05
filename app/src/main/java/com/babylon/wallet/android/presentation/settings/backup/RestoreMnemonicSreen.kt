@@ -144,7 +144,7 @@ private fun RestoreMnemonicContent(
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onMnemonicWordsTyped,
-                value = state.mnemonicWords,
+                value = state.wordsPhrase,
                 leftLabel = stringResource(id = R.string.seed_phrase),
                 hint = stringResource(id = R.string.seed_phrase),
                 rightLabel = state.wordsHint,

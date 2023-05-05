@@ -43,7 +43,7 @@ class RestoreMnemonicViewModel @Inject constructor(
 
     override fun initialState(): State = State(
         accountAddress = args.accountAddress,
-        mnemonicWords = "",
+        mnemonicWords = listOf(),
         passphrase = "",
         accountOnNetwork = null,
         acceptedSeedPhraseLength = SeedPhraseLength.TWENTY_FOUR,
@@ -72,8 +72,8 @@ class RestoreMnemonicViewModel @Inject constructor(
     }
 
     fun onMnemonicWordsTyped(words: String) {
-        _state.update {
-            it.copy(mnemonicWords = words)
+        _state.update { state ->
+            state.copy(mnemonicWords = words.split("\\s+".toRegex()))
         }
     }
 
@@ -91,7 +91,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         val derivationPath = factorInstance.derivationPath ?: return
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = _state.value.mnemonicWords.trim(),
+            mnemonic = _state.value.wordsPhrase,
             bip39Passphrase = _state.value.passphrase
         )
 
@@ -116,7 +116,7 @@ class RestoreMnemonicViewModel @Inject constructor(
 
     data class State(
         val accountAddress: String,
-        val mnemonicWords: String,
+        private val mnemonicWords: List<String>,
         val passphrase: String,
         val accountOnNetwork: Network.Account?,
         val factorSourceHint: String,
@@ -124,14 +124,14 @@ class RestoreMnemonicViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
     ): UiState {
 
-        private val words: Int
-            get() = mnemonicWords.trim().split("\\s+".toRegex()).size
+        val wordsPhrase: String
+            get() = mnemonicWords.joinToString(separator = " ")
 
         val wordsHint: String
-            get() = "$words/${acceptedSeedPhraseLength.words}"
+            get() = "${mnemonicWords.filterNot { it == "" }.size}/${acceptedSeedPhraseLength.words}"
 
         private val isWordCountValid: Boolean
-            get() = words == acceptedSeedPhraseLength.words
+            get() = mnemonicWords.filterNot { it == "" }.size == acceptedSeedPhraseLength.words
 
         val isSubmitButtonEnabled: Boolean
             get() = isWordCountValid && accountOnNetwork != null
