@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -27,6 +28,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
 fun RestoreMnemonicScreen(
@@ -35,6 +37,7 @@ fun RestoreMnemonicScreen(
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
     RestoreMnemonicContent(
         modifier = modifier,
         state = state,
@@ -42,7 +45,13 @@ fun RestoreMnemonicScreen(
         onMessageShown = viewModel::onMessageShown,
         onMnemonicWordsTyped = viewModel::onMnemonicWordsTyped,
         onPassphraseTyped = viewModel::onPassphraseTyped,
-        onRestore = viewModel::onRestore
+        onRestore = {
+            context.biometricAuthenticate { authenticated ->
+                if (authenticated) {
+                    viewModel.onRestore()
+                }
+            }
+        }
     )
 
     LaunchedEffect(Unit) {
