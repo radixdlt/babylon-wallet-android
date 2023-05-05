@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import rdx.works.core.blake2Hash
 import rdx.works.peerdroid.data.PeerdroidConnector
@@ -108,14 +109,19 @@ class PeerdroidClientImpl @Inject constructor(
         peerdroidConnector.terminateConnectionToConnectorExtension()
     }
 
+    @Suppress("SwallowedException")
     private fun parseIncomingMessage(
         remoteClientId: String,
         messageInJsonString: String
     ): MessageFromDataChannel {
-        val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
-        return when (payload) {
-            is WalletInteraction -> payload.toDomainModel(dappId = remoteClientId)
-            else -> (payload as LedgerInteractionResponse).toDomainModel()
+        return try {
+            val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
+            when (payload) {
+                is WalletInteraction -> payload.toDomainModel(dappId = remoteClientId)
+                else -> (payload as LedgerInteractionResponse).toDomainModel()
+            }
+        } catch (serializationException: SerializationException) {
+            MessageFromDataChannel.ParsingError
         }
     }
 }

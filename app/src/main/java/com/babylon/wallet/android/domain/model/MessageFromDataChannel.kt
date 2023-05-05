@@ -62,6 +62,7 @@ sealed interface MessageFromDataChannel {
                     data class WithChallenge(val challenge: String) : LoginRequest()
                     object WithoutChallenge : LoginRequest()
                 }
+
                 data class UsePersonaRequest(val personaAddress: String) : AuthRequest
             }
         }
@@ -182,6 +183,8 @@ sealed interface MessageFromDataChannel {
             val message: String
         ) : LedgerResponse(interactionId)
     }
+
+    object ParsingError : MessageFromDataChannel
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
