@@ -5,32 +5,30 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
-fun TargetAccountCard(
+fun TransferMessage(
     modifier: Modifier = Modifier,
-    onChooseAccountClick: () -> Unit,
-    onAddAssetsClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    isDeletable: Boolean = false
+    message: String,
+    onMessageChanged: (String) -> Unit,
+    onMessageClose: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -43,23 +41,16 @@ fun TargetAccountCard(
     ) {
         Row(
             modifier = Modifier
-                .padding(RadixTheme.dimensions.paddingSmall),
-            horizontalArrangement = Arrangement.Center,
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingXSmall),
+            horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadixTextButton(
-                text = stringResource(id = R.string.choose_accounts),
-                contentColor = RadixTheme.colors.gray2,
-                onClick = onChooseAccountClick
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            if (isDeletable) {
-                IconButton(onClick = onDeleteClick) {
-                    Icon(
-                        imageVector = Icons.Filled.Clear,
-                        contentDescription = "clear"
-                    )
-                }
+            IconButton(onClick = onMessageClose) {
+                Icon(
+                    imageVector = Icons.Filled.Clear,
+                    contentDescription = "clear"
+                )
             }
         }
 
@@ -72,14 +63,20 @@ fun TargetAccountCard(
                     color = RadixTheme.colors.gray5,
                     shape = RadixTheme.shapes.roundedRectBottomMedium
                 )
-                .padding(RadixTheme.dimensions.paddingDefault),
+                .padding(RadixTheme.dimensions.paddingSmall),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadixTextButton(
-                text = stringResource(id = R.string.add_assets),
-                contentColor = RadixTheme.colors.gray2,
-                onClick = onAddAssetsClick
+            RadixTextField(
+                modifier = Modifier,
+                onValueChanged = onMessageChanged,
+                value = message,
+                hint = "Add a message",
+                hintColor = RadixTheme.colors.gray2,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent
+                )
             )
         }
     }
@@ -87,12 +84,15 @@ fun TargetAccountCard(
 
 @Preview(showBackground = true)
 @Composable
-fun EmptyAccountCardPreview() {
+fun TransferMessagePreview() {
     RadixWalletTheme {
-        TargetAccountCard(
-            onChooseAccountClick = {},
-            onAddAssetsClick = {},
-            onDeleteClick = {}
+        TransferMessage(
+            modifier = Modifier
+                .padding(10.dp)
+                .background(color = Color.Gray),
+            message = "",
+            onMessageChanged = {},
+            onMessageClose = {}
         )
     }
 }

@@ -3,12 +3,15 @@ package com.babylon.wallet.android.presentation.transfer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,7 +54,8 @@ fun TransferScreen(
         modifier = modifier,
         onBackClick = onBackClick,
         onSendTransferClick = onSendTransferClick,
-        fromAccount = state.fromAccount
+        state = state,
+        onMessageChanged = viewModel::onMessageChanged
     )
 }
 
@@ -60,13 +64,16 @@ fun TransferContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     onSendTransferClick: () -> Unit,
-    fromAccount: AccountItemUiModel?
+    state: TransferUiState,
+    onMessageChanged: (String) -> Unit
 ) {
     var showMessageContent by remember { mutableStateOf(false) }
+    var emptyAccounts by remember { mutableStateOf(1) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            .imePadding()
             .background(color = RadixTheme.colors.white)
             .padding(RadixTheme.dimensions.paddingDefault),
         horizontalAlignment = Alignment.Start
@@ -77,117 +84,150 @@ fun TransferContent(
             contentColor = RadixTheme.colors.gray1,
             backIconType = BackIconType.Close
         )
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(
-                        vertical = RadixTheme.dimensions.paddingLarge,
-                        horizontal = RadixTheme.dimensions.paddingDefault
-                    ),
-                text = stringResource(id = R.string.transfer),
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            RadixTextButton(
-                text = stringResource(id = R.string.add_message),
-                onClick = { showMessageContent = true },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(
-                            id = R.drawable.ic_add_message
-                        ),
-                        contentDescription = ""
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(
+                                vertical = RadixTheme.dimensions.paddingLarge,
+                                horizontal = RadixTheme.dimensions.paddingDefault
+                            ),
+                        text = stringResource(id = R.string.transfer),
+                        style = RadixTheme.typography.title,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (!showMessageContent) {
+                        RadixTextButton(
+                            text = stringResource(id = R.string.add_message),
+                            onClick = { showMessageContent = true },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = R.drawable.ic_add_message
+                                    ),
+                                    contentDescription = ""
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            if (showMessageContent) {
+                item {
+                    TransferMessage(
+                        message = state.message,
+                        onMessageChanged = onMessageChanged,
+                        onMessageClose = { showMessageContent = false }
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+            }
+
+            state.fromAccount?.let { account ->
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingMedium,
+                                vertical = RadixTheme.dimensions.paddingXSmall
+                            ),
+                        text = stringResource(id = R.string.from).uppercase(),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    SimpleAccountCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.horizontalGradient(
+                                    AccountGradientList[account.appearanceID % AccountGradientList.size]
+                                ),
+                                RadixTheme.shapes.roundedRectSmall
+                            )
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingLarge,
+                                vertical = RadixTheme.dimensions.paddingDefault
+                            ),
+                        account = account
                     )
                 }
-            )
-        }
+            }
 
-        fromAccount?.let { account ->
-            Text(
-                modifier = Modifier
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
-                        vertical = RadixTheme.dimensions.paddingXSmall
-                    ),
-                text = stringResource(id = R.string.from).uppercase(),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            SimpleAccountCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            AccountGradientList[account.appearanceID % AccountGradientList.size]
-                        ),
-                        RadixTheme.shapes.roundedRectSmall
+            item {
+                StrokeLine(height = 50.dp)
+            }
+
+            item {
+                Row {
+                    Text(
+                        modifier = Modifier
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingMedium,
+                                vertical = RadixTheme.dimensions.paddingXSmall
+                            ),
+                        text = stringResource(id = R.string.to).uppercase(),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    ),
-                account = account
-            )
-        }
+                    StrokeLine()
+                }
+            }
 
-        StrokeLine(height = 50.dp)
+            items(count = emptyAccounts) {
+                TargetAccountCard(
+                    onChooseAccountClick = { /* todo */ },
+                    onAddAssetsClick = { /* todo */ },
+                    onDeleteClick = {
+                        emptyAccounts--
+                    },
+                    isDeletable = it > 0
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
 
-        Row {
-            Text(
-                modifier = Modifier
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
-                        vertical = RadixTheme.dimensions.paddingXSmall
-                    ),
-                text = stringResource(id = R.string.to).uppercase(),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            StrokeLine()
-        }
-
-        EmptyAccountCard(
-            onChooseAccountClick = { /* todo */ },
-            onAddAssetsClick = { /* todo */ },
-            onCancelClick = { /* todo */ },
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.End
-        ) {
-            RadixTextButton(
-                text = stringResource(id = R.string.add_account),
-                onClick = { showMessageContent = true },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(
-                            id = R.drawable.ic_add_account
-                        ),
-                        contentDescription = ""
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = RadixTheme.dimensions.paddingDefault),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    RadixTextButton(
+                        text = stringResource(id = R.string.add_account),
+                        onClick = { emptyAccounts++ },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(
+                                    id = R.drawable.ic_add_account
+                                ),
+                                contentDescription = ""
+                            )
+                        }
                     )
                 }
-            )
-        }
 
-        RadixPrimaryButton(
-            modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                .fillMaxWidth()
-                .imePadding(),
-            text = stringResource(id = R.string.send_transfer_request),
-            onClick = onSendTransferClick,
-            enabled = true
-        )
+                RadixPrimaryButton(
+                    modifier = Modifier
+                        .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth(),
+                    text = stringResource(id = R.string.send_transfer_request),
+                    onClick = onSendTransferClick
+                )
+            }
+        }
     }
 }
 
@@ -201,12 +241,16 @@ fun TransferContentPreview() {
                 .background(color = Color.Gray),
             onBackClick = {},
             onSendTransferClick = {},
-            fromAccount = AccountItemUiModel(
-                "rdx_t_12382918379821",
-                displayName = "Savings account",
-                appearanceID = 1,
-                isSelected = false
-            )
+            state = TransferUiState(
+                message = "",
+                fromAccount = AccountItemUiModel(
+                    "rdx_t_12382918379821",
+                    displayName = "Savings account",
+                    appearanceID = 1,
+                    isSelected = false
+                )
+            ),
+            onMessageChanged = {},
         )
     }
 }

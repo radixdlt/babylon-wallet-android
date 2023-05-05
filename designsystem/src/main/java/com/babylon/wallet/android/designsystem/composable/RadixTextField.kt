@@ -10,16 +10,17 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,14 +28,15 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RadixTextField(
     modifier: Modifier,
     onValueChanged: (String) -> Unit,
     value: String,
+    colors: TextFieldColors? = null,
     leftLabel: String? = null,
     hint: String? = null,
+    hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
     rightLabel: String? = null,
     optionalHint: String? = null,
@@ -72,7 +74,7 @@ fun RadixTextField(
                 value = value,
                 onValueChange = onValueChanged,
                 shape = RadixTheme.shapes.roundedRectSmall,
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = colors ?: OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = RadixTheme.colors.gray5,
                     focusedPlaceholderColor = RadixTheme.colors.gray2,
                     focusedTextColor = RadixTheme.colors.gray1,
@@ -86,7 +88,13 @@ fun RadixTextField(
                     )
                 ),
                 placeholder = {
-                    hint?.let { Text(text = it, style = RadixTheme.typography.body1Regular) }
+                    hint?.let {
+                        Text(
+                            text = it,
+                            style = RadixTheme.typography.body1Regular,
+                            color = hintColor ?: RadixTheme.colors.gray1
+                        )
+                    }
                 },
                 trailingIcon = trailingIcon,
                 isError = error != null,
