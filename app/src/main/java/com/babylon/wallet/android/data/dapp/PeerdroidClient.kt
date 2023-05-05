@@ -109,6 +109,7 @@ class PeerdroidClientImpl @Inject constructor(
         peerdroidConnector.terminateConnectionToConnectorExtension()
     }
 
+    @Suppress("SwallowedException")
     private fun parseIncomingMessage(
         remoteClientId: String,
         messageInJsonString: String

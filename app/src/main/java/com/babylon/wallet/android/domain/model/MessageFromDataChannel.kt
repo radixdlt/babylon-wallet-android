@@ -26,7 +26,7 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
@@ -47,14 +47,14 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null &&
-                        ongoingPersonaDataRequestItem == null &&
-                        oneTimeAccountsRequestItem == null &&
-                        oneTimePersonaDataRequestItem == null
+                    ongoingPersonaDataRequestItem == null &&
+                    oneTimeAccountsRequestItem == null &&
+                    oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
