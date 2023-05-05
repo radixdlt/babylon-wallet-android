@@ -2,6 +2,9 @@ package com.babylon.wallet.android.presentation.settings.seedphrase
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +27,8 @@ class ShowMnemonicViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
     savedStateHandle: SavedStateHandle
-) : StateViewModel<ShowMnemonicViewModel.SeedPhraseUiState>() {
+) : StateViewModel<ShowMnemonicViewModel.SeedPhraseUiState>(),
+    OneOffEventHandler<ShowMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
 
     private val args = ShowMnemonicArgs(savedStateHandle)
 
@@ -42,6 +46,12 @@ class ShowMnemonicViewModel @Inject constructor(
     }
 
     fun onShowMnemonic(factorSourceID: FactorSource.ID) {
+        viewModelScope.launch {
+            sendEvent(Effect.OnRequestToShowMnemonic(factorSourceID))
+        }
+    }
+
+    fun onAuthenticationGrantedToShowMnemonic(factorSourceID: FactorSource.ID) {
         viewModelScope.launch {
             mnemonicRepository.readMnemonic(factorSourceID)?.let { mnemonic ->
                 _state.update { it.copy(visibleMnemonic = VisibleMnemonic.Shown(mnemonic = mnemonic, factorSourceID = factorSourceID)) }
@@ -62,6 +72,10 @@ class ShowMnemonicViewModel @Inject constructor(
         val factorSources: ImmutableList<FactorSource> = persistentListOf(),
         val visibleMnemonic: VisibleMnemonic = VisibleMnemonic.None
     ) : UiState
+
+    sealed interface Effect: OneOffEvent {
+        data class OnRequestToShowMnemonic(val factorSourceID: FactorSource.ID): Effect
+    }
 }
 
 sealed interface VisibleMnemonic {

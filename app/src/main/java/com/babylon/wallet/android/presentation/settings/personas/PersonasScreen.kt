@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,7 +34,6 @@ import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.factorsources.FactorSource
 
@@ -82,7 +80,6 @@ fun PersonasContent(
     displaySecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit
 ) {
-    val context = LocalContext.current
     Column(
         modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -112,14 +109,8 @@ fun PersonasContent(
                     ApplySecuritySettingsLabel(
                         modifier = Modifier.fillMaxWidth(),
                         labelColor = Color.Black.copy(alpha = 0.2f),
-                        text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings),
-                        onClick = {
-                            context.biometricAuthenticate { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onApplySecuritySettings()
-                                }
-                            }
-                        }
+                        text = stringResource(id = R.string.apply_security_settings),
+                        onClick = onApplySecuritySettings
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 } else {

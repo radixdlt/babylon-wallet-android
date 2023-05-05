@@ -269,11 +269,7 @@ private fun WalletAccountList(
                     },
                 showApplySecuritySettings = account.needMnemonicBackup(),
                 onApplySecuritySettings = {
-                    context.biometricAuthenticate { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
-                            onApplySecuritySettings(account.address)
-                        }
-                    }
+                    onApplySecuritySettings(account.address)
                 },
                 needMnemonicRecovery = account.needMnemonicRecovery(),
                 onMnemonicRecovery = {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,6 +86,21 @@ fun ShowMnemonicScreen(
         }
         else -> {}
     }
+
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is ShowMnemonicViewModel.Effect.OnRequestToShowMnemonic -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            viewModel.onAuthenticationGrantedToShowMnemonic(it.factorSourceID)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -94,7 +110,6 @@ private fun SeedPhraseContent(
     onBackClick: () -> Unit,
     onShowMnemonic: (FactorSource.ID) -> Unit
 ) {
-    val context = LocalContext.current
     Column(
         modifier = Modifier.background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -129,11 +144,7 @@ private fun SeedPhraseContent(
                         .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                         .clip(RadixTheme.shapes.roundedRectMedium)
                         .throttleClickable {
-                            context.biometricAuthenticate { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onShowMnemonic(factorSource.id)
-                                }
-                            }
+                            onShowMnemonic(factorSource.id)
                         }
                         .fillMaxWidth()
                         .background(
