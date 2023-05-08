@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
@@ -23,12 +22,8 @@ import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.toExtendedKey
-import rdx.works.profile.data.utils.hashToFactorId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,7 +42,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         passphrase = "",
         accountOnNetwork = null,
         acceptedSeedPhraseLength = SeedPhraseLength.TWENTY_FOUR,
-        factorSourceHint = ""
+        factorSourceLabel = ""
     )
 
     init {
@@ -61,7 +56,7 @@ class RestoreMnemonicViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     accountOnNetwork = account,
-                    factorSourceHint = factorSource?.hint.orEmpty()
+                    factorSourceLabel = factorSource?.label.orEmpty()
                 )
             }
         }
@@ -119,7 +114,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         private val mnemonicWords: List<String>,
         val passphrase: String,
         val accountOnNetwork: Network.Account?,
-        val factorSourceHint: String,
+        val factorSourceLabel: String,
         val acceptedSeedPhraseLength: SeedPhraseLength,
         val uiMessage: UiMessage? = null,
     ): UiState {

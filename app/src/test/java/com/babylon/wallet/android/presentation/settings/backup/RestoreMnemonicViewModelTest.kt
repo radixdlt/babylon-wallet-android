@@ -76,7 +76,7 @@ class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel
             val item = expectMostRecentItem()
 
             assertEquals(sampleProfile.networks.first().accounts.first(), item.accountOnNetwork)
-            assertEquals(sampleProfile.factorSources.first().hint, item.factorSourceHint)
+            assertEquals(sampleProfile.factorSources.first().label, item.factorSourceLabel)
         }
     }
 
