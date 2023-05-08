@@ -3,8 +3,6 @@ package com.babylon.wallet.android.data.repository.transaction
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecentRequest
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecentResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatusRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitRequest
@@ -15,8 +13,6 @@ import javax.inject.Inject
 
 // TODO translate from network models to domain models
 interface TransactionRepository {
-
-    suspend fun getRecentTransactions(address: String, page: String?, limit: Int?): Result<TransactionRecentResponse>
 
     suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse>
 
@@ -32,15 +28,6 @@ class TransactionRepositoryImpl @Inject constructor(private val transactionApi: 
 
     override suspend fun getLedgerEpoch(): Result<Long> {
         return transactionApi.transactionConstruction().execute(map = { it.ledgerState.epoch })
-    }
-
-    override suspend fun getRecentTransactions(
-        address: String,
-        page: String?,
-        limit: Int?
-    ): Result<TransactionRecentResponse> {
-        return transactionApi.transactionRecent(TransactionRecentRequest(cursor = page, limit = limit))
-            .execute(map = { it })
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {

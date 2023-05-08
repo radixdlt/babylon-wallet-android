@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -98,13 +98,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            val result = dappMetadataRepository.getDappMetadata(
-                defitnionAddress = request.metadata.dAppDefinitionAddress,
+            val result = dappMetadataRepository.getDAppMetadata(
+                definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
-            result.onValue { dappMetadata ->
+            result.onValue { dappWithMetadata ->
                 _state.update {
-                    it.copy(dappMetadata = dappMetadata)
+                    it.copy(dappWithMetadata = dappWithMetadata)
                 }
             }
             result.onError { error ->
@@ -473,7 +473,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            val dAppName = state.value.dappMetadata?.getName().orEmpty().ifEmpty { "Unknown dApp" }
+            val dAppName = state.value.dappWithMetadata?.name.orEmpty().ifEmpty { "Unknown dApp" }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,
@@ -617,7 +617,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
                 requestId = request.requestId,
-                dAppName = state.value.dappMetadata?.getName().orEmpty(),
+                dAppName = state.value.dappWithMetadata?.name.orEmpty(),
                 showSuccessDialog = !request.isInternalRequest()
             )
         )
@@ -656,7 +656,7 @@ sealed interface DAppAuthorizedLoginEvent : OneOffEvent {
 }
 
 data class DAppLoginUiState(
-    val dappMetadata: DappMetadata? = null,
+    val dappWithMetadata: DappWithMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),

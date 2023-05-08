@@ -41,8 +41,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
@@ -98,7 +98,7 @@ fun SelectPersonaScreen(
             sharedViewModel.onSelectPersona(it)
             viewModel.onSelectPersona(it.address)
         },
-        dappMetadata = sharedState.dappMetadata,
+        dappWithMetadata = sharedState.dappWithMetadata,
         firstTimeLogin = state.firstTimeLogin,
         continueButtonEnabled = state.continueButtonEnabled,
         personas = state.personaListToDisplay,
@@ -112,7 +112,7 @@ private fun SelectPersonaContent(
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
     onSelectPersona: (Network.Persona) -> Unit,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     firstTimeLogin: Boolean,
     continueButtonEnabled: Boolean,
     personas: ImmutableList<PersonaUiModel>,
@@ -157,7 +157,7 @@ private fun SelectPersonaContent(
                         item {
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             AsyncImage(
-                                model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
+                                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                                 placeholder = painterResource(id = R.drawable.img_placeholder),
                                 fallback = painterResource(id = R.drawable.img_placeholder),
                                 error = painterResource(id = R.drawable.img_placeholder),
@@ -186,7 +186,7 @@ private fun SelectPersonaContent(
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             LoginRequestHeader(
-                                dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
                                 firstTimeLogin = firstTimeLogin,
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                             )
@@ -270,7 +270,10 @@ fun SelectPersonaPreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             firstTimeLogin = false,
             continueButtonEnabled = false,
             personas = persistentListOf(),
@@ -289,7 +292,10 @@ fun SelectPersonaFirstTimePreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             firstTimeLogin = true,
             continueButtonEnabled = false,
             personas = persistentListOf(),

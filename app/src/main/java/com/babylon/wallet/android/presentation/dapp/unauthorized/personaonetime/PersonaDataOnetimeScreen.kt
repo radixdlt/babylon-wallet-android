@@ -42,8 +42,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
@@ -89,7 +89,7 @@ fun PersonaDataOnetimeScreen(
     }
     PersonaDataOnetimeContent(
         onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
-        dappMetadata = sharedState.dappMetadata,
+        dappWithMetadata = sharedState.dappWithMetadata,
         onBackClick = {
             if (sharedState.initialUnauthorizedLoginRoute is InitialUnauthorizedLoginRoute.OnetimePersonaData) {
                 sharedViewModel.onRejectRequest()
@@ -112,7 +112,7 @@ fun PersonaDataOnetimeScreen(
 @Composable
 private fun PersonaDataOnetimeContent(
     onContinueClick: () -> Unit,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
@@ -143,7 +143,7 @@ private fun PersonaDataOnetimeContent(
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 AsyncImage(
-                    model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
+                    model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     fallback = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder),
@@ -162,7 +162,7 @@ private fun PersonaDataOnetimeContent(
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                PermissionRequestHeader(dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
+                PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(id = R.string.choose_data_to_provide),
@@ -242,7 +242,10 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOnetimeContent(
             onContinueClick = {},
-            dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,

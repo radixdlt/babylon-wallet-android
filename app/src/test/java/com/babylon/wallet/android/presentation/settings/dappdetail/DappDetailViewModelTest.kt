@@ -77,7 +77,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.dappMetadata != null)
+            assert(item.dappWithMetadata != null)
             assert(item.dapp != null)
             assert(item.personas.size == 1)
         }

@@ -26,6 +26,7 @@ import kotlinx.serialization.Serializable
  * @param fungibleResources 
  * @param nonFungibleResources 
  * @param ancestorIdentities 
+ * @param explicitMetadata 
  * @param details 
  */
 @Serializable
@@ -47,6 +48,9 @@ data class StateEntityDetailsResponseItem (
 
     @SerialName(value = "ancestor_identities")
     val ancestorIdentities: StateEntityDetailsResponseItemAncestorIdentities? = null,
+
+    @SerialName(value = "explicit_metadata")
+    val explicitMetadata: EntityMetadataCollection? = null,
 
     @SerialName(value = "details")
     val details: StateEntityDetailsResponseItemDetails? = null

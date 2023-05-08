@@ -288,7 +288,7 @@ class GetAccountResourcesUseCaseTest {
         nonFungibleIds = listOf(
             StateNonFungibleDetailsResponseItem(
                 nonFungibleId = "1",
-                mutableData = ScryptoSborValue(
+                data = ScryptoSborValue(
                     "",
                     RawJson(
                         elements = listOf(),

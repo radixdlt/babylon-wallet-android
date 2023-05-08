@@ -40,8 +40,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DappMetadata
-import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
@@ -80,7 +80,7 @@ fun LoginPermissionScreen(
         onContinueClick = {
             viewModel.onPermissionGranted(numberOfAccounts, isExactAccountsCount, oneTime)
         },
-        dappMetadata = state.dappMetadata,
+        dappWithMetadata = state.dappWithMetadata,
         onBackClick = {
             if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
                 viewModel.onAbortDappLogin()
@@ -97,7 +97,7 @@ fun LoginPermissionScreen(
 @Composable
 private fun LoginPermissionContent(
     onContinueClick: () -> Unit,
-    dappMetadata: DappMetadata?,
+    dappWithMetadata: DappWithMetadata?,
     onBackClick: () -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
@@ -126,7 +126,7 @@ private fun LoginPermissionContent(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             AsyncImage(
-                model = rememberImageUrl(fromUrl = dappMetadata?.getImageUrl(), size = ImageSize.MEDIUM),
+                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 fallback = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder),
@@ -145,7 +145,7 @@ private fun LoginPermissionContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            PermissionRequestHeader(dappName = dappMetadata?.getName().orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
+            PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
             Spacer(modifier = Modifier.weight(0.5f))
             RequestedPermissionsList(
                 modifier = Modifier
@@ -234,7 +234,10 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
@@ -250,7 +253,10 @@ fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dappMetadata = DappMetadata("address", mapOf(MetadataConstants.KEY_NAME to "Collabo.fi")),
+            dappWithMetadata = DappWithMetadata(
+                dAppAddress = "account_tdx_abc",
+                nameItem = NameMetadataItem("Collabo.fi")
+            ),
             onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
