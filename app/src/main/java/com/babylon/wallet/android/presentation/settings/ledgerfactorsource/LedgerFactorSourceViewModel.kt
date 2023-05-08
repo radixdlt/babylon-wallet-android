@@ -21,7 +21,6 @@ import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,22 +44,6 @@ class LedgerFactorSourcesViewModel @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    fun onShowDeleteLedgerDialog(factorSourceID: FactorSource.ID) {
-        viewModelScope.launch {
-            _state.update { it.copy(deleteLedgerDialogState = DeleteLedgerDialogState.Shown(factorSourceID = factorSourceID)) }
-        }
-    }
-
-    fun closeDeleteLedgerDialog(factorSourceId: FactorSource.ID?) {
-        viewModelScope.launch {
-            if (factorSourceId != null) {
-                // TODO delete factor source
-                Timber.d("Factor source delete No-op")
-            }
-            _state.update { it.copy(deleteLedgerDialogState = DeleteLedgerDialogState.None) }
         }
     }
 
@@ -108,15 +91,9 @@ class LedgerFactorSourcesViewModel @Inject constructor(
 
 data class LedgerFactorSourcesUiState(
     val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
-    val deleteLedgerDialogState: DeleteLedgerDialogState = DeleteLedgerDialogState.None,
     val loading: Boolean = false,
     val hasP2pLinks: Boolean = false,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Initial,
     val waitingForLedgerResponse: Boolean = false,
     var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
 ) : UiState
-
-sealed interface DeleteLedgerDialogState {
-    object None : DeleteLedgerDialogState
-    data class Shown(val factorSourceID: FactorSource.ID) : DeleteLedgerDialogState
-}
