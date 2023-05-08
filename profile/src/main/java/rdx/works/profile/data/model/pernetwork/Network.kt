@@ -487,6 +487,24 @@ fun Profile.addAccount(
     return updatedProfile
 }
 
+fun Profile.addNetworkIfDoesNotExist(
+    onNetwork: NetworkId
+): Profile {
+    val networkExist = this.networks.any { onNetwork.value == it.networkID }
+    return if (!networkExist) {
+        copy(
+            networks = networks + Network(
+                accounts = listOf(),
+                authorizedDapps = listOf(),
+                networkID = onNetwork.value,
+                personas = listOf()
+            )
+        )
+    } else {
+        this
+    }
+}
+
 fun Profile.incrementFactorSourceNextAccountIndex(
     forNetwork: NetworkId,
     factorSourceId: FactorSource.ID
