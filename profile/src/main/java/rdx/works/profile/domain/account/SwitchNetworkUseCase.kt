@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
+import rdx.works.profile.data.model.pernetwork.addNetworkIfDoesNotExist
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.derivation.model.NetworkId
@@ -28,7 +29,7 @@ class SwitchNetworkUseCase @Inject constructor(
                     network.name == networkName
                 }
             )
-            val updatedProfile = profile.changeGateway(gateway)
+            val updatedProfile = profile.addNetworkIfDoesNotExist(gateway.network.networkId()).changeGateway(gateway)
             profileRepository.saveProfile(updatedProfile)
             gateway.network.networkId()
         }
