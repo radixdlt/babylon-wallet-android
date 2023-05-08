@@ -110,7 +110,7 @@ class DappDetailViewModel @Inject constructor(
         }
         _state.update {
             it.copy(
-                selectedPersona = PersonaUiModel(persona, requiredFieldIDS = requiredFieldKinds),
+                selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds),
                 sharedPersonaAccounts = sharedAccounts.toPersistentList()
             )
         }
@@ -138,7 +138,7 @@ class DappDetailViewModel @Inject constructor(
     fun onEditPersona() {
         viewModelScope.launch {
             state.value.selectedPersona?.let { persona ->
-                sendEvent(DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDS.encodeToString()))
+                sendEvent(DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString()))
             }
         }
     }

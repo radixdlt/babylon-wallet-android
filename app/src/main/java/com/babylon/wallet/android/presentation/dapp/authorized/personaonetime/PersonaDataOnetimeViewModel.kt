@@ -42,7 +42,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         personaListToDisplay = personas.map {
-                            PersonaUiModel(it, requiredFieldIDS = args.requiredFields.toList())
+                            PersonaUiModel(it, requiredFieldIDs = args.requiredFields.toList())
                         }.toImmutableList()
                     )
                 }

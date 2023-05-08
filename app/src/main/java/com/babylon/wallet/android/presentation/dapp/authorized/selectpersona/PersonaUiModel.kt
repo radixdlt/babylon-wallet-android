@@ -10,15 +10,15 @@ data class PersonaUiModel(
     val pinned: Boolean = false,
     val lastUsedOn: String? = null,
     val lastUsedOnTimestamp: Long = 0,
-    val requiredFieldIDS: List<Network.Persona.Field.ID> = emptyList()
+    val requiredFieldIDs: List<Network.Persona.Field.ID> = emptyList()
 ) {
     fun missingFieldKinds(): ImmutableList<Network.Persona.Field.ID> {
-        return requiredFieldIDS.minus(persona.fields.map { it.id }.toSet()).sortedBy { it.ordinal }.toPersistentList()
+        return requiredFieldIDs.minus(persona.fields.map { it.id }.toSet()).sortedBy { it.ordinal }.toPersistentList()
     }
 
     fun personalInfoFormatted(): String {
         return buildString {
-            val fields = persona.fields.filter { requiredFieldIDS.contains(it.id) }
+            val fields = persona.fields.filter { requiredFieldIDs.contains(it.id) }
             val givenName = fields.firstOrNull { it.id == Network.Persona.Field.ID.GivenName }?.value
             val familyName = fields.firstOrNull { it.id == Network.Persona.Field.ID.FamilyName }?.value
             val email = fields.firstOrNull { it.id == Network.Persona.Field.ID.EmailAddress }?.value

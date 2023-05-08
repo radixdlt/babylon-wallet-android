@@ -3,21 +3,20 @@ package com.babylon.wallet.android.presentation.createaccount.addledger
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
-import com.babylon.wallet.android.domain.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.getLedgerDeviceModelAsDTO
+import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,8 +36,6 @@ class AddLedgerViewModel @Inject constructor(
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<AddLedgerViewModel.AddLedgerState>(), OneOffEventHandler<AddLedgerEvent> by OneOffEventHandlerImpl() {
-
-    private var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
 
     init {
         viewModelScope.launch {
@@ -67,10 +64,13 @@ class AddLedgerViewModel @Inject constructor(
     fun onSendAddLedgerRequest() {
         viewModelScope.launch {
             _state.update { it.copy(waitingForLedgerResponse = true) }
-            ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString()).cancellable().collect { response ->
-                recentlyConnectedLedgerDevice = LedgerDeviceUiModel(response.deviceId, response.model)
+            ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString()).collect { response ->
                 _state.update { state ->
-                    state.copy(addLedgerSheetState = AddLedgerSheetState.InputLedgerName, waitingForLedgerResponse = false)
+                    state.copy(
+                        addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
+                        waitingForLedgerResponse = false,
+                        recentlyConnectedLedgerDevice = LedgerDeviceUiModel(response.deviceId, response.model)
+                    )
                 }
             }
         }
@@ -85,7 +85,7 @@ class AddLedgerViewModel @Inject constructor(
             viewModelScope.launch {
                 _state.update { it.copy(waitingForLedgerResponse = true) }
                 val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(ledgerFactorSource)
-                val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModelAsDTO())
+                val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
                 ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(
                     UUIDGenerator.uuid().toString(),
                     derivationPath.path,
@@ -106,7 +106,7 @@ class AddLedgerViewModel @Inject constructor(
 
     private fun addLedgerFactorSource() {
         viewModelScope.launch {
-            recentlyConnectedLedgerDevice?.let { ledger ->
+            state.value.recentlyConnectedLedgerDevice?.let { ledger ->
                 val ledgerFactorSourceId = addLedgerFactorSourceUseCase(
                     id = FactorSource.ID(ledger.id),
                     model = ledger.model.toProfileLedgerDeviceModel(),
@@ -120,7 +120,9 @@ class AddLedgerViewModel @Inject constructor(
     }
 
     fun onConfirmLedgerName(name: String) {
-        recentlyConnectedLedgerDevice = recentlyConnectedLedgerDevice?.copy(name = name)
+        _state.update { state ->
+            state.copy(recentlyConnectedLedgerDevice = state.recentlyConnectedLedgerDevice?.copy(name = name))
+        }
         addLedgerFactorSource()
     }
 
@@ -130,7 +132,8 @@ class AddLedgerViewModel @Inject constructor(
         val selectedFactorSourceID: FactorSource.ID? = null,
         val hasP2pLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Initial,
-        val waitingForLedgerResponse: Boolean = false
+        val waitingForLedgerResponse: Boolean = false,
+        var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
     ) : UiState
 }
 

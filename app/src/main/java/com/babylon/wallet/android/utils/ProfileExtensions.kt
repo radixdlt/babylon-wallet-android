@@ -10,7 +10,7 @@ fun FactorSource.addedOnTimestampFormatted(): String {
     return formatter.format(lastUsedOn)
 }
 
-fun FactorSource.getLedgerDeviceModelAsDTO(): LedgerDeviceModel? {
+fun FactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
     return when (description) {
         "nanoS" -> LedgerDeviceModel.NanoS
         "nanoS+" -> LedgerDeviceModel.NanoSPlus
