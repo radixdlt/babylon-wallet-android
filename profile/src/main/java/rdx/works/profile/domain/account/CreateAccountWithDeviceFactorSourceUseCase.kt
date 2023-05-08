@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.addAccount
