@@ -276,18 +276,7 @@ private sealed class OnAction {
                 modifier = Modifier
                     .background(RadixTheme.colors.defaultBackground)
             ) {
-                val qrCode = remember(actionableAddress.address) {
-                    QRCodeGenerator.forAccount(actionableAddress.address)
-                }
-
-                AsyncImage(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .aspectRatio(ratio = 1f),
-                    model = qrCode,
-                    contentDescription = null
-                )
+                AccountQRCodeView(accountAddress = actionableAddress.address)
             }
         }
     }
