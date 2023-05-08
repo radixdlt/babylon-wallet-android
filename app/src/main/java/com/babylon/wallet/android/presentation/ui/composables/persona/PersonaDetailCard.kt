@@ -36,7 +36,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 @Composable
 fun PersonaDetailCard(
     persona: PersonaUiModel,
-    missingFields: ImmutableList<Network.Persona.Field.Kind>,
+    missingFields: ImmutableList<Network.Persona.Field.ID>,
     onEditClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onSelectPersona: ((Network.Persona) -> Unit)? = null
@@ -121,7 +121,7 @@ fun PersonaDetailCard(
 
 @Composable
 private fun RequiredInformationInfo(
-    requiredFields: ImmutableList<Network.Persona.Field.Kind>,
+    requiredFields: ImmutableList<Network.Persona.Field.ID>,
     modifier: Modifier = Modifier
 ) {
     val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold)

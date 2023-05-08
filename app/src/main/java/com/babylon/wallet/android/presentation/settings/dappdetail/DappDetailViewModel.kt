@@ -106,11 +106,11 @@ class DappDetailViewModel @Inject constructor(
         }.orEmpty()
         val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
         val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
-            it.kind
+            it.id
         }
         _state.update {
             it.copy(
-                selectedPersona = PersonaUiModel(persona, requiredFieldKinds = requiredFieldKinds),
+                selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds),
                 sharedPersonaAccounts = sharedAccounts.toPersistentList()
             )
         }
@@ -138,7 +138,7 @@ class DappDetailViewModel @Inject constructor(
     fun onEditPersona() {
         viewModelScope.launch {
             state.value.selectedPersona?.let { persona ->
-                sendEvent(DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldKinds.encodeToString()))
+                sendEvent(DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString()))
             }
         }
     }

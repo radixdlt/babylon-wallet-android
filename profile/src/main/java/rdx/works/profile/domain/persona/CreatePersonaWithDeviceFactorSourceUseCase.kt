@@ -12,7 +12,7 @@ import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
-class CreatePersonaUseCase @Inject constructor(
+class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -44,11 +44,7 @@ class CreatePersonaUseCase @Inject constructor(
                 withFactorSourceId = factorSource.id,
                 onNetwork = networkID
             )
-
-            // Save updated profile
             profileRepository.saveProfile(updatedProfile)
-
-            // Return new persona
             newPersona
         }
     }

@@ -290,7 +290,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)
                 ?.let { updatedPersona ->
                     val requiredDataFields =
-                        updatedPersona.fields.filter { requiredFields.contains(it.kind) }
+                        updatedPersona.fields.filter { requiredFields.contains(it.id) }
                     _state.update {
                         it.copy(
                             selectedPersona = updatedPersona.toUiModel(),
@@ -313,7 +313,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val requiredFields =
                 checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
-            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.kind) }
+            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.id) }
             _state.update {
                 it.copy(
                     selectedOnetimeDataFields = requiredDataFields
@@ -362,7 +362,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp?.updateAuthorizedDappPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
-                                ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                                ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
                             } else {
                                 ref
                             }
@@ -395,7 +395,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val requestedFieldKinds = requestItem.fields.map { it.toKind() }
         val personaFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)?.fields.orEmpty()
         val requestedFieldsIds =
-            personaFields.filter { requestedFieldKinds.contains(it.kind) }.map { it.id }
+            personaFields.filter { requestedFieldKinds.contains(it.id) }.map { it.id }
         return requestedFieldsCount == requestedFieldsIds.size && dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
             dapp.dAppDefinitionAddress,
             personaAddress,
@@ -444,7 +444,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp?.updateAuthorizedDappPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
-                                ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                                ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
                             } else {
                                 ref
                             }
@@ -483,7 +483,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
                             fieldIDs = emptyList(),
-                            lastUsedOn = date,
+                            lastLogin = date,
                             sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                                 emptyList(),
                                 request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(

@@ -25,7 +25,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                         Network.AuthorizedDapp.AuthorizedPersonaSimple(
                             identityAddress = "address1",
                             fieldIDs = emptyList(),
-                            lastUsedOn = "2023-01-31T10:28:14Z",
+                            lastLogin = "2023-01-31T10:28:14Z",
                             sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                 listOf("address-acc-1", SampleDataProvider().randomAddress()),
                                 Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
@@ -51,7 +51,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
                                 fieldIDs = emptyList(),
-                                lastUsedOn = "2023-01-31T10:28:14Z",
+                                lastLogin = "2023-01-31T10:28:14Z",
                                 sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                     listOf(),
                                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
@@ -67,7 +67,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
                                 fieldIDs = emptyList(),
-                                lastUsedOn = "2023-01-31T10:28:14Z",
+                                lastLogin = "2023-01-31T10:28:14Z",
                                 sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
                                     listOf(),
                                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
@@ -106,7 +106,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<String>
+        fieldIds: List<Network.Persona.Field.ID>
     ): Boolean {
         return false
     }
@@ -135,7 +135,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<String>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>) {
     }
 
 }

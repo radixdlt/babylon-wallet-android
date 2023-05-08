@@ -1,5 +1,6 @@
 package rdx.works.profile.data.model.factorsources
 
+import androidx.datastore.core.Storage
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -37,20 +38,45 @@ data class FactorSource(
     val id: ID,
 
     /**
-     * A user facing hint about this FactorSource which is displayed
+     * A user facing **label** about this FactorSource which is displayed
      * to the user when she is prompted for this FactorSource during
-     * for example transaction signing. Here are some examples.
+     * for example transaction signing. For most FactorSource kinds
+     * this value will be a *name*, here are some examples:
      *
-     * * "iPhone 14 Pro Max",
-     * * "Google Pixel 6",
-     * * "Ledger Nano Model X",
-     * * "My friend Lisa"
-     * * "YubiKey 5C NFC"
-     * * "Just a private key put in my standard secure storage."
-     * * "Mnemonic that describes a saga about a crazy horse"
+     * * `.device`: "iPhone RED"
+     * * `.ledgerHQHardwareWallet`: "Ledger MOON Edition"
+     * * `.trustedEntity`: "Sarah"
+     * * `.offDeviceMnemonic`: "Story about a horse and a battery"
+     * * `.securityQuestion`: ""
+     *
+     * The reason why this is mutable (`var`) instead of immutable `let` is
+     * an implementation detailed on iOS, where reading the device name
+     * and model is `async` but we want to be able to `sync` create the
+     * profile, thus this property at a later point in time where an async
+     * context is available.
      */
-    @SerialName("hint")
-    val hint: String,
+    @SerialName("label")
+    val label: String,
+
+    /** A user facing **description** about this FactorSource which is displayed
+     * to the user when she is prompted for this FactorSource during
+     * for example transaction signing. For most FactorSource kinds
+     * this value will be a *model*, here are some examples:
+     *
+     * * `.device`: "iPhone SE 2nd gen"
+     * * `.ledgerHQHardwareWallet`: "nanoS+"
+     * * `.trustedEntity`: "Friend"
+     * * `.offDeviceMnemonic`: "Stored in the place where I played often with my friend A***"
+     * * `.securityQuestion`: ""
+     *
+     * The reason why this is mutable (`var`) instead of immutable `let` is
+     * an implementation detailed on iOS, where reading the device name
+     * and model is `async` but we want to be able to `sync` create the
+     * profile, thus this property at a later point in time where an async
+     * context is available.
+     */
+    @SerialName("description")
+    val description: String,
 
     /**
      * Curve/Derivation scheme
@@ -85,21 +111,21 @@ data class FactorSource(
      * properties.
      */
     @SerialName("storage")
-    val storage: Storage?
+    val storage: Storage? = null
 ) {
 
     fun getNextAccountDerivationIndex(forNetworkId: NetworkId): Int {
-        val deviceStorage = storage as? Storage.Device ?: throw WasNotDeviceFactorSource()
+        val entityCreatingStorage = storage as? Storage.EntityCreating ?: throw WasNotDeviceFactorSource()
 
-        return deviceStorage.nextDerivationIndicesPerNetwork.find {
+        return entityCreatingStorage.nextDerivationIndicesPerNetwork.find {
             it.networkId == forNetworkId.value
         }?.forAccount ?: 0
     }
 
     fun getNextIdentityDerivationIndex(forNetworkId: NetworkId): Int {
-        val deviceStorage = storage as? Storage.Device ?: throw WasNotDeviceFactorSource()
+        val entityCreatingStorage = storage as? Storage.EntityCreating ?: throw WasNotDeviceFactorSource()
 
-        return deviceStorage.nextDerivationIndicesPerNetwork.find {
+        return entityCreatingStorage.nextDerivationIndicesPerNetwork.find {
             it.networkId == forNetworkId.value
         }?.forIdentity ?: 0
     }
@@ -134,8 +160,8 @@ data class FactorSource(
             )
 
             val olympia = Parameters(
-                supportedCurves = linkedSetOf(SECP_256K1),
-                supportedDerivationPathSchemes = linkedSetOf(BIP_44_OLYMPIA)
+                supportedCurves = linkedSetOf(SECP_256K1, CURVE_25519),
+                supportedDerivationPathSchemes = linkedSetOf(CAP_26, BIP_44_OLYMPIA)
             )
         }
     }
@@ -146,13 +172,13 @@ data class FactorSource(
     sealed class Storage {
 
         @Serializable
-        @SerialName("device")
-        data class Device(
+        @SerialName("entityCreating")
+        data class EntityCreating(
             @SerialName("nextDerivationIndicesPerNetwork")
             val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>
         ) : Storage() {
 
-            fun incrementAccount(forNetworkId: NetworkId): Device {
+            fun incrementAccount(forNetworkId: NetworkId): EntityCreating {
                 val indicesForNetwork = nextDerivationIndicesPerNetwork.find {
                     it.networkId == forNetworkId.value
                 }
@@ -176,7 +202,7 @@ data class FactorSource(
                 return copy(nextDerivationIndicesPerNetwork = mutatedList)
             }
 
-            fun incrementIdentity(forNetworkId: NetworkId): Device {
+            fun incrementIdentity(forNetworkId: NetworkId): EntityCreating {
                 val indicesForNetwork = nextDerivationIndicesPerNetwork.find {
                     it.networkId == forNetworkId.value
                 }
@@ -213,25 +239,40 @@ data class FactorSource(
                     NanoX -> "nanoX"
                 }
             }
+
+            companion object {
+                fun fromDescription(value: String): DeviceModel? {
+                    return when (value) {
+                        "nanoS" -> NanoS
+                        "nanoS+" -> NanoSPlus
+                        "nanoX" -> NanoX
+                        else -> null
+                    }
+                }
+            }
         }
     }
 
     companion object {
         fun babylon(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            hint: String = "babylon",
+            label: String = "Android",
+            description: String = "babylon",
         ) = device(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            hint = hint,
+            label = label,
+            description = description,
             olympiaCompatible = false
         )
 
         fun olympia(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            hint: String = "olympia",
+            label: String = "Android",
+            description: String = "olympia",
         ) = device(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            hint = hint,
+            label = label,
+            description = description,
             olympiaCompatible = true
         )
 
@@ -241,13 +282,13 @@ data class FactorSource(
             name: String?,
             olympiaCompatible: Boolean = true
         ): FactorSource {
-            val hint = name?.let { it + " (${model.description()})" } ?: model.description()
             return FactorSource(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 id = id,
-                hint = hint,
+                label = name ?: "Unnamed",
+                description = model.description(),
                 parameters = if (olympiaCompatible) olympia else babylon,
-                storage = null,
+                storage = Storage.EntityCreating(nextDerivationIndicesPerNetwork = listOf()),
                 addedOn = Instant.now(),
                 lastUsedOn = Instant.now()
             )
@@ -255,14 +296,16 @@ data class FactorSource(
 
         private fun device(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            hint: String,
+            label: String,
+            description: String,
             olympiaCompatible: Boolean
         ) = FactorSource(
             kind = FactorSourceKind.DEVICE,
             id = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase),
-            hint = hint,
+            label = label,
+            description = description,
             parameters = if (olympiaCompatible) olympia else babylon,
-            storage = Storage.Device(nextDerivationIndicesPerNetwork = listOf()),
+            storage = Storage.EntityCreating(nextDerivationIndicesPerNetwork = listOf()),
             addedOn = Instant.now(),
             lastUsedOn = Instant.now()
         )

@@ -12,9 +12,10 @@ import com.babylon.wallet.android.MainUiState
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
-import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
-import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
+import com.babylon.wallet.android.presentation.createaccount.addledger.addLedger
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCom
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -132,7 +134,21 @@ fun NavigationHost(
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
             },
-            onCloseApp = onCloseApp
+            onCloseApp = onCloseApp,
+            onAddLedgerDevice = {
+                navController.addLedger()
+            }
+        )
+        addLedger(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onAddP2PLink = {
+                navController.settingsConnectorScreen(scanQr = true)
+            },
+            goBackToCreateAccount = {
+                navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
+            }
         )
         createAccountConfirmationScreen(
             onNavigateToWallet = {
@@ -164,8 +180,8 @@ fun NavigationHost(
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
             },
-            onApplySecuritySettings = { factorSoruceIDString ->
-                navController.settingsShowMnemonic(factorSoruceIDString)
+            onApplySecuritySettings = { factorSourceIDString ->
+                navController.settingsShowMnemonic(factorSourceIDString)
             }
         )
         personaDetailScreen(

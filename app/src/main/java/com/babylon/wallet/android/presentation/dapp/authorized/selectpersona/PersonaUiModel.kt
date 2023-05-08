@@ -10,19 +10,19 @@ data class PersonaUiModel(
     val pinned: Boolean = false,
     val lastUsedOn: String? = null,
     val lastUsedOnTimestamp: Long = 0,
-    val requiredFieldKinds: List<Network.Persona.Field.Kind> = emptyList()
+    val requiredFieldIDs: List<Network.Persona.Field.ID> = emptyList()
 ) {
-    fun missingFieldKinds(): ImmutableList<Network.Persona.Field.Kind> {
-        return requiredFieldKinds.minus(persona.fields.map { it.kind }.toSet()).sortedBy { it.ordinal }.toPersistentList()
+    fun missingFieldKinds(): ImmutableList<Network.Persona.Field.ID> {
+        return requiredFieldIDs.minus(persona.fields.map { it.id }.toSet()).sortedBy { it.ordinal }.toPersistentList()
     }
 
     fun personalInfoFormatted(): String {
         return buildString {
-            val fields = persona.fields.filter { requiredFieldKinds.contains(it.kind) }
-            val givenName = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.GivenName }?.value
-            val familyName = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.FamilyName }?.value
-            val email = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.EmailAddress }?.value
-            val phone = fields.firstOrNull { it.kind == Network.Persona.Field.Kind.PhoneNumber }?.value
+            val fields = persona.fields.filter { requiredFieldIDs.contains(it.id) }
+            val givenName = fields.firstOrNull { it.id == Network.Persona.Field.ID.GivenName }?.value
+            val familyName = fields.firstOrNull { it.id == Network.Persona.Field.ID.FamilyName }?.value
+            val email = fields.firstOrNull { it.id == Network.Persona.Field.ID.EmailAddress }?.value
+            val phone = fields.firstOrNull { it.id == Network.Persona.Field.ID.PhoneNumber }?.value
             append(
                 listOfNotNull(listOfNotNull(givenName, familyName).joinToString(separator = " "), email, phone).filter { it.isNotEmpty() }
                     .joinToString("\n")

@@ -17,7 +17,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 @VisibleForTesting
 internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
-internal class PersonaDataOnetimeUnauthorizedArgs(val requiredFields: Array<Network.Persona.Field.Kind>) {
+internal class PersonaDataOnetimeUnauthorizedArgs(val requiredFields: Array<Network.Persona.Field.ID>) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataKinds().toTypedArray()
     )

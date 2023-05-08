@@ -91,7 +91,7 @@ class DappMessengerImpl @Inject constructor(
                 },
                 oneTimePersonaData = if (onetimeDataFields.isNotEmpty()) {
                     OneTimePersonaDataRequestResponseItem(
-                        fields = onetimeDataFields.map { PersonaData(it.kind.toPersonaDataField(), it.value) }
+                        fields = onetimeDataFields.map { PersonaData(it.id.toPersonaDataField(), it.value) }
                     )
                 } else {
                     null
@@ -220,7 +220,7 @@ class DappMessengerImpl @Inject constructor(
                 ongoingPersonaData = if (ongoingDataFields.isNotEmpty()) {
                     OngoingPersonaDataRequestResponseItem(
                         ongoingDataFields.map {
-                            PersonaData(it.kind.toPersonaDataField(), it.value)
+                            PersonaData(it.id.toPersonaDataField(), it.value)
                         }
                     )
                 } else {
@@ -229,7 +229,7 @@ class DappMessengerImpl @Inject constructor(
                 oneTimePersonaData = if (onetimeDataFields.isNotEmpty()) {
                     OneTimePersonaDataRequestResponseItem(
                         onetimeDataFields.map {
-                            PersonaData(it.kind.toPersonaDataField(), it.value)
+                            PersonaData(it.id.toPersonaDataField(), it.value)
                         }
                     )
                 } else {

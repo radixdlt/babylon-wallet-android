@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.createaccount
+package com.babylon.wallet.android.presentation.createaccount.confirmation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background

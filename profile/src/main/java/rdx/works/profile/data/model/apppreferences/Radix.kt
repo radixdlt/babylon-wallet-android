@@ -32,7 +32,7 @@ object Radix {
             val nebunet = Network(
                 id = NetworkId.Nebunet.value,
                 name = "nebunet",
-                displayDescription = "Radix Public Network"
+                displayDescription = "Betanet"
             )
             val kisharnet = Network(
                 id = NetworkId.Kisharnet.value,

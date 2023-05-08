@@ -13,7 +13,8 @@ fun NavController.settingsImportOlympiaAccounts() {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsImportOlympiaAccounts(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onAddP2PLink: () -> Unit
 ) {
     composable(
         route = "settings_import_olympia_account",
@@ -26,7 +27,8 @@ fun NavGraphBuilder.settingsImportOlympiaAccounts(
     ) {
         OlympiaImportScreen(
             viewModel = hiltViewModel(),
-            onCloseScreen = onBackClick
+            onCloseScreen = onBackClick,
+            onAddP2PLink = onAddP2PLink
         )
     }
 }
