@@ -32,12 +32,14 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
             val factorSource = profile.factorSources.first { it.id == factorSourceID }
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+            val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
             val newAccount = initAccountWithLedgerFactorSource(
                 displayName = displayName,
                 derivedPublicKeyHex = derivedPublicKeyHex,
                 ledgerFactorSource = factorSource,
                 networkId = networkId,
-                derivationPath = derivationPath
+                derivationPath = derivationPath,
+                appearanceID = totalAccountsOnNetwork % Network.Account.AppearanceIdGradient.values().count()
             )
             // Add account to the profile
             val updatedProfile = profile.addAccount(

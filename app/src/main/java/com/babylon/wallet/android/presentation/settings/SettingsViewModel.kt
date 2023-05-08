@@ -40,6 +40,7 @@ class SettingsViewModel @Inject constructor(
         SettingsItem.TopLevelSettings.AppSettings,
         SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
         SettingsItem.TopLevelSettings.ShowMnemonic,
+        SettingsItem.TopLevelSettings.LedgerHardwareWallets,
         SettingsItem.TopLevelSettings.DeleteAll
     )
 

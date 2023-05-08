@@ -1,0 +1,140 @@
+package com.babylon.wallet.android.presentation.createaccount.withledger
+
+import app.cash.turbine.test
+import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.mockdata.profile
+import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Test
+import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
+import rdx.works.profile.domain.GetProfileUseCase
+
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateAccountWithLedgerViewModel>() {
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val ledgerMessenger = mockk<LedgerMessenger>()
+    private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
+    private val eventBus = mockk<AppEventBus>()
+
+    override fun initVM(): CreateAccountWithLedgerViewModel {
+        return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, addLedgerFactorSourceUseCase, eventBus)
+    }
+
+    @Before
+    override fun setUp() {
+        super.setUp()
+        coEvery { eventBus.sendEvent(any()) } just Runs
+        coEvery { getProfileUseCase() } returns flowOf(profile())
+        coEvery { ledgerMessenger.sendDeviceInfoRequest(any()) } returns flowOf(
+            MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
+                "1", MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS, "device1"
+            )
+        )
+        coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns FactorSource.ID("2")
+        coEvery { ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(any(), any(), any()) } returns flowOf(
+            MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse("1", "publicKeyHex")
+        )
+    }
+
+    @Test
+    fun `initial state is correct with 1 factor source and no p2pLinks`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.ledgerFactorSources.size == 1)
+            assert(!item.hasP2pLinks)
+            assert(item.selectedFactorSourceID?.value == "Ledger1")
+        }
+    }
+
+    @Test
+    fun `initial state is correct with 1 factor source and 1 p2pLink`() = runTest {
+        coEvery { getProfileUseCase() } returns flowOf(profile(p2pLinks = listOf(P2PLink("pwd", "chrome"))))
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.ledgerFactorSources.size == 1)
+            assert(!item.hasP2pLinks)
+            assert(item.selectedFactorSourceID?.value == "Ledger1")
+        }
+    }
+
+    @Test
+    fun `sending ledger device info requests call proper method and sets proper state`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onSendAddLedgerRequest()
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.addLedgerSheetState == AddLedgerSheetState.InputLedgerName)
+            assert(item.recentlyConnectedLedgerDevice != null)
+        }
+        verify(exactly = 1) { ledgerMessenger.sendDeviceInfoRequest(any()) }
+    }
+
+    @Test
+    fun `adding ledger and providing name`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onSendAddLedgerRequest()
+        advanceUntilIdle()
+        vm.onConfirmLedgerName("My Ledger")
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.addLedgerSheetState == AddLedgerSheetState.Initial)
+            assert(item.selectedFactorSourceID?.value == "2")
+        }
+    }
+
+    @Test
+    fun `adding ledger and skipping name`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onSendAddLedgerRequest()
+        advanceUntilIdle()
+        val ledgerName = mutableListOf<String?>()
+        vm.onSkipLedgerName()
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.addLedgerSheetState == AddLedgerSheetState.Initial)
+            assert(item.selectedFactorSourceID?.value == "2")
+        }
+        coVerify(exactly = 1) { addLedgerFactorSourceUseCase(any(), any(), captureNullable(ledgerName)) }
+        assert(ledgerName.first() == null)
+    }
+
+    @Test
+    fun `use ledger to create account`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onUseLedger()
+        advanceUntilIdle()
+        val event = slot<AppEvent.DerivedAccountPublicKeyWithLedger>()
+        coVerify(exactly = 1) { ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(any(), any(), any()) }
+        coVerify(exactly = 1) { eventBus.sendEvent(capture(event)) }
+        assert(event.captured.derivedPublicKeyHex == "publicKeyHex")
+        assert(event.captured.factorSourceID.value == "Ledger1")
+    }
+}

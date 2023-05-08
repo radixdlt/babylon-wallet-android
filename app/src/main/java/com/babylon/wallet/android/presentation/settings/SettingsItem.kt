@@ -15,6 +15,7 @@ sealed interface SettingsItem {
         object AuthorizedDapps : TopLevelSettings
         object AppSettings : TopLevelSettings
         object ShowMnemonic : TopLevelSettings
+        object LedgerHardwareWallets : TopLevelSettings
         object ImportFromLegacyWallet : TopLevelSettings
         object DeleteAll : TopLevelSettings
         object Personas : TopLevelSettings
@@ -35,6 +36,7 @@ sealed interface SettingsItem {
                 AppSettings -> R.string.app_settings
                 ShowMnemonic -> R.string.view_mnemonics
                 ImportFromLegacyWallet -> R.string.import_from_legacy_wallet
+                LedgerHardwareWallets -> R.string.ledger_hardware_wallets
                 is Backups -> R.string.backups
             }
         }
@@ -47,8 +49,9 @@ sealed interface SettingsItem {
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
-                ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ShowMnemonic -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 else -> null
             }
