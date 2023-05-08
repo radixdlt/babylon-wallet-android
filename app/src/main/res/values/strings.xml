@@ -341,4 +341,12 @@
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>
     </plurals>
+    <string name="transfer">Transfer</string>
+    <string name="send_transfer_request">Send transfer request</string>
+    <string name="choose_accounts">Choose Account</string>
+    <string name="add_assets">Add Assets</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="add_message">Add Message</string>
+    <string name="add_account">Add Account</string>
 </resources>

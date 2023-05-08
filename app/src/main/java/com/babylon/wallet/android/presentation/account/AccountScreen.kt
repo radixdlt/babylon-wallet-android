@@ -95,6 +95,7 @@ fun AccountScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onApplySecuritySettingsClick: (String) -> Unit,
+    onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
@@ -122,7 +123,7 @@ fun AccountScreen(
         nonFungibleTokens = state.nonFungibleTokens,
         gradientIndex = state.gradientIndex,
         onHistoryClick = {},
-        onTransferClick = {},
+        onTransferClick = onTransferClick,
         onFungibleTokenClick = viewModel::onFungibleTokenClick,
         assetDetails = state.assetDetails,
         onNftClick = viewModel::onNonFungibleTokenClick,
@@ -151,7 +152,7 @@ private fun AccountScreenContent(
     nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
     gradientIndex: Int,
     onHistoryClick: () -> Unit,
-    onTransferClick: () -> Unit,
+    onTransferClick: (String) -> Unit,
     onFungibleTokenClick: (TokenUiModel) -> Unit,
     assetDetails: AssetUiModel?,
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
@@ -342,7 +343,7 @@ fun AccountContentWithScrollableHeader(
     onAccountPreferenceClick: () -> Unit,
     accountAddress: String,
     walletFiatBalance: String?,
-    onTransferClick: () -> Unit,
+    onTransferClick: (String) -> Unit,
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
     nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
@@ -431,7 +432,7 @@ private fun AccountContent(
     xrdToken: TokenUiModel?,
     fungibleTokens: ImmutableList<TokenUiModel>,
     nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    onTransferClick: () -> Unit,
+    onTransferClick: (String) -> Unit,
     onFungibleTokenClick: (TokenUiModel) -> Unit,
     onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
     walletFiatBalance: String?,
@@ -482,11 +483,11 @@ private fun AccountSummaryContent(
     modifier: Modifier,
     accountAddress: String,
     walletFiatBalance: String?,
-    onTransferClick: () -> Unit,
+    onTransferClick: (String) -> Unit,
     showSecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit,
     needMnemonicRecovery: Boolean,
-    onMnemonicRecovery: () -> Unit,
+    onMnemonicRecovery: () -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -498,6 +499,19 @@ private fun AccountSummaryContent(
             textColor = RadixTheme.colors.white
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        RadixSecondaryButton(
+            text = stringResource(id = R.string.account_transfer_button_title),
+            onClick = { onTransferClick(accountAddress) },
+            containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
+            contentColor = RadixTheme.colors.white,
+            shape = RadixTheme.shapes.circle
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                tint = RadixTheme.colors.white,
+                contentDescription = null
+            )
+        }
         walletFiatBalance?.let { value ->
             WalletBalanceView(
                 currencySignValue = "$",
@@ -507,19 +521,6 @@ private fun AccountSummaryContent(
                 contentColor = RadixTheme.colors.white
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            RadixSecondaryButton(
-                text = stringResource(id = R.string.account_transfer_button_title),
-                onClick = onTransferClick,
-                containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-                contentColor = RadixTheme.colors.white,
-                shape = RadixTheme.shapes.circle
-            ) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                    tint = RadixTheme.colors.white,
-                    contentDescription = null
-                )
-            }
         }
         AnimatedVisibility(visible = showSecurityPrompt, enter = fadeIn(), exit = fadeOut()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
