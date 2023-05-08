@@ -23,6 +23,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param addresses 
+ * @param optIns 
  * @param aggregationLevel 
  */
 @Serializable
@@ -31,6 +32,9 @@ data class StateEntityDetailsRequestAllOf (
 
     @SerialName(value = "addresses")
     val addresses: kotlin.collections.List<kotlin.String>,
+
+    @SerialName(value = "opt_ins")
+    val optIns: StateEntityDetailsOptIns? = null,
 
     @Contextual @SerialName(value = "aggregation_level")
     val aggregationLevel: ResourceAggregationLevel? = null

@@ -26,6 +26,7 @@ import kotlinx.serialization.Contextual
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limitPerPage The page size requested.
  * @param aggregationLevel 
+ * @param optIns 
  */
 @Serializable
 
@@ -47,7 +48,10 @@ data class StateEntityNonFungiblesPageRequest (
     val limitPerPage: kotlin.Int? = null,
 
     @Contextual @SerialName(value = "aggregation_level")
-    val aggregationLevel: ResourceAggregationLevel? = null
+    val aggregationLevel: ResourceAggregationLevel? = null,
+
+    @SerialName(value = "opt_ins")
+    val optIns: StateEntityNonFungiblesPageRequestOptIns? = null
 
 )
 

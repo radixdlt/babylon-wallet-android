@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -98,13 +98,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            val result = dappMetadataRepository.getDappMetadata(
-                defitnionAddress = request.metadata.dAppDefinitionAddress,
+            val result = dappMetadataRepository.getDAppMetadata(
+                definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
-            result.onValue { dappMetadata ->
+            result.onValue { dappWithMetadata ->
                 _state.update {
-                    it.copy(dappMetadata = dappMetadata)
+                    it.copy(dappWithMetadata = dappWithMetadata)
                 }
             }
             result.onError { error ->
@@ -115,28 +115,28 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRoute() {
-        val isLoginRequest = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest
-        val usePersonaRequest = request.isUsePersonaAuth()
-        if (isLoginRequest) {
-            _state.update {
-                it.copy(
-                    initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
-                        args.requestId
+        when (val request = request.authRequest) {
+            is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
+                // TODO temporary until flow with challenge is implemented
+                onAbortDappLogin()
+            }
+            is AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
+                _state.update {
+                    it.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
+                            args.requestId
+                        )
                     )
-                )
+                }
             }
-        } else if (usePersonaRequest) {
-            val dapp = authorizedDapp
-            if (dapp != null) {
-                setInitialDappLoginRouteForUsePersonaRequest(
-                    dapp,
-                    request.authRequest as AuthorizedRequest.AuthRequest.UsePersonaRequest
-                )
-            } else {
-                onAbortDappLogin(WalletErrorType.InvalidPersona)
+            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+                val dapp = authorizedDapp
+                if (dapp != null) {
+                    setInitialDappLoginRouteForUsePersonaRequest(dapp, request)
+                } else {
+                    onAbortDappLogin(WalletErrorType.InvalidPersona)
+                }
             }
-        } else {
-            onAbortDappLogin()
         }
     }
 
@@ -290,7 +290,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)
                 ?.let { updatedPersona ->
                     val requiredDataFields =
-                        updatedPersona.fields.filter { requiredFields.contains(it.kind) }
+                        updatedPersona.fields.filter { requiredFields.contains(it.id) }
                     _state.update {
                         it.copy(
                             selectedPersona = updatedPersona.toUiModel(),
@@ -313,7 +313,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val requiredFields =
                 checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
-            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.kind) }
+            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.id) }
             _state.update {
                 it.copy(
                     selectedOnetimeDataFields = requiredDataFields
@@ -362,7 +362,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp?.updateAuthorizedDappPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
-                                ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                                ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
                             } else {
                                 ref
                             }
@@ -395,7 +395,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val requestedFieldKinds = requestItem.fields.map { it.toKind() }
         val personaFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)?.fields.orEmpty()
         val requestedFieldsIds =
-            personaFields.filter { requestedFieldKinds.contains(it.kind) }.map { it.id }
+            personaFields.filter { requestedFieldKinds.contains(it.id) }.map { it.id }
         return requestedFieldsCount == requestedFieldsIds.size && dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
             dapp.dAppDefinitionAddress,
             personaAddress,
@@ -444,7 +444,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp?.updateAuthorizedDappPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
-                                ref.copy(lastUsedOn = LocalDateTime.now().toISO8601String())
+                                ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
                             } else {
                                 ref
                             }
@@ -473,7 +473,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            val dAppName = state.value.dappMetadata?.getName().orEmpty().ifEmpty { "Unknown dApp" }
+            val dAppName = state.value.dappWithMetadata?.name.orEmpty().ifEmpty { "Unknown dApp" }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,
@@ -483,7 +483,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
                             fieldIDs = emptyList(),
-                            lastUsedOn = date,
+                            lastLogin = date,
                             sharedAccounts = AuthorizedPersonaSimple.SharedAccounts(
                                 emptyList(),
                                 request = AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
@@ -617,7 +617,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         sendEvent(
             DAppAuthorizedLoginEvent.LoginFlowCompleted(
                 requestId = request.requestId,
-                dAppName = state.value.dappMetadata?.getName().orEmpty(),
+                dAppName = state.value.dappWithMetadata?.name.orEmpty(),
                 showSuccessDialog = !request.isInternalRequest()
             )
         )
@@ -656,7 +656,7 @@ sealed interface DAppAuthorizedLoginEvent : OneOffEvent {
 }
 
 data class DAppLoginUiState(
-    val dappMetadata: DappMetadata? = null,
+    val dappWithMetadata: DappWithMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),

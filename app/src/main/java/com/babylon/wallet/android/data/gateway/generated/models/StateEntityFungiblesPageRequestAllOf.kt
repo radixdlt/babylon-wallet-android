@@ -24,6 +24,7 @@ import kotlinx.serialization.Contextual
  *
  * @param address Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
  * @param aggregationLevel 
+ * @param optIns 
  */
 @Serializable
 
@@ -34,7 +35,10 @@ data class StateEntityFungiblesPageRequestAllOf (
     val address: kotlin.String,
 
     @Contextual @SerialName(value = "aggregation_level")
-    val aggregationLevel: ResourceAggregationLevel? = null
+    val aggregationLevel: ResourceAggregationLevel? = null,
+
+    @SerialName(value = "opt_ins")
+    val optIns: StateEntityFungiblesPageRequestOptIns? = null
 
 )
 

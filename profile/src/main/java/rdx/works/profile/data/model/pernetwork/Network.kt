@@ -7,15 +7,16 @@ import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
 import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
+import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import java.util.*
@@ -47,12 +48,6 @@ data class Network(
     @SerialName("authorizedDapps")
     val authorizedDapps: List<AuthorizedDapp>
 ) {
-    init {
-        /**
-         * We always require any per network instance to have at least one account
-         */
-        assert(accounts.isNotEmpty())
-    }
 
     val knownNetworkId: NetworkId?
         get() = NetworkId.values().find { it.value == networkID }
@@ -111,21 +106,16 @@ data class Network(
         }
 
         companion object {
-            fun init(
+            fun initAccountWithDeviceFactorSource(
                 displayName: String,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
-                factorSource: FactorSource,
+                deviceFactorSource: FactorSource,
                 networkId: NetworkId
             ): Account {
-                val index = factorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
-                val derivationPath = DerivationPath.forAccount(
-                    networkId = networkId,
-                    accountIndex = index,
-                    keyType = KeyType.TRANSACTION_SIGNING
-                )
+                val index = deviceFactorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
+                val derivationPath = deviceFactorSource.getNextDerivationPathForAccount(networkId)
 
                 val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
-
                 val address = deriveAccountAddress(
                     networkID = networkId,
                     publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
@@ -134,7 +124,37 @@ data class Network(
                 val unsecuredSecurityState = SecurityState.unsecured(
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = derivationPath,
-                    factorSourceId = factorSource.id
+                    factorSourceId = deviceFactorSource.id
+                )
+
+                return Account(
+                    address = address,
+                    appearanceID = index % Account.AppearanceIdGradient.values().count(),
+                    displayName = displayName,
+                    networkID = networkId.value,
+                    securityState = unsecuredSecurityState
+                )
+            }
+
+            fun initAccountWithLedgerFactorSource(
+                displayName: String,
+                derivedPublicKeyHex: String,
+                ledgerFactorSource: FactorSource,
+                networkId: NetworkId,
+                derivationPath: DerivationPath
+            ): Account {
+                val index = ledgerFactorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
+                require(ledgerFactorSource.getNextDerivationPathForAccount(networkId).path == derivationPath.path)
+
+                val address = deriveAccountAddress(
+                    networkID = networkId,
+                    publicKey = PublicKey.EddsaEd25519(derivedPublicKeyHex)
+                )
+
+                val unsecuredSecurityState = SecurityState.unsecured(
+                    publicKey = FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.CURVE_25519),
+                    derivationPath = derivationPath,
+                    factorSourceId = ledgerFactorSource.id
                 )
 
                 return Account(
@@ -245,17 +265,14 @@ data class Network(
         @Serializable
         data class Field(
             @SerialName("id")
-            val id: String,
-
-            @SerialName("kind")
-            val kind: Kind,
+            val id: ID,
 
             @SerialName("value")
             val value: String
         ) {
 
             @Serializable
-            enum class Kind {
+            enum class ID {
                 @SerialName("givenName")
                 GivenName,
 
@@ -271,13 +288,11 @@ data class Network(
 
             companion object {
                 fun init(
-                    id: String = UUIDGenerator.uuid().toString(),
-                    kind: Kind,
+                    id: ID,
                     value: String
                 ): Field {
                     return Field(
                         id = id,
-                        kind = kind,
                         value = value
                     )
                 }
@@ -313,10 +328,10 @@ data class Network(
              * List of "ongoing personaData" (identified by OnNetwork.Persona.Field.ID) user has given Dapp access to.
              */
             @SerialName("sharedFieldIDs")
-            val fieldIDs: List<String>,
+            val fieldIDs: List<Persona.Field.ID>,
 
-            @SerialName("lastUsedOn")
-            val lastUsedOn: String,
+            @SerialName("lastLogin")
+            val lastLogin: String,
 
             /**
              * List of shared accounts that user given the dApp access to.
@@ -480,11 +495,11 @@ fun Profile.incrementFactorSourceNextAccountIndex(
         factorSources = factorSources.mapWhen(predicate = { factorSource ->
             factorSource.id == factorSourceId
         }) { factorSource ->
-            val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
+            val entityCreatingStorage = factorSource.storage as? FactorSource.Storage.EntityCreating
                 ?: throw WasNotDeviceFactorSource()
 
             factorSource.copy(
-                storage = deviceStorage.incrementAccount(forNetworkId = forNetwork)
+                storage = entityCreatingStorage.incrementAccount(forNetworkId = forNetwork)
             )
         }
     )
@@ -493,7 +508,7 @@ fun Profile.incrementFactorSourceNextAccountIndex(
 fun Profile.updatePersona(
     persona: Network.Persona
 ): Profile {
-    val networkId = appPreferences.gateways.current().network.networkId()
+    val networkId = currentGateway.network.networkId()
 
     return copy(
         networks = networks.mapWhen(
@@ -533,16 +548,16 @@ fun Profile.addPersona(
         factorSources = factorSources.mapWhen(
             predicate = { it.id == withFactorSourceId },
             mutation = { factorSource ->
-                val deviceStorage = factorSource.storage as? FactorSource.Storage.Device
+                val entityCreatingStorage = factorSource.storage as? FactorSource.Storage.EntityCreating
                     ?: throw WasNotDeviceFactorSource()
 
                 factorSource.copy(
-                    storage = deviceStorage.incrementIdentity(forNetworkId = onNetwork)
+                    storage = entityCreatingStorage.incrementIdentity(forNetworkId = onNetwork)
                 )
             }
         )
     )
 }
 
-fun Network.Persona.filterFields(with: List<Network.Persona.Field.Kind>) =
-    fields.filter { with.contains(it.kind) }
+fun Network.Persona.filterFields(with: List<Network.Persona.Field.ID>) =
+    fields.filter { with.contains(it.id) }

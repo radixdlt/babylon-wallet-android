@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.model
 import rdx.works.profile.data.model.pernetwork.Network
 
 data class PersonaFieldKindWrapper(
-    val kind: Network.Persona.Field.Kind,
+    val id: Network.Persona.Field.ID,
     val selected: Boolean = false,
     val value: String = "",
     val valid: Boolean? = null,
@@ -12,6 +12,6 @@ data class PersonaFieldKindWrapper(
     val shouldDisplayValidationError: Boolean = false
 ) {
     fun isPhoneNumber(): Boolean {
-        return kind == Network.Persona.Field.Kind.PhoneNumber
+        return id == Network.Persona.Field.ID.PhoneNumber
     }
 }

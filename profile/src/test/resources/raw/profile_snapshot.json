@@ -4,241 +4,260 @@
     "creatingDevice": "Galaxy A53 5G (Samsung SM-A536B)",
     "creationDate": "2023-03-07T10:48:21Z",
     "lastModified": "2023-03-07T10:48:21Z",
-    "snapshotVersion": 29
+    "snapshotVersion": 30
   },
-  "appPreferences": {
-    "display": {
-      "fiatCurrencyPriceTarget": "usd",
-      "isCurrencyAmountVisible": true
+  "appPreferences" : {
+    "display" : {
+      "fiatCurrencyPriceTarget" : "usd",
+      "isCurrencyAmountVisible" : true
     },
-    "security": {
-      "isDeveloperModeEnabled": true,
-      "isCloudProfileSyncEnabled": true
-    },
-    "gateways": {
-      "current": "https://betanet.radixdlt.com",
-      "saved": [
+    "gateways" : {
+      "current" : "https://betanet.radixdlt.com",
+      "saved" : [
         {
-          "network": {
-            "id": 11,
-            "name": "nebunet",
-            "displayDescription" : "Radix Public Network"
+          "network" : {
+            "displayDescription" : "Betanet",
+            "id" : 11,
+            "name" : "nebunet"
           },
-          "url": "https://betanet.radixdlt.com"
+          "url" : "https://betanet.radixdlt.com"
         }
       ]
     },
-    "p2pLinks": [
+    "p2pLinks" : [
       {
-        "connectionPassword": "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
-        "displayName": "Brave browser on Mac Studio"
+        "connectionPassword" : "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
+        "displayName" : "Brave browser on Mac Studio"
+      },
+      {
+        "connectionPassword" : "beefbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadebeef",
+        "displayName" : "iPhone 13"
       }
-    ]
+    ],
+    "security" : {
+      "isCloudProfileSyncEnabled" : true,
+      "isDeveloperModeEnabled" : true
+    }
   },
-  "factorSources": [
+  "factorSources" : [
     {
-      "addedOn": "2023-03-07T10:48:21Z",
-      "hint": "Galaxy A53 5G (Samsung SM-A536B)",
-      "id": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-      "kind": "device",
-      "lastUsedOn": "2023-03-07T10:48:21Z",
-      "parameters": {
-        "supportedCurves": [
+      "addedOn" : "1970-01-01T00:00:00Z",
+      "description" : "unit test",
+      "id" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
+      "kind" : "device",
+      "label" : "computer",
+      "lastUsedOn" : "1970-01-01T00:00:00Z",
+      "parameters" : {
+        "supportedCurves" : [
           "curve25519"
         ],
-        "supportedDerivationPathSchemes": [
+        "supportedDerivationPathSchemes" : [
           "cap26"
         ]
       },
-      "storage": {
-        "discriminator": "device",
-        "nextDerivationIndicesPerNetwork": [
+      "storage" : {
+        "discriminator" : "entityCreating",
+        "nextDerivationIndicesPerNetwork" : [
           {
-            "forAccount": 3,
-            "forIdentity": 2,
-            "networkID": 11
+            "forAccount" : 3,
+            "forIdentity" : 2,
+            "networkID" : 11
           }
+        ]
+      }
+    },
+    {
+      "addedOn" : "1970-01-01T00:00:00Z",
+      "description" : "unit test",
+      "id" : "c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8",
+      "kind" : "device",
+      "label" : "computer",
+      "lastUsedOn" : "1970-01-01T00:00:00Z",
+      "parameters" : {
+        "supportedCurves" : [
+          "curve25519",
+          "secp256k1"
+        ],
+        "supportedDerivationPathSchemes" : [
+          "cap26",
+          "bip44Olympia"
         ]
       }
     }
   ],
-  "networks": [
+  "networks" : [
     {
-      "accounts": [
+      "accounts" : [
         {
-          "address": "account_tdx_b_1p9dkged3rpzy860ampt5jpmvv3yl4y6f5yppp4tnscdslvt9v3",
-          "appearanceID": 0,
-          "displayName": "First",
-          "networkID": 11,
-          "securityState": {
-            "discriminator": "unsecured",
-            "unsecuredEntityControl": {
-              "genesisFactorInstance": {
-                "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1460H/0H",
-                  "scheme": "cap26"
+          "address" : "account_tdx_b_1p9dkged3rpzy860ampt5jpmvv3yl4y6f5yppp4tnscdslvt9v3",
+          "appearanceID" : 0,
+          "displayName" : "First",
+          "networkID" : 11,
+          "securityState" : {
+            "discriminator" : "unsecured",
+            "unsecuredEntityControl" : {
+              "genesisFactorInstance" : {
+                "derivationPath" : {
+                  "path" : "m/44H/1022H/11H/525H/1460H/0H",
+                  "scheme" : "cap26"
                 },
-                "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-                "publicKey": {
-                  "compressedData": "7566e3e948d428112d6c40b597e7ea979b3516dfddc3aa5f51e1316303a09ad3",
-                  "curve": "curve25519"
+                "factorSourceID" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
+                "publicKey" : {
+                  "compressedData" : "7566e3e948d428112d6c40b597e7ea979b3516dfddc3aa5f51e1316303a09ad3",
+                  "curve" : "curve25519"
                 }
               }
             }
           }
         },
         {
-          "address": "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
-          "appearanceID": 1,
-          "displayName": "Second",
-          "networkID": 11,
-          "securityState": {
-            "discriminator": "unsecured",
-            "unsecuredEntityControl": {
-              "genesisFactorInstance": {
-                "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1460H/1H",
-                  "scheme": "cap26"
+          "address" : "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
+          "appearanceID" : 1,
+          "displayName" : "Second",
+          "networkID" : 11,
+          "securityState" : {
+            "discriminator" : "unsecured",
+            "unsecuredEntityControl" : {
+              "genesisFactorInstance" : {
+                "derivationPath" : {
+                  "path" : "m/44H/1022H/11H/525H/1460H/1H",
+                  "scheme" : "cap26"
                 },
-                "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-                "publicKey": {
-                  "compressedData": "216810705185adf3b8076a60d8d05e9da696ca8e87c1124ea909d394b7433719",
-                  "curve": "curve25519"
+                "factorSourceID" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
+                "publicKey" : {
+                  "compressedData" : "216810705185adf3b8076a60d8d05e9da696ca8e87c1124ea909d394b7433719",
+                  "curve" : "curve25519"
                 }
               }
             }
           }
         },
         {
-          "address": "account_tdx_b_1p8ahenyznrqy2w0tyg00r82rwuxys6z8kmrhh37c7maqpydx7p",
-          "appearanceID": 2,
-          "displayName": "Third",
-          "networkID": 11,
-          "securityState": {
-            "discriminator": "unsecured",
-            "unsecuredEntityControl": {
-              "genesisFactorInstance": {
-                "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1460H/2H",
-                  "scheme": "cap26"
+          "address" : "account_tdx_b_1p8ahenyznrqy2w0tyg00r82rwuxys6z8kmrhh37c7maqpydx7p",
+          "appearanceID" : 2,
+          "displayName" : "Third",
+          "networkID" : 11,
+          "securityState" : {
+            "discriminator" : "unsecured",
+            "unsecuredEntityControl" : {
+              "genesisFactorInstance" : {
+                "derivationPath" : {
+                  "path" : "m/44H/1022H/11H/525H/1460H/2H",
+                  "scheme" : "cap26"
                 },
-                "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-                "publicKey": {
-                  "compressedData": "a82afd5c21188314e60b9045407b7dfad378ba5043bea33b86891f06d94fb1f3",
-                  "curve": "curve25519"
+                "factorSourceID" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
+                "publicKey" : {
+                  "compressedData" : "a82afd5c21188314e60b9045407b7dfad378ba5043bea33b86891f06d94fb1f3",
+                  "curve" : "curve25519"
                 }
               }
             }
           }
         }
       ],
-      "authorizedDapps": [
+      "authorizedDapps" : [
         {
-          "dAppDefinitionAddress": "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
-          "displayName": "RadiSwap",
-          "networkID": 11,
-          "referencesToAuthorizedPersonas": [
+          "dAppDefinitionAddress" : "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
+          "displayName" : "RadiSwap",
+          "networkID" : 11,
+          "referencesToAuthorizedPersonas" : [
             {
-              "sharedFieldIDs": [
-                "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
-              ],
-              "lastUsedOn": "2023-01-31T10:28:14Z",
-              "identityAddress": "identity_tdx_b_1pjt9eddph3avjs32wswmk306wgpjelluedsg0hwv928qdunqu8",
-              "sharedAccounts": {
-                "accountsReferencedByAddress": [
+              "identityAddress" : "identity_tdx_b_1pjt9eddph3avjs32wswmk306wgpjelluedsg0hwv928qdunqu8",
+              "lastLogin" : "2001-01-01T00:00:00Z",
+              "sharedAccounts" : {
+                "accountsReferencedByAddress" : [
                   "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
                   "account_tdx_b_1p8ahenyznrqy2w0tyg00r82rwuxys6z8kmrhh37c7maqpydx7p"
                 ],
-                "request": {
-                  "quantifier": "exactly",
-                  "quantity": 2
+                "request" : {
+                  "quantifier" : "exactly",
+                  "quantity" : 2
                 }
-              }
+              },
+              "sharedFieldIDs" : [
+                "givenName",
+                "familyName"
+              ]
             },
             {
-              "sharedFieldIDs": [
-                "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-                "AC37E346-32EF-4670-9097-1AC27B20D394"
-              ],
-              "lastUsedOn": "2023-01-31T10:28:14Z",
-              "identityAddress": "identity_tdx_b_1pshnjvztw6t2hz58jld5mvxvp6ppyjk6ctzu0xhg700scqkhdw",
-              "sharedAccounts": {
-                "accountsReferencedByAddress": [
+              "identityAddress" : "identity_tdx_b_1pshnjvztw6t2hz58jld5mvxvp6ppyjk6ctzu0xhg700scqkhdw",
+              "lastLogin" : "2001-01-01T00:00:00Z",
+              "sharedAccounts" : {
+                "accountsReferencedByAddress" : [
                   "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"
                 ],
-                "request": {
-                  "quantifier": "atLeast",
-                  "quantity": 1
+                "request" : {
+                  "quantifier" : "atLeast",
+                  "quantity" : 1
                 }
-              }
+              },
+              "sharedFieldIDs" : [
+                "givenName",
+                "familyName"
+              ]
             }
           ]
         }
       ],
-      "networkID": 11,
-      "personas": [
+      "networkID" : 11,
+      "personas" : [
         {
-          "address": "identity_tdx_b_1pjt9eddph3avjs32wswmk306wgpjelluedsg0hwv928qdunqu8",
-          "displayName": "Mrs Incognito",
-          "fields": [
+          "address" : "identity_tdx_b_1pjt9eddph3avjs32wswmk306wgpjelluedsg0hwv928qdunqu8",
+          "displayName" : "Mrs Incognito",
+          "fields" : [
             {
-              "id": "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-              "kind": "givenName",
-              "value": "Jane"
+              "id" : "givenName",
+              "value" : "Jane"
             },
             {
-              "id": "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-              "kind": "familyName",
-              "value": "Incognitoson"
+              "id" : "familyName",
+              "value" : "Incognitoson"
             }
           ],
-          "networkID": 11,
-          "securityState": {
-            "discriminator": "unsecured",
-            "unsecuredEntityControl": {
-              "genesisFactorInstance": {
-                "derivationPath": {
-                  "path": "m/44H/1022H/11H/618H/1460H/0H",
-                  "scheme": "cap26"
+          "networkID" : 11,
+          "securityState" : {
+            "discriminator" : "unsecured",
+            "unsecuredEntityControl" : {
+              "genesisFactorInstance" : {
+                "derivationPath" : {
+                  "path" : "m/44H/1022H/11H/618H/1460H/0H",
+                  "scheme" : "cap26"
                 },
-                "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-                "publicKey": {
-                  "compressedData": "573c0dc84196cb4a7dc8ddff1e92a859c98635a64ef5fe0bcf5c7fe5a7dab3e4",
-                  "curve": "curve25519"
+                "factorSourceID" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
+                "publicKey" : {
+                  "compressedData" : "573c0dc84196cb4a7dc8ddff1e92a859c98635a64ef5fe0bcf5c7fe5a7dab3e4",
+                  "curve" : "curve25519"
                 }
               }
             }
           }
         },
         {
-          "address": "identity_tdx_b_1pshnjvztw6t2hz58jld5mvxvp6ppyjk6ctzu0xhg700scqkhdw",
-          "displayName": "Mrs Public",
-          "fields": [
+          "address" : "identity_tdx_b_1pshnjvztw6t2hz58jld5mvxvp6ppyjk6ctzu0xhg700scqkhdw",
+          "displayName" : "Mrs Public",
+          "fields" : [
             {
-              "id": "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-              "kind": "givenName",
-              "value": "Maria"
+              "id" : "givenName",
+              "value" : "Maria"
             },
             {
-              "id": "AC37E346-32EF-4670-9097-1AC27B20D394",
-              "kind": "familyName",
-              "value": "Publicson"
+              "id" : "familyName",
+              "value" : "Publicson"
             }
           ],
-          "networkID": 11,
-          "securityState": {
-            "discriminator": "unsecured",
-            "unsecuredEntityControl": {
-              "genesisFactorInstance": {
-                "derivationPath": {
-                  "path": "m/44H/1022H/11H/618H/1460H/1H",
-                  "scheme": "cap26"
+          "networkID" : 11,
+          "securityState" : {
+            "discriminator" : "unsecured",
+            "unsecuredEntityControl" : {
+              "genesisFactorInstance" : {
+                "derivationPath" : {
+                  "path" : "m/44H/1022H/11H/618H/1460H/1H",
+                  "scheme" : "cap26"
                 },
-                "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-                "publicKey": {
-                  "compressedData": "6b33fec79f1535ac566b3d840f753942af6447efbe5c50dc343f8ec2122af9b3",
-                  "curve": "curve25519"
+                "factorSourceID" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
+                "publicKey" : {
+                  "compressedData" : "6b33fec79f1535ac566b3d840f753942af6447efbe5c50dc343f8ec2122af9b3",
+                  "curve" : "curve25519"
                 }
               }
             }

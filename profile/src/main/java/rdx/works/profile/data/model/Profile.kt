@@ -11,10 +11,10 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
+import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.incrementFactorSourceNextAccountIndex
 import timber.log.Timber
 
 data class Profile(
@@ -36,15 +36,6 @@ data class Profile(
      */
     val networks: List<Network>,
 ) {
-
-    internal val currentNetwork: Network
-        get() {
-            val currentGateway = appPreferences.gateways.current()
-
-            return networks.find { it.networkID == currentGateway.network.id } ?: error(
-                "No per-network found for gateway: $currentGateway. This should not happen"
-            )
-        }
 
     internal fun snapshot(): ProfileSnapshot {
         return ProfileSnapshot(
@@ -138,30 +129,22 @@ data class Profile(
 
     val olympiaDeviceFactorSource: FactorSource
         get() = factorSources.first {
-            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(CURVE_25519)
+            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(SECP_256K1)
         }
 
     companion object {
         fun init(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            firstAccountDisplayName: String,
             header: Header,
             gateway: Radix.Gateway = Radix.Gateway.default
         ): Profile {
             val factorSource = FactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                hint = header.creatingDevice
-            )
-
-            val initialAccount = Network.Account.init(
-                mnemonicWithPassphrase = mnemonicWithPassphrase,
-                factorSource = factorSource,
-                networkId = gateway.network.networkId(),
-                displayName = firstAccountDisplayName
+                label = header.creatingDevice
             )
 
             val mainNetwork = Network(
-                accounts = listOf(initialAccount),
+                accounts = listOf(),
                 authorizedDapps = listOf(),
                 networkID = gateway.network.id,
                 personas = listOf()
@@ -179,10 +162,19 @@ data class Profile(
                 appPreferences = appPreferences,
                 factorSources = listOf(factorSource),
                 networks = listOf(mainNetwork)
-            ).incrementFactorSourceNextAccountIndex(
-                forNetwork = gateway.network.networkId(),
-                factorSourceId = factorSource.id
             )
         }
     }
 }
+
+val Profile.currentGateway: Radix.Gateway
+    get() = appPreferences.gateways.current()
+
+internal val Profile.currentNetwork: Network
+    get() {
+        val currentGateway = currentGateway
+
+        return networks.find { it.networkID == currentGateway.network.id } ?: error(
+            "No per-network found for gateway: $currentGateway. This should not happen"
+        )
+    }

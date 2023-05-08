@@ -8,6 +8,9 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +50,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -59,6 +64,7 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -88,6 +94,7 @@ fun OlympiaImportScreen(
     viewModel: OlympiaImportViewModel,
     onCloseScreen: () -> Unit,
     modifier: Modifier = Modifier,
+    onAddP2PLink: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     OlympiaImportContent(
@@ -124,9 +131,11 @@ fun OlympiaImportScreen(
         accountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         addLedgerName = state.addLedgerName,
-        onSkipLedgerName = viewModel::onSkipLedgerName,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
-        ledgerDevices = state.ledgerDevices
+        onSkipLedgerName = viewModel::onSkipLedgerName,
+        ledgerDevices = state.ledgerDevices,
+        hasP2pLinks = state.hasP2pLinks,
+        onAddP2PLink = onAddP2PLink
     )
 }
 
@@ -165,7 +174,9 @@ private fun OlympiaImportContent(
     addLedgerName: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onSkipLedgerName: () -> Unit,
-    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>
+    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>,
+    hasP2pLinks: Boolean,
+    onAddP2PLink: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -305,7 +316,9 @@ private fun OlympiaImportContent(
                             addLedgerName = addLedgerName,
                             onConfirmLedgerName = onConfirmLedgerName,
                             onSkipLedgerName = onSkipLedgerName,
-                            ledgerDevices = ledgerDevices
+                            ledgerDevices = ledgerDevices,
+                            hasP2pLinks = hasP2pLinks,
+                            onAddP2PLink = onAddP2PLink
                         )
                     }
                     ImportPage.ImportComplete -> {
@@ -452,7 +465,9 @@ private fun HardwareImportScreen(
     addLedgerName: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onSkipLedgerName: () -> Unit,
-    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>
+    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>,
+    hasP2pLinks: Boolean,
+    onAddP2PLink: () -> Unit
 ) {
     var ledgerNameValue by remember {
         mutableStateOf("")
@@ -468,6 +483,20 @@ private fun HardwareImportScreen(
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
+            if (!hasP2pLinks) {
+                Text(
+                    text = stringResource(id = com.babylon.wallet.android.R.string.found_no_radix_connect_connections),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onAddP2PLink,
+                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_p2p_link)
+                )
+            }
             if (addLedgerName) {
                 Spacer(modifier = Modifier.weight(1f))
                 RadixTextField(
@@ -516,13 +545,15 @@ private fun HardwareImportScreen(
                         )
                     }
                 }
-                RadixPrimaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.send_add_ledger_request),
-                    onClick = onHardwareImport,
-                    enabled = !waitingForLedgerResponse,
-                    throttleClicks = true
-                )
+                AnimatedVisibility(visible = hasP2pLinks, enter = fadeIn(), exit = fadeOut()) {
+                    RadixPrimaryButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.send_add_ledger_request),
+                        onClick = onHardwareImport,
+                        enabled = !waitingForLedgerResponse,
+                        throttleClicks = true
+                    )
+                }
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.skip_remaining_accounts),
@@ -689,7 +720,9 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             addLedgerName = false,
             onConfirmLedgerName = {},
             onSkipLedgerName = {},
-            ledgerDevices = persistentMapOf()
+            ledgerDevices = persistentMapOf(),
+            hasP2pLinks = true,
+            onAddP2PLink = {}
         )
     }
 }

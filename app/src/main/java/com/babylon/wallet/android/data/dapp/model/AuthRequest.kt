@@ -5,11 +5,21 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("login")
-data class AuthLoginRequestItem(
+sealed class AuthRequestItem
+
+@Serializable
+sealed class AuthLoginRequestItem : AuthRequestItem()
+
+@Serializable
+@SerialName("loginWithChallenge")
+data class AuthLoginWithChallengeRequestItem(
     @SerialName("challenge")
     val challenge: String? = null
-) : AuthRequestItem()
+) : AuthLoginRequestItem()
+
+@Serializable
+@SerialName("loginWithoutChallenge")
+object AuthLoginWithoutChallengeRequestItem : AuthLoginRequestItem()
 
 @Serializable
 @SerialName("usePersona")
@@ -18,11 +28,11 @@ data class AuthUsePersonaRequestItem(
     val identityAddress: String
 ) : AuthRequestItem()
 
-@Serializable
-sealed class AuthRequestItem
-
 fun AuthLoginRequestItem.toDomainModel(): AuthorizedRequest.AuthRequest.LoginRequest {
-    return AuthorizedRequest.AuthRequest.LoginRequest(challenge.orEmpty())
+    return when (this) {
+        is AuthLoginWithChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge(challenge = challenge.orEmpty())
+        is AuthLoginWithoutChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge
+    }
 }
 
 fun AuthUsePersonaRequestItem.toDomainModel(): AuthorizedRequest.AuthRequest.UsePersonaRequest {

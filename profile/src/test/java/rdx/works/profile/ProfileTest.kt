@@ -14,7 +14,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.init
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
@@ -35,7 +35,6 @@ class ProfileTest {
 
         val profile = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            firstAccountDisplayName = "First",
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
@@ -46,21 +45,21 @@ class ProfileTest {
         val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
         assertEquals(profile.networks.first().networkID, defaultNetwork.id)
-        assertEquals(profile.networks.first().accounts.count(), 1)
+        assertEquals(profile.networks.first().accounts.count(), 0)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
             "Next derivation index for second account",
             profile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
-            1
+            0
         )
 
         println("Profile generated $profile")
 
         val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
-        val firstAccount = init(
+        val firstAccount = initAccountWithDeviceFactorSource(
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            factorSource = factorSource,
+            deviceFactorSource = factorSource,
             networkId = defaultNetwork.networkId()
         )
 
@@ -70,24 +69,22 @@ class ProfileTest {
             onNetwork = defaultNetwork.networkId()
         )
 
-        assertEquals(updatedProfile.networks.first().accounts.count(), 2)
+        assertEquals(updatedProfile.networks.first().accounts.count(), 1)
         assertEquals(
             "Next derivation index for third account",
             updatedProfile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
-            2
+            1
         )
 
         val firstPersona = init(
             displayName = "First",
             fields = listOf(
                 Network.Persona.Field.init(
-                    id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = Network.Persona.Field.Kind.GivenName,
+                    id = Network.Persona.Field.ID.GivenName,
                     value = "Alice"
                 ),
                 Network.Persona.Field.init(
-                    id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = Network.Persona.Field.Kind.FamilyName,
+                    id = Network.Persona.Field.ID.FamilyName,
                     value = "Anderson"
                 )
             ),
@@ -139,7 +136,6 @@ class ProfileTest {
 
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            firstAccountDisplayName = "First",
             header = Header.init(
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -147,11 +143,24 @@ class ProfileTest {
             ),
             gateway = gateway
         )
+        expected = expected.copy(factorSources = expected.factorSources + listOf(FactorSource.olympia(mnemonicWithPassphrase)))
 
-        val secondAccount = init(
+        val firstAccount = initAccountWithDeviceFactorSource(
+            displayName = "First",
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
+            deviceFactorSource = expected.babylonDeviceFactorSource,
+            networkId = networkId
+        )
+        expected = expected.addAccount(
+            account = firstAccount,
+            withFactorSourceId = expected.babylonDeviceFactorSource.id,
+            onNetwork = networkId
+        )
+
+        val secondAccount = initAccountWithDeviceFactorSource(
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            factorSource = expected.babylonDeviceFactorSource,
+            deviceFactorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
         expected = expected.addAccount(
@@ -160,10 +169,10 @@ class ProfileTest {
             onNetwork = networkId
         )
 
-        val thirdAccount = init(
+        val thirdAccount = initAccountWithDeviceFactorSource(
             displayName = "Third",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            factorSource = expected.babylonDeviceFactorSource,
+            deviceFactorSource = expected.babylonDeviceFactorSource,
             networkId = networkId
         )
         expected = expected.addAccount(
@@ -176,13 +185,11 @@ class ProfileTest {
             displayName = "Mrs Incognito",
             fields = listOf(
                 Network.Persona.Field.init(
-                    id = "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                    kind = Network.Persona.Field.Kind.GivenName,
+                    id = Network.Persona.Field.ID.GivenName,
                     value = "Jane"
                 ),
                 Network.Persona.Field.init(
-                    id = "6C62C3C8-1CD9-4049-9B2F-347486BA97B9",
-                    kind = Network.Persona.Field.Kind.FamilyName,
+                    id = Network.Persona.Field.ID.FamilyName,
                     value = "Incognitoson"
                 )
             ),
@@ -200,13 +207,11 @@ class ProfileTest {
             displayName = "Mrs Public",
             fields = listOf(
                 Network.Persona.Field.init(
-                    id = "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-                    kind = Network.Persona.Field.Kind.GivenName,
+                    id = Network.Persona.Field.ID.GivenName,
                     value = "Maria"
                 ),
                 Network.Persona.Field.init(
-                    id = "AC37E346-32EF-4670-9097-1AC27B20D394",
-                    kind = Network.Persona.Field.Kind.FamilyName,
+                    id = Network.Persona.Field.ID.FamilyName,
                     value = "Publicson"
                 )
             ),
@@ -228,6 +233,12 @@ class ProfileTest {
         expected = expected.addP2PLink(
             p2pLink = p2pLink
         )
+        expected = expected.addP2PLink(
+            p2pLink = P2PLink.init(
+                connectionPassword = "beefbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadebeef",
+                displayName = "iPhone 13"
+            )
+        )
 
         val authorizedDapp = Network.AuthorizedDapp(
             networkID = networkId.value,
@@ -237,8 +248,8 @@ class ProfileTest {
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = firstPersona.address,
                     fieldIDs = listOf(
-                        "843A4716-D238-4D55-BF5B-1FF7EBDFF717",
-                        "6C62C3C8-1CD9-4049-9B2F-347486BA97B9"
+                        Network.Persona.Field.ID.GivenName,
+                        Network.Persona.Field.ID.FamilyName
                     ),
                     sharedAccounts =
                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
@@ -251,13 +262,13 @@ class ProfileTest {
                             2
                         )
                     ),
-                    lastUsedOn = "some date"
+                    lastLogin = "some date"
                 ),
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = secondPersona.address,
                     fieldIDs = listOf(
-                        "FAD199A5-D6A8-425D-8807-C1561C2425C8",
-                        "AC37E346-32EF-4670-9097-1AC27B20D394"
+                        Network.Persona.Field.ID.GivenName,
+                        Network.Persona.Field.ID.FamilyName
                     ),
                     sharedAccounts =
                     Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
@@ -269,7 +280,7 @@ class ProfileTest {
                             1
                         )
                     ),
-                    lastUsedOn = "some date"
+                    lastLogin = "some date"
                 )
             )
         )
@@ -550,8 +561,8 @@ class ProfileTest {
 
             assertEquals(
                 "The persona[$personaIndex] first field kind is the same",
-                expected.networks.first().personas[personaIndex].fields[0].kind,
-                actual.networks.first().personas[personaIndex].fields[0].kind
+                expected.networks.first().personas[personaIndex].fields[0].id,
+                actual.networks.first().personas[personaIndex].fields[0].id
             )
             assertEquals(
                 "The persona[$personaIndex] first field value is the same",
@@ -561,8 +572,8 @@ class ProfileTest {
 
             assertEquals(
                 "The persona[$personaIndex] second field kind is the same",
-                expected.networks.first().personas[personaIndex].fields[1].kind,
-                actual.networks.first().personas[personaIndex].fields[1].kind
+                expected.networks.first().personas[personaIndex].fields[1].id,
+                actual.networks.first().personas[personaIndex].fields[1].id
             )
             assertEquals(
                 "The persona[$personaIndex] second field value is the same",

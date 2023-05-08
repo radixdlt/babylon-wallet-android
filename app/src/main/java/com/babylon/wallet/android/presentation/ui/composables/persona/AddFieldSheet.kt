@@ -40,7 +40,7 @@ fun AddFieldSheet(
     onBackClick: () -> Unit,
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     anyFieldSelected: Boolean
 ) {
@@ -69,14 +69,14 @@ fun AddFieldSheet(
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             }
-            items(fieldsToAdd, key = { it.kind }) { field ->
+            items(fieldsToAdd, key = { it.id }) { field ->
                 SelectableFieldItem(
                     onSelectionChanged = onSelectionChanged,
                     field = field,
                     modifier = Modifier
                         .animateItemPlacement()
                         .throttleClickable {
-                            onSelectionChanged(field.kind, !field.selected)
+                            onSelectionChanged(field.id, !field.selected)
                         }
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault)
@@ -97,7 +97,7 @@ fun AddFieldSheet(
 
 @Composable
 private fun SelectableFieldItem(
-    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     field: PersonaFieldKindWrapper,
     modifier: Modifier = Modifier
 ) {
@@ -107,7 +107,7 @@ private fun SelectableFieldItem(
     ) {
         Text(
             modifier = Modifier.weight(1f),
-            text = stringResource(id = field.kind.toDisplayResource()),
+            text = stringResource(id = field.id.toDisplayResource()),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,
@@ -121,7 +121,7 @@ private fun SelectableFieldItem(
                 checkmarkColor = Color.White
             ),
             onCheckedChange = {
-                onSelectionChanged(field.kind, it)
+                onSelectionChanged(field.id, it)
             }
         )
     }
@@ -135,7 +135,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(Network.Persona.Field.Kind.GivenName)),
+            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(Network.Persona.Field.ID.GivenName)),
             anyFieldSelected = false
         )
     }

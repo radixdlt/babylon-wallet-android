@@ -18,12 +18,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.persona.CreatePersonaUseCase
+import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
-    private val createPersonaUseCase: CreatePersonaUseCase,
+    private val createPersonaWithDeviceFactorSourceUseCase: CreatePersonaWithDeviceFactorSourceUseCase,
     private val preferencesManager: PreferencesManager,
     private val deviceSecurityHelper: DeviceSecurityHelper,
 ) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
@@ -55,9 +55,9 @@ class CreatePersonaViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         viewModelScope.launch {
             val fields = _state.value.currentFields.map {
-                Network.Persona.Field.init(kind = it.kind, value = it.value.trim())
+                Network.Persona.Field.init(id = it.id, value = it.value.trim())
             }
-            val persona = createPersonaUseCase(
+            val persona = createPersonaWithDeviceFactorSourceUseCase(
                 displayName = _state.value.personaDisplayName.value,
                 fields = fields
             )

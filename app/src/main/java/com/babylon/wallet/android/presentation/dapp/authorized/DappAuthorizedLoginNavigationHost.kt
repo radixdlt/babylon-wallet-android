@@ -3,9 +3,10 @@ package com.babylon.wallet.android.presentation.dapp.authorized
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
-import com.babylon.wallet.android.presentation.createaccount.createAccountConfirmationScreen
+import com.babylon.wallet.android.presentation.createaccount.addledger.addLedger
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
@@ -24,6 +25,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.pe
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ROUTE_SELECT_PERSONA
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.selectPersona
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.utils.decodeUtf8
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -106,7 +108,21 @@ fun DappAuthorizedLoginNavigationHost(
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
             },
-            onCloseApp = {}
+            onCloseApp = {},
+            onAddLedgerDevice = {
+                navController.addLedger()
+            }
+        )
+        addLedger(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onAddP2PLink = {
+                navController.settingsConnectorScreen(scanQr = true)
+            },
+            goBackToCreateAccount = {
+                navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
+            }
         )
         createAccountConfirmationScreen(
             onNavigateToWallet = {

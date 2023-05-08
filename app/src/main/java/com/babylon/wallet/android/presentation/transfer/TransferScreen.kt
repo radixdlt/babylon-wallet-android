@@ -84,6 +84,7 @@ fun TransferContent(
             contentColor = RadixTheme.colors.gray1,
             backIconType = BackIconType.Close
         )
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)

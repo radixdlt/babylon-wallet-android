@@ -187,7 +187,11 @@ sealed interface AppState {
     companion object {
         fun from(profileState: ProfileState) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile
-            is ProfileState.Restored -> Wallet
+            is ProfileState.Restored -> if (profileState.hasAnyAccount()) {
+                Wallet
+            } else {
+                NewProfile
+            }
             is ProfileState.None -> if (profileState.profileBackupExists) {
                 OnBoarding
             } else {

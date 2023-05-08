@@ -44,7 +44,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         super.setUp()
 
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.ID.GivenName).encodeToString()
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidEmail() } returns true
         coEvery { updatePersonaUseCase(any()) } just Runs
@@ -68,7 +68,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
                 val item = expectMostRecentItem()
                 assert(item.persona?.address == "1")
                 assert(item.currentFields.size == 2)
-                assert(item.fieldsToAdd.size == Network.Persona.Field.Kind.values().size - 2)
+                assert(item.fieldsToAdd.size == Network.Persona.Field.ID.values().size - 2)
             }
         }
     }
@@ -91,7 +91,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onDeleteField(Network.Persona.Field.Kind.EmailAddress)
+            vm.onDeleteField(Network.Persona.Field.ID.EmailAddress)
             advanceUntilIdle()
             vm.onSave()
             advanceUntilIdle()
@@ -101,7 +101,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
             vm.state.test {
                 val item = expectMostRecentItem()
                 assert(item.currentFields.size == 1)
-                assert(item.fieldsToAdd.size == Network.Persona.Field.Kind.values().size - 1)
+                assert(item.fieldsToAdd.size == Network.Persona.Field.ID.values().size - 1)
             }
 
         }
@@ -112,14 +112,14 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.EmailAddress, "jakub@jakub.pl")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.EmailAddress, "jakub@jakub.pl")
             advanceUntilIdle()
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.GivenName, "jakub")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.GivenName, "jakub")
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()
-                assert(item.currentFields.firstOrNull { it.kind == Network.Persona.Field.Kind.EmailAddress }?.value == "jakub@jakub.pl")
-                assert(item.currentFields.firstOrNull { it.kind == Network.Persona.Field.Kind.GivenName }?.value == "jakub")
+                assert(item.currentFields.firstOrNull { it.id == Network.Persona.Field.ID.EmailAddress }?.value == "jakub@jakub.pl")
+                assert(item.currentFields.firstOrNull { it.id == Network.Persona.Field.ID.GivenName }?.value == "jakub")
             }
         }
     }
@@ -129,7 +129,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onSelectionChanged(Network.Persona.Field.Kind.FamilyName, true)
+            vm.onSelectionChanged(Network.Persona.Field.ID.FamilyName, true)
             vm.onAddFields()
             advanceUntilIdle()
             vm.state.test {
@@ -144,16 +144,16 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onSelectionChanged(Network.Persona.Field.Kind.FamilyName, true)
-            vm.onSelectionChanged(Network.Persona.Field.Kind.GivenName, true)
-            vm.onSelectionChanged(Network.Persona.Field.Kind.EmailAddress, true)
+            vm.onSelectionChanged(Network.Persona.Field.ID.FamilyName, true)
+            vm.onSelectionChanged(Network.Persona.Field.ID.GivenName, true)
+            vm.onSelectionChanged(Network.Persona.Field.ID.EmailAddress, true)
             vm.onAddFields()
             advanceUntilIdle()
             vm.onDisplayNameChanged("jakub")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.GivenName, "66666")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.FamilyName, "66666")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.EmailAddress, "jakub@jakub.pl")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.PhoneNumber, "123456789")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.GivenName, "66666")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.FamilyName, "66666")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.EmailAddress, "jakub@jakub.pl")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.PhoneNumber, "123456789")
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()
@@ -167,10 +167,10 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
                 assert(!item.saveButtonEnabled)
             }
             every { any<String>().isValidEmail() } returns false
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.GivenName, "")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.FamilyName, "")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.EmailAddress, "jakubjakub.pl")
-            vm.onFieldValueChanged(Network.Persona.Field.Kind.PhoneNumber, "")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.GivenName, "")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.FamilyName, "")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.EmailAddress, "jakubjakub.pl")
+            vm.onFieldValueChanged(Network.Persona.Field.ID.PhoneNumber, "")
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()

@@ -31,16 +31,16 @@ class GetTransactionProofResourcesUseCase @Inject constructor(
                 }
             }
         }
-        val metadataResults = dappMetadataRepository.getDappsMetadata(
-            defitnionAddresses = proofAddresses,
+        val metadataResults = dappMetadataRepository.getDAppsMetadata(
+            definitionAddresses = proofAddresses,
             needMostRecentData = false
         )
         metadataResults.onValue { dAppsMetadata ->
             dAppsMetadata.forEach { dAppMetadata ->
                 proofs.add(
                     PresentingProofUiModel(
-                        iconUrl = dAppMetadata.getImageUrl().orEmpty(),
-                        title = dAppMetadata.getName().orEmpty()
+                        iconUrl = dAppMetadata.iconUrl?.toString().orEmpty(),
+                        title = dAppMetadata.name.orEmpty()
                     )
                 )
             }

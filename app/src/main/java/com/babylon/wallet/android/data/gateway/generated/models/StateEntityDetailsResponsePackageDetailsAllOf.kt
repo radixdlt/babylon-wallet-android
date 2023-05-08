@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
  * 
  *
  * @param codeHex Hex-encoded binary blob.
- * @param royaltyAggregator 
+ * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
 
@@ -32,8 +32,9 @@ data class StateEntityDetailsResponsePackageDetailsAllOf (
     @SerialName(value = "code_hex")
     val codeHex: kotlin.String? = null,
 
-    @SerialName(value = "royalty_aggregator")
-    val royaltyAggregator: FungibleResourcesCollectionItemGloballyAggregated? = null
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "royalty_vault_balance")
+    val royaltyVaultBalance: kotlin.String? = null
 
 )
 

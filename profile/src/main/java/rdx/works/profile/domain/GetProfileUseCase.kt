@@ -6,11 +6,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.accountFactorSourceId
+import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.data.utils.personaFactorSourceId
 import javax.inject.Inject
 
@@ -27,6 +30,9 @@ val GetProfileUseCase.accountsOnCurrentNetwork
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE } }
 
+val GetProfileUseCase.ledgerFactorSources
+    get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } }
+
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
 
 suspend fun GetProfileUseCase.accountOnCurrentNetwork(
@@ -40,6 +46,13 @@ suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
 ): FactorSource.ID? {
     val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.accountFactorSourceId()
     return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
+}
+
+suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
+    factorSource: FactorSource,
+): DerivationPath {
+    val currentNetwork = requireNotNull(invoke().first().currentNetwork.knownNetworkId)
+    return factorSource.getNextDerivationPathForAccount(currentNetwork)
 }
 
 suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(

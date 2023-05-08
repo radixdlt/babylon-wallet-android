@@ -111,14 +111,14 @@ private fun PersonaEditContent(
     editedFields: ImmutableList<PersonaFieldKindWrapper>,
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
-    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
-    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
+    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onDeleteField: (Network.Persona.Field.ID) -> Unit,
+    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     addButtonEnabled: Boolean,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     saveButtonEnabled: Boolean,
-    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
     wasEdited: Boolean
@@ -244,12 +244,12 @@ private fun PersonaDetailList(
     onEditAvatar: () -> Unit,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldKindWrapper>,
-    onDeleteField: (Network.Persona.Field.Kind) -> Unit,
-    onValueChanged: (Network.Persona.Field.Kind, String) -> Unit,
+    onDeleteField: (Network.Persona.Field.ID) -> Unit,
+    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
-    onFieldFocusChanged: (Network.Persona.Field.Kind, Boolean) -> Unit,
+    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean
 ) {
@@ -312,16 +312,16 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = field.kind.toDisplayResource()),
+                label = stringResource(id = field.id.toDisplayResource()),
                 value = field.value,
                 onValueChanged = {
-                    onValueChanged(field.kind, it)
+                    onValueChanged(field.id, it)
                 },
                 onFocusChanged = {
-                    onFieldFocusChanged(field.kind, it.hasFocus)
+                    onFieldFocusChanged(field.id, it.hasFocus)
                 },
                 onDeleteField = {
-                    onDeleteField(field.kind)
+                    onDeleteField(field.id)
                 },
                 required = field.required,
                 error = if (field.shouldDisplayValidationError && field.valid == false) {

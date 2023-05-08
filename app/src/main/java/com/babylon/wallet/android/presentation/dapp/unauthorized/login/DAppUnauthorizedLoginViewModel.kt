@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappMetadata
+import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -74,13 +74,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 handleRequestError(DappRequestFailure.InvalidRequest)
                 return@launch
             }
-            val result = dappMetadataRepository.getDappMetadata(
-                defitnionAddress = request.metadata.dAppDefinitionAddress,
+            val result = dappMetadataRepository.getDAppMetadata(
+                definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
-            result.onValue { dappMetadata ->
+            result.onValue { dappWithMetadata ->
                 _state.update {
-                    it.copy(dappMetadata = dappMetadata)
+                    it.copy(dappWithMetadata = dappWithMetadata)
                 }
             }
             result.onError { error ->
@@ -138,7 +138,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
             getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
-                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.kind) }
+                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.id) }
                 _state.update {
                     it.copy(
                         selectedPersona = updatedPersona.toUiModel(),
@@ -191,7 +191,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         sendEvent(
             DAppUnauthorizedLoginEvent.LoginFlowCompleted(
                 requestId = request.id,
-                dAppName = state.value.dappMetadata?.getName() ?: "Unknown dApp"
+                dAppName = state.value.dappWithMetadata?.name ?: "Unknown dApp"
             )
         )
     }
@@ -214,7 +214,7 @@ sealed interface DAppUnauthorizedLoginEvent : OneOffEvent {
 }
 
 data class DAppUnauthorizedLoginUiState(
-    val dappMetadata: DappMetadata? = null,
+    val dappWithMetadata: DappWithMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
     val selectedOnetimeDataFields: ImmutableList<Network.Persona.Field> = persistentListOf(),

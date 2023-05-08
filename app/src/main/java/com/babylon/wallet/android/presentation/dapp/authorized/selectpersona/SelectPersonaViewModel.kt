@@ -100,7 +100,7 @@ class SelectPersonaViewModel @Inject constructor(
                 personaUiModel.persona.address == it.identityAddress
             }
             if (matchingAuthorizedPersona != null) {
-                val localDateTime = matchingAuthorizedPersona.lastUsedOn.fromISO8601String()
+                val localDateTime = matchingAuthorizedPersona.lastLogin.fromISO8601String()
                 personaUiModel.copy(
                     lastUsedOn = localDateTime
                         ?.format(DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT)),

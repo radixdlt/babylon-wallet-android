@@ -40,7 +40,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.Kind.GivenName).encodeToString()
+        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.ID.GivenName).encodeToString()
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }

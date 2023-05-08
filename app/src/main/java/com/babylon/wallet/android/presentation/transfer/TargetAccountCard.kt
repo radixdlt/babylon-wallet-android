@@ -87,7 +87,7 @@ fun TargetAccountCard(
 
 @Preview(showBackground = true)
 @Composable
-fun EmptyAccountCardPreview() {
+fun TargetAccountCardPreview() {
     RadixWalletTheme {
         TargetAccountCard(
             onChooseAccountClick = {},

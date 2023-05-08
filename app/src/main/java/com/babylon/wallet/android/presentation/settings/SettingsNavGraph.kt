@@ -5,7 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.babylon.wallet.android.presentation.createaccount.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
@@ -70,6 +70,9 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsImportOlympiaAccounts(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onAddP2PLink = {
+                navController.settingsConnectorScreen(scanQr = true)
             }
         )
     }

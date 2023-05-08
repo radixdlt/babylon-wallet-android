@@ -124,7 +124,7 @@ private fun SeedPhraseContent(
             itemsIndexed(items = factorSources) { _, factorSource ->
                 StandardOneLineCard(
                     "",
-                    factorSource.hint,
+                    factorSource.label,
                     modifier = Modifier
                         .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                         .clip(RadixTheme.shapes.roundedRectMedium)

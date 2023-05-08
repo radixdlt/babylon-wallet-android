@@ -21,6 +21,9 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
 
     override val profileState: Flow<ProfileState> = profileStateSource
 
+    override val inMemoryProfileOrNull: Profile?
+        get() = (profileStateSource.value as? ProfileState.Restored)?.profile
+
     override suspend fun saveProfile(profile: Profile) {
         profileStateSource.update { ProfileState.Restored(profile) }
     }

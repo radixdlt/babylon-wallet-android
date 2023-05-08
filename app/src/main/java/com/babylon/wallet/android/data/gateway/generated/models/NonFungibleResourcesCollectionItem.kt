@@ -24,6 +24,7 @@ import kotlinx.serialization.Serializable
  *
  * @param aggregationLevel 
  * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param explicitMetadata 
  */
 @Serializable(with = NonFungibleResourcesCollectionItemSerializer::class)
 abstract class NonFungibleResourcesCollectionItem {
@@ -34,5 +35,7 @@ abstract class NonFungibleResourcesCollectionItem {
     /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
     @SerialName(value = "resource_address")
     abstract val resourceAddress: kotlin.String
+    @SerialName(value = "explicit_metadata")
+    abstract val explicitMetadata: EntityMetadataCollection?
 }
 

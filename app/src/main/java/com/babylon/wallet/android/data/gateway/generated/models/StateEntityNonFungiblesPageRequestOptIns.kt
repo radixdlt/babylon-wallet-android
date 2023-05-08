@@ -15,20 +15,22 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param transactionNotFound 
+ * @param explicitMetadata 
  */
 @Serializable
 
-data class TransactionNotFoundErrorAllOf (
+data class StateEntityNonFungiblesPageRequestOptIns (
 
-    @SerialName(value = "transaction_not_found")
-    val transactionNotFound: TransactionCommittedDetailsRequestIdentifier
+    @SerialName(value = "explicit_metadata")
+    val explicitMetadata: kotlin.collections.List<kotlin.String>? = null
 
 )
 
