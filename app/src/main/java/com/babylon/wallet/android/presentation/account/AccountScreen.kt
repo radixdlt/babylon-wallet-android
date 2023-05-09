@@ -87,6 +87,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Composable
 fun AccountScreen(
@@ -94,7 +95,8 @@ fun AccountScreen(
     onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onApplySecuritySettingsClick: (String) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
+    onNavigateToMnemonicRestore: (String) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -102,8 +104,8 @@ fun AccountScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is AccountEvent.ApplySecuritySettingsClick -> {
-                    onApplySecuritySettingsClick(it.factorSourceIdString)
+                is AccountEvent.NavigateToMnemonicBackup -> {
+                    onNavigateToMnemonicBackup(it.factorSourceId)
                 }
             }
         }
@@ -133,7 +135,9 @@ fun AccountScreen(
         showSecurityPrompt = state.showSecurityPrompt,
         onApplySecuritySettings = viewModel::onApplySecuritySettings,
         needMnemonicRecovery = state.needMnemonicRecovery,
-        onMnemonicRecovery = viewModel::onMnemonicRecovery
+        onMnemonicRecovery = {
+            onNavigateToMnemonicRestore(state.accountAddressFull)
+        }
     )
 }
 

@@ -35,7 +35,10 @@ import java.time.Instant
 
 class SampleDataProvider {
 
-    fun sampleAccount(address: String = "fj3489fj348f"): Network.Account {
+    fun sampleAccount(
+        address: String = "fj3489fj348f",
+        factorSourceId: FactorSource.ID = FactorSource.ID("IDIDDIIDD")
+    ): Network.Account {
         return Network.Account(
             address = address,
             appearanceID = 123,
@@ -49,7 +52,7 @@ class SampleDataProvider {
                             accountIndex = 0,
                             keyType = KeyType.TRANSACTION_SIGNING
                         ),
-                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                        factorSourceId = factorSourceId,
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -103,7 +106,12 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleProfile(): Profile {
+    fun sampleProfile(
+        mnemonicWithPassphrase: MnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+            bip39Passphrase = ""
+        )
+    ): Profile {
         return Profile(
             header = Header(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -119,12 +127,7 @@ class SampleDataProvider {
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(
-                FactorSource.babylon(
-                    mnemonicWithPassphrase = MnemonicWithPassphrase(
-                        mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
-                        bip39Passphrase = ""
-                    )
-                )
+                FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
             ),
             networks = emptyList()
         )

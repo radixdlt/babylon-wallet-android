@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,10 +58,10 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Composable
 fun WalletScreen(
@@ -70,7 +69,8 @@ fun WalletScreen(
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAccountClick: (accountId: String) -> Unit = { },
-    onApplySecuritySettingsClick: (String) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
+    onNavigateToMnemonicRestore: (String) -> Unit,
     onAccountCreationClick: () -> Unit,
     mainUiState: StateFlow<MainUiState>,
     onNavigateToCreateAccount: () -> Unit,
@@ -95,14 +95,14 @@ fun WalletScreen(
                 isBackupWarningVisible = walletState.isBackupWarningVisible,
                 error = walletState.error,
                 onMessageShown = viewModel::onMessageShown,
-                onApplySecuritySettings = viewModel::onApplySecuritySettings,
-                onMnemonicRecovery = viewModel::onMnemonicRecovery
+                onApplySecuritySettings = viewModel::onApplyMnemonicBackup,
+                onMnemonicRecovery = onNavigateToMnemonicRestore
             )
             LaunchedEffect(Unit) {
                 viewModel.oneOffEvent.collect {
                     when (it) {
                         is WalletEvent.AccountClick -> onAccountClick(it.address)
-                        is WalletEvent.ApplySecuritySettingsClick -> onApplySecuritySettingsClick(it.factorSourceIdString)
+                        is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                     }
                 }
             }
@@ -237,7 +237,6 @@ private fun WalletAccountList(
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
             Text(
@@ -267,11 +266,7 @@ private fun WalletAccountList(
                     },
                 showApplySecuritySettings = account.needMnemonicBackup(),
                 onApplySecuritySettings = {
-                    context.biometricAuthenticate { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
-                            onApplySecuritySettings(account.address)
-                        }
-                    }
+                    onApplySecuritySettings(account.address)
                 },
                 needMnemonicRecovery = account.needMnemonicRecovery(),
                 onMnemonicRecovery = {

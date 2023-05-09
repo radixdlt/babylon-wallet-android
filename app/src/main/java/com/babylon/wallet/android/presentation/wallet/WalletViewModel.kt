@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.utils.accountFactorSourceId
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -67,6 +68,14 @@ class WalletViewModel @Inject constructor(
                 event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
             }.collect {
                 loadResourceData(true)
+            }
+        }
+
+        viewModelScope.launch {
+            appEventBus.events.filter { event ->
+                event is AppEvent.RestoredMnemonic
+            }.collect {
+                loadResourceData(false)
             }
         }
     }
@@ -114,17 +123,10 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
-    fun onApplySecuritySettings(address: String) {
+    fun onApplyMnemonicBackup(address: String) {
         viewModelScope.launch {
             getProfileUseCase.accountOnCurrentNetwork(address)?.accountFactorSourceId()?.let {
-                sendEvent(WalletEvent.ApplySecuritySettingsClick(it.value))
-            }
-        }
-    }
-
-    fun onMnemonicRecovery(address: String) {
-        viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(address)?.accountFactorSourceId()?.let {
+                sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
             }
         }
     }
@@ -138,7 +140,7 @@ class WalletViewModel @Inject constructor(
 
 internal sealed interface WalletEvent : OneOffEvent {
     data class AccountClick(val address: String) : WalletEvent
-    data class ApplySecuritySettingsClick(val factorSourceIdString: String) : WalletEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : WalletEvent
 }
 
 data class WalletUiState(

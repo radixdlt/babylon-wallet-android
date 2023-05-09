@@ -27,8 +27,22 @@ fun BoxScope.SnackbarUiMessageHandler(message: UiMessage?, modifier: Modifier = 
             .align(Alignment.BottomCenter)
             .padding(RadixTheme.dimensions.paddingLarge)
     )
-    val messageToShow =
-        message?.getUserFriendlyDescriptionRes()?.let { stringResource(id = it) } ?: message?.getErrorMessage()
+    SnackbarUIMessage(
+        message = message,
+        snackbarHostState = snackbarHostState,
+        onMessageShown = onMessageShown
+    )
+}
+
+@Composable
+fun SnackbarUIMessage(
+    message: UiMessage?,
+    snackbarHostState: SnackbarHostState,
+    onMessageShown: () -> Unit
+) {
+    val messageToShow = message?.getUserFriendlyDescriptionRes()?.let {
+        stringResource(id = it)
+    } ?: message?.getErrorMessage()
     messageToShow?.let {
         LaunchedEffect(messageToShow, message?.id) {
             snackbarHostState.showSnackbar(message = messageToShow)

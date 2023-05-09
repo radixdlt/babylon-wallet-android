@@ -27,6 +27,8 @@ import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCom
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonic
+import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
@@ -96,8 +98,11 @@ fun NavigationHost(
                 onNavigateToIncompatibleProfile = {
                     navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
                 },
-                onApplySecuritySettingsClick = { factorSourceIDString ->
-                    navController.settingsShowMnemonic(factorSourceIDString)
+                onNavigateToMnemonicBackup = { factorSourceID ->
+                    navController.settingsShowMnemonic(factorSourceID.value)
+                },
+                onNavigateToMnemonicRestore = { accountAddress ->
+                    navController.restoreMnemonic(accountAddress)
                 }
             )
         }
@@ -115,8 +120,11 @@ fun NavigationHost(
                 onBackClick = {
                     navController.navigateUp()
                 },
-                onApplySecuritySettingsClick = { factorSourceIDString ->
-                    navController.settingsShowMnemonic(factorSourceIDString)
+                onNavigateToMnemonicBackup = { factorSourceID ->
+                    navController.settingsShowMnemonic(factorSourceID.value)
+                },
+                onNavigateToMnemonicRestore = { accountAddress ->
+                    navController.restoreMnemonic(accountAddress)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -158,6 +166,9 @@ fun NavigationHost(
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
             }
         )
+        restoreMnemonicScreen(
+            onBackClick = { navController.navigateUp() }
+        )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() },
             onContinueClick = { personaId ->
@@ -180,8 +191,8 @@ fun NavigationHost(
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
             },
-            onApplySecuritySettings = { factorSourceIDString ->
-                navController.settingsShowMnemonic(factorSourceIDString)
+            onNavigateToMnemonicBackup = { factorSourceId ->
+                navController.settingsShowMnemonic(factorSourceId.value)
             }
         )
         personaDetailScreen(

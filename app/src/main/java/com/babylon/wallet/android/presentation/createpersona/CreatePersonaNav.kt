@@ -10,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.settings.personadetail.ROUTE_PERSONA_DETAIL
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.google.accompanist.navigation.animation.composable
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
 const val ROUTE_PERSONA_INFO = "persona_info_route"
@@ -99,7 +100,7 @@ fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
     createPersonaScreen: (Boolean) -> Unit,
     onPersonaClick: (String) -> Unit,
-    onApplySecuritySettings: (String) -> Unit
+    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONAS,
@@ -121,7 +122,7 @@ fun NavGraphBuilder.personasScreen(
             onBackClick = onBackClick,
             createNewPersona = createPersonaScreen,
             onPersonaClick = onPersonaClick,
-            onApplySecuritySettings = onApplySecuritySettings
+            onNavigateToMnemonicBackup = onNavigateToMnemonicBackup
         )
     }
 }
