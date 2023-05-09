@@ -185,6 +185,8 @@ sealed interface MessageFromDataChannel {
     }
 
     object ParsingError : MessageFromDataChannel
+
+    object Error : MessageFromDataChannel
 }
 
 fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
