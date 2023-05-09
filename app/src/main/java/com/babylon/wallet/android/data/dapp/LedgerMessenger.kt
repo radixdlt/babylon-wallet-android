@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.GetDeviceInfoRequest
 import com.babylon.wallet.android.data.dapp.model.ImportOlympiaDeviceRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.data.dapp.model.SignTransactionRequest
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,14 @@ interface LedgerMessenger {
         derivationPath: String,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice
     ): Flow<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>
+
+    fun signTransactionRequest(
+        interactionId: String,
+        signersDerivationPathToCurve: List<Pair<String, Curve>>,
+        compiledTransactionIntent: String,
+        ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+        displayHashOnLedgerDisplay: Boolean = true
+    ): Flow<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>
 }
 
 class LedgerMessengerImpl @Inject constructor(
@@ -86,6 +95,35 @@ class LedgerMessengerImpl @Inject constructor(
                     peerdroidClient.listenForLedgerResponses().filter {
                         it.id == interactionId
                     }.filterIsInstance<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>().collect {
+                        emit(it)
+                    }
+                }
+                is Error -> {}
+            }
+        }
+    }
+
+    override fun signTransactionRequest(
+        interactionId: String,
+        signersDerivationPathToCurve: List<Pair<String, Curve>>,
+        compiledTransactionIntent: String,
+        ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+        displayHashOnLedgerDisplay: Boolean
+    ): Flow<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
+        val ledgerRequest: LedgerInteractionRequest = SignTransactionRequest(
+            interactionId = interactionId,
+            signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(it.second, it.first) },
+            ledgerDevice = ledgerDevice,
+            displayHash = displayHashOnLedgerDisplay,
+            compiledTransactionIntent = compiledTransactionIntent,
+            mode = SignTransactionRequest.Mode.Summary
+        )
+        return flow {
+            when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
+                is Success -> {
+                    peerdroidClient.listenForLedgerResponses().filter {
+                        it.id == interactionId
+                    }.filterIsInstance<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>().collect {
                         emit(it)
                     }
                 }

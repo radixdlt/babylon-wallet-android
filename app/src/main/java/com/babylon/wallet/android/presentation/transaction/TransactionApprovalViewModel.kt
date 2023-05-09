@@ -149,7 +149,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     _state.update { state -> state.copy(networkFee = networkFee) }
                                 }
 
-                                val manifestPreview = transactionClient.analyzeManifest(
+                                val manifestPreview = transactionClient.analyzeManifestWithPreviewContext(
                                     networkId = getCurrentGatewayUseCase().network.networkId(),
                                     transactionManifest = transactionManifest,
                                     transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
