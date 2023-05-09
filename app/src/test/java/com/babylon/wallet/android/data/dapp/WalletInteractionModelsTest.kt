@@ -2,13 +2,17 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.AccountDto
 import com.babylon.wallet.android.data.dapp.model.AccountWithProofOfOwnership
-import com.babylon.wallet.android.data.dapp.model.AuthLoginRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestItem
 import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.OngoingAccountsWithProofOfOwnershipRequestItem
+import com.babylon.wallet.android.data.dapp.model.OngoingAccountsWithoutProofOfOwnershipRequestItem
+import com.babylon.wallet.android.data.dapp.model.ProofDto
 import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
@@ -29,23 +33,46 @@ class WalletInteractionModelsTest {
     @Test
     fun `OneTimeAccountsRequestResponseItem serialization & deserialization`() {
         val responseItem1: OneTimeAccountsRequestResponseItem = OneTimeAccountsWithProofOfOwnershipRequestResponseItem(
-            listOf(
+            challenge = "challenge",
+            accounts = listOf(
                 AccountWithProofOfOwnership(
-                    accountDto = AccountDto(address = "address2", label = "Test account", appearanceId = 0),
-                    challenge = "1",
-                    signature = "2"
+                    accountDto = AccountDto(
+                        address = "address2",
+                        label = "Test account",
+                        appearanceId = 0
+                    ),
+                    proof = ProofDto(
+                        publicKey = "publicKey",
+                        signature = "signature",
+                        curve = "curve"
+                    )
                 ), AccountWithProofOfOwnership(
-                    accountDto = AccountDto(address = "address2", label = "Test account", appearanceId = 0),
-                    challenge = "1",
-                    signature = "2"
+                    accountDto = AccountDto(
+                        address = "address2",
+                        label = "Test account",
+                        appearanceId = 0
+                    ),
+                    proof = ProofDto(
+                        publicKey = "publicKey",
+                        signature = "signature",
+                        curve = "curve"
+                    )
                 )
             )
         )
         val responseItem2: OneTimeAccountsRequestResponseItem =
             OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
                 listOf(
-                    AccountDto(address = "address1", label = "Test account", appearanceId = 0),
-                    AccountDto(address = "address2", label = "Test account", appearanceId = 1)
+                    AccountDto(
+                        address = "address1",
+                        label = "Test account",
+                        appearanceId = 0
+                    ),
+                    AccountDto(
+                        address = "address2",
+                        label = "Test account",
+                        appearanceId = 1
+                    )
                 )
             )
 
@@ -62,7 +89,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"unauthorizedRequest",
                   "oneTimeAccounts":{
-                     "requiresProofOfOwnership":false,
+                     "discriminator": "oneTimeAccountsWithoutProofOfOwnership",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -80,7 +107,7 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletUnauthorizedRequestItems)
         val item = result.items as WalletUnauthorizedRequestItems
-        assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
+        assert(item.oneTimeAccounts is OneTimeAccountsWithoutProofOfOwnershipRequestItem)
     }
 
     @Test
@@ -118,7 +145,7 @@ class WalletInteractionModelsTest {
                     "identityAddress":"randomAddress1"
                   }
                   "oneTimeAccounts":{
-                     "requiresProofOfOwnership":false,
+                     "discriminator":"oneTimeAccountsWithoutProofOfOwnership",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -137,7 +164,7 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthUsePersonaRequestItem)
-        assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
+        assert(item.oneTimeAccounts is OneTimeAccountsWithoutProofOfOwnershipRequestItem)
     }
 
     @Test
@@ -151,7 +178,7 @@ class WalletInteractionModelsTest {
                     "identityAddress":"randomAddress1"
                   }
                   "ongoingAccounts":{
-                     "requiresProofOfOwnership":false,
+                     "discriminator":"ongoingAccountsWithoutProofOfOwnership",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -170,7 +197,7 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assert(item.auth is AuthUsePersonaRequestItem)
-        assert(item.ongoingAccounts?.requiresProofOfOwnership == false)
+        assert(item.ongoingAccounts is OngoingAccountsWithoutProofOfOwnershipRequestItem)
     }
 
     @Test
@@ -239,7 +266,8 @@ class WalletInteractionModelsTest {
                     "discriminator":"loginWithoutChallenge"                   
                   }
                   "oneTimeAccounts":{
-                     "requiresProofOfOwnership":false,
+                     "discriminator": "oneTimeAccountsWithProofOfOwnership",
+                     "challenge": "challenge",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -258,11 +286,11 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assertEquals(AuthLoginWithoutChallengeRequestItem, item.auth)
-        assert(item.oneTimeAccounts?.requiresProofOfOwnership == false)
+        assert(item.oneTimeAccounts is OneTimeAccountsWithProofOfOwnershipRequestItem)
     }
 
     @Test
-    fun `WalletInteraction authorized login request decoding with ongoingAccounts item`() {
+    fun `WalletInteraction authorized login request decoding with ongoingAccounts item without proof of ownership`() {
         val request = """
             {
                "items":{
@@ -272,7 +300,7 @@ class WalletInteractionModelsTest {
                     "challenge":"randomChallenge"
                   }
                   "ongoingAccounts":{
-                     "requiresProofOfOwnership":false,
+                     "discriminator":"ongoingAccountsWithoutProofOfOwnership",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -291,7 +319,41 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assertEquals(AuthLoginWithChallengeRequestItem("randomChallenge"), item.auth)
-        assert(item.ongoingAccounts?.requiresProofOfOwnership == false)
+        assert(item.ongoingAccounts is OngoingAccountsWithoutProofOfOwnershipRequestItem)
+    }
+
+    @Test
+    fun `WalletInteraction authorized login request decoding with ongoingAccounts item with proof of ownership`() {
+        val request = """
+            {
+               "items":{
+                  "discriminator":"authorizedRequest",
+                  "auth":{
+                    "discriminator":"loginWithChallenge",
+                    "challenge":"randomChallenge"
+                  }
+                  "ongoingAccounts":{
+                     "discriminator":"ongoingAccountsWithProofOfOwnership",
+                     "challenge":"challenge"
+                     "numberOfAccounts":{
+                        "quantity":1,
+                        "quantifier":"exactly"
+                     }
+                  }               
+               },
+               "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
+               "metadata":{
+                  "networkId":34,
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "dAppDefinitionAddress":"dashboard"
+               }
+            }
+        """
+        val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
+        assert(result.items is WalletAuthorizedRequestItems)
+        val item = result.items as WalletAuthorizedRequestItems
+        assertEquals(AuthLoginWithChallengeRequestItem("randomChallenge"), item.auth)
+        assert(item.ongoingAccounts is OngoingAccountsWithProofOfOwnershipRequestItem)
     }
 
     @Test
