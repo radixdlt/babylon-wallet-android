@@ -82,9 +82,9 @@ class ShowMnemonicViewModel @Inject constructor(
         val visibleMnemonic: VisibleMnemonic = VisibleMnemonic.None
     ) : UiState
 
-    sealed interface Effect: OneOffEvent {
-        data class OnRequestToShowMnemonic(val factorSourceID: FactorSource.ID): Effect
-        data class OnRequestToRecoverMnemonic(val accountAddress: String): Effect
+    sealed interface Effect : OneOffEvent {
+        data class OnRequestToShowMnemonic(val factorSourceID: FactorSource.ID) : Effect
+        data class OnRequestToRecoverMnemonic(val accountAddress: String) : Effect
     }
 }
 

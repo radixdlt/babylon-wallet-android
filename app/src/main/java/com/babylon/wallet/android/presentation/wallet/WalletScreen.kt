@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,7 +58,6 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
@@ -239,7 +237,6 @@ private fun WalletAccountList(
     accounts: List<AccountResources>,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
             Text(

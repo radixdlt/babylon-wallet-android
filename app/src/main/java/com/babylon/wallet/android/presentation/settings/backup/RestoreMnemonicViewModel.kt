@@ -33,7 +33,7 @@ class RestoreMnemonicViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val appEventBus: AppEventBus
-): StateViewModel<RestoreMnemonicViewModel.State>(), OneOffEventHandler<RestoreMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
+) : StateViewModel<RestoreMnemonicViewModel.State>(), OneOffEventHandler<RestoreMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
 
     private val args = RestoreMnemonicArgs(savedStateHandle)
 
@@ -92,7 +92,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         )
 
         val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-                factorInstance.factorSourceId
+            factorInstance.factorSourceId
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
             .removeLeadingZero()
@@ -118,7 +118,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         val factorSourceLabel: String,
         val acceptedSeedPhraseLength: SeedPhraseLength,
         val uiMessage: UiMessage? = null,
-    ): UiState {
+    ) : UiState {
 
         val wordsPhrase: String
             get() = mnemonicWords.joinToString(separator = " ")
@@ -133,11 +133,12 @@ class RestoreMnemonicViewModel @Inject constructor(
             get() = isWordCountValid && accountOnNetwork != null
     }
 
-    sealed class Effect: OneOffEvent {
-        object FinishRestoration: Effect()
+    sealed interface Effect : OneOffEvent {
+        object FinishRestoration : Effect
     }
 }
 
+@Suppress("MagicNumber")
 enum class SeedPhraseLength(val words: Int) {
     TWELVE(12),
     FIFTEEN(15),

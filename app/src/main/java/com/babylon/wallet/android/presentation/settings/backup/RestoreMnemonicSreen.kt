@@ -183,7 +183,6 @@ private fun RestoreMnemonicContent(
                                 )
                             )
                         }
-
                     }
                 }
             }
