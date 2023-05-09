@@ -170,7 +170,7 @@ data class Profile(
 val Profile.currentGateway: Radix.Gateway
     get() = appPreferences.gateways.current()
 
-internal val Profile.currentNetwork: Network
+val Profile.currentNetwork: Network
     get() {
         val currentGateway = currentGateway
 
