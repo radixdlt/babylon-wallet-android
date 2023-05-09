@@ -8,19 +8,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+
+@Serializable
+data class AccountDto(
+    @SerialName("address") val address: String,
+    @SerialName("label") val label: String,
+    @SerialName("appearanceId") val appearanceId: Int,
+)
+
 @Serializable
 data class AccountWithProofOfOwnership(
     @SerialName("account") val accountDto: AccountDto,
     @SerialName("proof") val proof: ProofDto
-) {
-
-    @Serializable
-    data class AccountDto(
-        @SerialName("address") val address: String,
-        @SerialName("label") val label: String,
-        @SerialName("appearanceId") val appearanceId: Int,
-    )
-}
+)
 
 @Serializable
 @JsonClassDiscriminator("discriminator")
@@ -39,7 +39,7 @@ data class OneTimeAccountsWithProofOfOwnershipRequestResponseItem(
 @SerialName("oneTimeAccountsWithoutProofOfOwnership")
 data class OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
     @SerialName("accounts")
-    val accounts: List<AccountWithProofOfOwnership.AccountDto>
+    val accounts: List<AccountDto>
 ) : OneTimeAccountsRequestResponseItem()
 
 @Serializable
@@ -57,11 +57,11 @@ data class OngoingAccountsWithProofOfOwnershipRequestResponseItem(
 @SerialName("ongoingAccountsWithoutProofOfOwnership")
 data class OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
     @SerialName("accounts")
-    val accounts: List<AccountWithProofOfOwnership.AccountDto>
+    val accounts: List<AccountDto>
 ) : OngoingAccountsRequestResponseItem()
 
 fun List<AccountItemUiModel>.toDataModel() = map { accountResources ->
-    AccountWithProofOfOwnership.AccountDto(
+    AccountDto(
         address = accountResources.address,
         label = accountResources.displayName.orEmpty(),
         appearanceId = accountResources.appearanceID
