@@ -6,14 +6,14 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-internal class AddressTypeTest(
+internal class ActionableAddressTypeTest(
     private val address: String,
-    private val type: Address.Type
+    private val type: ActionableAddress.Type
 ) {
 
     @Test
     fun `convert of address to type`() {
-        assertEquals(type, Address.Type.from(address))
+        assertEquals(type, ActionableAddress.Type.from(address))
     }
 
 
@@ -22,13 +22,13 @@ internal class AddressTypeTest(
         @Parameterized.Parameters(name = "\"{0}\" => {1}")
         fun data() : Collection<Array<Any>> {
             return listOf(
-                arrayOf(RESOURCE_ADDRESS, Address.Type.RESOURCE),
-                arrayOf(RESOURCE_NFT_ADDRESS, Address.Type.RESOURCE),
-                arrayOf(ACCOUNT_ADDRESS, Address.Type.ACCOUNT),
-                arrayOf(PACKAGE_ADDRESS, Address.Type.PACKAGE),
-                arrayOf(TRANSACTION_ADDRESS, Address.Type.TRANSACTION),
-                arrayOf(COMPONENT_ADDRESS, Address.Type.COMPONENT),
-                arrayOf(UNKNOWN_ADDRESS, Address.Type.TRANSACTION)
+                arrayOf(RESOURCE_ADDRESS, ActionableAddress.Type.RESOURCE),
+                arrayOf(RESOURCE_NFT_ADDRESS, ActionableAddress.Type.RESOURCE),
+                arrayOf(ACCOUNT_ADDRESS, ActionableAddress.Type.ACCOUNT),
+                arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.PACKAGE),
+                arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.TRANSACTION),
+                arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.COMPONENT),
+                arrayOf(UNKNOWN_ADDRESS, ActionableAddress.Type.TRANSACTION)
             )
         }
 

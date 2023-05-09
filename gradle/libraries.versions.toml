@@ -46,6 +46,7 @@ composeUiTooling = "1.4.1"
 ktor = "2.2.4"
 slf4j = "2.0.7"
 turbine = "0.12.3"
+zxing = "3.5.1"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -115,3 +116,4 @@ composeUiTooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "c
 composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
 slf4j = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+zxing = { module = "com.google.zxing:core", version.ref = "zxing" }

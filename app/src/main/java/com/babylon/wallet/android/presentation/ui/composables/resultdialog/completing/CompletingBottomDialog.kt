@@ -32,7 +32,7 @@ fun CompletingBottomDialog(
 ) {
     BottomSheetWrapper(
         onDismissRequest = onDismissDialogClick,
-        newBottomSheetState = bottomSheetState
+        bottomSheetState = bottomSheetState
     ) {
         CompletingBottomDialogContent(
             modifier = modifier

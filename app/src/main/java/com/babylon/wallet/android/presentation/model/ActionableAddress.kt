@@ -2,12 +2,12 @@ package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.utils.truncatedHash
 
-data class Address(
+data class ActionableAddress(
     val address: String,
     val type: Type
 ) {
 
-    private val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
+    val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
 
     val isCopyPrimaryAction: Boolean = type != Type.TRANSACTION
 
@@ -53,7 +53,7 @@ data class Address(
         private const val NFT_DELIMITER = ":"
         private const val DASHBOARD_BASE_URL = "https://rcnet-dashboard.radixdlt.com"
 
-        fun from(address: String) = Address(
+        fun from(address: String) = ActionableAddress(
             address = address,
             type = Type.from(address)
         )

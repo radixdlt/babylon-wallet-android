@@ -29,7 +29,7 @@ class AccountPreferenceViewModel @Inject constructor(
 
     private val args = AccountPreferencesArgs(savedStateHandle)
 
-    override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState()
+    override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(accountAddress = args.address)
 
     init {
         viewModelScope.launch {
@@ -72,6 +72,7 @@ class AccountPreferenceViewModel @Inject constructor(
 }
 
 data class AccountPreferenceUiState(
+    val accountAddress: String,
     val canUseFaucet: Boolean = false,
     val isLoading: Boolean = false,
     val isDeviceSecure: Boolean = false,

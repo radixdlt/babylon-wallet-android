@@ -9,11 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,12 +32,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AccountPreferenceScreen(
     viewModel: AccountPreferenceViewModel,
@@ -40,26 +49,58 @@ fun AccountPreferenceScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    AccountPreferenceContent(
-        onBackClick = onBackClick,
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+
+    ModalBottomSheetLayout(
         modifier = modifier
 //            .systemBarsPadding()
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
-        onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
-        canUseFaucet = state.canUseFaucet,
-        loading = state.isLoading,
-        isDeviceSecure = state.isDeviceSecure,
-        error = state.error,
-        onMessageShown = viewModel::onMessageShown
-    )
+            .navigationBarsPadding(),
+        sheetContent = {
+            Column {
+                BottomDialogDragHandle(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
+                        .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                    onDismissRequest = {
+                        scope.launch { sheetState.hide() }
+                    }
+                )
+
+                AccountQRCodeView(accountAddress = state.accountAddress)
+            }
+        },
+        sheetState = sheetState,
+        sheetBackgroundColor = RadixTheme.colors.defaultBackground,
+        sheetShape = RadixTheme.shapes.roundedRectTopDefault
+    ) {
+        AccountPreferenceContent(
+            onBackClick = onBackClick,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RadixTheme.colors.defaultBackground),
+            onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
+            onShowQRCodeClick = {
+                scope.launch { sheetState.show() }
+            },
+            canUseFaucet = state.canUseFaucet,
+            loading = state.isLoading,
+            isDeviceSecure = state.isDeviceSecure,
+            error = state.error,
+            onMessageShown = viewModel::onMessageShown
+        )
+    }
 }
 
 @Composable
 private fun AccountPreferenceContent(
     onBackClick: () -> Unit,
     onGetFreeXrdClick: () -> Unit,
+    onShowQRCodeClick: () -> Unit,
     canUseFaucet: Boolean,
     loading: Boolean,
     isDeviceSecure: Boolean,
@@ -108,6 +149,14 @@ private fun AccountPreferenceContent(
                     },
                     enabled = !loading && canUseFaucet
                 )
+
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.action_show_qr_code),
+                    onClick = onShowQRCodeClick,
+                    enabled = !loading
+                )
+
                 if (loading) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
                     Text(
@@ -124,6 +173,7 @@ private fun AccountPreferenceContent(
                 onMessageShown()
             }
         }
+
         if (showNotSecuredDialog) {
             NotSecureAlertDialog(finish = {
                 showNotSecuredDialog = false
@@ -142,6 +192,7 @@ fun AccountPreferencePreview() {
         AccountPreferenceContent(
             onBackClick = {},
             onGetFreeXrdClick = {},
+            onShowQRCodeClick = {},
             canUseFaucet = true,
             loading = false,
             isDeviceSecure = true,
