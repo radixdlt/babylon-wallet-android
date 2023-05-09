@@ -66,7 +66,7 @@ suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(it.address)).getOrThrow().data
-        // bTODO change to addressData.drop(1) after RET update, to be consistent with iOS
+        // TODO change to addressData.drop(1) after RET update, to be consistent with iOS
         addressData.takeLast(26).toByteArray()
     }.toSet()
 }
