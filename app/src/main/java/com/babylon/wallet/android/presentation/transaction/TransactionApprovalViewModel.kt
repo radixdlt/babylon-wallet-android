@@ -98,10 +98,10 @@ class TransactionApprovalViewModel @Inject constructor(
                 )
             )
 
-            manifestResult.onValue { manifestWithLockFee ->
+            manifestResult.onValue { manifestJson ->
                 when (
                     val manifestInStringFormatConversionResult = transactionClient.manifestInStringFormat(
-                        manifest = manifestWithLockFee
+                        manifest = manifestJson
                     )
                 ) {
                     is Result.Error -> {
