@@ -3,126 +3,188 @@ package com.babylon.wallet.android.presentation.wallet
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
+import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.profile.data.utils.isOlympiaAccount
 import java.math.BigDecimal
 
 @Composable
 fun AccountCardView(
-    address: String,
-    accountName: String,
-    isLegacyAccount: Boolean,
-    showApplySecuritySettings: Boolean,
-    needMnemonicRecovery: Boolean,
-    assets: ImmutableList<AccountWithResources.FungibleResource>, // at the moment we pass only the tokens
+    accountWithResources: AccountWithResources,
     modifier: Modifier = Modifier,
     onApplySecuritySettings: () -> Unit,
     onMnemonicRecovery: () -> Unit,
 ) {
-    Box(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    vertical = RadixTheme.dimensions.paddingDefault,
-                    horizontal = RadixTheme.dimensions.paddingLarge
-                )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = accountName,
-                    style = RadixTheme.typography.body1Header,
-                    maxLines = 1,
-                    modifier = Modifier.weight(1f, false),
-                    color = RadixTheme.colors.white,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (isLegacyAccount) {
-                    Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.legacy_label),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.white
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            ActionableAddressView(
-                address = address,
-                textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+    val gradient = remember(accountWithResources.account.appearanceID) {
+        AccountGradientList[accountWithResources.account.appearanceID % AccountGradientList.size]
+    }
+
+    ConstraintLayout(
+        modifier
+            .background(Brush.linearGradient(gradient), shape = RadixTheme.shapes.roundedRectMedium)
+            .fillMaxWidth()
+            .heightIn(min = 160.dp)
+            .padding(
+                vertical = RadixTheme.dimensions.paddingDefault,
+                horizontal = RadixTheme.dimensions.paddingLarge
             )
-            Spacer(modifier = Modifier.weight(1f))
-            AnimatedVisibility(visible = showApplySecuritySettings, enter = fadeIn(), exit = fadeOut()) {
+    ) {
+        val (nameLabel, legacyLabel, addressLabel, spacer, assetsContainer, promptsContainer) = createRefs()
+
+        Text(
+            modifier = Modifier.constrainAs(nameLabel) {
+                linkTo(start = parent.start, end = parent.end, bias = 0f)
+                top.linkTo(parent.top)
+            },
+            text = accountWithResources.account.displayName,
+            style = RadixTheme.typography.body1Header,
+            maxLines = 2,
+            color = RadixTheme.colors.white,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        ActionableAddressView(
+            modifier = Modifier.constrainAs(addressLabel) {
+                top.linkTo(nameLabel.bottom, margin = 8.dp)
+                start.linkTo(parent.start)
+            },
+            address = accountWithResources.account.address,
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+        )
+
+        if (accountWithResources.account.isOlympiaAccount()) {
+            Text(
+                modifier = Modifier.constrainAs(legacyLabel) {
+                    start.linkTo(addressLabel.end, margin = 8.dp)
+                    bottom.linkTo(addressLabel.bottom)
+                },
+                text = stringResource(id = R.string.legacy_label),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.white
+            )
+        }
+
+        Spacer(modifier = Modifier.constrainAs(spacer) {
+            linkTo(
+                start = parent.start,
+                end = parent.end,
+                top = addressLabel.bottom,
+                bottom = assetsContainer.top,
+            )
+            height = Dimension.value(32.dp)
+        })
+
+
+        val isPromptsVisible = remember(accountWithResources) {
+            accountWithResources.needMnemonicBackup() || accountWithResources.needMnemonicRecovery()
+        }
+
+        AccountAssetsRow(
+            modifier = Modifier.constrainAs(assetsContainer) {
+                linkTo(
+                    start = parent.start,
+                    end = parent.end,
+                    top = spacer.bottom,
+                    bottom = if (isPromptsVisible) promptsContainer.top else parent.bottom,
+                    bottomMargin = if (isPromptsVisible) 18.dp else 0.dp
+                )
+                width = Dimension.fillToConstraints
+            },
+            assetsState = AccountAssetsRowState.Assets(
+                accountWithResources.fungibleResources,
+                accountWithResources.nonFungibleResources
+            )
+        )
+
+        AnimatedVisibility(
+            modifier = Modifier.constrainAs(promptsContainer) {
+                linkTo(
+                    start = parent.start,
+                    end = parent.end,
+                    top = assetsContainer.bottom,
+                    bottom = parent.bottom,
+                    verticalBias = 1f
+                )
+            },
+            visible = isPromptsVisible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Column {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onApplySecuritySettings,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.apply_security_settings)
+                    onClick = {
+                        if (accountWithResources.needMnemonicBackup()) {
+                            onApplySecuritySettings()
+                        } else {
+                            onMnemonicRecovery()
+                        }
+                    },
+                    text = stringResource(
+                        id = if (accountWithResources.needMnemonicBackup())
+                            R.string.apply_security_settings
+                        else
+                            R.string.recover_mnemonic
+                    )
                 )
-            }
-            AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
-                ApplySecuritySettingsLabel(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onMnemonicRecovery,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.recover_mnemonic)
-                )
-            }
-            AnimatedVisibility(visible = false) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AssetIconRowView(assets = assets)
             }
         }
+
+
+
     }
 }
-
-@Preview("default")
-@Preview("large font", fontScale = 2f)
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun AccountCardPreview() {
     RadixWalletTheme {
-        AccountCardView(
-            address = "0x589e5cb09935F67c441AEe6AF46A365274a932e3",
-            accountName = "My main account",
-            isLegacyAccount = true,
-            assets = persistentListOf(
-                AccountWithResources.FungibleResource(
-                    resourceAddress = "resource_address",
-                    amount = BigDecimal.valueOf(237659),
-                    nameMetadataItem = NameMetadataItem("cool XRD"),
-                    symbolMetadataItem = SymbolMetadataItem("XRD")
-                )
-            ),
-            modifier = Modifier.padding(bottom = 20.dp),
-            onApplySecuritySettings = {},
-            showApplySecuritySettings = true,
-            needMnemonicRecovery = true,
-            onMnemonicRecovery = {}
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            AccountCardView(
+                accountWithResources = AccountWithResources(
+                    account = SampleDataProvider().sampleAccount(),
+                    fungibleResources = listOf(
+                        AccountWithResources.FungibleResource(
+                            resourceAddress = "resource_address",
+                            amount = BigDecimal.valueOf(237659),
+                            nameMetadataItem = NameMetadataItem("cool XRD"),
+                            symbolMetadataItem = SymbolMetadataItem("XRD")
+                        )
+                    ),
+                    nonFungibleResources = listOf(),
+                    factorSourceState = AccountWithResources.FactorSourceState.NeedMnemonicBackup
+                ),
+                onApplySecuritySettings = {},
+                onMnemonicRecovery = {}
+            )
+        }
     }
 }
