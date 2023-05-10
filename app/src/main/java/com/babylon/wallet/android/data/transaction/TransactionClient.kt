@@ -19,7 +19,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_L
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.crypto.toECKeyPair
@@ -52,7 +52,7 @@ class TransactionClient @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountSignersUseCase: GetAccountSignersUseCase,
-    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val cache: HttpCache
 ) {
 
