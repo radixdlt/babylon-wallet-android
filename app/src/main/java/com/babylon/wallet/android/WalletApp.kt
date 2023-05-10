@@ -7,6 +7,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
+import com.babylon.wallet.android.presentation.main.MainEvent
+import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
@@ -14,7 +17,6 @@ import com.babylon.wallet.android.presentation.ui.composables.resultdialog.succe
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 
-@ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 @Suppress("ModifierMissing")
@@ -24,7 +26,7 @@ fun WalletApp(
 ) {
     val navController = rememberAnimatedNavController()
     NavigationHost(
-        startDestination = Screen.WalletDestination.route,
+        startDestination = MAIN_ROUTE,
         navController = navController,
         mainUiState = mainViewModel.state,
         onCloseApp = onCloseApp
