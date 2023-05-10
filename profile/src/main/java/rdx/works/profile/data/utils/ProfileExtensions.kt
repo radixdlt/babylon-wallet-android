@@ -8,7 +8,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 
-fun Network.Account.accountFactorSourceId(): FactorSource.ID? {
+fun Network.Account.unsecuredFactorSourceId(): FactorSource.ID? {
     return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
 }
 

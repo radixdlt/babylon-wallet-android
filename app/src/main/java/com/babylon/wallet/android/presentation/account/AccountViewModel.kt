@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.utils.accountFactorSourceId
+import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
@@ -154,7 +154,7 @@ class AccountViewModel @Inject constructor(
 
     fun onApplySecuritySettings() {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(state.value.accountAddressFull)?.accountFactorSourceId()?.let {
+            getProfileUseCase.accountOnCurrentNetwork(state.value.accountAddressFull)?.unsecuredFactorSourceId()?.let {
                 sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
             }
         }
