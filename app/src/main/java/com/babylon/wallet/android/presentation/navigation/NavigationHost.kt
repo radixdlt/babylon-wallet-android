@@ -8,7 +8,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.MainUiState
+import com.babylon.wallet.android.presentation.main.MainScreen
+import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
@@ -25,6 +26,8 @@ import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
+import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonic
@@ -42,13 +45,10 @@ import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.failed.failedBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
-import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.flow.StateFlow
 
-@ExperimentalPagerApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
@@ -69,43 +69,37 @@ fun NavigationHost(
             OnboardingScreen(
                 viewModel = hiltViewModel(),
                 onOnBoardingEnd = {
-                    navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
                 },
                 onBack = onCloseApp
             )
         }
-        composable(route = Screen.WalletDestination.route) {
-            WalletScreen(
-                mainUiState = mainUiState,
-                viewModel = hiltViewModel(),
-                onMenuClick = {
-                    navController.navigate(Screen.SettingsAllDestination.route)
-                },
-                onAccountClick = { accountId ->
-                    navController.navigate(
-                        Screen.AccountDestination.routeWithArgs(accountId)
-                    )
-                },
-                onAccountCreationClick = {
-                    navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
-                },
-                onNavigateToCreateAccount = {
-                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
-                },
-                onNavigateToOnBoarding = {
-                    navController.navigate(Screen.OnboardingDestination.route)
-                },
-                onNavigateToIncompatibleProfile = {
-                    navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
-                },
-                onNavigateToMnemonicBackup = { factorSourceID ->
-                    navController.settingsShowMnemonic(factorSourceID.value)
-                },
-                onNavigateToMnemonicRestore = { accountAddress ->
-                    navController.restoreMnemonic(accountAddress)
-                }
-            )
-        }
+        main(
+            mainUiState = mainUiState,
+            onMenuClick = {
+                navController.navigate(Screen.SettingsAllDestination.route)
+            },
+            onAccountClick = { accountId ->
+                navController.navigate(
+                    Screen.AccountDestination.routeWithArgs(accountId)
+                )
+            },
+            onAccountCreationClick = {
+                navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
+            },
+            onNavigateToCreateAccount = {
+                navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+            },
+            onNavigateToOnBoarding = {
+                navController.navigate(Screen.OnboardingDestination.route)
+            },
+            onNavigateToIncompatibleProfile = {
+                navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+            },
+            onNavigateToMnemonicBackup = { factorSourceID ->
+                navController.settingsShowMnemonic(factorSourceID.value)
+            }
+        )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
             arguments = listOf(
@@ -160,7 +154,7 @@ fun NavigationHost(
         )
         createAccountConfirmationScreen(
             onNavigateToWallet = {
-                navController.popBackStack(Screen.WalletDestination.route, inclusive = false)
+                navController.popBackStack(MAIN_ROUTE, inclusive = false)
             },
             onFinishAccountCreation = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
@@ -284,7 +278,7 @@ fun NavigationHost(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
             IncompatibleProfileContent(hiltViewModel(), onProfileDeleted = {
-                navController.popBackStack(Screen.WalletDestination.route, false)
+                navController.popBackStack(MAIN_ROUTE, false)
             })
         }
         successBottomDialog(

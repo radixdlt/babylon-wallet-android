@@ -1,4 +1,4 @@
-package com.babylon.wallet.android
+package com.babylon.wallet.android.presentation.main
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository

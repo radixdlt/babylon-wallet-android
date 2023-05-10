@@ -54,11 +54,9 @@ fun SnackbarUIMessage(
 @Composable
 fun RadixSnackbarHost(
     hostState: SnackbarHostState,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     snackbar: @Composable (SnackbarData) -> Unit = { data ->
-        RadixSnackbar(
-            snackbarData = data
-        )
+        RadixSnackbar(snackbarData = data)
     }
 ) {
     SnackbarHost(hostState = hostState, modifier = modifier, snackbar = snackbar)
