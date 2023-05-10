@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import kotlinx.coroutines.flow.first
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -13,7 +13,7 @@ class GetFactorSourceStateForAccountUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository
 ) {
-    suspend operator fun invoke(accountAddress: String): AccountResources.FactorSourceState {
+    suspend operator fun invoke(accountAddress: String): AccountWithResources.FactorSourceState {
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().first()
         val accountFactorSourceIDOfDeviceKind = getProfileUseCase.accountFactorSourceIDOfDeviceKind(accountAddress)
         val mnemonic = accountFactorSourceIDOfDeviceKind?.let { mnemonicRepository.readMnemonic(it) }
@@ -21,9 +21,9 @@ class GetFactorSourceStateForAccountUseCase @Inject constructor(
         val needMnemonicBackup = accountFactorSourceIDOfDeviceKind != null && mnemonic != null &&
             !backedUpFactorSourceIds.contains(accountFactorSourceIDOfDeviceKind.value)
         return when {
-            needMnemonicRecovery -> AccountResources.FactorSourceState.NeedMnemonicRecovery
-            needMnemonicBackup -> AccountResources.FactorSourceState.NeedMnemonicBackup
-            else -> AccountResources.FactorSourceState.Valid
+            needMnemonicRecovery -> AccountWithResources.FactorSourceState.NeedMnemonicRecovery
+            needMnemonicBackup -> AccountWithResources.FactorSourceState.NeedMnemonicBackup
+            else -> AccountWithResources.FactorSourceState.Valid
         }
     }
 }
