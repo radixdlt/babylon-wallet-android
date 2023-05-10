@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
-import com.babylon.wallet.android.presentation.model.toNftUiModel
 
 @Suppress("MutableParams", "UnstableCollections")
 @Composable
@@ -87,7 +86,8 @@ fun NftTokenListEmpty() {
     }
 }
 
-@Preview(showBackground = true)
+// TODO when gateway is ready
+/*@Preview(showBackground = true)
 @Composable
 fun NftTokenListPreview() {
     RadixWalletTheme {
@@ -111,4 +111,4 @@ fun NftTokenListExpandedPreview() {
             onNftClick = { _, _ -> }
         )
     }
-}
+}*/

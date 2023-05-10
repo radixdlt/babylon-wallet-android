@@ -20,9 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.AccountAddress
-import com.babylon.wallet.android.domain.model.FungibleToken
-import com.babylon.wallet.android.domain.model.OwnedFungibleToken
+import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.AssetIconRowView
@@ -37,7 +37,7 @@ fun AccountCardView(
     isLegacyAccount: Boolean,
     showApplySecuritySettings: Boolean,
     needMnemonicRecovery: Boolean,
-    assets: ImmutableList<OwnedFungibleToken>, // at the moment we pass only the tokens
+    assets: ImmutableList<AccountWithResources.FungibleResource>, // at the moment we pass only the tokens
     modifier: Modifier = Modifier,
     onApplySecuritySettings: () -> Unit,
     onMnemonicRecovery: () -> Unit,
@@ -111,14 +111,11 @@ fun AccountCardPreview() {
             accountName = "My main account",
             isLegacyAccount = true,
             assets = persistentListOf(
-                OwnedFungibleToken(
-                    AccountAddress("123"),
-                    BigDecimal.valueOf(100000),
-                    "1234",
-                    FungibleToken(
-                        "1234",
-                        metadata = mapOf("symbol" to "XRD")
-                    )
+                AccountWithResources.FungibleResource(
+                    resourceAddress = "resource_address",
+                    amount = BigDecimal.valueOf(237659),
+                    nameMetadataItem = NameMetadataItem("cool XRD"),
+                    symbolMetadataItem = SymbolMetadataItem("XRD")
                 )
             ),
             modifier = Modifier.padding(bottom = 20.dp),

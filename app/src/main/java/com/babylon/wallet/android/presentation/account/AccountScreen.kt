@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
 
 package com.babylon.wallet.android.presentation.account
 
@@ -650,8 +650,8 @@ fun AccountContentPreview() {
                 isRefreshing = false,
                 onRefresh = {},
                 accountAddress = randomAddress(),
-                xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
-                fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
+                xrdToken = sampleFungibleResources().first().toTokenUiModel(),
+                fungibleTokens = sampleFungibleResources().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
                 gradientIndex = 0,
                 onHistoryClick = {},
@@ -684,8 +684,8 @@ fun AccountContentDarkPreview() {
                 isRefreshing = false,
                 onRefresh = {},
                 accountAddress = randomAddress(),
-                xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
-                fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
+                xrdToken = sampleFungibleResources().first().toTokenUiModel(),
+                fungibleTokens = sampleFungibleResources().map { it.toTokenUiModel() }.toPersistentList(),
                 nonFungibleTokens = persistentListOf(),
                 gradientIndex = 0,
                 onHistoryClick = {},
@@ -712,7 +712,7 @@ fun FungibleTokenDetailsDarkPreview() {
         with(SampleDataProvider()) {
             FungibleTokenBottomSheetDetails(
                 modifier = Modifier.fillMaxSize(),
-                token = sampleFungibleTokens().first().toTokenUiModel(),
+                token = sampleFungibleResources().first().toTokenUiModel(),
                 onCloseClick = {}
             )
         }
