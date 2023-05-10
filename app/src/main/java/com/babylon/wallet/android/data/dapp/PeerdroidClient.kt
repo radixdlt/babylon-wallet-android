@@ -81,7 +81,6 @@ class PeerdroidClientImpl @Inject constructor(
                 )
             }.catch { exception ->
                 Timber.e("caught exception: ${exception.localizedMessage}")
-                // TODO a snackbar message error? close the data channel between wallet and dapp?
             }
             .cancellable()
             .flowOn(ioDispatcher)
@@ -121,7 +120,12 @@ class PeerdroidClientImpl @Inject constructor(
                 else -> (payload as LedgerInteractionResponse).toDomainModel()
             }
         } catch (serializationException: SerializationException) {
+            // TODO a snackbar message error like iOS
+            Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
             MessageFromDataChannel.ParsingError
+        } catch (exception: Exception) {
+            Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
+            MessageFromDataChannel.Error
         }
     }
 }
