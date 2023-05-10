@@ -27,12 +27,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.utils.isOlympiaAccount
 import java.math.BigDecimal
 
@@ -171,15 +170,17 @@ fun AccountCardPreview() {
             AccountCardView(
                 accountWithResources = AccountWithResources(
                     account = SampleDataProvider().sampleAccount(),
-                    fungibleResources = listOf(
-                        AccountWithResources.FungibleResource(
-                            resourceAddress = "resource_address",
-                            amount = BigDecimal.valueOf(237659),
-                            nameMetadataItem = NameMetadataItem("cool XRD"),
-                            symbolMetadataItem = SymbolMetadataItem("XRD")
-                        )
+                    resources = Resources(
+                        fungibleResources = listOf(
+                            AccountWithResources.FungibleResource(
+                                resourceAddress = "resource_address",
+                                amount = BigDecimal.valueOf(237659),
+                                nameMetadataItem = NameMetadataItem("cool XRD"),
+                                symbolMetadataItem = SymbolMetadataItem("XRD")
+                            )
+                        ),
+                        nonFungibleResources = listOf()
                     ),
-                    nonFungibleResources = listOf(),
                     factorSourceState = AccountWithResources.FactorSourceState.NeedMnemonicBackup
                 ),
                 onApplySecuritySettings = {},

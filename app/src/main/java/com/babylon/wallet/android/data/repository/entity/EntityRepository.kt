@@ -29,6 +29,7 @@ import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
@@ -89,8 +90,10 @@ class EntityRepositoryImpl @Inject constructor(
             val listOfAccountsWithResources = accounts.map { account ->
                 AccountWithResources(
                     account = account,
-                    fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
-                    nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
+                    resources = Resources(
+                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
+                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
+                    )
                 )
             }
 
