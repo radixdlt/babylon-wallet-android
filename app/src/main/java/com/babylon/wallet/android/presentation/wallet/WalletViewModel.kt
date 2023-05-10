@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -17,49 +16,95 @@ import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.utils.accountFactorSourceId
-import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
-import rdx.works.profile.domain.exists
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
-    private val getProfileStateUseCase: GetProfileStateUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val appEventBus: AppEventBus,
     getBackupStateUseCase: GetBackupStateUseCase
-) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<WalletState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
-    override fun initialState() = WalletUiState()
+    override fun initialState() = WalletState()
+
+    private val refreshFlow = MutableSharedFlow<Unit>()
+    private val accountsFlow = combine(
+        getProfileUseCase().map { it.factorSources },
+        getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
+        refreshFlow
+    ) { factorSources, accounts, _ ->
+        Pair(factorSources, accounts)
+    }
 
     init {
-        viewModelScope.launch { // TODO probably here we can observe the accounts from network repository
-            getProfileUseCase().collect {
-                loadResourceData(isRefreshing = false)
-            }
-        }
-
-        viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                _state.update { it.copy(isBackupWarningVisible = backupState.isWarningVisible) }
-            }
-        }
-        observeBackedUpMnemonics()
+        observeAccounts()
+        observePrompts()
+        observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
+        refresh()
+    }
+
+    private fun observeAccounts() {
+        viewModelScope.launch {
+            accountsFlow.collect { pair ->
+                _state.update { state ->
+                    state.copy(
+                        factorSources = pair.first,
+                        resources = pair.second.map {
+                            AccountWithResources(account = it, resources = null)
+                        },
+                        loading = true
+                    )
+                }
+
+                getAccountsWithResourcesUseCase(pair.second, isRefreshing = true)
+                    .onValue { resources ->
+                        _state.update {
+                            it.copy(resources = resources, loading = false)
+                        }
+                    }
+                    .onError { error ->
+                        _state.update { it.copy(error = UiMessage.ErrorMessage(error), loading = false) }
+                    }
+            }
+        }
+    }
+
+    private fun observePrompts() {
+        viewModelScope.launch {
+            preferencesManager
+                .getBackedUpFactorSourceIds()
+                .distinctUntilChanged()
+                .collect { backedUpFactorSourceIds ->
+                    _state.update { it.copy(backedUpFactorSourceIds = backedUpFactorSourceIds) }
+                }
+        }
+    }
+
+    private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
+        viewModelScope.launch {
+            getBackupStateUseCase()
+                .collect { backupState ->
+                    _state.update { it.copy(isSettingsWarningVisible = backupState.isWarningVisible) }
+                }
+        }
     }
 
     private fun observeGlobalAppEvents() {
@@ -67,65 +112,13 @@ class WalletViewModel @Inject constructor(
             appEventBus.events.filter { event ->
                 event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
             }.collect {
-                loadResourceData(true)
-            }
-        }
-
-        viewModelScope.launch {
-            appEventBus.events.filter { event ->
-                event is AppEvent.RestoredMnemonic
-            }.collect {
-                loadResourceData(false)
-            }
-        }
-    }
-
-    private fun observeBackedUpMnemonics() {
-        viewModelScope.launch {
-            preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged().collect {
-                loadResourceData(isRefreshing = false)
-            }
-        }
-    }
-
-    private suspend fun loadResourceData(isRefreshing: Boolean) {
-        _state.update { state ->
-            state.copy(
-                accountsWithResources = getProfileUseCase
-                    .accountsOnCurrentNetwork()
-                    .map {
-                        AccountWithResources(
-                            account = it,
-                            resources = Resources(
-                                fungibleResources = emptyList(),
-                                nonFungibleResources = emptyList()
-                            )
-                        )
-                    }
-                    .toPersistentList(),
-                isLoading = false
-            )
-        }
-        val result = getAccountsWithResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
-        result.onError { error ->
-            Timber.w(error)
-            _state.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
-        }
-        result.onValue { accountsWithResources ->
-            _state.update { state ->
-                state.copy(accountsWithResources = accountsWithResources.toPersistentList(), isLoading = false)
+                refresh()
             }
         }
     }
 
     fun refresh() {
-        viewModelScope.launch {
-            _state.update { it.copy(isRefreshing = true) }
-            if (getProfileStateUseCase.exists()) {
-                loadResourceData(isRefreshing = true)
-            }
-            _state.update { it.copy(isRefreshing = false) }
-        }
+        viewModelScope.launch { refreshFlow.emit(Unit) }
     }
 
     fun onMessageShown() {
@@ -134,7 +127,7 @@ class WalletViewModel @Inject constructor(
 
     fun onApplyMnemonicBackup(address: String) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(address)?.accountFactorSourceId()?.let {
+            getProfileUseCase.accountOnCurrentNetwork(address)?.unsecuredFactorSourceId()?.let {
                 sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
             }
         }
@@ -150,6 +143,32 @@ class WalletViewModel @Inject constructor(
 internal sealed interface WalletEvent : OneOffEvent {
     data class AccountClick(val address: String) : WalletEvent
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : WalletEvent
+}
+
+data class WalletState(
+    private val factorSources: List<FactorSource> = emptyList(),
+    private val resources: List<AccountWithResources>? = null,
+    private val loading: Boolean = true,
+    private val backedUpFactorSourceIds: Set<String> = emptySet(),
+    val isSettingsWarningVisible: Boolean = false,
+    val error: UiMessage? = null,
+) : UiState {
+
+    val accountResources: List<AccountWithResources>
+        get() = resources ?: emptyList()
+
+    val isLoading: Boolean
+        get() = resources == null && loading
+
+    val isRefreshing: Boolean
+        get() = resources != null && loading
+
+    fun isMnemonicBackupNeeded(forAccount: Network.Account): Boolean {
+        val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
+
+        return backedUpFactorSourceIds.any { it == unsecuredFactorSourceId.value }
+    }
+
 }
 
 data class WalletUiState(
