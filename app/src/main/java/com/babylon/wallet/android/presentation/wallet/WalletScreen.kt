@@ -53,15 +53,17 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.utils.isOlympiaAccount
 
 @Composable
 fun WalletScreen(
@@ -91,7 +93,7 @@ fun WalletScreen(
                 onRefresh = viewModel::refresh,
                 modifier = modifier,
                 isLoading = walletState.isLoading,
-                accounts = walletState.resources,
+                accountsWithResourcesList = walletState.accountsWithResources,
                 isBackupWarningVisible = walletState.isBackupWarningVisible,
                 error = walletState.error,
                 onMessageShown = viewModel::onMessageShown,
@@ -138,7 +140,7 @@ private fun WalletScreenContent(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean,
-    accounts: ImmutableList<AccountResources>,
+    accountsWithResourcesList: ImmutableList<AccountWithResources>,
     isBackupWarningVisible: Boolean,
     error: UiMessage?,
     onMessageShown: () -> Unit,
@@ -209,7 +211,7 @@ private fun WalletScreenContent(
                     WalletAccountList(
                         onAccountClick = onAccountClick,
                         onAccountCreationClick = onAccountCreationClick,
-                        accounts = accounts,
+                        accountsWithResourcesList = accountsWithResourcesList,
                         onApplySecuritySettings = onApplySecuritySettings,
                         onMnemonicRecovery = onMnemonicRecovery
                     )
@@ -234,7 +236,7 @@ private fun WalletAccountList(
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettings: (String) -> Unit,
     onMnemonicRecovery: (String) -> Unit,
-    accounts: List<AccountResources>,
+    accountsWithResourcesList: List<AccountWithResources>,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -249,28 +251,28 @@ private fun WalletAccountList(
                 color = RadixTheme.colors.gray2
             )
         }
-        itemsIndexed(accounts) { _, account ->
-            val gradientColors = AccountGradientList[account.appearanceID % AccountGradientList.size]
+        itemsIndexed(accountsWithResourcesList) { _, accountWithResources ->
+            val gradientColors = AccountGradientList[accountWithResources.account.appearanceID % AccountGradientList.size]
             AccountCardView(
-                address = account.address,
-                accountName = account.displayName,
-                isLegacyAccount = account.isOlympiaAccount,
-                assets = account.fungibleTokens,
+                address = accountWithResources.account.address,
+                accountName = accountWithResources.account.displayName,
+                isLegacyAccount = accountWithResources.account.isOlympiaAccount(),
+                assets = accountWithResources.fungibleResources.toImmutableList(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
-                        onAccountClick(account.address)
+                        onAccountClick(accountWithResources.account.address)
                     },
-                showApplySecuritySettings = account.needMnemonicBackup(),
+                showApplySecuritySettings = accountWithResources.needMnemonicBackup(),
                 onApplySecuritySettings = {
-                    onApplySecuritySettings(account.address)
+                    onApplySecuritySettings(accountWithResources.account.address)
                 },
-                needMnemonicRecovery = account.needMnemonicRecovery(),
+                needMnemonicRecovery = accountWithResources.needMnemonicRecovery(),
                 onMnemonicRecovery = {
-                    onMnemonicRecovery(account.address)
+                    onMnemonicRecovery(accountWithResources.account.address)
                 }
 
             )
@@ -303,7 +305,7 @@ fun WalletContentPreview() {
                 onRefresh = { },
                 modifier = Modifier.fillMaxSize(),
                 isLoading = false,
-                accounts = persistentListOf(sampleAccountResource(), sampleAccountResource()),
+                accountsWithResourcesList = persistentListOf(sampleAccountWithResources(), sampleAccountWithResources()),
                 isBackupWarningVisible = true,
                 error = null,
                 onMessageShown = {},

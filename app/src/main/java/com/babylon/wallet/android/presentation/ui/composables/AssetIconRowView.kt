@@ -17,8 +17,7 @@ import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.model.OwnedFungibleToken
+import com.babylon.wallet.android.domain.model.AccountWithResources
 
 private const val MAX_ASSETS_DISPLAYED = 10
 private const val RELATIVE_PADDING = 0.7f
@@ -26,7 +25,7 @@ private const val RELATIVE_PADDING = 0.7f
 @Suppress("UnstableCollections")
 @Composable
 fun AssetIconRowView(
-    assets: List<OwnedFungibleToken>,
+    assets: List<AccountWithResources.FungibleResource>,
     modifier: Modifier = Modifier,
     circleSize: Int = 30,
     fontSize: Int = 10,
@@ -64,7 +63,7 @@ fun AssetIconRowView(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = assets[i].token.metadata[MetadataConstants.KEY_SYMBOL].orEmpty(),
+                        text = assets[i].symbol,
                         style = RadixTheme.typography.body2Regular.copy(fontSize = fontSize.sp),
                         color = RadixTheme.colors.gray1
                     )
@@ -81,7 +80,7 @@ fun AssetIconRowPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AssetIconRowView(
-                assets = sampleFungibleTokens()
+                assets = sampleFungibleResources()
             )
         }
     }
@@ -93,8 +92,8 @@ fun AssetIconRowOverflowPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AssetIconRowView(
-                assets = sampleFungibleTokens() +
-                    sampleFungibleTokens() + sampleFungibleTokens() + sampleFungibleTokens()
+                assets = sampleFungibleResources() +
+                    sampleFungibleResources() + sampleFungibleResources() + sampleFungibleResources()
             )
         }
     }
