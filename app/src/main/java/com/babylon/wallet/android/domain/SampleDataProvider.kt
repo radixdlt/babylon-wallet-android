@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
@@ -115,8 +116,10 @@ class SampleDataProvider {
     ): AccountWithResources {
         return AccountWithResources(
             account = sampleAccount(address =  address),
-            fungibleResources = withFungibleTokens,
-            nonFungibleResources = emptyList()
+            resources = Resources(
+                fungibleResources = withFungibleTokens,
+                nonFungibleResources = emptyList()
+            )
         )
     }
 

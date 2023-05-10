@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resources
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
@@ -22,8 +23,10 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
             it.map { accountWithResources ->
                 AccountWithResources(
                     account = accountWithResources.account,
-                    fungibleResources = accountWithResources.fungibleResources,
-                    nonFungibleResources = accountWithResources.nonFungibleResources,
+                    resources = Resources(
+                        fungibleResources = accountWithResources.fungibleResources,
+                        nonFungibleResources = accountWithResources.nonFungibleResources,
+                    ),
                     factorSourceState = getFactorSourceStateForAccountUseCase(accountWithResources.account.address)
                 )
             }
@@ -41,8 +44,10 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
             it.map { accountWithResources ->
                 AccountWithResources(
                     account = accountWithResources.account,
-                    fungibleResources = accountWithResources.fungibleResources,
-                    nonFungibleResources = accountWithResources.nonFungibleResources,
+                    resources = Resources(
+                        fungibleResources = accountWithResources.fungibleResources,
+                        nonFungibleResources = accountWithResources.nonFungibleResources,
+                    ),
                     factorSourceState = getFactorSourceStateForAccountUseCase(accountWithResources.account.address)
                 )
             }
