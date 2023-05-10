@@ -252,29 +252,19 @@ private fun WalletAccountList(
             )
         }
         itemsIndexed(accountsWithResourcesList) { _, accountWithResources ->
-            val gradientColors = AccountGradientList[accountWithResources.account.appearanceID % AccountGradientList.size]
             AccountCardView(
-                address = accountWithResources.account.address,
-                accountName = accountWithResources.account.displayName,
-                isLegacyAccount = accountWithResources.account.isOlympiaAccount(),
-                assets = accountWithResources.fungibleResources.toImmutableList(),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                    .background(Brush.linearGradient(gradientColors), shape = RadixTheme.shapes.roundedRectMedium)
                     .throttleClickable {
                         onAccountClick(accountWithResources.account.address)
                     },
-                showApplySecuritySettings = accountWithResources.needMnemonicBackup(),
+                accountWithResources = accountWithResources,
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account.address)
                 },
-                needMnemonicRecovery = accountWithResources.needMnemonicRecovery(),
                 onMnemonicRecovery = {
                     onMnemonicRecovery(accountWithResources.account.address)
                 }
-
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
