@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDappsScreen
@@ -135,7 +136,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                 }
             },
             onProfileDeleted = {
-                navController.popBackStack(Screen.WalletDestination.route, false)
+                navController.popBackStack(MAIN_ROUTE, false)
             }
         )
     }

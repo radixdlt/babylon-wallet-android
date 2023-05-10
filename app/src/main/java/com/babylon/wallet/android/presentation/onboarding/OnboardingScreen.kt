@@ -50,7 +50,6 @@ import kotlin.math.absoluteValue
 import kotlin.math.sign
 
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
