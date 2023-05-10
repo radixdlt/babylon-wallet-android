@@ -15,7 +15,7 @@ class TokenItemTitleDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         assertEquals(tokenUi.symbol, tokenUi.tokenItemTitle)
@@ -29,7 +29,7 @@ class TokenItemTitleDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         assertEquals(tokenUi.symbol, tokenUi.tokenItemTitle)
@@ -43,7 +43,7 @@ class TokenItemTitleDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         assertEquals(tokenUi.name, tokenUi.tokenItemTitle)
@@ -57,7 +57,7 @@ class TokenItemTitleDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         assertEquals("", tokenUi.tokenItemTitle)
@@ -71,7 +71,7 @@ class TokenItemTitleDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         assertEquals(tokenUi.name, tokenUi.tokenItemTitle)
@@ -85,7 +85,7 @@ class TokenItemTitleDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         assertEquals("", tokenUi.tokenItemTitle)
