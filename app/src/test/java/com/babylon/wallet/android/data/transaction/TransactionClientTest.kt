@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.toDomainModel
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -40,7 +39,6 @@ internal class TransactionClientTest {
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getAccountSignersUseCase = mockk<GetAccountSignersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
     private val getAccountResourceUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val cache = mockk<HttpCache>()
     private val networkId = Radix.Gateway.hammunet.network.networkId().value
@@ -127,42 +125,30 @@ internal class TransactionClientTest {
                 )
             } returns Result.Success(
                 listOf(
-                    SampleDataProvider().sampleAccountResource(
+                    SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-//                    SampleDataProvider().sampleAccountWithResources(
-//                        address = addressWithNoFunds,
-//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-//                            amount = BigDecimal.ZERO to "XRD"
-//                        )
-//                    )
+                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+                            amount = BigDecimal.ZERO to "XRD"
+                        )
+                    )
                 )
             )
             coEvery {
                 getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
             } returns Result.Success(
                 listOf(
-                    SampleDataProvider().sampleAccountResource(
+                    SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-//                    SampleDataProvider().sampleAccountWithResources(
-//                        address = addressWithNoFunds,
-//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-//                            amount = BigDecimal.ZERO to "XRD"
-//                        )
+                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+                            amount = BigDecimal.ZERO to "XRD"
+                        )
                     ),
-                    SampleDataProvider().sampleAccountResource(
+                    SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddress,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-//                    SampleDataProvider().sampleAccountWithResources(
-//                        address = addressWithFunds,
-//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-//                            amount = BigDecimal(100000) to "XRD"
-//                        )
-//                    )
+                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+                            amount = BigDecimal(100000) to "XRD"
+                        )
+                    )
                 )
             )
 
