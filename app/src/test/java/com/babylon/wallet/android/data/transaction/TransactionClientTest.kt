@@ -131,40 +131,28 @@ internal class TransactionClientTest {
                 listOf(
                     SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-//                    SampleDataProvider().sampleAccountWithResources(
-//                        address = addressWithNoFunds,
-//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-//                            amount = BigDecimal.ZERO to "XRD"
-//                        )
-//                    )
+                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+                            amount = BigDecimal.ZERO to "XRD"
+                        )
+                    )
                 )
             )
             coEvery {
                 getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
             } returns Result.Success(
                 listOf(
-                    SampleDataProvider().sampleAccountResource(
+                    SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-//                    SampleDataProvider().sampleAccountWithResources(
-//                        address = addressWithNoFunds,
-//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-//                            amount = BigDecimal.ZERO to "XRD"
-//                        )
+                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+                            amount = BigDecimal.ZERO to "XRD"
+                        )
                     ),
-                    SampleDataProvider().sampleAccountResource(
+                    SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddress,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-//                    SampleDataProvider().sampleAccountWithResources(
-//                        address = addressWithFunds,
-//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-//                            amount = BigDecimal(100000) to "XRD"
-//                        )
-//                    )
+                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+                            amount = BigDecimal(100000) to "XRD"
+                        )
+                    )
                 )
             )
 
