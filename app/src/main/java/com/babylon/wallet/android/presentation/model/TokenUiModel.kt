@@ -14,7 +14,7 @@ data class TokenUiModel(
     val symbol: String?, // short capitalized name
     val tokenQuantity: BigDecimal, // the amount of the token held
     val iconUrl: String?,
-    val address: String,
+    val resourceAddress: String,
     val metadata: Map<String, String> = emptyMap(),
     val isTokenAmountVisible: Boolean? = null,
     val guaranteedQuantity: BigDecimal? = null
@@ -99,7 +99,7 @@ fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
         iconUrl = ownedFungibleToken.token.getIconUrl(),
         description = ownedFungibleToken.token.getTokenDescription(),
         metadata = ownedFungibleToken.token.getDisplayableMetadata(),
-        address = ownedFungibleToken.address
+        resourceAddress = ownedFungibleToken.address
     )
 }
 
@@ -111,6 +111,6 @@ fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
         iconUrl = token.getIconUrl(),
         description = token.getTokenDescription(),
         metadata = token.getDisplayableMetadata(),
-        address = token.address
+        resourceAddress = token.address
     )
 }

@@ -195,7 +195,7 @@ fun TransactionAccountCardPreview() {
             tokens = persistentListOf(
                 TokenUiModel(
                     tokenQuantity = BigDecimal(689.203),
-                    address = "d3d3nd32dko3dko3",
+                    resourceAddress = "d3d3nd32dko3dko3",
                     symbol = "XRD",
                     iconUrl = "",
                     isTokenAmountVisible = true,
