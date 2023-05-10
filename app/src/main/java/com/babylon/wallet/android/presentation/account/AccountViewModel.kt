@@ -8,7 +8,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -41,7 +41,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val appEventBus: AppEventBus,
@@ -100,31 +100,31 @@ class AccountViewModel @Inject constructor(
     private fun loadAccountData(isRefreshing: Boolean) {
         viewModelScope.launch {
             if (accountId.isNotEmpty()) {
-                val result = getAccountResourcesUseCase.getAccount(accountId, isRefreshing)
+                val result = getAccountsWithResourcesUseCase.getAccount(accountId, isRefreshing)
                 result.onError { e ->
                     _state.update { accountUiState ->
                         accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
                     }
                 }
-                result.onValue { accountResources ->
-                    val xrdToken = accountResources.fungibleTokens.find {
-                        it.token.metadata[MetadataConstants.KEY_SYMBOL] == MetadataConstants.SYMBOL_XRD
+                result.onValue { accountWithResources ->
+                    val xrdToken = accountWithResources.fungibleResources.find {
+                        it.symbol == MetadataConstants.SYMBOL_XRD
                     }
 
-                    val fungibleTokens = accountResources.fungibleTokens.filter {
-                        it.token.metadata[MetadataConstants.KEY_SYMBOL] != MetadataConstants.SYMBOL_XRD
+                    val fungibleTokens = accountWithResources.fungibleResources.filter {
+                        it.symbol != MetadataConstants.SYMBOL_XRD
                     }
 
                     _state.update { accountUiState ->
                         accountUiState.copy(
-                            showSecurityPrompt = accountResources.needMnemonicBackup(),
-                            needMnemonicRecovery = accountResources.needMnemonicRecovery(),
+                            showSecurityPrompt = accountWithResources.needMnemonicBackup(),
+                            needMnemonicRecovery = accountWithResources.needMnemonicRecovery(),
                             isRefreshing = false,
                             isLoading = false,
                             xrdToken = xrdToken?.toTokenUiModel(),
                             fungibleTokens = fungibleTokens.toTokenUiModel().toPersistentList(),
-                            nonFungibleTokens = accountResources.nonFungibleTokens.toNftUiModel().toPersistentList(),
-                            gradientIndex = accountResources.appearanceID % AccountGradientList.size
+                            nonFungibleTokens = accountWithResources.nonFungibleResources.toNftUiModel().toPersistentList(),
+                            gradientIndex = accountWithResources.account.appearanceID % AccountGradientList.size
                         )
                     }
                 }
