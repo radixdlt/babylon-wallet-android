@@ -14,7 +14,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_L
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.crypto.getCompressedPublicKey
@@ -56,7 +56,7 @@ class TransactionClient @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
     private val getFactorSourcesAndSigningEntitiesUseCase: GetFactorSourcesAndSigningEntitiesUseCase,
-    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
 

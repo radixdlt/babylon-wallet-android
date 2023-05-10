@@ -5,11 +5,11 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.toDomainModel
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
@@ -40,7 +40,7 @@ internal class TransactionClientTest {
     private val transactionRepository = mockk<TransactionRepository>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
+    private val getAccountResourceUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val collectSignersSignaturesUseCase = mockk<CollectSignersSignaturesUseCase>()
     private val getFactorSourcesAndSigningEntitiesUseCase = mockk<GetFactorSourcesAndSigningEntitiesUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
@@ -90,11 +90,11 @@ internal class TransactionClientTest {
         runTest {
             coEvery {
                 getAccountResourceUseCase.getAccounts(
-                    addresses = listOf(expectedAddress),
+                    accountAddresses = listOf(expectedAddress),
                     isRefreshing = true
                 )
             } returns Result.Success(
-                listOf(SampleDataProvider().sampleAccountResource(expectedAddress))
+                listOf(SampleDataProvider().sampleAccountWithResources(expectedAddress))
             )
 
             var manifest = ManifestBuilder().addInstruction(
@@ -124,18 +124,21 @@ internal class TransactionClientTest {
         runTest {
             coEvery {
                 getAccountResourceUseCase.getAccounts(
-                    addresses = listOf(expectedAddressWithNoFunds),
+                    accountAddresses = listOf(expectedAddressWithNoFunds),
                     isRefreshing = true
                 )
             } returns Result.Success(
                 listOf(
-                    SampleDataProvider().sampleAccountResource(
+                    SampleDataProvider().sampleAccountWithResources(
                         address = expectedAddressWithNoFunds,
                         withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
                             ownerAddress = expectedAddressWithNoFunds,
-                            amount = BigDecimal.ZERO to "XRD"
-                        )
-                    )
+//                    SampleDataProvider().sampleAccountWithResources(
+//                        address = addressWithNoFunds,
+//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+//                            amount = BigDecimal.ZERO to "XRD"
+//                        )
+//                    )
                 )
             )
             coEvery {
@@ -146,16 +149,22 @@ internal class TransactionClientTest {
                         address = expectedAddressWithNoFunds,
                         withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
                             ownerAddress = expectedAddressWithNoFunds,
-                            amount = BigDecimal.ZERO to "XRD"
-                        )
+//                    SampleDataProvider().sampleAccountWithResources(
+//                        address = addressWithNoFunds,
+//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+//                            amount = BigDecimal.ZERO to "XRD"
+//                        )
                     ),
                     SampleDataProvider().sampleAccountResource(
                         address = expectedAddress,
                         withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
                             ownerAddress = expectedAddressWithNoFunds,
-                            amount = BigDecimal(100000) to "XRD"
-                        )
-                    )
+//                    SampleDataProvider().sampleAccountWithResources(
+//                        address = addressWithFunds,
+//                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
+//                            amount = BigDecimal(100000) to "XRD"
+//                        )
+//                    )
                 )
             )
 
@@ -186,15 +195,14 @@ internal class TransactionClientTest {
     fun `when address has no funds, return the respective error`() = runTest {
         coEvery {
             getAccountResourceUseCase.getAccounts(
-                addresses = listOf(expectedAddress),
+                accountAddresses = listOf(expectedAddress),
                 isRefreshing = true
             )
         } returns Result.Success(
             listOf(
-                SampleDataProvider().sampleAccountResource(
+                SampleDataProvider().sampleAccountWithResources(
                     address = expectedAddress,
-                    withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                        ownerAddress = expectedAddress,
+                    withFungibleTokens = SampleDataProvider().sampleFungibleResources(
                         amount = BigDecimal.ZERO to "XRD"
                     )
                 )
@@ -204,10 +212,9 @@ internal class TransactionClientTest {
             getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
         } returns Result.Success(
             listOf(
-                SampleDataProvider().sampleAccountResource(
+                SampleDataProvider().sampleAccountWithResources(
                     address = expectedAddress,
-                    withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                        ownerAddress = expectedAddress,
+                    withFungibleTokens = SampleDataProvider().sampleFungibleResources(
                         amount = BigDecimal.ZERO to "XRD"
                     )
                 )
