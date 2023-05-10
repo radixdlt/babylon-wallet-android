@@ -15,7 +15,6 @@ data class TokenUiModel(
     val tokenQuantity: BigDecimal, // the amount of the token held
     val iconUrl: String?,
     val resourceAddress: String,
-    val metadata: Map<String, String> = emptyMap(),
     val isTokenAmountVisible: Boolean? = null,
     val guaranteedQuantity: BigDecimal? = null
 ) : AssetUiModel() {
@@ -98,7 +97,6 @@ fun AccountWithResources.FungibleResource.toTokenUiModel(): TokenUiModel {
         tokenQuantity = amount,
         iconUrl = iconUrl.toString(),
         description = description,
-        metadata = emptyMap(), // token.getDisplayableMetadata(), // TODO
         resourceAddress = resourceAddress
     )
 }
@@ -110,31 +108,6 @@ fun List<AccountWithResources.FungibleResource>.toTokenUiModel() = map { fungibl
         tokenQuantity = fungibleResource.amount,
         iconUrl = fungibleResource.iconUrl.toString(),
         description = fungibleResource.description,
-        metadata = emptyMap(), // token.getDisplayableMetadata(), // TODO
         resourceAddress = fungibleResource.resourceAddress
     )
 }
-
-/*fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
-    TokenUiModel(
-        name = ownedFungibleToken.token.getTokenName(),
-        symbol = ownedFungibleToken.token.getTokenSymbol(),
-        tokenQuantity = ownedFungibleToken.amount,
-        iconUrl = ownedFungibleToken.token.getIconUrl(),
-        description = ownedFungibleToken.token.getTokenDescription(),
-        metadata = ownedFungibleToken.token.getDisplayableMetadata(),
-        resourceAddress = ownedFungibleToken.address
-    )
-}
-
-fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
-    return TokenUiModel(
-        name = token.getTokenName(),
-        symbol = token.getTokenSymbol(),
-        tokenQuantity = amount,
-        iconUrl = token.getIconUrl(),
-        description = token.getTokenDescription(),
-        metadata = token.getDisplayableMetadata(),
-        resourceAddress = token.address
-    )
-}*/
