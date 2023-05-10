@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -91,7 +91,31 @@ data class TokenUiModel(
     }
 }
 
-fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
+fun AccountWithResources.FungibleResource.toTokenUiModel(): TokenUiModel {
+    return TokenUiModel(
+        name = name,
+        symbol = symbol,
+        tokenQuantity = amount,
+        iconUrl = iconUrl.toString(),
+        description = description,
+        metadata = emptyMap(), // token.getDisplayableMetadata(), // TODO
+        resourceAddress = resourceAddress
+    )
+}
+
+fun List<AccountWithResources.FungibleResource>.toTokenUiModel() = map { fungibleResource ->
+    TokenUiModel(
+        name = fungibleResource.name,
+        symbol = fungibleResource.symbol,
+        tokenQuantity = fungibleResource.amount,
+        iconUrl = fungibleResource.iconUrl.toString(),
+        description = fungibleResource.description,
+        metadata = emptyMap(), // token.getDisplayableMetadata(), // TODO
+        resourceAddress = fungibleResource.resourceAddress
+    )
+}
+
+/*fun List<OwnedFungibleToken>.toTokenUiModel() = map { ownedFungibleToken ->
     TokenUiModel(
         name = ownedFungibleToken.token.getTokenName(),
         symbol = ownedFungibleToken.token.getTokenSymbol(),
@@ -113,4 +137,4 @@ fun OwnedFungibleToken.toTokenUiModel(): TokenUiModel {
         metadata = token.getDisplayableMetadata(),
         resourceAddress = token.address
     )
-}
+}*/
