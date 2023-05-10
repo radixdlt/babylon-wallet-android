@@ -55,7 +55,7 @@ fun WithdrawAccountContent(
                         iconUrl = account.iconUrl,
                         symbol = account.tokenSymbol,
                         tokenQuantity = account.tokenQuantityDecimal,
-                        address = account.address,
+                        resourceAddress = account.address,
                         isTokenAmountVisible = account.isTokenAmountVisible,
                         guaranteedQuantity = account.guaranteedQuantityDecimal
                     )

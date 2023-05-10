@@ -22,7 +22,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(1234.5678),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -38,7 +38,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(123456789012345.4),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -54,7 +54,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(120073000000123.92),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -70,7 +70,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(1000.500),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -86,7 +86,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(0.1234567),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -102,7 +102,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(0.005000000000002),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -118,7 +118,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(3959.8617984),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -134,7 +134,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(12345678901.1000),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -150,7 +150,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(12345.12345),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -166,7 +166,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(0.001000000000001),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -182,7 +182,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(12345.0029999),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -198,7 +198,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(1234567890.01),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUi.tokenQuantityToDisplay)
@@ -214,7 +214,7 @@ class TokenQuantityToDisplayTest {
             tokenQuantity = BigDecimal(1234567.19),
             iconUrl = "icon url",
             description = null,
-            address = ""
+            resourceAddress = ""
         )
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, tokenUiModel.tokenQuantityToDisplay)

@@ -101,7 +101,7 @@ fun FungibleTokenBottomSheetDetails(
             }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                address = token.address
+                address = token.resourceAddress
             )
             Spacer(modifier = Modifier.height(100.dp))
         }

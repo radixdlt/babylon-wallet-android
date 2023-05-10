@@ -97,7 +97,7 @@ fun TokenItemCardPreview() {
                 tokenQuantity = BigDecimal(1234.5678),
                 iconUrl = "icon url",
                 description = null,
-                address = ""
+                resourceAddress = ""
             )
         )
     }
@@ -115,7 +115,7 @@ fun TokenItemCardWithLongNameAndLongValuesPreview() {
                 tokenQuantity = BigDecimal(1234567.890123),
                 iconUrl = null,
                 description = null,
-                address = ""
+                resourceAddress = ""
             )
         )
     }
