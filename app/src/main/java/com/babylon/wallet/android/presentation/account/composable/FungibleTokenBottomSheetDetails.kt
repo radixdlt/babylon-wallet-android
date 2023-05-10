@@ -93,12 +93,6 @@ fun FungibleTokenBottomSheetDetails(
                 Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            if (token.metadata.isNotEmpty()) {
-                token.metadata.forEach { mapEntry ->
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    AssetMetadataRow(Modifier.fillMaxWidth(), mapEntry.key, mapEntry.value)
-                }
-            }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
                 address = token.resourceAddress
