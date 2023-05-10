@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resources
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
@@ -14,6 +15,13 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getFactorSourceStateForAccountUseCase: GetFactorSourceStateForAccountUseCase
 ) {
+
+    suspend operator fun invoke(forProfileAccounts: List<Network.Account>, isRefreshing: Boolean): Result<List<AccountWithResources>>{
+        return entityRepository.getAccountsWithResources(
+            accounts = forProfileAccounts,
+            isRefreshing = isRefreshing
+        )
+    }
 
     suspend fun getAccountsFromProfile(isRefreshing: Boolean): Result<List<AccountWithResources>> {
         return entityRepository.getAccountsWithResources(

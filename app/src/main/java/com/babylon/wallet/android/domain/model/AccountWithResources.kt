@@ -10,15 +10,15 @@ import java.math.BigDecimal
 
 data class AccountWithResources(
     val account: Network.Account,
-    val resources: Resources,
+    val resources: Resources?,
     private val factorSourceState: FactorSourceState = FactorSourceState.Valid
 ) {
 
     val fungibleResources: List<FungibleResource>
-        get() = resources.fungibleResources
+        get() = resources?.fungibleResources ?: emptyList()
 
     val nonFungibleResources: List<NonFungibleResource>
-        get() = resources.nonFungibleResources
+        get() = resources?.nonFungibleResources ?: emptyList()
 
     data class FungibleResource(
         val resourceAddress: String,

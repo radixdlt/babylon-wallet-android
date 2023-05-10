@@ -19,7 +19,7 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.utils.accountFactorSourceId
+import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.deviceFactorSources
 import javax.inject.Inject
@@ -60,7 +60,7 @@ class ShowMnemonicViewModel @Inject constructor(
             if (mnemonic != null) {
                 _state.update { it.copy(visibleMnemonic = VisibleMnemonic.Shown(mnemonic = mnemonic, factorSourceID = factorSourceID)) }
             } else {
-                val account = getProfileUseCase().first().currentNetwork.accounts.find { it.accountFactorSourceId() == factorSourceID }
+                val account = getProfileUseCase().first().currentNetwork.accounts.find { it.unsecuredFactorSourceId() == factorSourceID }
                 if (account != null) {
                     sendEvent(Effect.OnRequestToRecoverMnemonic(account.address))
                 }
