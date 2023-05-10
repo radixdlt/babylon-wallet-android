@@ -158,7 +158,7 @@ private fun TokenBalance(token: TokenUiModel, modifier: Modifier = Modifier) {
 fun FungibleTokenBottomSheetDetailsPreview() {
     RadixWalletTheme {
         FungibleTokenBottomSheetDetails(
-            token = SampleDataProvider().sampleFungibleTokens().first().toTokenUiModel(),
+            token = SampleDataProvider().sampleFungibleResources().first().toTokenUiModel(),
             onCloseClick = {}
         )
     }
