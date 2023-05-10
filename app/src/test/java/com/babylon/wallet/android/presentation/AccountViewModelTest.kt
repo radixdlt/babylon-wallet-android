@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.account.AccountUiState
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
@@ -40,14 +40,14 @@ class AccountViewModelTest {
 
     private lateinit var vm: AccountViewModel
 
-    private val requestAccountsUseCase = Mockito.mock(GetAccountResourcesUseCase::class.java)
+    private val requestAccountsUseCase = Mockito.mock(GetAccountsWithResourcesUseCase::class.java)
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
 
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
 
-    private val sampleData = SampleDataProvider().sampleAccountResource(address = accountId)
+    private val sampleData = SampleDataProvider().sampleAccountWithResources(address = accountId)
 
     @Before
     fun setUp() = runTest {
@@ -89,7 +89,7 @@ class AccountViewModelTest {
         with(event.last()) {
             assert(!this.isLoading)
             assert(xrdToken != null)
-            assert(sampleData.fungibleTokens.size == 3)
+            assert(sampleData.fungibleResources.size == 3)
         }
     }
 
