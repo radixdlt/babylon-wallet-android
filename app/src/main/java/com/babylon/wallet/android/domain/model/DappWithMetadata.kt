@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataIt
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
@@ -56,16 +57,6 @@ data class DappWithMetadata(
                 accountTypeItem = remainingItems.consume(),
                 nonExplicitMetadataItems = remainingItems.filterIsInstance<StringMetadataItem>()
             )
-        }
-
-        private inline fun <reified T : MetadataItem> MutableList<MetadataItem>.consume(): T? {
-            val item = find { it is T } as? T
-
-            if (item != null) {
-                remove(item)
-            }
-
-            return item
         }
     }
 }
