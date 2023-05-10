@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -95,8 +96,10 @@ class WalletViewModel @Inject constructor(
                     .map {
                         AccountWithResources(
                             account = it,
-                            fungibleResources = emptyList(),
-                            nonFungibleResources = emptyList()
+                            resources = Resources(
+                                fungibleResources = emptyList(),
+                                nonFungibleResources = emptyList()
+                            )
                         )
                     }
                     .toPersistentList(),

@@ -10,10 +10,15 @@ import java.math.BigDecimal
 
 data class AccountWithResources(
     val account: Network.Account,
-    val fungibleResources: List<FungibleResource>,
-    val nonFungibleResources: List<NonFungibleResource>,
+    val resources: Resources,
     private val factorSourceState: FactorSourceState = FactorSourceState.Valid
 ) {
+
+    val fungibleResources: List<FungibleResource>
+        get() = resources.fungibleResources
+
+    val nonFungibleResources: List<NonFungibleResource>
+        get() = resources.nonFungibleResources
 
     data class FungibleResource(
         val resourceAddress: String,
@@ -71,6 +76,11 @@ data class AccountWithResources(
         NeedMnemonicRecovery, NeedMnemonicBackup, Valid
     }
 }
+
+data class Resources(
+    val fungibleResources: List<AccountWithResources.FungibleResource>,
+    val nonFungibleResources: List<AccountWithResources.NonFungibleResource>,
+)
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
     it.hasXrdWithEnoughBalance(minimumBalance)
