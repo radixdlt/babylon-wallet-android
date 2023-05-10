@@ -3,9 +3,8 @@ package com.babylon.wallet.android.presentation.wallet
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.domain.model.toDomainModel
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -36,7 +35,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
@@ -91,20 +90,27 @@ class WalletViewModel @Inject constructor(
     private suspend fun loadResourceData(isRefreshing: Boolean) {
         _state.update { state ->
             state.copy(
-                resources = getProfileUseCase.accountsOnCurrentNetwork()
-                    .map { it.toDomainModel() }
+                accountsWithResources = getProfileUseCase
+                    .accountsOnCurrentNetwork()
+                    .map {
+                        AccountWithResources(
+                            account = it,
+                            fungibleResources = emptyList(),
+                            nonFungibleResources = emptyList()
+                        )
+                    }
                     .toPersistentList(),
                 isLoading = false
             )
         }
-        val result = getAccountResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
+        val result = getAccountsWithResourcesUseCase.getAccountsFromProfile(isRefreshing = isRefreshing)
         result.onError { error ->
             Timber.w(error)
             _state.update { it.copy(error = UiMessage.ErrorMessage(error = error), isLoading = false) }
         }
-        result.onValue { resourceList ->
+        result.onValue { accountsWithResources ->
             _state.update { state ->
-                state.copy(resources = resourceList.toPersistentList(), isLoading = false)
+                state.copy(accountsWithResources = accountsWithResources.toPersistentList(), isLoading = false)
             }
         }
     }
@@ -146,7 +152,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 data class WalletUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
-    val resources: ImmutableList<AccountResources> = persistentListOf(),
+    val accountsWithResources: ImmutableList<AccountWithResources> = persistentListOf(),
     val error: UiMessage? = null,
     val isBackupWarningVisible: Boolean = false
 ) : UiState
