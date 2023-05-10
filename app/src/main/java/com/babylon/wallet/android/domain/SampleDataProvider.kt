@@ -4,12 +4,15 @@ package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
 import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
@@ -106,6 +109,17 @@ class SampleDataProvider {
         )
     }
 
+    fun sampleAccountWithResources(
+        address: String = randomAddress(),
+        withFungibleTokens: List<AccountWithResources.FungibleResource> = sampleFungibleResources()
+    ): AccountWithResources {
+        return AccountWithResources(
+            account = sampleAccount(),
+            fungibleResources = withFungibleTokens,
+            nonFungibleResources = emptyList()
+        )
+    }
+
     fun sampleProfile(
         mnemonicWithPassphrase: MnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
@@ -156,6 +170,24 @@ class SampleDataProvider {
         }
     }
 
+    fun sampleFungibleResources(
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+    ): List<AccountWithResources.FungibleResource> {
+        val result = mutableListOf<AccountWithResources.FungibleResource>()
+        return result.apply {
+            repeat(3) {
+                add(
+                    AccountWithResources.FungibleResource(
+                        resourceAddress = randomAddress(),
+                        amount = amount.first,
+                        nameMetadataItem = NameMetadataItem("cool XRD"),
+                        symbolMetadataItem = SymbolMetadataItem("XRD")
+                    )
+                )
+            }
+        }
+    }
+
     fun sampleManifest(): TransactionManifest {
         return ManifestBuilder()
             .callMethod(
@@ -170,8 +202,12 @@ class SampleDataProvider {
             .build()
     }
 
-    val mockTokenUiList = sampleFungibleTokens().map { ownedFungibleToken ->
-        ownedFungibleToken.toTokenUiModel()
+//    val mockTokenUiList = sampleFungibleTokens().map { ownedFungibleToken ->
+//        ownedFungibleToken.toTokenUiModel()
+//    }
+
+    val mockTokenUiList = sampleFungibleResources().map { fungibleResources ->
+        fungibleResources.toTokenUiModel()
     }
 
     val mockNftUiList = listOf(
