@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
@@ -37,14 +37,14 @@ class WalletViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     private lateinit var vm: WalletViewModel
-    private val requestAccountsUseCase = mock(GetAccountResourcesUseCase::class.java)
+    private val requestAccountsUseCase = mock(GetAccountsWithResourcesUseCase::class.java)
     private val getBackupStateUseCase = mock(GetBackupStateUseCase::class.java)
     private val getProfileUseCase = mock<GetProfileUseCase>()
     private val getProfileStateUseCase = mock<GetProfileStateUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
 
-    private val sampleData = SampleDataProvider().sampleAccountResource()
+    private val sampleData = SampleDataProvider().sampleAccountWithResources()
 
     @Before
     fun setUp() {
