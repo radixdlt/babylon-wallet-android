@@ -4,12 +4,11 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.toDomainModel
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
@@ -17,7 +16,6 @@ import com.radixdlt.toolkit.models.ManifestAstValue
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -30,7 +28,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
-import java.math.BigDecimal
 
 internal class TransactionClientTest {
 
@@ -47,7 +44,10 @@ internal class TransactionClientTest {
     private val networkId = Radix.Gateway.hammunet.network.networkId().value
     private val expectedAddress = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
     private val expectedAddressWithNoFunds = "account_tdx_22_1pzg5a7htq650xh33x23zq9k90j5me3dvd8jql2wrkk8sd64ak7"
-
+    private val account1 = account("my1", expectedAddress)
+    private val account2 = account("my2", expectedAddressWithNoFunds)
+    private val accountWithFunds = SampleDataProvider().sampleAccountWithResources(expectedAddress)
+    private val accountWithNoFunds = SampleDataProvider().sampleAccountWithResources(expectedAddressWithNoFunds)
     private lateinit var transactionClient: TransactionClient
 
     @Before
@@ -66,19 +66,19 @@ internal class TransactionClientTest {
         every { getProfileUseCase() } returns flowOf(
             profile(
                 accounts = listOf(
-                    account("my1", expectedAddress),
-                    account("my2", expectedAddressWithNoFunds)
+                    account1,
+                    account2
                 )
             )
         )
         coEvery {
-            getAccountsWithResourcesUseCase.getAccounts(
+            getAccountsWithResourcesUseCase(
                 any(),
                 any()
             )
         } returns Result.Success(
             data = listOf(
-                SampleDataProvider().sampleAccountWithResources(address = expectedAddress)
+                accountWithFunds
             )
         )
     }
@@ -88,13 +88,11 @@ internal class TransactionClientTest {
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
         runTest {
             coEvery {
-                getAccountsWithResourcesUseCase.getAccounts(
-                    accountAddresses = listOf(expectedAddress),
+                getAccountsWithResourcesUseCase(
+                    accounts = listOf(account1, account2),
                     isRefreshing = true
                 )
-            } returns Result.Success(
-                listOf(SampleDataProvider().sampleAccountWithResources(expectedAddress))
-            )
+            } returns Result.Success(listOf(accountWithNoFunds, accountWithNoFunds))
 
             var manifest = ManifestBuilder().addInstruction(
                 Instruction.SetMetadata(
@@ -122,36 +120,19 @@ internal class TransactionClientTest {
     fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
         runTest {
             coEvery {
-                getAccountsWithResourcesUseCase.getAccounts(
-                    accountAddresses = listOf(expectedAddressWithNoFunds),
+                getAccountsWithResourcesUseCase(
+                    accounts = listOf(account2),
                     isRefreshing = true
                 )
             } returns Result.Success(
-                listOf(
-                    SampleDataProvider().sampleAccountWithResources(
-                        address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-                            amount = BigDecimal.ZERO to "XRD"
-                        )
-                    )
-                )
+                listOf(accountWithNoFunds)
             )
             coEvery {
-                getAccountsWithResourcesUseCase.getAccountsFromProfile(isRefreshing = true)
+                getAccountsWithResourcesUseCase(isRefreshing = true)
             } returns Result.Success(
                 listOf(
-                    SampleDataProvider().sampleAccountWithResources(
-                        address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-                            amount = BigDecimal.ZERO to "XRD"
-                        )
-                    ),
-                    SampleDataProvider().sampleAccountWithResources(
-                        address = expectedAddress,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-                            amount = BigDecimal(100000) to "XRD"
-                        )
-                    )
+                    accountWithNoFunds,
+                    accountWithFunds
                 )
             )
 
@@ -181,31 +162,17 @@ internal class TransactionClientTest {
     @Test
     fun `when address has no funds, return the respective error`() = runTest {
         coEvery {
-            getAccountsWithResourcesUseCase.getAccounts(
-                accountAddresses = listOf(expectedAddress),
+            getAccountsWithResourcesUseCase(
+                accounts = listOf(account1),
                 isRefreshing = true
             )
         } returns Result.Success(
-            listOf(
-                SampleDataProvider().sampleAccountWithResources(
-                    address = expectedAddress,
-                    withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-                        amount = BigDecimal.ZERO to "XRD"
-                    )
-                )
-            )
+            listOf(accountWithNoFunds)
         )
         coEvery {
-            getAccountsWithResourcesUseCase.getAccountsFromProfile(isRefreshing = true)
+            getAccountsWithResourcesUseCase(isRefreshing = true)
         } returns Result.Success(
-            listOf(
-                SampleDataProvider().sampleAccountWithResources(
-                    address = expectedAddress,
-                    withFungibleTokens = SampleDataProvider().sampleFungibleResources(
-                        amount = BigDecimal.ZERO to "XRD"
-                    )
-                )
-            )
+            listOf(accountWithNoFunds)
         )
 
         val manifest = ManifestBuilder().addInstruction(

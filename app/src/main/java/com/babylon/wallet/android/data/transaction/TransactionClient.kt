@@ -236,7 +236,10 @@ class TransactionClient @Inject constructor(
 
     private suspend fun findFeePayerWithin(addresses: List<String>): String? {
         return getAccountsWithResourcesUseCase
-            .getAccounts(accountAddresses = addresses, isRefreshing = true)
+            .invoke(
+                accounts = getProfileUseCase.accountsOnCurrentNetwork().filter { addresses.contains(it.address) },
+                isRefreshing = true
+            )
             .value()
             ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
             ?.account
