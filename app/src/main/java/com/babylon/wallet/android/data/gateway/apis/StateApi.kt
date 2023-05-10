@@ -95,7 +95,7 @@ interface StateApi {
      * @return [StateEntityNonFungiblesPageResponse]
      */
     @POST("state/entity/page/non-fungibles")
-    fun nonFungiblesPage(
+    fun entityNonFungiblesPage(
         @Body stateEntityNonFungiblesPageRequest: StateEntityNonFungiblesPageRequest
     ): Call<StateEntityNonFungiblesPageResponse>
 
