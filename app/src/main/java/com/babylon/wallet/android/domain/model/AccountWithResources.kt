@@ -29,6 +29,9 @@ data class AccountWithResources(
         val symbol: String
             get() = symbolMetadataItem?.symbol.orEmpty()
 
+        val isXrd: Boolean
+            get() = symbolMetadataItem?.isXrd ?: false
+
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
 
