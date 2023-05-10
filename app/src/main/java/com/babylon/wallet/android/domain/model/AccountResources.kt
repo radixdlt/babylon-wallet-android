@@ -6,6 +6,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.isOlympiaAccount
 import java.math.BigDecimal
 
+@Deprecated("Replaced with AccountWithResources and will be removed soon.")
 data class AccountResources(
     val address: String,
     val displayName: String,
