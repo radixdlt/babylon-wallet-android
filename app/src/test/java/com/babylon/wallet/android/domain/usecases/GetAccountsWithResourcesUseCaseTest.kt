@@ -17,15 +17,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.AccountAddress
-import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.domain.model.FungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
-import com.babylon.wallet.android.domain.model.NonFungibleToken
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
-import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
-import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import io.mockk.coEvery
@@ -39,25 +32,45 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GetProfileUseCase
 import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class GetAccountResourcesUseCaseTest {
+class GetAccountsWithResourcesUseCaseTest {
 
     private val entityRepositoryMock = mockk<EntityRepository>()
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
     private val getFactorSourceStateForAccountUseCase = mockk<GetFactorSourceStateForAccountUseCase>()
 
-    private val testedClass = GetAccountResourcesUseCase(
+    private val testedClass = GetAccountsWithResourcesUseCase(
         entityRepository = entityRepositoryMock,
         getProfileUseCase = getProfileUseCaseMock,
         getFactorSourceStateForAccountUseCase = getFactorSourceStateForAccountUseCase
     )
 
+    private val securityState = SecurityState.Unsecured(
+        unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+            genesisFactorInstance = FactorInstance(
+                derivationPath = DerivationPath.forIdentity(
+                    networkId = Radix.Gateway.default.network.networkId(),
+                    identityIndex = 0,
+                    keyType = KeyType.TRANSACTION_SIGNING
+                ),
+                factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+            )
+        )
+    )
+
     @Before
     fun setUp() {
-        coEvery { getFactorSourceStateForAccountUseCase.invoke(any()) } returns AccountResources.FactorSourceState.Valid
+        coEvery { getFactorSourceStateForAccountUseCase.invoke(any()) } returns AccountWithResources.FactorSourceState.Valid
     }
 
     @Test
@@ -82,12 +95,16 @@ class GetAccountResourcesUseCaseTest {
 
         Assert.assertEquals(
             listOf(
-                AccountResources(
-                    address = expectedProfileAccountAddress,
-                    displayName = expectedProfileAccountName,
-                    appearanceID = 1,
-                    fungibleTokens = persistentListOf(),
-                    nonFungibleTokens = persistentListOf(),
+                AccountWithResources(
+                    account = Network.Account(
+                        address = expectedProfileAccountAddress,
+                        displayName = expectedProfileAccountName,
+                        appearanceID = 1,
+                        networkID = 1,
+                        securityState = securityState
+                    ),
+                    fungibleResources = persistentListOf(),
+                    nonFungibleResources = persistentListOf(),
                 )
             ),
             accountResourcesResult.value()
@@ -126,19 +143,21 @@ class GetAccountResourcesUseCaseTest {
 
         Assert.assertEquals(
             listOf(
-                AccountResources(
-                    address = expectedProfileAccountAddress,
-                    displayName = expectedProfileAccountName,
-                    appearanceID = 1,
-                    fungibleTokens = persistentListOf(
-                        OwnedFungibleToken(
-                            owner = AccountAddress(expectedProfileAccountAddress),
+                AccountWithResources(
+                    account = Network.Account(
+                        address = expectedProfileAccountAddress,
+                        displayName = expectedProfileAccountName,
+                        appearanceID = 1,
+                        networkID = Radix.Gateway.default.network.networkId().value,
+                        securityState = securityState
+                    ),
+                    fungibleResources = persistentListOf(
+                        AccountWithResources.FungibleResource(
                             amount = BigDecimal("1000"),
-                            address = expectedResource.resourceAddress,
-                            token = FungibleToken(address = expectedResource.resourceAddress)
+                            resourceAddress = expectedResource.resourceAddress,
                         )
                     ),
-                    nonFungibleTokens = persistentListOf(),
+                    nonFungibleResources = persistentListOf(),
                 )
             ),
             accountResourcesResult.value()
@@ -188,23 +207,20 @@ class GetAccountResourcesUseCaseTest {
 
         Assert.assertEquals(
             listOf(
-                AccountResources(
-                    address = expectedProfileAccountAddress,
-                    displayName = expectedProfileAccountName,
-                    appearanceID = 1,
-                    fungibleTokens = persistentListOf(),
-                    nonFungibleTokens = persistentListOf(
-                        OwnedNonFungibleToken(
-                            owner = AccountAddress(expectedProfileAccountAddress),
+                AccountWithResources(
+                    account = Network.Account(
+                        address = expectedProfileAccountAddress,
+                        displayName = expectedProfileAccountName,
+                        appearanceID = 1,
+                        networkID = Radix.Gateway.default.network.networkId().value,
+                        securityState = securityState
+                    ),
+                    fungibleResources = persistentListOf(),
+                    nonFungibleResources = persistentListOf(
+                        AccountWithResources.NonFungibleResource(
+                            resourceAddress = expectedResource.resourceAddress,
                             amount = 10,
-                            tokenResourceAddress = expectedResource.resourceAddress,
-                            token = NonFungibleToken(
-                                address = expectedResource.resourceAddress,
-                                nfts = listOf(
-                                    NonFungibleTokenItemContainer(id = "1", nftImage = "")
-                                ),
-                                metadataContainer = NonFungibleMetadataContainer()
-                            )
+                            nftIds = listOf("1")
                         )
                     ),
                 )

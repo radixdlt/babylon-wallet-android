@@ -1,53 +1,74 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
-import com.babylon.wallet.android.data.gateway.extensions.amount
-import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
-import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.AccountAddress
-import com.babylon.wallet.android.domain.model.AccountResources
-import com.babylon.wallet.android.domain.model.FungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
-import com.babylon.wallet.android.domain.model.NonFungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
-import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import kotlinx.collections.immutable.toPersistentList
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.utils.isOlympiaAccount
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
-class GetAccountResourcesUseCase @Inject constructor(
+class GetAccountsWithResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val getFactorSourceStateForAccountUseCase: GetFactorSourceStateForAccountUseCase
 ) {
 
-    /**
+    suspend fun getAccountsFromProfile(isRefreshing: Boolean): Result<List<AccountWithResources>> {
+        return entityRepository.getAccountsWithResources(
+            accounts = getProfileUseCase.accountsOnCurrentNetwork(),
+            isRefreshing = isRefreshing
+        ).map {
+            it.map { accountWithResources ->
+                AccountWithResources(
+                    account = accountWithResources.account,
+                    fungibleResources = accountWithResources.fungibleResources,
+                    nonFungibleResources = accountWithResources.nonFungibleResources,
+                    factorSourceState = getFactorSourceStateForAccountUseCase(accountWithResources.account.address)
+                )
+            }
+        }
+    }
+
+    suspend fun getAccounts(
+        accountAddresses: List<String>,
+        isRefreshing: Boolean
+    ): Result<List<AccountWithResources>> {
+        return entityRepository.getAccountsWithResources(
+            accounts = getProfileUseCase.accountsOnCurrentNetwork().filter { it.address in accountAddresses },
+            isRefreshing = isRefreshing
+        ).map {
+            it.map { accountWithResources ->
+                AccountWithResources(
+                    account = accountWithResources.account,
+                    fungibleResources = accountWithResources.fungibleResources,
+                    nonFungibleResources = accountWithResources.nonFungibleResources,
+                    factorSourceState = getFactorSourceStateForAccountUseCase(accountWithResources.account.address)
+                )
+            }
+        }
+    }
+
+    suspend fun getAccount(address: String, isRefreshing: Boolean): Result<AccountWithResources> =
+        getAccounts(accountAddresses = listOf(address), isRefreshing = isRefreshing).map { it.first() }
+
+    // ----- the code below (or parts of it) will become obsolete soon -----
+    /*/**
      * Retrieves all data related to the accounts saved in the profile.
      *
      * @param isRefreshing When need to override the cache.
      */
-    suspend fun getAccountsFromProfile(isRefreshing: Boolean) = getProfileUseCase
+    /*suspend fun getAccountsFromProfile(isRefreshing: Boolean) = getProfileUseCase
         .accountsOnCurrentNetwork()
-        .resolveDetailsInGateway(isRefreshing = isRefreshing)
+        .resolveDetailsInGateway(isRefreshing = isRefreshing)*/
 
     /**
      * Retrieves all data related to those specific [addresses] that exist in the Profile.
      */
-    suspend fun getAccounts(addresses: List<String>, isRefreshing: Boolean) = getProfileUseCase
+    /*suspend fun getAccounts(addresses: List<String>, isRefreshing: Boolean) = getProfileUseCase
         .accountsOnCurrentNetwork()
         .filter { it.address in addresses }
-        .resolveDetailsInGateway(isRefreshing = isRefreshing)
+        .resolveDetailsInGateway(isRefreshing = isRefreshing)*/
 
     /**
      * Retrieves all data related to this certain address that exists in the Profile.
@@ -55,9 +76,9 @@ class GetAccountResourcesUseCase @Inject constructor(
      * @param isRefreshing When need to override the cache.
      */
     suspend fun getAccount(address: String, isRefreshing: Boolean): Result<AccountResources> =
-        getAccounts(addresses = listOf(address), isRefreshing = isRefreshing).map { it.first() }
+        getAccounts(addresses = listOf(address), isRefreshing = isRefreshing).map { it.first() }*/
 
-    private suspend fun List<Network.Account>.resolveDetailsInGateway(
+    /*private suspend fun List<Network.Account>.resolveDetailsInGateway(
         isRefreshing: Boolean
     ): Result<List<AccountResources>> = entityRepository.stateEntityDetails(
         addresses = this.map { it.address },
@@ -194,5 +215,5 @@ class GetAccountResourcesUseCase @Inject constructor(
                 )
             )
         )
-    }?.filterNot { it.amount == 0L }.orEmpty()
+    }?.filterNot { it.amount == 0L }.orEmpty()*/
 }
