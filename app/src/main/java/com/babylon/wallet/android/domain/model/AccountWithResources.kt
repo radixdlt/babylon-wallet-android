@@ -5,8 +5,7 @@ import java.math.BigDecimal
 
 data class AccountWithResources(
     val account: Network.Account,
-    val resources: Resources?,
-    private val factorSourceState: FactorSourceState = FactorSourceState.Valid
+    val resources: Resources?
 ) {
 
     val fungibleResources: List<Resource.FungibleResource>
@@ -19,10 +18,6 @@ data class AccountWithResources(
         return fungibleResources.any {
             it.symbol == MetadataConstants.SYMBOL_XRD && it.amount >= BigDecimal(minimumBalance)
         }
-    }
-
-    enum class FactorSourceState {
-        NeedMnemonicRecovery, NeedMnemonicBackup, Valid
     }
 }
 
