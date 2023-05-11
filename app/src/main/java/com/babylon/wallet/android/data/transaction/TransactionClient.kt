@@ -188,7 +188,7 @@ class TransactionClient @Inject constructor(
                 allNetworkAddresses = allAccountsAddresses
             )
             searchedAddresses.addAll(requiringAuthCandidates)
-            val requiringAuthCandidate = findFeePayerWithin(withdrawnFromCandidates)
+            val requiringAuthCandidate = findFeePayerWithin(requiringAuthCandidates)
             if (requiringAuthCandidate != null) return requiringAuthCandidate
 
             val depositedIntoCandidates = findFeePayerCandidates(
