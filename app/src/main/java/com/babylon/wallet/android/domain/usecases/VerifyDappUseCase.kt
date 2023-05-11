@@ -1,11 +1,15 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.request.DecodeAddressRequest
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security
@@ -19,6 +23,17 @@ class VerifyDappUseCase @Inject constructor(
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
         val developerMode = getProfileUseCase.security.first().isDeveloperModeEnabled
+        val decodeResult = RadixEngineToolkit.decodeAddress(
+            request = DecodeAddressRequest(request.metadata.dAppDefinitionAddress)
+        )
+        if (decodeResult.isFailure) {
+            dAppMessenger.sendWalletInteractionResponseFailure(
+                dappId = request.remoteClientId,
+                requestId = request.id,
+                error = WalletErrorType.InvalidRequest
+            )
+            return Result.Error(DappRequestException(DappRequestFailure.InvalidRequest))
+        }
         return if (developerMode) {
             Result.Success(true)
         } else {
