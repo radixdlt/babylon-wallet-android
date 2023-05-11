@@ -23,6 +23,7 @@ import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowM
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 
+@Suppress("LongMethod")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController,
