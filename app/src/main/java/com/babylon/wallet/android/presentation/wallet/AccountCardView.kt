@@ -40,8 +40,7 @@ fun AccountCardView(
     accountWithResources: AccountWithResources,
     isPromptVisible: Boolean,
     modifier: Modifier = Modifier,
-    onApplySecuritySettings: () -> Unit,
-    onMnemonicRecovery: () -> Unit,
+    onApplySecuritySettings: () -> Unit
 ) {
     val gradient = remember(accountWithResources.account.appearanceID) {
         AccountGradientList[accountWithResources.account.appearanceID % AccountGradientList.size]
@@ -134,13 +133,7 @@ fun AccountCardView(
             Column {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        if (accountWithResources.needMnemonicBackup()) {
-                            onApplySecuritySettings()
-                        } else {
-                            onMnemonicRecovery()
-                        }
-                    },
+                    onClick = onApplySecuritySettings,
                     text = stringResource(id = R.string.apply_security_settings)
                 )
             }
@@ -171,8 +164,7 @@ fun AccountCardPreview() {
                     )
                 ),
                 isPromptVisible = true,
-                onApplySecuritySettings = {},
-                onMnemonicRecovery = {}
+                onApplySecuritySettings = {}
             )
         }
     }

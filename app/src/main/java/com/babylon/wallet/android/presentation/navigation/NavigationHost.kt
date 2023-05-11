@@ -8,7 +8,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.main.MainScreen
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
@@ -79,9 +78,9 @@ fun NavigationHost(
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
-            onAccountClick = { accountId ->
+            onAccountClick = { account ->
                 navController.navigate(
-                    Screen.AccountDestination.routeWithArgs(accountId)
+                    Screen.AccountDestination.routeWithArgs(account.address)
                 )
             },
             onAccountCreationClick = {
