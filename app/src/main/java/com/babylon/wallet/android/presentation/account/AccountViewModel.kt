@@ -67,8 +67,8 @@ class AccountViewModel @Inject constructor(
 
     private fun observeBackedUpMnemonics() {
         viewModelScope.launch {
-            preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged().collect {
-                loadAccountData(isRefreshing = false)
+            preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged().collect { backedUpFactorSourceIds ->
+                _state.update { it.copy(backedUpFactorSourceIds = backedUpFactorSourceIds) }
             }
         }
     }
