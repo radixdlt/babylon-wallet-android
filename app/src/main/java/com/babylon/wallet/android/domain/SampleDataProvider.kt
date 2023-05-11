@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.model.NonFungibleToken
 import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -112,7 +113,7 @@ class SampleDataProvider {
 
     fun sampleAccountWithResources(
         address: String = randomAddress(),
-        withFungibleTokens: List<AccountWithResources.Resource.FungibleResource> = sampleFungibleResources()
+        withFungibleTokens: List<Resource.FungibleResource> = sampleFungibleResources()
     ): AccountWithResources {
         return AccountWithResources(
             account = sampleAccount(address =  address),
@@ -175,12 +176,12 @@ class SampleDataProvider {
 
     fun sampleFungibleResources(
         amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
-    ): List<AccountWithResources.Resource.FungibleResource> {
-        val result = mutableListOf<AccountWithResources.Resource.FungibleResource>()
+    ): List<Resource.FungibleResource> {
+        val result = mutableListOf<Resource.FungibleResource>()
         return result.apply {
             repeat(3) {
                 add(
-                    AccountWithResources.Resource.FungibleResource(
+                    Resource.FungibleResource(
                         resourceAddress = randomAddress(),
                         amount = amount.first,
                         nameMetadataItem = NameMetadataItem("cool XRD"),

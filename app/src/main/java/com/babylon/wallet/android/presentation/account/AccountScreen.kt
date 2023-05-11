@@ -63,11 +63,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.NonFungibleResourcesContent
@@ -127,8 +127,8 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onHistoryClick: () -> Unit,
     onTransferClick: (String) -> Unit,
-    onFungibleResourceClicked: (AccountWithResources.Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClicked: (AccountWithResources.Resource.NonFungibleResource, String) -> Unit,
+    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
+    onNonFungibleItemClicked: (Resource.NonFungibleResource, String) -> Unit,
     onApplySecuritySettings: () -> Unit
 ) {
 
@@ -314,8 +314,8 @@ private fun AccountContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
     onTransferClick: (String) -> Unit,
-    onFungibleResourceClicked: (AccountWithResources.Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClicked: (AccountWithResources.Resource.NonFungibleResource, String) -> Unit,
+    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
+    onNonFungibleItemClicked: (Resource.NonFungibleResource, String) -> Unit,
     onApplySecuritySettings: () -> Unit
 ) {
     Column(
@@ -406,8 +406,8 @@ fun AssetsContent(
     modifier: Modifier = Modifier,
     resources: Resources?,
     isLoading: Boolean,
-    onFungibleTokenClick: (AccountWithResources.Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClick: (AccountWithResources.Resource.NonFungibleResource, String) -> Unit,
+    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleItemClick: (Resource.NonFungibleResource, String) -> Unit,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val pagerState = rememberPagerState()

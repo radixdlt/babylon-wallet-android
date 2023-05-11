@@ -7,6 +7,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -103,14 +104,14 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onFungibleResourceClicked(resource: AccountWithResources.Resource.FungibleResource) {
+    fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
         _state.update { accountUiState ->
             accountUiState.copy(selectedResource = SelectedResource.SelectedFungibleResource(resource))
         }
     }
 
     fun onNonFungibleResourceClicked(
-        nonFungibleResource: AccountWithResources.Resource.NonFungibleResource,
+        nonFungibleResource: Resource.NonFungibleResource,
         id: String
     ) {
         _state.update { accountUiState ->
@@ -154,6 +155,6 @@ enum class AssetTypeTab(@StringRes val stringId: Int) {
 }
 
 sealed interface SelectedResource {
-    data class SelectedFungibleResource(val fungible: AccountWithResources.Resource.FungibleResource): SelectedResource
-    data class SelectedNonFungibleResource(val nonFungible: AccountWithResources.Resource.NonFungibleResource, val id: String): SelectedResource
+    data class SelectedFungibleResource(val fungible: Resource.FungibleResource): SelectedResource
+    data class SelectedNonFungibleResource(val nonFungible: Resource.NonFungibleResource, val id: String): SelectedResource
 }

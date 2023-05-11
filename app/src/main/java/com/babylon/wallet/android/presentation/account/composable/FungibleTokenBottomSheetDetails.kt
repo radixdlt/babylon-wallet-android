@@ -27,10 +27,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.presentation.account.SelectedResource
-import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.model.toTokenUiModel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
@@ -42,7 +39,7 @@ import java.util.Locale
 
 @Composable
 fun FungibleTokenBottomSheetDetails(
-    fungible: AccountWithResources.Resource.FungibleResource,
+    fungible: Resource.FungibleResource,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -134,7 +131,7 @@ private fun ResourceAddressRow(
 }
 
 @Composable
-private fun TokenBalance(resource: AccountWithResources.Resource.FungibleResource, modifier: Modifier = Modifier) {
+private fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
         Text(
             modifier = Modifier.alignByBaseline(),
