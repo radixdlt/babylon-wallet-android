@@ -81,7 +81,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.Success(
             previewResponse()
         )
-        coEvery { transactionClient.analyzeManifest(any(), any(), any()) } returns kotlin.Result.success(
+        coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any(), any()) } returns kotlin.Result.success(
             analyzeManifestResponse()
         )
         coEvery { transactionClient.pollTransactionStatus(any()) } returns Result.Success("")

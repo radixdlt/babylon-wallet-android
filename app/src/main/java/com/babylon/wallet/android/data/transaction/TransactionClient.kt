@@ -27,8 +27,8 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.TransactionBuilder
-import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.ManifestAstValue
+import com.radixdlt.toolkit.models.address.EntityAddress
+import com.radixdlt.toolkit.models.request.AnalyzeManifestRequest
 import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextRequest
 import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextResponse
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionResponse
@@ -40,7 +40,9 @@ import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.delay
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.GetAccountSignersUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.security.SecureRandom
 import javax.inject.Inject
@@ -48,6 +50,7 @@ import javax.inject.Inject
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getAccountSignersUseCase: GetAccountSignersUseCase,
     private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
     private val cache: HttpCache
@@ -101,19 +104,18 @@ class TransactionClient @Inject constructor(
         networkId: Int,
         hasLockFeeInstruction: Boolean,
     ): Result<String> {
-        val addressesInvolved = getAddressesInvolvedInATransaction(jsonTransactionManifest)
         val manifestWithTransactionFee = if (hasLockFeeInstruction) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee = selectAccountAddressToLockFee(addressesInvolved)
+            val accountAddressToLockFee = selectAccountAddressToLockFee(networkId, jsonTransactionManifest)
                 ?: return Result.Error(
                     DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                        DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
                     )
                 )
             jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         }
-        val addressesNeededToSign = getAddressesNeededToSign(manifestWithTransactionFee)
+        val addressesNeededToSign = getAddressesNeededToSign(networkId, manifestWithTransactionFee)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
                 DappRequestException(
@@ -168,16 +170,52 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun selectAccountAddressToLockFee(addresses: List<String>): String? {
-        val accountFromInvolvedAddresses = getAccountResourcesUseCase
-            .getAccounts(addresses = addresses, isRefreshing = true)
-            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
+    suspend fun selectAccountAddressToLockFee(networkId: Int, manifestJson: TransactionManifest): String? {
+        val allAccountsAddresses = getProfileUseCase.accountsOnCurrentNetwork().map { it.address }.toSet()
+        val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
+        val searchedAddresses = mutableSetOf<String>()
+        result.onSuccess { analyzeManifestResponse ->
+            val withdrawnFromCandidates = findFeePayerCandidates(
+                entityAddress = analyzeManifestResponse.accountsWithdrawnFrom.toList(),
+                allNetworkAddresses = allAccountsAddresses
+            )
+            searchedAddresses.addAll(withdrawnFromCandidates)
+            val withdrawnFromCandidate = findFeePayerWithin(withdrawnFromCandidates)
+            if (withdrawnFromCandidate != null) return withdrawnFromCandidate
 
-        return accountFromInvolvedAddresses?.address ?: getAccountResourcesUseCase
-            .getAccountsFromProfile(isRefreshing = true)
-            .value()
-            ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
-            ?.address
+            val requiringAuthCandidates = findFeePayerCandidates(
+                entityAddress = analyzeManifestResponse.accountsRequiringAuth.toList(),
+                allNetworkAddresses = allAccountsAddresses
+            )
+            searchedAddresses.addAll(requiringAuthCandidates)
+            val requiringAuthCandidate = findFeePayerWithin(withdrawnFromCandidates)
+            if (requiringAuthCandidate != null) return requiringAuthCandidate
+
+            val depositedIntoCandidates = findFeePayerCandidates(
+                entityAddress = analyzeManifestResponse.accountsDepositedInto.toList(),
+                allNetworkAddresses = allAccountsAddresses
+            )
+            searchedAddresses.addAll(depositedIntoCandidates)
+            val depositedIntoCandidate = findFeePayerWithin(depositedIntoCandidates)
+            if (depositedIntoCandidate != null) return depositedIntoCandidate
+
+            val accountsLeftToSearch = allAccountsAddresses.minus(searchedAddresses)
+            return findFeePayerWithin(accountsLeftToSearch.toList())
+        }
+        return null
+    }
+
+    private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, allNetworkAddresses: Set<String>): List<String> {
+        return entityAddress
+            .filterIsInstance<EntityAddress.ComponentAddress>()
+            .filter { allNetworkAddresses.contains(it.address) }
+            .map { it.address }
+    }
+
+    private suspend fun findFeePayerWithin(addresses: List<String>): String? {
+        return getAccountResourcesUseCase
+            .getAccounts(addresses = addresses, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)?.address
     }
 
     private suspend fun buildTransactionHeader(
@@ -365,65 +403,19 @@ class TransactionClient @Inject constructor(
         return Result.Success(txID)
     }
 
-    fun getAddressesNeededToSign(jsonTransactionManifest: TransactionManifest): List<String> {
-        return getAddressesInvolvedInATransaction(
-            jsonTransactionManifest,
-            ::callMethodAuthorizedFilter
-        )
-    }
-
-    @Suppress("NestedBlockDepth")
-    fun getAddressesInvolvedInATransaction(
-        jsonTransactionManifest: TransactionManifest,
-        callInstructionFilter: ((String) -> Boolean) = { true }
-    ): List<String> {
-        val addressesNeededToSign = mutableListOf<String>()
-        when (val manifestInstructions = jsonTransactionManifest.instructions) {
-            is ManifestInstructions.ParsedInstructions -> {
-                manifestInstructions.instructions
-                    .forEach { instruction ->
-                        when (instruction) {
-                            is Instruction.CallMethod -> {
-                                (instruction.componentAddress as? ManifestAstValue.Address)
-                                    ?.executeIfAccountComponent { accountAddress ->
-                                        if (callInstructionFilter(instruction.methodName.value)) {
-                                            addressesNeededToSign.add(accountAddress)
-                                        }
-                                    }
-                            }
-                            is Instruction.SetMetadata -> {
-                                (instruction.entityAddress as? ManifestAstValue.Address)
-                                    ?.executeIfAccountComponent { accountAddress ->
-                                        addressesNeededToSign.add(accountAddress)
-                                    }
-                            }
-                            is Instruction.SetMethodAccessRule -> {
-                                (instruction.entityAddress as? ManifestAstValue.Address)
-                                    ?.executeIfAccountComponent { accountAddress ->
-                                        addressesNeededToSign.add(accountAddress)
-                                    }
-                            }
-                            is Instruction.SetComponentRoyaltyConfig -> {
-                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
-                                    addressesNeededToSign.add(accountAddress)
-                                }
-                            }
-                            is Instruction.ClaimComponentRoyalty -> {
-                                instruction.componentAddress.executeIfAccountComponent { accountAddress ->
-                                    addressesNeededToSign.add(accountAddress)
-                                }
-                            }
-                            else -> {}
-                        }
-                    }
-            }
-            is ManifestInstructions.StringInstructions -> {
-            }
+    suspend fun getAddressesNeededToSign(networkId: Int, manifestJson: TransactionManifest): List<String> {
+        val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
+        val allAccountsAddresses = getProfileUseCase.accountsOnCurrentNetwork().map { it.address }.toSet()
+        result.onSuccess { analyzeManifestResponse ->
+            return analyzeManifestResponse.accountsRequiringAuth
+                .filterIsInstance<EntityAddress.ComponentAddress>()
+                .filter { allAccountsAddresses.contains(it.address) }
+                .map { it.address }
         }
-        return addressesNeededToSign.distinct().toList()
+        return emptyList()
     }
 
-    fun analyzeManifest(
+    fun analyzeManifestWithPreviewContext(
         networkId: NetworkId,
         transactionManifest: TransactionManifest,
         transactionReceipt: ByteArray
@@ -451,7 +443,7 @@ class TransactionClient @Inject constructor(
             endEpochExclusive = epoch + 1L
         }
 
-        val addressesNeededToSign = getAddressesNeededToSign(manifest)
+        val addressesNeededToSign = getAddressesNeededToSign(networkId, manifest)
         val notaryAndSigners = getNotaryAndSigners(networkId, addressesNeededToSign)
             ?: return Result.Error(
                 DappRequestException(
@@ -492,21 +484,6 @@ class TransactionClient @Inject constructor(
                 notaryAsSignatory = false
             )
         )
-    }
-
-    private fun callMethodAuthorizedFilter(instructionName: String): Boolean {
-        return MethodName
-            .methodsThatRequireAuth()
-            .map { methodName ->
-                methodName.stringValue
-            }
-            .contains(instructionName)
-    }
-
-    private fun ManifestAstValue.Address.executeIfAccountComponent(action: (String) -> Unit) {
-        if (address.startsWith("account")) {
-            action(address)
-        }
     }
 
     @Suppress("MagicNumber")

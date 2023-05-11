@@ -67,9 +67,11 @@ data class SignTransactionRequest(
     @SerialName("interactionId")
     val interactionId: String,
     @SerialName("signers")
-    val signers: DerivePublicKeyRequest.KeyParameters,
+    val signers: List<DerivePublicKeyRequest.KeyParameters>,
     @SerialName("ledgerDevice")
     val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+    @SerialName("displayHash")
+    val displayHash: Boolean,
     @SerialName("compiledTransactionIntent")
     val compiledTransactionIntent: String,
     @SerialName("mode")
