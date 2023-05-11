@@ -70,7 +70,7 @@ fun WalletScreen(
         onMenuClick = onMenuClick,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
-        onRefresh = viewModel::refresh,
+        onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettings = viewModel::onApplyMnemonicBackup
     )
@@ -238,7 +238,6 @@ fun WalletContentPreview() {
         with(SampleDataProvider()) {
             WalletContent(
                 state = WalletState(
-                    factorSources = emptyList(),
                     accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
                     loading = false,
                     isSettingsWarningVisible = true,
