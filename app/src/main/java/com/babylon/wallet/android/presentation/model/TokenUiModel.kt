@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
-import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.Resource
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -90,7 +90,7 @@ data class TokenUiModel(
     }
 }
 
-fun AccountWithResources.Resource.FungibleResource.toTokenUiModel(): TokenUiModel {
+fun Resource.FungibleResource.toTokenUiModel(): TokenUiModel {
     return TokenUiModel(
         name = name,
         symbol = symbol,
@@ -101,7 +101,7 @@ fun AccountWithResources.Resource.FungibleResource.toTokenUiModel(): TokenUiMode
     )
 }
 
-fun List<AccountWithResources.Resource.FungibleResource>.toTokenUiModel() = map { fungibleResource ->
+fun List<Resource.FungibleResource>.toTokenUiModel() = map { fungibleResource ->
     TokenUiModel(
         name = fungibleResource.name,
         symbol = fungibleResource.symbol,

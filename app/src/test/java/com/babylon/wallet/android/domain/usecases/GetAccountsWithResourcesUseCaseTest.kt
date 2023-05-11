@@ -19,6 +19,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
@@ -156,7 +157,7 @@ class GetAccountsWithResourcesUseCaseTest {
                     ),
                     resources = Resources(
                         fungibleResources = persistentListOf(
-                            AccountWithResources.Resource.FungibleResource(
+                            Resource.FungibleResource(
                                 amount = BigDecimal("1000"),
                                 resourceAddress = expectedResource.resourceAddress,
                             )
@@ -223,7 +224,7 @@ class GetAccountsWithResourcesUseCaseTest {
                     resources = Resources(
                         fungibleResources = persistentListOf(),
                         nonFungibleResources = persistentListOf(
-                            AccountWithResources.Resource.NonFungibleResource(
+                            Resource.NonFungibleResource(
                                 resourceAddress = expectedResource.resourceAddress,
                                 amount = 10,
                                 nftIds = listOf("1")

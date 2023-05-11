@@ -27,6 +27,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -153,7 +154,7 @@ fun AccountCardPreview() {
                     account = SampleDataProvider().sampleAccount(),
                     resources = Resources(
                         fungibleResources = listOf(
-                            AccountWithResources.Resource.FungibleResource(
+                            Resource.FungibleResource(
                                 resourceAddress = "resource_address",
                                 amount = BigDecimal.valueOf(237659),
                                 nameMetadataItem = NameMetadataItem("cool XRD"),

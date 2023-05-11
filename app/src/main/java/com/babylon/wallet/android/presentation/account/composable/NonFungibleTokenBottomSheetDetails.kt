@@ -16,22 +16,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.presentation.account.SelectedResource
-import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    nonFungibleResource: AccountWithResources.Resource.NonFungibleResource,
+    nonFungibleResource: Resource.NonFungibleResource,
     id: String,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,

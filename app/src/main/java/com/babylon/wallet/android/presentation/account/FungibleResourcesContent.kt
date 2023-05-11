@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import java.math.BigDecimal
 
@@ -29,8 +29,8 @@ import java.math.BigDecimal
 @Composable
 fun FungibleResourcesContent(
     modifier: Modifier = Modifier,
-    fungibles: List<AccountWithResources.Resource.FungibleResource>,
-    onFungibleTokenClick: (AccountWithResources.Resource.FungibleResource) -> Unit,
+    fungibles: List<Resource.FungibleResource>,
+    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
 ) {
     val (xrdItem, restItems) = remember(fungibles) {
         fungibles.find { it.isXrd } to fungibles.filterNot { it.isXrd }
@@ -113,7 +113,8 @@ fun ListOfTokenItemsEmptyPreview() {
 fun ListOfTokenItemsPreview() {
     RadixWalletTheme {
         FungibleResourcesContent(
-            fungibles = listOf(AccountWithResources.Resource.FungibleResource(
+            fungibles = listOf(
+                Resource.FungibleResource(
                 resourceAddress = "account_rdx_abcdef",
                 amount = BigDecimal.TEN,
                 symbolMetadataItem = SymbolMetadataItem(symbol = "XRD")

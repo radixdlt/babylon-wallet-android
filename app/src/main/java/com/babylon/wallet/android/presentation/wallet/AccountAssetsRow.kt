@@ -54,7 +54,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -276,13 +276,13 @@ fun AssetsContentRowPreview() {
             AccountAssetsRow(
                 resources = Resources(
                     fungibleResources = listOf(
-                        AccountWithResources.Resource.FungibleResource(
+                        Resource.FungibleResource(
                             resourceAddress = "resource_address",
                             amount = BigDecimal.valueOf(237659),
                             nameMetadataItem = NameMetadataItem("Radix"),
                             symbolMetadataItem = SymbolMetadataItem("XRD")
                         ),
-                        AccountWithResources.Resource.FungibleResource(
+                        Resource.FungibleResource(
                             resourceAddress = "resource_address",
                             amount = BigDecimal.valueOf(237659),
                             nameMetadataItem = NameMetadataItem("AWE"),

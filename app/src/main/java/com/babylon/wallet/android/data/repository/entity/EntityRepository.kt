@@ -29,6 +29,7 @@ import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import rdx.works.profile.data.model.pernetwork.Network
@@ -103,13 +104,13 @@ class EntityRepositoryImpl @Inject constructor(
 
     private suspend fun buildMapOfAccountsWithFungibles(
         entityDetailsResponses: List<StateEntityDetailsResponse>
-    ): Map<String, List<AccountWithResources.Resource.FungibleResource>> {
+    ): Map<String, List<Resource.FungibleResource>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
                     entityDetailsResponseItem.address
                 }
-                .foldTo(mutableMapOf(), listOf<AccountWithResources.Resource.FungibleResource>()) { _, entityItem ->
+                .foldTo(mutableMapOf(), listOf<Resource.FungibleResource>()) { _, entityItem ->
                     val fungibleResourcesItemsList = if (entityItem.fungibleResources != null) {
                         getFungibleResourcesCollectionItemsForAccount(
                             accountAddress = entityItem.address,
@@ -120,7 +121,7 @@ class EntityRepositoryImpl @Inject constructor(
                     }
                     fungibleResourcesItemsList.map { fungibleResourcesItem ->
                         val metaDataItems = fungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
-                        AccountWithResources.Resource.FungibleResource(
+                        Resource.FungibleResource(
                             resourceAddress = fungibleResourcesItem.resourceAddress,
                             amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal(),
                             nameMetadataItem = metaDataItems.toMutableList().consume(),
@@ -139,13 +140,13 @@ class EntityRepositoryImpl @Inject constructor(
 
     private suspend fun buildMapOfAccountsWithNonFungibles(
         entityDetailsResponses: List<StateEntityDetailsResponse>
-    ): Map<String, List<AccountWithResources.Resource.NonFungibleResource>> {
+    ): Map<String, List<Resource.NonFungibleResource>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
                     entityDetailsResponseItem.address
                 }
-                .foldTo(mutableMapOf(), listOf<AccountWithResources.Resource.NonFungibleResource>()) { _, entityItem ->
+                .foldTo(mutableMapOf(), listOf<Resource.NonFungibleResource>()) { _, entityItem ->
                     val nonFungibleResourcesItemsList = if (entityItem.nonFungibleResources != null) {
                         getNonFungibleResourcesCollectionItemsForAccount(
                             accountAddress = entityItem.address,
@@ -156,7 +157,7 @@ class EntityRepositoryImpl @Inject constructor(
                     }
                     nonFungibleResourcesItemsList.map { nonFungibleResourcesItem ->
                         val metaDataItems = nonFungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
-                        AccountWithResources.Resource.NonFungibleResource(
+                        Resource.NonFungibleResource(
                             resourceAddress = nonFungibleResourcesItem.resourceAddress,
                             amount = nonFungibleResourcesItem.vaults.items.first().totalCount,
                             nameMetadataItem = metaDataItems.toMutableList().consume(),
