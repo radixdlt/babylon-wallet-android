@@ -102,7 +102,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.addLedgerSheetState == AddLedgerSheetState.Initial)
+            assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
             assert(item.selectedFactorSourceID?.value == "2")
         }
     }
@@ -118,7 +118,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.addLedgerSheetState == AddLedgerSheetState.Initial)
+            assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
             assert(item.selectedFactorSourceID?.value == "2")
         }
         coVerify(exactly = 1) { addLedgerFactorSourceUseCase(any(), any(), captureNullable(ledgerName)) }

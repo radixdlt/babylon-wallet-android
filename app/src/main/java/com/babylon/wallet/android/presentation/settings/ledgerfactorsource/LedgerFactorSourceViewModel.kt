@@ -11,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,7 +49,7 @@ class LedgerFactorSourcesViewModel @Inject constructor(
     fun onSendAddLedgerRequest() {
         viewModelScope.launch {
             _state.update { it.copy(waitingForLedgerResponse = true) }
-            ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString()).cancellable().collect { response ->
+            ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString()).collect { response ->
                 _state.update { state ->
                     state.copy(
                         addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
@@ -75,7 +74,7 @@ class LedgerFactorSourcesViewModel @Inject constructor(
                     name = ledger.name
                 )
                 _state.update { state ->
-                    state.copy(addLedgerSheetState = AddLedgerSheetState.Initial)
+                    state.copy(addLedgerSheetState = AddLedgerSheetState.Connect)
                 }
             }
         }
@@ -93,7 +92,7 @@ data class LedgerFactorSourcesUiState(
     val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
     val loading: Boolean = false,
     val hasP2pLinks: Boolean = false,
-    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Initial,
+    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
     val waitingForLedgerResponse: Boolean = false,
     var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
 ) : UiState

@@ -235,7 +235,7 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
             hasP2pLinks = false,
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
-            addLedgerSheetState = AddLedgerSheetState.Initial,
+            addLedgerSheetState = AddLedgerSheetState.Connect,
             waitingForLedgerResponse = false,
             onSkipLedgerName = {}
         ) {}

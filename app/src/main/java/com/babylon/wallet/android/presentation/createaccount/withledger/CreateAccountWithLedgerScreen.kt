@@ -311,7 +311,7 @@ fun CreateAccountWithLedgerContentPreview() {
             onLedgerFactorSourceSelected = {},
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
-            addLedgerSheetState = AddLedgerSheetState.Initial,
+            addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
             onSkipLedgerName = {},
             onUseLedger = {},

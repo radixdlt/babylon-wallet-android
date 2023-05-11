@@ -115,7 +115,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                     name = ledger.name
                 )
                 _state.update { state ->
-                    state.copy(selectedFactorSourceID = ledgerFactorSourceId, addLedgerSheetState = AddLedgerSheetState.Initial)
+                    state.copy(selectedFactorSourceID = ledgerFactorSourceId, addLedgerSheetState = AddLedgerSheetState.Connect)
                 }
             }
         }
@@ -133,7 +133,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
         val selectedFactorSourceID: FactorSource.ID? = null,
         val hasP2pLinks: Boolean = false,
-        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Initial,
+        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
         var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
     ) : UiState

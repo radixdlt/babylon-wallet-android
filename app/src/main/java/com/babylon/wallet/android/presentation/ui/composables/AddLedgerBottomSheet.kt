@@ -46,7 +46,7 @@ fun AddLedgerBottomSheet(
                 mutableStateOf("")
             }
             when (addLedgerSheetState) {
-                AddLedgerSheetState.Initial -> {
+                AddLedgerSheetState.Connect -> {
                     if (!hasP2pLinks) {
                         Text(
                             text = stringResource(id = com.babylon.wallet.android.R.string.found_no_radix_connect_connections),
