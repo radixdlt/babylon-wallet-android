@@ -12,8 +12,7 @@ import javax.inject.Inject
 
 class GetAccountsWithResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val getFactorSourceStateForAccountUseCase: GetFactorSourceStateForAccountUseCase
+    private val getProfileUseCase: GetProfileUseCase
 ) {
 
     suspend operator fun invoke(forProfileAccounts: List<Network.Account>, isRefreshing: Boolean): Result<List<AccountWithResources>>{
@@ -34,8 +33,7 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
                     resources = Resources(
                         fungibleResources = accountWithResources.fungibleResources,
                         nonFungibleResources = accountWithResources.nonFungibleResources,
-                    ),
-                    factorSourceState = getFactorSourceStateForAccountUseCase(accountWithResources.account.address)
+                    )
                 )
             }
         }
@@ -55,8 +53,7 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
                     resources = Resources(
                         fungibleResources = accountWithResources.fungibleResources,
                         nonFungibleResources = accountWithResources.nonFungibleResources,
-                    ),
-                    factorSourceState = getFactorSourceStateForAccountUseCase(accountWithResources.account.address)
+                    )
                 )
             }
         }
