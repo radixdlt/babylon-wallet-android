@@ -67,8 +67,11 @@ class WalletViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         factorSources = pair.first,
-                        resources = pair.second.map {
-                            AccountWithResources(account = it, resources = null)
+                        accountsWithResources = pair.second.map { account ->
+                            AccountWithResources(
+                                account = account,
+                                resources = state.accountResources.find { account == it.account }?.resources
+                            )
                         },
                         loading = true
                     )
@@ -77,7 +80,7 @@ class WalletViewModel @Inject constructor(
                 getAccountsWithResourcesUseCase(pair.second, isRefreshing = true)
                     .onValue { resources ->
                         _state.update {
-                            it.copy(resources = resources, loading = false)
+                            it.copy(accountsWithResources = resources, loading = false)
                         }
                     }
                     .onError { error ->
@@ -147,7 +150,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 
 data class WalletState(
     private val factorSources: List<FactorSource> = emptyList(),
-    private val resources: List<AccountWithResources>? = null,
+    private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
     private val backedUpFactorSourceIds: Set<String> = emptySet(),
     val isSettingsWarningVisible: Boolean = false,
@@ -155,18 +158,25 @@ data class WalletState(
 ) : UiState {
 
     val accountResources: List<AccountWithResources>
-        get() = resources ?: emptyList()
+        get() = accountsWithResources ?: emptyList()
 
+    /**
+     * Initial loading of the screen.
+     */
     val isLoading: Boolean
-        get() = resources == null && loading
+        get() = accountsWithResources == null && loading
 
+    /**
+     * Used in pull to refresh mode.
+     */
     val isRefreshing: Boolean
-        get() = resources != null && loading
+        get() = accountsWithResources != null && accountsWithResources.any { it.resources != null } && loading
 
     fun isMnemonicBackupNeeded(forAccount: Network.Account): Boolean {
         val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
 
-        return backedUpFactorSourceIds.any { it == unsecuredFactorSourceId.value }
+        return accountsWithResources?.find { it.account == forAccount }?.hasXrd() == true &&
+                backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
     }
 
 }

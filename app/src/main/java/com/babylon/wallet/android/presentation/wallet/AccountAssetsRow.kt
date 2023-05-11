@@ -55,6 +55,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -65,19 +66,14 @@ import java.math.BigDecimal
 @Composable
 fun AccountAssetsRow(
     modifier: Modifier = Modifier,
-    assetsState: AccountAssetsRowState,
+    resources: Resources?,
     iconSize: Dp = 30.dp,
     bordersSize: Dp = 1.dp,
     maxVisibleFungibles: Int = 5
 ) {
-    AnimatedVisibility(
-        modifier = modifier.wrapContentSize(),
-        visible = assetsState is AccountAssetsRowState.Loading,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
+    if (resources == null) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .height(iconSize + bordersSize * 2)
                 .clip(shape = RadixTheme.shapes.roundedRectMedium)
@@ -87,16 +83,13 @@ fun AccountAssetsRow(
 
     AnimatedVisibility(
         modifier = modifier.wrapContentSize(),
-        visible = assetsState is AccountAssetsRowState.Assets,
+        visible = resources != null,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
         AssetsContent(
             modifier = modifier.fillMaxWidth(),
-            assets = (assetsState as? AccountAssetsRowState.Assets) ?: AccountAssetsRowState.Assets(
-                fungibleTokens = emptyList(),
-                nonFungibleTokens = emptyList()
-            ),
+            resources = resources ?: Resources(emptyList(), emptyList()),
             iconSize = iconSize,
             maxVisibleFungibles = maxVisibleFungibles
         )
@@ -106,7 +99,7 @@ fun AccountAssetsRow(
 @Composable
 private fun AssetsContent(
     modifier: Modifier = Modifier,
-    assets: AccountAssetsRowState.Assets,
+    resources: Resources,
     iconSize: Dp,
     maxVisibleFungibles: Int,
     iconsOverlap: Dp = 10.dp
@@ -115,15 +108,15 @@ private fun AssetsContent(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val (sortedFungibles, remainingFungiblesCount) = remember(assets.fungibleTokens) {
-            val xrdResource = assets.fungibleTokens.find { it.isXrd }
-            val remainingResources = assets.fungibleTokens.filterNot { it == xrdResource }
+        val (sortedFungibles, remainingFungiblesCount) = remember(resources.fungibleResources) {
+            val xrdResource = resources.fungibleResources.find { it.isXrd }
+            val remainingResources = resources.fungibleResources.filterNot { it == xrdResource }
 
             val sorted = (listOf(xrdResource) + remainingResources).filterNotNull()
             sorted.take(maxVisibleFungibles) to (sorted.size - maxVisibleFungibles).coerceAtLeast(minimumValue = 0)
         }
 
-        if (sortedFungibles.isNotEmpty() || assets.nonFungibleTokens.isNotEmpty()) {
+        if (sortedFungibles.isNotEmpty() || resources.nonFungibleResources.isNotEmpty()) {
             sortedFungibles.forEachIndexed { index, fungible ->
                 val iconModifier = Modifier
                     .zIndex(sortedFungibles.size - index.toFloat())
@@ -166,7 +159,7 @@ private fun AssetsContent(
                 )
             }
 
-            if (assets.nonFungibleTokens.isNotEmpty()) {
+            if (resources.nonFungibleResources.isNotEmpty()) {
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
                 Box(
                     modifier = Modifier
@@ -177,7 +170,7 @@ private fun AssetsContent(
                             .padding(horizontal = 1.dp)
                             .size(width = 54.dp, height = 30.dp)
                             .align(Alignment.Center),
-                        text = "${assets.nonFungibleTokens.size}"
+                        text = "${resources.nonFungibleResources.size}"
                     )
 
                     Image(
@@ -185,7 +178,7 @@ private fun AssetsContent(
                             .collectionImageModifier(32.dp)
                             .align(Alignment.CenterStart)
                             .padding(top = 4.dp), // Needed since the icon is not correctly centered.
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_nfts),
+                        painter = painterResource(id = R.drawable.ic_nfts),
                         contentDescription = null
                     )
                 }
@@ -263,17 +256,6 @@ private fun CounterBox(
     }
 }
 
-sealed interface AccountAssetsRowState {
-
-    object Loading : AccountAssetsRowState
-
-    data class Assets(
-        val fungibleTokens: List<AccountWithResources.FungibleResource>,
-        val nonFungibleTokens: List<AccountWithResources.NonFungibleResource>
-    ) : AccountAssetsRowState
-
-}
-
 
 @Preview
 @Composable
@@ -289,13 +271,11 @@ fun AssetsContentRowPreview() {
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AccountAssetsRow(
-                assetsState = AccountAssetsRowState.Loading
-            )
+            AccountAssetsRow(resources = null)
 
             AccountAssetsRow(
-                assetsState = AccountAssetsRowState.Assets(
-                    fungibleTokens = listOf(
+                resources = Resources(
+                    fungibleResources = listOf(
                         AccountWithResources.FungibleResource(
                             resourceAddress = "resource_address",
                             amount = BigDecimal.valueOf(237659),
@@ -310,7 +290,7 @@ fun AssetsContentRowPreview() {
                             iconUrlMetadataItem = IconUrlMetadataItem(url = Uri.parse("https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"))
                         ),
                     ),
-                    nonFungibleTokens = listOf()
+                    nonFungibleResources = listOf()
                 )
             )
         }

@@ -58,14 +58,14 @@ data class AccountWithResources(
             get() = descriptionMetadataItem?.description.orEmpty()
     }
 
-    fun hasXrdWithEnoughBalance(minimumBalance: Long): Boolean {
+    fun hasXrd(minimumBalance: Long = 1L): Boolean {
         return fungibleResources.any {
             it.symbol == MetadataConstants.SYMBOL_XRD && it.amount >= BigDecimal(minimumBalance)
         }
     }
 
     fun needMnemonicBackup(): Boolean {
-        return hasXrdWithEnoughBalance(1L) && factorSourceState == FactorSourceState.NeedMnemonicBackup
+        return hasXrd() && factorSourceState == FactorSourceState.NeedMnemonicBackup
     }
 
     fun needMnemonicRecovery(): Boolean {
@@ -83,5 +83,5 @@ data class Resources(
 )
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
-    it.hasXrdWithEnoughBalance(minimumBalance)
+    it.hasXrd(minimumBalance)
 }
