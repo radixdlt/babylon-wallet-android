@@ -25,12 +25,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
-fun EmptyAccountCard(
+fun TargetAccountCard(
     modifier: Modifier = Modifier,
     onChooseAccountClick: () -> Unit,
     onAddAssetsClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    isCancelable: Boolean = false
+    onDeleteClick: () -> Unit,
+    isDeletable: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -53,8 +53,8 @@ fun EmptyAccountCard(
                 onClick = onChooseAccountClick
             )
             Spacer(modifier = Modifier.weight(1f))
-            if (isCancelable) {
-                IconButton(onClick = onCancelClick) {
+            if (isDeletable) {
+                IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear"
@@ -87,12 +87,12 @@ fun EmptyAccountCard(
 
 @Preview(showBackground = true)
 @Composable
-fun EmptyAccountCardPreview() {
+fun TargetAccountCardPreview() {
     RadixWalletTheme {
-        EmptyAccountCard(
+        TargetAccountCard(
             onChooseAccountClick = {},
             onAddAssetsClick = {},
-            onCancelClick = {}
+            onDeleteClick = {}
         )
     }
 }

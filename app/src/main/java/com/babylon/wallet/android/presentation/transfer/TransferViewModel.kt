@@ -37,8 +37,17 @@ class TransferViewModel @Inject constructor(
             }
         }
     }
+
+    fun onMessageChanged(message: String) {
+        _state.update {
+            it.copy(
+                message = message
+            )
+        }
+    }
 }
 
 data class TransferUiState(
-    val fromAccount: AccountItemUiModel? = null
+    val fromAccount: AccountItemUiModel? = null,
+    val message: String = ""
 ) : UiState
