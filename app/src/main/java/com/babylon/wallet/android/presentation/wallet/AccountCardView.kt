@@ -38,6 +38,7 @@ import java.math.BigDecimal
 @Composable
 fun AccountCardView(
     accountWithResources: AccountWithResources,
+    isPromptVisible: Boolean,
     modifier: Modifier = Modifier,
     onApplySecuritySettings: () -> Unit,
     onMnemonicRecovery: () -> Unit,
@@ -102,26 +103,18 @@ fun AccountCardView(
             height = Dimension.value(32.dp)
         })
 
-
-        val isPromptsVisible = remember(accountWithResources) {
-            accountWithResources.needMnemonicBackup() || accountWithResources.needMnemonicRecovery()
-        }
-
         AccountAssetsRow(
             modifier = Modifier.constrainAs(assetsContainer) {
                 linkTo(
                     start = parent.start,
                     end = parent.end,
                     top = spacer.bottom,
-                    bottom = if (isPromptsVisible) promptsContainer.top else parent.bottom,
-                    bottomMargin = if (isPromptsVisible) 18.dp else 0.dp
+                    bottom = if (isPromptVisible) promptsContainer.top else parent.bottom,
+                    bottomMargin = if (isPromptVisible) 18.dp else 0.dp
                 )
                 width = Dimension.fillToConstraints
             },
-            assetsState = AccountAssetsRowState.Assets(
-                accountWithResources.fungibleResources,
-                accountWithResources.nonFungibleResources
-            )
+            resources = accountWithResources.resources
         )
 
         AnimatedVisibility(
@@ -134,7 +127,7 @@ fun AccountCardView(
                     verticalBias = 1f
                 )
             },
-            visible = isPromptsVisible,
+            visible = isPromptVisible,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -148,12 +141,7 @@ fun AccountCardView(
                             onMnemonicRecovery()
                         }
                     },
-                    text = stringResource(
-                        id = if (accountWithResources.needMnemonicBackup())
-                            R.string.apply_security_settings
-                        else
-                            R.string.recover_mnemonic
-                    )
+                    text = stringResource(id = R.string.apply_security_settings)
                 )
             }
         }
@@ -180,9 +168,9 @@ fun AccountCardPreview() {
                             )
                         ),
                         nonFungibleResources = listOf()
-                    ),
-                    factorSourceState = AccountWithResources.FactorSourceState.NeedMnemonicBackup
+                    )
                 ),
+                isPromptVisible = true,
                 onApplySecuritySettings = {},
                 onMnemonicRecovery = {}
             )
