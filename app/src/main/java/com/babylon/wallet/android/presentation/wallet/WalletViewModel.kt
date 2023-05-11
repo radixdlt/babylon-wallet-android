@@ -156,7 +156,7 @@ data class WalletUiState(
     val isRefreshing: Boolean
         get() = refreshing
 
-    fun isMnemonicBackupNeeded(forAccount: Network.Account): Boolean {
+    fun isSecurityPromptVisible(forAccount: Network.Account): Boolean {
         val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
 
         return accountsWithResources?.find { it.account == forAccount }?.hasXrd() == true &&
