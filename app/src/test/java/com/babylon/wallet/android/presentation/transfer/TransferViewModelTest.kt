@@ -5,6 +5,8 @@ import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,15 +17,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.whenever
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
 class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
-    private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
-    private val getProfileUseCase = Mockito.mock(GetProfileUseCase::class.java)
+    private val savedStateHandle = mockk<SavedStateHandle>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
 
     private val accounts = listOf(
         account(
@@ -54,8 +54,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        whenever(savedStateHandle.get<String>(ARG_ACCOUNT_ID)).thenReturn(accounts.first().address)
-        whenever(getProfileUseCase()).thenReturn(flowOf(profile(accounts = accounts)))
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns accounts.first().address
+        every { getProfileUseCase() } returns flowOf(profile(accounts = accounts))
     }
 
     @Test

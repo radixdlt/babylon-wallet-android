@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
@@ -43,9 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import kotlinx.coroutines.launch
 
@@ -140,30 +138,41 @@ fun TransferContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .imePadding()
-                .background(color = RadixTheme.colors.white)
-                .padding(RadixTheme.dimensions.paddingDefault),
+                .background(color = RadixTheme.colors.white),
             horizontalAlignment = Alignment.Start
         ) {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.empty),
-                onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1,
-                backIconType = BackIconType.Close
-            )
+            Row(
+                modifier = Modifier
+                    .padding(
+                        start = RadixTheme.dimensions.paddingMedium,
+                        top = RadixTheme.dimensions.paddingMedium
+                    ),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                IconButton(
+                    onClick = onBackClick
+                ) {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = "close"
+                    )
+                }
+            }
+
             LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
+                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
             ) {
                 item {
                     Row(
+                        modifier = Modifier
+                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier
                                 .padding(
-                                    vertical = RadixTheme.dimensions.paddingLarge,
-                                    horizontal = RadixTheme.dimensions.paddingDefault
+                                    start = RadixTheme.dimensions.paddingSmall
                                 ),
                             text = stringResource(id = R.string.transfer),
                             style = RadixTheme.typography.title,

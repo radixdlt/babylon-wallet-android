@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
@@ -135,28 +136,30 @@ fun StrokeLine(
 @Preview(showBackground = true)
 @Composable
 fun DepositAccountContentPreview() {
-    DepositAccountContent(
-        previewAccounts =
-        persistentListOf(
-            PreviewAccountItemsUiModel(
-                address = "account_tdx_19jd32jd3928jd3892jd329",
-                accountName = "My main account",
-                appearanceID = 1,
-                accounts = listOf(
-                    TransactionAccountItemUiModel(
-                        "account_tdx_19jd32jd3928jd3892jd329",
-                        "My main account",
-                        "XRD",
-                        "200",
-                        1,
-                        "",
-                        isTokenAmountVisible = true,
-                        shouldPromptForGuarantees = false,
-                        guaranteedQuantity = "200"
+    RadixWalletTheme {
+        DepositAccountContent(
+            previewAccounts =
+            persistentListOf(
+                PreviewAccountItemsUiModel(
+                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    accountName = "My main account",
+                    appearanceID = 1,
+                    accounts = listOf(
+                        TransactionAccountItemUiModel(
+                            "account_tdx_19jd32jd3928jd3892jd329",
+                            "My main account",
+                            "XRD",
+                            "200",
+                            1,
+                            "",
+                            isTokenAmountVisible = true,
+                            shouldPromptForGuarantees = false,
+                            guaranteedQuantity = "200"
+                        )
                     )
                 )
-            )
-        ),
-        promptForGuarantees = {}
-    )
+            ),
+            promptForGuarantees = {}
+        )
+    }
 }
