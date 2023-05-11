@@ -323,15 +323,11 @@ private fun AccountContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AccountSummaryContent(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             accountAddress = state.accountWithResources?.account?.address.orEmpty(),
             showSecurityPrompt = state.showSecurityPrompt,
             onTransferClick = onTransferClick,
             onApplySecuritySettings = onApplySecuritySettings,
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         AssetsContent(
             modifier = Modifier
                 .weight(1f)
@@ -350,7 +346,7 @@ private fun AccountContent(
 
 @Composable
 private fun AccountSummaryContent(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     accountAddress: String,
     walletFiatBalance: String? = null,
     onTransferClick: (String) -> Unit,
@@ -358,7 +354,7 @@ private fun AccountSummaryContent(
     onApplySecuritySettings: () -> Unit
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         ActionableAddressView(
@@ -366,7 +362,19 @@ private fun AccountSummaryContent(
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+        walletFiatBalance?.let { value ->
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            WalletBalanceView(
+                currencySignValue = "$",
+                amount = value,
+                hidden = false,
+                balanceClicked = {},
+                contentColor = RadixTheme.colors.white
+            )
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         RadixSecondaryButton(
             text = stringResource(id = R.string.account_transfer_button_title),
             onClick = { onTransferClick(accountAddress) },
@@ -380,18 +388,15 @@ private fun AccountSummaryContent(
                 contentDescription = null
             )
         }
-        walletFiatBalance?.let { value ->
-            WalletBalanceView(
-                currencySignValue = "$",
-                amount = value,
-                hidden = false,
-                balanceClicked = {},
-                contentColor = RadixTheme.colors.white
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-        }
-        AnimatedVisibility(visible = showSecurityPrompt, enter = fadeIn(), exit = fadeOut()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        AnimatedVisibility(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(top = RadixTheme.dimensions.paddingLarge),
+            visible = showSecurityPrompt,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onApplySecuritySettings,
