@@ -116,9 +116,6 @@ fun NavigationHost(
                 onNavigateToMnemonicBackup = { factorSourceID ->
                     navController.settingsShowMnemonic(factorSourceID.value)
                 },
-                onNavigateToMnemonicRestore = { accountAddress ->
-                    navController.restoreMnemonic(accountAddress)
-                },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
                 }

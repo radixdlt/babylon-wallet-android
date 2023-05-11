@@ -156,7 +156,7 @@ class GetAccountsWithResourcesUseCaseTest {
                     ),
                     resources = Resources(
                         fungibleResources = persistentListOf(
-                            AccountWithResources.FungibleResource(
+                            AccountWithResources.Resource.FungibleResource(
                                 amount = BigDecimal("1000"),
                                 resourceAddress = expectedResource.resourceAddress,
                             )
@@ -223,7 +223,7 @@ class GetAccountsWithResourcesUseCaseTest {
                     resources = Resources(
                         fungibleResources = persistentListOf(),
                         nonFungibleResources = persistentListOf(
-                            AccountWithResources.NonFungibleResource(
+                            AccountWithResources.Resource.NonFungibleResource(
                                 resourceAddress = expectedResource.resourceAddress,
                                 amount = 10,
                                 nftIds = listOf("1")

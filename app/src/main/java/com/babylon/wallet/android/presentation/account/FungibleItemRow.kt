@@ -20,19 +20,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 @Composable
-fun TokenItemCard(
-    token: TokenUiModel,
+fun FungibleItemRow(
+    fungible: AccountWithResources.Resource.FungibleResource,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -44,7 +50,7 @@ fun TokenItemCard(
             ),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
-            val placeholder = if (token.isXrd()) {
+            val placeholder = if (fungible.isXrd) {
                 painterResource(id = R.drawable.ic_xrd_token)
             } else {
                 rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
@@ -55,7 +61,7 @@ fun TokenItemCard(
                     .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
             ) {
                 AsyncImage(
-                    model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.MEDIUM),
+                    model = rememberImageUrl(fromUrl = fungible.iconUrl.toString(), size = ImageSize.MEDIUM),
                     placeholder = placeholder,
                     fallback = placeholder,
                     error = placeholder,
@@ -67,14 +73,14 @@ fun TokenItemCard(
                 )
             }
             Text(
-                text = token.tokenItemTitle,
+                text = fungible.displayTitle,
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = token.tokenQuantityToDisplay,
+                text = fungible.amount.displayableQuantity(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -90,14 +96,14 @@ fun TokenItemCard(
 @Composable
 fun TokenItemCardPreview() {
     RadixWalletTheme {
-        TokenItemCard(
-            token = TokenUiModel(
-                name = "name",
-                symbol = "symbol",
-                tokenQuantity = BigDecimal(1234.5678),
-                iconUrl = "icon url",
-                description = null,
-                resourceAddress = ""
+        FungibleItemRow(
+            fungible = AccountWithResources.Resource.FungibleResource(
+                resourceAddress = "account_rdx_abc",
+                amount = BigDecimal(1234.5678),
+                nameMetadataItem = NameMetadataItem("a very long name that might cause troubles"),
+                symbolMetadataItem = SymbolMetadataItem("BTC"),
+                iconUrlMetadataItem = IconUrlMetadataItem("https://some.icon".toUri()),
+                descriptionMetadataItem = DescriptionMetadataItem("Bitcoin")
             )
         )
     }
@@ -108,14 +114,12 @@ fun TokenItemCardPreview() {
 @Composable
 fun TokenItemCardWithLongNameAndLongValuesPreview() {
     RadixWalletTheme {
-        TokenItemCard(
-            token = TokenUiModel(
-                name = "a very long name that might cause troubles",
-                symbol = "XRD",
-                tokenQuantity = BigDecimal(1234567.890123),
-                iconUrl = null,
-                description = null,
-                resourceAddress = ""
+        FungibleItemRow(
+            fungible = AccountWithResources.Resource.FungibleResource(
+                resourceAddress = "account_rdx_abc",
+                amount = BigDecimal(1234567.890123),
+                nameMetadataItem = NameMetadataItem("Radix"),
+                symbolMetadataItem = SymbolMetadataItem("XRD")
             )
         )
     }

@@ -14,48 +14,64 @@ data class AccountWithResources(
     private val factorSourceState: FactorSourceState = FactorSourceState.Valid
 ) {
 
-    val fungibleResources: List<FungibleResource>
+    val fungibleResources: List<Resource.FungibleResource>
         get() = resources?.fungibleResources ?: emptyList()
 
-    val nonFungibleResources: List<NonFungibleResource>
+    val nonFungibleResources: List<Resource.NonFungibleResource>
         get() = resources?.nonFungibleResources ?: emptyList()
 
-    data class FungibleResource(
-        val resourceAddress: String,
-        val amount: BigDecimal,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val symbolMetadataItem: SymbolMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-    ) {
-        val name: String?
-            get() = nameMetadataItem?.name // .orEmpty()
+    sealed class Resource {
+        abstract val resourceAddress: String
 
-        val symbol: String
-            get() = symbolMetadataItem?.symbol.orEmpty()
+        data class FungibleResource(
+            override val resourceAddress: String,
+            val amount: BigDecimal,
+            private val nameMetadataItem: NameMetadataItem? = null,
+            private val symbolMetadataItem: SymbolMetadataItem? = null,
+            private val descriptionMetadataItem: DescriptionMetadataItem? = null,
+            private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        ): Resource() {
+            val name: String?
+                get() = nameMetadataItem?.name // .orEmpty()
 
-        val isXrd: Boolean
-            get() = symbolMetadataItem?.isXrd ?: false
+            val symbol: String
+                get() = symbolMetadataItem?.symbol.orEmpty()
 
-        val description: String
-            get() = descriptionMetadataItem?.description.orEmpty()
+            val isXrd: Boolean
+                get() = symbolMetadataItem?.isXrd ?: false
 
-        val iconUrl: Uri?
-            get() = iconUrlMetadataItem?.url
-    }
+            val description: String
+                get() = descriptionMetadataItem?.description.orEmpty()
 
-    data class NonFungibleResource(
-        val resourceAddress: String,
-        val amount: Long,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        val nftIds: List<String>, // TODO when gateway is ready
-    ) {
-        val name: String
-            get() = nameMetadataItem?.name.orEmpty()
+            val iconUrl: Uri?
+                get() = iconUrlMetadataItem?.url
 
-        val description: String
-            get() = descriptionMetadataItem?.description.orEmpty()
+            val displayTitle: String
+                get() = if (symbol.isNotBlank()) {
+                    symbol
+                } else if (name?.isNotBlank() == true) {
+                    name.orEmpty()
+                } else {
+                    ""
+                }
+        }
+
+        data class NonFungibleResource(
+            override val resourceAddress: String,
+            val amount: Long,
+            private val nameMetadataItem: NameMetadataItem? = null,
+            private val descriptionMetadataItem: DescriptionMetadataItem? = null,
+            val nftIds: List<String>, // TODO when gateway is ready
+        ): Resource() {
+            val name: String
+                get() = nameMetadataItem?.name.orEmpty()
+
+            val description: String
+                get() = descriptionMetadataItem?.description.orEmpty()
+
+            fun globalId(localId: String) = "$resourceAddress:$localId"
+        }
+
     }
 
     fun hasXrd(minimumBalance: Long = 1L): Boolean {
@@ -64,22 +80,14 @@ data class AccountWithResources(
         }
     }
 
-    fun needMnemonicBackup(): Boolean {
-        return hasXrd() && factorSourceState == FactorSourceState.NeedMnemonicBackup
-    }
-
-    fun needMnemonicRecovery(): Boolean {
-        return factorSourceState == FactorSourceState.NeedMnemonicRecovery
-    }
-
     enum class FactorSourceState {
         NeedMnemonicRecovery, NeedMnemonicBackup, Valid
     }
 }
 
 data class Resources(
-    val fungibleResources: List<AccountWithResources.FungibleResource>,
-    val nonFungibleResources: List<AccountWithResources.NonFungibleResource>,
+    val fungibleResources: List<AccountWithResources.Resource.FungibleResource>,
+    val nonFungibleResources: List<AccountWithResources.Resource.NonFungibleResource>,
 )
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
