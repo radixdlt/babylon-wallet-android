@@ -27,7 +27,6 @@ import kotlinx.collections.immutable.toPersistentHashMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -298,13 +297,15 @@ class OlympiaImportViewModel @Inject constructor(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
             val interactionId = UUIDGenerator.uuid().toString()
-            ledgerMessenger.sendImportOlympiaDeviceRequest(
+            val result = ledgerMessenger.sendImportOlympiaDeviceRequest(
                 interactionId = interactionId,
                 derivationPaths = hardwareAccountsDerivationPaths
-            ).catch { error ->
+            )
+            result.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error.cause), waitingForLedgerResponse = false) }
-            }.collect { response ->
-                processIncomingLedgerResponse(response)
+            }
+            result.onSuccess { r ->
+                processIncomingLedgerResponse(r)
             }
         }
     }

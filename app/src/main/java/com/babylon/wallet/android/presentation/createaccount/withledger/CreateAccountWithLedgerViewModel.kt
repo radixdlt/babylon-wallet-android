@@ -66,13 +66,19 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     fun onSendAddLedgerRequest() {
         viewModelScope.launch {
             _state.update { it.copy(waitingForLedgerResponse = true) }
-            ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString()).collect { response ->
+            val result = ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString())
+            result.onSuccess { response ->
                 _state.update { state ->
                     state.copy(
                         addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
                         waitingForLedgerResponse = false,
                         recentlyConnectedLedgerDevice = LedgerDeviceUiModel(response.deviceId, response.model)
                     )
+                }
+            }
+            result.onFailure {
+                _state.update { state ->
+                    state.copy(waitingForLedgerResponse = false)
                 }
             }
         }
@@ -88,11 +94,12 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                 _state.update { it.copy(waitingForLedgerResponse = true) }
                 val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(ledgerFactorSource)
                 val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-                ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(
+                val result = ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(
                     UUIDGenerator.uuid().toString(),
                     derivationPath.path,
                     DerivePublicKeyRequest.LedgerDevice(ledgerFactorSource.label, deviceModel, ledgerFactorSource.id.value)
-                ).collect { response ->
+                )
+                result.onSuccess { response ->
                     appEventBus.sendEvent(
                         AppEvent.DerivedAccountPublicKeyWithLedger(
                             factorSourceID = ledgerFactorSource.id,

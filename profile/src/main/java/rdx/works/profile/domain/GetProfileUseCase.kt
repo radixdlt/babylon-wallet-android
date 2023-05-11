@@ -27,11 +27,20 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
 val GetProfileUseCase.accountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts }
 
+val GetProfileUseCase.factorSources
+    get() = invoke().map { profile -> profile.factorSources }
+
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE } }
 
 val GetProfileUseCase.ledgerFactorSources
     get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } }
+
+suspend fun GetProfileUseCase.factorSource(
+    id: FactorSource.ID
+) = factorSources.first().firstOrNull { factorSource ->
+    factorSource.id == id
+}
 
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
 
@@ -41,18 +50,18 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
-    accountAddress: String,
-): FactorSource.ID? {
-    val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.accountFactorSourceId()
-    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
-}
-
 suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
     factorSource: FactorSource,
 ): DerivationPath {
     val currentNetwork = requireNotNull(invoke().first().currentNetwork.knownNetworkId)
     return factorSource.getNextDerivationPathForAccount(currentNetwork)
+}
+
+suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
+    accountAddress: String,
+): FactorSource.ID? {
+    val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.accountFactorSourceId()
+    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
 }
 
 suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.Slip10Curve
 
 @Serializable
 sealed interface LedgerInteractionRequest
@@ -12,7 +13,16 @@ enum class Curve {
     Curve25519,
 
     @SerialName("secp256k1")
-    Secp256k1
+    Secp256k1;
+
+    companion object {
+        fun from(curve: Slip10Curve): Curve {
+            return when (curve) {
+                Slip10Curve.CURVE_25519 -> Curve25519
+                Slip10Curve.SECP_256K1 -> Secp256k1
+            }
+        }
+    }
 }
 
 @Serializable

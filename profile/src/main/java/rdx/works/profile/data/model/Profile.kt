@@ -1,8 +1,5 @@
 package rdx.works.profile.data.model
 
-import com.radixdlt.crypto.getCompressedPublicKey
-import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.hex.extensions.toHexString
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
@@ -12,10 +9,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
-import rdx.works.profile.data.model.pernetwork.AccountSigner
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.SecurityState
-import timber.log.Timber
 
 data class Profile(
     val header: Header,
@@ -44,75 +38,6 @@ data class Profile(
             factorSources = factorSources,
             networks = networks
         )
-    }
-
-    /**
-     * Returns the account signers, currently only for accounts that their factor instances derive
-     * from [FactorSourceKind.DEVICE] factor sources. Note that those instances also have
-     * a non-null derivation path.
-     */
-    inline fun getAccountSigners(
-        addresses: List<String>,
-        networkId: Int,
-        getMnemonic: (FactorSource) -> MnemonicWithPassphrase
-    ): List<AccountSigner> {
-        val network = networks.firstOrNull { network ->
-            network.networkID == networkId
-        } ?: return emptyList()
-
-        val accounts = if (addresses.isEmpty()) {
-            listOf(network.accounts.first())
-        } else {
-            addresses.mapNotNull { address ->
-                network.accounts.find { it.address == address }
-            }
-        }
-
-        return accounts.map { account ->
-            when (val securityState = account.securityState) {
-                is SecurityState.Unsecured -> {
-                    val factorInstance = securityState.unsecuredEntityControl.genesisFactorInstance
-
-                    val factorSource = factorSources.find {
-                        it.id == factorInstance.factorSourceId
-                    }
-
-                    if (factorSource == null) {
-                        Timber.w("No FactorSource found with id ${factorInstance.factorSourceId}")
-                        return@map null
-                    }
-
-                    if (factorSource.kind != FactorSourceKind.DEVICE) {
-                        Timber.w("No FactorSource with DEVICE kind was found, but the account requested for a non-DEVICE factor source")
-                        return@map null
-                    }
-
-                    if (!factorSource.supportsCurve(factorInstance.publicKey.curve)) {
-                        Timber.w("The curve ${factorInstance.publicKey.curve} is not supported by the selected FactorSource")
-                        return@map null
-                    }
-
-                    val mnemonicWithPassphrase = getMnemonic(factorSource)
-                    val extendedKey = mnemonicWithPassphrase.deriveExtendedKey(
-                        factorInstance = factorInstance
-                    )
-                    if (
-                        extendedKey.keyPair
-                            .getCompressedPublicKey()
-                            .removeLeadingZero()
-                            .toHexString() != factorInstance.publicKey.compressedData
-                    ) {
-                        Timber.w("FactorSource's public key does not match with the derived public key")
-                        return@map null
-                    }
-
-                    AccountSigner(
-                        account = account,
-                        privateKey = extendedKey.keyPair.privateKey
-                    )
-                }
-            }
-        }.filterNotNull()
     }
 
     /**

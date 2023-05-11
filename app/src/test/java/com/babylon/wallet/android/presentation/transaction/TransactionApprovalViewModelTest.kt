@@ -78,7 +78,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.convertManifestInstructionsToString(any()) } returns Result.Success(sampleManifest)
-        coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.Success(
+        coEvery { transactionClient.getTransactionPreview(any(), ephemeralNotaryPrivateKey, any(), any()) } returns Result.Success(
             previewResponse()
         )
         coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any(), any()) } returns kotlin.Result.success(

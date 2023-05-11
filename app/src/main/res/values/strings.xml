@@ -95,6 +95,7 @@
     <string name="tx_fail_epoch">Failed to get epoch</string>
     <string name="tx_fail_duplicate">Failed to convert transaction manifest</string>
     <string name="tx_fail_prepare">Failed to prepare transaction</string>
+    <string name="tx_fail_compile">Failed to compile transaction</string>
     <string name="tx_fail_rejected_by_user">Failed to convert transaction manifest</string>
     <string name="tx_fail_submit">Failed to submit transaction</string>
     <string name="tx_fail_network">Wrong network</string>
@@ -365,6 +366,7 @@
     <string name="add_message">Add Message</string>
     <string name="add_account">Add Account</string>
     <string name="ledger_hardware_wallets">Ledger Hardware Wallets</string>
+    <string name="tx_fail_sign">Failed to sign transaction</string>
     <string name="choose_receiving_account">Choose Receiving Account</string>
     <string name="scan_qr_code">Scan QR Code</string>
     <string name="enter_account_address_manually">Enter an account address manually</string>
