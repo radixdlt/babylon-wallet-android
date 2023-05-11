@@ -153,14 +153,11 @@ private fun WalletContent(
         },
         containerColor = RadixTheme.colors.defaultBackground,
         contentColor = RadixTheme.colors.defaultText
-    ) { innerPadding ->
+    ) {
         val pullRefreshState = rememberPullRefreshState(state.isRefreshing, onRefresh = onRefresh)
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .pullRefresh(pullRefreshState)
-        ) {
+        Box(modifier = Modifier.padding(top = it.calculateTopPadding())) {
             WalletAccountList(
+                modifier = Modifier.pullRefresh(pullRefreshState),
                 state = state,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
@@ -184,11 +181,11 @@ private fun WalletContent(
 
 @Composable
 private fun WalletAccountList(
+    modifier: Modifier = Modifier,
     state: WalletUiState,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettings: (Network.Account) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
@@ -210,6 +207,7 @@ private fun WalletAccountList(
                         onAccountClick(accountWithResources.account)
                     },
                 accountWithResources = accountWithResources,
+                isLoadingResources = state.isLoadingResources,
                 isPromptVisible = state.isMnemonicBackupNeeded(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account)

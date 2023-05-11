@@ -67,11 +67,12 @@ import java.math.BigDecimal
 fun AccountAssetsRow(
     modifier: Modifier = Modifier,
     resources: Resources?,
+    isLoading: Boolean,
     iconSize: Dp = 30.dp,
     bordersSize: Dp = 1.dp,
     maxVisibleFungibles: Int = 5
 ) {
-    if (resources == null) {
+    if (isLoading) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -83,7 +84,7 @@ fun AccountAssetsRow(
 
     AnimatedVisibility(
         modifier = modifier.wrapContentSize(),
-        visible = resources != null,
+        visible = !isLoading,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
@@ -271,7 +272,7 @@ fun AssetsContentRowPreview() {
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AccountAssetsRow(resources = null)
+            AccountAssetsRow(resources = null, isLoading = true)
 
             AccountAssetsRow(
                 resources = Resources(
@@ -291,7 +292,8 @@ fun AssetsContentRowPreview() {
                         ),
                     ),
                     nonFungibleResources = listOf()
-                )
+                ),
+                isLoading = false
             )
         }
     }

@@ -24,7 +24,13 @@ data class AccountWithResources(
 data class Resources(
     val fungibleResources: List<Resource.FungibleResource>,
     val nonFungibleResources: List<Resource.NonFungibleResource>,
-)
+) {
+
+    companion object {
+        val EMPTY = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())
+    }
+
+}
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
     it.hasXrd(minimumBalance)
