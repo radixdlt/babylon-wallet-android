@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.wallet.WalletState
+import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.coEvery
@@ -84,7 +84,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
         viewModel.state.test {
             assertEquals(
-                WalletState(isSettingsWarningVisible = true),
+                WalletUiState(isSettingsWarningVisible = true),
                 expectMostRecentItem()
             )
         }

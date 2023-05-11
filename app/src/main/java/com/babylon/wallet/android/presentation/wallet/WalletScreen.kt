@@ -88,7 +88,7 @@ fun WalletScreen(
 @Composable
 private fun WalletContent(
     modifier: Modifier = Modifier,
-    state: WalletState,
+    state: WalletUiState,
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -184,7 +184,7 @@ private fun WalletContent(
 
 @Composable
 private fun WalletAccountList(
-    state: WalletState,
+    state: WalletUiState,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettings: (Network.Account) -> Unit,
@@ -237,7 +237,7 @@ fun WalletContentPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             WalletContent(
-                state = WalletState(
+                state = WalletUiState(
                     accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
                     loading = false,
                     isSettingsWarningVisible = true,
