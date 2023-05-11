@@ -48,7 +48,8 @@ sealed class Resource {
         val amount: Long,
         private val nameMetadataItem: NameMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        val nftIds: List<String>, // TODO when gateway is ready
+        private val iconMetadataItem: IconUrlMetadataItem? = null,
+        val items: List<Item>
     ): Resource() {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -56,7 +57,22 @@ sealed class Resource {
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
 
-        fun globalId(localId: String) = "$resourceAddress:$localId"
+        val iconUrl: Uri?
+            get() = iconMetadataItem?.url
+
+
+
+        data class Item(
+            val localId: String,
+            val iconMetadataItem: IconUrlMetadataItem?
+        ) {
+
+            val imageUrl: Uri?
+                get() = iconMetadataItem?.url
+
+            fun globalAddress(nftAddress: String) = "$nftAddress:$localId"
+
+        }
     }
 
 }

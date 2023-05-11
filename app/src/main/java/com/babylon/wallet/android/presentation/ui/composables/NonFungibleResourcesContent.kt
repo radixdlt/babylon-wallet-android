@@ -21,47 +21,45 @@ import com.babylon.wallet.android.domain.model.Resource
 @Composable
 fun NonFungibleResourcesContent(
     items: List<Resource.NonFungibleResource>,
-    onNftClick: (Resource.NonFungibleResource, String) -> Unit,
+    onNftClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val collapsedState = remember(items) { items.map { true }.toMutableStateList() }
     LazyColumn(modifier) {
-        items.forEachIndexed { i, dataItem ->
+        items.forEachIndexed { i, nft ->
             val collapsed = collapsedState[i]
             item(key = "header_$i") {
-//                NftTokenHeaderItem(
-//                    nftImageUrl = dataItem.iconUrl,
-//                    nftName = dataItem.name,
-//                    nftsInCirculation = "?",
-//                    nftsInPossession = dataItem.nftIds.size.toString(),
-//                    nftChildCount = dataItem.nftIds.size,
-//                    collapsed = collapsed
-//                ) {
-//                    collapsedState[i] = !collapsed
-//                }
+                NftTokenHeaderItem(
+                    nftImageUrl = nft.iconUrl.toString(),
+                    nftName = nft.name,
+                    nftsInCirculation = "?",
+                    nftsInPossession = nft.items.size.toString(),
+                    nftChildCount = nft.items.size,
+                    collapsed = collapsed
+                ) {
+                    collapsedState[i] = !collapsed
+                }
             }
             items(
-                dataItem.nftIds,
-                key = { address -> address }
-            ) { nftId ->
+                nft.items,
+                key = { item -> item.globalAddress(nftAddress = item.localId) }
+            ) { item ->
                 AnimatedVisibility(
                     visible = !collapsed,
                     enter = expandVertically(),
                     exit = shrinkVertically(animationSpec = tween(150))
                 ) {
                     var bottomCornersRounded = false
-                    if (dataItem.nftIds.last() == nftId) {
+                    if (nft.items.last() == item) {
                         bottomCornersRounded = true
                     }
-//                    NftTokenDetailItem(
-//                        nftId = nftId,
-//                        imageUrl = nftId.nftImage.orEmpty(),
-//                        bottomCornersRounded = bottomCornersRounded,
-//                        nftMetadata = nftId.nftsMetadata,
-//                        onNftClick = {
-//                            onNftClick(dataItem, nftId)
-//                        }
-//                    )
+                    NftTokenDetailItem(
+                        item = item,
+                        bottomCornersRounded = bottomCornersRounded,
+                        onItemClicked = {
+                            onNftClick(nft, item)
+                        }
+                    )
                 }
             }
         }

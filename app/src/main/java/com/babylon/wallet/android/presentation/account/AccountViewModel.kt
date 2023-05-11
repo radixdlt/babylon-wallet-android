@@ -112,10 +112,10 @@ class AccountViewModel @Inject constructor(
 
     fun onNonFungibleResourceClicked(
         nonFungibleResource: Resource.NonFungibleResource,
-        id: String
+        item: Resource.NonFungibleResource.Item
     ) {
         _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedNonFungibleResource(nonFungibleResource, id))
+            accountUiState.copy(selectedResource = SelectedResource.SelectedNonFungibleResource(nonFungibleResource, item))
         }
     }
 
@@ -156,5 +156,8 @@ enum class AssetTypeTab(@StringRes val stringId: Int) {
 
 sealed interface SelectedResource {
     data class SelectedFungibleResource(val fungible: Resource.FungibleResource): SelectedResource
-    data class SelectedNonFungibleResource(val nonFungible: Resource.NonFungibleResource, val id: String): SelectedResource
+    data class SelectedNonFungibleResource(
+        val nonFungible: Resource.NonFungibleResource,
+        val item: Resource.NonFungibleResource.Item
+    ): SelectedResource
 }

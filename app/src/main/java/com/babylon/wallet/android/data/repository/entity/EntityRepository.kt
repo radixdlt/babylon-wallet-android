@@ -162,7 +162,7 @@ class EntityRepositoryImpl @Inject constructor(
                             amount = nonFungibleResourcesItem.vaults.items.first().totalCount,
                             nameMetadataItem = metaDataItems.toMutableList().consume(),
                             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
-                            nftIds = emptyList()
+                            items = emptyList()
                         )
                     }
                 }
@@ -319,7 +319,6 @@ class EntityRepositoryImpl @Inject constructor(
                 address = accountAddress,
                 cursor = nextCursor,
                 aggregationLevel = ResourceAggregationLevel.vault,
-
             )
         ).execute(
             cacheParameters = CacheParameters(
@@ -339,7 +338,6 @@ class EntityRepositoryImpl @Inject constructor(
                 address = accountAddress,
                 cursor = nextCursor,
                 aggregationLevel = ResourceAggregationLevel.vault,
-
             )
         ).execute(
             cacheParameters = CacheParameters(
