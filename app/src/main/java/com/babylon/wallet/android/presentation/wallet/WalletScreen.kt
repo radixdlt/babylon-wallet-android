@@ -208,7 +208,7 @@ private fun WalletAccountList(
                     },
                 accountWithResources = accountWithResources,
                 isLoadingResources = state.isLoadingResources,
-                isPromptVisible = state.isMnemonicBackupNeeded(accountWithResources.account),
+                isPromptVisible = state.isSecurityPromptVisible(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account)
                 }
