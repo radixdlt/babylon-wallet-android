@@ -128,7 +128,7 @@ private fun AccountScreenContent(
     onHistoryClick: () -> Unit,
     onTransferClick: (String) -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClicked: (Resource.NonFungibleResource, String) -> Unit,
+    onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: () -> Unit
 ) {
 
@@ -172,7 +172,7 @@ private fun AccountScreenContent(
                             NonFungibleTokenBottomSheetDetails(
                                 modifier = Modifier.fillMaxSize(),
                                 nonFungibleResource = state.selectedResource.nonFungible,
-                                id = state.selectedResource.id,
+                                item = state.selectedResource.item,
                                 onCloseClick = {
                                     scope.launch {
                                         bottomSheetState.hide()
@@ -315,7 +315,7 @@ private fun AccountContent(
     state: AccountUiState,
     onTransferClick: (String) -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClicked: (Resource.NonFungibleResource, String) -> Unit,
+    onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: () -> Unit
 ) {
     Column(
@@ -407,7 +407,7 @@ fun AssetsContent(
     resources: Resources?,
     isLoading: Boolean,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClick: (Resource.NonFungibleResource, String) -> Unit,
+    onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val pagerState = rememberPagerState()

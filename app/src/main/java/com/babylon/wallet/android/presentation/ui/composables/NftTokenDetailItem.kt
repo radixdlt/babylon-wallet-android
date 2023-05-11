@@ -30,17 +30,16 @@ import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.Resource
 
 @OptIn(ExperimentalMaterialApi::class)
 @Suppress("UnstableCollections")
 @Composable
 fun NftTokenDetailItem(
-    nftId: String,
-    imageUrl: String?,
+    item: Resource.NonFungibleResource.Item,
     modifier: Modifier = Modifier,
     bottomCornersRounded: Boolean = false,
-    nftMetadata: List<Pair<String, String>> = emptyList(),
-    onNftClick: (String) -> Unit
+    onItemClicked: () -> Unit
 ) {
     val bottomCorners by animateDpAsState(targetValue = if (bottomCornersRounded) 12.dp else 0.dp)
     Card(
@@ -50,7 +49,7 @@ fun NftTokenDetailItem(
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
         backgroundColor = RadixTheme.colors.defaultBackground,
         onClick = {
-            onNftClick(nftId)
+            onItemClicked()
         }
     ) {
         Column(
@@ -61,7 +60,7 @@ fun NftTokenDetailItem(
 
             val painter = rememberAsyncImagePainter(
                 model = rememberImageUrl(
-                    fromUrl = imageUrl,
+                    fromUrl = item.imageUrl.toString(),
                     size = ImageSize.LARGE
                 ),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
@@ -78,29 +77,11 @@ fun NftTokenDetailItem(
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )
             Text(
-                nftId,
+                item.localId,
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2HighImportance
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            nftMetadata.forEach { metadata ->
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = SpaceBetween) {
-                    Text(
-                        modifier = Modifier.weight(0.35f),
-                        text = metadata.first,
-                        color = RadixTheme.colors.gray2,
-                        style = RadixTheme.typography.body1Regular
-                    )
-                    Text(
-                        modifier = Modifier.weight(0.65f),
-                        text = metadata.second,
-                        color = RadixTheme.colors.gray1,
-                        style = RadixTheme.typography.body1HighImportance,
-                        textAlign = TextAlign.End
-                    )
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
         }
         Divider()
     }
@@ -111,13 +92,11 @@ fun NftTokenDetailItem(
 fun CollapsableChildItemPreview() {
     RadixWalletTheme {
         NftTokenDetailItem(
-            nftId = "123",
-            imageUrl = "url",
-            nftMetadata = listOf(
-                Pair("Type", "Devin Booker - Dunk"),
-                Pair("Type", "Reggie Jackson - Jump Shot")
+            item = Resource.NonFungibleResource.Item(
+                localId = "#12",
+                iconMetadataItem = null
             ),
-            onNftClick = { }
+            onItemClicked = { }
         )
     }
 }
