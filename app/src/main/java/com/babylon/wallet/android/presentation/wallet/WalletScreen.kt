@@ -46,7 +46,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -164,9 +163,9 @@ private fun WalletContent(
                 .pullRefresh(pullRefreshState)
         ) {
             WalletAccountList(
+                state = state,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
-                accountsWithResourcesList = state.accountResources,
                 onApplySecuritySettings = onApplySecuritySettings,
                 onMnemonicRecovery = onMnemonicRecovery
             )
@@ -188,11 +187,11 @@ private fun WalletContent(
 
 @Composable
 private fun WalletAccountList(
+    state: WalletState,
     onAccountClick: (accountId: String) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettings: (String) -> Unit,
     onMnemonicRecovery: (String) -> Unit,
-    accountsWithResourcesList: List<AccountWithResources>,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -207,7 +206,7 @@ private fun WalletAccountList(
                 color = RadixTheme.colors.gray2
             )
         }
-        itemsIndexed(accountsWithResourcesList) { _, accountWithResources ->
+        itemsIndexed(state.accountResources) { _, accountWithResources ->
             AccountCardView(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -215,6 +214,7 @@ private fun WalletAccountList(
                         onAccountClick(accountWithResources.account.address)
                     },
                 accountWithResources = accountWithResources,
+                isPromptVisible = state.isMnemonicBackupNeeded(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account.address)
                 },
@@ -246,7 +246,7 @@ fun WalletContentPreview() {
             WalletContent(
                 state = WalletState(
                     factorSources = emptyList(),
-                    resources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
+                    accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
                     loading = false,
                     isSettingsWarningVisible = true,
                     error = null
