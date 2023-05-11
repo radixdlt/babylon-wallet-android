@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -39,7 +40,6 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
-import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -92,12 +92,6 @@ private fun PersonaDetailContent(
                         title = persona.displayName,
                         onBackClick = onBackClick,
                         contentColor = RadixTheme.colors.gray1,
-                        actions = {
-                            UnderlineTextButton(
-                                text = stringResource(id = R.string.edit),
-                                onClick = { onEditPersona(persona.address) }
-                            )
-                        }
                     )
                     Divider(color = RadixTheme.colors.gray5)
                     PersonaDetailList(
@@ -106,7 +100,8 @@ private fun PersonaDetailContent(
                             .weight(1f),
                         persona = persona,
                         authorizedDapps = authorizedDapps,
-                        onDappClick = onDappClick
+                        onDappClick = onDappClick,
+                        onEditPersona = onEditPersona
                     )
                 }
             }
@@ -122,7 +117,8 @@ private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: Network.Persona,
     authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
-    onDappClick: (String) -> Unit
+    onDappClick: (String) -> Unit,
+    onEditPersona: (String) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -158,6 +154,14 @@ private fun PersonaDetailList(
                 value = field.value
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+        }
+        item {
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.edit_persona),
+                onClick = { onEditPersona(persona.address) },
+                throttleClicks = true
+            )
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
         }
         if (authorizedDapps.isNotEmpty()) {
             item {

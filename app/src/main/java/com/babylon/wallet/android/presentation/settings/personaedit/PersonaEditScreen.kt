@@ -138,6 +138,7 @@ private fun PersonaEditContent(
             wasEdited -> {
                 showCancelPrompt = true
             }
+            else -> onBackClick()
         }
     }
     DefaultModalSheetLayout(modifier = modifier, sheetState = bottomSheetState, sheetContent = {
