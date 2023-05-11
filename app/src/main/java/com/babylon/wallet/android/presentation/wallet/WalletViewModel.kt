@@ -14,26 +14,20 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,9 +37,9 @@ class WalletViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val appEventBus: AppEventBus,
     getBackupStateUseCase: GetBackupStateUseCase
-) : StateViewModel<WalletState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
-    override fun initialState() = WalletState()
+    override fun initialState() = WalletUiState()
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private var refreshContent: Boolean = false
@@ -148,7 +142,7 @@ internal sealed interface WalletEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : WalletEvent
 }
 
-data class WalletState(
+data class WalletUiState(
     private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
     private val backedUpFactorSourceIds: Set<String> = emptySet(),
