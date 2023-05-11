@@ -21,7 +21,7 @@ data class NftCollectionUiModel(
 }
 
 // TODO when gateway is ready
-fun List<AccountWithResources.NonFungibleResource>.toNftUiModel() = map { nonFungibleResource ->
+fun List<AccountWithResources.Resource.NonFungibleResource>.toNftUiModel() = map { nonFungibleResource ->
     NftCollectionUiModel(
         name = nonFungibleResource.name,
         iconUrl = "", // ownedNonFungibleToken.token?.getIconUrl().orEmpty(),

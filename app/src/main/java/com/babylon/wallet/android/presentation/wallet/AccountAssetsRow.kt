@@ -276,13 +276,13 @@ fun AssetsContentRowPreview() {
             AccountAssetsRow(
                 resources = Resources(
                     fungibleResources = listOf(
-                        AccountWithResources.FungibleResource(
+                        AccountWithResources.Resource.FungibleResource(
                             resourceAddress = "resource_address",
                             amount = BigDecimal.valueOf(237659),
                             nameMetadataItem = NameMetadataItem("Radix"),
                             symbolMetadataItem = SymbolMetadataItem("XRD")
                         ),
-                        AccountWithResources.FungibleResource(
+                        AccountWithResources.Resource.FungibleResource(
                             resourceAddress = "resource_address",
                             amount = BigDecimal.valueOf(237659),
                             nameMetadataItem = NameMetadataItem("AWE"),
