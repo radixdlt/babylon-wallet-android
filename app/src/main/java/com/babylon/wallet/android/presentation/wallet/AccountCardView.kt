@@ -39,6 +39,7 @@ import java.math.BigDecimal
 @Composable
 fun AccountCardView(
     accountWithResources: AccountWithResources,
+    isLoadingResources: Boolean,
     isPromptVisible: Boolean,
     modifier: Modifier = Modifier,
     onApplySecuritySettings: () -> Unit
@@ -114,7 +115,8 @@ fun AccountCardView(
                 )
                 width = Dimension.fillToConstraints
             },
-            resources = accountWithResources.resources
+            resources = accountWithResources.resources,
+            isLoading = isLoadingResources
         )
 
         AnimatedVisibility(
@@ -164,6 +166,7 @@ fun AccountCardPreview() {
                         nonFungibleResources = listOf()
                     )
                 ),
+                isLoadingResources = false,
                 isPromptVisible = true,
                 onApplySecuritySettings = {}
             )

@@ -42,7 +42,6 @@ class WalletViewModel @Inject constructor(
     override fun initialState() = WalletUiState()
 
     private val refreshFlow = MutableSharedFlow<Unit>()
-    private var refreshContent: Boolean = false
     private val accountsFlow = combine(
         getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
@@ -60,27 +59,15 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             accountsFlow.collect { accounts ->
                 _state.update { state ->
-                    state.copy(
-                        accountsWithResources = accounts.map { account ->
-                            AccountWithResources(
-                                account = account,
-                                resources = state.accountResources.find { account == it.account }?.resources
-                            )
-                        },
-                        loading = true
-                    )
+                    state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
                 }
 
-                getAccountsWithResourcesUseCase(accounts, isRefreshing = refreshContent)
+                getAccountsWithResourcesUseCase(accounts, isRefreshing = _state.value.isRefreshing)
                     .onValue { resources ->
-                        refreshContent = false
-                        _state.update {
-                            it.copy(accountsWithResources = resources, loading = false)
-                        }
+                        _state.update { it.onResourcesReceived(resources) }
                     }
                     .onError { error ->
-                        refreshContent = false
-                        _state.update { it.copy(error = UiMessage.ErrorMessage(error), loading = false) }
+                        _state.update {it.onResourcesError(error) }
                     }
             }
         }
@@ -117,7 +104,7 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun loadResources(withRefresh: Boolean) {
-        refreshContent = withRefresh
+        _state.update { it.copy(refreshing = withRefresh) }
         viewModelScope.launch { refreshFlow.emit(Unit) }
     }
 
@@ -145,6 +132,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 data class WalletUiState(
     private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
+    private val refreshing: Boolean = false,
     private val backedUpFactorSourceIds: Set<String> = emptySet(),
     val isSettingsWarningVisible: Boolean = false,
     val error: UiMessage? = null,
@@ -159,11 +147,14 @@ data class WalletUiState(
     val isLoading: Boolean
         get() = accountsWithResources == null && loading
 
+    val isLoadingResources: Boolean
+        get() = accountsWithResources != null && accountsWithResources.none { it.resources != null } && loading
+
     /**
      * Used in pull to refresh mode.
      */
     val isRefreshing: Boolean
-        get() = accountsWithResources != null && accountsWithResources.any { it.resources != null } && loading
+        get() = refreshing
 
     fun isMnemonicBackupNeeded(forAccount: Network.Account): Boolean {
         val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
@@ -171,5 +162,28 @@ data class WalletUiState(
         return accountsWithResources?.find { it.account == forAccount }?.hasXrd() == true &&
                 backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
     }
+
+    fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
+        accountsWithResources = accounts.map { account ->
+            AccountWithResources(
+                account = account,
+                resources = accountsWithResources?.find { account == it.account }?.resources
+            )
+        },
+        loading = true,
+        refreshing = isRefreshing
+    )
+
+    fun onResourcesReceived(accountsWithResources: List<AccountWithResources>): WalletUiState = copy(
+        accountsWithResources = accountsWithResources,
+        loading = false,
+        refreshing = false
+    )
+
+    fun onResourcesError(error: Throwable?): WalletUiState = copy(
+        error = UiMessage.ErrorMessage(error),
+        loading = false,
+        refreshing = false
+    )
 
 }
