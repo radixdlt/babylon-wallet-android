@@ -19,6 +19,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import io.mockk.coEvery
@@ -103,8 +104,10 @@ class GetAccountsWithResourcesUseCaseTest {
                         networkID = 1,
                         securityState = securityState
                     ),
-                    fungibleResources = persistentListOf(),
-                    nonFungibleResources = persistentListOf(),
+                    resources = Resources(
+                        fungibleResources = persistentListOf(),
+                        nonFungibleResources = persistentListOf(),
+                    )
                 )
             ),
             accountResourcesResult.value()
@@ -151,13 +154,15 @@ class GetAccountsWithResourcesUseCaseTest {
                         networkID = Radix.Gateway.default.network.networkId().value,
                         securityState = securityState
                     ),
-                    fungibleResources = persistentListOf(
-                        AccountWithResources.FungibleResource(
-                            amount = BigDecimal("1000"),
-                            resourceAddress = expectedResource.resourceAddress,
-                        )
-                    ),
-                    nonFungibleResources = persistentListOf(),
+                    resources = Resources(
+                        fungibleResources = persistentListOf(
+                            AccountWithResources.FungibleResource(
+                                amount = BigDecimal("1000"),
+                                resourceAddress = expectedResource.resourceAddress,
+                            )
+                        ),
+                        nonFungibleResources = persistentListOf()
+                    )
                 )
             ),
             accountResourcesResult.value()
@@ -215,14 +220,16 @@ class GetAccountsWithResourcesUseCaseTest {
                         networkID = Radix.Gateway.default.network.networkId().value,
                         securityState = securityState
                     ),
-                    fungibleResources = persistentListOf(),
-                    nonFungibleResources = persistentListOf(
-                        AccountWithResources.NonFungibleResource(
-                            resourceAddress = expectedResource.resourceAddress,
-                            amount = 10,
-                            nftIds = listOf("1")
+                    resources = Resources(
+                        fungibleResources = persistentListOf(),
+                        nonFungibleResources = persistentListOf(
+                            AccountWithResources.NonFungibleResource(
+                                resourceAddress = expectedResource.resourceAddress,
+                                amount = 10,
+                                nftIds = listOf("1")
+                            )
                         )
-                    ),
+                    )
                 )
             ),
             accountResourcesResult.value()

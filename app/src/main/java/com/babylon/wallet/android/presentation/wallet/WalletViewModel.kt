@@ -19,18 +19,21 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,29 +48,26 @@ class WalletViewModel @Inject constructor(
     override fun initialState() = WalletState()
 
     private val refreshFlow = MutableSharedFlow<Unit>()
+    private var refreshContent: Boolean = false
     private val accountsFlow = combine(
-        getProfileUseCase().map { it.factorSources },
         getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
-    ) { factorSources, accounts, _ ->
-        Pair(factorSources, accounts)
-    }
+    ) { accounts, _ -> accounts }
 
     init {
         observeAccounts()
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
-        refresh()
+        loadResources(withRefresh = false)
     }
 
     private fun observeAccounts() {
         viewModelScope.launch {
-            accountsFlow.collect { pair ->
+            accountsFlow.collect { accounts ->
                 _state.update { state ->
                     state.copy(
-                        factorSources = pair.first,
-                        accountsWithResources = pair.second.map { account ->
+                        accountsWithResources = accounts.map { account ->
                             AccountWithResources(
                                 account = account,
                                 resources = state.accountResources.find { account == it.account }?.resources
@@ -77,13 +77,15 @@ class WalletViewModel @Inject constructor(
                     )
                 }
 
-                getAccountsWithResourcesUseCase(pair.second, isRefreshing = true)
+                getAccountsWithResourcesUseCase(accounts, isRefreshing = refreshContent)
                     .onValue { resources ->
+                        refreshContent = false
                         _state.update {
                             it.copy(accountsWithResources = resources, loading = false)
                         }
                     }
                     .onError { error ->
+                        refreshContent = false
                         _state.update { it.copy(error = UiMessage.ErrorMessage(error), loading = false) }
                     }
             }
@@ -115,13 +117,18 @@ class WalletViewModel @Inject constructor(
             appEventBus.events.filter { event ->
                 event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
             }.collect {
-                refresh()
+                loadResources(withRefresh = true)
             }
         }
     }
 
-    fun refresh() {
+    private fun loadResources(withRefresh: Boolean) {
+        refreshContent = withRefresh
         viewModelScope.launch { refreshFlow.emit(Unit) }
+    }
+
+    fun onRefresh() {
+        loadResources(withRefresh = true)
     }
 
     fun onMessageShown() {
@@ -142,7 +149,6 @@ internal sealed interface WalletEvent : OneOffEvent {
 }
 
 data class WalletState(
-    private val factorSources: List<FactorSource> = emptyList(),
     private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
     private val backedUpFactorSourceIds: Set<String> = emptySet(),
@@ -173,11 +179,3 @@ data class WalletState(
     }
 
 }
-
-data class WalletUiState(
-    val isLoading: Boolean = true,
-    val isRefreshing: Boolean = false,
-    val accountsWithResources: ImmutableList<AccountWithResources> = persistentListOf(),
-    val error: UiMessage? = null,
-    val isBackupWarningVisible: Boolean = false
-) : UiState
