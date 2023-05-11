@@ -202,8 +202,6 @@ class TransactionClient @Inject constructor(
             val accountsLeftToSearch = allAccountsAddresses.minus(searchedAddresses)
             return findFeePayerWithin(accountsLeftToSearch.toList())
         }
-        result.onFailure {
-        }
         return null
     }
 
