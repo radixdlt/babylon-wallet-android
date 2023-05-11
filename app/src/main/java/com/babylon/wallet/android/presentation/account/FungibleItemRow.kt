@@ -25,7 +25,7 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -38,7 +38,7 @@ import java.math.BigDecimal
 
 @Composable
 fun FungibleItemRow(
-    fungible: AccountWithResources.Resource.FungibleResource,
+    fungible: Resource.FungibleResource,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -97,7 +97,7 @@ fun FungibleItemRow(
 fun TokenItemCardPreview() {
     RadixWalletTheme {
         FungibleItemRow(
-            fungible = AccountWithResources.Resource.FungibleResource(
+            fungible = Resource.FungibleResource(
                 resourceAddress = "account_rdx_abc",
                 amount = BigDecimal(1234.5678),
                 nameMetadataItem = NameMetadataItem("a very long name that might cause troubles"),
@@ -115,7 +115,7 @@ fun TokenItemCardPreview() {
 fun TokenItemCardWithLongNameAndLongValuesPreview() {
     RadixWalletTheme {
         FungibleItemRow(
-            fungible = AccountWithResources.Resource.FungibleResource(
+            fungible = Resource.FungibleResource(
                 resourceAddress = "account_rdx_abc",
                 amount = BigDecimal(1234567.890123),
                 nameMetadataItem = NameMetadataItem("Radix"),

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -39,7 +40,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val appEventBus = mockk<AppEventBus>()
 
     private val sampleProfile = profile(accounts = listOf(account(address = "adr_1", name = "primary")))
-    private val sampleXrdResource = AccountWithResources.Resource.FungibleResource(
+    private val sampleXrdResource = Resource.FungibleResource(
         resourceAddress = "addr_xrd",
         amount = BigDecimal.TEN,
         symbolMetadataItem = SymbolMetadataItem("XRD")
