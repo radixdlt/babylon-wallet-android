@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.presentation.account.SelectedResource
 import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -29,7 +31,8 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    selectedNft: NftCollectionUiModel.NftItemUiModel,
+    nonFungibleResource: AccountWithResources.Resource.NonFungibleResource,
+    id: String,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -49,21 +52,21 @@ fun NonFungibleTokenBottomSheetDetails(
                 .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val painter = rememberAsyncImagePainter(
-                model = rememberImageUrl(
-                    fromUrl = selectedNft.nftImage,
-                    size = ImageSize.LARGE
-                ),
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder)
-            )
+//            val painter = rememberAsyncImagePainter(
+//                model = rememberImageUrl(
+//                    fromUrl = nonFungibleResource.nftImage,
+//                    size = ImageSize.LARGE
+//                ),
+//                placeholder = painterResource(id = R.drawable.img_placeholder),
+//                error = painterResource(id = R.drawable.img_placeholder)
+//            )
             Image(
-                painter = painter,
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_token),
                 contentDescription = "Nft image",
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
+//                    .applyImageAspectRatio(painter = painter)
                     .clip(RadixTheme.shapes.roundedRectMedium)
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )
@@ -73,19 +76,19 @@ fun NonFungibleTokenBottomSheetDetails(
                 key = stringResource(id = R.string.nft_id)
             ) {
                 ActionableAddressView(
-                    address = selectedNft.displayAddress,
+                    address = nonFungibleResource.globalId(id),
                     textStyle = RadixTheme.typography.body1Regular,
                     textColor = RadixTheme.colors.gray1
                 )
             }
-            selectedNft.nftsMetadata.forEach {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                AssetMetadataRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    key = it.first,
-                    value = it.second
-                )
-            }
+//            nonFungibleResource.nftsMetadata.forEach {
+//                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+//                AssetMetadataRow(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    key = it.first,
+//                    value = it.second
+//                )
+//            }
             Spacer(modifier = Modifier.height(100.dp))
         }
     }

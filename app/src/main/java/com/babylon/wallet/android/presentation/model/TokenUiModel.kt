@@ -90,7 +90,7 @@ data class TokenUiModel(
     }
 }
 
-fun AccountWithResources.FungibleResource.toTokenUiModel(): TokenUiModel {
+fun AccountWithResources.Resource.FungibleResource.toTokenUiModel(): TokenUiModel {
     return TokenUiModel(
         name = name,
         symbol = symbol,
@@ -101,7 +101,7 @@ fun AccountWithResources.FungibleResource.toTokenUiModel(): TokenUiModel {
     )
 }
 
-fun List<AccountWithResources.FungibleResource>.toTokenUiModel() = map { fungibleResource ->
+fun List<AccountWithResources.Resource.FungibleResource>.toTokenUiModel() = map { fungibleResource ->
     TokenUiModel(
         name = fungibleResource.name,
         symbol = fungibleResource.symbol,

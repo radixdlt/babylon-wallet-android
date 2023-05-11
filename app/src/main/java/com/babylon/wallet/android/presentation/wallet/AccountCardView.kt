@@ -153,7 +153,7 @@ fun AccountCardPreview() {
                     account = SampleDataProvider().sampleAccount(),
                     resources = Resources(
                         fungibleResources = listOf(
-                            AccountWithResources.FungibleResource(
+                            AccountWithResources.Resource.FungibleResource(
                                 resourceAddress = "resource_address",
                                 amount = BigDecimal.valueOf(237659),
                                 nameMetadataItem = NameMetadataItem("cool XRD"),
