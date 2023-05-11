@@ -20,8 +20,8 @@ data class RadixShapes(
     val roundedRectSmall: CornerBasedShape = RoundedCornerShape(8.dp),
     val roundedRectMedium: CornerBasedShape = RoundedCornerShape(12.dp),
     val roundedRectDefault: CornerBasedShape = RoundedCornerShape(16.dp),
-    val roundedRectTopMedium: CornerBasedShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
-    val roundedRectBottomMedium: CornerBasedShape = RoundedCornerShape(bottomEnd = 8.dp, bottomStart = 8.dp),
+    val roundedRectTopMedium: CornerBasedShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+    val roundedRectBottomMedium: CornerBasedShape = RoundedCornerShape(bottomEnd = 12.dp, bottomStart = 12.dp),
     val roundedRectTopDefault: CornerBasedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
 )
 
