@@ -50,13 +50,14 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun WalletScreen(
     modifier: Modifier = Modifier,
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
-    onAccountClick: (accountId: String) -> Unit = { },
+    onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
     onAccountCreationClick: () -> Unit
 ) {
@@ -67,18 +68,16 @@ fun WalletScreen(
         modifier = modifier,
         state = walletState,
         onMenuClick = onMenuClick,
-        onAccountClick = viewModel::onAccountClick,
+        onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::refresh,
         onMessageShown = viewModel::onMessageShown,
-        onApplySecuritySettings = viewModel::onApplyMnemonicBackup,
-        onMnemonicRecovery = {} // Todo to be removed
+        onApplySecuritySettings = viewModel::onApplyMnemonicBackup
     )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is WalletEvent.AccountClick -> onAccountClick(it.address)
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
             }
         }
@@ -91,12 +90,11 @@ private fun WalletContent(
     modifier: Modifier = Modifier,
     state: WalletState,
     onMenuClick: () -> Unit,
-    onAccountClick: (accountId: String) -> Unit,
+    onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
-    onApplySecuritySettings: (String) -> Unit,
-    onMnemonicRecovery: (String) -> Unit,
+    onApplySecuritySettings: (Network.Account) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -166,8 +164,7 @@ private fun WalletContent(
                 state = state,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
-                onApplySecuritySettings = onApplySecuritySettings,
-                onMnemonicRecovery = onMnemonicRecovery
+                onApplySecuritySettings = onApplySecuritySettings
             )
 
             AnimatedVisibility(visible = state.isLoading) {
@@ -188,10 +185,9 @@ private fun WalletContent(
 @Composable
 private fun WalletAccountList(
     state: WalletState,
-    onAccountClick: (accountId: String) -> Unit,
+    onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
-    onApplySecuritySettings: (String) -> Unit,
-    onMnemonicRecovery: (String) -> Unit,
+    onApplySecuritySettings: (Network.Account) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -211,15 +207,12 @@ private fun WalletAccountList(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .throttleClickable {
-                        onAccountClick(accountWithResources.account.address)
+                        onAccountClick(accountWithResources.account)
                     },
                 accountWithResources = accountWithResources,
                 isPromptVisible = state.isMnemonicBackupNeeded(accountWithResources.account),
                 onApplySecuritySettings = {
-                    onApplySecuritySettings(accountWithResources.account.address)
-                },
-                onMnemonicRecovery = {
-                    onMnemonicRecovery(accountWithResources.account.address)
+                    onApplySecuritySettings(accountWithResources.account)
                 }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -256,8 +249,7 @@ fun WalletContentPreview() {
                 onAccountCreationClick = { },
                 onRefresh = { },
                 onMessageShown = {},
-                onApplySecuritySettings = {},
-                onMnemonicRecovery = {}
+                onApplySecuritySettings = {}
             )
         }
     }

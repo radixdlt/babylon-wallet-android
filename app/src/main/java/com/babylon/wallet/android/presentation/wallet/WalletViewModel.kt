@@ -128,23 +128,16 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
-    fun onApplyMnemonicBackup(address: String) {
+    fun onApplyMnemonicBackup(account: Network.Account) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(address)?.unsecuredFactorSourceId()?.let {
+            getProfileUseCase.accountOnCurrentNetwork(account.address)?.unsecuredFactorSourceId()?.let {
                 sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
             }
-        }
-    }
-
-    fun onAccountClick(address: String) {
-        viewModelScope.launch {
-            sendEvent(WalletEvent.AccountClick(address))
         }
     }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
-    data class AccountClick(val address: String) : WalletEvent
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : WalletEvent
 }
 

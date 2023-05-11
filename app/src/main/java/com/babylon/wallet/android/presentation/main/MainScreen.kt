@@ -10,13 +10,14 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
-    onAccountClick: (accountId: String) -> Unit = { },
+    onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToCreateAccount: () -> Unit,
