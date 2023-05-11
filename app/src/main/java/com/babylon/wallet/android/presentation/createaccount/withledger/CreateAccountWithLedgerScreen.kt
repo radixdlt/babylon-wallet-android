@@ -1,12 +1,11 @@
 @file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
-package com.babylon.wallet.android.presentation.createaccount.addledger
+package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,10 +47,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.addedOnTimestampFormatted
@@ -61,8 +61,8 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Composable
-fun AddLedgerScreen(
-    viewModel: AddLedgerViewModel,
+fun CreateAccountWithLedgerScreen(
+    viewModel: CreateAccountWithLedgerViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAddP2PLink: () -> Unit,
@@ -75,11 +75,11 @@ fun AddLedgerScreen(
         LaunchedEffect(Unit) {
             viewModel.oneOffEvent.collect { event ->
                 when (event) {
-                    AddLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
+                    CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
                 }
             }
         }
-        AddLedgerContent(
+        CreateAccountWithLedgerContent(
             modifier = modifier,
             onBackClick = onBackClick,
             ledgerFactorSources = state.ledgerFactorSources,
@@ -98,7 +98,7 @@ fun AddLedgerScreen(
 }
 
 @Composable
-fun AddLedgerContent(
+fun CreateAccountWithLedgerContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
@@ -240,92 +240,6 @@ fun AddLedgerContent(
 }
 
 @Composable
-fun AddLedgerBottomSheet(
-    modifier: Modifier,
-    hasP2pLinks: Boolean,
-    onAddP2PLink: () -> Unit,
-    onSendAddLedgerRequest: () -> Unit,
-    addLedgerSheetState: AddLedgerSheetState,
-    onConfirmLedgerName: (String) -> Unit,
-    onSkipLedgerName: () -> Unit,
-    waitingForLedgerResponse: Boolean
-) {
-    Box(modifier = modifier) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            var ledgerNameValue by remember {
-                mutableStateOf("")
-            }
-            when (addLedgerSheetState) {
-                AddLedgerSheetState.Initial -> {
-                    if (!hasP2pLinks) {
-                        Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.found_no_radix_connect_connections),
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
-                        RadixSecondaryButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = onAddP2PLink,
-                            text = stringResource(id = com.babylon.wallet.android.R.string.add_new_p2p_link)
-                        )
-                    }
-                    Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.connect_the_ledger_device),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    RadixSecondaryButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = onSendAddLedgerRequest,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.send_add_ledger_request),
-                        enabled = hasP2pLinks
-                    )
-                }
-                AddLedgerSheetState.InputLedgerName -> {
-                    RadixTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        onValueChanged = { ledgerNameValue = it },
-                        value = ledgerNameValue,
-                        leftLabel = stringResource(id = com.babylon.wallet.android.R.string.name_this_ledger),
-                        hint = stringResource(id = com.babylon.wallet.android.R.string.ledger_hint),
-                        optionalHint = stringResource(id = com.babylon.wallet.android.R.string.ledger_name_bottom_hint)
-                    )
-                    RadixPrimaryButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(com.babylon.wallet.android.R.string.confirm_name),
-                        onClick = {
-                            onConfirmLedgerName(ledgerNameValue)
-                            ledgerNameValue = ""
-                        },
-                        throttleClicks = true
-                    )
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding(),
-                        text = stringResource(com.babylon.wallet.android.R.string.skip),
-                        onClick = onSkipLedgerName,
-                        throttleClicks = true
-                    )
-                }
-            }
-        }
-        if (waitingForLedgerResponse) {
-            FullscreenCircularProgressContent()
-        }
-    }
-}
-
-@Composable
 private fun LedgerSelector(
     modifier: Modifier,
     selectedLedgerFactorSourceID: FactorSource.ID?,
@@ -386,9 +300,9 @@ private fun LedgerSelector(
 
 @Preview(showBackground = true)
 @Composable
-fun AddLedgerContentPreview() {
+fun CreateAccountWithLedgerContentPreview() {
     RadixWalletTheme {
-        AddLedgerContent(
+        CreateAccountWithLedgerContent(
             modifier = Modifier.fillMaxSize(),
             onBackClick = {},
             ledgerFactorSources = persistentListOf(),
@@ -397,7 +311,7 @@ fun AddLedgerContentPreview() {
             onLedgerFactorSourceSelected = {},
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
-            addLedgerSheetState = AddLedgerSheetState.Initial,
+            addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
             onSkipLedgerName = {},
             onUseLedger = {},

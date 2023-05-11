@@ -60,7 +60,8 @@ class ProfileTest {
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = factorSource,
-            networkId = defaultNetwork.networkId()
+            networkId = defaultNetwork.networkId(),
+            appearanceID = 0
         )
 
         var updatedProfile = profile.addAccount(
@@ -149,7 +150,8 @@ class ProfileTest {
             displayName = "First",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
-            networkId = networkId
+            networkId = networkId,
+            appearanceID = 0
         )
         expected = expected.addAccount(
             account = firstAccount,
@@ -161,7 +163,8 @@ class ProfileTest {
             displayName = "Second",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
-            networkId = networkId
+            networkId = networkId,
+            appearanceID = 2
         )
         expected = expected.addAccount(
             account = secondAccount,
@@ -173,7 +176,8 @@ class ProfileTest {
             displayName = "Third",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
-            networkId = networkId
+            networkId = networkId,
+            appearanceID = 3
         )
         expected = expected.addAccount(
             account = thirdAccount,

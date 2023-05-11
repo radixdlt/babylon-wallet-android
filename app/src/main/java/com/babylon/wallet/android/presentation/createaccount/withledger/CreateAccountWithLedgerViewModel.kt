@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.createaccount.addledger
+package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -30,12 +31,13 @@ import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
-class AddLedgerViewModel @Inject constructor(
+class CreateAccountWithLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val appEventBus: AppEventBus
-) : StateViewModel<AddLedgerViewModel.AddLedgerState>(), OneOffEventHandler<AddLedgerEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<CreateAccountWithLedgerViewModel.CreateAccountWithLedgerState>(),
+    OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
 
     init {
         viewModelScope.launch {
@@ -53,7 +55,7 @@ class AddLedgerViewModel @Inject constructor(
         }
     }
 
-    override fun initialState(): AddLedgerState = AddLedgerState()
+    override fun initialState(): CreateAccountWithLedgerState = CreateAccountWithLedgerState()
 
     fun onLedgerFactorSourceSelected(ledgerFactorSource: FactorSource) {
         _state.update { state ->
@@ -98,7 +100,7 @@ class AddLedgerViewModel @Inject constructor(
                             derivedPublicKeyHex = response.publicKeyHex
                         )
                     )
-                    sendEvent(AddLedgerEvent.DerivedPublicKeyForAccount)
+                    sendEvent(CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount)
                 }
             }
         }
@@ -113,7 +115,7 @@ class AddLedgerViewModel @Inject constructor(
                     name = ledger.name
                 )
                 _state.update { state ->
-                    state.copy(selectedFactorSourceID = ledgerFactorSourceId, addLedgerSheetState = AddLedgerSheetState.Initial)
+                    state.copy(selectedFactorSourceID = ledgerFactorSourceId, addLedgerSheetState = AddLedgerSheetState.Connect)
                 }
             }
         }
@@ -126,21 +128,17 @@ class AddLedgerViewModel @Inject constructor(
         addLedgerFactorSource()
     }
 
-    data class AddLedgerState(
+    data class CreateAccountWithLedgerState(
         val loading: Boolean = false,
         val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
         val selectedFactorSourceID: FactorSource.ID? = null,
         val hasP2pLinks: Boolean = false,
-        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Initial,
+        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
         var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
     ) : UiState
 }
 
-enum class AddLedgerSheetState {
-    Initial, InputLedgerName
-}
-
-internal sealed interface AddLedgerEvent : OneOffEvent {
-    object DerivedPublicKeyForAccount : AddLedgerEvent
+internal sealed interface CreateAccountWithLedgerEvent : OneOffEvent {
+    object DerivedPublicKeyForAccount : CreateAccountWithLedgerEvent
 }

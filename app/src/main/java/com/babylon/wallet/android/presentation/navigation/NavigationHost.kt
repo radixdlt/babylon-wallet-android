@@ -13,10 +13,10 @@ import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.accountpreference.accountPreferencesScreen
 import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
-import com.babylon.wallet.android.presentation.createaccount.addledger.addLedger
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.createaccount.withledger.createAccountWithLedger
 import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
@@ -144,10 +144,10 @@ fun NavigationHost(
             },
             onCloseApp = onCloseApp,
             onAddLedgerDevice = {
-                navController.addLedger()
+                navController.createAccountWithLedger()
             }
         )
-        addLedger(
+        createAccountWithLedger(
             onBackClick = {
                 navController.navigateUp()
             },

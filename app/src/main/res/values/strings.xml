@@ -202,6 +202,7 @@
     <string name="warning_disables_website">Warning: Disables website validity checks</string>
     <string name="remove_connector">Remove Connection</string>
     <string name="you_will_no_longer">You will no longer be able to connect your wallet to this device and browser combination</string>
+    <string name="delete_factor_source">Delete only if you know what you are doing</string>
     <string name="remove">Remove</string>
     <string name="wallet_data_incompatible">Wallet Data is Incompatible</string>
     <string name="for_this_preview_wallet_version">For this Preview wallet version, you must delete your wallet data to continue.</string>
@@ -348,6 +349,9 @@
     <string name="connect_the_ledger_device">Connect the Ledger device you wanna add to a computer on which you have a Browser you have RadixConnect linked to. Unlock your Ledger and open the Radix Babylon Ledger App on your ledger. Look for a new tab in your linked Browser and follow the instructions on the screen.</string>
     <string name="selected_ledger_description">%s | added on: %s</string>
     <string name="select_ledger_device">Select Ledger Device</string>
+    <string name="what_is_ledger_factor_source">What is Ledger Factor Source</string>
+    <string name="all_ledgers_info">Here are all the Ledger devices connected to your account</string>
+    <string name="remove_ledger_factor_source">Remove Ledger Factor Source</string>
     <plurals name="accounts_per_device">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>
@@ -360,4 +364,5 @@
     <string name="to">To</string>
     <string name="add_message">Add Message</string>
     <string name="add_account">Add Account</string>
+    <string name="ledger_hardware_wallets">Ledger Hardware Wallets</string>
 </resources>

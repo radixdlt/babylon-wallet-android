@@ -110,9 +110,9 @@ data class Network(
                 displayName: String,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 deviceFactorSource: FactorSource,
-                networkId: NetworkId
+                networkId: NetworkId,
+                appearanceID: Int
             ): Account {
-                val index = deviceFactorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
                 val derivationPath = deviceFactorSource.getNextDerivationPathForAccount(networkId)
 
                 val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
@@ -129,21 +129,23 @@ data class Network(
 
                 return Account(
                     address = address,
-                    appearanceID = index % Account.AppearanceIdGradient.values().count(),
+                    appearanceID = appearanceID,
                     displayName = displayName,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState
                 )
             }
 
+            @Suppress("LongParameterList")
             fun initAccountWithLedgerFactorSource(
                 displayName: String,
                 derivedPublicKeyHex: String,
                 ledgerFactorSource: FactorSource,
                 networkId: NetworkId,
-                derivationPath: DerivationPath
+                derivationPath: DerivationPath,
+                appearanceID: Int
             ): Account {
-                val index = ledgerFactorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
+                ledgerFactorSource.getNextAccountDerivationIndex(forNetworkId = networkId)
                 require(ledgerFactorSource.getNextDerivationPathForAccount(networkId).path == derivationPath.path)
 
                 val address = deriveAccountAddress(
@@ -159,7 +161,7 @@ data class Network(
 
                 return Account(
                     address = address,
-                    appearanceID = index % Account.AppearanceIdGradient.values().count(),
+                    appearanceID = appearanceID,
                     displayName = displayName,
                     networkID = networkId.value,
                     securityState = unsecuredSecurityState

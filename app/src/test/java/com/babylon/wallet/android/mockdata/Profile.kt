@@ -7,6 +7,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -16,7 +17,8 @@ import java.time.Instant
 fun profile(
     accounts: List<Network.Account> = listOf(account("acc-1"), account("acc-2")),
     personas: List<Network.Persona> = listOf(SampleDataProvider().samplePersona()),
-    dApps: List<Network.AuthorizedDapp> = emptyList()
+    dApps: List<Network.AuthorizedDapp> = emptyList(),
+    p2pLinks: List<P2PLink> = emptyList()
 ) = Profile(
     header = Header.init(
         id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -35,6 +37,11 @@ fun profile(
                 mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
                 bip39Passphrase = ""
             )
+        ),
+        FactorSource.ledger(
+            id = FactorSource.ID("Ledger1"),
+            model = FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
+            name = "My Ledger"
         )
     ),
     networks = listOf(

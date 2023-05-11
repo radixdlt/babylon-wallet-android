@@ -17,12 +17,14 @@ import com.babylon.wallet.android.presentation.settings.backup.systemBackupSetti
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
+import com.babylon.wallet.android.presentation.settings.ledgerfactorsource.settingsLedgerFactorSourcesScreen
 import com.babylon.wallet.android.presentation.settings.legacyimport.settingsImportOlympiaAccounts
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 
+@Suppress("LongMethod")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController,
@@ -77,6 +79,13 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.settingsConnectorScreen(scanQr = true)
             }
         )
+        settingsLedgerFactorSourcesScreen(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        ) {
+            navController.settingsConnectorScreen(scanQr = true)
+        }
     }
 }
 
@@ -118,6 +127,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
                     is SettingsItem.TopLevelSettings.Backups -> {
                         navController.backupScreen()
+                    }
+                    SettingsItem.TopLevelSettings.LedgerHardwareWallets -> {
+                        navController.settingsLedgerFactorSourcesScreen()
                     }
                     else -> {}
                 }
