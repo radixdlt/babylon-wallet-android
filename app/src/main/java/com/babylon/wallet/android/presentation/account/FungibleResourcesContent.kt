@@ -23,13 +23,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import java.math.BigDecimal
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FungibleResourcesContent(
     modifier: Modifier = Modifier,
-    fungibles: List<Resource.FungibleResource>,
+    fungibles: PersistentList<Resource.FungibleResource>,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
 ) {
     val (xrdItem, restItems) = remember(fungibles) {
@@ -100,7 +102,7 @@ fun FungibleResourcesContent(
 fun ListOfTokenItemsEmptyPreview() {
     RadixWalletTheme {
         FungibleResourcesContent(
-            fungibles = emptyList(),
+            fungibles = persistentListOf(),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
         )
@@ -113,12 +115,13 @@ fun ListOfTokenItemsEmptyPreview() {
 fun ListOfTokenItemsPreview() {
     RadixWalletTheme {
         FungibleResourcesContent(
-            fungibles = listOf(
+            fungibles = persistentListOf(
                 Resource.FungibleResource(
-                resourceAddress = "account_rdx_abcdef",
-                amount = BigDecimal.TEN,
-                symbolMetadataItem = SymbolMetadataItem(symbol = "XRD")
-            )),
+                    resourceAddress = "account_rdx_abcdef",
+                    amount = BigDecimal.TEN,
+                    symbolMetadataItem = SymbolMetadataItem(symbol = "XRD")
+                )
+            ),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
         )

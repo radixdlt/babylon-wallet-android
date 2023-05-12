@@ -9,10 +9,10 @@ data class AccountWithResources(
 ) {
 
     val fungibleResources: List<Resource.FungibleResource>
-        get() = resources?.fungibleResources ?: emptyList()
+        get() = resources?.fungibleResources.orEmpty()
 
     val nonFungibleResources: List<Resource.NonFungibleResource>
-        get() = resources?.nonFungibleResources ?: emptyList()
+        get() = resources?.nonFungibleResources.orEmpty()
 
     fun hasXrd(minimumBalance: Long = 1L): Boolean {
         return fungibleResources.any {
@@ -29,7 +29,6 @@ data class Resources(
     companion object {
         val EMPTY = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())
     }
-
 }
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {

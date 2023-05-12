@@ -207,7 +207,7 @@ class EntityRepositoryImpl @Inject constructor(
             }
             errorResponse
         } else { // otherwise all StateEntityDetailsResponses are success so return the list
-            Result.Success(responses.map { it.value()!! })
+            Result.Success(responses.mapNotNull { it.value() })
         }
     }
 

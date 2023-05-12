@@ -1,6 +1,9 @@
 @file:OptIn(
-    ExperimentalFoundationApi::class, ExperimentalPagerApi::class, ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class,
+    ExperimentalPagerApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class
 )
 
 package com.babylon.wallet.android.presentation.account
@@ -78,6 +81,7 @@ import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 
@@ -131,7 +135,6 @@ private fun AccountScreenContent(
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: () -> Unit
 ) {
-
     val gradient = remember(state.accountWithResources) {
         val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
         AccountGradientList[appearanceId % AccountGradientList.size]
@@ -473,7 +476,7 @@ fun AssetsContent(
                     when (AssetTypeTab.values()[page]) {
                         AssetTypeTab.TOKEN_TAB -> {
                             FungibleResourcesContent(
-                                fungibles = resources?.fungibleResources.orEmpty(),
+                                fungibles = resources?.fungibleResources.orEmpty().toPersistentList(),
                                 modifier = Modifier.fillMaxSize(),
                                 onFungibleTokenClick = onFungibleTokenClick
                             )
