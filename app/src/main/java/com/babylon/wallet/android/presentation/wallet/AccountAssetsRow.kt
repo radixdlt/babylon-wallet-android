@@ -72,28 +72,32 @@ fun AccountAssetsRow(
     bordersSize: Dp = 1.dp,
     maxVisibleFungibles: Int = 5
 ) {
-    if (isLoading) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(iconSize + bordersSize * 2)
-                .clip(shape = RadixTheme.shapes.roundedRectMedium)
-                .shimmer()
-        )
-    }
-
-    AnimatedVisibility(
-        modifier = modifier.wrapContentSize(),
-        visible = !isLoading,
-        enter = fadeIn(),
-        exit = fadeOut()
+    Box(
+        modifier = modifier
     ) {
-        AssetsContent(
-            modifier = modifier.fillMaxWidth(),
-            resources = resources ?: Resources(emptyList(), emptyList()),
-            iconSize = iconSize,
-            maxVisibleFungibles = maxVisibleFungibles
-        )
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(iconSize + bordersSize * 2)
+                    .clip(shape = RadixTheme.shapes.roundedRectMedium)
+                    .shimmer()
+            )
+        }
+
+        AnimatedVisibility(
+            modifier = Modifier.wrapContentSize(),
+            visible = !isLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            AssetsContent(
+                modifier = Modifier.fillMaxWidth(),
+                resources = resources ?: Resources(emptyList(), emptyList()),
+                iconSize = iconSize,
+                maxVisibleFungibles = maxVisibleFungibles
+            )
+        }
     }
 }
 
@@ -257,7 +261,6 @@ private fun CounterBox(
     }
 }
 
-
 @Preview
 @Composable
 fun AssetsContentRowPreview() {
@@ -288,7 +291,11 @@ fun AssetsContentRowPreview() {
                             amount = BigDecimal.valueOf(237659),
                             nameMetadataItem = NameMetadataItem("AWE"),
                             symbolMetadataItem = SymbolMetadataItem("AWE"),
-                            iconUrlMetadataItem = IconUrlMetadataItem(url = Uri.parse("https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"))
+                            iconUrlMetadataItem = IconUrlMetadataItem(
+                                url = Uri.parse(
+                                    "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                                )
+                            )
                         ),
                     ),
                     nonFungibleResources = listOf()

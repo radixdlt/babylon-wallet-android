@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySetti
 import rdx.works.profile.data.utils.isOlympiaAccount
 import java.math.BigDecimal
 
+@Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
 fun AccountCardView(
     accountWithResources: AccountWithResources,
@@ -94,15 +95,17 @@ fun AccountCardView(
             )
         }
 
-        Spacer(modifier = Modifier.constrainAs(spacer) {
-            linkTo(
-                start = parent.start,
-                end = parent.end,
-                top = addressLabel.bottom,
-                bottom = assetsContainer.top,
-            )
-            height = Dimension.value(32.dp)
-        })
+        Spacer(
+            modifier = Modifier.constrainAs(spacer) {
+                linkTo(
+                    start = parent.start,
+                    end = parent.end,
+                    top = addressLabel.bottom,
+                    bottom = assetsContainer.top,
+                )
+                height = Dimension.value(32.dp)
+            }
+        )
 
         AccountAssetsRow(
             modifier = Modifier.constrainAs(assetsContainer) {
@@ -141,11 +144,9 @@ fun AccountCardView(
                 )
             }
         }
-
-
-
     }
 }
+
 @Preview
 @Composable
 fun AccountCardPreview() {

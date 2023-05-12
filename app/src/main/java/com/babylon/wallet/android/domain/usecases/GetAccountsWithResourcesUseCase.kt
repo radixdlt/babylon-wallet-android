@@ -13,7 +13,7 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
-    suspend operator fun invoke(accounts: List<Network.Account>, isRefreshing: Boolean): Result<List<AccountWithResources>>{
+    suspend operator fun invoke(accounts: List<Network.Account>, isRefreshing: Boolean): Result<List<AccountWithResources>> {
         return entityRepository.getAccountsWithResources(
             accounts = accounts,
             isRefreshing = isRefreshing

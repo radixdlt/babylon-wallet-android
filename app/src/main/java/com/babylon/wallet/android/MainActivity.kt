@@ -15,7 +15,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
-import com.google.accompanist.pager.ExperimentalPagerApi
 import dagger.hilt.android.AndroidEntryPoint
 
 // Extending from FragmentActivity because of Biometric

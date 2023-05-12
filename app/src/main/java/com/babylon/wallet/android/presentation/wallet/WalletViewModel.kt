@@ -67,7 +67,7 @@ class WalletViewModel @Inject constructor(
                         _state.update { it.onResourcesReceived(resources) }
                     }
                     .onError { error ->
-                        _state.update {it.onResourcesError(error) }
+                        _state.update { it.onResourcesError(error) }
                     }
             }
         }
@@ -139,7 +139,7 @@ data class WalletUiState(
 ) : UiState {
 
     val accountResources: List<AccountWithResources>
-        get() = accountsWithResources ?: emptyList()
+        get() = accountsWithResources.orEmpty()
 
     /**
      * Initial loading of the screen.
@@ -160,7 +160,7 @@ data class WalletUiState(
         val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
 
         return accountsWithResources?.find { it.account == forAccount }?.hasXrd() == true &&
-                backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
+            backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
     }
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
@@ -185,5 +185,4 @@ data class WalletUiState(
         loading = false,
         refreshing = false
     )
-
 }
