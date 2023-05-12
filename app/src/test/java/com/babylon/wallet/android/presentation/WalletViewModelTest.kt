@@ -67,7 +67,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         advanceUntilIdle()
         coEvery {
             getAccountsWithResourcesUseCase(
-                forProfileAccounts = sampleProfile.currentNetwork.accounts,
+                accounts = sampleProfile.currentNetwork.accounts,
                 isRefreshing = false
             )
         } returns Result.Success(
