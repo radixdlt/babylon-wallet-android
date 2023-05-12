@@ -35,12 +35,6 @@ import javax.inject.Inject
 
 interface EntityRepository {
 
-    suspend fun getResourcesForAccount(
-        account: Network.Account,
-        // we pass a combination of fungible AND non fungible explicit metadata keys
-        explicitMetadataForAssets: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forAssets
-    ): Result<AccountWithResources>
-
     suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
         // we pass a combination of fungible AND non fungible explicit metadata keys
@@ -73,78 +67,6 @@ class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
 ) : EntityRepository {
-
-    override suspend fun getResourcesForAccount(
-        account: Network.Account,
-        explicitMetadataForAssets: Set<ExplicitMetadataKey>,
-    ): Result<AccountWithResources> {
-        val entityDetailsResponse = getStateEntityDetailsResponse(
-            addresses = listOf(account.address),
-            explicitMetadata = explicitMetadataForAssets,
-            isRefreshing = false
-        )
-
-        return entityDetailsResponse.switchMap {
-            val entityDetailsResponseItem = it.first().items.first()
-
-            // build list of fungible resources for this account
-            val listOfFungibleResourcesCollectionItems = if (entityDetailsResponseItem.fungibleResources != null) {
-                getFungibleResourcesCollectionItemsForAccount(
-                    accountAddress = entityDetailsResponseItem.address,
-                    fungibleResources = entityDetailsResponseItem.fungibleResources
-                )
-            } else {
-                emptyList()
-            }
-            val accountWithFungibleResourcesItems =
-                Pair(entityDetailsResponseItem.address, listOfFungibleResourcesCollectionItems)
-            // end of building list of fungible resources for this account
-
-            // build list of non fungible resources for this account
-            val listOfNonFungibleResourcesCollectionItems =
-                if (entityDetailsResponseItem.nonFungibleResources != null) {
-                    getNonFungibleResourcesCollectionItemsForAccount(
-                        accountAddress = entityDetailsResponseItem.address,
-                        nonFungibleResources = entityDetailsResponseItem.nonFungibleResources
-                    )
-                } else {
-                    emptyList()
-                }
-            val accountWithNonFungibleResourcesItems =
-                Pair(entityDetailsResponseItem.address, listOfNonFungibleResourcesCollectionItems)
-            // end of building list of non fungible resources for this account
-
-            // build result account with resources
-            val accountWithResourcesResult = AccountWithResources(
-                account = account,
-                fungibleResources = accountWithFungibleResourcesItems.second
-                    .map { fungibleResourcesCollectionItemVault ->
-                        val metaDataItems = fungibleResourcesCollectionItemVault.explicitMetadata?.asMetadataItems().orEmpty()
-                        AccountWithResources.FungibleResource(
-                            resourceAddress = fungibleResourcesCollectionItemVault.resourceAddress,
-                            amount = fungibleResourcesCollectionItemVault.vaults.items.first().amount.toBigDecimal(),
-                            nameMetadataItem = metaDataItems.toMutableList().consume(),
-                            symbolMetadataItem = metaDataItems.toMutableList().consume(),
-                            descriptionMetadataItem = metaDataItems.toMutableList().consume(),
-                            iconUrlMetadataItem = metaDataItems.toMutableList().consume()
-                        )
-                    },
-                nonFungibleResources = accountWithNonFungibleResourcesItems.second
-                    .map { nonFungibleResourcesCollectionItemVault ->
-                        val metaDataItems = nonFungibleResourcesCollectionItemVault.explicitMetadata?.asMetadataItems().orEmpty()
-                        AccountWithResources.NonFungibleResource(
-                            resourceAddress = nonFungibleResourcesCollectionItemVault.resourceAddress,
-                            amount = nonFungibleResourcesCollectionItemVault.vaults.items.first().totalCount,
-                            nameMetadataItem = metaDataItems.toMutableList().consume(),
-                            descriptionMetadataItem = metaDataItems.toMutableList().consume(),
-                            nftIds = emptyList()
-                        )
-                    }
-            )
-
-            Result.Success(accountWithResourcesResult)
-        }
-    }
 
     override suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
