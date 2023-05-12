@@ -23,9 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 
 @Composable
@@ -53,11 +53,9 @@ fun TargetAccountCard(
             TransferViewModel.State.SelectedAccountForTransfer.Type.ExistingAccount -> {
                 Modifier
                     .background(
-                        brush = selectedAccount.account?.appearanceID?.let { appearanceId ->
-                            Brush.linearGradient(AccountGradientList[appearanceId % AccountGradientList.size])
-                        } ?: run {
-                            Brush.linearGradient(AccountGradientList[0])
-                        },
+                        brush = Brush.linearGradient(
+                            getAccountGradientColorsFor(selectedAccount.account?.appearanceID ?: 0)
+                        ),
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
             }

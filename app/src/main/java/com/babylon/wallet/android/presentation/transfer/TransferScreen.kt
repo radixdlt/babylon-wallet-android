@@ -70,7 +70,7 @@ fun TransferScreen(
         deleteAccountClick = viewModel::deleteAccountClick,
         onAddressDecoded = viewModel::onAddressDecoded,
         onQrCodeIconClick = viewModel::onQrCodeIconClick,
-        cancelQrScan = viewModel::cancelQrScan,
+        cancelQrScan = viewModel::cancelQrScan
     )
 }
 
@@ -90,7 +90,7 @@ fun TransferContent(
     deleteAccountClick: (Int) -> Unit,
     onAddressDecoded: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
-    cancelQrScan: () -> Unit,
+    cancelQrScan: () -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -258,7 +258,7 @@ fun TransferContent(
                             color = RadixTheme.colors.gray2,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        StrokeLine()
+                        StrokeLine(height = 30.dp)
                     }
                 }
 

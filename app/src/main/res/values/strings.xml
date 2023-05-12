@@ -357,7 +357,7 @@
         <item quantity="other">%d accounts</item>
     </plurals>
     <string name="transfer">Transfer</string>
-    <string name="send_transfer_request">Send transfer request</string>
+    <string name="send_transfer_request">Send Transfer Request</string>
     <string name="choose_accounts">Choose Account</string>
     <string name="add_assets">Add Assets</string>
     <string name="from">From</string>
@@ -371,4 +371,5 @@
     <string name="enter_or_paste_address">Enter or paste address</string>
     <string name="or_choose_one_of_your_accounts">Or choose one of your own accounts</string>
     <string name="choose">Choose</string>
+    <string name="scan_qr_code_of_radix_account_address">Scan a QR code of a Radix account address</string>
 </resources>

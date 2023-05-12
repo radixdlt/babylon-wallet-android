@@ -126,7 +126,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         viewModel.onChooseClick(selectedIndex)
 
         Assert.assertEquals(
-            viewModel.state.first().chosenAccountIndex,
+            viewModel.state.first().recipientAccountContainerIndex,
             selectedIndex
         )
     }
@@ -333,6 +333,10 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         Assert.assertEquals(
             viewModel.state.first().receivingAccounts,
             receivingAccounts
+        )
+        Assert.assertEquals(
+            viewModel.state.first().receivingAccountIndex,
+            0
         )
     }
 

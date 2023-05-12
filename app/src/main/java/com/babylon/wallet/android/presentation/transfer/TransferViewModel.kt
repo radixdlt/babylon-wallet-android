@@ -101,7 +101,8 @@ class TransferViewModel @Inject constructor(
             it.copy(
                 receivingAccounts = updatedAccounts.toPersistentList(),
                 buttonEnabled = updatedAccounts.any { account -> account.isSelected },
-                accountsDisabled = false
+                accountsDisabled = false,
+                receivingAccountIndex = accountIndex
             )
         }
     }
@@ -121,8 +122,28 @@ class TransferViewModel @Inject constructor(
 
     fun deleteAccountClick(index: Int) {
         val updatedSelectedAccounts = _state.value.selectedAccounts.toMutableList()
-        updatedSelectedAccounts.removeAt(index)
+        val removedAccount = updatedSelectedAccounts.removeAt(index)
 
+        val existingAccount = removedAccount.type == State.SelectedAccountForTransfer.Type.ExistingAccount
+
+        if (existingAccount) {
+            val receivingAccounts = _state.value.receivingAccounts.toMutableList()
+            removedAccount.account?.let { accountItem ->
+                // Unselect account when discarded
+                val account = accountItem.copy(
+                    address = accountItem.address,
+                    displayName = accountItem.displayName,
+                    appearanceID = accountItem.appearanceID,
+                    isSelected = false
+                )
+                receivingAccounts.add(_state.value.receivingAccountIndex ?: 0, account)
+            }
+            _state.update {
+                it.copy(
+                    receivingAccounts = receivingAccounts.toPersistentList()
+                )
+            }
+        }
         _state.update {
             it.copy(
                 selectedAccounts = updatedSelectedAccounts.toPersistentList()
@@ -133,17 +154,21 @@ class TransferViewModel @Inject constructor(
     fun onChooseClick(index: Int) {
         _state.update {
             it.copy(
-                chosenAccountIndex = index
+                recipientAccountContainerIndex = index
             )
         }
     }
 
     fun onChooseDestinationAccountClick() {
         val selectedDestinationAccount = _state.value.receivingAccounts.find { it.isSelected }
-        val chosenIndex = _state.value.chosenAccountIndex
+        val updatedReceivingAccounts = _state.value.receivingAccounts.toMutableList()
+
+        val recipientAccountContainerIndex = _state.value.recipientAccountContainerIndex
         val updatedSelectedAccounts = _state.value.selectedAccounts.mapIndexed { index, account ->
-            if (chosenIndex == index) {
+            if (recipientAccountContainerIndex == index) {
                 if (selectedDestinationAccount != null) {
+                    updatedReceivingAccounts.remove(selectedDestinationAccount)
+
                     // We selected account we hold
                     State.SelectedAccountForTransfer(
                         account = selectedDestinationAccount,
@@ -166,7 +191,9 @@ class TransferViewModel @Inject constructor(
         }
         _state.update {
             it.copy(
-                selectedAccounts = updatedSelectedAccounts.toPersistentList()
+                receivingAccounts = updatedReceivingAccounts.toPersistentList(),
+                selectedAccounts = updatedSelectedAccounts.toPersistentList(),
+                buttonEnabled = false
             )
         }
     }
@@ -203,12 +230,13 @@ class TransferViewModel @Inject constructor(
         val selectedAccounts: ImmutableList<SelectedAccountForTransfer> = persistentListOf(
             SelectedAccountForTransfer()
         ),
-        val chosenAccountIndex: Int? = null,
+        val recipientAccountContainerIndex: Int? = null,
+        val receivingAccountIndex: Int? = null,
         val address: String = "",
         val message: String = "",
         val buttonEnabled: Boolean = false,
         val accountsDisabled: Boolean = false,
-        val chooseAccountSheetMode: ChooseAccountSheetMode = ChooseAccountSheetMode.Default,
+        val chooseAccountSheetMode: ChooseAccountSheetMode = ChooseAccountSheetMode.Default
     ) : UiState {
 
         data class SelectedAccountForTransfer(

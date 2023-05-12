@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
@@ -157,7 +158,10 @@ fun ChooseAccountSheet(
                                     }
                                 }
                                 IconButton(
-                                    onClick = onQrCodeIconClick
+                                    onClick = {
+                                        cameraPermissionState.launchPermissionRequest()
+                                        onQrCodeIconClick()
+                                    }
                                 ) {
                                     Icon(
                                         painter = painterResource(
@@ -195,7 +199,7 @@ fun ChooseAccountSheet(
                 }
 
                 itemsIndexed(receivingAccounts) { index, accountItem ->
-                    val gradientColor = AccountGradientList[accountItem.appearanceID % AccountGradientList.size]
+                    val gradientColor = getAccountGradientColorsFor(accountItem.appearanceID)
                     AccountSelectionCard(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -233,10 +237,27 @@ fun ChooseAccountSheet(
             ChooseAccountSheetMode.ScanQr -> {
                 if (cameraPermissionState.status.isGranted) {
                     item {
-                        CameraPreview(
-                            modifier = Modifier.fillMaxSize()
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            onAddressDecoded(it)
+                            Text(
+                                modifier = Modifier
+                                    .padding(vertical = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.scan_qr_code_of_radix_account_address),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.gray1
+                            )
+
+                            CameraPreview(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                    .clip(RadixTheme.shapes.roundedRectMedium)
+                            ) {
+                                onAddressDecoded(it)
+                            }
                         }
                     }
                 }
