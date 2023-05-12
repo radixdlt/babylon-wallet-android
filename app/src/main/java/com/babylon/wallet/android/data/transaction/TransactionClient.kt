@@ -39,6 +39,8 @@ import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import kotlinx.coroutines.delay
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
@@ -193,57 +195,51 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun selectAccountAddressToLockFee(networkId: Int, manifestJson: TransactionManifest): String? {
-        val allAccountsAddresses = getProfileUseCase.accountsOnCurrentNetwork().map { it.address }.toSet()
+        val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
-        val searchedAddresses = mutableSetOf<String>()
+        val searchedAccounts = mutableSetOf<Network.Account>()
         result.onSuccess { analyzeManifestResponse ->
             val withdrawnFromCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsWithdrawnFrom.toList(),
-                allNetworkAddresses = allAccountsAddresses
+                accounts = allAccounts
             )
-            searchedAddresses.addAll(withdrawnFromCandidates)
+            searchedAccounts.addAll(withdrawnFromCandidates)
             val withdrawnFromCandidate = findFeePayerWithin(withdrawnFromCandidates)
             if (withdrawnFromCandidate != null) return withdrawnFromCandidate
 
             val requiringAuthCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsRequiringAuth.toList(),
-                allNetworkAddresses = allAccountsAddresses
+                accounts = allAccounts
             )
-            searchedAddresses.addAll(requiringAuthCandidates)
+            searchedAccounts.addAll(requiringAuthCandidates)
             val requiringAuthCandidate = findFeePayerWithin(requiringAuthCandidates)
             if (requiringAuthCandidate != null) return requiringAuthCandidate
 
             val depositedIntoCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsDepositedInto.toList(),
-                allNetworkAddresses = allAccountsAddresses
+                accounts = allAccounts
             )
-            searchedAddresses.addAll(depositedIntoCandidates)
+            searchedAccounts.addAll(depositedIntoCandidates)
             val depositedIntoCandidate = findFeePayerWithin(depositedIntoCandidates)
             if (depositedIntoCandidate != null) return depositedIntoCandidate
 
-            val accountsLeftToSearch = allAccountsAddresses.minus(searchedAddresses)
+            val accountsLeftToSearch = allAccounts.minus(searchedAccounts)
             return findFeePayerWithin(accountsLeftToSearch.toList())
         }
         return null
     }
 
-    private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, allNetworkAddresses: Set<String>): List<String> {
+    private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, accounts: List<Network.Account>): List<Network.Account> {
         return entityAddress
             .filterIsInstance<EntityAddress.ComponentAddress>()
-            .filter { allNetworkAddresses.contains(it.address) }
-            .map { it.address }
+            .mapNotNull { componentAddress ->
+                accounts.find { it.address == componentAddress.address }
+            }
     }
 
-    private suspend fun findFeePayerWithin(addresses: List<String>): String? {
-        return getAccountsWithResourcesUseCase
-            .invoke(
-                accounts = getProfileUseCase.accountsOnCurrentNetwork().filter { addresses.contains(it.address) },
-                isRefreshing = true
-            )
-            .value()
-            ?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)
-            ?.account
-            ?.address
+    private suspend fun findFeePayerWithin(accounts: List<Network.Account>): String? {
+        return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)?.account?.address
     }
 
     private suspend fun buildTransactionHeader(

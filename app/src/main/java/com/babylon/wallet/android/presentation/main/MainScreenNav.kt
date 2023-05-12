@@ -9,11 +9,12 @@ import rdx.works.profile.data.model.pernetwork.Network
 
 const val MAIN_ROUTE = "main"
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.main(
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
-    onAccountClick: (Network.Account) -> Unit = { },
+    onAccountClick: (Network.Account) -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToCreateAccount: () -> Unit,

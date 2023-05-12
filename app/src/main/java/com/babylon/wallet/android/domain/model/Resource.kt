@@ -17,7 +17,7 @@ sealed class Resource {
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-    ): Resource() {
+    ) : Resource() {
         val name: String?
             get() = nameMetadataItem?.name // .orEmpty()
 
@@ -50,7 +50,7 @@ sealed class Resource {
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
         val items: List<Item>
-    ): Resource() {
+    ) : Resource() {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
 
@@ -59,8 +59,6 @@ sealed class Resource {
 
         val iconUrl: Uri?
             get() = iconMetadataItem?.url
-
-
 
         data class Item(
             val localId: String,
@@ -71,8 +69,6 @@ sealed class Resource {
                 get() = iconMetadataItem?.url
 
             fun globalAddress(nftAddress: String) = "$nftAddress:$localId"
-
         }
     }
-
 }

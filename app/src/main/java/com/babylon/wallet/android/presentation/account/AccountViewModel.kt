@@ -28,7 +28,6 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -143,7 +142,6 @@ data class AccountUiState(
             val unsecuredFactorSourceId = accountWithResources?.account?.unsecuredFactorSourceId() ?: return false
             return accountWithResources.hasXrd() && backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
         }
-
 }
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {

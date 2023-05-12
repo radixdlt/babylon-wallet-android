@@ -18,7 +18,6 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnaut
 import com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime.ROUTE_PERSONA_DATA_ONETIME_UNAUTHORIZED
 import com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime.personaDataOnetimeUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
