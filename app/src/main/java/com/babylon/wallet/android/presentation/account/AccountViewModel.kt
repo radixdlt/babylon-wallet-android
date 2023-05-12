@@ -50,9 +50,9 @@ class AccountViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(accountWithResources = AccountWithResources(account = account, resources = null))
                 }
+                loadAccountData(isRefreshing = false)
             }
         }
-        loadAccountData(isRefreshing = false)
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
@@ -81,25 +81,22 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun loadAccountData(isRefreshing: Boolean) {
+        val account = _state.value.accountWithResources?.account ?: return
         viewModelScope.launch {
-            if (accountId.isNotEmpty()) {
-                val result = getAccountsWithResourcesUseCase.getAccount(accountId, isRefreshing)
-                result.onError { e ->
-                    _state.update { accountUiState ->
-                        accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
-                    }
+            val result = getAccountsWithResourcesUseCase(listOf(account), isRefreshing)
+            result.onError { e ->
+                _state.update { accountUiState ->
+                    accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
                 }
-                result.onValue { accountWithResources ->
-                    _state.update { accountUiState ->
-                        accountUiState.copy(
-                            accountWithResources = accountWithResources,
-                            isRefreshing = false,
-                            isLoading = false
-                        )
-                    }
+            }
+            result.onValue { accountsWithResources ->
+                _state.update { accountUiState ->
+                    accountUiState.copy(
+                        accountWithResources = accountsWithResources.first(),
+                        isRefreshing = false,
+                        isLoading = false
+                    )
                 }
-            } else {
-                Timber.d("arg account id is empty")
             }
         }
     }
@@ -155,9 +152,9 @@ enum class AssetTypeTab(@StringRes val stringId: Int) {
 }
 
 sealed interface SelectedResource {
-    data class SelectedFungibleResource(val fungible: Resource.FungibleResource): SelectedResource
+    data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedResource
     data class SelectedNonFungibleResource(
         val nonFungible: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item
-    ): SelectedResource
+    ) : SelectedResource
 }
