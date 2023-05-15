@@ -14,9 +14,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungi
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -28,11 +25,13 @@ import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.domain.model.NonFungibleTokenIdContainer
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
 interface EntityRepository {
@@ -49,58 +48,52 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
 
-    suspend fun nonFungibleData(
-        address: String,
-        nonFungibleIds: List<String>,
-        page: String? = null,
-        limit: Int? = null,
-        isRefreshing: Boolean
-    ): Result<StateNonFungibleDataResponse>
-
-    suspend fun getNonFungibleIds(
-        address: String,
-        page: String? = null,
-        limit: Int? = null,
-        isRefreshing: Boolean
-    ): Result<NonFungibleTokenIdContainer>
 }
 
 class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
-    private val cache: HttpCache
+    private val cache: HttpCache,
+    private val profileRepository: ProfileRepository,
 ) : EntityRepository {
+
+    private val rcNetRepository = EntityRepositoryRCNet(stateApi, cache)
 
     override suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
         isRefreshing: Boolean
-    ): Result<List<AccountWithResources>> {
-        val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
-            addresses = accounts.map { it.address },
-            explicitMetadata = explicitMetadataForAssets,
-            isRefreshing = isRefreshing
-        )
+    ): Result<List<AccountWithResources>> = router(
+        rcnetRequest = {
+            rcNetRepository.getAccountsWithResources(accounts, explicitMetadataForAssets, isRefreshing)
+        },
+        enkinetRequest = {
+            val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
+                addresses = accounts.map { it.address },
+                explicitMetadata = explicitMetadataForAssets,
+                isRefreshing = isRefreshing
+            )
 
-        return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
+            listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
 
-            val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses)
+                val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses)
 
-            val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(entityDetailsResponses)
+                val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(entityDetailsResponses)
 
-            // build result list of accounts with resources
-            val listOfAccountsWithResources = accounts.map { account ->
-                AccountWithResources(
-                    account = account,
-                    resources = Resources(
-                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
-                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
+                // build result list of accounts with resources
+                val listOfAccountsWithResources = accounts.map { account ->
+                    AccountWithResources(
+                        account = account,
+                        resources = Resources(
+                            fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
+                            nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
+                        )
                     )
-                )
-            }
+                }
 
-            Result.Success(listOfAccountsWithResources)
+                Result.Success(listOfAccountsWithResources)
+            }
         }
-    }
+    )
 
     private suspend fun buildMapOfAccountsWithFungibles(
         entityDetailsResponses: List<StateEntityDetailsResponse>
@@ -269,46 +262,29 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     // TODO currently this is only used in GetTransactionComponentResourcesUseCase,
-    //  we should better hide this function by wrapping it in another more meaningful function,
-    //  for example: getTypeOfAddress() in case of the GetTransactionComponentResourcesUseCase
+    //  we should refactor GetTransactionComponentResourcesUseCase to use the new domain models.
     override suspend fun stateEntityDetails(
         addresses: List<String>,
         isRefreshing: Boolean
-    ): Result<StateEntityDetailsResponse> {
-        return stateApi.entityDetails(
-            StateEntityDetailsRequest(
-                addresses = addresses,
-                aggregationLevel = ResourceAggregationLevel.vault
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-            ),
-            map = { it }
-        )
-    }
-
-    override suspend fun getNonFungibleIds(
-        address: String,
-        page: String?,
-        limit: Int?,
-        isRefreshing: Boolean
-    ): Result<NonFungibleTokenIdContainer> {
-        return stateApi.nonFungibleIds(StateNonFungibleIdsRequest(address)).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
-            ),
-            map = { response ->
-                NonFungibleTokenIdContainer(
-                    ids = response.nonFungibleIds.items.map { it.nonFungibleId },
-                    nextCursor = response.nonFungibleIds.nextCursor,
-                    previousCursor = response.nonFungibleIds.previousCursor
+    ): Result<StateEntityDetailsResponse> = router(
+        rcnetRequest = {
+            rcNetRepository.stateEntityDetails(addresses, isRefreshing)
+        },
+        enkinetRequest = {
+            stateApi.entityDetails(
+                StateEntityDetailsRequest(
+                    addresses = addresses,
+                    aggregationLevel = ResourceAggregationLevel.vault
                 )
-            }
-        )
-    }
+            ).execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+                ),
+                map = { it }
+            )
+        }
+    )
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,
@@ -348,25 +324,18 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun nonFungibleData(
-        address: String,
-        nonFungibleIds: List<String>,
-        page: String?,
-        limit: Int?,
-        isRefreshing: Boolean
-    ): Result<StateNonFungibleDataResponse> {
-        return stateApi.nonFungibleData(
-            StateNonFungibleDataRequest(
-                resourceAddress = address,
-                nonFungibleIds = nonFungibleIds
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-            ),
-            map = { it }
-        )
+    // Temporary solution that routes the request depending on the current gateway
+    private suspend fun <T> router(
+        rcnetRequest: suspend () -> T,
+        enkinetRequest: suspend () -> T
+    ): T {
+        val currentNetworkId = profileRepository.inMemoryProfileOrNull?.currentGateway?.network?.id
+
+        return if (currentNetworkId == Radix.Network.enkinet.id) {
+            enkinetRequest()
+        } else {
+            rcnetRequest()
+        }
     }
 
     companion object {
