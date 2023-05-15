@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
+import com.babylon.wallet.android.data.dapp.model.IncompatibleVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -17,6 +20,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.core.blake2Hash
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
@@ -109,7 +114,7 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     @Suppress("SwallowedException")
-    private fun parseIncomingMessage(
+    private suspend fun parseIncomingMessage(
         remoteClientId: String,
         messageInJsonString: String
     ): MessageFromDataChannel {
@@ -123,9 +128,31 @@ class PeerdroidClientImpl @Inject constructor(
             // TODO a snackbar message error like iOS
             Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
             MessageFromDataChannel.ParsingError
+        } catch (incompatibleVersionException: IncompatibleVersionException) {
+            val requestVersion = incompatibleVersionException.requestVersion
+            val currentVersion = WalletInteraction.Metadata.VERSION
+            Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
+            sendIncompatibleVersionRequestToDapp(
+                requestId = incompatibleVersionException.requestId,
+                remoteClientId = remoteClientId
+            )
+            MessageFromDataChannel.ParsingError
         } catch (exception: Exception) {
             Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
             MessageFromDataChannel.Error
         }
+    }
+
+    private suspend fun sendIncompatibleVersionRequestToDapp(
+        requestId: String,
+        remoteClientId: String
+    ) {
+        val messageJson = Json.encodeToString(
+            WalletInteractionFailureResponse(
+                interactionId = requestId,
+                error = WalletErrorType.IncompatibleVersion
+            )
+        )
+        sendMessage(remoteClientId, messageJson)
     }
 }
