@@ -11,9 +11,9 @@ data class PersonaDataRequestItem( // REQUEST
     @SerialName("fields") val fields: List<PersonaData.PersonaDataField>
 )
 
-fun PersonaDataRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
+fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
     if (fields.isEmpty()) return null
-    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, isOngoing = false)
+    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, isOngoing = isOngoing)
 }
 
 // RESPONSE

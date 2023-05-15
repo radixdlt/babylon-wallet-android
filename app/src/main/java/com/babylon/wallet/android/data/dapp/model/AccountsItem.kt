@@ -30,7 +30,7 @@ data class AccountsRequestItem(
     }
 }
 
-fun AccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem? {
+fun AccountsRequestItem.toDomainModel(isOngoing: Boolean = true): IncomingRequest.AccountsRequestItem? {
     // correct request but not actionable, return null
     if (numberOfAccounts.quantity == 0 &&
         numberOfAccounts.quantifier == NumberOfAccounts.AccountNumberQuantifier.Exactly
@@ -40,14 +40,14 @@ fun AccountsRequestItem.toDomainModel(): IncomingRequest.AccountsRequestItem? {
 
     return if (this.challenge == null) {
         IncomingRequest.AccountsRequestItem(
-            isOngoing = false,
+            isOngoing = isOngoing,
             requiresProofOfOwnership = true,
             numberOfAccounts = numberOfAccounts.quantity,
             quantifier = numberOfAccounts.quantifier.toDomainModel()
         )
     } else {
         IncomingRequest.AccountsRequestItem(
-            isOngoing = false,
+            isOngoing = isOngoing,
             requiresProofOfOwnership = false,
             numberOfAccounts = numberOfAccounts.quantity,
             quantifier = numberOfAccounts.quantifier.toDomainModel()
