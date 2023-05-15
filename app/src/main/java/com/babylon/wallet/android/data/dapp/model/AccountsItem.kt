@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 // REQUEST
 @Serializable
 data class AccountsRequestItem(
-    @SerialName("challenge") val challenge: String? = null, // TODO HexString32Bytes
+    @SerialName("challenge") val challenge: String? = null,
     @SerialName("numberOfAccounts") val numberOfAccounts: NumberOfAccounts
 ) {
 
@@ -73,8 +73,8 @@ fun NumberOfAccounts.AccountNumberQuantifier.toDomainModel(): IncomingRequest.Ac
 @Serializable
 data class AccountsRequestResponseItem(
     @SerialName("accounts") val accounts: List<Account>,
-    @SerialName("challenge") val challenge: String?, // TODO Challenge
-    @SerialName("proofs") val proofs: List<AccountProof>?
+    @SerialName("challenge") val challenge: String? = null,
+    @SerialName("proofs") val proofs: List<AccountProof>? = null
 ) {
 
     @Serializable
@@ -100,7 +100,7 @@ fun List<AccountItemUiModel>.toDataModel(): AccountsRequestResponseItem? {
 
     return AccountsRequestResponseItem(
         accounts = accounts,
-        challenge = null, // TODO
-        proofs = null // TODO
+        challenge = null,
+        proofs = null
     )
 }
