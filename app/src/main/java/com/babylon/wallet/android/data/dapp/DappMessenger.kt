@@ -2,25 +2,18 @@
 
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.AccountDto
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.OneTimePersonaDataRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.OngoingAccountsWithoutProofOfOwnershipRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.OngoingPersonaDataRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.PersonaData
-import com.babylon.wallet.android.data.dapp.model.PersonaDto
-import com.babylon.wallet.android.data.dapp.model.SendTransactionResponseItem
+import com.babylon.wallet.android.data.dapp.model.Persona
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems.SendTransactionResponseItem
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.toDataModel
-import com.babylon.wallet.android.data.dapp.model.toPersonaDataField
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.serialization.encodeToString
@@ -82,20 +75,8 @@ class DappMessengerImpl @Inject constructor(
         val walletResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
             interactionId = requestId,
             items = WalletUnauthorizedRequestResponseItems(
-                oneTimeAccounts = if (oneTimeAccounts.isNotEmpty()) {
-                    OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
-                        accounts = oneTimeAccounts.toDataModel()
-                    )
-                } else {
-                    null
-                },
-                oneTimePersonaData = if (onetimeDataFields.isNotEmpty()) {
-                    OneTimePersonaDataRequestResponseItem(
-                        fields = onetimeDataFields.map { PersonaData(it.id.toPersonaDataField(), it.value) }
-                    )
-                } else {
-                    null
-                }
+                oneTimeAccounts = oneTimeAccounts.toDataModel(),
+                oneTimePersonaData = onetimeDataFields.toDataModel()
             )
         )
         val json = Json.encodeToString(walletResponse)
@@ -186,55 +167,23 @@ class DappMessengerImpl @Inject constructor(
             items = WalletAuthorizedRequestResponseItems(
                 auth = if (usePersona) {
                     AuthUsePersonaRequestResponseItem(
-                        PersonaDto(
+                        Persona(
                             persona.address,
                             persona.displayName
                         )
                     )
                 } else {
                     AuthLoginWithoutChallengeRequestResponseItem(
-                        PersonaDto(
+                        Persona(
                             persona.address,
                             persona.displayName
                         )
                     )
                 },
-                oneTimeAccounts = if (oneTimeAccounts.isNotEmpty()) {
-                    OneTimeAccountsWithoutProofOfOwnershipRequestResponseItem(
-                        oneTimeAccounts.map {
-                            AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
-                        }
-                    )
-                } else {
-                    null
-                },
-                ongoingAccounts = if (ongoingAccounts.isNotEmpty()) {
-                    OngoingAccountsWithoutProofOfOwnershipRequestResponseItem(
-                        ongoingAccounts.map {
-                            AccountDto(it.address, it.displayName.orEmpty(), it.appearanceID)
-                        }
-                    )
-                } else {
-                    null
-                },
-                ongoingPersonaData = if (ongoingDataFields.isNotEmpty()) {
-                    OngoingPersonaDataRequestResponseItem(
-                        ongoingDataFields.map {
-                            PersonaData(it.id.toPersonaDataField(), it.value)
-                        }
-                    )
-                } else {
-                    null
-                },
-                oneTimePersonaData = if (onetimeDataFields.isNotEmpty()) {
-                    OneTimePersonaDataRequestResponseItem(
-                        onetimeDataFields.map {
-                            PersonaData(it.id.toPersonaDataField(), it.value)
-                        }
-                    )
-                } else {
-                    null
-                }
+                oneTimeAccounts = oneTimeAccounts.toDataModel(),
+                ongoingAccounts = ongoingAccounts.toDataModel(),
+                ongoingPersonaData = ongoingDataFields.toDataModel(),
+                oneTimePersonaData = onetimeDataFields.toDataModel()
             )
         )
         return walletSuccessResponse
