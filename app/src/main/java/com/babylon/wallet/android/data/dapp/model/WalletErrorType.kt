@@ -3,6 +3,9 @@ package com.babylon.wallet.android.data.dapp.model
 import kotlinx.serialization.SerialName
 
 enum class WalletErrorType {
+    @SerialName("incompatibleVersion")
+    IncompatibleVersion,
+
     @SerialName("rejectedByUser")
     RejectedByUser,
 

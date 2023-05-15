@@ -26,7 +26,12 @@ data class WalletInteraction(
         val origin: String,
         @SerialName("dAppDefinitionAddress")
         val dAppDefinitionAddress: String,
-    )
+    ) {
+
+        companion object {
+            const val VERSION = 1L
+        }
+    }
 }
 
 @Suppress("UnnecessaryAbstractClass")
@@ -99,6 +104,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
 
 fun WalletInteraction.toDomainModel(dappId: String): MessageFromDataChannel.IncomingRequest {
     val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+        version = metadata.version,
         networkId = metadata.networkId,
         origin = metadata.origin,
         dAppDefinitionAddress = metadata.dAppDefinitionAddress
