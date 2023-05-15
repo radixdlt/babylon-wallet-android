@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
-import com.babylon.wallet.android.data.dapp.model.IncompatibleVersionException
+import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
@@ -128,12 +128,12 @@ class PeerdroidClientImpl @Inject constructor(
             // TODO a snackbar message error like iOS
             Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
             MessageFromDataChannel.ParsingError
-        } catch (incompatibleVersionException: IncompatibleVersionException) {
-            val requestVersion = incompatibleVersionException.requestVersion
+        } catch (incompatibleRequestVersionException: IncompatibleRequestVersionException) {
+            val requestVersion = incompatibleRequestVersionException.requestVersion
             val currentVersion = WalletInteraction.Metadata.VERSION
             Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
             sendIncompatibleVersionRequestToDapp(
-                requestId = incompatibleVersionException.requestId,
+                requestId = incompatibleRequestVersionException.requestId,
                 remoteClientId = remoteClientId
             )
             MessageFromDataChannel.ParsingError

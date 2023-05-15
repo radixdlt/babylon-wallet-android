@@ -14,10 +14,11 @@ object ConnectorExtensionInteractionSerializer :
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ConnectorExtensionInteraction> {
         return when {
             element.jsonObject["items"] != null -> {
+                // check for incoming request version compatibility: WalletInteraction.Metadata.VERSION
                 val requestId = element.jsonObject["interactionId"]?.jsonPrimitive?.contentOrNull.orEmpty()
                 val requestVersion = element.jsonObject["metadata"]?.jsonObject?.get("version")?.jsonPrimitive?.longOrNull
                 if (requestVersion != WalletInteraction.Metadata.VERSION) {
-                    throw IncompatibleVersionException(requestId, requestVersion)
+                    throw IncompatibleRequestVersionException(requestId, requestVersion)
                 }
                 WalletInteraction.serializer()
             }
@@ -27,7 +28,7 @@ object ConnectorExtensionInteractionSerializer :
     }
 }
 
-class IncompatibleVersionException(
+class IncompatibleRequestVersionException(
     val requestId: String,
     val requestVersion: Long?
 ) : IllegalStateException()
