@@ -104,7 +104,6 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
 
 fun WalletInteraction.toDomainModel(dappId: String): MessageFromDataChannel.IncomingRequest {
     val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-        version = metadata.version,
         networkId = metadata.networkId,
         origin = metadata.origin,
         dAppDefinitionAddress = metadata.dAppDefinitionAddress
