@@ -114,7 +114,7 @@ class SampleDataProvider {
         withFungibleTokens: List<AccountWithResources.FungibleResource> = sampleFungibleResources()
     ): AccountWithResources {
         return AccountWithResources(
-            account = sampleAccount(),
+            account = sampleAccount(address),
             fungibleResources = withFungibleTokens,
             nonFungibleResources = emptyList()
         )

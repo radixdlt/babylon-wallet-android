@@ -39,7 +39,7 @@ internal class TransactionClientTest {
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getAccountSignersUseCase = mockk<GetAccountSignersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountResourceUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val cache = mockk<HttpCache>()
     private val networkId = Radix.Gateway.hammunet.network.networkId().value
     private val expectedAddress = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
@@ -54,7 +54,7 @@ internal class TransactionClientTest {
             getCurrentGatewayUseCase,
             getProfileUseCase,
             getAccountSignersUseCase,
-            getAccountResourceUseCase,
+            getAccountsWithResourcesUseCase,
             cache
         )
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.hammunet
@@ -67,14 +67,13 @@ internal class TransactionClientTest {
             )
         )
         coEvery {
-            getAccountResourceUseCase.getAccounts(
+            getAccountsWithResourcesUseCase.getAccounts(
                 any(),
                 any()
             )
         } returns Result.Success(
             data = listOf(
-                account(address = expectedAddress).toDomainModel()
-                    .copy(fungibleTokens = SampleDataProvider().sampleFungibleTokens().toPersistentList())
+                SampleDataProvider().sampleAccountWithResources(address = expectedAddress)
             )
         )
     }
@@ -84,7 +83,7 @@ internal class TransactionClientTest {
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
         runTest {
             coEvery {
-                getAccountResourceUseCase.getAccounts(
+                getAccountsWithResourcesUseCase.getAccounts(
                     accountAddresses = listOf(expectedAddress),
                     isRefreshing = true
                 )
@@ -119,7 +118,7 @@ internal class TransactionClientTest {
     fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
         runTest {
             coEvery {
-                getAccountResourceUseCase.getAccounts(
+                getAccountsWithResourcesUseCase.getAccounts(
                     accountAddresses = listOf(expectedAddressWithNoFunds),
                     isRefreshing = true
                 )
@@ -134,7 +133,7 @@ internal class TransactionClientTest {
                 )
             )
             coEvery {
-                getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
+                getAccountsWithResourcesUseCase.getAccountsFromProfile(isRefreshing = true)
             } returns Result.Success(
                 listOf(
                     SampleDataProvider().sampleAccountWithResources(
@@ -178,7 +177,7 @@ internal class TransactionClientTest {
     @Test
     fun `when address has no funds, return the respective error`() = runTest {
         coEvery {
-            getAccountResourceUseCase.getAccounts(
+            getAccountsWithResourcesUseCase.getAccounts(
                 accountAddresses = listOf(expectedAddress),
                 isRefreshing = true
             )
@@ -193,7 +192,7 @@ internal class TransactionClientTest {
             )
         )
         coEvery {
-            getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
+            getAccountsWithResourcesUseCase.getAccountsFromProfile(isRefreshing = true)
         } returns Result.Success(
             listOf(
                 SampleDataProvider().sampleAccountWithResources(
