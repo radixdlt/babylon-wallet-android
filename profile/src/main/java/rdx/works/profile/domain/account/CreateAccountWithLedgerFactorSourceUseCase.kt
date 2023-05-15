@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.account
 
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -40,7 +41,7 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                 ledgerFactorSource = factorSource,
                 networkId = networkId,
                 derivationPath = derivationPath,
-                appearanceID = totalAccountsOnNetwork % Network.Account.AppearanceIdGradient.values().count()
+                appearanceID = totalAccountsOnNetwork % AccountGradientList.count()
             )
             // Add account to the profile
             val updatedProfile = profile.addAccount(

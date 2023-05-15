@@ -140,7 +140,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
         Assert.assertEquals(
             viewModel.state.first().chooseAccountSheetMode,
-            ChooseAccountSheetMode.ScanQr
+            ChooseAccountSheetMode.QRScanner
         )
     }
 
@@ -153,14 +153,14 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
         Assert.assertEquals(
             viewModel.state.first().chooseAccountSheetMode,
-            ChooseAccountSheetMode.Default
+            ChooseAccountSheetMode.Chooser
         )
     }
 
     @Test
     fun `when valid address decoded from qr scanner, verify view mode is back to Default and choose button enabled`() =
         runTest {
-            val address = "account_rdx_1923ej83292"
+            val address = "account_tdx_c_1pykx7m9uv9szcuqe2ydgagtl2xtzrrxst79gz59um6eq8rfj6d"
             val viewModel = vm.value
             advanceUntilIdle()
 
@@ -172,7 +172,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             )
             Assert.assertEquals(
                 viewModel.state.first().chooseAccountSheetMode,
-                ChooseAccountSheetMode.Default
+                ChooseAccountSheetMode.Chooser
             )
             Assert.assertEquals(
                 viewModel.state.first().buttonEnabled,
@@ -195,7 +195,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             )
             Assert.assertEquals(
                 viewModel.state.first().chooseAccountSheetMode,
-                ChooseAccountSheetMode.Default
+                ChooseAccountSheetMode.Chooser
             )
             Assert.assertEquals(
                 viewModel.state.first().buttonEnabled,

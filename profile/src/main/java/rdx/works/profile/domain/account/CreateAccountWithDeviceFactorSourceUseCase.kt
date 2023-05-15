@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.account
 
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -37,7 +38,7 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
                 mnemonicWithPassphrase = mnemonicRepository(mnemonicKey = factorSource.id),
                 deviceFactorSource = factorSource,
                 networkId = networkId,
-                appearanceID = totalAccountsOnNetwork % Network.Account.AppearanceIdGradient.values().count()
+                appearanceID = totalAccountsOnNetwork % AccountGradientList.count()
             )
             // Add account to the profile
             val updatedProfile = profile.addAccount(

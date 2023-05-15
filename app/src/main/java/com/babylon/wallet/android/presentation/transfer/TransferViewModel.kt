@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.request.DecodeAddressRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -60,6 +62,7 @@ class TransferViewModel @Inject constructor(
         }
     }
 
+    @Suppress("MagicNumber")
     fun onAddressChanged(address: String) {
         val updatedAccounts = _state.value.receivingAccounts.map { account ->
             account.copy(
@@ -69,10 +72,20 @@ class TransferViewModel @Inject constructor(
                 isSelected = false
             )
         }
+
+        // As per https://radixdlt.atlassian.net/wiki/spaces/S/pages/2781839425/REP+39+Bech32m+and+Addressing
+        // The address is at least 26 chars long, so before then we don't apply validation.
+        // This might be revisited but for now validation on focus loose or as we type does not work well enough so
+        // choosing this approach instead
+        val isAddressValid = if (address.length >= 26) {
+            RadixEngineToolkit.decodeAddress(DecodeAddressRequest(address)).isSuccess
+        } else {
+            false
+        }
         _state.update {
             it.copy(
+                buttonEnabled = isAddressValid,
                 address = address,
-                buttonEnabled = address.isNotEmpty(),
                 accountsDisabled = address.isNotEmpty(),
                 receivingAccounts = updatedAccounts.toPersistentList()
             )
@@ -193,17 +206,20 @@ class TransferViewModel @Inject constructor(
             it.copy(
                 receivingAccounts = updatedReceivingAccounts.toPersistentList(),
                 selectedAccounts = updatedSelectedAccounts.toPersistentList(),
-                buttonEnabled = false
+                buttonEnabled = false,
+                address = "",
+                accountsDisabled = false
             )
         }
     }
 
     fun onAddressDecoded(address: String) {
+        val isValidAddress = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(address)).isSuccess
         _state.update {
             it.copy(
                 address = address,
-                chooseAccountSheetMode = ChooseAccountSheetMode.Default,
-                buttonEnabled = address.isNotEmpty()
+                chooseAccountSheetMode = ChooseAccountSheetMode.Chooser,
+                buttonEnabled = isValidAddress
             )
         }
     }
@@ -211,7 +227,7 @@ class TransferViewModel @Inject constructor(
     fun onQrCodeIconClick() {
         _state.update {
             it.copy(
-                chooseAccountSheetMode = ChooseAccountSheetMode.ScanQr
+                chooseAccountSheetMode = ChooseAccountSheetMode.QRScanner
             )
         }
     }
@@ -219,7 +235,7 @@ class TransferViewModel @Inject constructor(
     fun cancelQrScan() {
         _state.update {
             it.copy(
-                chooseAccountSheetMode = ChooseAccountSheetMode.Default
+                chooseAccountSheetMode = ChooseAccountSheetMode.Chooser
             )
         }
     }
@@ -236,7 +252,7 @@ class TransferViewModel @Inject constructor(
         val message: String = "",
         val buttonEnabled: Boolean = false,
         val accountsDisabled: Boolean = false,
-        val chooseAccountSheetMode: ChooseAccountSheetMode = ChooseAccountSheetMode.Default
+        val chooseAccountSheetMode: ChooseAccountSheetMode = ChooseAccountSheetMode.Chooser
     ) : UiState {
 
         data class SelectedAccountForTransfer(
@@ -251,5 +267,5 @@ class TransferViewModel @Inject constructor(
 }
 
 enum class ChooseAccountSheetMode {
-    Default, ScanQr
+    Chooser, QRScanner
 }
