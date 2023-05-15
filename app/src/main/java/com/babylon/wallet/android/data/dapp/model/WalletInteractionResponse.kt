@@ -7,40 +7,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
-@Serializable
-@SerialName("unauthorizedRequest")
-data class WalletUnauthorizedRequestResponseItems(
-    @SerialName("oneTimePersonaData")
-    val oneTimePersonaData: OneTimePersonaDataRequestResponseItem? = null,
-    @SerialName("oneTimeAccounts")
-    val oneTimeAccounts: OneTimeAccountsRequestResponseItem? = null
-) : WalletRequestResponseItems()
-
-@Serializable
-@SerialName("authorizedRequest")
-data class WalletAuthorizedRequestResponseItems(
-    @SerialName("auth")
-    val auth: AuthRequestResponseItem?,
-    @SerialName("oneTimeAccounts")
-    val oneTimeAccounts: OneTimeAccountsRequestResponseItem? = null,
-    @SerialName("ongoingAccounts")
-    val ongoingAccounts: OngoingAccountsRequestResponseItem? = null,
-    @SerialName("oneTimePersonaData")
-    val oneTimePersonaData: OneTimePersonaDataRequestResponseItem? = null,
-    @SerialName("ongoingPersonaData")
-    val ongoingPersonaData: OngoingPersonaDataRequestResponseItem? = null
-) : WalletRequestResponseItems()
-
+@Suppress("UnnecessaryAbstractClass")
 @Serializable
 @JsonClassDiscriminator("discriminator")
-sealed class WalletRequestResponseItems : WalletInteractionResponseItems()
-
-@Serializable
-@SerialName("transaction")
-data class WalletTransactionResponseItems(
-    @SerialName("send")
-    val send: SendTransactionResponseItem
-) : WalletInteractionResponseItems()
+sealed class WalletInteractionResponse
 
 @Serializable
 @JsonClassDiscriminator("discriminator")
@@ -57,6 +27,34 @@ data class WalletInteractionSuccessResponse(
 ) : WalletInteractionResponse()
 
 @Serializable
+@JsonClassDiscriminator("discriminator")
+sealed class WalletRequestResponseItems : WalletInteractionResponseItems()
+
+@Serializable
+@SerialName("unauthorizedRequest")
+data class WalletUnauthorizedRequestResponseItems(
+    @SerialName("oneTimeAccounts")
+    val oneTimeAccounts: AccountsRequestResponseItem? = null,
+    @SerialName("oneTimePersonaData")
+    val oneTimePersonaData: PersonaDataRequestResponseItem? = null
+) : WalletRequestResponseItems()
+
+@Serializable
+@SerialName("authorizedRequest")
+data class WalletAuthorizedRequestResponseItems(
+    @SerialName("auth")
+    val auth: AuthRequestResponseItem?,
+    @SerialName("oneTimeAccounts")
+    val oneTimeAccounts: AccountsRequestResponseItem? = null,
+    @SerialName("ongoingAccounts")
+    val ongoingAccounts: AccountsRequestResponseItem? = null,
+    @SerialName("oneTimePersonaData")
+    val oneTimePersonaData: PersonaDataRequestResponseItem? = null,
+    @SerialName("ongoingPersonaData")
+    val ongoingPersonaData: PersonaDataRequestResponseItem? = null
+) : WalletRequestResponseItems()
+
+@Serializable
 @SerialName("failure")
 data class WalletInteractionFailureResponse(
     @SerialName("interactionId")
@@ -67,7 +65,16 @@ data class WalletInteractionFailureResponse(
     val message: String? = null,
 ) : WalletInteractionResponse()
 
-@Suppress("UnnecessaryAbstractClass")
 @Serializable
-@JsonClassDiscriminator("discriminator")
-sealed class WalletInteractionResponse
+@SerialName("transaction")
+data class WalletTransactionResponseItems(
+    @SerialName("send")
+    val send: SendTransactionResponseItem
+) : WalletInteractionResponseItems() {
+
+    @Serializable
+    data class SendTransactionResponseItem(
+        @SerialName("transactionIntentHash")
+        val transactionIntentHash: String,
+    )
+}

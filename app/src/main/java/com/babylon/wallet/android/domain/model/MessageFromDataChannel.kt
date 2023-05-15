@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.PersonaDataField
+import com.babylon.wallet.android.data.dapp.model.PersonaData
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -112,7 +112,7 @@ sealed interface MessageFromDataChannel {
         }
 
         data class PersonaRequestItem(
-            val fields: List<PersonaDataField>,
+            val fields: List<PersonaData.PersonaDataField>,
             val isOngoing: Boolean
         ) {
             fun isValid(): Boolean {
@@ -195,6 +195,7 @@ fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuan
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly
         }
+
         MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
             Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
         }
