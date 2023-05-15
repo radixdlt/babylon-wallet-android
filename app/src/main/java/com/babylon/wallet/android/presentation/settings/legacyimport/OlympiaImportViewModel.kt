@@ -297,14 +297,12 @@ class OlympiaImportViewModel @Inject constructor(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
             val interactionId = UUIDGenerator.uuid().toString()
-            val result = ledgerMessenger.sendImportOlympiaDeviceRequest(
+            ledgerMessenger.sendImportOlympiaDeviceRequest(
                 interactionId = interactionId,
                 derivationPaths = hardwareAccountsDerivationPaths
-            )
-            result.onFailure { error ->
+            ).onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error.cause), waitingForLedgerResponse = false) }
-            }
-            result.onSuccess { r ->
+            }.onSuccess { r ->
                 processIncomingLedgerResponse(r)
             }
         }

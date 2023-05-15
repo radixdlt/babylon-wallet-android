@@ -76,7 +76,7 @@ data class Network(
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
-        override val displayName: String,
+        val displayName: String,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
@@ -182,7 +182,7 @@ data class Network(
          * An optional displayName or label, used by presentation layer only.
          */
         @SerialName("displayName")
-        override val displayName: String,
+        val displayName: String,
 
         @SerialName("fields")
         val fields: List<Field>,

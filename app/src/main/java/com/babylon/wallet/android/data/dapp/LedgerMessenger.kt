@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
+import rdx.works.peerdroid.helpers.Result.Error
+import rdx.works.peerdroid.helpers.Result.Success
+import rdx.works.profile.data.model.factorsources.Slip10Curve
 import javax.inject.Inject
 
 interface LedgerMessenger {
@@ -32,7 +35,7 @@ interface LedgerMessenger {
 
     suspend fun signTransactionRequest(
         interactionId: String,
-        signersDerivationPathToCurve: List<Pair<String, Curve>>,
+        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         compiledTransactionIntent: String,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean = true
@@ -47,7 +50,7 @@ class LedgerMessengerImpl @Inject constructor(
         val ledgerRequest: LedgerInteractionRequest = GetDeviceInfoRequest(interactionId)
         return flow<Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is rdx.works.peerdroid.helpers.Result.Success -> {
+                is Success -> {
                     peerdroidClient.listenForLedgerResponses().filter {
                         it.id == interactionId
                     }.catch {
@@ -56,7 +59,7 @@ class LedgerMessengerImpl @Inject constructor(
                         emit(Result.success(it))
                     }
                 }
-                is rdx.works.peerdroid.helpers.Result.Error -> {
+                is Error -> {
                     emit(Result.failure(Exception("Failed to get ledger device info")))
                 }
             }
@@ -70,7 +73,7 @@ class LedgerMessengerImpl @Inject constructor(
         val request: LedgerInteractionRequest = ImportOlympiaDeviceRequest(interactionId, derivationPaths)
         return flow<Result<MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
-                is rdx.works.peerdroid.helpers.Result.Success -> {
+                is Success -> {
                     peerdroidClient.listenForLedgerResponses().filter {
                         it.id == interactionId
                     }.catch {
@@ -79,7 +82,7 @@ class LedgerMessengerImpl @Inject constructor(
                         emit(Result.success(it))
                     }
                 }
-                is rdx.works.peerdroid.helpers.Result.Error -> {
+                is Error -> {
                     emit(Result.failure(Exception("Failed to receive Olympia Import response")))
                 }
             }
@@ -98,7 +101,7 @@ class LedgerMessengerImpl @Inject constructor(
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is rdx.works.peerdroid.helpers.Result.Success -> {
+                is Success -> {
                     peerdroidClient.listenForLedgerResponses().filter {
                         it.id == interactionId
                     }.catch {
@@ -107,7 +110,7 @@ class LedgerMessengerImpl @Inject constructor(
                         emit(Result.success(it))
                     }
                 }
-                is rdx.works.peerdroid.helpers.Result.Error -> {
+                is Error -> {
                     emit(Result.failure(Exception("Failed to derive public key with Ledger")))
                 }
             }
@@ -116,14 +119,14 @@ class LedgerMessengerImpl @Inject constructor(
 
     override suspend fun signTransactionRequest(
         interactionId: String,
-        signersDerivationPathToCurve: List<Pair<String, Curve>>,
+        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         compiledTransactionIntent: String,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean
     ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
         val ledgerRequest: LedgerInteractionRequest = SignTransactionRequest(
             interactionId = interactionId,
-            signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(it.second, it.first) },
+            signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(Curve.from(it.second), it.first) },
             ledgerDevice = ledgerDevice,
             displayHash = displayHashOnLedgerDisplay,
             compiledTransactionIntent = compiledTransactionIntent,
@@ -131,7 +134,7 @@ class LedgerMessengerImpl @Inject constructor(
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is rdx.works.peerdroid.helpers.Result.Success -> {
+                is Success -> {
                     peerdroidClient.listenForLedgerResponses().filter {
                         it.id == interactionId
                     }.catch { e ->
@@ -140,7 +143,7 @@ class LedgerMessengerImpl @Inject constructor(
                         emit(Result.success(it))
                     }
                 }
-                is rdx.works.peerdroid.helpers.Result.Error -> {
+                is Error -> {
                     emit(Result.failure(Exception("Failed to sign transaction with Ledger")))
                 }
             }

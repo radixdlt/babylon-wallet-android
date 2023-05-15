@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.getLedgerDeviceModel
@@ -34,7 +33,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             when (val securityState = signer.securityState) {
                 is SecurityState.Unsecured -> {
                     val derivationPath = checkNotNull(securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
-                    derivationPath.path to Curve.from(securityState.unsecuredEntityControl.genesisFactorInstance.publicKey.curve)
+                    derivationPath.path to securityState.unsecuredEntityControl.genesisFactorInstance.publicKey.curve
                 }
             }
         }
