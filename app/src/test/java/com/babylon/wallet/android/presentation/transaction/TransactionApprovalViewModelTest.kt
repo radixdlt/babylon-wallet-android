@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.gateway.generated.models.FeeSummary
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
@@ -59,7 +58,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         dappId = "dappId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(WalletInteraction.Metadata.VERSION, 11, "", "")
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 

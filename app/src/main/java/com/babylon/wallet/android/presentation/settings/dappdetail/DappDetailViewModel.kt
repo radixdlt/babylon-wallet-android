@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
@@ -156,10 +155,9 @@ class DappDetailViewModel @Inject constructor(
                 dappId = "",
                 requestId = UUIDGenerator.uuid().toString(),
                 requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-                    version = WalletInteraction.Metadata.VERSION,
-                    networkId = authorizedDapp.networkID,
-                    origin = "",
-                    dAppDefinitionAddress = authorizedDapp.dAppDefinitionAddress
+                    authorizedDapp.networkID,
+                    "",
+                    authorizedDapp.dAppDefinitionAddress
                 ),
                 authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(persona.address),
                 ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(

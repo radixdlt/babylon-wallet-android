@@ -87,7 +87,6 @@ sealed interface MessageFromDataChannel {
         ) : IncomingRequest(dappId, requestId, requestMetadata)
 
         data class RequestMetadata(
-            val version: Long,
             val networkId: Int,
             val origin: String,
             val dAppDefinitionAddress: String

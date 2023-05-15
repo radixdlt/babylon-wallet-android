@@ -7,7 +7,6 @@ import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
-import com.babylon.wallet.android.domain.usecases.VerifyRequestVersionCompatibilityUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -40,7 +39,6 @@ class MainViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val verifyRequestVersionCompatibilityUseCase: VerifyRequestVersionCompatibilityUseCase,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDappUseCase,
     getProfileStateUseCase: GetProfileStateUseCase
@@ -140,13 +138,10 @@ class MainViewModel @Inject constructor(
 
     private fun processIncomingRequest(request: IncomingRequest) {
         processingRequestJob = viewModelScope.launch {
-            val requestVersionCompatibilityResult = verifyRequestVersionCompatibilityUseCase(request)
-            requestVersionCompatibilityResult.onValue {
-                val verificationResult = verifyDappUseCase(request)
-                verificationResult.onValue { verified ->
-                    if (verified) {
-                        incomingRequestRepository.add(request)
-                    }
+            val verificationResult = verifyDappUseCase(request)
+            verificationResult.onValue { verified ->
+                if (verified) {
+                    incomingRequestRepository.add(request)
                 }
             }
         }
