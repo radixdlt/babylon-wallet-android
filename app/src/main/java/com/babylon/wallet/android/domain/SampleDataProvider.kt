@@ -3,7 +3,6 @@
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.domain.model.AccountAddress
-import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
@@ -14,7 +13,6 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -91,18 +89,6 @@ class SampleDataProvider {
                     )
                 )
             )
-        )
-    }
-
-    fun sampleAccountResource(
-        address: String = randomAddress(),
-        withFungibleTokens: List<OwnedFungibleToken> = sampleFungibleTokens(address)
-    ): AccountResources {
-        return AccountResources(
-            address = address,
-            displayName = "My account",
-            fungibleTokens = withFungibleTokens.toPersistentList(),
-            appearanceID = 1
         )
     }
 
