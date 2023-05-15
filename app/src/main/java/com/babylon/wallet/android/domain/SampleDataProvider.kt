@@ -6,16 +6,11 @@ import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.FungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
-import com.babylon.wallet.android.domain.model.NonFungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -205,53 +200,4 @@ class SampleDataProvider {
             )
             .build()
     }
-
-//    val mockTokenUiList = sampleFungibleTokens().map { ownedFungibleToken ->
-//        ownedFungibleToken.toTokenUiModel()
-//    }
-
-    val mockTokenUiList = sampleFungibleResources().map { fungibleResources ->
-        fungibleResources.toTokenUiModel()
-    }
-
-    val mockNftUiList = listOf(
-        OwnedNonFungibleToken(
-            owner = AccountAddress(
-                address = "owner address",
-                label = "NBA"
-            ),
-            amount = 10L,
-            tokenResourceAddress = "token resource address",
-            token = NonFungibleToken(
-                address = "non fungible token address",
-                nfts = listOf(
-                    NonFungibleTokenItemContainer("#1#", "")
-                ),
-                metadataContainer = NonFungibleMetadataContainer(
-                    metadata = emptyMap(),
-                    nextCursor = "meta next cursor",
-                    previousCursor = "meta previous cursor"
-                )
-            )
-        ),
-        OwnedNonFungibleToken(
-            owner = AccountAddress(
-                address = "owner address",
-                label = "Space"
-            ),
-            amount = 10L,
-            tokenResourceAddress = "token resource address",
-            token = NonFungibleToken(
-                address = "non fungible token address",
-                nfts = listOf(
-                    NonFungibleTokenItemContainer("#1#", "")
-                ),
-                metadataContainer = NonFungibleMetadataContainer(
-                    metadata = emptyMap(),
-                    nextCursor = "meta next cursor",
-                    previousCursor = "meta previous cursor"
-                )
-            )
-        )
-    )
 }

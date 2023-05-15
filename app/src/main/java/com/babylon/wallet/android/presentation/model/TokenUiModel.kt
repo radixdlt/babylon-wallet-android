@@ -1,12 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.model.Resource
 import java.math.BigDecimal
-import java.math.BigInteger
-import java.math.RoundingMode
-import java.text.DecimalFormat
-import java.util.Locale
 
 data class TokenUiModel(
     val name: String? = null,
@@ -35,48 +30,6 @@ data class TokenUiModel(
             ""
         }
 
-    /**
-     * From here it starts the algorithm that implements the rules of token amount display:
-     *
-     * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2820538382/Wallet+Token+Amount+Display+and+Copying
-     */
-    private val integralPart: BigInteger = tokenQuantity.toBigInteger()
-    private val integralPartLength = if (integralPart.signum() == 0) 0 else integralPart.toString().length
-    private val tokenQuantityString = tokenQuantity.toString()
-    private val decimalPartLength = if (tokenQuantityString.contains(".") &&
-        (tokenQuantityString.substringAfter(".") == "0").not()
-    ) {
-        tokenQuantityString.substringAfter(".").length
-    } else {
-        0
-    }
-
-    private val decimalFormat = DecimalFormat.getInstance(Locale.getDefault())
-
-    // the token amount to display on token card
-    val tokenQuantityToDisplay: String
-        get() = if (integralPartLength >= MAX_TOKEN_DIGITS_LENGTH && decimalPartLength == 0) {
-            decimalFormat.format(tokenQuantity)
-        } else if (integralPartLength >= MAX_TOKEN_DIGITS_LENGTH && decimalPartLength > 0) {
-            decimalFormat.maximumFractionDigits = 1
-            decimalFormat.format(tokenQuantity)
-        } else if (integralPartLength + decimalPartLength <= MAX_TOKEN_DIGITS_LENGTH) {
-            decimalFormat.minimumFractionDigits = decimalPartLength
-            decimalFormat.format(tokenQuantity)
-        } else if (integralPartLength == 0 && decimalPartLength >= MAX_TOKEN_DIGITS_LENGTH - 1) {
-            val roundTokenQuantity = tokenQuantity.setScale(MAX_TOKEN_DIGITS_LENGTH, RoundingMode.FLOOR)
-            val roundTokenQuantityStr = roundTokenQuantity.toPlainString()
-            val result = roundTokenQuantityStr.toDouble()
-            if (result == 0.0) {
-                "0"
-            } else {
-                result.toString()
-            }
-        } else {
-            decimalFormat.maximumFractionDigits = MAX_TOKEN_DIGITS_LENGTH - integralPartLength
-            decimalFormat.format(tokenQuantity)
-        }
-
     // token guaranteed amount to display on token card
     val guaranteedQuantityToDisplay: String
         get() = guaranteedQuantity?.toPlainString().orEmpty()
@@ -84,30 +37,4 @@ data class TokenUiModel(
     fun isXrd(): Boolean {
         return symbol == MetadataConstants.SYMBOL_XRD
     }
-
-    companion object {
-        private const val MAX_TOKEN_DIGITS_LENGTH = 8
-    }
-}
-
-fun Resource.FungibleResource.toTokenUiModel(): TokenUiModel {
-    return TokenUiModel(
-        name = name,
-        symbol = symbol,
-        tokenQuantity = amount,
-        iconUrl = iconUrl.toString(),
-        description = description,
-        resourceAddress = resourceAddress
-    )
-}
-
-fun List<Resource.FungibleResource>.toTokenUiModel() = map { fungibleResource ->
-    TokenUiModel(
-        name = fungibleResource.name,
-        symbol = fungibleResource.symbol,
-        tokenQuantity = fungibleResource.amount,
-        iconUrl = fungibleResource.iconUrl.toString(),
-        description = fungibleResource.description,
-        resourceAddress = fungibleResource.resourceAddress
-    )
 }
