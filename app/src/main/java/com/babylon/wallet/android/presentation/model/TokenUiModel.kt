@@ -13,22 +13,6 @@ data class TokenUiModel(
     val isTokenAmountVisible: Boolean? = null,
     val guaranteedQuantity: BigDecimal? = null
 ) : AssetUiModel() {
-    /**
-     * The title to show in the token list item of the Account screen.
-     *
-     * It is based of the token display rule:
-     *
-     * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2844753933/Rules+for+Display+of+Assets+in+Account+Detail+View
-     *
-     */
-    val tokenItemTitle: String
-        get() = if (symbol?.isNotBlank() == true) {
-            symbol
-        } else if (name?.isNotBlank() == true) {
-            name
-        } else {
-            ""
-        }
 
     // token guaranteed amount to display on token card
     val guaranteedQuantityToDisplay: String
