@@ -5,47 +5,43 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-@SerialName("loginWithoutChallenge")
-data class AuthLoginWithoutChallengeRequestResponseItem(
-    @SerialName("persona")
-    val persona: PersonaDto
-) : AuthLoginRequestResponseItem()
-
-@Serializable
-@SerialName("loginWithChallenge")
-data class AuthLoginWithChallengeRequestResponseItem(
-    @SerialName("persona")
-    val persona: PersonaDto,
-    @SerialName("challenge")
-    val challenge: String,
-    @SerialName("proof")
-    val proofDto: ProofDto
-) : AuthLoginRequestResponseItem()
-
-@Serializable
-data class ProofDto(
-    @SerialName("publicKey")
-    val publicKey: String,
-    @SerialName("signature")
-    val signature: String,
-    @SerialName("curve")
-    val curve: String
-)
+@JsonClassDiscriminator("discriminator")
+sealed class AuthRequestResponseItem
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("discriminator")
 sealed class AuthLoginRequestResponseItem : AuthRequestResponseItem()
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-@JsonClassDiscriminator("discriminator")
-sealed class AuthRequestResponseItem
+@SerialName("loginWithoutChallenge")
+data class AuthLoginWithoutChallengeRequestResponseItem(
+    @SerialName("persona")
+    val persona: Persona
+) : AuthLoginRequestResponseItem()
+
+@Serializable
+@SerialName("loginWithChallenge")
+data class AuthLoginWithChallengeRequestResponseItem(
+    @SerialName("persona")
+    val persona: Persona,
+    @SerialName("challenge")
+    val challenge: String,
+    @SerialName("proof")
+    val proof: AccountProof
+) : AuthLoginRequestResponseItem()
 
 @Serializable
 @SerialName("usePersona")
 data class AuthUsePersonaRequestResponseItem(
     @SerialName("persona")
-    val persona: PersonaDto
+    val persona: Persona
 ) : AuthRequestResponseItem()
+
+@Serializable
+data class Persona(
+    @SerialName("identityAddress") val identityAddress: String,
+    @SerialName("label") val label: String,
+)
