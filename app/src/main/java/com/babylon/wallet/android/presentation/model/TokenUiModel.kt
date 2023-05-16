@@ -3,6 +3,11 @@ package com.babylon.wallet.android.presentation.model
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import java.math.BigDecimal
 
+@Deprecated(
+    message = "Will soon be deprecated when TransactionApprovalViewModel uses the new modes. Use the Resource class instead " +
+        "which differentiates between all kinds of resources",
+    level = DeprecationLevel.WARNING
+)
 data class TokenUiModel(
     val name: String? = null,
     val description: String? = null,

@@ -37,7 +37,7 @@ import javax.inject.Inject
 class EntityRepositoryRCNet @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
-): EntityRepository {
+) : EntityRepository {
 
     override suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
@@ -61,7 +61,7 @@ class EntityRepositoryRCNet @Inject constructor(
         val nonFungiblesWithData = resolveNonFungibleData(nonFungibleAddresses, isRefreshing)
 
         accounts.mapNotNull { profileAccount ->
-        val accountOnGateway = response.items.find { it.address == profileAccount.address } ?: return@mapNotNull null
+            val accountOnGateway = response.items.find { it.address == profileAccount.address } ?: return@mapNotNull null
 
             AccountWithResources(
                 account = profileAccount,
