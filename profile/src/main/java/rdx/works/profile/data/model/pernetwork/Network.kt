@@ -90,21 +90,6 @@ data class Network(
         val securityState: SecurityState
     ) {
 
-        enum class AppearanceIdGradient {
-            Gradient1,
-            Gradient2,
-            Gradient3,
-            Gradient4,
-            Gradient5,
-            Gradient6,
-            Gradient7,
-            Gradient8,
-            Gradient9,
-            Gradient10,
-            Gradient11,
-            Gradient12,
-        }
-
         companion object {
             fun initAccountWithDeviceFactorSource(
                 displayName: String,

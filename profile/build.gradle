@@ -45,6 +45,8 @@ dependencies {
 
     implementation libs.kotlinxSerialization
     implementation project(path: ':core')
+    // Import it to find out gradient lists for appearanceId
+    implementation project(path: ':designsystem')
 
     // Datastore
     implementation libs.datastorePreferences
