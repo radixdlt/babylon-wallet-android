@@ -5,6 +5,7 @@ import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -31,11 +32,12 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     signaturesWithPublicKeys.addAll(signatures)
                 }
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                    val signaturesResult = signWithLedgerFactorSourceUseCase(factorSource, signers, dataToSign)
-                    signaturesResult.onSuccess { signatures ->
+                    _signingEvent.update { SigningEvent.SigningWithLedger(factorSource) }
+                    signWithLedgerFactorSourceUseCase(factorSource, signers, dataToSign).onSuccess { signatures ->
+                        _signingEvent.update { SigningEvent.SigningWithLedgerSuccess(factorSource.id) }
                         signaturesWithPublicKeys.addAll(signatures)
-                    }
-                    signaturesResult.onFailure {
+                    }.onFailure {
+                        _signingEvent.update { SigningEvent.SigningWithLedgerFailed(factorSource.id) }
                         return Result.failure(it)
                     }
                 }
