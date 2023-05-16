@@ -93,7 +93,7 @@ fun AccountAssetsRow(
         ) {
             AssetsContent(
                 modifier = Modifier.fillMaxWidth(),
-                resources = resources ?: Resources(emptyList(), emptyList()),
+                resources = resources ?: Resources.EMPTY,
                 iconSize = iconSize,
                 maxVisibleFungibles = maxVisibleFungibles
             )
@@ -134,7 +134,12 @@ private fun AssetsContent(
                     .padding(1.dp)
                     .size(iconSize)
                     .clip(CircleShape)
-                    .background(RadixTheme.colors.defaultBackground.copy(alpha = 0.83f), shape = RadixTheme.shapes.circle)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(White, White.copy(alpha = 0.73f))
+                        ),
+                        shape = RadixTheme.shapes.circle
+                    )
 
                 if (fungible.isXrd) {
                     Image(
