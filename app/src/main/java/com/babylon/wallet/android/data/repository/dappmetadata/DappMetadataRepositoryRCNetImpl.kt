@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository.dappmetadata
 
 import androidx.core.net.toUri
+import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
@@ -9,8 +10,15 @@ import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.execute
+import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.di.JsonConverterFactory
+import com.babylon.wallet.android.di.SimpleHttpClient
+import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.map
+import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
@@ -20,11 +28,16 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
+import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import retrofit2.Converter
 import javax.inject.Inject
 
-class DappMetadataRepositoryRCNet @Inject constructor(
+class DappMetadataRepositoryRCNetImpl @Inject constructor(
+    @SimpleHttpClient private val okHttpClient: OkHttpClient,
+    @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     private val stateApi: StateApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val cache: HttpCache
@@ -33,16 +46,45 @@ class DappMetadataRepositoryRCNet @Inject constructor(
     override suspend fun verifyDapp(
         origin: String,
         dAppDefinitionAddress: String
-    ): Result<Boolean> {
-        error("Same implementation as ekninet")
+    ): Result<Boolean> = withContext(ioDispatcher) {
+        if (origin.isValidHttpsUrl()) {
+            getDAppMetadata(
+                definitionAddress = dAppDefinitionAddress,
+                explicitMetadata = ExplicitMetadataKey.forDapp,
+                needMostRecentData = false
+            ).switchMap { gatewayMetadata ->
+                when {
+                    !gatewayMetadata.isDappDefinition -> {
+                        Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.WrongAccountType))
+                    }
+                    !gatewayMetadata.isRelatedWith(origin) -> {
+                        Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
+                    }
+                    else -> wellKnownFileMetadata(origin)
+                }
+            }.switchMap { wellKnownFileDAppDefinitions ->
+                val isWellKnown = wellKnownFileDAppDefinitions.any { it == dAppDefinitionAddress }
+                if (isWellKnown) {
+                    Result.Success(true)
+                } else {
+                    Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress))
+                }
+            }
+        } else {
+            Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
+        }
     }
 
     override suspend fun getDAppMetadata(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata> {
-        error("Same implementation as ekninet")
+    ): Result<DappWithMetadata> = getDAppsMetadata(
+        definitionAddresses = listOf(definitionAddress),
+        explicitMetadata = explicitMetadata,
+        needMostRecentData = needMostRecentData
+    ).map { dAppWithMetadataItems ->
+        dAppWithMetadataItems.first()
     }
 
     override suspend fun getDAppsMetadata(
@@ -84,5 +126,26 @@ class DappMetadataRepositoryRCNet @Inject constructor(
                 }
             },
         )
+    }
+
+    private suspend fun wellKnownFileMetadata(
+        origin: String
+    ): Result<List<String>> {
+        return withContext(ioDispatcher) {
+            buildApi<DAppDefinitionApi>(
+                baseUrl = origin,
+                okHttpClient = okHttpClient,
+                jsonConverterFactory = jsonConverterFactory
+            ).wellKnownDAppDefinition().execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = TimeoutDuration.FIVE_MINUTES
+                ),
+                map = { response -> response.dApps.map { it.dAppDefinitionAddress } },
+                error = {
+                    DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
+                }
+            )
+        }
     }
 }

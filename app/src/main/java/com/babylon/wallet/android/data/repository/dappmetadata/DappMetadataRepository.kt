@@ -24,9 +24,6 @@ import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
-import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Converter
 import javax.inject.Inject
 
@@ -49,16 +46,13 @@ interface DappMetadataRepository {
     ): Result<List<DappWithMetadata>>
 }
 
-class DappMetadataRepositoryImpl @Inject constructor(
+class DappMetadataRepositoryEnkinetImpl @Inject constructor(
     @SimpleHttpClient private val okHttpClient: OkHttpClient,
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     private val stateApi: StateApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val cache: HttpCache,
-    private val profileRepository: ProfileRepository
+    private val cache: HttpCache
 ) : DappMetadataRepository {
-
-    private val rcnetRepository = DappMetadataRepositoryRCNet(stateApi, ioDispatcher, cache)
 
     override suspend fun verifyDapp(
         origin: String,
@@ -108,42 +102,35 @@ class DappMetadataRepositoryImpl @Inject constructor(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> = router(
-        rcnetRequest = {
-            rcnetRepository.getDAppsMetadata(definitionAddresses, explicitMetadata, needMostRecentData)
-        },
-        enkinetRequest = {
-            withContext(ioDispatcher) {
-                val optIns = if (explicitMetadata.isNotEmpty()) {
-                    StateEntityDetailsOptIns(
-                        explicitMetadata = explicitMetadata.map { it.key }
-                    )
-                } else {
-                    null
-                }
-
-                stateApi.entityDetails(
-                    StateEntityDetailsRequest(
-                        addresses = definitionAddresses,
-                        optIns = optIns
-                    )
-                ).execute(
-                    cacheParameters = CacheParameters(
-                        httpCache = cache,
-                        timeoutDuration = if (needMostRecentData) TimeoutDuration.NO_CACHE else TimeoutDuration.FIVE_MINUTES
-                    ),
-                    map = { response ->
-                        response.items.map { dAppResponse ->
-                            DappWithMetadata.from(
-                                address = dAppResponse.address,
-                                metadataItems = dAppResponse.explicitMetadata?.asMetadataItems().orEmpty()
-                            )
-                        }
-                    },
-                )
-            }
+    ): Result<List<DappWithMetadata>> = withContext(ioDispatcher) {
+        val optIns = if (explicitMetadata.isNotEmpty()) {
+            StateEntityDetailsOptIns(
+                explicitMetadata = explicitMetadata.map { it.key }
+            )
+        } else {
+            null
         }
-    )
+
+        stateApi.entityDetails(
+            StateEntityDetailsRequest(
+                addresses = definitionAddresses,
+                optIns = optIns
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (needMostRecentData) TimeoutDuration.NO_CACHE else TimeoutDuration.FIVE_MINUTES
+            ),
+            map = { response ->
+                response.items.map { dAppResponse ->
+                    DappWithMetadata.from(
+                        address = dAppResponse.address,
+                        metadataItems = dAppResponse.explicitMetadata?.asMetadataItems().orEmpty()
+                    )
+                }
+            },
+        )
+    }
 
     private suspend fun wellKnownFileMetadata(
         origin: String
@@ -163,20 +150,6 @@ class DappMetadataRepositoryImpl @Inject constructor(
                     DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
             )
-        }
-    }
-
-    // Temporary solution that routes the request depending on the current gateway
-    private suspend fun <T> router(
-        rcnetRequest: suspend () -> T,
-        enkinetRequest: suspend () -> T
-    ): T {
-        val currentNetworkId = profileRepository.inMemoryProfileOrNull?.currentGateway?.network?.id
-
-        return if (currentNetworkId == Radix.Network.enkinet.id) {
-            enkinetRequest()
-        } else {
-            rcnetRequest()
         }
     }
 }
