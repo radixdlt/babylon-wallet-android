@@ -34,7 +34,7 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
-class EntityRepositoryRCNet @Inject constructor(
+class EntityRepositoryRCNetImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
 ) : EntityRepository {

@@ -28,10 +28,7 @@ import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
 interface EntityRepository {
@@ -49,50 +46,42 @@ interface EntityRepository {
     ): Result<StateEntityDetailsResponse>
 }
 
-class EntityRepositoryImpl @Inject constructor(
+class EntityRepositoryEnkinetImpl @Inject constructor(
     private val stateApi: StateApi,
-    private val cache: HttpCache,
-    private val profileRepository: ProfileRepository,
+    private val cache: HttpCache
 ) : EntityRepository {
-
-    private val rcNetRepository = EntityRepositoryRCNet(stateApi, cache)
 
     override suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
         isRefreshing: Boolean
-    ): Result<List<AccountWithResources>> = router(
-        rcnetRequest = {
-            rcNetRepository.getAccountsWithResources(accounts, explicitMetadataForAssets, isRefreshing)
-        },
-        enkinetRequest = {
-            val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
-                addresses = accounts.map { it.address },
-                explicitMetadata = explicitMetadataForAssets,
-                isRefreshing = isRefreshing
-            )
+    ): Result<List<AccountWithResources>> {
+        val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
+            addresses = accounts.map { it.address },
+            explicitMetadata = explicitMetadataForAssets,
+            isRefreshing = isRefreshing
+        )
 
-            listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
+        return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
 
-                val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses)
+            val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses)
 
-                val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(entityDetailsResponses)
+            val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(entityDetailsResponses)
 
-                // build result list of accounts with resources
-                val listOfAccountsWithResources = accounts.map { account ->
-                    AccountWithResources(
-                        account = account,
-                        resources = Resources(
-                            fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
-                            nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
-                        )
+            // build result list of accounts with resources
+            val listOfAccountsWithResources = accounts.map { account ->
+                AccountWithResources(
+                    account = account,
+                    resources = Resources(
+                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
+                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
                     )
-                }
-
-                Result.Success(listOfAccountsWithResources)
+                )
             }
+
+            Result.Success(listOfAccountsWithResources)
         }
-    )
+    }
 
     private suspend fun buildMapOfAccountsWithFungibles(
         entityDetailsResponses: List<StateEntityDetailsResponse>
@@ -265,24 +254,17 @@ class EntityRepositoryImpl @Inject constructor(
     override suspend fun stateEntityDetails(
         addresses: List<String>,
         isRefreshing: Boolean
-    ): Result<StateEntityDetailsResponse> = router(
-        rcnetRequest = {
-            rcNetRepository.stateEntityDetails(addresses, isRefreshing)
-        },
-        enkinetRequest = {
-            stateApi.entityDetails(
-                StateEntityDetailsRequest(
-                    addresses = addresses,
-                    aggregationLevel = ResourceAggregationLevel.vault
-                )
-            ).execute(
-                cacheParameters = CacheParameters(
-                    httpCache = cache,
-                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-                ),
-                map = { it }
-            )
-        }
+    ): Result<StateEntityDetailsResponse> = stateApi.entityDetails(
+        StateEntityDetailsRequest(
+            addresses = addresses,
+            aggregationLevel = ResourceAggregationLevel.vault
+        )
+    ).execute(
+        cacheParameters = CacheParameters(
+            httpCache = cache,
+            timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+        ),
+        map = { it }
     )
 
     private suspend fun nextFungiblesPage(
@@ -321,20 +303,6 @@ class EntityRepositoryImpl @Inject constructor(
             ),
             map = { it }
         )
-    }
-
-    // Temporary solution that routes the request depending on the current gateway
-    private suspend fun <T> router(
-        rcnetRequest: suspend () -> T,
-        enkinetRequest: suspend () -> T
-    ): T {
-        val currentNetworkId = profileRepository.inMemoryProfileOrNull?.currentGateway?.network?.id
-
-        return if (currentNetworkId == Radix.Network.enkinet.id) {
-            enkinetRequest()
-        } else {
-            rcnetRequest()
-        }
     }
 
     companion object {
