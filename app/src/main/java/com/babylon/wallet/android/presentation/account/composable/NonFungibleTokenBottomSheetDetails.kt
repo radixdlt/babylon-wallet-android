@@ -51,14 +51,14 @@ fun NonFungibleTokenBottomSheetDetails(
         ) {
             val painter = rememberAsyncImagePainter(
                 model = rememberImageUrl(
-                    fromUrl = nonFungibleResource.iconUrl.toString(),
+                    fromUrl = item.imageUrl.toString(),
                     size = ImageSize.LARGE
                 ),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
                 error = painterResource(id = R.drawable.img_placeholder)
             )
             Image(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_token),
+                painter = painter,
                 contentDescription = "Nft image",
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
