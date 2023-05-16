@@ -103,7 +103,7 @@
     <string name="link_to_connector">Link to Connector</string>
     <string name="link_new_connector">Link New Connector</string>
     <string name="linked_connector">Linked Connector</string>
-    <string name="version_and_build">Version: %s build %d</string>
+    <string name="version_and_build">Version: %s (build %d)</string>
     <string name="your_radix_wallet_is_linked">Your Radix Wallet is linked to the following desktop browser using the Connector browser extension.</string>
     <string name="space">" "</string>
     <string name="resource_address">Resource Address</string>
