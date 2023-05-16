@@ -48,6 +48,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
@@ -88,6 +89,12 @@ class TransactionApprovalViewModel @Inject constructor(
     private var depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf()
 
     init {
+        viewModelScope.launch {
+            transactionClient.signingState.filterNotNull().collect { event ->
+                // TODO display UI relevant to current signing state
+                Timber.d("Signing state: $event")
+            }
+        }
         viewModelScope.launch {
             _state.update {
                 it.copy(

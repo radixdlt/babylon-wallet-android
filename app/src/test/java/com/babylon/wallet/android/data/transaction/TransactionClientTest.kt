@@ -19,6 +19,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -51,6 +52,7 @@ internal class TransactionClientTest {
 
     @Before
     fun setUp() {
+        coEvery { collectSignersSignaturesUseCase.signingEvent } returns emptyFlow()
         transactionClient = TransactionClient(
             transactionRepository,
             getCurrentGatewayUseCase,

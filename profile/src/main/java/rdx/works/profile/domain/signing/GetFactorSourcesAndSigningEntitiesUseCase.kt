@@ -2,6 +2,7 @@ package rdx.works.profile.domain.signing
 
 import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSource
@@ -28,6 +29,15 @@ class GetFactorSourcesAndSigningEntitiesUseCase @Inject constructor(
                 }
             }
         }
-        return result
+        return result.toSortedMap(comparator = { l, r ->
+            l.kind.signingOrder().compareTo(r.kind.signingOrder())
+        })
+    }
+}
+
+fun FactorSourceKind.signingOrder(): Int {
+    return when (this) {
+        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 0
+        FactorSourceKind.DEVICE -> 1
     }
 }

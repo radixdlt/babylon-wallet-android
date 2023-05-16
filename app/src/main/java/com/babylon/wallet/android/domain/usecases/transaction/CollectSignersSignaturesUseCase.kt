@@ -1,6 +1,10 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
+import com.babylon.wallet.android.data.transaction.SigningEvent
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -11,6 +15,10 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
     private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase
 ) {
+
+    private val _signingEvent = MutableStateFlow<SigningEvent?>(null)
+    val signingEvent: Flow<SigningEvent?> = _signingEvent.asSharedFlow()
+
     suspend operator fun invoke(
         signersPerFactorSource: Map<FactorSource, List<SigningEntity>>,
         dataToSign: ByteArray
@@ -31,7 +39,6 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         return Result.failure(it)
                     }
                 }
-                else -> {}
             }
         }
         return Result.success(signaturesWithPublicKeys)

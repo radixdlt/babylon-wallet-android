@@ -61,6 +61,7 @@ class TransactionClient @Inject constructor(
 ) {
 
     private val engine = RadixEngineToolkit
+    val signingState = collectSignersSignaturesUseCase.signingEvent
 
     suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
