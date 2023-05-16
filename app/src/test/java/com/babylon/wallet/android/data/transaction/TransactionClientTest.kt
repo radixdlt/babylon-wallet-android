@@ -31,6 +31,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
+import java.math.BigDecimal
 
 internal class TransactionClientTest {
 
