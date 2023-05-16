@@ -47,7 +47,6 @@ interface EntityRepository {
         addresses: List<String>,
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
-
 }
 
 class EntityRepositoryImpl @Inject constructor(
