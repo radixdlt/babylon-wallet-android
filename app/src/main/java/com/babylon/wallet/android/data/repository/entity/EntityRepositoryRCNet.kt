@@ -170,7 +170,7 @@ class EntityRepositoryRCNet @Inject constructor(
         )
     }
 
-    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = data.rawJson.elements.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = mutable_data?.rawJson?.elements?.find { element ->
         val value = element.value
         value.contains("https") && (value.contains(".jpg") || value.contains(".png") || value.contains(".svg"))
     }?.value?.toUri()
