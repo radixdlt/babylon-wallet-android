@@ -8,19 +8,11 @@ import java.time.Instant
 
 @Serializable
 data class Header(
-    /**
-     * A description of the device the Profile was first generated on,
-     * typically the wallet app reads a human provided device name
-     * if present and able, and/or a model description of the device e.g:
-     * `"Galaxy A53 5G (Samsung SM-A536B)"`
-     * This string can be presented to the user during a recovery flow,
-     * when the profile is restored from backup.
-     *
-     * This string is as constructed from [DeviceInfo] will be formed firt by the user's generated
-     * device name followed by the device's manufacturer and the device's factory model.
-     */
     @SerialName("creatingDevice")
-    val creatingDevice: String,
+    val creatingDevice: Device,
+
+    @SerialName("lastUsedOnDevice")
+    val lastUsedOnDevice: Device,
 
     /**
      * A locally generated stable identifier of this Profile. Useful for checking if
@@ -47,6 +39,7 @@ data class Header(
     /**
      * A version of the Profile Snapshot data format used for compatibility checks.
      */
+    @SerialName("snapshotVersion")
     val snapshotVersion: Int
 ) {
 
@@ -57,12 +50,69 @@ data class Header(
             id: String,
             creatingDevice: String?,
             creationDate: Instant
-        ) = Header(
-            creatingDevice = if (creatingDevice.isNullOrBlank()) GENERIC_ANDROID_DEVICE_PLACEHOLDER else creatingDevice,
-            id = id,
-            creationDate = creationDate,
-            lastModified = creationDate,
-            snapshotVersion = ProfileSnapshot.MINIMUM
-        )
+        ): Header {
+            val device = Device(
+                description = if (creatingDevice.isNullOrBlank()) GENERIC_ANDROID_DEVICE_PLACEHOLDER else creatingDevice,
+                id = id,
+                date = creationDate
+            )
+
+            return Header(
+                creatingDevice = device,
+                lastUsedOnDevice = device,
+                id = id,
+                creationDate = creationDate,
+                lastModified = creationDate,
+                snapshotVersion = ProfileSnapshot.MINIMUM
+            )
+        }
     }
+
+    fun claim(deviceDescription: String, claimedDate: Instant): Header = copy(
+        lastUsedOnDevice = Device(
+            description = deviceDescription,
+            id = id,
+            date = claimedDate
+        )
+    )
+
+    @Serializable
+    data class Device(
+        /**
+         * A description of the [Device] the Profile was generated/claimed,
+         * typically the wallet app reads a human provided device name
+         * if present and able, and/or a model description of the device e.g:
+         * `"Galaxy A53 5G (Samsung SM-A536B)"`
+         * This string can be presented to the user during a recovery flow,
+         * when the profile is restored from backup.
+         *
+         * This string is as constructed from [DeviceInfo] will be formed first by the user's generated
+         * device name followed by the device's manufacturer and the device's factory model.
+         */
+        @SerialName("description")
+        val description: String,
+
+        /**
+         * The profile's id which is associated with this [Device]
+         */
+        @SerialName("id")
+        val id: String,
+
+        /**
+         * The [Instant] on which this profile was generated/claimed
+         */
+        @Serializable(with = InstantSerializer::class)
+        @SerialName("date")
+        val date: Instant
+    )
+
+    @Serializable
+    data class ContentHint(
+        @SerialName("numberOfAccountsOnAllNetworksInTotal")
+        val numberOfAccountsOnAllNetworksInTotal: Int,
+        @SerialName("numberOfPersonasOnAllNetworksInTotal")
+        val numberOfPersonasOnAllNetworksInTotal: Int,
+        @SerialName("numberOfNetworks")
+        val numberOfNetworks: Int
+    )
 }

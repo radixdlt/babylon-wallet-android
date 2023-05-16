@@ -65,7 +65,7 @@ data class Profile(
         ): Profile {
             val factorSource = FactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                label = header.creatingDevice
+                label = header.creatingDevice.description
             )
 
             val mainNetwork = Network(

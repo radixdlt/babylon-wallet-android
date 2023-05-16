@@ -112,13 +112,12 @@ class SampleDataProvider {
             bip39Passphrase = ""
         )
     ): Profile {
+
         return Profile(
-            header = Header(
+            header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                lastModified = Instant.now(),
-                creationDate = Instant.now(),
-                snapshotVersion = 1
+                creationDate = Instant.now()
             ),
             appPreferences = AppPreferences(
                 display = Display.default,
