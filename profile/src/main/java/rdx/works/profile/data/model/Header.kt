@@ -40,7 +40,13 @@ data class Header(
      * A version of the Profile Snapshot data format used for compatibility checks.
      */
     @SerialName("snapshotVersion")
-    val snapshotVersion: Int
+    val snapshotVersion: Int,
+
+    /**
+     * General information about the total networks, accounts and personas
+     */
+    @SerialName("contentHint")
+    val contentHint: ContentHint
 ) {
 
     companion object {
@@ -49,7 +55,10 @@ data class Header(
         fun init(
             id: String,
             creatingDevice: String?,
-            creationDate: Instant
+            creationDate: Instant,
+            numberOfNetworks: Int,
+            numberOfAccounts: Int = 0,
+            numberOfPersonas: Int = 0,
         ): Header {
             val device = Device(
                 description = if (creatingDevice.isNullOrBlank()) GENERIC_ANDROID_DEVICE_PLACEHOLDER else creatingDevice,
@@ -63,7 +72,12 @@ data class Header(
                 id = id,
                 creationDate = creationDate,
                 lastModified = creationDate,
-                snapshotVersion = ProfileSnapshot.MINIMUM
+                snapshotVersion = ProfileSnapshot.MINIMUM,
+                contentHint = ContentHint(
+                    numberOfNetworks = numberOfNetworks,
+                    numberOfAccountsOnAllNetworksInTotal = numberOfAccounts,
+                    numberOfPersonasOnAllNetworksInTotal = numberOfPersonas
+                )
             )
         }
     }

@@ -10,6 +10,7 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 import rdx.works.profile.data.model.pernetwork.Network
+import java.time.Instant
 
 data class Profile(
     val header: Header,
@@ -40,6 +41,16 @@ data class Profile(
         )
     }
 
+    internal fun withUpdatedContentHint() = copy(
+        header = header.copy(
+            contentHint = Header.ContentHint(
+                numberOfNetworks = networks.size,
+                numberOfAccountsOnAllNetworksInTotal = networks.map { it.accounts }.flatten().size,
+                numberOfPersonasOnAllNetworksInTotal = networks.map { it.personas }.flatten().size
+            )
+        )
+    )
+
     /**
      * Temporarily the only factor source that the user can use to create accounts/personas.
      * When new UI is added that allows the user to import other factor sources
@@ -60,19 +71,23 @@ data class Profile(
     companion object {
         fun init(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            header: Header,
+            id: String,
+            creatingDevice: String,
+            creationDate: Instant,
             gateway: Radix.Gateway = Radix.Gateway.default
         ): Profile {
             val factorSource = FactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                label = header.creatingDevice.description
+                label = creatingDevice
             )
 
-            val mainNetwork = Network(
-                accounts = listOf(),
-                authorizedDapps = listOf(),
-                networkID = gateway.network.id,
-                personas = listOf()
+            val networks = listOf(
+                Network(
+                    accounts = listOf(),
+                    authorizedDapps = listOf(),
+                    networkID = gateway.network.id,
+                    personas = listOf()
+                )
             )
 
             val appPreferences = AppPreferences(
@@ -83,10 +98,15 @@ data class Profile(
             )
 
             return Profile(
-                header = header,
+                header = Header.init(
+                    id = id,
+                    creatingDevice = creatingDevice,
+                    creationDate = creationDate,
+                    numberOfNetworks = networks.size
+                ),
                 appPreferences = appPreferences,
                 factorSources = listOf(factorSource),
-                networks = listOf(mainNetwork)
+                networks = networks
             )
         }
     }

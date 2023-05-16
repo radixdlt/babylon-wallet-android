@@ -9,6 +9,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
+import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.SigningEntity
@@ -473,7 +474,7 @@ fun Profile.addAccount(
             factorSourceId = withFactorSourceId
         )
     }
-    return updatedProfile
+    return updatedProfile.withUpdatedContentHint()
 }
 
 fun Profile.addNetworkIfDoesNotExist(
@@ -488,7 +489,7 @@ fun Profile.addNetworkIfDoesNotExist(
                 networkID = onNetwork.value,
                 personas = listOf()
             )
-        )
+        ).withUpdatedContentHint()
     } else {
         this
     }
@@ -563,7 +564,7 @@ fun Profile.addPersona(
                 )
             }
         )
-    )
+    ).withUpdatedContentHint()
 }
 
 fun Profile.updateLastUsed(id: FactorSource.ID): Profile {

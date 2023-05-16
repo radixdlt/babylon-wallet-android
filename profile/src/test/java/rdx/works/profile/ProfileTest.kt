@@ -35,11 +35,9 @@ class ProfileTest {
 
         val profile = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            header = Header.init(
-                id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                creationDate = Instant.now()
-            )
+            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            creationDate = Instant.now()
         )
 
         val defaultNetwork = Radix.Gateway.default.network
@@ -137,11 +135,9 @@ class ProfileTest {
 
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            header = Header.init(
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creationDate = Instant.parse("2023-03-07T10:48:21Z")
-            ),
+            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            creationDate = Instant.parse("2023-03-07T10:48:21Z"),
             gateway = gateway
         )
         expected = expected.copy(factorSources = expected.factorSources + listOf(FactorSource.olympia(mnemonicWithPassphrase)))
