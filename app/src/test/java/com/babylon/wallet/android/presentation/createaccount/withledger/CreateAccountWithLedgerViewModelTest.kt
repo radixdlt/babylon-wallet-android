@@ -14,7 +14,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -42,13 +41,13 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         super.setUp()
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
-        coEvery { ledgerMessenger.sendDeviceInfoRequest(any()) } returns flowOf(
+        coEvery { ledgerMessenger.sendDeviceInfoRequest(any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
                 "1", MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS, "device1"
             )
         )
         coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns FactorSource.ID("2")
-        coEvery { ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(any(), any(), any()) } returns flowOf(
+        coEvery { ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(any(), any(), any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse("1", "publicKeyHex")
         )
     }
@@ -89,7 +88,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             assert(item.addLedgerSheetState == AddLedgerSheetState.InputLedgerName)
             assert(item.recentlyConnectedLedgerDevice != null)
         }
-        verify(exactly = 1) { ledgerMessenger.sendDeviceInfoRequest(any()) }
+        coVerify(exactly = 1) { ledgerMessenger.sendDeviceInfoRequest(any()) }
     }
 
     @Test

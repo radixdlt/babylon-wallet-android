@@ -11,6 +11,7 @@ import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -19,6 +20,7 @@ import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
 import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
+import java.time.Instant
 import java.util.*
 
 @Serializable
@@ -61,7 +63,7 @@ data class Network(
          * typically used in the primary role of this account).
          */
         @SerialName("address")
-        val address: String,
+        override val address: String,
 
         /**
          * An identifier for the gradient for this account, to be displayed in wallet
@@ -81,14 +83,14 @@ data class Network(
          * have been added and dApps connected.
          */
         @SerialName("networkID")
-        val networkID: Int,
+        override val networkID: Int,
 
         /**
          * Security of this account
          */
         @SerialName("securityState")
-        val securityState: SecurityState
-    ) {
+        override val securityState: SecurityState
+    ) : SigningEntity {
 
         companion object {
             fun initAccountWithDeviceFactorSource(
@@ -174,7 +176,7 @@ data class Network(
          * typically used in the primary role of this persona).
          */
         @SerialName("address")
-        val address: String,
+        override val address: String,
 
         /**
          * An optional displayName or label, used by presentation layer only.
@@ -190,14 +192,14 @@ data class Network(
          * have been added and dApps connected.
          */
         @SerialName("networkID")
-        val networkID: Int,
+        override val networkID: Int,
 
         /**
          * Security of this persona
          */
         @SerialName("securityState")
-        val securityState: SecurityState
-    ) {
+        override val securityState: SecurityState
+    ) : SigningEntity {
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
@@ -561,6 +563,14 @@ fun Profile.addPersona(
                 )
             }
         )
+    )
+}
+
+fun Profile.updateLastUsed(id: FactorSource.ID): Profile {
+    return copy(
+        factorSources = this.factorSources.mapWhen(predicate = { it.id == id }) { factorSource ->
+            factorSource.copy(lastUsedOn = Instant.now())
+        }
     )
 }
 

@@ -1,12 +1,13 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
-import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.toDomainModel
 import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.TestDispatcherRule
@@ -18,6 +19,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -26,8 +28,8 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.account.GetAccountSignersUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
@@ -37,10 +39,11 @@ internal class TransactionClientTest {
 
     private val transactionRepository = mockk<TransactionRepository>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val getAccountSignersUseCase = mockk<GetAccountSignersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
-    private val cache = mockk<HttpCache>()
+    private val collectSignersSignaturesUseCase = mockk<CollectSignersSignaturesUseCase>()
+    private val getFactorSourcesAndSigningEntitiesUseCase = mockk<GetFactorSourcesAndSigningEntitiesUseCase>()
+    private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val networkId = Radix.Gateway.hammunet.network.networkId().value
     private val expectedAddress = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
     private val expectedAddressWithNoFunds = "account_tdx_22_1pzg5a7htq650xh33x23zq9k90j5me3dvd8jql2wrkk8sd64ak7"
@@ -49,13 +52,15 @@ internal class TransactionClientTest {
 
     @Before
     fun setUp() {
+        coEvery { collectSignersSignaturesUseCase.signingEvent } returns emptyFlow()
         transactionClient = TransactionClient(
             transactionRepository,
             getCurrentGatewayUseCase,
             getProfileUseCase,
-            getAccountSignersUseCase,
+            collectSignersSignaturesUseCase,
+            getFactorSourcesAndSigningEntitiesUseCase,
             getAccountResourceUseCase,
-            cache
+            submitTransactionUseCase
         )
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.hammunet
         every { getProfileUseCase() } returns flowOf(
@@ -104,13 +109,12 @@ internal class TransactionClientTest {
                 transactionClient.selectAccountAddressToLockFee(networkId, manifest)
             manifest =
                 manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(networkId, manifest)
+            val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
 
-
-            Assert.assertEquals(1, addressesNeededToSign.size)
+            Assert.assertEquals(1, signingEntities.size)
             Assert.assertEquals(
                 expectedAddress,
-                addressesNeededToSign.first()
+                signingEntities.first().address
             )
         }
 
@@ -167,12 +171,12 @@ internal class TransactionClientTest {
                 transactionClient.selectAccountAddressToLockFee(networkId, manifest)
             manifest =
                 manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-            val addressesNeededToSign = transactionClient.getAddressesNeededToSign(networkId, manifest)
+            val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
 
-            Assert.assertEquals(2, addressesNeededToSign.size)
+            Assert.assertEquals(2, signingEntities.size)
             Assert.assertEquals(
                 expectedAddress,
-                addressesNeededToSign.first()
+                signingEntities.first().address
             )
 
         }

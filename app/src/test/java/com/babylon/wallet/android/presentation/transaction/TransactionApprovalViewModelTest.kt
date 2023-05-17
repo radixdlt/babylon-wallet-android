@@ -7,15 +7,16 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.FeeSummary
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -35,7 +36,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyString
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
@@ -47,6 +47,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
     private val getValidDAppMetadataUseCase = mockk<GetValidDAppMetadataUseCase>()
+    private val pollTransactionStatusUseCase = mockk<PollTransactionStatusUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -74,17 +75,17 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { getTransactionProofResourcesUseCase.invoke(any()) } returns listOf(
             PresentingProofUiModel("", "")
         )
-        coEvery { transactionClient.signAndSubmitTransaction(anyString(), any()) } returns Result.Success(sampleTxId)
+        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.convertManifestInstructionsToString(any()) } returns Result.Success(sampleManifest)
-        coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.Success(
+        coEvery { transactionClient.getTransactionPreview(any(), any(), any(), any()) } returns Result.Success(
             previewResponse()
         )
         coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any(), any()) } returns kotlin.Result.success(
             analyzeManifestResponse()
         )
-        coEvery { transactionClient.pollTransactionStatus(any()) } returns Result.Success("")
+        coEvery { pollTransactionStatusUseCase(any()) } returns Result.Success("")
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",
@@ -113,6 +114,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             getCurrentGatewayUseCase,
             deviceSecurityHelper,
             dAppMessenger,
+            pollTransactionStatusUseCase,
             TestScope(),
             appEventBus,
             savedStateHandle
@@ -156,7 +158,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(anyString(), any()) } returns Result.Error(
+        coEvery { pollTransactionStatusUseCase(any()) } returns Result.Error(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )

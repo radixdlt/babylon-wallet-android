@@ -27,7 +27,6 @@ import kotlinx.collections.immutable.toPersistentHashMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -301,10 +300,10 @@ class OlympiaImportViewModel @Inject constructor(
             ledgerMessenger.sendImportOlympiaDeviceRequest(
                 interactionId = interactionId,
                 derivationPaths = hardwareAccountsDerivationPaths
-            ).catch { error ->
+            ).onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error.cause), waitingForLedgerResponse = false) }
-            }.collect { response ->
-                processIncomingLedgerResponse(response)
+            }.onSuccess { r ->
+                processIncomingLedgerResponse(r)
             }
         }
     }

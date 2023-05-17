@@ -17,6 +17,8 @@ sealed interface DappRequestFailure {
         object ConvertManifest : TransactionApprovalFailure
         object BuildTransactionHeader : TransactionApprovalFailure
         object FailedToFindAccountWithEnoughFundsToLockFee : TransactionApprovalFailure
+        object CompileTransactionIntent : TransactionApprovalFailure
+        object SignCompiledTransactionIntent : TransactionApprovalFailure
         object PrepareNotarizedTransaction : TransactionApprovalFailure
         object SubmitNotarizedTransaction : TransactionApprovalFailure
         data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure
@@ -58,6 +60,8 @@ sealed interface DappRequestFailure {
             DappVerificationFailure.WrongAccountType -> WalletErrorType.WrongAccountType
             InvalidPersona -> WalletErrorType.InvalidPersona
             InvalidRequest -> WalletErrorType.InvalidRequest
+            TransactionApprovalFailure.CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
+            TransactionApprovalFailure.SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
         }
     }
 
@@ -82,6 +86,8 @@ sealed interface DappRequestFailure {
             DappVerificationFailure.WrongAccountType -> R.string.expected_to_find_dapp_account_type
             InvalidPersona -> R.string.invalid_persona_id_specified_by_dapp
             InvalidRequest -> R.string.invalid_request
+            TransactionApprovalFailure.CompileTransactionIntent -> R.string.tx_fail_prepare
+            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.tx_fail_sign
         }
     }
 

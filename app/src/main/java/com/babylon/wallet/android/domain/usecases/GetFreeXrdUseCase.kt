@@ -5,10 +5,12 @@ import com.babylon.wallet.android.data.manifest.addFreeXrdInstruction
 import com.babylon.wallet.android.data.manifest.addLockFeeInstruction
 import com.babylon.wallet.android.data.manifest.faucetComponentAddress
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.data.transaction.TransactionApprovalRequest
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,6 +27,7 @@ class GetFreeXrdUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val preferencesManager: PreferencesManager,
+    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
@@ -41,9 +44,10 @@ class GetFreeXrdUseCase @Inject constructor(
             when (val epochResult = transactionRepository.getLedgerEpoch()) {
                 is Result.Error -> epochResult
                 is Result.Success -> {
-                    val submitResult = transactionClient.signAndSubmitTransaction(manifest, true)
+                    val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
+                    val submitResult = transactionClient.signAndSubmitTransaction(request)
                     submitResult.onValue { txId ->
-                        val transactionStatus = transactionClient.pollTransactionStatus(txId)
+                        val transactionStatus = pollTransactionStatusUseCase(txId)
                         transactionStatus.onValue {
                             preferencesManager.updateEpoch(address, epochResult.data)
                         }

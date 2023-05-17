@@ -9,8 +9,8 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.TransactionApprovalRequest
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.readInstructions
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.Result
@@ -22,6 +22,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -32,6 +33,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.toolkit.models.address.EntityAddress
+import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.ResourceSpecifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
@@ -46,6 +48,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
@@ -65,14 +68,18 @@ class TransactionApprovalViewModel @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
+    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<TransactionUiState>(), OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<TransactionUiState>(),
+    OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
     private val args = TransactionApprovalArgs(savedStateHandle)
     private val transactionWriteRequest =
         incomingRequestRepository.getTransactionWriteRequest(args.requestId)
+
+    private val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom()
 
     override fun initialState(): TransactionUiState =
         TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure())
@@ -82,6 +89,12 @@ class TransactionApprovalViewModel @Inject constructor(
     private var depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf()
 
     init {
+        viewModelScope.launch {
+            transactionClient.signingState.filterNotNull().collect { event ->
+                // TODO display UI relevant to current signing state
+                Timber.d("Signing state: $event")
+            }
+        }
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -118,6 +131,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         val transactionManifest = manifestInStringFormatConversionResult.data
                         val transactionPreview = transactionClient.getTransactionPreview(
                             manifest = transactionManifest,
+                            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
                             networkId = getCurrentGatewayUseCase().network.networkId().value,
                             blobs = transactionManifest.blobs.orEmpty()
                         )
@@ -419,55 +433,24 @@ class TransactionApprovalViewModel @Inject constructor(
                                 }
                             }
                         }
-
-                        transactionClient.convertManifestInstructionsToString(
-                            manifestJson
-                        ).onValue { manifestStringResponse ->
-                            val signAndSubmitResult = transactionClient.signAndSubmitTransaction(
-                                instructions = manifestStringResponse.readInstructions(),
-                                blobs = manifestStringResponse.blobs
+                        val request = TransactionApprovalRequest(manifestJson, ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey)
+                        val signAndSubmitResult = transactionClient.signAndSubmitTransaction(request)
+                        signAndSubmitResult.onValue { txId ->
+                            // Send confirmation to the dApp that tx was submitted before status polling
+                            dAppMessenger.sendTransactionWriteResponseSuccess(
+                                dappId = transactionWriteRequest.dappId,
+                                requestId = args.requestId,
+                                txId = txId
                             )
-                            signAndSubmitResult.onValue { txId ->
-                                // Send confirmation to the dApp that tx was submitted before status polling
-                                dAppMessenger.sendTransactionWriteResponseSuccess(
-                                    dappId = transactionWriteRequest.dappId,
-                                    requestId = args.requestId,
-                                    txId = txId
-                                )
 
-                                val transactionStatus = transactionClient.pollTransactionStatus(txId)
-                                transactionStatus.onValue { _ ->
-                                    _state.update { it.copy(isSigning = false) }
-                                    approvalJob = null
-                                    appEventBus.sendEvent(AppEvent.ApprovedTransaction)
-                                    sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
-                                }
-                                transactionStatus.onError { error ->
-                                    _state.update {
-                                        it.copy(
-                                            isSigning = false,
-                                            error = UiMessage.ErrorMessage(error = error)
-                                        )
-                                    }
-                                    val exception = error as? DappRequestException
-                                    if (exception != null) {
-                                        dAppMessenger.sendWalletInteractionResponseFailure(
-                                            dappId = transactionWriteRequest.dappId,
-                                            requestId = args.requestId,
-                                            error = exception.failure.toWalletErrorType(),
-                                            message = exception.failure.getDappMessage()
-                                        )
-                                        approvalJob = null
-                                        sendEvent(
-                                            TransactionApprovalEvent.FlowCompletedWithError(
-                                                requestId = args.requestId,
-                                                errorTextRes = exception.failure.toDescriptionRes()
-                                            )
-                                        )
-                                    }
-                                }
+                            val transactionStatus = pollTransactionStatusUseCase(txId)
+                            transactionStatus.onValue { _ ->
+                                _state.update { it.copy(isSigning = false) }
+                                approvalJob = null
+                                appEventBus.sendEvent(AppEvent.ApprovedTransaction)
+                                sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                             }
-                            signAndSubmitResult.onError { error ->
+                            transactionStatus.onError { error ->
                                 _state.update {
                                     it.copy(
                                         isSigning = false,
@@ -490,6 +473,30 @@ class TransactionApprovalViewModel @Inject constructor(
                                         )
                                     )
                                 }
+                            }
+                        }
+                        signAndSubmitResult.onError { error ->
+                            _state.update {
+                                it.copy(
+                                    isSigning = false,
+                                    error = UiMessage.ErrorMessage(error = error)
+                                )
+                            }
+                            val exception = error as? DappRequestException
+                            if (exception != null) {
+                                dAppMessenger.sendWalletInteractionResponseFailure(
+                                    dappId = transactionWriteRequest.dappId,
+                                    requestId = args.requestId,
+                                    error = exception.failure.toWalletErrorType(),
+                                    message = exception.failure.getDappMessage()
+                                )
+                                approvalJob = null
+                                sendEvent(
+                                    TransactionApprovalEvent.FlowCompletedWithError(
+                                        requestId = args.requestId,
+                                        errorTextRes = exception.failure.toDescriptionRes()
+                                    )
+                                )
                             }
                         }
                     }

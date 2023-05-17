@@ -49,7 +49,8 @@ class LedgerFactorSourcesViewModel @Inject constructor(
     fun onSendAddLedgerRequest() {
         viewModelScope.launch {
             _state.update { it.copy(waitingForLedgerResponse = true) }
-            ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString()).collect { response ->
+            val result = ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString())
+            result.onSuccess { response ->
                 _state.update { state ->
                     state.copy(
                         addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
