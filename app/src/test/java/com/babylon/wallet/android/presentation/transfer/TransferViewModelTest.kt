@@ -70,12 +70,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
         // then
         Assert.assertEquals(
-            AccountItemUiModel(
-                address = firstAccount.address,
-                displayName = firstAccount.displayName,
-                appearanceID = firstAccount.appearanceID,
-                isSelected = false
-            ),
+            firstAccount,
             viewModel.state.first().fromAccount
         )
         Assert.assertEquals(

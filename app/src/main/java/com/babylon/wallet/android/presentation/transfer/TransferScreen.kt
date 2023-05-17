@@ -41,6 +41,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -326,11 +327,9 @@ fun TransferContentPreview() {
             onSendTransferClick = {},
             state = TransferViewModel.State(
                 message = "",
-                fromAccount = AccountItemUiModel(
-                    "rdx_t_12382918379821",
-                    displayName = "Savings account",
-                    appearanceID = 1,
-                    isSelected = false
+                fromAccount = SampleDataProvider().sampleAccount(
+                    address = "rdx_t_12382918379821",
+                    name = "Savings account"
                 )
             ),
             onMessageChanged = {},

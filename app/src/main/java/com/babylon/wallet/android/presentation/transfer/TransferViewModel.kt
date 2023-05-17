@@ -13,6 +13,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -36,11 +37,7 @@ class TransferViewModel @Inject constructor(
             sourceAccount?.let { account ->
                 _state.update {
                     it.copy(
-                        fromAccount = AccountItemUiModel(
-                            address = account.address,
-                            displayName = account.displayName,
-                            appearanceID = account.appearanceID
-                        ),
+                        fromAccount = account,
                         receivingAccounts = destinationAccounts.map { destinationAccount ->
                             AccountItemUiModel(
                                 address = destinationAccount.address,
@@ -241,7 +238,7 @@ class TransferViewModel @Inject constructor(
     }
 
     data class State(
-        val fromAccount: AccountItemUiModel? = null,
+        val fromAccount: Network.Account? = null,
         val receivingAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
         val selectedAccounts: ImmutableList<SelectedAccountForTransfer> = persistentListOf(
             SelectedAccountForTransfer()
