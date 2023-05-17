@@ -1,11 +1,8 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package rdx.works.profile.data.model
 
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.Header.Companion.equals
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.serialisers.InstantSerializer
 import java.time.Instant
@@ -49,10 +46,8 @@ data class Header(
     /**
      * When this profile was first created
      */
-    @Serializable(with = InstantSerializer::class)
-    @SerialName("creationDate")
-    @EncodeDefault
-    val creationDate: Instant = creatingDevice.date
+    val creationDate: Instant
+        get() = creatingDevice.date
 
     companion object {
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
