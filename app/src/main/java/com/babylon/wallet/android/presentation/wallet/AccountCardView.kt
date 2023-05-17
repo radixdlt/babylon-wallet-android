@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -122,7 +119,7 @@ fun AccountCardView(
             isLoading = isLoadingResources
         )
 
-        AnimatedVisibility(
+        Column(
             modifier = Modifier.constrainAs(promptsContainer) {
                 linkTo(
                     start = parent.start,
@@ -131,12 +128,9 @@ fun AccountCardView(
                     bottom = parent.bottom,
                     verticalBias = 1f
                 )
-            },
-            visible = isPromptVisible,
-            enter = fadeIn(),
-            exit = fadeOut()
+            }
         ) {
-            Column {
+            if (isPromptVisible) {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onApplySecuritySettings,

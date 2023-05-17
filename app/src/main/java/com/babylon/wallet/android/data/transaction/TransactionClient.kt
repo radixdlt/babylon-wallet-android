@@ -333,7 +333,7 @@ class TransactionClient @Inject constructor(
                 .filterIsInstance<EntityAddress.ComponentAddress>()
                 .map { it.address }.toSet()
             allAccounts.filter { addressesNeededToSign.contains(it.address) }
-        } ?: emptyList()
+        }.orEmpty()
     }
 
     fun analyzeManifestWithPreviewContext(
