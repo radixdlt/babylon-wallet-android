@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package rdx.works.profile.data.model
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.Profile.Companion.equals
@@ -23,13 +27,6 @@ data class Header(
     val id: String,
 
     /**
-     * When this profile was first created
-     */
-    @Serializable(with = InstantSerializer::class)
-    @SerialName("creationDate")
-    val creationDate: Instant,
-
-    /**
      * When the profile was last updated, by modifications from the user
      */
     @Serializable(with = InstantSerializer::class)
@@ -49,9 +46,18 @@ data class Header(
     val contentHint: ContentHint
 ) {
 
+    /**
+     * When this profile was first created
+     */
+    @Serializable(with = InstantSerializer::class)
+    @SerialName("creationDate")
+    @EncodeDefault
+    val creationDate: Instant = creatingDevice.date
+
     companion object {
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"
 
+        @Suppress("LongParameterList")
         fun init(
             id: String,
             creatingDevice: String?,
@@ -70,7 +76,6 @@ data class Header(
                 creatingDevice = device,
                 lastUsedOnDevice = device,
                 id = id,
-                creationDate = creationDate,
                 lastModified = creationDate,
                 snapshotVersion = ProfileSnapshot.MINIMUM,
                 contentHint = ContentHint(
