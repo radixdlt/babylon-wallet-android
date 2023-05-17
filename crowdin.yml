@@ -1,0 +1,6 @@
+targets:
+  - name: Andorid
+    sources:
+      - en
+    file: '%two_letters_code%/Localize.strings'
+    format: android
