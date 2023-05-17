@@ -99,7 +99,7 @@ internal class TransactionClientTest {
                 profile(
                     accounts = listOf(
                         accountWithFunds.account,
-                        accountWithFunds.account
+                        accountWithNoFunds.account
                     )
                 )
             )
@@ -145,17 +145,12 @@ internal class TransactionClientTest {
                 data = listOf(accountWithFunds)
             )
 
-            val addressToLockFee =
-                transactionClient.selectAccountAddressToLockFee(networkId, manifest)
-            manifest =
-                manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
+            val addressToLockFee = transactionClient.selectAccountAddressToLockFee(networkId, manifest)
+            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
             val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
 
             Assert.assertEquals(2, signingEntities.size)
-            Assert.assertEquals(
-                addressWithFunds,
-                signingEntities.first().address
-            )
+            Assert.assertTrue(signingEntities.any { it.address == addressWithFunds })
 
         }
 

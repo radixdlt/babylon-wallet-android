@@ -39,9 +39,8 @@ import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import kotlinx.coroutines.delay
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.SigningEntity
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -198,7 +197,7 @@ class TransactionClient @Inject constructor(
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
         val searchedAccounts = mutableSetOf<Network.Account>()
-        result.onSuccess { analyzeManifestResponse ->
+        return result.getOrNull()?.let { analyzeManifestResponse ->
             val withdrawnFromCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsWithdrawnFrom.toList(),
                 accounts = allAccounts
@@ -226,7 +225,6 @@ class TransactionClient @Inject constructor(
             val accountsLeftToSearch = allAccounts.minus(searchedAccounts)
             return findFeePayerWithin(accountsLeftToSearch.toList())
         }
-        return null
     }
 
     private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, accounts: List<Network.Account>): List<Network.Account> {
@@ -330,13 +328,12 @@ class TransactionClient @Inject constructor(
     suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<SigningEntity> {
         val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-        result.onSuccess { analyzeManifestResponse ->
+        return result.getOrNull()?.let { analyzeManifestResponse ->
             val addressesNeededToSign = analyzeManifestResponse.accountsRequiringAuth
                 .filterIsInstance<EntityAddress.ComponentAddress>()
                 .map { it.address }.toSet()
-            return allAccounts.filter { addressesNeededToSign.contains(it.address) }
-        }
-        return emptyList()
+            allAccounts.filter { addressesNeededToSign.contains(it.address) }
+        } ?: emptyList()
     }
 
     fun analyzeManifestWithPreviewContext(
