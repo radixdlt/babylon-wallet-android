@@ -47,7 +47,7 @@ internal data class ProfileSnapshot(
         /**
          * The minimum accepted snapshot version format. Lower versions are currently discarded.
          */
-        const val MINIMUM = 30
+        const val MINIMUM = 33
 
         fun fromJson(serialised: String) = Json.decodeFromString<ProfileSnapshot>(serialised)
     }

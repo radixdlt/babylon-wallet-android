@@ -473,7 +473,7 @@ fun Profile.addAccount(
             factorSourceId = withFactorSourceId
         )
     }
-    return updatedProfile
+    return updatedProfile.withUpdatedContentHint()
 }
 
 fun Profile.addNetworkIfDoesNotExist(
@@ -488,7 +488,7 @@ fun Profile.addNetworkIfDoesNotExist(
                 networkID = onNetwork.value,
                 personas = listOf()
             )
-        )
+        ).withUpdatedContentHint()
     } else {
         this
     }
@@ -563,7 +563,7 @@ fun Profile.addPersona(
                 )
             }
         )
-    )
+    ).withUpdatedContentHint()
 }
 
 fun Profile.updateLastUsed(id: FactorSource.ID): Profile {

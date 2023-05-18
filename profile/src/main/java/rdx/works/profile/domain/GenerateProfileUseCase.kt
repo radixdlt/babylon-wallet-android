@@ -4,7 +4,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -29,11 +28,9 @@ class GenerateProfileUseCase @Inject constructor(
 
                 val profile = Profile.init(
                     mnemonicWithPassphrase = mnemonicWithPassphrase,
-                    header = Header.init(
-                        id = UUIDGenerator.uuid().toString(),
-                        creatingDevice = deviceInfoRepository.getDeviceInfo().displayName,
-                        creationDate = Instant.now()
-                    )
+                    id = UUIDGenerator.uuid().toString(),
+                    creatingDevice = deviceInfoRepository.getDeviceInfo().displayName,
+                    creationDate = Instant.now()
                 )
 
                 profileRepository.saveProfile(profile)

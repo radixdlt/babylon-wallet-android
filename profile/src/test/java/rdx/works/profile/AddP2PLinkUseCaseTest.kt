@@ -36,7 +36,8 @@ class AddP2PLinkUseCaseTest {
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                creationDate = Instant.now()
+                creationDate = Instant.now(),
+                numberOfNetworks = 0
             ),
             appPreferences = AppPreferences(
                 display = Display.default,
