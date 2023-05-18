@@ -254,9 +254,14 @@ class TransferViewModel @Inject constructor(
         val fromAccount = state.value.fromAccount ?: return
         assetsChooserDelegate.onChooseAssets(
             fromAccount = fromAccount,
-            selectedAssets = listOf()
+            selectedAssets = setOf()
         )
     }
+
+    fun onAssetSelectionChanged(resource: Resource, isSelected: Boolean) = assetsChooserDelegate.onAssetSelectionChanged(
+        resource = resource,
+        isChecked = isSelected
+    )
 
     fun onSheetClose() {
         _state.update { it.copy(sheet = State.Sheet.None) }
@@ -295,7 +300,7 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAssets(
                 val resources: Resources? = null,
-                val selectedResources: List<Resource>,
+                val selectedResources: Set<Resource>,
                 val selectedTab: Tab = Tab.Tokens
             ): Sheet {
 

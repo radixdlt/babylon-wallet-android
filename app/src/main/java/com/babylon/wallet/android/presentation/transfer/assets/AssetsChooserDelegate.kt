@@ -18,7 +18,7 @@ class AssetsChooserDelegate(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase
 ) {
 
-    fun onChooseAssets(fromAccount: Network.Account, selectedAssets: List<Resource>) {
+    fun onChooseAssets(fromAccount: Network.Account, selectedAssets: Set<Resource>) {
         state.update {
             it.copy(sheet = Sheet.ChooseAssets(selectedResources = selectedAssets))
         }
@@ -37,6 +37,19 @@ class AssetsChooserDelegate(
 
     fun onTabSelected(tab: Sheet.ChooseAssets.Tab) {
         updateSheetState { it.copy(selectedTab = tab) }
+    }
+
+    fun onAssetSelectionChanged(resource: Resource, isChecked: Boolean) {
+        updateSheetState { state ->
+            val selected = state.selectedResources.toMutableSet()
+            if (isChecked) {
+                selected.add(resource)
+            } else {
+                selected.remove(resource)
+            }
+
+            state.copy(selectedResources = selected.toSet())
+        }
     }
 
     private fun updateSheetState(

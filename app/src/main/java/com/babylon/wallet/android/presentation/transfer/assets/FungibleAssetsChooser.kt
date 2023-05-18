@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.toArgb
@@ -43,15 +42,15 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
 
 @Composable
-fun ChooseAssetsFungiblesContent(
+fun FungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    resources: List<Resource.FungibleResource>,
-    selectedResources: List<Resource>,
-    onResourceClicked: (Resource.FungibleResource) -> Unit
+    assets: List<Resource.FungibleResource>,
+    selectedAssets: Set<Resource>,
+    onAssetSelectionChanged: (Resource.FungibleResource, Boolean) -> Unit
 ) {
-    val (xrdResource, restResources) = remember(resources) {
-        val xrdResource = resources.find { it.isXrd }
-        xrdResource to resources.filterNot { it == xrdResource }
+    val (xrdResource, restResources) = remember(assets) {
+        val xrdResource = assets.find { it.isXrd }
+        xrdResource to assets.filterNot { it == xrdResource }
     }
 
     LazyColumn(
@@ -65,11 +64,12 @@ fun ChooseAssetsFungiblesContent(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
                     shape = listItemShape()
                 ) {
+                    val isSelected = selectedAssets.contains(xrdResource)
                     Item(
                         modifier = Modifier.height(85.dp),
                         resource = xrdResource,
-                        isSelected = selectedResources.contains(xrdResource),
-                        onClick = { onResourceClicked(xrdResource) }
+                        isSelected = isSelected,
+                        onCheckChanged = { onAssetSelectionChanged(xrdResource, it) }
                     )
                 }
             }
@@ -111,8 +111,8 @@ fun ChooseAssetsFungiblesContent(
                 Item(
                     modifier = Modifier.height(83.dp),
                     resource = resource,
-                    isSelected = selectedResources.contains(resource),
-                    onClick = { onResourceClicked(resource) }
+                    isSelected = selectedAssets.contains(resource),
+                    onCheckChanged = { onAssetSelectionChanged(resource, it) }
                 )
             }
         }
@@ -145,15 +145,19 @@ private fun Item(
     modifier: Modifier = Modifier,
     resource: Resource.FungibleResource,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onCheckChanged: (Boolean) -> Unit
 ) {
     Row(
         modifier = modifier
-            .padding(horizontal = 28.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable {
+                onCheckChanged(!isSelected)
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+
+        Spacer(modifier = Modifier.width(28.dp))
 
         AsyncImage(
             modifier = Modifier
@@ -189,12 +193,14 @@ private fun Item(
 
         Checkbox(
             checked = isSelected,
-            onCheckedChange = { onClick() },
+            onCheckedChange = onCheckChanged,
             colors = CheckboxDefaults.colors(
                 checkedColor = RadixTheme.colors.gray1,
-                uncheckedColor = RadixTheme.colors.gray3,
+                uncheckedColor = RadixTheme.colors.gray2,
                 checkmarkColor = Color.White
             )
         )
+
+        Spacer(modifier = Modifier.width(8.dp))
     }
 }

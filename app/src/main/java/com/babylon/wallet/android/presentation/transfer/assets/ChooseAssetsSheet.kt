@@ -35,6 +35,7 @@ import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
@@ -46,7 +47,8 @@ fun ChooseAssetsSheet(
     modifier: Modifier = Modifier,
     state: ChooseAssets,
     onTabSelected: (ChooseAssets.Tab) -> Unit,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onAssetSelectionChanged: (Resource, Boolean) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -84,10 +86,10 @@ fun ChooseAssetsSheet(
                     }
 
                     when (tab) {
-                        ChooseAssets.Tab.Tokens -> ChooseAssetsFungiblesContent(
-                            resources = state.resources?.fungibleResources.orEmpty(),
-                            selectedResources = state.selectedResources,
-                            onResourceClicked = {}
+                        ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
+                            assets = state.resources?.fungibleResources.orEmpty(),
+                            selectedAssets = state.selectedResources,
+                            onAssetSelectionChanged = onAssetSelectionChanged
                         )
                         ChooseAssets.Tab.NFTs -> {}
                     }
@@ -177,10 +179,11 @@ private fun ChooseAssetsSheetPreview() {
                     fungibleResources = listOf(),
                     nonFungibleResources = listOf()
                 ),
-                selectedResources = listOf()
+                selectedResources = setOf()
             ),
             onTabSelected = {},
-            onCloseClick = {}
+            onCloseClick = {},
+            onAssetSelectionChanged = { _, _ -> }
         )
     }
 }

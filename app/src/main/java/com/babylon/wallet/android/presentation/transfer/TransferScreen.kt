@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.transfer
 
@@ -46,6 +46,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
@@ -79,7 +80,8 @@ fun TransferScreen(
         cancelQrScan = viewModel::cancelQrScan,
         onChooseAssetTabSelected = viewModel::onChooseAssetTabSelected,
         onSheetClosed = viewModel::onSheetClose,
-        onAddAssetsClick = viewModel::onAddAssetsClick
+        onAddAssetsClick = viewModel::onAddAssetsClick,
+        onAssetSelectionChanged = viewModel::onAssetSelectionChanged
     )
 }
 
@@ -102,7 +104,8 @@ fun TransferContent(
     cancelQrScan: () -> Unit,
     onChooseAssetTabSelected: (State.Sheet.ChooseAssets.Tab) -> Unit,
     onSheetClosed: () -> Unit,
-    onAddAssetsClick: () -> Unit
+    onAddAssetsClick: () -> Unit,
+    onAssetSelectionChanged: (Resource, Boolean) -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -127,7 +130,8 @@ fun TransferContent(
                     ChooseAssetsSheet(
                         state = state.sheet,
                         onTabSelected = { onChooseAssetTabSelected(it) },
-                        onCloseClick = onSheetClosed
+                        onCloseClick = onSheetClosed,
+                        onAssetSelectionChanged = onAssetSelectionChanged
                     )
                 }
                 is State.Sheet.None -> {
@@ -395,7 +399,8 @@ fun TransferContentPreview() {
             cancelQrScan = {},
             onChooseAssetTabSelected = {},
             onSheetClosed = {},
-            onAddAssetsClick = {}
+            onAddAssetsClick = {},
+            onAssetSelectionChanged = { _, _ ->}
         )
     }
 }
