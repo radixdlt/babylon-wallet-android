@@ -3,18 +3,16 @@
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.domain.model.AccountAddress
-import com.babylon.wallet.android.domain.model.AccountResources
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.FungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleMetadataContainer
-import com.babylon.wallet.android.domain.model.NonFungibleToken
-import com.babylon.wallet.android.domain.model.NonFungibleTokenItemContainer
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
-import com.babylon.wallet.android.domain.model.OwnedNonFungibleToken
-import com.babylon.wallet.android.presentation.model.toTokenUiModel
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -94,15 +92,16 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountResource(
+    fun sampleAccountWithResources(
         address: String = randomAddress(),
-        withFungibleTokens: List<OwnedFungibleToken> = sampleFungibleTokens(address)
-    ): AccountResources {
-        return AccountResources(
-            address = address,
-            displayName = "My account",
-            fungibleTokens = withFungibleTokens.toPersistentList(),
-            appearanceID = 1
+        withFungibleTokens: List<Resource.FungibleResource> = sampleFungibleResources()
+    ): AccountWithResources {
+        return AccountWithResources(
+            account = sampleAccount(address = address),
+            resources = Resources(
+                fungibleResources = withFungibleTokens,
+                nonFungibleResources = emptyList()
+            )
         )
     }
 
@@ -156,6 +155,24 @@ class SampleDataProvider {
         }
     }
 
+    fun sampleFungibleResources(
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+    ): List<Resource.FungibleResource> {
+        val result = mutableListOf<Resource.FungibleResource>()
+        return result.apply {
+            repeat(3) {
+                add(
+                    Resource.FungibleResource(
+                        resourceAddress = randomAddress(),
+                        amount = amount.first,
+                        nameMetadataItem = NameMetadataItem("cool XRD"),
+                        symbolMetadataItem = SymbolMetadataItem("XRD")
+                    )
+                )
+            }
+        }
+    }
+
     fun sampleManifest(): TransactionManifest {
         return ManifestBuilder()
             .callMethod(
@@ -169,49 +186,4 @@ class SampleDataProvider {
             )
             .build()
     }
-
-    val mockTokenUiList = sampleFungibleTokens().map { ownedFungibleToken ->
-        ownedFungibleToken.toTokenUiModel()
-    }
-
-    val mockNftUiList = listOf(
-        OwnedNonFungibleToken(
-            owner = AccountAddress(
-                address = "owner address",
-                label = "NBA"
-            ),
-            amount = 10L,
-            tokenResourceAddress = "token resource address",
-            token = NonFungibleToken(
-                address = "non fungible token address",
-                nfts = listOf(
-                    NonFungibleTokenItemContainer("#1#", "")
-                ),
-                metadataContainer = NonFungibleMetadataContainer(
-                    metadata = emptyMap(),
-                    nextCursor = "meta next cursor",
-                    previousCursor = "meta previous cursor"
-                )
-            )
-        ),
-        OwnedNonFungibleToken(
-            owner = AccountAddress(
-                address = "owner address",
-                label = "Space"
-            ),
-            amount = 10L,
-            tokenResourceAddress = "token resource address",
-            token = NonFungibleToken(
-                address = "non fungible token address",
-                nfts = listOf(
-                    NonFungibleTokenItemContainer("#1#", "")
-                ),
-                metadataContainer = NonFungibleMetadataContainer(
-                    metadata = emptyMap(),
-                    nextCursor = "meta next cursor",
-                    previousCursor = "meta previous cursor"
-                )
-            )
-        )
-    )
 }

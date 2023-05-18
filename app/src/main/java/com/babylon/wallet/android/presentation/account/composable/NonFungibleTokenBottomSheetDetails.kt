@@ -15,11 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
@@ -29,7 +28,8 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    selectedNft: NftCollectionUiModel.NftItemUiModel,
+    nonFungibleResource: Resource.NonFungibleResource,
+    item: Resource.NonFungibleResource.Item,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -51,7 +51,7 @@ fun NonFungibleTokenBottomSheetDetails(
         ) {
             val painter = rememberAsyncImagePainter(
                 model = rememberImageUrl(
-                    fromUrl = selectedNft.nftImage,
+                    fromUrl = item.imageUrl.toString(),
                     size = ImageSize.LARGE
                 ),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
@@ -73,20 +73,12 @@ fun NonFungibleTokenBottomSheetDetails(
                 key = stringResource(id = R.string.nft_id)
             ) {
                 ActionableAddressView(
-                    address = selectedNft.displayAddress,
+                    address = item.globalAddress(nftAddress = nonFungibleResource.resourceAddress),
                     textStyle = RadixTheme.typography.body1Regular,
                     textColor = RadixTheme.colors.gray1
                 )
             }
-            selectedNft.nftsMetadata.forEach {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                AssetMetadataRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    key = it.first,
-                    value = it.second
-                )
-            }
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

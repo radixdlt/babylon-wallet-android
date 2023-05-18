@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 @Composable
@@ -149,7 +150,7 @@ fun TransactionAccountCard(
                         }
                         Text(
                             modifier = Modifier,
-                            text = if (token.isTokenAmountVisible == true) token.tokenQuantityToDisplay else "",
+                            text = if (token.isTokenAmountVisible == true) token.tokenQuantity.displayableQuantity() else "",
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -195,7 +196,7 @@ fun TransactionAccountCardPreview() {
             tokens = persistentListOf(
                 TokenUiModel(
                     tokenQuantity = BigDecimal(689.203),
-                    address = "d3d3nd32dko3dko3",
+                    resourceAddress = "d3d3nd32dko3dko3",
                     symbol = "XRD",
                     iconUrl = "",
                     isTokenAmountVisible = true,

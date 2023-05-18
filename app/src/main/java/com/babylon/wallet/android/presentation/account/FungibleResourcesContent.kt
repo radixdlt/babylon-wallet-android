@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -20,26 +21,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import java.math.BigDecimal
 
-@Suppress("UnstableCollections")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TokenListContent(
-    tokenItems: List<TokenUiModel>,
+fun FungibleResourcesContent(
     modifier: Modifier = Modifier,
-    xrdTokenUi: TokenUiModel? = null,
-    onFungibleTokenClick: (TokenUiModel) -> Unit,
+    fungibles: PersistentList<Resource.FungibleResource>,
+    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
 ) {
+    val (xrdItem, restItems) = remember(fungibles) {
+        fungibles.find { it.isXrd } to fungibles.filterNot { it.isXrd }
+    }
     LazyColumn(
         contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
         modifier = modifier,
     ) {
-        if (xrdTokenUi != null) {
+        if (xrdItem != null) {
             stickyHeader {
-                TokenItemCard(
-                    token = xrdTokenUi,
+                FungibleItemRow(
+                    fungible = xrdItem,
                     modifier = Modifier
                         .shadow(4.dp, RadixTheme.shapes.roundedRectMedium)
                         .fillMaxWidth()
@@ -49,7 +54,7 @@ fun TokenListContent(
                         )
                         .clip(RadixTheme.shapes.roundedRectMedium)
                         .clickable {
-                            onFungibleTokenClick(xrdTokenUi)
+                            onFungibleTokenClick(xrdItem)
                         },
                 )
             }
@@ -58,22 +63,21 @@ fun TokenListContent(
             }
         }
         itemsIndexed(
-            items = tokenItems,
-            key = { _, item: TokenUiModel ->
-                item.address
+            items = restItems,
+            key = { _, item ->
+                item.resourceAddress
             },
             itemContent = { index, item ->
-                val lastItem = index == tokenItems.size - 1
+                val isLastItem = index == restItems.lastIndex
                 val shape = when {
-                    index == 0 && lastItem -> RadixTheme.shapes.roundedRectMedium
+                    index == 0 && isLastItem -> RadixTheme.shapes.roundedRectMedium
                     index == 0 -> RadixTheme.shapes.roundedRectTopMedium
-                    lastItem -> RadixTheme.shapes.roundedRectBottomMedium
+                    isLastItem -> RadixTheme.shapes.roundedRectBottomMedium
                     else -> RectangleShape
                 }
-                TokenItemCard(
-                    token = item,
+                FungibleItemRow(
+                    fungible = item,
                     modifier = Modifier
-//                        .shadow(elevation = 4.dp, shape = shape)
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, shape)
                         .clip(shape)
@@ -81,7 +85,8 @@ fun TokenListContent(
                             onFungibleTokenClick(item)
                         }
                 )
-                if (!lastItem) {
+
+                if (!isLastItem) {
                     Divider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray5)
                 }
             }
@@ -96,8 +101,8 @@ fun TokenListContent(
 @Composable
 fun ListOfTokenItemsEmptyPreview() {
     RadixWalletTheme {
-        TokenListContent(
-            tokenItems = emptyList(),
+        FungibleResourcesContent(
+            fungibles = persistentListOf(),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
         )
@@ -109,8 +114,14 @@ fun ListOfTokenItemsEmptyPreview() {
 @Composable
 fun ListOfTokenItemsPreview() {
     RadixWalletTheme {
-        TokenListContent(
-            tokenItems = SampleDataProvider().mockTokenUiList,
+        FungibleResourcesContent(
+            fungibles = persistentListOf(
+                Resource.FungibleResource(
+                    resourceAddress = "account_rdx_abcdef",
+                    amount = BigDecimal.TEN,
+                    symbolMetadataItem = SymbolMetadataItem(symbol = "XRD")
+                )
+            ),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
         )

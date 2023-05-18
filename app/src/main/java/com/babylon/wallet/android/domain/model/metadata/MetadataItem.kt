@@ -6,4 +6,16 @@ package com.babylon.wallet.android.domain.model.metadata
  */
 interface MetadataItem {
     val key: String
+
+    companion object {
+        inline fun <reified T : MetadataItem> MutableList<MetadataItem>.consume(): T? {
+            val item = find { it is T } as? T
+
+            if (item != null) {
+                remove(item)
+            }
+
+            return item
+        }
+    }
 }

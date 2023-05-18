@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.data.repository.dappmetadata
 
+import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
@@ -20,6 +20,14 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
+import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -27,26 +35,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Converter
 import javax.inject.Inject
 
-interface DappMetadataRepository {
-    suspend fun verifyDapp(
-        origin: String,
-        dAppDefinitionAddress: String
-    ): Result<Boolean>
-
-    suspend fun getDAppMetadata(
-        definitionAddress: String,
-        explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
-        needMostRecentData: Boolean
-    ): Result<DappWithMetadata>
-
-    suspend fun getDAppsMetadata(
-        definitionAddresses: List<String>,
-        explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
-        needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>>
-}
-
-class DappMetadataRepositoryEnkinetImpl @Inject constructor(
+class DappMetadataRepositoryRCNetImpl @Inject constructor(
     @SimpleHttpClient private val okHttpClient: OkHttpClient,
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     private val stateApi: StateApi,
@@ -100,21 +89,12 @@ class DappMetadataRepositoryEnkinetImpl @Inject constructor(
 
     override suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
-        explicitMetadata: Set<ExplicitMetadataKey>,
+        explicitMetadata: Set<ExplicitMetadataKey>, // Not needed in rcnet
         needMostRecentData: Boolean
     ): Result<List<DappWithMetadata>> = withContext(ioDispatcher) {
-        val optIns = if (explicitMetadata.isNotEmpty()) {
-            StateEntityDetailsOptIns(
-                explicitMetadata = explicitMetadata.map { it.key }
-            )
-        } else {
-            null
-        }
-
         stateApi.entityDetails(
             StateEntityDetailsRequest(
-                addresses = definitionAddresses,
-                optIns = optIns
+                addresses = definitionAddresses
             )
         ).execute(
             cacheParameters = CacheParameters(
@@ -123,9 +103,25 @@ class DappMetadataRepositoryEnkinetImpl @Inject constructor(
             ),
             map = { response ->
                 response.items.map { dAppResponse ->
-                    DappWithMetadata.from(
-                        address = dAppResponse.address,
-                        metadataItems = dAppResponse.explicitMetadata?.asMetadataItems().orEmpty()
+                    val metadata = response.items.first().metadata.asMetadataStringMap()
+                    DappWithMetadata(
+                        dAppAddress = dAppResponse.address,
+                        nameItem = metadata[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
+                        descriptionItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
+                        iconMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) },
+                        relatedWebsitesItem = metadata[ExplicitMetadataKey.RELATED_WEBSITES.key]?.let { RelatedWebsiteMetadataItem(it) },
+                        accountTypeItem = metadata[ExplicitMetadataKey.ACCOUNT_TYPE.key]?.let {
+                            AccountTypeMetadataItem(type = AccountType.valueOf(it))
+                        },
+                        dAppDefinitionMetadataItem = metadata[ExplicitMetadataKey.DAPP_DEFINITION.key]?.let {
+                            DAppDefinitionMetadataItem(it)
+                        },
+                        nonExplicitMetadataItems = metadata
+                            .filterNot { entry ->
+                                entry.key in ExplicitMetadataKey.forDapp.map { it.key }
+                            }.map {
+                                StringMetadataItem(it.key, it.value)
+                            }
                     )
                 }
             },

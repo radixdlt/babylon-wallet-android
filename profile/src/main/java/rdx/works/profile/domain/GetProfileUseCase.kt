@@ -12,9 +12,9 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.data.utils.accountFactorSourceId
 import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.data.utils.personaFactorSourceId
+import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -50,18 +50,18 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
+suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
+    accountAddress: String,
+): FactorSource.ID? {
+    val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.unsecuredFactorSourceId()
+    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
+}
+
 suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
     factorSource: FactorSource,
 ): DerivationPath {
     val currentNetwork = requireNotNull(invoke().first().currentNetwork.knownNetworkId)
     return factorSource.getNextDerivationPathForAccount(currentNetwork)
-}
-
-suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
-    accountAddress: String,
-): FactorSource.ID? {
-    val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.accountFactorSourceId()
-    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
 }
 
 suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(

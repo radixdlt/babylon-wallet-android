@@ -27,19 +27,19 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.model.toTokenUiModel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
 import java.util.Locale
 
 @Composable
 fun FungibleTokenBottomSheetDetails(
-    token: TokenUiModel,
+    fungible: Resource.FungibleResource,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -48,7 +48,7 @@ fun FungibleTokenBottomSheetDetails(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = token.name.orEmpty(),
+            title = fungible.name.orEmpty(),
             onBackClick = onCloseClick,
             modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,
@@ -61,13 +61,13 @@ fun FungibleTokenBottomSheetDetails(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val placeholder = if (token.isXrd()) {
+            val placeholder = if (fungible.isXrd) {
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
             } else {
                 rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
             }
             AsyncImage(
-                model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = fungible.iconUrl.toString(), size = ImageSize.LARGE),
                 placeholder = placeholder,
                 fallback = placeholder,
                 error = placeholder,
@@ -79,13 +79,14 @@ fun FungibleTokenBottomSheetDetails(
                     .clip(RadixTheme.shapes.circle)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(token)
+            TokenBalance(fungible)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            token.description?.let { desc ->
+
+            if (fungible.description.isNotBlank()) {
                 Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
-                    text = desc,
+                    text = fungible.description,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -93,15 +94,9 @@ fun FungibleTokenBottomSheetDetails(
                 Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            if (token.metadata.isNotEmpty()) {
-                token.metadata.forEach { mapEntry ->
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    AssetMetadataRow(Modifier.fillMaxWidth(), mapEntry.key, mapEntry.value)
-                }
-            }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                address = token.address
+                address = fungible.resourceAddress
             )
             Spacer(modifier = Modifier.height(100.dp))
         }
@@ -136,17 +131,17 @@ private fun ResourceAddressRow(
 }
 
 @Composable
-private fun TokenBalance(token: TokenUiModel, modifier: Modifier = Modifier) {
+private fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
         Text(
             modifier = Modifier.alignByBaseline(),
-            text = token.tokenQuantityToDisplay,
+            text = resource.amount.displayableQuantity(),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         Text(
             modifier = Modifier.alignByBaseline(),
-            text = stringResource(id = R.string.space) + token.symbol.orEmpty(),
+            text = stringResource(id = R.string.space) + resource.symbol,
             style = RadixTheme.typography.header,
             color = RadixTheme.colors.gray1
         )
@@ -158,7 +153,7 @@ private fun TokenBalance(token: TokenUiModel, modifier: Modifier = Modifier) {
 fun FungibleTokenBottomSheetDetailsPreview() {
     RadixWalletTheme {
         FungibleTokenBottomSheetDetails(
-            token = SampleDataProvider().sampleFungibleTokens().first().toTokenUiModel(),
+            fungible = SampleDataProvider().sampleFungibleResources().first(),
             onCloseClick = {}
         )
     }

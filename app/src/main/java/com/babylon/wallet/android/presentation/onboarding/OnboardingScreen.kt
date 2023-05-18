@@ -45,12 +45,10 @@ import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
-import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,

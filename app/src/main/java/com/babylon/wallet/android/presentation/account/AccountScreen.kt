@@ -1,4 +1,10 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
+@file:OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalPagerApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class
+)
 
 package com.babylon.wallet.android.presentation.account
 
@@ -35,16 +41,12 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,7 +55,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -64,27 +65,22 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.model.AssetUiModel
-import com.babylon.wallet.android.presentation.model.NftCollectionUiModel
-import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.model.toTokenUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.NftListContent
+import com.babylon.wallet.android.presentation.ui.composables.NonFungibleResourcesContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
-import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -96,7 +92,6 @@ fun AccountScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
-    onNavigateToMnemonicRestore: (String) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -111,66 +106,43 @@ fun AccountScreen(
         }
     }
     AccountScreenContent(
-        accountName = state.accountName,
+        state = state,
         onAccountPreferenceClick = {
-            onAccountPreferenceClick(state.accountAddressFull)
+            onAccountPreferenceClick(it)
         },
         onBackClick = onBackClick,
-        isLoading = state.isLoading,
-        isRefreshing = state.isRefreshing,
         onRefresh = viewModel::refresh,
-        accountAddress = state.accountAddressFull,
-        xrdToken = state.xrdToken,
-        fungibleTokens = state.fungibleTokens,
-        nonFungibleTokens = state.nonFungibleTokens,
-        gradientIndex = state.gradientIndex,
         onHistoryClick = {},
         onTransferClick = onTransferClick,
-        onFungibleTokenClick = viewModel::onFungibleTokenClick,
-        assetDetails = state.assetDetails,
-        onNftClick = viewModel::onNonFungibleTokenClick,
-        selectedNft = state.selectedNft,
-        walletFiatBalance = state.walletFiatBalance,
+        onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
+        onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         modifier = modifier,
-        showSecurityPrompt = state.showSecurityPrompt,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings,
-        needMnemonicRecovery = state.needMnemonicRecovery,
-        onMnemonicRecovery = {
-            onNavigateToMnemonicRestore(state.accountAddressFull)
-        }
+        onApplySecuritySettings = viewModel::onApplySecuritySettings
     )
 }
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 private fun AccountScreenContent(
-    accountName: String,
-    onAccountPreferenceClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    state: AccountUiState,
+    onAccountPreferenceClick: (String) -> Unit,
     onBackClick: () -> Unit,
-    isLoading: Boolean,
-    isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    accountAddress: String,
-    xrdToken: TokenUiModel?,
-    fungibleTokens: ImmutableList<TokenUiModel>,
-    nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    gradientIndex: Int,
     onHistoryClick: () -> Unit,
     onTransferClick: (String) -> Unit,
-    onFungibleTokenClick: (TokenUiModel) -> Unit,
-    assetDetails: AssetUiModel?,
-    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
-    selectedNft: NftCollectionUiModel.NftItemUiModel?,
-    walletFiatBalance: String?,
-    modifier: Modifier = Modifier,
-    showSecurityPrompt: Boolean,
-    onApplySecuritySettings: () -> Unit,
-    needMnemonicRecovery: Boolean,
-    onMnemonicRecovery: () -> Unit,
+    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
+    onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onApplySecuritySettings: () -> Unit
 ) {
+    val gradient = remember(state.accountWithResources) {
+        val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
+        AccountGradientList[appearanceId % AccountGradientList.size]
+    }
+
     BoxWithConstraints(
         modifier = modifier
-            .background(Brush.horizontalGradient(AccountGradientList[gradientIndex % AccountGradientList.size]))
+            .background(Brush.horizontalGradient(gradient))
     ) {
         val bottomSheetState =
             rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -198,22 +170,29 @@ private fun AccountScreenContent(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    when (assetDetails) {
-                        is NftCollectionUiModel -> {
-                            selectedNft?.let { selectedNft ->
-                                NonFungibleTokenBottomSheetDetails(onCloseClick = {
+                    when (state.selectedResource) {
+                        is SelectedResource.SelectedNonFungibleResource -> {
+                            NonFungibleTokenBottomSheetDetails(
+                                modifier = Modifier.fillMaxSize(),
+                                nonFungibleResource = state.selectedResource.nonFungible,
+                                item = state.selectedResource.item,
+                                onCloseClick = {
                                     scope.launch {
                                         bottomSheetState.hide()
                                     }
-                                }, modifier = Modifier.fillMaxSize(), selectedNft = selectedNft)
-                            }
-                        }
-                        is TokenUiModel -> {
-                            FungibleTokenBottomSheetDetails(token = assetDetails, onCloseClick = {
-                                scope.launch {
-                                    bottomSheetState.hide()
                                 }
-                            }, modifier = Modifier.fillMaxSize())
+                            )
+                        }
+                        is SelectedResource.SelectedFungibleResource -> {
+                            FungibleTokenBottomSheetDetails(
+                                modifier = Modifier.fillMaxSize(),
+                                fungible = state.selectedResource.fungible,
+                                onCloseClick = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                }
+                            )
                         }
                         else -> {}
                     }
@@ -230,12 +209,16 @@ private fun AccountScreenContent(
                         .fillMaxSize(),
                     topBar = {
                         RadixCenteredTopAppBar(
-                            title = accountName,
+                            title = state.accountWithResources?.account?.displayName.orEmpty(),
                             onBackClick = onBackClick,
                             containerColor = Color.Transparent,
                             contentColor = RadixTheme.colors.white,
                             actions = {
-                                IconButton(onClick = { onAccountPreferenceClick() }) {
+                                IconButton(
+                                    onClick = {
+                                        onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
+                                    }
+                                ) {
                                     Icon(
                                         painterResource(
                                             id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
@@ -251,10 +234,10 @@ private fun AccountScreenContent(
                 ) { innerPadding ->
                     // TODO I can't make new swipe to refresh work with development preview banner,
                     //  using accompanist for now
-                    val state = rememberSwipeRefreshState(isRefreshing = isRefreshing)
+                    val pullToRefreshState = rememberSwipeRefreshState(isRefreshing = state.isRefreshing)
                     SwipeRefresh(
                         modifier = Modifier.fillMaxSize(),
-                        state = state,
+                        state = pullToRefreshState,
                         onRefresh = onRefresh,
                         indicatorPadding = innerPadding,
                         indicator = { s, dp ->
@@ -268,30 +251,22 @@ private fun AccountScreenContent(
                         refreshTriggerDistance = 100.dp,
                         content = {
                             AccountContent(
-                                accountAddress = accountAddress,
-                                xrdToken = xrdToken,
-                                fungibleTokens = fungibleTokens,
-                                nonFungibleTokens = nonFungibleTokens,
-                                onTransferClick = onTransferClick,
-                                onFungibleTokenClick = {
-                                    onFungibleTokenClick(it)
-                                    scope.launch {
-                                        bottomSheetState.show()
-                                    }
-                                },
-                                onNftClick = { nftCollection, nftItem ->
-                                    onNftClick(nftCollection, nftItem)
-                                    scope.launch {
-                                        bottomSheetState.show()
-                                    }
-                                },
-                                walletFiatBalance = walletFiatBalance,
                                 modifier = Modifier.fillMaxSize(),
-                                isLoading = isLoading,
-                                showSecurityPrompt = showSecurityPrompt,
-                                onApplySecuritySettings = onApplySecuritySettings,
-                                needMnemonicRecovery = needMnemonicRecovery,
-                                onMnemonicRecovery = onMnemonicRecovery
+                                state = state,
+                                onTransferClick = onTransferClick,
+                                onFungibleResourceClicked = {
+                                    onFungibleResourceClicked(it)
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                onNonFungibleItemClicked = { nftCollection, nftItem ->
+                                    onNonFungibleItemClicked(nftCollection, nftItem)
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                onApplySecuritySettings = onApplySecuritySettings
                             )
 //                        PullRefreshIndicator(
 //                            refreshing = isRefreshing,
@@ -300,7 +275,7 @@ private fun AccountScreenContent(
 //                            backgroundColor = RadixTheme.colors.defaultBackground,
 //                            modifier = Modifier.align(Alignment.TopCenter)
 //                        )
-                            if (isLoading) {
+                            if (state.isLoading) {
                                 FullscreenCircularProgressContent()
                             }
                         }
@@ -338,137 +313,25 @@ private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> U
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
-fun AccountContentWithScrollableHeader(
-    onRefresh: () -> Unit,
-    headerScrollState: ScrollableHeaderViewScrollState,
-    accountName: String,
-    onBackClick: () -> Unit,
-    onAccountPreferenceClick: () -> Unit,
-    accountAddress: String,
-    walletFiatBalance: String?,
-    onTransferClick: (String) -> Unit,
-    xrdToken: TokenUiModel?,
-    fungibleTokens: ImmutableList<TokenUiModel>,
-    nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    onFungibleTokenClick: (TokenUiModel) -> Unit,
-    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
-    density: Density,
-    isLoading: Boolean,
-    isRefreshing: Boolean,
-    modifier: Modifier = Modifier,
-    showSecurityPrompt: Boolean,
-    onApplySecuritySettings: () -> Unit,
-    needMnemonicRecovery: Boolean,
-    onMnemonicRecovery: () -> Unit,
-) {
-    val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = onRefresh)
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
-    ) {
-        ScrollableHeaderView(
-            modifier = Modifier.fillMaxWidth(),
-            state = headerScrollState,
-            header = {
-                Column(Modifier.fillMaxWidth()) {
-                    RadixCenteredTopAppBar(
-                        title = accountName,
-                        onBackClick = onBackClick,
-                        actions = {
-                            IconButton(onClick = { onAccountPreferenceClick() }) {
-                                Icon(
-                                    painterResource(
-                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
-                                    ),
-                                    tint = RadixTheme.colors.white,
-                                    contentDescription = "account settings"
-                                )
-                            }
-                        }
-                    )
-                    AccountSummaryContent(
-                        modifier = Modifier.fillMaxWidth(),
-                        accountAddress = accountAddress,
-                        walletFiatBalance = walletFiatBalance,
-                        onTransferClick = onTransferClick,
-                        showSecurityPrompt = showSecurityPrompt,
-                        onApplySecuritySettings = onApplySecuritySettings,
-                        needMnemonicRecovery = needMnemonicRecovery,
-                        onMnemonicRecovery = onMnemonicRecovery
-                    )
-                }
-            },
-            content = {
-                AssetsContent(
-                    xrdToken = xrdToken,
-                    fungibleTokens = fungibleTokens,
-                    nonFungibleTokens = nonFungibleTokens,
-                    onFungibleTokenClick = onFungibleTokenClick,
-                    modifier = Modifier
-                        .background(
-                            color = RadixTheme.colors.gray5,
-                            shape = RadixTheme.shapes.roundedRectTopDefault
-                        )
-                        .clip(RadixTheme.shapes.roundedRectTopDefault),
-                    onNftClick = onNftClick,
-                    isLoading = isLoading
-                )
-            },
-            topBarHeightPx = with(density) { 64.dp.toPx() }.toInt()
-        )
-        PullRefreshIndicator(
-            refreshing = isRefreshing,
-            state = pullRefreshState,
-            contentColor = RadixTheme.colors.gray1,
-            backgroundColor = RadixTheme.colors.defaultBackground,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 100.dp)
-        )
-    }
-}
-
-@Composable
 private fun AccountContent(
-    accountAddress: String,
-    xrdToken: TokenUiModel?,
-    fungibleTokens: ImmutableList<TokenUiModel>,
-    nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    onTransferClick: (String) -> Unit,
-    onFungibleTokenClick: (TokenUiModel) -> Unit,
-    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
-    walletFiatBalance: String?,
     modifier: Modifier = Modifier,
-    isLoading: Boolean,
-    showSecurityPrompt: Boolean,
-    onApplySecuritySettings: () -> Unit,
-    needMnemonicRecovery: Boolean,
-    onMnemonicRecovery: () -> Unit,
+    state: AccountUiState,
+    onTransferClick: (String) -> Unit,
+    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
+    onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onApplySecuritySettings: () -> Unit
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AccountSummaryContent(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            accountAddress = accountAddress,
-            walletFiatBalance = walletFiatBalance,
+            accountAddress = state.accountWithResources?.account?.address.orEmpty(),
+            showSecurityPrompt = state.showSecurityPrompt,
             onTransferClick = onTransferClick,
-            showSecurityPrompt = showSecurityPrompt,
             onApplySecuritySettings = onApplySecuritySettings,
-            needMnemonicRecovery = needMnemonicRecovery,
-            onMnemonicRecovery = onMnemonicRecovery
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         AssetsContent(
-            xrdToken = xrdToken,
-            fungibleTokens = fungibleTokens,
-            nonFungibleTokens = nonFungibleTokens,
-            onFungibleTokenClick = onFungibleTokenClick,
             modifier = Modifier
                 .weight(1f)
                 .background(
@@ -476,25 +339,25 @@ private fun AccountContent(
                     shape = RadixTheme.shapes.roundedRectTopDefault
                 )
                 .clip(RadixTheme.shapes.roundedRectTopDefault),
-            onNftClick = onNftClick,
-            isLoading = isLoading
+            resources = state.accountWithResources?.resources,
+            isLoading = state.isLoading,
+            onFungibleTokenClick = onFungibleResourceClicked,
+            onNonFungibleItemClick = onNonFungibleItemClicked
         )
     }
 }
 
 @Composable
 private fun AccountSummaryContent(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     accountAddress: String,
-    walletFiatBalance: String?,
+    walletFiatBalance: String? = null,
     onTransferClick: (String) -> Unit,
     showSecurityPrompt: Boolean,
-    onApplySecuritySettings: () -> Unit,
-    needMnemonicRecovery: Boolean,
-    onMnemonicRecovery: () -> Unit
+    onApplySecuritySettings: () -> Unit
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         ActionableAddressView(
@@ -502,7 +365,19 @@ private fun AccountSummaryContent(
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+        walletFiatBalance?.let { value ->
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            WalletBalanceView(
+                currencySignValue = "$",
+                amount = value,
+                hidden = false,
+                balanceClicked = {},
+                contentColor = RadixTheme.colors.white
+            )
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         RadixSecondaryButton(
             text = stringResource(id = R.string.account_transfer_button_title),
             onClick = { onTransferClick(accountAddress) },
@@ -516,30 +391,19 @@ private fun AccountSummaryContent(
                 contentDescription = null
             )
         }
-        walletFiatBalance?.let { value ->
-            WalletBalanceView(
-                currencySignValue = "$",
-                amount = value,
-                hidden = false,
-                balanceClicked = {},
-                contentColor = RadixTheme.colors.white
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-        }
-        AnimatedVisibility(visible = showSecurityPrompt, enter = fadeIn(), exit = fadeOut()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        AnimatedVisibility(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(top = RadixTheme.dimensions.paddingLarge),
+            visible = showSecurityPrompt,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onApplySecuritySettings,
                 text = stringResource(id = R.string.apply_security_settings)
-            )
-        }
-        AnimatedVisibility(visible = needMnemonicRecovery, enter = fadeIn(), exit = fadeOut()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            ApplySecuritySettingsLabel(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onMnemonicRecovery,
-                text = stringResource(id = R.string.recover_mnemonic)
             )
         }
     }
@@ -547,13 +411,11 @@ private fun AccountSummaryContent(
 
 @Composable
 fun AssetsContent(
-    xrdToken: TokenUiModel?,
-    fungibleTokens: ImmutableList<TokenUiModel>,
-    nonFungibleTokens: ImmutableList<NftCollectionUiModel>,
-    onFungibleTokenClick: (TokenUiModel) -> Unit,
     modifier: Modifier = Modifier,
-    onNftClick: (NftCollectionUiModel, NftCollectionUiModel.NftItemUiModel) -> Unit,
+    resources: Resources?,
     isLoading: Boolean,
+    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val pagerState = rememberPagerState()
@@ -613,21 +475,17 @@ fun AssetsContent(
                 content = {
                     when (AssetTypeTab.values()[page]) {
                         AssetTypeTab.TOKEN_TAB -> {
-                            TokenListContent(
-                                tokenItems = fungibleTokens,
-                                xrdTokenUi = xrdToken,
+                            FungibleResourcesContent(
+                                fungibles = resources?.fungibleResources.orEmpty().toPersistentList(),
                                 modifier = Modifier.fillMaxSize(),
                                 onFungibleTokenClick = onFungibleTokenClick
                             )
                         }
                         AssetTypeTab.NTF_TAB -> {
-                            val collapsedState =
-                                remember(nonFungibleTokens) { nonFungibleTokens.map { true }.toMutableStateList() }
-                            NftListContent(
-                                collapsedState = collapsedState,
-                                items = nonFungibleTokens,
+                            NonFungibleResourcesContent(
+                                items = resources?.nonFungibleResources.orEmpty(),
                                 modifier = Modifier.fillMaxSize(),
-                                onNftClick = onNftClick
+                                onNftClick = onNonFungibleItemClick
                             )
                         }
                     }
@@ -643,77 +501,23 @@ fun AccountContentPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                accountName = randomAddress(),
+                state = AccountUiState(
+                    accountWithResources = AccountWithResources(
+                        account = sampleAccount("acount_rdx_abcde"),
+                        resources = Resources(
+                            fungibleResources = sampleFungibleResources(),
+                            nonFungibleResources = listOf()
+                        ),
+                    )
+                ),
                 onAccountPreferenceClick = {},
                 onBackClick = {},
-                isLoading = false,
-                isRefreshing = false,
                 onRefresh = {},
-                accountAddress = randomAddress(),
-                xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
-                fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
-                nonFungibleTokens = persistentListOf(),
-                gradientIndex = 0,
                 onHistoryClick = {},
                 onTransferClick = {},
-                onFungibleTokenClick = {},
-                assetDetails = null,
-                onNftClick = { _, _ -> },
-                selectedNft = null,
-                walletFiatBalance = "1000",
-                modifier = Modifier,
-                showSecurityPrompt = true,
-                onApplySecuritySettings = {},
-                needMnemonicRecovery = false,
-                onMnemonicRecovery = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AccountContentDarkPreview() {
-    RadixWalletTheme(darkTheme = true) {
-        with(SampleDataProvider()) {
-            AccountScreenContent(
-                accountName = randomAddress(),
-                onAccountPreferenceClick = {},
-                onBackClick = {},
-                isLoading = false,
-                isRefreshing = false,
-                onRefresh = {},
-                accountAddress = randomAddress(),
-                xrdToken = sampleFungibleTokens().first().toTokenUiModel(),
-                fungibleTokens = sampleFungibleTokens().map { it.toTokenUiModel() }.toPersistentList(),
-                nonFungibleTokens = persistentListOf(),
-                gradientIndex = 0,
-                onHistoryClick = {},
-                onTransferClick = {},
-                onFungibleTokenClick = {},
-                assetDetails = null,
-                onNftClick = { _, _ -> },
-                selectedNft = null,
-                walletFiatBalance = "1000",
-                modifier = Modifier,
-                showSecurityPrompt = true,
-                onApplySecuritySettings = {},
-                needMnemonicRecovery = false,
-                onMnemonicRecovery = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FungibleTokenDetailsDarkPreview() {
-    RadixWalletTheme(darkTheme = true) {
-        with(SampleDataProvider()) {
-            FungibleTokenBottomSheetDetails(
-                modifier = Modifier.fillMaxSize(),
-                token = sampleFungibleTokens().first().toTokenUiModel(),
-                onCloseClick = {}
+                onFungibleResourceClicked = {},
+                onNonFungibleItemClicked = { _, _ -> },
+                onApplySecuritySettings = {}
             )
         }
     }

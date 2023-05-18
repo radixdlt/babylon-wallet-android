@@ -14,7 +14,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_L
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.crypto.getCompressedPublicKey
@@ -40,6 +40,7 @@ import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import rdx.works.profile.data.model.SigningEntity
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -56,7 +57,7 @@ class TransactionClient @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
     private val getFactorSourcesAndSigningEntitiesUseCase: GetFactorSourcesAndSigningEntitiesUseCase,
-    private val getAccountResourcesUseCase: GetAccountResourcesUseCase,
+    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
 
@@ -193,51 +194,50 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun selectAccountAddressToLockFee(networkId: Int, manifestJson: TransactionManifest): String? {
-        val allAccountsAddresses = getProfileUseCase.accountsOnCurrentNetwork().map { it.address }.toSet()
+        val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
-        val searchedAddresses = mutableSetOf<String>()
-        result.onSuccess { analyzeManifestResponse ->
+        val searchedAccounts = mutableSetOf<Network.Account>()
+        return result.getOrNull()?.let { analyzeManifestResponse ->
             val withdrawnFromCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsWithdrawnFrom.toList(),
-                allNetworkAddresses = allAccountsAddresses
+                accounts = allAccounts
             )
-            searchedAddresses.addAll(withdrawnFromCandidates)
+            searchedAccounts.addAll(withdrawnFromCandidates)
             val withdrawnFromCandidate = findFeePayerWithin(withdrawnFromCandidates)
             if (withdrawnFromCandidate != null) return withdrawnFromCandidate
 
             val requiringAuthCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsRequiringAuth.toList(),
-                allNetworkAddresses = allAccountsAddresses
+                accounts = allAccounts
             )
-            searchedAddresses.addAll(requiringAuthCandidates)
+            searchedAccounts.addAll(requiringAuthCandidates)
             val requiringAuthCandidate = findFeePayerWithin(requiringAuthCandidates)
             if (requiringAuthCandidate != null) return requiringAuthCandidate
 
             val depositedIntoCandidates = findFeePayerCandidates(
                 entityAddress = analyzeManifestResponse.accountsDepositedInto.toList(),
-                allNetworkAddresses = allAccountsAddresses
+                accounts = allAccounts
             )
-            searchedAddresses.addAll(depositedIntoCandidates)
+            searchedAccounts.addAll(depositedIntoCandidates)
             val depositedIntoCandidate = findFeePayerWithin(depositedIntoCandidates)
             if (depositedIntoCandidate != null) return depositedIntoCandidate
 
-            val accountsLeftToSearch = allAccountsAddresses.minus(searchedAddresses)
+            val accountsLeftToSearch = allAccounts.minus(searchedAccounts)
             return findFeePayerWithin(accountsLeftToSearch.toList())
         }
-        return null
     }
 
-    private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, allNetworkAddresses: Set<String>): List<String> {
+    private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, accounts: List<Network.Account>): List<Network.Account> {
         return entityAddress
             .filterIsInstance<EntityAddress.ComponentAddress>()
-            .filter { allNetworkAddresses.contains(it.address) }
-            .map { it.address }
+            .mapNotNull { componentAddress ->
+                accounts.find { it.address == componentAddress.address }
+            }
     }
 
-    private suspend fun findFeePayerWithin(addresses: List<String>): String? {
-        return getAccountResourcesUseCase
-            .getAccounts(addresses = addresses, isRefreshing = true)
-            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)?.address
+    private suspend fun findFeePayerWithin(accounts: List<Network.Account>): String? {
+        return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
+            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)?.account?.address
     }
 
     private suspend fun buildTransactionHeader(
@@ -328,13 +328,12 @@ class TransactionClient @Inject constructor(
     suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<SigningEntity> {
         val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-        result.onSuccess { analyzeManifestResponse ->
+        return result.getOrNull()?.let { analyzeManifestResponse ->
             val addressesNeededToSign = analyzeManifestResponse.accountsRequiringAuth
                 .filterIsInstance<EntityAddress.ComponentAddress>()
                 .map { it.address }.toSet()
-            return allAccounts.filter { addressesNeededToSign.contains(it.address) }
-        }
-        return emptyList()
+            allAccounts.filter { addressesNeededToSign.contains(it.address) }
+        }.orEmpty()
     }
 
     fun analyzeManifestWithPreviewContext(

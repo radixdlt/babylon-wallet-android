@@ -9,7 +9,7 @@ sealed interface Result<out T> {
     ) : Result<Nothing>
 }
 
-suspend fun <T> Result<T>.onValue(action: suspend (T) -> Unit) {
+suspend fun <T> Result<T>.onValue(action: suspend (T) -> Unit) = apply {
     if (this is Result.Success) {
         action(this.data)
     }
@@ -36,7 +36,7 @@ fun <T> Result<T>.value(): T? {
     return null
 }
 
-suspend fun <T> Result<T>.onError(action: suspend (Throwable?) -> Unit) {
+suspend fun <T> Result<T>.onError(action: suspend (Throwable?) -> Unit) = apply {
     if (this is Result.Error) {
         action(this.exception)
     }

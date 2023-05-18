@@ -65,8 +65,20 @@ data class AccountTypeMetadataItem(
     }
 }
 
+data class InfoUrlMetadataItem(
+    val url: Uri
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.INFO_URL.key
+}
+
 data class IconUrlMetadataItem(
     val url: Uri
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.ICON_URL.key
+}
+
+data class TagsMetadataItem(
+    val tags: List<String>
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.TAGS.key
 }

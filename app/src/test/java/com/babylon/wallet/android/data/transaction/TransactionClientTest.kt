@@ -2,10 +2,12 @@ package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.toDomainModel
-import com.babylon.wallet.android.domain.usecases.GetAccountResourcesUseCase
+import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -17,7 +19,6 @@ import com.radixdlt.toolkit.models.ManifestAstValue
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -40,15 +41,31 @@ internal class TransactionClientTest {
     private val transactionRepository = mockk<TransactionRepository>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountResourceUseCase = mockk<GetAccountResourcesUseCase>()
+    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val collectSignersSignaturesUseCase = mockk<CollectSignersSignaturesUseCase>()
     private val getFactorSourcesAndSigningEntitiesUseCase = mockk<GetFactorSourcesAndSigningEntitiesUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val networkId = Radix.Gateway.hammunet.network.networkId().value
-    private val expectedAddress = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
-    private val expectedAddressWithNoFunds = "account_tdx_22_1pzg5a7htq650xh33x23zq9k90j5me3dvd8jql2wrkk8sd64ak7"
 
     private lateinit var transactionClient: TransactionClient
+
+    private val addressWithFunds = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
+    private val accountWithFunds = AccountWithResources(
+        account = account(address = addressWithFunds),
+        resources = Resources(
+            fungibleResources = listOf(Resource.FungibleResource(
+                resourceAddress = "resource_rdx_abc",
+                amount = BigDecimal.TEN,
+                symbolMetadataItem = SymbolMetadataItem("XRD")
+            )),
+            nonFungibleResources = emptyList()
+        )
+    )
+    private val addressWithNoFunds = "account_tdx_22_1pzg5a7htq650xh33x23zq9k90j5me3dvd8jql2wrkk8sd64ak7"
+    private val accountWithNoFunds = AccountWithResources(
+        account = account(address = addressWithNoFunds),
+        resources = Resources.EMPTY
+    )
 
     @Before
     fun setUp() {
@@ -59,61 +76,46 @@ internal class TransactionClientTest {
             getProfileUseCase,
             collectSignersSignaturesUseCase,
             getFactorSourcesAndSigningEntitiesUseCase,
-            getAccountResourceUseCase,
+            getAccountsWithResourcesUseCase,
             submitTransactionUseCase
         )
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.hammunet
-        every { getProfileUseCase() } returns flowOf(
-            profile(
-                accounts = listOf(
-                    account("my1", expectedAddress),
-                    account("my2", expectedAddressWithNoFunds)
-                )
-            )
-        )
-        coEvery {
-            getAccountResourceUseCase.getAccounts(
-                any(),
-                any()
-            )
-        } returns Result.Success(
-            data = listOf(
-                account(address = expectedAddress).toDomainModel()
-                    .copy(fungibleTokens = SampleDataProvider().sampleFungibleTokens().toPersistentList())
-            )
-        )
+        coEvery { getAccountsWithResourcesUseCase(accounts = listOf(), isRefreshing = true) } returns Result.Success(emptyList())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
         runTest {
-            coEvery {
-                getAccountResourceUseCase.getAccounts(
-                    addresses = listOf(expectedAddress),
-                    isRefreshing = true
-                )
-            } returns Result.Success(
-                listOf(SampleDataProvider().sampleAccountResource(expectedAddress))
-            )
-
             var manifest = ManifestBuilder().addInstruction(
                 Instruction.SetMetadata(
-                    entityAddress = ManifestAstValue.Address(expectedAddress),
+                    entityAddress = ManifestAstValue.Address(addressWithFunds),
                     ManifestAstValue.String("name"),
                     ManifestAstValue.Enum("RadixDashboard")
                 )
             ).build()
 
-            val addressToLockFee =
-                transactionClient.selectAccountAddressToLockFee(networkId, manifest)
-            manifest =
-                manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
+            every { getProfileUseCase() } returns flowOf(
+                profile(
+                    accounts = listOf(
+                        accountWithFunds.account,
+                        accountWithNoFunds.account
+                    )
+                )
+            )
+            coEvery {
+                getAccountsWithResourcesUseCase(accounts = listOf(accountWithFunds.account), isRefreshing = true)
+            } returns Result.Success(
+                data = listOf(accountWithFunds)
+            )
+
+            val addressToLockFee = transactionClient.selectAccountAddressToLockFee(networkId, manifest)
+            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
             val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
 
             Assert.assertEquals(1, signingEntities.size)
             Assert.assertEquals(
-                expectedAddress,
+                addressWithFunds,
                 signingEntities.first().address
             )
         }
@@ -122,105 +124,53 @@ internal class TransactionClientTest {
     @Test
     fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
         runTest {
-            coEvery {
-                getAccountResourceUseCase.getAccounts(
-                    addresses = listOf(expectedAddressWithNoFunds),
-                    isRefreshing = true
-                )
-            } returns Result.Success(
-                listOf(
-                    SampleDataProvider().sampleAccountResource(
-                        address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-                            amount = BigDecimal.ZERO to "XRD"
-                        )
-                    )
-                )
-            )
-            coEvery {
-                getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
-            } returns Result.Success(
-                listOf(
-                    SampleDataProvider().sampleAccountResource(
-                        address = expectedAddressWithNoFunds,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-                            amount = BigDecimal.ZERO to "XRD"
-                        )
-                    ),
-                    SampleDataProvider().sampleAccountResource(
-                        address = expectedAddress,
-                        withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                            ownerAddress = expectedAddressWithNoFunds,
-                            amount = BigDecimal(100000) to "XRD"
-                        )
-                    )
-                )
-            )
-
             var manifest = ManifestBuilder().addInstruction(
                 Instruction.SetMetadata(
-                    entityAddress = ManifestAstValue.Address(expectedAddressWithNoFunds),
+                    entityAddress = ManifestAstValue.Address(addressWithNoFunds),
                     ManifestAstValue.String("name"),
                     ManifestAstValue.Enum("RadixDashboard")
                 )
             ).build()
 
-            val addressToLockFee =
-                transactionClient.selectAccountAddressToLockFee(networkId, manifest)
-            manifest =
-                manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
+            every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(accountWithNoFunds.account, accountWithFunds.account)))
+            coEvery {
+                getAccountsWithResourcesUseCase(accounts = listOf(accountWithNoFunds.account), isRefreshing = true)
+            } returns Result.Success(
+                data = listOf(accountWithNoFunds)
+            )
+
+            coEvery {
+                getAccountsWithResourcesUseCase(accounts = listOf(accountWithFunds.account), isRefreshing = true)
+            } returns Result.Success(
+                data = listOf(accountWithFunds)
+            )
+
+            val addressToLockFee = transactionClient.selectAccountAddressToLockFee(networkId, manifest)
+            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
             val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
 
             Assert.assertEquals(2, signingEntities.size)
-            Assert.assertEquals(
-                expectedAddress,
-                signingEntities.first().address
-            )
+            Assert.assertTrue(signingEntities.any { it.address == addressWithFunds })
 
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `when address has no funds, return the respective error`() = runTest {
-        coEvery {
-            getAccountResourceUseCase.getAccounts(
-                addresses = listOf(expectedAddress),
-                isRefreshing = true
-            )
-        } returns Result.Success(
-            listOf(
-                SampleDataProvider().sampleAccountResource(
-                    address = expectedAddress,
-                    withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                        ownerAddress = expectedAddress,
-                        amount = BigDecimal.ZERO to "XRD"
-                    )
-                )
-            )
-        )
-        coEvery {
-            getAccountResourceUseCase.getAccountsFromProfile(isRefreshing = true)
-        } returns Result.Success(
-            listOf(
-                SampleDataProvider().sampleAccountResource(
-                    address = expectedAddress,
-                    withFungibleTokens = SampleDataProvider().sampleFungibleTokens(
-                        ownerAddress = expectedAddress,
-                        amount = BigDecimal.ZERO to "XRD"
-                    )
-                )
-            )
-        )
-
         val manifest = ManifestBuilder().addInstruction(
             Instruction.SetMetadata(
-                entityAddress = ManifestAstValue.Address(expectedAddress),
+                entityAddress = ManifestAstValue.Address(addressWithNoFunds),
                 ManifestAstValue.String("name"),
                 ManifestAstValue.Enum("RadixDashboard")
             )
         ).build()
+
+        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(accountWithNoFunds.account)))
+        coEvery {
+            getAccountsWithResourcesUseCase(accounts = listOf(accountWithNoFunds.account), isRefreshing = true)
+        } returns Result.Success(
+            data = listOf(accountWithNoFunds)
+        )
 
         try {
             transactionClient.selectAccountAddressToLockFee(networkId, manifest)
