@@ -5,6 +5,8 @@ buildscript {
         minSdk = 27
         compileSdk = 33
         targetSdk = 33
+        versionName = "0.2.1"
+        internalVersionName = "ash"
         kotlinCompilerExtensionVersion = "1.4.0"
     }
     dependencies {
