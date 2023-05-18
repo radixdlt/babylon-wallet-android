@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
+
 package com.babylon.wallet.android.presentation.transfer
 
 import androidx.activity.compose.BackHandler
@@ -15,11 +17,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,8 +46,9 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
+import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
+import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import kotlinx.coroutines.launch
@@ -71,7 +76,10 @@ fun TransferScreen(
         deleteAccountClick = viewModel::deleteAccountClick,
         onAddressDecoded = viewModel::onAddressDecoded,
         onQrCodeIconClick = viewModel::onQrCodeIconClick,
-        cancelQrScan = viewModel::cancelQrScan
+        cancelQrScan = viewModel::cancelQrScan,
+        onChooseAssetTabSelected = viewModel::onChooseAssetTabSelected,
+        onSheetClosed = viewModel::onSheetClose,
+        onAddAssetsClick = viewModel::onAddAssetsClick
     )
 }
 
@@ -81,7 +89,7 @@ fun TransferContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     onSendTransferClick: () -> Unit,
-    state: TransferViewModel.State,
+    state: State,
     onMessageChanged: (String) -> Unit,
     onAddressChanged: (String) -> Unit,
     onAccountSelect: (Int) -> Unit,
@@ -91,7 +99,10 @@ fun TransferContent(
     deleteAccountClick: (Int) -> Unit,
     onAddressDecoded: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
-    cancelQrScan: () -> Unit
+    cancelQrScan: () -> Unit,
+    onChooseAssetTabSelected: (State.Sheet.ChooseAssets.Tab) -> Unit,
+    onSheetClosed: () -> Unit,
+    onAddAssetsClick: () -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -99,11 +110,11 @@ fun TransferContent(
 
     var showMessageContent by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        scope.launch {
-            bottomSheetState.hide()
-        }
-    }
+    SyncSheetState(
+        bottomSheetState = bottomSheetState,
+        isSheetVisible = state.isSheetVisible,
+        onSheetClosed = onSheetClosed
+    )
 
     DefaultModalSheetLayout(
         modifier = modifier
@@ -111,29 +122,43 @@ fun TransferContent(
             .fillMaxSize(),
         sheetState = bottomSheetState,
         sheetContent = {
-            ChooseAccountSheet(
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                },
-                address = state.address,
-                buttonEnabled = state.buttonEnabled,
-                accountsDisabled = state.accountsDisabled,
-                chooseAccountSheetMode = state.chooseAccountSheetMode,
-                onAddressChanged = onAddressChanged,
-                receivingAccounts = state.receivingAccounts,
-                onAccountSelect = onAccountSelect,
-                onChooseDestinationAccountClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                    onChooseDestinationAccountClick()
-                },
-                onAddressDecoded = onAddressDecoded,
-                onQrCodeIconClick = onQrCodeIconClick,
-                cancelQrScan = cancelQrScan
-            )
+            when (state.sheet) {
+                is State.Sheet.ChooseAssets -> {
+                    ChooseAssetsSheet(
+                        state = state.sheet,
+                        onTabSelected = { onChooseAssetTabSelected(it) },
+                        onCloseClick = onSheetClosed
+                    )
+                }
+                is State.Sheet.None -> {
+
+                }
+            }
+
+//            // TODO this should be added in the sheet state
+//            ChooseAccountSheet(
+//                onCloseClick = {
+//                    scope.launch {
+//                        bottomSheetState.hide()
+//                    }
+//                },
+//                address = state.address,
+//                buttonEnabled = state.buttonEnabled,
+//                accountsDisabled = state.accountsDisabled,
+//                chooseAccountSheetMode = state.chooseAccountSheetMode,
+//                onAddressChanged = onAddressChanged,
+//                receivingAccounts = state.receivingAccounts,
+//                onAccountSelect = onAccountSelect,
+//                onChooseDestinationAccountClick = {
+//                    scope.launch {
+//                        bottomSheetState.hide()
+//                    }
+//                    onChooseDestinationAccountClick()
+//                },
+//                onAddressDecoded = onAddressDecoded,
+//                onQrCodeIconClick = onQrCodeIconClick,
+//                cancelQrScan = cancelQrScan
+//            )
         }
     ) {
         Column(
@@ -271,7 +296,7 @@ fun TransferContent(
                                 bottomSheetState.show()
                             }
                         },
-                        onAddAssetsClick = { /* TODO */ },
+                        onAddAssetsClick = onAddAssetsClick,
                         onDeleteClick = {
                             deleteAccountClick(index)
                         },
@@ -315,6 +340,32 @@ fun TransferContent(
     }
 }
 
+@Composable
+private fun SyncSheetState(
+    bottomSheetState: ModalBottomSheetState,
+    isSheetVisible: Boolean,
+    onSheetClosed: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    BackHandler(enabled = isSheetVisible) {
+        onSheetClosed()
+    }
+
+    LaunchedEffect(isSheetVisible) {
+        if (isSheetVisible) {
+            scope.launch { bottomSheetState.show() }
+        } else {
+            scope.launch { bottomSheetState.hide() }
+        }
+    }
+
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (!bottomSheetState.isVisible) {
+            onSheetClosed()
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun TransferContentPreview() {
@@ -325,7 +376,7 @@ fun TransferContentPreview() {
                 .background(color = Color.Gray),
             onBackClick = {},
             onSendTransferClick = {},
-            state = TransferViewModel.State(
+            state = State(
                 message = "",
                 fromAccount = SampleDataProvider().sampleAccount(
                     address = "rdx_t_12382918379821",
@@ -341,7 +392,10 @@ fun TransferContentPreview() {
             deleteAccountClick = {},
             onAddressDecoded = {},
             onQrCodeIconClick = {},
-            cancelQrScan = {}
+            cancelQrScan = {},
+            onChooseAssetTabSelected = {},
+            onSheetClosed = {},
+            onAddAssetsClick = {}
         )
     }
 }

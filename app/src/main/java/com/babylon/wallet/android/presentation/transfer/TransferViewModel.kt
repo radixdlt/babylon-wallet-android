@@ -2,9 +2,13 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.request.DecodeAddressRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,12 +26,19 @@ import javax.inject.Inject
 @HiltViewModel
 class TransferViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
+    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransferViewModel.State>() {
 
     internal val args = TransferArgs(savedStateHandle)
 
     override fun initialState(): State = State()
+
+    private val assetsChooserDelegate = AssetsChooserDelegate(
+        state = _state,
+        viewModelScope = viewModelScope,
+        getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+    )
 
     init {
         viewModelScope.launch {
@@ -237,6 +248,20 @@ class TransferViewModel @Inject constructor(
         }
     }
 
+    fun onChooseAssetTabSelected(tab: State.Sheet.ChooseAssets.Tab) = assetsChooserDelegate.onTabSelected(tab)
+
+    fun onAddAssetsClick(/* TODO add selected account */) {
+        val fromAccount = state.value.fromAccount ?: return
+        assetsChooserDelegate.onChooseAssets(
+            fromAccount = fromAccount,
+            selectedAssets = listOf()
+        )
+    }
+
+    fun onSheetClose() {
+        _state.update { it.copy(sheet = State.Sheet.None) }
+    }
+
     data class State(
         val fromAccount: Network.Account? = null,
         val receivingAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
@@ -249,8 +274,12 @@ class TransferViewModel @Inject constructor(
         val message: String = "",
         val buttonEnabled: Boolean = false,
         val accountsDisabled: Boolean = false,
-        val chooseAccountSheetMode: ChooseAccountSheetMode = ChooseAccountSheetMode.Chooser
+        val chooseAccountSheetMode: ChooseAccountSheetMode = ChooseAccountSheetMode.Chooser,
+        val sheet: Sheet = Sheet.None
     ) : UiState {
+
+        val isSheetVisible: Boolean
+            get() = sheet != Sheet.None
 
         data class SelectedAccountForTransfer(
             val account: AccountItemUiModel? = null,
@@ -259,6 +288,24 @@ class TransferViewModel @Inject constructor(
             enum class Type {
                 NoAccount, ThirdPartyAccount, ExistingAccount
             }
+        }
+
+        sealed interface Sheet {
+            object None: Sheet
+
+            data class ChooseAssets(
+                val resources: Resources? = null,
+                val selectedResources: List<Resource>,
+                val selectedTab: Tab = Tab.Tokens
+            ): Sheet {
+
+                enum class Tab {
+                    Tokens,
+                    NFTs
+                }
+            }
+
+            // TODO should contain the sheet contents for choosing account
         }
     }
 }
