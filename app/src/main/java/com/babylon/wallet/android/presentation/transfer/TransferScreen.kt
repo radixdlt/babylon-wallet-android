@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun TransferScreen(
@@ -69,13 +70,13 @@ fun TransferScreen(
         onSendTransferClick = onSendTransferClick,
         state = state,
         onMessageChanged = viewModel::onMessageChanged,
-        onAddressChanged = viewModel::onAddressChanged,
-        onAccountSelect = viewModel::onAccountSelect,
-        onChooseClick = viewModel::onChooseClick,
-        onChooseDestinationAccountClick = viewModel::onChooseDestinationAccountClick,
+        onAddressTyped = viewModel::onAddressTyped,
+        onOwnedAccountSelected = viewModel::onOwnedAccountSelected,
+        onChooseAccountForSkeleton = viewModel::onChooseAccountForSkeleton,
+        onChooseAccountSubmitted = viewModel::onChooseAccountSubmitted,
         addAccountClick = viewModel::addAccountClick,
         deleteAccountClick = viewModel::deleteAccountClick,
-        onAddressDecoded = viewModel::onAddressDecoded,
+        onAddressDecoded = viewModel::onQRAddressDecoded,
         onQrCodeIconClick = viewModel::onQrCodeIconClick,
         cancelQrScan = viewModel::cancelQrScan,
         onChooseAssetTabSelected = viewModel::onChooseAssetTabSelected,
@@ -93,10 +94,10 @@ fun TransferContent(
     onSendTransferClick: () -> Unit,
     state: State,
     onMessageChanged: (String) -> Unit,
-    onAddressChanged: (String) -> Unit,
-    onAccountSelect: (Int) -> Unit,
-    onChooseClick: (Int) -> Unit,
-    onChooseDestinationAccountClick: () -> Unit,
+    onAddressTyped: (String) -> Unit,
+    onOwnedAccountSelected: (Network.Account) -> Unit,
+    onChooseAccountForSkeleton: (Int) -> Unit,
+    onChooseAccountSubmitted: () -> Unit,
     addAccountClick: () -> Unit,
     deleteAccountClick: (Int) -> Unit,
     onAddressDecoded: (String) -> Unit,
@@ -125,44 +126,29 @@ fun TransferContent(
             .fillMaxSize(),
         sheetState = bottomSheetState,
         sheetContent = {
-            when (state.sheet) {
+            when (val sheetState = state.sheet) {
+                is State.Sheet.ChooseAccounts -> {
+                    ChooseAccountSheet(
+                        onCloseClick = onSheetClosed,
+                        state = sheetState,
+                        onOwnedAccountSelected = onOwnedAccountSelected,
+                        onChooseAccountSubmitted = onChooseAccountSubmitted,
+                        onAddressDecoded = onAddressDecoded,
+                        onQrCodeIconClick = onQrCodeIconClick,
+                        cancelQrScan = cancelQrScan,
+                        onAddressChanged = onAddressTyped
+                    )
+                }
                 is State.Sheet.ChooseAssets -> {
                     ChooseAssetsSheet(
-                        state = state.sheet,
+                        state = sheetState,
                         onTabSelected = { onChooseAssetTabSelected(it) },
                         onCloseClick = onSheetClosed,
                         onAssetSelectionChanged = onAssetSelectionChanged
                     )
                 }
-                is State.Sheet.None -> {
-
-                }
+                is State.Sheet.None -> {}
             }
-
-//            // TODO this should be added in the sheet state
-//            ChooseAccountSheet(
-//                onCloseClick = {
-//                    scope.launch {
-//                        bottomSheetState.hide()
-//                    }
-//                },
-//                address = state.address,
-//                buttonEnabled = state.buttonEnabled,
-//                accountsDisabled = state.accountsDisabled,
-//                chooseAccountSheetMode = state.chooseAccountSheetMode,
-//                onAddressChanged = onAddressChanged,
-//                receivingAccounts = state.receivingAccounts,
-//                onAccountSelect = onAccountSelect,
-//                onChooseDestinationAccountClick = {
-//                    scope.launch {
-//                        bottomSheetState.hide()
-//                    }
-//                    onChooseDestinationAccountClick()
-//                },
-//                onAddressDecoded = onAddressDecoded,
-//                onQrCodeIconClick = onQrCodeIconClick,
-//                cancelQrScan = cancelQrScan
-//            )
         }
     ) {
         Column(
@@ -292,20 +278,17 @@ fun TransferContent(
                     }
                 }
 
-                itemsIndexed(state.selectedAccounts) { index, selectedAccount ->
+                itemsIndexed(state.targetAccounts) { index, targetAccount ->
                     TargetAccountCard(
                         onChooseAccountClick = {
-                            onChooseClick(index)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
+                            onChooseAccountForSkeleton(index)
                         },
                         onAddAssetsClick = onAddAssetsClick,
                         onDeleteClick = {
                             deleteAccountClick(index)
                         },
                         isDeletable = index > 0,
-                        selectedAccount = selectedAccount
+                        targetAccount = targetAccount
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -388,10 +371,10 @@ fun TransferContentPreview() {
                 )
             ),
             onMessageChanged = {},
-            onAddressChanged = {},
-            onAccountSelect = {},
-            onChooseClick = {},
-            onChooseDestinationAccountClick = {},
+            onAddressTyped = {},
+            onOwnedAccountSelected = {},
+            onChooseAccountForSkeleton = {},
+            onChooseAccountSubmitted = {},
             addAccountClick = {},
             deleteAccountClick = {},
             onAddressDecoded = {},

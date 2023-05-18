@@ -118,7 +118,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onChooseClick(selectedIndex)
+        viewModel.onChooseAccountSubmitted(selectedIndex)
 
         Assert.assertEquals(
             viewModel.state.first().recipientAccountContainerIndex,
@@ -159,7 +159,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             val viewModel = vm.value
             advanceUntilIdle()
 
-            viewModel.onAddressDecoded(address)
+            viewModel.onQRAddressDecoded(address)
 
             Assert.assertEquals(
                 viewModel.state.first().address,
@@ -182,7 +182,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             val viewModel = vm.value
             advanceUntilIdle()
 
-            viewModel.onAddressDecoded(address)
+            viewModel.onQRAddressDecoded(address)
 
             Assert.assertEquals(
                 viewModel.state.first().address,
@@ -206,7 +206,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onAddressChanged(address)
+        viewModel.onAddressTyped(address)
 
         Assert.assertEquals(
             viewModel.state.first().address,
@@ -315,7 +315,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onAccountSelect(0)
+        viewModel.onOwnedAccountSelected(0)
 
         Assert.assertEquals(
             viewModel.state.first().buttonEnabled,
@@ -353,9 +353,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onChooseClick(0)
+        viewModel.onChooseAccountSubmitted(0)
         advanceUntilIdle()
-        viewModel.onAccountSelect(selectedIndex)
+        viewModel.onOwnedAccountSelected(selectedIndex)
         advanceUntilIdle()
         viewModel.onChooseDestinationAccountClick()
         advanceUntilIdle()
@@ -384,9 +384,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onChooseClick(0)
+        viewModel.onChooseAccountSubmitted(0)
         advanceUntilIdle()
-        viewModel.onAccountSelect(selectedIndex)
+        viewModel.onOwnedAccountSelected(selectedIndex)
         advanceUntilIdle()
         viewModel.onChooseDestinationAccountClick()
         advanceUntilIdle()
@@ -412,9 +412,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onChooseClick(0)
+        viewModel.onChooseAccountSubmitted(0)
         advanceUntilIdle()
-        viewModel.onAddressDecoded(thirdPartyAccountsAddress)
+        viewModel.onQRAddressDecoded(thirdPartyAccountsAddress)
         advanceUntilIdle()
         viewModel.onChooseDestinationAccountClick()
         advanceUntilIdle()
@@ -440,9 +440,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.onChooseClick(0)
+        viewModel.onChooseAccountSubmitted(0)
         advanceUntilIdle()
-        viewModel.onAddressChanged(thirdPartyAccountsAddress)
+        viewModel.onAddressTyped(thirdPartyAccountsAddress)
         advanceUntilIdle()
         viewModel.onChooseDestinationAccountClick()
         advanceUntilIdle()

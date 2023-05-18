@@ -35,7 +35,7 @@ fun TargetAccountCard(
     onAddAssetsClick: () -> Unit,
     onDeleteClick: () -> Unit,
     isDeletable: Boolean = false,
-    selectedAccount: TransferViewModel.State.SelectedAccountForTransfer,
+    targetAccount: TargetAccount,
 ) {
     Column(
         modifier = modifier
@@ -46,26 +46,20 @@ fun TargetAccountCard(
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {
-        val cardModifier = when (selectedAccount.type) {
-            TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount -> {
-                Modifier
-            }
-            TransferViewModel.State.SelectedAccountForTransfer.Type.ExistingAccount -> {
-                Modifier
-                    .background(
-                        brush = Brush.linearGradient(
-                            getAccountGradientColorsFor(selectedAccount.account?.appearanceID ?: 0)
-                        ),
-                        shape = RadixTheme.shapes.roundedRectTopMedium
-                    )
-            }
-            TransferViewModel.State.SelectedAccountForTransfer.Type.ThirdPartyAccount -> {
-                Modifier
-                    .background(
-                        color = RadixTheme.colors.gray2,
-                        shape = RadixTheme.shapes.roundedRectTopMedium
-                    )
-            }
+        val cardModifier = when (targetAccount) {
+            is TargetAccount.Skeleton -> Modifier
+            is TargetAccount.Owned -> Modifier
+                .background(
+                    brush = Brush.linearGradient(
+                        getAccountGradientColorsFor(targetAccount.account.appearanceID)
+                    ),
+                    shape = RadixTheme.shapes.roundedRectTopMedium
+                )
+            is TargetAccount.Other -> Modifier
+                .background(
+                    color = RadixTheme.colors.gray2,
+                    shape = RadixTheme.shapes.roundedRectTopMedium
+                )
         }
         Row(
             modifier = cardModifier
@@ -78,37 +72,48 @@ fun TargetAccountCard(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selectedAccount.type == TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount) {
-                RadixTextButton(
-                    text = stringResource(id = R.string.choose_accounts),
-                    textStyle = RadixTheme.typography.body1Header,
-                    contentColor = RadixTheme.colors.gray2,
-                    onClick = onChooseAccountClick
-                )
-            } else {
-                Text(
-                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                    text = selectedAccount.account?.displayName.orEmpty(),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.white
-                )
+            when (targetAccount) {
+                is TargetAccount.Skeleton -> {
+                    RadixTextButton(
+                        text = stringResource(id = R.string.choose_accounts),
+                        textStyle = RadixTheme.typography.body1Header,
+                        contentColor = RadixTheme.colors.gray2,
+                        onClick = onChooseAccountClick
+                    )
+                }
+                is TargetAccount.Other -> {
+                    Text(
+                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
+                        text = stringResource(id = R.string.unknown),
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.white
+                    )
+                }
+                is TargetAccount.Owned -> {
+                    Text(
+                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
+                        text = targetAccount.account.displayName,
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.white
+                    )
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
-            val hasAccount = selectedAccount.type != TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
-            if (hasAccount) {
+            if (targetAccount.isAddressValid) {
                 ActionableAddressView(
-                    address = selectedAccount.account?.address.orEmpty(),
+                    address = targetAccount.address,
                     textStyle = RadixTheme.typography.body2HighImportance,
                     textColor = RadixTheme.colors.white.copy(alpha = 0.8f),
                     iconColor = RadixTheme.colors.white.copy(alpha = 0.8f)
                 )
             }
-            if (isDeletable || hasAccount) {
+
+            if (isDeletable || targetAccount.isAddressValid) {
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear",
-                        tint = if (hasAccount) RadixTheme.colors.white else RadixTheme.colors.gray1,
+                        tint = if (targetAccount.isAddressValid) RadixTheme.colors.white else RadixTheme.colors.gray1,
                     )
                 }
             }
@@ -144,7 +149,7 @@ fun TargetAccountCardPreview() {
             onChooseAccountClick = {},
             onAddAssetsClick = {},
             onDeleteClick = {},
-            selectedAccount = TransferViewModel.State.SelectedAccountForTransfer()
+            targetAccount = TargetAccount.Skeleton(index = 0)
         )
     }
 }

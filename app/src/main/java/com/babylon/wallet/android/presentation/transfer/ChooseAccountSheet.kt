@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -39,38 +38,35 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
+import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChooseAccountSheet(
     modifier: Modifier = Modifier,
+    state: ChooseAccounts,
     onCloseClick: () -> Unit,
-    address: String,
-    buttonEnabled: Boolean,
-    accountsDisabled: Boolean,
-    chooseAccountSheetMode: ChooseAccountSheetMode,
     onAddressChanged: (String) -> Unit,
-    receivingAccounts: ImmutableList<AccountItemUiModel>,
-    onAccountSelect: (Int) -> Unit,
-    onChooseDestinationAccountClick: () -> Unit,
-    onAddressDecoded: (String) -> Unit,
+    onOwnedAccountSelected: (Network.Account) -> Unit,
+    onChooseAccountSubmitted: () -> Unit,
     onQrCodeIconClick: () -> Unit,
+    onAddressDecoded: (String) -> Unit,
     cancelQrScan: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val focusManager = LocalFocusManager.current
 
     Scaffold(
-        modifier = modifier
-            .navigationBarsPadding(),
+        modifier = modifier.navigationBarsPadding(),
         topBar = {
             Box(
                 modifier = Modifier
@@ -91,7 +87,7 @@ fun ChooseAccountSheet(
                         )
                         .align(Alignment.CenterStart),
                     onClick = {
-                        if (chooseAccountSheetMode == ChooseAccountSheetMode.QRScanner) {
+                        if (state.mode == ChooseAccounts.Mode.QRScanner) {
                             cancelQrScan()
                         } else {
                             onCloseClick()
@@ -99,7 +95,7 @@ fun ChooseAccountSheet(
                     }
                 ) {
                     Icon(
-                        imageVector = if (chooseAccountSheetMode == ChooseAccountSheetMode.QRScanner) {
+                        imageVector = if (state.mode == ChooseAccounts.Mode.QRScanner) {
                             Icons.Filled.ArrowBack
                         } else {
                             Icons.Filled.Clear
@@ -112,7 +108,7 @@ fun ChooseAccountSheet(
                     modifier = Modifier
                         .align(alignment = Alignment.Center)
                         .padding(RadixTheme.dimensions.paddingLarge),
-                    text = if (chooseAccountSheetMode == ChooseAccountSheetMode.Chooser) {
+                    text = if (state.mode == ChooseAccounts.Mode.QRScanner) {
                         stringResource(id = R.string.choose_receiving_account)
                     } else {
                         stringResource(id = R.string.scan_qr_code)
@@ -123,35 +119,35 @@ fun ChooseAccountSheet(
             }
         },
         bottomBar = {
-            if (chooseAccountSheetMode == ChooseAccountSheetMode.Chooser) {
+            if (state.mode == ChooseAccounts.Mode.QRScanner) {
                 RadixPrimaryButton(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
                     text = stringResource(id = R.string.choose),
-                    onClick = onChooseDestinationAccountClick,
-                    enabled = buttonEnabled
+                    onClick = onChooseAccountSubmitted,
+                    enabled = state.isChooseButtonEnabled
                 )
             }
         }
     ) { padding ->
-        when (chooseAccountSheetMode) {
-            ChooseAccountSheetMode.Chooser -> {
+        when (state.mode) {
+            ChooseAccounts.Mode.Chooser -> {
                 ChooseAccountContent(
                     modifier = Modifier
                         .background(color = RadixTheme.colors.white)
                         .padding(padding),
                     onAddressChanged = onAddressChanged,
-                    address = address,
+                    address = (state.selectedAccount as? TargetAccount.Other)?.address.orEmpty(),
                     cameraPermissionState = cameraPermissionState,
                     onQrCodeIconClick = onQrCodeIconClick,
-                    receivingAccounts = receivingAccounts,
-                    accountsDisabled = accountsDisabled,
-                    onAccountSelect = onAccountSelect,
+                    ownedAccounts = state.ownedAccounts.toPersistentList(),
+                    accountsDisabled = !state.isOwnedAccountsEnabled,
+                    onOwnedAccountSelected = onOwnedAccountSelected,
                     focusManager = focusManager
                 )
             }
-            ChooseAccountSheetMode.QRScanner -> {
+            ChooseAccounts.Mode.QRScanner -> {
                 if (cameraPermissionState.status.isGranted) {
                     ScanQRContent(
                         modifier = Modifier
@@ -173,9 +169,9 @@ fun ChooseAccountContent(
     address: String,
     cameraPermissionState: PermissionState,
     onQrCodeIconClick: () -> Unit,
-    receivingAccounts: ImmutableList<AccountItemUiModel>,
+    ownedAccounts: ImmutableList<Network.Account>,
+    onOwnedAccountSelected: (Network.Account) -> Unit,
     accountsDisabled: Boolean,
-    onAccountSelect: (Int) -> Unit,
     focusManager: FocusManager
 ) {
     LazyColumn(
@@ -258,7 +254,9 @@ fun ChooseAccountContent(
             )
         }
 
-        itemsIndexed(receivingAccounts) { index, accountItem ->
+        items(ownedAccounts.size) {index ->
+            val accountItem = ownedAccounts[index]
+
             val gradientColor = getAccountGradientColorsFor(accountItem.appearanceID)
             AccountSelectionCard(
                 modifier = Modifier
@@ -271,17 +269,17 @@ fun ChooseAccountContent(
                     .clip(RadixTheme.shapes.roundedRectSmall)
                     .clickable {
                         if (!accountsDisabled) {
-                            onAccountSelect(index)
+                            onOwnedAccountSelected(accountItem)
                             focusManager.clearFocus(true)
                         }
                     },
-                accountName = accountItem.displayName.orEmpty(),
+                accountName = accountItem.displayName,
                 address = accountItem.address,
-                checked = accountItem.isSelected,
+                checked = false, // TODO
                 isSingleChoice = true,
                 radioButtonClicked = {
                     if (!accountsDisabled) {
-                        onAccountSelect(index)
+                        onOwnedAccountSelected(accountItem)
                         focusManager.clearFocus(true)
                     }
                 }
