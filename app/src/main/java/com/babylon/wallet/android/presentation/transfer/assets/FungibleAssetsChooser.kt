@@ -16,6 +16,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
@@ -126,11 +130,15 @@ private fun ItemContainer(
     bottomContent: @Composable (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    Surface(
+    Card(
         modifier = modifier,
         shape = shape,
-        color = RadixTheme.colors.defaultBackground,
-        elevation = 4.dp
+        colors = CardDefaults.cardColors(
+            containerColor = RadixTheme.colors.defaultBackground
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
     ) {
         Column {
             content()
