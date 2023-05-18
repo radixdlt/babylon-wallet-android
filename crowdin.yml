@@ -2,5 +2,5 @@ targets:
   - name: Andorid
     sources:
       - en
-    file: app/src/main/res/values/strings.xml
+    file: ../app/src/main/res/values/strings.xml
     format: android
