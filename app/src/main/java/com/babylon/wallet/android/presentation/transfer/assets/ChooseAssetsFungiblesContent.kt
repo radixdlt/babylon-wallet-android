@@ -1,9 +1,46 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
+import android.graphics.drawable.ColorDrawable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.listItemShape
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
 
 @Composable
 fun ChooseAssetsFungiblesContent(
@@ -12,9 +49,152 @@ fun ChooseAssetsFungiblesContent(
     selectedResources: List<Resource>,
     onResourceClicked: (Resource.FungibleResource) -> Unit
 ) {
+    val (xrdResource, restResources) = remember(resources) {
+        val xrdResource = resources.find { it.isXrd }
+        xrdResource to resources.filterNot { it == xrdResource }
+    }
+
     LazyColumn(
         modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
-        
+        if (xrdResource != null) {
+            item {
+                ItemContainer(
+                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
+                    shape = listItemShape()
+                ) {
+                    Item(
+                        modifier = Modifier.height(85.dp),
+                        resource = xrdResource,
+                        isSelected = selectedResources.contains(xrdResource),
+                        onClick = { onResourceClicked(xrdResource) }
+                    )
+                }
+            }
+        }
+
+        itemsIndexed(restResources) { index, resource ->
+            val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
+            ItemContainer(
+                modifier = Modifier
+                    .padding(top = topPadding)
+                    .drawWithContent {
+                        // Needed to remove shadow casted above of previous elements in the top side
+                        if (index != 0 && restResources.size != 1) {
+                            val shadowPadding = 16.dp.toPx()
+                            clipRect(
+                                top = 0f,
+                                left = -shadowPadding,
+                                right = size.width + shadowPadding,
+                                bottom = size.height + shadowPadding
+                            ) {
+                                this@drawWithContent.drawContent()
+                            }
+                        } else {
+                            this@drawWithContent.drawContent()
+                        }
+                    },
+                shape = listItemShape(itemIndex = index, allItemsSize = restResources.size),
+                bottomContent = if (index != restResources.lastIndex) {
+                    {
+                        Divider(
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            color = RadixTheme.colors.gray4
+                        )
+                    }
+                } else {
+                    null
+                }
+            ) {
+                Item(
+                    modifier = Modifier.height(83.dp),
+                    resource = resource,
+                    isSelected = selectedResources.contains(resource),
+                    onClick = { onResourceClicked(resource) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ItemContainer(
+    modifier: Modifier = Modifier,
+    shape: Shape,
+    bottomContent: @Composable (() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        modifier = modifier,
+        shape = shape,
+        color = RadixTheme.colors.defaultBackground,
+        elevation = 4.dp
+    ) {
+        Column {
+            content()
+
+            bottomContent?.invoke()
+        }
+    }
+}
+
+@Composable
+private fun Item(
+    modifier: Modifier = Modifier,
+    resource: Resource.FungibleResource,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .padding(horizontal = 28.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+
+        AsyncImage(
+            modifier = Modifier
+                .size(44.dp)
+                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+                .clip(RadixTheme.shapes.circle),
+            model = if (resource.isXrd) {
+                R.drawable.ic_xrd_token
+            } else {
+                rememberImageUrl(fromUrl = resource.iconUrl.toString(), size = ImageSize.MEDIUM)
+            },
+            placeholder = placeholder,
+            fallback = placeholder,
+            error = placeholder,
+            contentDescription = null,
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+        Text(
+            modifier = Modifier.weight(1f),
+            text = resource.displayTitle,
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1
+        )
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+        Text(
+            text = resource.amount.displayableQuantity(),
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1
+        )
+
+        Checkbox(
+            checked = isSelected,
+            onCheckedChange = { onClick() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = RadixTheme.colors.gray1,
+                uncheckedColor = RadixTheme.colors.gray3,
+                checkmarkColor = Color.White
+            )
+        )
     }
 }

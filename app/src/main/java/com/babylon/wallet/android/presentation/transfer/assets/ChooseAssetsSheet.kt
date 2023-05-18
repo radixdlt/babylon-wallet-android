@@ -6,9 +6,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -64,8 +66,9 @@ fun ChooseAssetsSheet(
         ) {
             val pagerState = rememberPagerState()
 
+            Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingDefault))
+
             ResourcesTabs(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
                 selectedTab = state.selectedTab, onTabSelected = onTabSelected,
                 pagerState = pagerState
             )
