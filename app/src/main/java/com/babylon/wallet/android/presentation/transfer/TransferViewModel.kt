@@ -8,12 +8,9 @@ import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCas
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -69,22 +66,22 @@ class TransferViewModel @Inject constructor(
         _state.update {
             it.copy(
                 targetAccounts = it.targetAccounts.toMutableList().apply {
-                    add(TargetAccount.Skeleton(it.targetAccounts.size))
+                    add(TargetAccount.Skeleton(it.targetAccounts.size, assets = emptyList()))
                 }.toPersistentList()
             )
         }
     }
 
-    fun deleteAccountClick(index: Int) {
+    fun deleteAccountClick(from: TargetAccount) {
         _state.update {
             val targetAccounts = it.targetAccounts.toMutableList()
 
-            if (index == 0 && targetAccounts.size == 1) {
-                targetAccounts.removeAt(index)
-                targetAccounts.add(TargetAccount.Skeleton(index))
+            if (from.index == 0 && targetAccounts.size == 1) {
+                targetAccounts.removeAt(from.index)
+                targetAccounts.add(TargetAccount.Skeleton(from.index, assets = emptyList()))
                 it.copy(targetAccounts = targetAccounts.toPersistentList())
-            } else if (index > 0 && index < targetAccounts.size) {
-                targetAccounts.removeAt(index)
+            } else if (from.index > 0 && from.index < targetAccounts.size) {
+                targetAccounts.removeAt(from.index)
                 it.copy(targetAccounts = targetAccounts.toPersistentList())
             } else {
                 it
@@ -94,11 +91,11 @@ class TransferViewModel @Inject constructor(
 
     // Choose accounts flow
 
-    fun onChooseAccountForSkeleton(index: Int) {
+    fun onChooseAccountForSkeleton(from: TargetAccount) {
         val fromAccount = _state.value.fromAccount ?: return
         accountsChooserDelegate.onChooseAccount(
             fromAccount = fromAccount,
-            index = index,
+            slotAccount = from,
             selectedAccounts = _state.value.targetAccounts
         )
     }
@@ -134,13 +131,15 @@ class TransferViewModel @Inject constructor(
 
     fun onUiMessageShown() = assetsChooserDelegate.onUiMessageShown()
 
+    fun onChooseAssetsSubmitted() = assetsChooserDelegate.onChooseAssetsSubmitted()
+
     fun onSheetClose() {
         _state.update { it.copy(sheet = State.Sheet.None) }
     }
 
     data class State(
         val fromAccount: Network.Account? = null,
-        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton(index = 0)),
+        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton(index = 0, assets = emptyList())),
         val address: String = "",
         val message: String = "",
         val sheet: Sheet = Sheet.None
@@ -195,6 +194,7 @@ class TransferViewModel @Inject constructor(
 sealed class TargetAccount {
     abstract val address: String
     abstract val index: Int
+    abstract val assets: List<Resource>
 
     val isAddressValid: Boolean
         get() = when (this) {
@@ -204,7 +204,8 @@ sealed class TargetAccount {
         }
 
     data class Skeleton(
-        override val index: Int
+        override val index: Int,
+        override val assets: List<Resource>
     ): TargetAccount() {
         override val address: String = ""
     }
@@ -212,12 +213,14 @@ sealed class TargetAccount {
     data class Other(
         override val address: String,
         val isValidatedSuccessfully: Boolean,
-        override val index: Int
+        override val index: Int,
+        override val assets: List<Resource>
     ): TargetAccount()
 
     data class Owned(
         val account: Network.Account,
-        override val index: Int
+        override val index: Int,
+        override val assets: List<Resource>
     ): TargetAccount() {
         override val address: String
             get() = account.address

@@ -83,7 +83,8 @@ fun TransferScreen(
         onSheetClosed = viewModel::onSheetClose,
         onAddAssetsClick = viewModel::onAddAssetsClick,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
-        onUiMessageShown = viewModel::onUiMessageShown
+        onUiMessageShown = viewModel::onUiMessageShown,
+        onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted
     )
 }
 
@@ -97,10 +98,10 @@ fun TransferContent(
     onMessageChanged: (String) -> Unit,
     onAddressTyped: (String) -> Unit,
     onOwnedAccountSelected: (Network.Account) -> Unit,
-    onChooseAccountForSkeleton: (Int) -> Unit,
+    onChooseAccountForSkeleton: (TargetAccount) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     addAccountClick: () -> Unit,
-    deleteAccountClick: (Int) -> Unit,
+    deleteAccountClick: (TargetAccount) -> Unit,
     onAddressDecoded: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
     cancelQrScan: () -> Unit,
@@ -108,7 +109,8 @@ fun TransferContent(
     onSheetClosed: () -> Unit,
     onAddAssetsClick: () -> Unit,
     onAssetSelectionChanged: (Resource, Boolean) -> Unit,
-    onUiMessageShown: () -> Unit
+    onUiMessageShown: () -> Unit,
+    onChooseAssetsSubmitted: () -> Unit
 ) {
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
 
@@ -145,7 +147,8 @@ fun TransferContent(
                         onTabSelected = { onChooseAssetTabSelected(it) },
                         onCloseClick = onSheetClosed,
                         onAssetSelectionChanged = onAssetSelectionChanged,
-                        onUiMessageShown = onUiMessageShown
+                        onUiMessageShown = onUiMessageShown,
+                        onChooseAssetsSubmitted = onChooseAssetsSubmitted
                     )
                 }
                 is State.Sheet.None -> {}
@@ -279,16 +282,18 @@ fun TransferContent(
                     }
                 }
 
-                itemsIndexed(state.targetAccounts) { index, targetAccount ->
+                items(state.targetAccounts.size) { index ->
+                    val targetAccount = state.targetAccounts[index]
+
                     TargetAccountCard(
                         onChooseAccountClick = {
-                            onChooseAccountForSkeleton(index)
+                            onChooseAccountForSkeleton(targetAccount)
                         },
                         onAddAssetsClick = onAddAssetsClick,
                         onDeleteClick = {
-                            deleteAccountClick(index)
+                            deleteAccountClick(targetAccount)
                         },
-                        isDeletable = index > 0,
+                        isDeletable = targetAccount.index > 0,
                         targetAccount = targetAccount
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -385,7 +390,8 @@ fun TransferContentPreview() {
             onSheetClosed = {},
             onAddAssetsClick = {},
             onAssetSelectionChanged = { _, _ ->},
-            onUiMessageShown = {}
+            onUiMessageShown = {},
+            onChooseAssetsSubmitted = {}
         )
     }
 }

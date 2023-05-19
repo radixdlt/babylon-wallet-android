@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
@@ -52,7 +53,8 @@ fun ChooseAssetsSheet(
     onTabSelected: (ChooseAssets.Tab) -> Unit,
     onCloseClick: () -> Unit,
     onAssetSelectionChanged: (Resource, Boolean) -> Unit,
-    onUiMessageShown: () -> Unit
+    onUiMessageShown: () -> Unit,
+    onChooseAssetsSubmitted: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -68,6 +70,16 @@ fun ChooseAssetsSheet(
             SheetHeader(
                 title = "Choose Asset(s)",
                 onLeadingActionClicked = onCloseClick
+            )
+        },
+        bottomBar = {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Select Assets",
+                onClick = onChooseAssetsSubmitted,
+                enabled = state.selectedResources.isNotEmpty()
             )
         },
         snackbarHost = {
@@ -202,7 +214,8 @@ private fun ChooseAssetsSheetPreview() {
             onTabSelected = {},
             onCloseClick = {},
             onAssetSelectionChanged = { _, _ -> },
-            onUiMessageShown = {}
+            onUiMessageShown = {},
+            onChooseAssetsSubmitted = {}
         )
     }
 }

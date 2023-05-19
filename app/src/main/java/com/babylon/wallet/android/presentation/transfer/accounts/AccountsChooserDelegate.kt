@@ -21,13 +21,13 @@ class AccountsChooserDelegate(
 
     fun onChooseAccount(
         fromAccount: Network.Account,
-        index: Int,
+        slotAccount: TargetAccount,
         selectedAccounts: List<TargetAccount>
     ) {
         state.update {
             it.copy(
                 sheet = ChooseAccounts(
-                    selectedAccount = TargetAccount.Skeleton(index = index),
+                    selectedAccount = slotAccount,
                     ownedAccounts = emptyList(),
                 )
             )
@@ -49,7 +49,8 @@ class AccountsChooserDelegate(
                 selectedAccount = TargetAccount.Other(
                     address = address,
                     isValidatedSuccessfully = isValid,
-                    index = it.selectedAccount.index
+                    index = it.selectedAccount.index,
+                    assets = it.selectedAccount.assets
                 )
             )
         }
@@ -70,7 +71,8 @@ class AccountsChooserDelegate(
                 selectedAccount = TargetAccount.Other(
                     address = address,
                     isValidatedSuccessfully = isValid,
-                    index = it.selectedAccount.index
+                    index = it.selectedAccount.index,
+                    assets = it.selectedAccount.assets
                 ),
                 mode = ChooseAccounts.Mode.Chooser
             )
@@ -82,7 +84,8 @@ class AccountsChooserDelegate(
             it.copy(
                 selectedAccount = TargetAccount.Owned(
                     account = account,
-                    index = it.selectedAccount.index
+                    index = it.selectedAccount.index,
+                    assets = it.selectedAccount.assets
                 )
             )
         }
@@ -96,7 +99,6 @@ class AccountsChooserDelegate(
         state.update {
             val targetAccounts = it.targetAccounts.map { targetAccount ->
                 if (targetAccount.index == sheetState.selectedAccount.index) {
-                    // TODO copy assets if existed
                     sheetState.selectedAccount
                 } else {
                     targetAccount

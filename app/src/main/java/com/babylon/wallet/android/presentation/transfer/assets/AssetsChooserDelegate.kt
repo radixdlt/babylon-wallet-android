@@ -63,6 +63,10 @@ class AssetsChooserDelegate(
         updateSheetState { it.copy(uiMessage = null) }
     }
 
+    fun onChooseAssetsSubmitted() {
+
+    }
+
     private fun updateSheetState(
         onUpdate: (Sheet.ChooseAssets) -> Sheet.ChooseAssets
     ) {

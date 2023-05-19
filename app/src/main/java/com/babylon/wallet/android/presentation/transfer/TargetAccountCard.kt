@@ -149,7 +149,7 @@ fun TargetAccountCardPreview() {
             onChooseAccountClick = {},
             onAddAssetsClick = {},
             onDeleteClick = {},
-            targetAccount = TargetAccount.Skeleton(index = 0)
+            targetAccount = TargetAccount.Skeleton(index = 0, assets = emptyList())
         )
     }
 }
