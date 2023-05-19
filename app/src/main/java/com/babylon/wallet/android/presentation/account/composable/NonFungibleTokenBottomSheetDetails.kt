@@ -73,7 +73,7 @@ fun NonFungibleTokenBottomSheetDetails(
                 key = stringResource(id = R.string.nft_id)
             ) {
                 ActionableAddressView(
-                    address = item.globalAddress(nftAddress = nonFungibleResource.resourceAddress),
+                    address = item.globalAddress,
                     textStyle = RadixTheme.typography.body1Regular,
                     textColor = RadixTheme.colors.gray1
                 )

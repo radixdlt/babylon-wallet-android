@@ -42,7 +42,7 @@ fun NonFungibleResourcesContent(
             }
             items(
                 nft.items,
-                key = { item -> item.globalAddress(nftAddress = nft.resourceAddress) }
+                key = { item -> item.globalAddress }
             ) { item ->
                 AnimatedVisibility(
                     visible = !collapsed,

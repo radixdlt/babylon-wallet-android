@@ -146,6 +146,7 @@ class EntityRepositoryRCNetImpl @Inject constructor(
                 map = { response ->
                     response.nonFungibleIds.map {
                         Resource.NonFungibleResource.Item(
+                            collectionAddress = nonFungibleResourceAddress,
                             localId = it.nonFungibleId,
                             iconMetadataItem = it.nftImage()?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
                         )

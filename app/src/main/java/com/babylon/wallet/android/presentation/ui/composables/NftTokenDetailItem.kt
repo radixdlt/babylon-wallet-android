@@ -90,6 +90,7 @@ fun CollapsableChildItemPreview() {
     RadixWalletTheme {
         NftTokenDetailItem(
             item = Resource.NonFungibleResource.Item(
+                collectionAddress = "resource_rdx_abcd",
                 localId = "#12",
                 iconMetadataItem = null
             ),
