@@ -139,9 +139,7 @@
         <item quantity="one">\u2022 %d account</item>
         <item quantity="other">\u2022 %d accounts</item>
     </plurals>
-    <plurals name="view_at_least_x_accounts">
-        <item quantity="other">\u2022 %d or more accounts</item>
-    </plurals>
+    <string name="view_at_least_x_accounts">\u2022 %d or more accounts</string>
     <string name="any_number_of_accounts">\u2022 Any number of accounts</string>
     <string name="agree">Agree</string>
     <string name="new_login_request">New Login Request</string>

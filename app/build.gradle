@@ -230,3 +230,19 @@ dependencies {
     debugImplementation libs.composeUiTooling
     debugImplementation libs.composeUiTestManifest
 }
+
+/**
+ * Copies the english translation file to the default location.
+ * This is needed since Crowdin cannot create pull requests
+ * in a path that does not declare the language code.
+ *
+ * So assuming that the english language defined in the values-es is the default,
+ * this will be the file that gets copied.
+ */
+task buildDefaultLanguage {
+    copy {
+        from ('src/main/res/values-en/strings.xml')
+        into ('src/main/res/values/')
+    }
+}
+preBuild.dependsOn buildDefaultLanguage

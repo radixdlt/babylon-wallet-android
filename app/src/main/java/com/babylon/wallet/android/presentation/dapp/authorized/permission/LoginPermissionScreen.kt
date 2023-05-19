@@ -193,9 +193,8 @@ private fun RequestedPermissionsList(
             if (numberOfAccounts == 0) {
                 stringResource(id = R.string.any_number_of_accounts)
             } else {
-                pluralStringResource(
-                    id = R.plurals.view_at_least_x_accounts,
-                    numberOfAccounts,
+                stringResource(
+                    id = R.string.view_at_least_x_accounts,
                     numberOfAccounts
                 )
             }

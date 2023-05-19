@@ -1,5 +1,3 @@
-
-
 # Gradle files
 .gradle/
 build/
@@ -37,3 +35,6 @@ google-services.json
 .DS_Store
 
 vendor/
+
+# Default translation file (See in app/build.gradle)
+app/src/main/res/values/strings.xml
