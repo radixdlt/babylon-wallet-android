@@ -2,10 +2,5 @@ targets:
   - name: Andorid
     sources:
       - en
-    file: app/src/main/res/values/strings.xml
-    format: android
-  - name: Android translations
-    sources:
-      - en
     file: /app/src/main/res/values-%two_letters_code%/strings.xml
     format: android
