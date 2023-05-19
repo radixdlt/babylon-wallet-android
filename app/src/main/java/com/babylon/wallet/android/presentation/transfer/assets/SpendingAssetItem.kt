@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
@@ -39,10 +40,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -50,10 +50,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -72,41 +74,36 @@ fun SpendingAssetItem(
 ) {
     val isEditingState = remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    Row(modifier = modifier) {
-        OutlinedCard(
-            modifier = Modifier
-                .animateContentSize()
-                .clickable(enabled = asset.resource is Resource.FungibleResource) {
-                    focusRequester.requestFocus()
-                },
-            shape = RadixTheme.shapes.roundedRectSmall,
-            colors = CardDefaults.outlinedCardColors(
-                containerColor = RadixTheme.colors.defaultBackground,
-                contentColor = RadixTheme.colors.gray1
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            border = BorderStroke(
-                width = if (isEditingState.value) 1.dp else 0.dp,
-                color = if (isEditingState.value) RadixTheme.colors.gray1 else Color.Transparent
+
+    OutlinedCard(
+        modifier = modifier.clickable(enabled = asset is SpendingAsset.Fungible) {
+            focusRequester.requestFocus()
+        },
+        shape = RadixTheme.shapes.roundedRectSmall,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = RadixTheme.colors.defaultBackground,
+            contentColor = RadixTheme.colors.gray1
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        border = BorderStroke(
+            width = if (isEditingState.value) 1.dp else 0.dp,
+            color = if (isEditingState.value) RadixTheme.colors.gray1 else RadixTheme.colors.gray1.copy(alpha = 0.01f)
+        )
+    ) {
+        when (asset) {
+            is SpendingAsset.Fungible -> FungibleSpendingAsset(
+                resource = asset.resource,
+                amount = asset.amountString,
+                isExceedingBalance = asset.exceedingBalance,
+                onAmountChanged = onAmountChanged,
+                focusRequester = focusRequester,
+                isEditingState = isEditingState,
+                onMaxClicked = onMaxClicked
             )
-        ) {
-            when (asset.resource) {
-                is Resource.FungibleResource -> {
-                    FungibleSpendingAsset(
-                        resource = asset.resource,
-                        amount = asset.amountString,
-                        isExceedingBalance = asset.exceedingBalance,
-                        onAmountChanged = onAmountChanged,
-                        focusRequester = focusRequester,
-                        isEditingState = isEditingState,
-                        onMaxClicked = onMaxClicked
-                    )
-                }
-                is Resource.NonFungibleResource -> TODO()
+            is SpendingAsset.NFT -> {
+                NonFungibleSpendingAsset(nft = asset.item)
             }
         }
-
-        // TODO X Button
     }
 }
 
@@ -244,8 +241,51 @@ private fun ColumnScope.FungibleSpendingAsset(
             )
         }
     }
-    
+
     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+}
+
+@Composable
+private fun NonFungibleSpendingAsset(
+    modifier: Modifier = Modifier,
+    nft: Resource.NonFungibleResource.Item,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    ) {
+        AsyncImage(
+            model = rememberImageUrl(
+                fromUrl = nft.imageUrl.toString(),
+                size = ImageSize.SMALL,
+                placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
+                error = com.babylon.wallet.android.R.drawable.img_placeholder
+            ),
+            contentDescription = "Nft image",
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.Center,
+            modifier = Modifier
+                .size(55.dp)
+                .clip(RadixTheme.shapes.roundedRectSmall),
+        )
+
+        Column {
+            Text(
+                text = nft.localId,
+                color = RadixTheme.colors.gray2,
+                style = RadixTheme.typography.body2Regular
+            )
+
+//            Text(
+//                text = "Devin Booker - Dunk",
+//                color = RadixTheme.colors.gray1,
+//                style = RadixTheme.typography.body1HighImportance
+//            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -254,14 +294,13 @@ fun SpendingAssetItemsPreview() {
     RadixWalletTheme {
         Column(
             modifier = Modifier
-                .background(color = RadixTheme.colors.gray2)
-                .padding(RadixTheme.dimensions.paddingDefault),
+                .background(color = RadixTheme.colors.gray5),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             var firstAmount by remember { mutableStateOf("") }
             SpendingAssetItem(
-                asset = SpendingAsset(
-                    resource = Resource.FungibleResource(
+                asset = SpendingAsset.Fungible(
+                    Resource.FungibleResource(
                         resourceAddress = "resource_rdx_abcd",
                         amount = BigDecimal.TEN,
                         nameMetadataItem = NameMetadataItem("Radix"),
@@ -279,7 +318,7 @@ fun SpendingAssetItemsPreview() {
 
             var secondAmount by remember { mutableStateOf("3.4") }
             SpendingAssetItem(
-                asset = SpendingAsset(
+                asset = SpendingAsset.Fungible(
                     resource = Resource.FungibleResource(
                         resourceAddress = "resource_rdx_abcd",
                         amount = BigDecimal.TEN,
@@ -288,6 +327,26 @@ fun SpendingAssetItemsPreview() {
                     ),
                     amountString = secondAmount,
                     exceedingBalance = secondAmount.toBigDecimalOrNull()?.compareTo(BigDecimal.TEN) == 1
+                ),
+                onAmountChanged = {
+                    secondAmount = it
+                },
+                onMaxClicked = {
+                    secondAmount = "10"
+                }
+            )
+
+            SpendingAssetItem(
+                asset = SpendingAsset.NFT(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcd",
+                        localId = "dbooker_dunk_39",
+                        iconMetadataItem = IconUrlMetadataItem(
+                            url = Uri.parse(
+                                "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                            )
+                        )
+                    )
                 ),
                 onAmountChanged = {
                     secondAmount = it

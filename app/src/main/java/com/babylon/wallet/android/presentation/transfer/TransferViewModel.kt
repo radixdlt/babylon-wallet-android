@@ -149,13 +149,13 @@ class TransferViewModel @Inject constructor(
             get() = sheet != Sheet.None
 
         sealed interface Sheet {
-            object None: Sheet
+            object None : Sheet
 
             data class ChooseAccounts(
                 val selectedAccount: TargetAccount,
                 val ownedAccounts: List<Network.Account>,
                 val mode: Mode = Mode.Chooser
-            ): Sheet {
+            ) : Sheet {
 
                 val isOwnedAccountsEnabled: Boolean
                     get() = when (selectedAccount) {
@@ -180,7 +180,7 @@ class TransferViewModel @Inject constructor(
                 val selectedResources: Set<Resource>,
                 val selectedTab: Tab = Tab.Tokens,
                 val uiMessage: UiMessage? = null
-            ): Sheet {
+            ) : Sheet {
 
                 enum class Tab {
                     Tokens,
@@ -206,7 +206,7 @@ sealed class TargetAccount {
     data class Skeleton(
         override val index: Int,
         override val assets: List<SpendingAsset>
-    ): TargetAccount() {
+    ) : TargetAccount() {
         override val address: String = ""
     }
 
@@ -215,23 +215,27 @@ sealed class TargetAccount {
         val isValidatedSuccessfully: Boolean,
         override val index: Int,
         override val assets: List<SpendingAsset>
-    ): TargetAccount()
+    ) : TargetAccount()
 
     data class Owned(
         val account: Network.Account,
         override val index: Int,
         override val assets: List<SpendingAsset>
-    ): TargetAccount() {
+    ) : TargetAccount() {
         override val address: String
             get() = account.address
     }
 }
 
-data class SpendingAsset(
-    val resource: Resource,
-    val amountString: String = "",
-    val exceedingBalance: Boolean = false
-)
+sealed interface SpendingAsset {
+    data class Fungible(
+        val resource: Resource.FungibleResource,
+        val amountString: String = "",
+        val exceedingBalance: Boolean = false
+    ) : SpendingAsset
+
+    data class NFT(val item: Resource.NonFungibleResource.Item) : SpendingAsset
+}
 
 enum class ChooseAccountSheetMode {
     Chooser, QRScanner
