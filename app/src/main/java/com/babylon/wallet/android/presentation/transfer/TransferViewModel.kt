@@ -80,7 +80,11 @@ class TransferViewModel @Inject constructor(
         _state.update {
             val targetAccounts = it.targetAccounts.toMutableList()
 
-            if (index < targetAccounts.size && index > 0) {
+            if (index == 0 && targetAccounts.size == 1) {
+                targetAccounts.removeAt(index)
+                targetAccounts.add(TargetAccount.Skeleton(index))
+                it.copy(targetAccounts = targetAccounts.toPersistentList())
+            } else if (index > 0 && index < targetAccounts.size) {
                 targetAccounts.removeAt(index)
                 it.copy(targetAccounts = targetAccounts.toPersistentList())
             } else {
@@ -136,15 +140,6 @@ class TransferViewModel @Inject constructor(
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
 
-        data class SelectedAccountForTransfer(
-            val account: AccountItemUiModel? = null,
-            val type: Type = Type.NoAccount
-        ) {
-            enum class Type {
-                NoAccount, ThirdPartyAccount, ExistingAccount
-            }
-        }
-
         sealed interface Sheet {
             object None: Sheet
 
@@ -155,10 +150,16 @@ class TransferViewModel @Inject constructor(
             ): Sheet {
 
                 val isOwnedAccountsEnabled: Boolean
-                    get() = selectedAccount !is TargetAccount.Other
+                    get() = when (selectedAccount) {
+                        is TargetAccount.Other -> selectedAccount.address.isBlank()
+                        is TargetAccount.Owned -> true
+                        is TargetAccount.Skeleton -> true
+                    }
 
                 val isChooseButtonEnabled: Boolean
                     get() = selectedAccount.isAddressValid
+
+                fun isOwnedAccountSelected(account: Network.Account) = (selectedAccount as? TargetAccount.Owned)?.account == account
 
                 enum class Mode {
                     Chooser,

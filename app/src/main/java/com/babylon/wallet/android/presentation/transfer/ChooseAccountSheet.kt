@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,7 +109,7 @@ fun ChooseAccountSheet(
                     modifier = Modifier
                         .align(alignment = Alignment.Center)
                         .padding(RadixTheme.dimensions.paddingLarge),
-                    text = if (state.mode == ChooseAccounts.Mode.QRScanner) {
+                    text = if (state.mode == ChooseAccounts.Mode.Chooser) {
                         stringResource(id = R.string.choose_receiving_account)
                     } else {
                         stringResource(id = R.string.scan_qr_code)
@@ -119,7 +120,7 @@ fun ChooseAccountSheet(
             }
         },
         bottomBar = {
-            if (state.mode == ChooseAccounts.Mode.QRScanner) {
+            if (state.mode == ChooseAccounts.Mode.Chooser) {
                 RadixPrimaryButton(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
@@ -138,11 +139,9 @@ fun ChooseAccountSheet(
                         .background(color = RadixTheme.colors.white)
                         .padding(padding),
                     onAddressChanged = onAddressChanged,
-                    address = (state.selectedAccount as? TargetAccount.Other)?.address.orEmpty(),
+                    state = state,
                     cameraPermissionState = cameraPermissionState,
                     onQrCodeIconClick = onQrCodeIconClick,
-                    ownedAccounts = state.ownedAccounts.toPersistentList(),
-                    accountsDisabled = !state.isOwnedAccountsEnabled,
                     onOwnedAccountSelected = onOwnedAccountSelected,
                     focusManager = focusManager
                 )
@@ -163,16 +162,14 @@ fun ChooseAccountSheet(
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ChooseAccountContent(
+private fun ChooseAccountContent(
     modifier: Modifier = Modifier,
-    onAddressChanged: (String) -> Unit,
-    address: String,
+    focusManager: FocusManager,
     cameraPermissionState: PermissionState,
+    state: ChooseAccounts,
+    onAddressChanged: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
-    ownedAccounts: ImmutableList<Network.Account>,
-    onOwnedAccountSelected: (Network.Account) -> Unit,
-    accountsDisabled: Boolean,
-    focusManager: FocusManager
+    onOwnedAccountSelected: (Network.Account) -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -190,12 +187,15 @@ fun ChooseAccountContent(
         }
 
         item {
+            val typedAddress = remember(state.selectedAccount) {
+                (state.selectedAccount as? TargetAccount.Other)?.address.orEmpty()
+            }
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
                 onValueChanged = onAddressChanged,
-                value = address,
+                value = typedAddress,
                 hint = stringResource(id = R.string.enter_or_paste_address),
                 hintColor = RadixTheme.colors.gray2,
                 singleLine = true,
@@ -203,7 +203,7 @@ fun ChooseAccountContent(
                     Row(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall)
                     ) {
-                        if (address.isNotEmpty()) {
+                        if (typedAddress.isNotEmpty()) {
                             IconButton(
                                 onClick = { onAddressChanged("") }
                             ) {
@@ -254,8 +254,8 @@ fun ChooseAccountContent(
             )
         }
 
-        items(ownedAccounts.size) {index ->
-            val accountItem = ownedAccounts[index]
+        items(state.ownedAccounts.size) {index ->
+            val accountItem = state.ownedAccounts[index]
 
             val gradientColor = getAccountGradientColorsFor(accountItem.appearanceID)
             AccountSelectionCard(
@@ -264,21 +264,21 @@ fun ChooseAccountContent(
                     .background(
                         brush = Brush.horizontalGradient(gradientColor),
                         shape = RadixTheme.shapes.roundedRectSmall,
-                        alpha = if (accountsDisabled) 0.5f else 1f
+                        alpha = if (state.isOwnedAccountsEnabled) 1f else 0.5f
                     )
                     .clip(RadixTheme.shapes.roundedRectSmall)
                     .clickable {
-                        if (!accountsDisabled) {
+                        if (state.isOwnedAccountsEnabled) {
                             onOwnedAccountSelected(accountItem)
                             focusManager.clearFocus(true)
                         }
                     },
                 accountName = accountItem.displayName,
                 address = accountItem.address,
-                checked = false, // TODO
+                checked = state.isOwnedAccountSelected(account = accountItem),
                 isSingleChoice = true,
                 radioButtonClicked = {
-                    if (!accountsDisabled) {
+                    if (state.isOwnedAccountsEnabled) {
                         onOwnedAccountSelected(accountItem)
                         focusManager.clearFocus(true)
                     }

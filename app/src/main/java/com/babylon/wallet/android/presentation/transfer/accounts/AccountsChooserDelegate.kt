@@ -104,7 +104,8 @@ class AccountsChooserDelegate(
             }
 
             it.copy(
-                targetAccounts = targetAccounts
+                targetAccounts = targetAccounts,
+                sheet = TransferViewModel.State.Sheet.None
             )
         }
     }
