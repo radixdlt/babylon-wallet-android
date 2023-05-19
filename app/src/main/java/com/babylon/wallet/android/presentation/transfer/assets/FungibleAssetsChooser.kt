@@ -196,7 +196,7 @@ private fun Item(
             text = resource.amount.displayableQuantity(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
-            maxLines = 1
+            maxLines = 2
         )
 
         Checkbox(

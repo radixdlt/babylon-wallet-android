@@ -194,7 +194,7 @@ class TransferViewModel @Inject constructor(
 sealed class TargetAccount {
     abstract val address: String
     abstract val index: Int
-    abstract val assets: List<Resource>
+    abstract val assets: List<SpendingAsset>
 
     val isAddressValid: Boolean
         get() = when (this) {
@@ -205,7 +205,7 @@ sealed class TargetAccount {
 
     data class Skeleton(
         override val index: Int,
-        override val assets: List<Resource>
+        override val assets: List<SpendingAsset>
     ): TargetAccount() {
         override val address: String = ""
     }
@@ -214,18 +214,24 @@ sealed class TargetAccount {
         override val address: String,
         val isValidatedSuccessfully: Boolean,
         override val index: Int,
-        override val assets: List<Resource>
+        override val assets: List<SpendingAsset>
     ): TargetAccount()
 
     data class Owned(
         val account: Network.Account,
         override val index: Int,
-        override val assets: List<Resource>
+        override val assets: List<SpendingAsset>
     ): TargetAccount() {
         override val address: String
             get() = account.address
     }
 }
+
+data class SpendingAsset(
+    val resource: Resource,
+    val amountString: String = "",
+    val exceedingBalance: Boolean = false
+)
 
 enum class ChooseAccountSheetMode {
     Chooser, QRScanner
