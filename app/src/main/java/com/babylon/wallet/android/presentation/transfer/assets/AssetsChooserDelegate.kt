@@ -3,7 +3,9 @@ package com.babylon.wallet.android.presentation.transfer.assets
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
 import kotlinx.coroutines.CoroutineScope
@@ -28,8 +30,13 @@ class AssetsChooserDelegate(
                 .onValue { accountWithResources ->
                     val resources = accountWithResources.firstOrNull()?.resources
                     updateSheetState { it.copy(resources = resources) }
-                }.onError {
-                    // TODO
+                }.onError { error ->
+                    updateSheetState {
+                        it.copy(
+                            resources = Resources.EMPTY,
+                            uiMessage = UiMessage.ErrorMessage(error)
+                        )
+                    }
                 }
         }
     }
@@ -50,6 +57,10 @@ class AssetsChooserDelegate(
 
             state.copy(selectedResources = selected.toSet())
         }
+    }
+
+    fun onUiMessageShown() {
+        updateSheetState { it.copy(uiMessage = null) }
     }
 
     private fun updateSheetState(

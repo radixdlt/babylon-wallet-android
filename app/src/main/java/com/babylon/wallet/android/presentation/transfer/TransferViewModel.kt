@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
@@ -54,6 +55,8 @@ class TransferViewModel @Inject constructor(
         }
     }
 
+    // Transfer flow
+
     fun onMessageChanged(message: String) {
         _state.update {
             it.copy(
@@ -61,10 +64,6 @@ class TransferViewModel @Inject constructor(
             )
         }
     }
-
-    fun onAddressTyped(address: String) = accountsChooserDelegate.addressTyped(address = address)
-
-    fun onOwnedAccountSelected(account: Network.Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
 
     fun addAccountClick() {
         _state.update {
@@ -93,7 +92,7 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    fun onChooseAccountSubmitted() = accountsChooserDelegate.chooseAccountSubmitted()
+    // Choose accounts flow
 
     fun onChooseAccountForSkeleton(index: Int) {
         val fromAccount = _state.value.fromAccount ?: return
@@ -104,11 +103,19 @@ class TransferViewModel @Inject constructor(
         )
     }
 
+    fun onAddressTyped(address: String) = accountsChooserDelegate.addressTyped(address = address)
+
+    fun onOwnedAccountSelected(account: Network.Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
+
+    fun onChooseAccountSubmitted() = accountsChooserDelegate.chooseAccountSubmitted()
+
     fun onQRAddressDecoded(address: String) = accountsChooserDelegate.onQRAddressDecoded(address = address)
 
     fun onQrCodeIconClick() = accountsChooserDelegate.onQRModeStarted()
 
     fun cancelQrScan() = accountsChooserDelegate.onQRModeCanceled()
+
+    // Choose assets flow
 
     fun onChooseAssetTabSelected(tab: State.Sheet.ChooseAssets.Tab) = assetsChooserDelegate.onTabSelected(tab)
 
@@ -124,6 +131,8 @@ class TransferViewModel @Inject constructor(
         resource = resource,
         isChecked = isSelected
     )
+
+    fun onUiMessageShown() = assetsChooserDelegate.onUiMessageShown()
 
     fun onSheetClose() {
         _state.update { it.copy(sheet = State.Sheet.None) }
@@ -170,7 +179,8 @@ class TransferViewModel @Inject constructor(
             data class ChooseAssets(
                 val resources: Resources? = null,
                 val selectedResources: Set<Resource>,
-                val selectedTab: Tab = Tab.Tokens
+                val selectedTab: Tab = Tab.Tokens,
+                val uiMessage: UiMessage? = null
             ): Sheet {
 
                 enum class Tab {

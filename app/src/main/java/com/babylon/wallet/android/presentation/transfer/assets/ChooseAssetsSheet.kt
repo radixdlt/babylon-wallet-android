@@ -18,6 +18,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -38,6 +39,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
 import kotlinx.coroutines.launch
@@ -48,14 +51,29 @@ fun ChooseAssetsSheet(
     state: ChooseAssets,
     onTabSelected: (ChooseAssets.Tab) -> Unit,
     onCloseClick: () -> Unit,
-    onAssetSelectionChanged: (Resource, Boolean) -> Unit
+    onAssetSelectionChanged: (Resource, Boolean) -> Unit,
+    onUiMessageShown: () -> Unit
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onUiMessageShown
+    )
+
     Scaffold(
         modifier = modifier,
         topBar = {
             SheetHeader(
                 title = "Choose Asset(s)",
                 onLeadingActionClicked = onCloseClick
+            )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
             )
         },
         containerColor = RadixTheme.colors.gray5
@@ -183,7 +201,8 @@ private fun ChooseAssetsSheetPreview() {
             ),
             onTabSelected = {},
             onCloseClick = {},
-            onAssetSelectionChanged = { _, _ -> }
+            onAssetSelectionChanged = { _, _ -> },
+            onUiMessageShown = {}
         )
     }
 }

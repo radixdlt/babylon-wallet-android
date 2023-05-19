@@ -82,7 +82,8 @@ fun TransferScreen(
         onChooseAssetTabSelected = viewModel::onChooseAssetTabSelected,
         onSheetClosed = viewModel::onSheetClose,
         onAddAssetsClick = viewModel::onAddAssetsClick,
-        onAssetSelectionChanged = viewModel::onAssetSelectionChanged
+        onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
+        onUiMessageShown = viewModel::onUiMessageShown
     )
 }
 
@@ -106,11 +107,10 @@ fun TransferContent(
     onChooseAssetTabSelected: (State.Sheet.ChooseAssets.Tab) -> Unit,
     onSheetClosed: () -> Unit,
     onAddAssetsClick: () -> Unit,
-    onAssetSelectionChanged: (Resource, Boolean) -> Unit
+    onAssetSelectionChanged: (Resource, Boolean) -> Unit,
+    onUiMessageShown: () -> Unit
 ) {
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-    val scope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
 
     var showMessageContent by remember { mutableStateOf(false) }
 
@@ -144,7 +144,8 @@ fun TransferContent(
                         state = sheetState,
                         onTabSelected = { onChooseAssetTabSelected(it) },
                         onCloseClick = onSheetClosed,
-                        onAssetSelectionChanged = onAssetSelectionChanged
+                        onAssetSelectionChanged = onAssetSelectionChanged,
+                        onUiMessageShown = onUiMessageShown
                     )
                 }
                 is State.Sheet.None -> {}
@@ -383,7 +384,8 @@ fun TransferContentPreview() {
             onChooseAssetTabSelected = {},
             onSheetClosed = {},
             onAddAssetsClick = {},
-            onAssetSelectionChanged = { _, _ ->}
+            onAssetSelectionChanged = { _, _ ->},
+            onUiMessageShown = {}
         )
     }
 }
