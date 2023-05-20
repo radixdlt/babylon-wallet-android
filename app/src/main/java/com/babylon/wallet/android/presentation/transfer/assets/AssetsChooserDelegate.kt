@@ -6,12 +6,15 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.transfer.SpendingAsset
+import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 
 class AssetsChooserDelegate(
@@ -20,9 +23,9 @@ class AssetsChooserDelegate(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase
 ) {
 
-    fun onChooseAssets(fromAccount: Network.Account, selectedAssets: Set<Resource>) {
+    fun onChooseAssets(fromAccount: Network.Account, targetAccount: TargetAccount) {
         state.update {
-            it.copy(sheet = Sheet.ChooseAssets(selectedResources = selectedAssets))
+            it.copy(sheet = Sheet.ChooseAssets(targetAccount = targetAccount))
         }
 
         viewModelScope.launch {
@@ -41,21 +44,17 @@ class AssetsChooserDelegate(
         }
     }
 
-
     fun onTabSelected(tab: Sheet.ChooseAssets.Tab) {
         updateSheetState { it.copy(selectedTab = tab) }
     }
 
-    fun onAssetSelectionChanged(resource: Resource, isChecked: Boolean) {
+    fun onAssetSelectionChanged(asset: SpendingAsset, isChecked: Boolean) {
         updateSheetState { state ->
-            val selected = state.selectedResources.toMutableSet()
             if (isChecked) {
-                selected.add(resource)
+                state.copy(targetAccount = state.targetAccount.addAsset(asset))
             } else {
-                selected.remove(resource)
+                state.copy(targetAccount = state.targetAccount.removeAsset(asset))
             }
-
-            state.copy(selectedResources = selected.toSet())
         }
     }
 
@@ -64,7 +63,21 @@ class AssetsChooserDelegate(
     }
 
     fun onChooseAssetsSubmitted() {
+        state.update { state ->
+            val chooseAssetState = (state.sheet as? Sheet.ChooseAssets) ?: return@update state
 
+            state.copy(
+                targetAccounts = state.targetAccounts.mapWhen(
+                    predicate = {
+                        it.address == chooseAssetState.targetAccount.address
+                    },
+                    mutation = {
+                        chooseAssetState.targetAccount
+                    }
+                ),
+                sheet = Sheet.None
+            )
+        }
     }
 
     private fun updateSheetState(

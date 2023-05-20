@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
@@ -40,6 +37,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.listItemShape
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -48,13 +46,13 @@ import rdx.works.core.displayableQuantity
 @Composable
 fun FungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    assets: List<Resource.FungibleResource>,
-    selectedAssets: Set<Resource>,
-    onAssetSelectionChanged: (Resource.FungibleResource, Boolean) -> Unit
+    resources: List<Resource.FungibleResource>,
+    selectedAssets: Set<SpendingAsset>,
+    onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit
 ) {
-    val (xrdResource, restResources) = remember(assets) {
-        val xrdResource = assets.find { it.isXrd }
-        xrdResource to assets.filterNot { it == xrdResource }
+    val (xrdResource, restResources) = remember(resources) {
+        val xrdResource = resources.find { it.isXrd }
+        xrdResource to resources.filterNot { it == xrdResource }
     }
 
     LazyColumn(
@@ -68,12 +66,15 @@ fun FungibleAssetsChooser(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
                     shape = listItemShape()
                 ) {
-                    val isSelected = selectedAssets.contains(xrdResource)
+                    val isSelected = selectedAssets.any { it.address == xrdResource.resourceAddress }
                     Item(
                         modifier = Modifier.height(85.dp),
                         resource = xrdResource,
                         isSelected = isSelected,
-                        onCheckChanged = { onAssetSelectionChanged(xrdResource, it) }
+                        onCheckChanged = {
+                            val fungibleAsset = SpendingAsset.Fungible(resource = xrdResource)
+                            onAssetSelectionChanged(fungibleAsset, it)
+                        }
                     )
                 }
             }
@@ -115,8 +116,11 @@ fun FungibleAssetsChooser(
                 Item(
                     modifier = Modifier.height(83.dp),
                     resource = resource,
-                    isSelected = selectedAssets.contains(resource),
-                    onCheckChanged = { onAssetSelectionChanged(resource, it) }
+                    isSelected = selectedAssets.any { it.address == resource.resourceAddress },
+                    onCheckChanged = {
+                        val fungibleAsset = SpendingAsset.Fungible(resource = resource)
+                        onAssetSelectionChanged(fungibleAsset, it)
+                    }
                 )
             }
         }

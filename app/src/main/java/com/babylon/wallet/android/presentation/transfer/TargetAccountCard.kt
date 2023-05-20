@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -26,13 +28,22 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import java.math.BigDecimal
 
 @Composable
 fun TargetAccountCard(
     modifier: Modifier = Modifier,
     onChooseAccountClick: () -> Unit,
     onAddAssetsClick: () -> Unit,
+    onRemoveAssetClicked: (SpendingAsset) -> Unit,
+    onAmountTyped: (SpendingAsset, String) -> Unit,
+    onMaxAmountClicked: (SpendingAsset) -> Unit,
     onDeleteClick: () -> Unit,
     isDeletable: Boolean = false,
     targetAccount: TargetAccount,
@@ -121,23 +132,59 @@ fun TargetAccountCard(
 
         Divider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
 
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 68.dp)
                 .background(
                     color = RadixTheme.colors.gray5,
                     shape = RadixTheme.shapes.roundedRectBottomMedium
                 )
-                .padding(RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingXSmall
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            targetAccount.assets.forEach { spendingAsset ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SpendingAssetItem(
+                        modifier = Modifier.weight(1f),
+                        asset = spendingAsset,
+                        onAmountTyped = {
+                            onAmountTyped(spendingAsset, it)
+                        },
+                        onMaxClicked = {
+                            onMaxAmountClicked(spendingAsset)
+                        }
+                    )
+
+                    IconButton(
+                        onClick = {
+                            onRemoveAssetClicked(spendingAsset)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            tint = RadixTheme.colors.gray2,
+                            contentDescription = "clear"
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+
             RadixTextButton(
                 text = stringResource(id = R.string.add_assets),
                 contentColor = RadixTheme.colors.gray2,
                 onClick = onAddAssetsClick
             )
         }
+
+
     }
 }
 
@@ -145,11 +192,50 @@ fun TargetAccountCard(
 @Composable
 fun TargetAccountCardPreview() {
     RadixWalletTheme {
-        TargetAccountCard(
-            onChooseAccountClick = {},
-            onAddAssetsClick = {},
-            onDeleteClick = {},
-            targetAccount = TargetAccount.Skeleton(index = 0, assets = emptyList())
-        )
+        Column(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            TargetAccountCard(
+                onChooseAccountClick = {},
+                onAddAssetsClick = {},
+                onRemoveAssetClicked = {},
+                onAmountTyped = { _, _ -> },
+                onMaxAmountClicked = {},
+                onDeleteClick = {},
+                targetAccount = TargetAccount.Skeleton(index = 0)
+            )
+
+            TargetAccountCard(
+                onChooseAccountClick = {},
+                onAddAssetsClick = {},
+                onRemoveAssetClicked = {},
+                onAmountTyped = { _, _ -> },
+                onMaxAmountClicked = {},
+                onDeleteClick = {},
+                targetAccount = TargetAccount.Owned(
+                    account = SampleDataProvider().sampleAccount(),
+                    index = 1,
+                    assets = setOf(
+                        SpendingAsset.Fungible(
+                            resource = Resource.FungibleResource(
+                                resourceAddress = "resource_rdx_abcd",
+                                amount = BigDecimal.TEN,
+                                nameMetadataItem = NameMetadataItem("Radix"),
+                                symbolMetadataItem = SymbolMetadataItem("XRD")
+                            )
+                        ),
+                        SpendingAsset.NFT(
+                            item = Resource.NonFungibleResource.Item(
+                                collectionAddress = "resource_rdx_abcde",
+                                localId = "local_id",
+                                iconMetadataItem = null
+                            )
+                        )
+                    )
+                )
+            )
+        }
+
     }
 }

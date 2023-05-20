@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -37,8 +38,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.presentation.transfer.SpendingAsset
+import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -52,7 +54,7 @@ fun ChooseAssetsSheet(
     state: ChooseAssets,
     onTabSelected: (ChooseAssets.Tab) -> Unit,
     onCloseClick: () -> Unit,
-    onAssetSelectionChanged: (Resource, Boolean) -> Unit,
+    onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit
 ) {
@@ -65,7 +67,7 @@ fun ChooseAssetsSheet(
     )
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.navigationBarsPadding(),
         topBar = {
             SheetHeader(
                 title = "Choose Asset(s)",
@@ -79,7 +81,7 @@ fun ChooseAssetsSheet(
                     .fillMaxWidth(),
                 text = "Select Assets",
                 onClick = onChooseAssetsSubmitted,
-                enabled = state.selectedResources.isNotEmpty()
+                enabled = state.targetAccount.assets.isNotEmpty()
             )
         },
         snackbarHost = {
@@ -117,8 +119,8 @@ fun ChooseAssetsSheet(
 
                     when (tab) {
                         ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
-                            assets = state.resources?.fungibleResources.orEmpty(),
-                            selectedAssets = state.selectedResources,
+                            resources = state.resources?.fungibleResources.orEmpty(),
+                            selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )
                         ChooseAssets.Tab.NFTs -> {}
@@ -209,7 +211,7 @@ private fun ChooseAssetsSheetPreview() {
                     fungibleResources = listOf(),
                     nonFungibleResources = listOf()
                 ),
-                selectedResources = setOf()
+                targetAccount = TargetAccount.Skeleton(index = 0)
             ),
             onTabSelected = {},
             onCloseClick = {},

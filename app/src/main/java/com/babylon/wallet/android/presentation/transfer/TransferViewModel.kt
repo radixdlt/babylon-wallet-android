@@ -14,9 +14,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -66,7 +68,7 @@ class TransferViewModel @Inject constructor(
         _state.update {
             it.copy(
                 targetAccounts = it.targetAccounts.toMutableList().apply {
-                    add(TargetAccount.Skeleton(it.targetAccounts.size, assets = emptyList()))
+                    add(TargetAccount.Skeleton(it.targetAccounts.size))
                 }.toPersistentList()
             )
         }
@@ -78,7 +80,7 @@ class TransferViewModel @Inject constructor(
 
             if (from.index == 0 && targetAccounts.size == 1) {
                 targetAccounts.removeAt(from.index)
-                targetAccounts.add(TargetAccount.Skeleton(from.index, assets = emptyList()))
+                targetAccounts.add(TargetAccount.Skeleton(from.index))
                 it.copy(targetAccounts = targetAccounts.toPersistentList())
             } else if (from.index > 0 && from.index < targetAccounts.size) {
                 targetAccounts.removeAt(from.index)
@@ -86,6 +88,68 @@ class TransferViewModel @Inject constructor(
             } else {
                 it
             }
+        }
+    }
+
+    fun onRemoveAsset(account: TargetAccount, asset: SpendingAsset) {
+        _state.update { state ->
+            state.copy(
+                targetAccounts = state.targetAccounts.mapWhen(
+                    predicate = { it == account },
+                    mutation = { it.removeAsset(asset) }
+                )
+            )
+        }
+    }
+
+    fun onAmountTyped(account: TargetAccount, asset: SpendingAsset, amount: String) {
+        val fungibleAsset = asset as? SpendingAsset.Fungible ?: return
+
+        val amountDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val maxAmount = fungibleAsset.resource.amount
+        val spentAmount = _state.value.targetAccounts
+            .filterNot { it.address == account.address }
+            .sumOf { it.amountSpent(fungibleAsset) } + amountDecimal
+
+        _state.update { state ->
+            state.copy(
+                targetAccounts = state.targetAccounts.mapWhen(
+                    predicate = { it.address == account.address },
+                    mutation = {
+                        it.updateAsset(
+                            asset.copy(
+                                amountString = amount,
+                                exceedingBalance = spentAmount > maxAmount
+                            )
+                        )
+                    }
+                )
+            )
+        }
+    }
+
+    fun onMaxAmount(account: TargetAccount, asset: SpendingAsset) {
+        val fungibleAsset = asset as? SpendingAsset.Fungible ?: return
+
+        val maxAmount = fungibleAsset.resource.amount
+        val spendAmount = _state.value.targetAccounts
+            .filterNot { it.address == account.address }
+            .sumOf { it.amountSpent(fungibleAsset) }
+
+        _state.update { state ->
+            state.copy(
+                targetAccounts = state.targetAccounts.mapWhen(
+                    predicate = { it.address == account.address },
+                    mutation = {
+                        it.updateAsset(
+                            asset.copy(
+                                amountString = (maxAmount - spendAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString(),
+                                exceedingBalance = false
+                            )
+                        )
+                    }
+                )
+            )
         }
     }
 
@@ -116,16 +180,16 @@ class TransferViewModel @Inject constructor(
 
     fun onChooseAssetTabSelected(tab: State.Sheet.ChooseAssets.Tab) = assetsChooserDelegate.onTabSelected(tab)
 
-    fun onAddAssetsClick(/* TODO add selected account */) {
+    fun onAddAssetsClick(targetAccount: TargetAccount) {
         val fromAccount = state.value.fromAccount ?: return
         assetsChooserDelegate.onChooseAssets(
             fromAccount = fromAccount,
-            selectedAssets = setOf()
+            targetAccount = targetAccount
         )
     }
 
-    fun onAssetSelectionChanged(resource: Resource, isSelected: Boolean) = assetsChooserDelegate.onAssetSelectionChanged(
-        resource = resource,
+    fun onAssetSelectionChanged(asset: SpendingAsset, isSelected: Boolean) = assetsChooserDelegate.onAssetSelectionChanged(
+        asset = asset,
         isChecked = isSelected
     )
 
@@ -139,7 +203,7 @@ class TransferViewModel @Inject constructor(
 
     data class State(
         val fromAccount: Network.Account? = null,
-        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton(index = 0, assets = emptyList())),
+        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton(index = 0)),
         val address: String = "",
         val message: String = "",
         val sheet: Sheet = Sheet.None
@@ -177,7 +241,7 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAssets(
                 val resources: Resources? = null,
-                val selectedResources: Set<Resource>,
+                val targetAccount: TargetAccount,
                 val selectedTab: Tab = Tab.Tokens,
                 val uiMessage: UiMessage? = null
             ) : Sheet {
@@ -194,7 +258,7 @@ class TransferViewModel @Inject constructor(
 sealed class TargetAccount {
     abstract val address: String
     abstract val index: Int
-    abstract val assets: List<SpendingAsset>
+    abstract val assets: Set<SpendingAsset>
 
     val isAddressValid: Boolean
         get() = when (this) {
@@ -203,9 +267,50 @@ sealed class TargetAccount {
             else -> false
         }
 
+    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = assets
+        .filterIsInstance<SpendingAsset.Fungible>()
+        .find { it.address == fungibleAsset.address }
+        ?.amountDecimal ?: BigDecimal.ZERO
+
+    fun updateAsset(asset: SpendingAsset.Fungible): TargetAccount {
+        val newAssets = assets.mapWhen(
+            predicate = { it.address == asset.address },
+            mutation = { asset }
+        ).toSet()
+        return when (this) {
+            is Owned -> copy(assets = newAssets)
+            is Other -> copy(assets = newAssets)
+            is Skeleton -> copy(assets = newAssets)
+        }
+    }
+
+    fun addAsset(asset: SpendingAsset): TargetAccount {
+        val newAssets = assets.toMutableSet().apply {
+            add(asset)
+        }
+
+        return when (this) {
+            is Owned -> copy(assets = newAssets)
+            is Other -> copy(assets = newAssets)
+            is Skeleton -> copy(assets = newAssets)
+        }
+    }
+
+    fun removeAsset(asset: SpendingAsset): TargetAccount {
+        val newAssets = assets.toMutableSet().apply {
+            remove(asset)
+        }
+
+        return when (this) {
+            is Owned -> copy(assets = newAssets)
+            is Other -> copy(assets = newAssets)
+            is Skeleton -> copy(assets = newAssets)
+        }
+    }
+
     data class Skeleton(
         override val index: Int,
-        override val assets: List<SpendingAsset>
+        override val assets: Set<SpendingAsset> = emptySet()
     ) : TargetAccount() {
         override val address: String = ""
     }
@@ -214,27 +319,38 @@ sealed class TargetAccount {
         override val address: String,
         val isValidatedSuccessfully: Boolean,
         override val index: Int,
-        override val assets: List<SpendingAsset>
+        override val assets: Set<SpendingAsset> = emptySet()
     ) : TargetAccount()
 
     data class Owned(
         val account: Network.Account,
         override val index: Int,
-        override val assets: List<SpendingAsset>
+        override val assets: Set<SpendingAsset> = emptySet()
     ) : TargetAccount() {
         override val address: String
             get() = account.address
     }
 }
 
-sealed interface SpendingAsset {
+sealed class SpendingAsset {
+    abstract val address: String
+
     data class Fungible(
         val resource: Resource.FungibleResource,
         val amountString: String = "",
         val exceedingBalance: Boolean = false
-    ) : SpendingAsset
+    ) : SpendingAsset() {
+        override val address: String
+            get() = resource.resourceAddress
 
-    data class NFT(val item: Resource.NonFungibleResource.Item) : SpendingAsset
+        val amountDecimal: BigDecimal
+            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    }
+
+    data class NFT(val item: Resource.NonFungibleResource.Item) : SpendingAsset() {
+        override val address: String
+            get() = item.globalAddress
+    }
 }
 
 enum class ChooseAccountSheetMode {

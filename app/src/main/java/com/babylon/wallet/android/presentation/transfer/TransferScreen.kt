@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetState
@@ -46,7 +46,6 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
@@ -82,6 +81,9 @@ fun TransferScreen(
         onChooseAssetTabSelected = viewModel::onChooseAssetTabSelected,
         onSheetClosed = viewModel::onSheetClose,
         onAddAssetsClick = viewModel::onAddAssetsClick,
+        onRemoveAssetClick = viewModel::onRemoveAsset,
+        onAmountTyped = viewModel::onAmountTyped,
+        onMaxAmountClicked = viewModel::onMaxAmount,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown,
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted
@@ -107,8 +109,11 @@ fun TransferContent(
     cancelQrScan: () -> Unit,
     onChooseAssetTabSelected: (State.Sheet.ChooseAssets.Tab) -> Unit,
     onSheetClosed: () -> Unit,
-    onAddAssetsClick: () -> Unit,
-    onAssetSelectionChanged: (Resource, Boolean) -> Unit,
+    onAddAssetsClick: (TargetAccount) -> Unit,
+    onRemoveAssetClick: (TargetAccount, SpendingAsset) -> Unit,
+    onAmountTyped: (TargetAccount, SpendingAsset, String) -> Unit,
+    onMaxAmountClicked: (TargetAccount, SpendingAsset) -> Unit,
+    onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit
 ) {
@@ -125,7 +130,8 @@ fun TransferContent(
     DefaultModalSheetLayout(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .navigationBarsPadding(),
         sheetState = bottomSheetState,
         sheetContent = {
             when (val sheetState = state.sheet) {
@@ -289,7 +295,18 @@ fun TransferContent(
                         onChooseAccountClick = {
                             onChooseAccountForSkeleton(targetAccount)
                         },
-                        onAddAssetsClick = onAddAssetsClick,
+                        onAddAssetsClick = {
+                            onAddAssetsClick(targetAccount)
+                        },
+                        onRemoveAssetClicked = { spendingAsset ->
+                            onRemoveAssetClick(targetAccount, spendingAsset)
+                        },
+                        onAmountTyped = { spendingAsset, amount ->
+                            onAmountTyped(targetAccount, spendingAsset, amount)
+                        },
+                        onMaxAmountClicked = { spendingAsset ->
+                            onMaxAmountClicked(targetAccount, spendingAsset)
+                        },
                         onDeleteClick = {
                             deleteAccountClick(targetAccount)
                         },
@@ -389,7 +406,10 @@ fun TransferContentPreview() {
             onChooseAssetTabSelected = {},
             onSheetClosed = {},
             onAddAssetsClick = {},
-            onAssetSelectionChanged = { _, _ ->},
+            onRemoveAssetClick = { _, _ -> },
+            onAmountTyped = { _, _, _ -> },
+            onMaxAmountClicked = { _, _ -> },
+            onAssetSelectionChanged = { _, _ -> },
             onUiMessageShown = {},
             onChooseAssetsSubmitted = {}
         )

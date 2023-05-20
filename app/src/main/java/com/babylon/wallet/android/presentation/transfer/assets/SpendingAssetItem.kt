@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transfer.assets
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -42,7 +41,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -50,7 +48,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -69,7 +66,7 @@ import java.math.BigDecimal
 fun SpendingAssetItem(
     modifier: Modifier = Modifier,
     asset: SpendingAsset,
-    onAmountChanged: (String) -> Unit,
+    onAmountTyped: (String) -> Unit,
     onMaxClicked: () -> Unit
 ) {
     val isEditingState = remember { mutableStateOf(false) }
@@ -95,14 +92,12 @@ fun SpendingAssetItem(
                 resource = asset.resource,
                 amount = asset.amountString,
                 isExceedingBalance = asset.exceedingBalance,
-                onAmountChanged = onAmountChanged,
+                onAmountChanged = onAmountTyped,
                 focusRequester = focusRequester,
                 isEditingState = isEditingState,
                 onMaxClicked = onMaxClicked
             )
-            is SpendingAsset.NFT -> {
-                NonFungibleSpendingAsset(nft = asset.item)
-            }
+            is SpendingAsset.NFT -> NonFungibleSpendingAsset(nft = asset.item)
         }
     }
 }
@@ -308,7 +303,7 @@ fun SpendingAssetItemsPreview() {
                     ),
                     amountString = firstAmount,
                 ),
-                onAmountChanged = {
+                onAmountTyped = {
                     firstAmount = it
                 },
                 onMaxClicked = {
@@ -328,7 +323,7 @@ fun SpendingAssetItemsPreview() {
                     amountString = secondAmount,
                     exceedingBalance = secondAmount.toBigDecimalOrNull()?.compareTo(BigDecimal.TEN) == 1
                 ),
-                onAmountChanged = {
+                onAmountTyped = {
                     secondAmount = it
                 },
                 onMaxClicked = {
@@ -348,7 +343,7 @@ fun SpendingAssetItemsPreview() {
                         )
                     )
                 ),
-                onAmountChanged = {
+                onAmountTyped = {
                     secondAmount = it
                 },
                 onMaxClicked = {
