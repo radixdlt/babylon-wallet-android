@@ -69,7 +69,7 @@ class AssetsChooserDelegate(
             state.copy(
                 targetAccounts = state.targetAccounts.mapWhen(
                     predicate = {
-                        it.address == chooseAssetState.targetAccount.address
+                        it.id == chooseAssetState.targetAccount.id
                     },
                     mutation = {
                         chooseAssetState.targetAccount

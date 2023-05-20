@@ -310,7 +310,7 @@ fun TransferContent(
                         onDeleteClick = {
                             deleteAccountClick(targetAccount)
                         },
-                        isDeletable = targetAccount.index > 0,
+                        isDeletable = !(targetAccount is TargetAccount.Skeleton && index == 0),
                         targetAccount = targetAccount
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

@@ -211,7 +211,7 @@ private fun ChooseAssetsSheetPreview() {
                     fungibleResources = listOf(),
                     nonFungibleResources = listOf()
                 ),
-                targetAccount = TargetAccount.Skeleton(index = 0)
+                targetAccount = TargetAccount.Skeleton()
             ),
             onTabSelected = {},
             onCloseClick = {},

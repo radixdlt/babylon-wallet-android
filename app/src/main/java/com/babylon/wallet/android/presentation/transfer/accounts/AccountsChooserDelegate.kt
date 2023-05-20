@@ -49,7 +49,7 @@ class AccountsChooserDelegate(
                 selectedAccount = TargetAccount.Other(
                     address = address,
                     isValidatedSuccessfully = isValid,
-                    index = it.selectedAccount.index,
+                    id = it.selectedAccount.id,
                     assets = it.selectedAccount.assets
                 )
             )
@@ -71,7 +71,7 @@ class AccountsChooserDelegate(
                 selectedAccount = TargetAccount.Other(
                     address = address,
                     isValidatedSuccessfully = isValid,
-                    index = it.selectedAccount.index,
+                    id = it.selectedAccount.id,
                     assets = it.selectedAccount.assets
                 ),
                 mode = ChooseAccounts.Mode.Chooser
@@ -84,7 +84,7 @@ class AccountsChooserDelegate(
             it.copy(
                 selectedAccount = TargetAccount.Owned(
                     account = account,
-                    index = it.selectedAccount.index,
+                    id = it.selectedAccount.id,
                     assets = it.selectedAccount.assets
                 )
             )
@@ -98,7 +98,7 @@ class AccountsChooserDelegate(
 
         state.update {
             val targetAccounts = it.targetAccounts.map { targetAccount ->
-                if (targetAccount.index == sheetState.selectedAccount.index) {
+                if (targetAccount.id == sheetState.selectedAccount.id) {
                     sheetState.selectedAccount
                 } else {
                     targetAccount

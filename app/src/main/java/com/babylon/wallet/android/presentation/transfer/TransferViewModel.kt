@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -68,7 +69,7 @@ class TransferViewModel @Inject constructor(
         _state.update {
             it.copy(
                 targetAccounts = it.targetAccounts.toMutableList().apply {
-                    add(TargetAccount.Skeleton(it.targetAccounts.size))
+                    add(TargetAccount.Skeleton())
                 }.toPersistentList()
             )
         }
@@ -77,17 +78,17 @@ class TransferViewModel @Inject constructor(
     fun deleteAccountClick(from: TargetAccount) {
         _state.update {
             val targetAccounts = it.targetAccounts.toMutableList()
+            val index = it.targetAccounts.indexOf(from)
 
-            if (from.index == 0 && targetAccounts.size == 1) {
-                targetAccounts.removeAt(from.index)
-                targetAccounts.add(TargetAccount.Skeleton(from.index))
-                it.copy(targetAccounts = targetAccounts.toPersistentList())
-            } else if (from.index > 0 && from.index < targetAccounts.size) {
-                targetAccounts.removeAt(from.index)
-                it.copy(targetAccounts = targetAccounts.toPersistentList())
-            } else {
-                it
+            if (index != -1) {
+                targetAccounts.removeAt(index)
             }
+
+            if (targetAccounts.isEmpty()) {
+                targetAccounts.add(TargetAccount.Skeleton())
+            }
+
+            it.copy(targetAccounts = targetAccounts.toPersistentList())
         }
     }
 
@@ -203,7 +204,7 @@ class TransferViewModel @Inject constructor(
 
     data class State(
         val fromAccount: Network.Account? = null,
-        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton(index = 0)),
+        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton()),
         val address: String = "",
         val message: String = "",
         val sheet: Sheet = Sheet.None
@@ -257,7 +258,7 @@ class TransferViewModel @Inject constructor(
 
 sealed class TargetAccount {
     abstract val address: String
-    abstract val index: Int
+    abstract val id: String
     abstract val assets: Set<SpendingAsset>
 
     val isAddressValid: Boolean
@@ -309,7 +310,7 @@ sealed class TargetAccount {
     }
 
     data class Skeleton(
-        override val index: Int,
+        override val id: String = UUIDGenerator.uuid().toString(),
         override val assets: Set<SpendingAsset> = emptySet()
     ) : TargetAccount() {
         override val address: String = ""
@@ -318,13 +319,13 @@ sealed class TargetAccount {
     data class Other(
         override val address: String,
         val isValidatedSuccessfully: Boolean,
-        override val index: Int,
+        override val id: String,
         override val assets: Set<SpendingAsset> = emptySet()
     ) : TargetAccount()
 
     data class Owned(
         val account: Network.Account,
-        override val index: Int,
+        override val id: String,
         override val assets: Set<SpendingAsset> = emptySet()
     ) : TargetAccount() {
         override val address: String

@@ -34,6 +34,7 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import rdx.works.core.UUIDGenerator
 import java.math.BigDecimal
 
 @Composable
@@ -119,7 +120,7 @@ fun TargetAccountCard(
                 )
             }
 
-            if (isDeletable || targetAccount.isAddressValid) {
+            if (isDeletable) {
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
@@ -203,7 +204,7 @@ fun TargetAccountCardPreview() {
                 onAmountTyped = { _, _ -> },
                 onMaxAmountClicked = {},
                 onDeleteClick = {},
-                targetAccount = TargetAccount.Skeleton(index = 0)
+                targetAccount = TargetAccount.Skeleton()
             )
 
             TargetAccountCard(
@@ -215,7 +216,7 @@ fun TargetAccountCardPreview() {
                 onDeleteClick = {},
                 targetAccount = TargetAccount.Owned(
                     account = SampleDataProvider().sampleAccount(),
-                    index = 1,
+                    id = UUIDGenerator.uuid().toString(),
                     assets = setOf(
                         SpendingAsset.Fungible(
                             resource = Resource.FungibleResource(
