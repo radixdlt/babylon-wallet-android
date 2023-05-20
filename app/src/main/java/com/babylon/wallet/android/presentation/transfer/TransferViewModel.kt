@@ -264,7 +264,7 @@ sealed class TargetAccount {
     val isAddressValid: Boolean
         get() = when (this) {
             is Owned -> true
-            is Other -> isValidatedSuccessfully
+            is Other -> validity == Other.AddressValidity.VALID
             else -> false
         }
 
@@ -318,10 +318,17 @@ sealed class TargetAccount {
 
     data class Other(
         override val address: String,
-        val isValidatedSuccessfully: Boolean,
+        val validity: AddressValidity,
         override val id: String,
         override val assets: Set<SpendingAsset> = emptySet()
-    ) : TargetAccount()
+    ) : TargetAccount() {
+
+        enum class AddressValidity {
+            VALID,
+            INVALID,
+            USED
+        }
+    }
 
     data class Owned(
         val account: Network.Account,
@@ -352,8 +359,4 @@ sealed class SpendingAsset {
         override val address: String
             get() = item.globalAddress
     }
-}
-
-enum class ChooseAccountSheetMode {
-    Chooser, QRScanner
 }

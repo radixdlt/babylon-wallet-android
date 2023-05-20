@@ -43,15 +43,25 @@ class AccountsChooserDelegate(
     }
 
     fun addressTyped(address: String) {
-        updateSheetState {
-            val isValid = isAddressValid(address = address)
-            it.copy(
+        updateSheetState { sheetState ->
+            val validity = if (!isAddressValid(address)) {
+                TargetAccount.Other.AddressValidity.INVALID
+            } else {
+                val selectedAccountAddresses = state.value.targetAccounts.map { it.address }
+                if (address in selectedAccountAddresses) {
+                    TargetAccount.Other.AddressValidity.USED
+                } else {
+                    TargetAccount.Other.AddressValidity.VALID
+                }
+            }
+            sheetState.copy(
                 selectedAccount = TargetAccount.Other(
                     address = address,
-                    isValidatedSuccessfully = isValid,
-                    id = it.selectedAccount.id,
-                    assets = it.selectedAccount.assets
-                )
+                    validity = validity,
+                    id = sheetState.selectedAccount.id,
+                    assets = sheetState.selectedAccount.assets
+                ),
+                mode = ChooseAccounts.Mode.Chooser
             )
         }
     }
@@ -64,20 +74,7 @@ class AccountsChooserDelegate(
         updateSheetState { it.copy(mode = ChooseAccounts.Mode.Chooser) }
     }
 
-    fun onQRAddressDecoded(address: String) {
-        updateSheetState {
-            val isValid = isAddressValid(address = address)
-            it.copy(
-                selectedAccount = TargetAccount.Other(
-                    address = address,
-                    isValidatedSuccessfully = isValid,
-                    id = it.selectedAccount.id,
-                    assets = it.selectedAccount.assets
-                ),
-                mode = ChooseAccounts.Mode.Chooser
-            )
-        }
-    }
+    fun onQRAddressDecoded(address: String) = addressTyped(address = address)
 
     fun onOwnedAccountSelected(account: Network.Account) {
         updateSheetState {
@@ -96,16 +93,27 @@ class AccountsChooserDelegate(
 
         if (!sheetState.isChooseButtonEnabled) return
 
-        state.update {
-            val targetAccounts = it.targetAccounts.map { targetAccount ->
-                if (targetAccount.id == sheetState.selectedAccount.id) {
-                    sheetState.selectedAccount
+        state.update { state ->
+            val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
+            val selectedAccount = if (ownedAccount != null) {
+                TargetAccount.Owned(
+                    account = ownedAccount,
+                    id = sheetState.selectedAccount.id,
+                    assets = sheetState.selectedAccount.assets
+                )
+            } else {
+                sheetState.selectedAccount
+            }
+
+            val targetAccounts = state.targetAccounts.map { targetAccount ->
+                if (targetAccount.id == selectedAccount.id) {
+                    selectedAccount
                 } else {
                     targetAccount
                 }
             }
 
-            it.copy(
+            state.copy(
                 targetAccounts = targetAccounts,
                 sheet = TransferViewModel.State.Sheet.None
             )

@@ -46,8 +46,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -187,8 +185,19 @@ private fun ChooseAccountContent(
         }
 
         item {
-            val typedAddress = remember(state.selectedAccount) {
-                (state.selectedAccount as? TargetAccount.Other)?.address.orEmpty()
+            val (typedAddress, error) = remember(state.selectedAccount) {
+                if (state.selectedAccount is TargetAccount.Other) {
+                    val address = state.selectedAccount.address
+                    val errorText = when (state.selectedAccount.validity) {
+                        TargetAccount.Other.AddressValidity.VALID -> null
+                        TargetAccount.Other.AddressValidity.INVALID -> "Invalid address"
+                        TargetAccount.Other.AddressValidity.USED -> "Already used address"
+                    }
+
+                    address to errorText
+                } else {
+                    "" to null
+                }
             }
             RadixTextField(
                 modifier = Modifier
@@ -198,6 +207,7 @@ private fun ChooseAccountContent(
                 value = typedAddress,
                 hint = stringResource(id = R.string.enter_or_paste_address),
                 hintColor = RadixTheme.colors.gray2,
+                error = error,
                 singleLine = true,
                 trailingIcon = {
                     Row(
