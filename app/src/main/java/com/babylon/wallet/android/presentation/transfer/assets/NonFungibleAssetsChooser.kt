@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -71,12 +72,17 @@ fun NonFungibleAssetsChooser(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(RadixTheme.dimensions.paddingDefault)
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+        contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault)
     ) {
         resources.forEachIndexed { collectionIndex, collection ->
             val collapsed = collapsedState[collectionIndex]
             item(key = collection.resourceAddress) {
                 NftTokenHeaderItem(
+                    modifier = Modifier.padding(
+                        top = if (collectionIndex == 0) 0.dp else RadixTheme.dimensions.paddingDefault,
+                        bottom = 1.dp
+                    ),
                     nftImageUrl = collection.iconUrl.toString(),
                     nftName = collection.name,
                     nftsInCirculation = collection.amount.toString(),
@@ -98,6 +104,7 @@ fun NonFungibleAssetsChooser(
                     exit = shrinkVertically(animationSpec = tween(150))
                 ) {
                     ItemContainer(
+                        modifier = Modifier.padding(vertical = 1.dp),
                         shape = if (itemIndex == collection.items.lastIndex) {
                             RadixTheme.shapes.roundedRectBottomMedium
                         } else {
@@ -115,8 +122,6 @@ fun NonFungibleAssetsChooser(
                     }
                 }
             }
-
-            item { Spacer(modifier = Modifier.height(if (collapsed) 0.dp else RadixTheme.dimensions.paddingDefault)) }
         }
     }
 }

@@ -18,6 +18,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Surface
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
@@ -75,14 +77,22 @@ fun ChooseAssetsSheet(
             )
         },
         bottomBar = {
-            RadixPrimaryButton(
+            Column(
                 modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault)
-                    .fillMaxWidth(),
-                text = "Select Assets",
-                onClick = onChooseAssetsSubmitted,
-                enabled = state.targetAccount.assets.isNotEmpty()
-            )
+                    .background(color = RadixTheme.colors.defaultBackground)
+            ) {
+                Divider(color = RadixTheme.colors.gray5)
+
+                RadixPrimaryButton(
+                    modifier = Modifier
+                        .padding(RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth(),
+                    text = "Select Assets",
+                    onClick = onChooseAssetsSubmitted,
+                    enabled = state.targetAccount.assets.isNotEmpty()
+                )
+            }
+
         },
         snackbarHost = {
             RadixSnackbarHost(
