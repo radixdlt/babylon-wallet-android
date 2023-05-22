@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransferViewModel @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase,
+    getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransferViewModel.State>() {
@@ -158,7 +158,11 @@ class TransferViewModel @Inject constructor(
                                 if (updatingAsset is SpendingAsset.Fungible && updatingAsset.address == asset.address) {
                                     updatingAsset.copy(
                                         // Update the amount of the asset only for the currently editing target account
-                                        amountString = if (target.address == account.address) remainingAmountString else updatingAsset.amountString,
+                                        amountString = if (target.address == account.address) {
+                                            remainingAmountString
+                                        } else {
+                                            updatingAsset.amountString
+                                        },
                                         // Update the flag for all assets with the same address of the one that is being edited
                                         exceedingBalance = remainingAmount < BigDecimal.ZERO
                                     )
@@ -226,13 +230,14 @@ class TransferViewModel @Inject constructor(
     data class State(
         val fromAccount: Network.Account? = null,
         val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton()),
-        val address: String = "",
         val message: String = "",
         val sheet: Sheet = Sheet.None
     ) : UiState {
 
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
+
+        val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all { it.isValidForSubmission }
 
         sealed interface Sheet {
             object None : Sheet
@@ -287,6 +292,13 @@ sealed class TargetAccount {
             is Owned -> true
             is Other -> validity == Other.AddressValidity.VALID
             else -> false
+        }
+
+    val isValidForSubmission: Boolean
+        get() = when (this) {
+            is Other -> assets.isNotEmpty() && assets.all { it.isValidForSubmission }
+            is Owned -> assets.isNotEmpty() && assets.all { it.isValidForSubmission }
+            is Skeleton -> assets.isEmpty()
         }
 
     fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = assets
@@ -359,6 +371,7 @@ sealed class TargetAccount {
 
 sealed class SpendingAsset {
     abstract val address: String
+    abstract val isValidForSubmission: Boolean
 
     data class Fungible(
         val resource: Resource.FungibleResource,
@@ -368,6 +381,9 @@ sealed class SpendingAsset {
         override val address: String
             get() = resource.resourceAddress
 
+        override val isValidForSubmission: Boolean
+            get() = !exceedingBalance
+
         val amountDecimal: BigDecimal
             get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
     }
@@ -375,5 +391,7 @@ sealed class SpendingAsset {
     data class NFT(val item: Resource.NonFungibleResource.Item) : SpendingAsset() {
         override val address: String
             get() = item.globalAddress
+
+        override val isValidForSubmission: Boolean = true
     }
 }

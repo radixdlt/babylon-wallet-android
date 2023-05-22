@@ -337,11 +337,14 @@ fun TransferContent(
                         )
                     }
 
+                    val isEnabled = remember(state) { state.isSubmitEnabled }
+
                     RadixPrimaryButton(
                         modifier = Modifier
                             .padding(vertical = RadixTheme.dimensions.paddingDefault)
                             .fillMaxWidth(),
                         text = stringResource(id = R.string.send_transfer_request),
+                        enabled = isEnabled,
                         onClick = onSendTransferClick
                     )
                 }
