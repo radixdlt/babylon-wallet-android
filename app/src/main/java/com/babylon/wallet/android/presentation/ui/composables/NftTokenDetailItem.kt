@@ -56,24 +56,27 @@ fun NftTokenDetailItem(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            val painter = rememberAsyncImagePainter(
-                model = rememberImageUrl(
-                    fromUrl = item.imageUrl.toString(),
-                    size = ImageSize.LARGE
-                ),
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder)
-            )
-            Image(
-                painter = painter,
-                contentDescription = "Nft image",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
-                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-            )
+            if (item.imageUrl != null) {
+                val painter = rememberAsyncImagePainter(
+                    model = rememberImageUrl(
+                        fromUrl = item.imageUrl.toString(),
+                        size = ImageSize.LARGE
+                    ),
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    error = painterResource(id = R.drawable.img_placeholder)
+                )
+                Image(
+                    painter = painter,
+                    contentDescription = "Nft image",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyImageAspectRatio(painter = painter)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
+                )
+            }
+
             Text(
                 item.localId,
                 color = RadixTheme.colors.gray2,

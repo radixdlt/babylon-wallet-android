@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
-import android.graphics.drawable.ColorDrawable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -11,35 +10,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,18 +36,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.listItemShape
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
-import com.babylon.wallet.android.presentation.ui.composables.NftTokenDetailItem
 import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
 import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import rdx.works.core.displayableQuantity
 
 @Composable
 fun NonFungibleAssetsChooser(
@@ -167,26 +151,27 @@ private fun Item(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
-            val painter = rememberAsyncImagePainter(
-                model = rememberImageUrl(
-                    fromUrl = resource.imageUrl.toString(),
-                    size = ImageSize.LARGE
-                ),
-                placeholder = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder),
-                error = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder)
-            )
+            if (resource.imageUrl != null) {
+                val painter = rememberAsyncImagePainter(
+                    model = rememberImageUrl(
+                        fromUrl = resource.imageUrl.toString(),
+                        size = ImageSize.LARGE
+                    ),
+                    placeholder = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder),
+                    error = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder)
+                )
 
-            AsyncImage(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
-                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
-                model = rememberImageUrl(fromUrl = resource.imageUrl.toString(), size = ImageSize.MEDIUM),
-                contentDescription = null,
-                contentScale = ContentScale.FillWidth
-            )
-
+                AsyncImage(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyImageAspectRatio(painter = painter)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
+                    model = rememberImageUrl(fromUrl = resource.imageUrl.toString(), size = ImageSize.MEDIUM),
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
