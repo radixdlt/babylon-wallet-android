@@ -206,7 +206,7 @@ class TransferViewModel @Inject constructor(
         assetsChooserDelegate.onChooseAssets(
             fromAccount = fromAccount,
             targetAccount = targetAccount,
-            restOfTargetAccounts = currentState.targetAccounts.filterNot { it.address == targetAccount.address }
+            restOfTargetAccounts = currentState.targetAccounts.filterNot { it.id == targetAccount.id }
         )
     }
 

@@ -6,6 +6,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 
@@ -30,9 +32,11 @@ fun NonFungibleResourcesContent(
             val collapsed = collapsedState[i]
             item(key = "header_$i") {
                 NftTokenHeaderItem(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp),
                     nftImageUrl = nft.iconUrl.toString(),
                     nftName = nft.name,
-                    nftsInCirculation = "?",
+                    nftsInCirculation = nft.amount.toString(),
                     nftsInPossession = nft.items.size.toString(),
                     nftChildCount = nft.items.size,
                     collapsed = collapsed
@@ -62,6 +66,7 @@ fun NonFungibleResourcesContent(
                     )
                 }
             }
+            item { Spacer(modifier = Modifier.height(if (collapsed) 0.dp else RadixTheme.dimensions.paddingDefault)) }
         }
         item {
             Spacer(modifier = Modifier.height(100.dp))
