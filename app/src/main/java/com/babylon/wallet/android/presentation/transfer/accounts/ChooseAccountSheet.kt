@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalComposeUiApi::class)
+
 package com.babylon.wallet.android.presentation.transfer
 
 import android.Manifest
@@ -14,6 +16,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -24,16 +28,30 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -188,6 +206,12 @@ private fun ChooseAccountContent(
             val (typedAddress, error) = remember(state.selectedAccount) {
                 if (state.selectedAccount is TargetAccount.Other) {
                     val address = state.selectedAccount.address
+
+                    // Do not show the error when the field has an empty value
+                    if (address.isBlank()) {
+                        return@remember "" to null
+                    }
+
                     val errorText = when (state.selectedAccount.validity) {
                         TargetAccount.Other.AddressValidity.VALID -> null
                         TargetAccount.Other.AddressValidity.INVALID -> "Invalid address"
@@ -199,15 +223,22 @@ private fun ChooseAccountContent(
                     "" to null
                 }
             }
+
+            val focusRequester = remember { FocusRequester() }
+            var isFocused by remember { mutableStateOf(false) }
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged {
+                        isFocused = it.isFocused
+                    }
                     .padding(RadixTheme.dimensions.paddingDefault),
                 onValueChanged = onAddressChanged,
                 value = typedAddress,
                 hint = stringResource(id = R.string.enter_or_paste_address),
                 hintColor = RadixTheme.colors.gray2,
-                error = error,
+                error = if (!isFocused) error else null,
                 singleLine = true,
                 trailingIcon = {
                     Row(
@@ -215,7 +246,10 @@ private fun ChooseAccountContent(
                     ) {
                         if (typedAddress.isNotEmpty()) {
                             IconButton(
-                                onClick = { onAddressChanged("") }
+                                onClick = {
+                                    onAddressChanged("")
+                                    focusManager.clearFocus()
+                                }
                             ) {
                                 Icon(
                                     painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
@@ -243,6 +277,14 @@ private fun ChooseAccountContent(
                     unfocusedBorderColor = RadixTheme.colors.gray1,
                     focusedContainerColor = RadixTheme.colors.gray5,
                     unfocusedContainerColor = RadixTheme.colors.gray5
+                ),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
                 )
             )
             Divider(
