@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.transaction.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
@@ -51,7 +52,7 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("LongParameterList", "TooManyFunctions", "LongMethod", "LargeClass")
 class DAppAuthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppMessenger: DappMessenger,
@@ -59,15 +60,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dappMetadataRepository: DappMetadataRepository,
-    private val incomingRequestRepository: IncomingRequestRepository
-) : StateViewModel<DAppLoginUiState>(), OneOffEventHandler<DAppAuthorizedLoginEvent> by OneOffEventHandlerImpl() {
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase,
+) : StateViewModel<DAppLoginUiState>(),
+    OneOffEventHandler<DAppAuthorizedLoginEvent> by OneOffEventHandlerImpl() {
 
     private val args = DAppAuthorizedLoginArgs(savedStateHandle)
 
     private val mutex = Mutex()
 
     private val request = incomingRequestRepository.getAuthorizedRequest(
-        args.requestId
+        args.interactionId
     )
 
     private var authorizedDapp: Network.AuthorizedDapp? = null
@@ -116,25 +119,21 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun setInitialDappLoginRoute() {
         when (val request = request.authRequest) {
-            is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
-                // TODO temporary until flow with challenge is implemented
-                onAbortDappLogin()
-            }
-            is AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
-                _state.update {
-                    it.copy(
-                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
-                            args.requestId
-                        )
-                    )
-                }
-            }
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 val dapp = authorizedDapp
                 if (dapp != null) {
                     setInitialDappLoginRouteForUsePersonaRequest(dapp, request)
                 } else {
                     onAbortDappLogin(WalletErrorType.InvalidPersona)
+                }
+            }
+            else -> {
+                _state.update {
+                    it.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
+                            args.interactionId
+                        )
+                    )
                 }
             }
         }
@@ -217,13 +216,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
-            args.requestId,
+            args.interactionId,
             failure.toWalletErrorType(),
             failure.getDappMessage()
         )
         delay(2000)
         topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
-        incomingRequestRepository.requestHandled(requestId = args.requestId)
+        incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
     fun onMessageShown() {
@@ -509,12 +508,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             } else {
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     request.dappId,
-                    args.requestId,
+                    args.interactionId,
                     error = walletWalletErrorType
                 )
             }
             topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
-            incomingRequestRepository.requestHandled(requestId = args.requestId)
+            incomingRequestRepository.requestHandled(requestId = args.interactionId)
         }
     }
 
@@ -598,29 +597,33 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val selectedPersona = state.value.selectedPersona?.persona
         requireNotNull(selectedPersona)
         if (request.isInternalRequest()) {
-            incomingRequestRepository.requestHandled(request.requestId)
+            incomingRequestRepository.requestHandled(request.interactionId)
         } else {
-            dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
-                request.dappId,
-                args.requestId,
+            buildAuthorizedDappResponseUseCase(
+                request,
                 selectedPersona,
-                request.isUsePersonaAuth(),
-                state.value.selectedAccountsOneTime,
-                state.value.selectedAccountsOngoing,
+                state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                state.value.selectedAccountsOngoing.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
                 state.value.selectedOngoingDataFields,
-                state.value.selectedOnetimeDataFields,
-            )
+                state.value.selectedOnetimeDataFields
+            ).onSuccess { response ->
+                dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)
+                mutex.withLock {
+                    editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
+                }
+                sendEvent(
+                    DAppAuthorizedLoginEvent.LoginFlowCompleted(
+                        requestId = request.interactionId,
+                        dAppName = state.value.dappWithMetadata?.name.orEmpty(),
+                        showSuccessDialog = !request.isInternalRequest()
+                    )
+                )
+            }.onFailure { throwable ->
+                if (throwable is DappRequestFailure) {
+                    handleRequestError(throwable)
+                }
+            }
         }
-        mutex.withLock {
-            editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
-        }
-        sendEvent(
-            DAppAuthorizedLoginEvent.LoginFlowCompleted(
-                requestId = request.requestId,
-                dAppName = state.value.dappWithMetadata?.name.orEmpty(),
-                showSuccessDialog = !request.isInternalRequest()
-            )
-        )
     }
 }
 

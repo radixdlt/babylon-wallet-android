@@ -23,7 +23,7 @@ fun NavController.accountPreferences(address: String) {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.accountPreferencesScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.accountPreferencesScreen(onBackClick: () -> Unit, onApproveTransaction: (String) -> Unit) {
     composable(
         route = "account_preference_route/{$ARG_ADDRESS}",
         arguments = listOf(
@@ -39,6 +39,7 @@ fun NavGraphBuilder.accountPreferencesScreen(onBackClick: () -> Unit) {
         AccountPreferenceScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
+            onApproveTransaction = onApproveTransaction
         )
     }
 }

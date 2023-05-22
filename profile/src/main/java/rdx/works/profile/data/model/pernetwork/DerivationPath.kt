@@ -45,6 +45,24 @@ data class DerivationPath(
         fun forLegacyOlympia(accountIndex: Int): DerivationPath = LegacyOlympiaBIP44LikeDerivationPathBuilder(
             accountIndex = accountIndex
         ).build()
+
+        fun authSigningDerivationPathFromCap26Path(derivationPath: DerivationPath): DerivationPath {
+            val pathComponents = derivationPath.path.split("/").drop(1).toMutableList()
+            require(pathComponents.size == BabylonDerivationPathComponent.values().size)
+            pathComponents.removeAt(BabylonDerivationPathComponent.KeyKindIndex.ordinal)
+            pathComponents.add(BabylonDerivationPathComponent.KeyKindIndex.ordinal, "${KeyType.AUTHENTICATION_SIGNING.value}H")
+            return DerivationPath(
+                path = "m/" + pathComponents.joinToString("/"),
+                scheme = CAP_26
+            )
+        }
+
+        fun authSigningDerivationPathFromBip44LikePath(networkId: NetworkId, derivationPath: DerivationPath): DerivationPath {
+            val pathComponents = derivationPath.path.split("/").drop(1).toMutableList()
+            require(pathComponents.size == OlympiaDerivationPathComponent.values().size)
+            val accountIndex = pathComponents.last().toInt()
+            return forAccount(networkId, accountIndex, KeyType.AUTHENTICATION_SIGNING)
+        }
     }
 }
 
@@ -136,4 +154,12 @@ private data class LegacyOlympiaBIP44LikeDerivationPathBuilder(
         path = "$BIP44_PREFIX/44H/${coinType.value}H/0H/0/${accountIndex}H",
         scheme = CAP_26
     )
+}
+
+enum class BabylonDerivationPathComponent {
+    PurposeIndex, CoinTypeIndex, NetworkIndex, EntityKindIndex, KeyKindIndex, EntityIndex
+}
+
+enum class OlympiaDerivationPathComponent {
+    Purpose, CoinType, Account, Change, AddressIndex
 }

@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
+import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
@@ -65,6 +66,9 @@ fun NavGraphBuilder.settingsNavGraph(
             },
             onEditPersona = { personaAddress, requiredFields ->
                 navController.personaEditScreen(personaAddress, requiredFields)
+            },
+            onHandleInternalRequest = {
+                navController.dAppLoginAuthorized(it)
             }
         )
         settingsGatewayEdit(navController)

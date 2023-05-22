@@ -5,7 +5,7 @@ import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.crypto.Signature
-import rdx.works.profile.data.model.SigningEntity
+import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.utils.toEnginePublicKeyModel
 import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 

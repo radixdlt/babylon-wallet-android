@@ -372,4 +372,6 @@
     <string name="or_choose_one_of_your_accounts">Or choose one of your own accounts</string>
     <string name="choose">Choose</string>
     <string name="scan_qr_code_of_radix_account_address">Scan a QR code of a Radix account address</string>
+    <string name="create_and_upload_auth_key"><![CDATA[Create & Upload Auth Key]]></string>
+    <string name="failed_to_sign_auth_challenge">Failed to sign auth challenge</string>
 </resources>

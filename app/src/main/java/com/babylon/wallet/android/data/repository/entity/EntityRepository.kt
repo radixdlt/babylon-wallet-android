@@ -27,6 +27,7 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
@@ -44,6 +45,8 @@ interface EntityRepository {
         addresses: List<String>,
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
+
+    suspend fun getEntityMetadata(address: String, isRefreshing: Boolean = false): Result<List<MetadataItem>>
 }
 
 class EntityRepositoryEnkinetImpl @Inject constructor(
@@ -302,6 +305,22 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
                 timeoutDuration = NO_CACHE
             ),
             map = { it }
+        )
+    }
+
+    override suspend fun getEntityMetadata(address: String, isRefreshing: Boolean): Result<List<MetadataItem>> {
+        return stateApi.entityDetails(
+            StateEntityDetailsRequest(
+                addresses = listOf(address)
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+            ),
+            map = { response ->
+                response.items.first().metadata.asMetadataItems()
+            },
         )
     }
 

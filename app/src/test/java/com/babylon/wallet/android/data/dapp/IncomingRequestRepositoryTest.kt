@@ -22,7 +22,7 @@ class IncomingRequestRepositoryTest {
     private val amountOfIncomingRequests = 1000
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = "dappId",
-        requestId = UUIDGenerator.uuid().toString(),
+        interactionId = UUIDGenerator.uuid().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
@@ -45,7 +45,7 @@ class IncomingRequestRepositoryTest {
                 val coroutines = 1.rangeTo(1000).map { // create 1000 coroutines
                     launch {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
-                            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(requestId = i.toString()))
+                            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = i.toString()))
                         }
                     }
                 }
@@ -65,7 +65,7 @@ class IncomingRequestRepositoryTest {
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         for (i in 1..5) { // and in each of them, add an incoming request
-            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(requestId = i.toString()))
+            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = i.toString()))
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)

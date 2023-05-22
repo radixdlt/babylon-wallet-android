@@ -11,7 +11,6 @@ import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -474,6 +473,46 @@ fun Profile.addAccount(
         )
     }
     return updatedProfile.withUpdatedContentHint()
+}
+
+fun Profile.addAuthSigningFactorInstanceForEntity(
+    entity: SigningEntity,
+    authSigningFactorInstance: FactorInstance
+): Profile {
+    val updatedNetworks =
+        networks.mapWhen(predicate = { network -> network.networkID == entity.networkID }) { network ->
+            when (entity) {
+                is Network.Account -> network.copy(
+                    accounts = network.accounts.mapWhen(predicate = { it.address == entity.address }) { account ->
+                        val updatedSecurityState = when (val state = account.securityState) {
+                            is SecurityState.Unsecured -> state.copy(
+                                unsecuredEntityControl = state.unsecuredEntityControl.copy(
+                                    authenticationSigning = authSigningFactorInstance
+                                )
+                            )
+                        }
+                        account.copy(securityState = updatedSecurityState)
+                    }
+                )
+                is Network.Persona -> {
+                    network.copy(
+                        personas = network.personas.mapWhen(predicate = { it.address == entity.address }) { persona ->
+                            val updatedSecurityState = when (val state = persona.securityState) {
+                                is SecurityState.Unsecured -> state.copy(
+                                    unsecuredEntityControl = state.unsecuredEntityControl.copy(
+                                        authenticationSigning = authSigningFactorInstance
+                                    )
+                                )
+                            }
+                            persona.copy(securityState = updatedSecurityState)
+                        }
+                    )
+                }
+            }
+        }
+    return copy(
+        networks = updatedNetworks
+    )
 }
 
 fun Profile.addNetworkIfDoesNotExist(

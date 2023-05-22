@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -45,6 +46,8 @@ interface ProfileRepository {
     suspend fun getRestoredProfileFromBackup(): Profile?
 
     suspend fun discardBackedUpProfile()
+
+    suspend fun updateProfile(updateAction: (Profile) -> Profile)
 }
 
 val ProfileRepository.profile: Flow<Profile>
@@ -160,6 +163,12 @@ class ProfileRepositoryImpl @Inject constructor(
         encryptedPreferencesManager.clearProfileSnapshotFromBackup()
         preferencesManager.removeLastBackupInstant()
         profileStateFlow.update { ProfileState.None() }
+    }
+
+    override suspend fun updateProfile(updateAction: (Profile) -> Profile) {
+        val profile = profile.first()
+        val updatedProfile = updateAction(profile)
+        saveProfile(updatedProfile)
     }
 
     @Suppress("SwallowedException")

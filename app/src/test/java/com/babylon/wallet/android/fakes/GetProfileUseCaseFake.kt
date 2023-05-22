@@ -56,4 +56,8 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
         TODO("Not yet implemented")
     }
 
+    override suspend fun updateProfile(updateAction: (Profile) -> Profile) {
+        TODO("Not yet implemented")
+    }
+
 }

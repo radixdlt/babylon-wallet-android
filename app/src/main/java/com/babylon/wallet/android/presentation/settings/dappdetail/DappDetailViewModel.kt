@@ -153,7 +153,7 @@ class DappDetailViewModel @Inject constructor(
             )
             val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
                 dappId = "",
-                requestId = UUIDGenerator.uuid().toString(),
+                interactionId = UUIDGenerator.uuid().toString(),
                 requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
                     authorizedDapp.networkID,
                     "",
@@ -162,19 +162,21 @@ class DappDetailViewModel @Inject constructor(
                 authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(persona.address),
                 ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
                     isOngoing = true,
-                    requiresProofOfOwnership = false,
                     numberOfAccounts = sharedAccounts.request.quantity,
-                    quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
+                    quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest(),
+                    challenge = null
                 ),
                 resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
             )
-            incomingRequestRepository.add(request)
+            incomingRequestRepository.add(incomingRequest = request, skipCurrentlyHandledQueue = true)
+            sendEvent(DappDetailEvent.HandleInternalRequest(requestId = request.interactionId))
         }
     }
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
     data class EditPersona(val personaAddress: String, val requiredFieldsStringEncoded: String) : DappDetailEvent
+    data class HandleInternalRequest(val requestId: String) : DappDetailEvent
     object LastPersonaDeleted : DappDetailEvent
     object DappDeleted : DappDetailEvent
 }

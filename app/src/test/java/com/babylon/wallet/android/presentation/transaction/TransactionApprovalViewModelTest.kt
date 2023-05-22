@@ -30,6 +30,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -59,7 +60,11 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         dappId = "dappId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "https://test.origin.com",
+            "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"
+        )
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 
@@ -77,8 +82,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
         coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
+        coEvery { transactionClient.signingState } returns emptyFlow()
         coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.Success(sampleManifest)
-        coEvery { transactionClient.convertManifestInstructionsToString(any()) } returns Result.Success(sampleManifest)
         coEvery { transactionClient.getTransactionPreview(any(), any(), any(), any()) } returns Result.Success(
             previewResponse()
         )

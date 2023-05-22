@@ -34,7 +34,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = "1",
-        requestId = "1",
+        interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",

@@ -15,6 +15,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +39,6 @@ import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDial
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -47,6 +47,7 @@ fun AccountPreferenceScreen(
     viewModel: AccountPreferenceViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onApproveTransaction: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -54,7 +55,13 @@ fun AccountPreferenceScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is AccountPreferenceEvent.TransactionApproval -> onApproveTransaction(event.requestId)
+            }
+        }
+    }
     ModalBottomSheetLayout(
         modifier = modifier
 //            .systemBarsPadding()
@@ -80,9 +87,6 @@ fun AccountPreferenceScreen(
     ) {
         AccountPreferenceContent(
             onBackClick = onBackClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground),
             onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
             onShowQRCodeClick = {
                 scope.launch { sheetState.show() }
@@ -90,8 +94,13 @@ fun AccountPreferenceScreen(
             canUseFaucet = state.canUseFaucet,
             loading = state.isLoading,
             isDeviceSecure = state.isDeviceSecure,
+            onMessageShown = viewModel::onMessageShown,
             error = state.error,
-            onMessageShown = viewModel::onMessageShown
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RadixTheme.colors.defaultBackground),
+            hasAuthKey = state.hasAuthKey,
+            onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
         )
     }
 }
@@ -107,6 +116,8 @@ private fun AccountPreferenceContent(
     onMessageShown: () -> Unit,
     error: UiMessage?,
     modifier: Modifier = Modifier,
+    hasAuthKey: Boolean,
+    onCreateAndUploadAuthKey: () -> Unit,
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     Column(
@@ -136,11 +147,9 @@ private fun AccountPreferenceContent(
                     text = stringResource(R.string.get_free_xrd),
                     onClick = {
                         if (isDeviceSecure) {
-                            context.findFragmentActivity()?.let { activity ->
-                                activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                    if (authenticatedSuccessfully) {
-                                        onGetFreeXrdClick()
-                                    }
+                            context.biometricAuthenticate { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onGetFreeXrdClick()
                                 }
                             }
                         } else {
@@ -149,7 +158,15 @@ private fun AccountPreferenceContent(
                     },
                     enabled = !loading && canUseFaucet
                 )
-
+                if (!hasAuthKey) {
+                    RadixSecondaryButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.create_and_upload_auth_key),
+                        onClick = onCreateAndUploadAuthKey,
+                        enabled = !loading,
+                        throttleClicks = true
+                    )
+                }
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.action_show_qr_code),
@@ -197,7 +214,9 @@ fun AccountPreferencePreview() {
             loading = false,
             isDeviceSecure = true,
             onMessageShown = {},
-            error = null
+            error = null,
+            hasAuthKey = false,
+            onCreateAndUploadAuthKey = {}
         )
     }
 }

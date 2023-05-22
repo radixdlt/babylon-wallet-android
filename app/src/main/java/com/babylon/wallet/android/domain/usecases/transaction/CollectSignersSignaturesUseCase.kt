@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.domain.signing.SignWithDeviceFactorSourceUseCase
 import javax.inject.Inject
 
@@ -28,7 +28,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         signersPerFactorSource.forEach { (factorSource, signers) ->
             when (factorSource.kind) {
                 FactorSourceKind.DEVICE -> {
-                    val signatures = signWithDeviceFactorSourceUseCase(factorSource, signers, dataToSign)
+                    val signatures = signWithDeviceFactorSourceUseCase(signers, dataToSign)
                     signaturesWithPublicKeys.addAll(signatures)
                 }
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {

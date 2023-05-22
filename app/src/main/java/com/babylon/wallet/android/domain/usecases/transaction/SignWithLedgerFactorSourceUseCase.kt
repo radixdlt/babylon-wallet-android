@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
-import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.model.pernetwork.updateLastUsed
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -32,8 +32,8 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         val pathToCurve = signers.map { signer ->
             when (val securityState = signer.securityState) {
                 is SecurityState.Unsecured -> {
-                    val derivationPath = checkNotNull(securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
-                    derivationPath.path to securityState.unsecuredEntityControl.genesisFactorInstance.publicKey.curve
+                    val derivationPath = checkNotNull(securityState.unsecuredEntityControl.transactionSigning.derivationPath)
+                    derivationPath.path to securityState.unsecuredEntityControl.transactionSigning.publicKey.curve
                 }
             }
         }

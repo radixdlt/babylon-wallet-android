@@ -33,7 +33,8 @@ fun NavController.personaDetailScreen(personaAddress: String) {
 fun NavGraphBuilder.personaDetailScreen(
     onBackClick: () -> Unit,
     onPersonaEdit: (String) -> Unit,
-    onDappClick: (String) -> Unit
+    onDappClick: (String) -> Unit,
+    goToTransactionApproval: (String) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DETAIL,
@@ -62,7 +63,8 @@ fun NavGraphBuilder.personaDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onEditPersona = onPersonaEdit,
-            onDappClick = onDappClick
+            onDappClick = onDappClick,
+            goToTransactionApproval = goToTransactionApproval
         )
     }
 }

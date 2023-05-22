@@ -1,12 +1,29 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.data.manifest
 
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.domain.common.Result
+import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.ManifestBuilder
+import com.radixdlt.toolkit.models.EnumDiscriminator
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
+import com.radixdlt.toolkit.models.ValueKind
+import com.radixdlt.toolkit.models.request.ConvertManifestRequest
+import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
+import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.core.decodeHex
+import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 /**
@@ -38,6 +55,42 @@ fun ManifestBuilder.addDepositBatchInstruction(
             ),
             methodName = ManifestAstValue.String(MethodName.DepositBatch.stringValue),
             arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
+        )
+    )
+}
+
+fun TransactionManifest.getStringInstructions(): String? {
+    return when (val instructions = this.instructions) {
+        is ManifestInstructions.ParsedInstructions -> null
+        is ManifestInstructions.StringInstructions -> instructions.instructions
+    }
+}
+
+fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
+    entityAddress: String,
+    ownerKeys: List<FactorInstance.PublicKey>
+): ManifestBuilder {
+    val keysAsEngineValues: Array<ManifestAstValue> = ownerKeys.map { key ->
+        ManifestAstValue.Enum(
+            variant = publicKeyDiscriminator,
+            fields = arrayOf(
+                ManifestAstValue.Enum(
+                    variant = key.curveKindScryptoDiscriminator(),
+                    fields = arrayOf(ManifestAstValue.Bytes(key.compressedData.decodeHex()))
+                )
+            )
+        )
+    }.toTypedArray()
+    return addInstruction(
+        Instruction.SetMetadata(
+            entityAddress = ManifestAstValue.Address(
+                address = entityAddress
+            ),
+            key = ManifestAstValue.String(ExplicitMetadataKey.OWNER_KEYS.key),
+            value = ManifestAstValue.Enum(
+                variant = metadataEntryDiscriminator,
+                fields = arrayOf(ManifestAstValue.Array(ValueKind.Enum, keysAsEngineValues))
+            )
         )
     )
 }
@@ -94,6 +147,30 @@ fun TransactionManifest.addGuaranteeInstructionToManifest(
     return copy(updatedManifestInstructions, blobs)
 }
 
+fun TransactionManifest.convertManifestInstructionsToString(
+    networkId: Int
+): Result<ConvertManifestResponse> {
+    return try {
+        Result.Success(
+            RadixEngineToolkit.convertManifest(
+                ConvertManifestRequest(
+                    networkId = networkId.toUByte(),
+                    instructionsOutputKind = ManifestInstructionsKind.String,
+                    manifest = this
+                )
+            ).getOrThrow()
+        )
+    } catch (e: Exception) {
+        Result.Error(
+            DappRequestException(
+                DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
+                e.message,
+                e
+            )
+        )
+    }
+}
+
 private fun lockFeeInstruction(
     addressToLockFee: String
 ): Instruction {
@@ -117,3 +194,24 @@ private fun guaranteeInstruction(
         amount = ManifestAstValue.Decimal(guaranteedAmount)
     )
 }
+
+fun faucetComponentAddress(
+    networkId: UByte
+): ManifestAstValue.Address {
+    val faucetComponentAddress = RadixEngineToolkit.knownEntityAddresses(
+        request = KnownEntityAddressesRequest(
+            networkId = networkId
+        )
+    ).getOrThrow().faucetComponentAddress
+    return ManifestAstValue.Address(faucetComponentAddress.toString())
+}
+
+fun FactorInstance.PublicKey.curveKindScryptoDiscriminator(): EnumDiscriminator.U8 {
+    return when (curve) {
+        Slip10Curve.SECP_256K1 -> EnumDiscriminator.U8(0x00u)
+        Slip10Curve.CURVE_25519 -> EnumDiscriminator.U8(0x01u)
+    }
+}
+
+private val publicKeyDiscriminator = EnumDiscriminator.U8(0x09u)
+private val metadataEntryDiscriminator = EnumDiscriminator.U8(0x01u)

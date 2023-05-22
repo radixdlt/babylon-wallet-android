@@ -5,20 +5,33 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 
 fun Network.Account.unsecuredFactorSourceId(): FactorSource.ID? {
-    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
+    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning?.factorSourceId
 }
 
 fun Network.Account.isOlympiaAccount(): Boolean {
     return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
-        ?.genesisFactorInstance?.publicKey?.curve == Slip10Curve.SECP_256K1
+        ?.transactionSigning?.publicKey?.curve == Slip10Curve.SECP_256K1
 }
 
 fun Network.Persona.personaFactorSourceId(): FactorSource.ID? {
-    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
+    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning?.factorSourceId
+}
+
+fun SigningEntity.hasAuthSigning(): Boolean {
+    return when (val state = securityState) {
+        is SecurityState.Unsecured -> {
+            state.unsecuredEntityControl.authenticationSigning != null
+        }
+    }
+}
+
+fun SigningEntity.networkId() {
+    this.networkID
 }
 
 fun FactorSource.getNextDerivationPathForAccount(

@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
+import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
 import com.babylon.wallet.android.domain.common.Result
@@ -38,8 +39,10 @@ import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.profile.data.model.SigningEntity
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -69,8 +72,9 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun manifestInStringFormat(manifest: TransactionManifest): Result<TransactionManifest> {
-        val manifestConversionResult = convertManifestInstructionsToString(
-            manifest = manifest
+        val networkId = getCurrentGatewayUseCase().network.networkId()
+        val manifestConversionResult = manifest.convertManifestInstructionsToString(
+            networkId = networkId.value
         )
         val stringManifest = when (manifestConversionResult) {
             is Result.Error -> return manifestConversionResult
@@ -96,6 +100,7 @@ class TransactionClient @Inject constructor(
                 )
             jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
         }
+        Timber.d("Approving: \n${Json.encodeToString(manifestWithTransactionFee)}")
         val signers = getSigningEntities(networkId, manifestWithTransactionFee)
         val signersPerFactorSource = getFactorSourcesAndSigningEntitiesUseCase(signers)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
@@ -297,31 +302,6 @@ class TransactionClient @Inject constructor(
                     failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                     msg = e.message,
                     e = e
-                )
-            )
-        }
-    }
-
-    suspend fun convertManifestInstructionsToString(
-        manifest: TransactionManifest,
-    ): Result<ConvertManifestResponse> {
-        val networkId = getCurrentGatewayUseCase().network.networkId()
-        return try {
-            Result.Success(
-                engine.convertManifest(
-                    ConvertManifestRequest(
-                        networkId = networkId.value.toUByte(),
-                        instructionsOutputKind = ManifestInstructionsKind.String,
-                        manifest = manifest
-                    )
-                ).getOrThrow()
-            )
-        } catch (e: Exception) {
-            Result.Error(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
-                    e.message,
-                    e
                 )
             )
         }

@@ -13,7 +13,7 @@ interface IncomingRequestRepository {
 
     val currentRequestToHandle: Flow<IncomingRequest>
 
-    suspend fun add(incomingRequest: IncomingRequest)
+    suspend fun add(incomingRequest: IncomingRequest, skipCurrentlyHandledQueue: Boolean = false)
 
     suspend fun requestHandled(requestId: String)
 
@@ -37,9 +37,9 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     private val mutex = Mutex()
 
-    override suspend fun add(incomingRequest: IncomingRequest) {
+    override suspend fun add(incomingRequest: IncomingRequest, skipCurrentlyHandledQueue: Boolean) {
         mutex.withLock {
-            if (listOfIncomingRequests.isEmpty()) {
+            if (listOfIncomingRequests.isEmpty() && !skipCurrentlyHandledQueue) {
                 _currentRequestToHandle.emit(incomingRequest)
             }
             listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)

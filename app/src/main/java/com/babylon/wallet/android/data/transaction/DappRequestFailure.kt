@@ -5,33 +5,34 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 
 @Suppress("CyclomaticComplexMethod")
-sealed interface DappRequestFailure {
+sealed class DappRequestFailure : Exception() {
 
-    object GetEpoch : DappRequestFailure
-    object RejectedByUser : DappRequestFailure
-    object InvalidRequest : DappRequestFailure
-    object InvalidPersona : DappRequestFailure
-    data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure
+    object GetEpoch : DappRequestFailure()
+    object RejectedByUser : DappRequestFailure()
+    object InvalidRequest : DappRequestFailure()
+    object InvalidPersona : DappRequestFailure()
+    object FailedToSignAuthChallenge : DappRequestFailure()
+    data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
 
-    sealed interface TransactionApprovalFailure : DappRequestFailure {
-        object ConvertManifest : TransactionApprovalFailure
-        object BuildTransactionHeader : TransactionApprovalFailure
-        object FailedToFindAccountWithEnoughFundsToLockFee : TransactionApprovalFailure
-        object CompileTransactionIntent : TransactionApprovalFailure
-        object SignCompiledTransactionIntent : TransactionApprovalFailure
-        object PrepareNotarizedTransaction : TransactionApprovalFailure
-        object SubmitNotarizedTransaction : TransactionApprovalFailure
-        data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure
-        data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure
-        data class GatewayRejected(val txId: String) : TransactionApprovalFailure
-        data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure
+    sealed class TransactionApprovalFailure : DappRequestFailure() {
+        object ConvertManifest : TransactionApprovalFailure()
+        object BuildTransactionHeader : TransactionApprovalFailure()
+        object FailedToFindAccountWithEnoughFundsToLockFee : TransactionApprovalFailure()
+        object CompileTransactionIntent : TransactionApprovalFailure()
+        object SignCompiledTransactionIntent : TransactionApprovalFailure()
+        object PrepareNotarizedTransaction : TransactionApprovalFailure()
+        object SubmitNotarizedTransaction : TransactionApprovalFailure()
+        data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure()
+        data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure()
+        data class GatewayRejected(val txId: String) : TransactionApprovalFailure()
+        data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure()
     }
 
-    sealed interface DappVerificationFailure : DappRequestFailure {
-        object WrongAccountType : DappRequestFailure
-        object UnknownWebsite : DappRequestFailure
-        object RadixJsonNotFound : DappRequestFailure
-        object UnknownDefinitionAddress : DappRequestFailure
+    sealed class DappVerificationFailure : DappRequestFailure() {
+        object WrongAccountType : DappVerificationFailure()
+        object UnknownWebsite : DappVerificationFailure()
+        object RadixJsonNotFound : DappVerificationFailure()
+        object UnknownDefinitionAddress : DappVerificationFailure()
     }
 
     fun toWalletErrorType(): WalletErrorType {
@@ -62,6 +63,7 @@ sealed interface DappRequestFailure {
             InvalidRequest -> WalletErrorType.InvalidRequest
             TransactionApprovalFailure.CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
             TransactionApprovalFailure.SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
+            FailedToSignAuthChallenge -> WalletErrorType.FailedToSignAuthChallenge
         }
     }
 
@@ -88,6 +90,7 @@ sealed interface DappRequestFailure {
             InvalidRequest -> R.string.invalid_request
             TransactionApprovalFailure.CompileTransactionIntent -> R.string.tx_fail_prepare
             TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.tx_fail_sign
+            FailedToSignAuthChallenge -> R.string.failed_to_sign_auth_challenge
         }
     }
 

@@ -146,7 +146,7 @@ private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
     }
     return MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = dappId,
-        requestId = requestId,
+        interactionId = requestId,
         requestMetadata = metadata,
         authRequest = auth,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(isOngoing = false),

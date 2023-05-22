@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.amount
 import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
@@ -167,6 +169,22 @@ class EntityRepositoryRCNetImpl @Inject constructor(
                 timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
             ),
             map = { it }
+        )
+    }
+
+    override suspend fun getEntityMetadata(address: String, isRefreshing: Boolean): Result<List<MetadataItem>> {
+        return stateApi.entityDetails(
+            StateEntityDetailsRequest(
+                addresses = listOf(address)
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+            ),
+            map = { response ->
+                response.items.first().metadata.asMetadataItems()
+            },
         )
     }
 

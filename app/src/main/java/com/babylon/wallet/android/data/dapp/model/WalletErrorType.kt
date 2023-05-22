@@ -56,4 +56,7 @@ enum class WalletErrorType {
 
     @SerialName("invalidRequest")
     InvalidRequest,
+
+    @SerialName("ailedToSignAuthChallenge")
+    FailedToSignAuthChallenge,
 }

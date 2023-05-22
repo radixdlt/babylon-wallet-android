@@ -31,7 +31,8 @@ fun NavController.dappDetailScreen(dappDefinitionAddress: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dappDetailScreen(
     onBackClick: () -> Unit,
-    onEditPersona: (String, String) -> Unit
+    onEditPersona: (String, String) -> Unit,
+    onHandleInternalRequest: (String) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_DETAIL,
@@ -59,7 +60,8 @@ fun NavGraphBuilder.dappDetailScreen(
         DappDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onEditPersona = onEditPersona
+            onEditPersona = onEditPersona,
+            onHandleInternalRequest = onHandleInternalRequest
         )
     }
 }
