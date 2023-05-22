@@ -107,7 +107,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         viewModel.onMessageChanged(message)
 
         Assert.assertEquals(
-            viewModel.state.first().message,
+            viewModel.state.first().messageState,
             message
         )
     }

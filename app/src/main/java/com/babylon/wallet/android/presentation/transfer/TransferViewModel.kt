@@ -57,10 +57,18 @@ class TransferViewModel @Inject constructor(
 
     // Transfer flow
 
+    fun onMessageStateChanged(isOpen: Boolean) {
+        _state.update {
+            it.copy(messageState = if (isOpen) State.Message.Added() else State.Message.None)
+        }
+    }
+
     fun onMessageChanged(message: String) {
+        val addedMessageState = _state.value.messageState as? State.Message.Added ?: return
+
         _state.update {
             it.copy(
-                message = message
+                messageState = addedMessageState.copy(message = message)
             )
         }
     }
@@ -230,7 +238,7 @@ class TransferViewModel @Inject constructor(
     data class State(
         val fromAccount: Network.Account? = null,
         val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton()),
-        val message: String = "",
+        val messageState: Message = Message.None,
         val sheet: Sheet = Sheet.None
     ) : UiState {
 
@@ -278,6 +286,11 @@ class TransferViewModel @Inject constructor(
                     NFTs
                 }
             }
+        }
+
+        sealed interface Message {
+            object None: Message
+            data class Added(val message: String = ""): Message
         }
     }
 }

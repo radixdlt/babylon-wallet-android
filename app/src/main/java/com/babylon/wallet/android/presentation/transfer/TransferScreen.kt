@@ -68,6 +68,7 @@ fun TransferScreen(
         onBackClick = onBackClick,
         onSendTransferClick = onSendTransferClick,
         state = state,
+        onMessageStateChanged = viewModel::onMessageStateChanged,
         onMessageChanged = viewModel::onMessageChanged,
         onAddressTyped = viewModel::onAddressTyped,
         onOwnedAccountSelected = viewModel::onOwnedAccountSelected,
@@ -97,6 +98,7 @@ fun TransferContent(
     onBackClick: () -> Unit,
     onSendTransferClick: () -> Unit,
     state: State,
+    onMessageStateChanged: (Boolean) -> Unit,
     onMessageChanged: (String) -> Unit,
     onAddressTyped: (String) -> Unit,
     onOwnedAccountSelected: (Network.Account) -> Unit,
@@ -118,8 +120,6 @@ fun TransferContent(
     onChooseAssetsSubmitted: () -> Unit
 ) {
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-
-    var showMessageContent by remember { mutableStateOf(false) }
 
     SyncSheetState(
         bottomSheetState = bottomSheetState,
@@ -207,15 +207,13 @@ fun TransferContent(
                             overflow = TextOverflow.Ellipsis,
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        if (!showMessageContent) {
+                        if (state.messageState is State.Message.None) {
                             RadixTextButton(
                                 text = stringResource(id = R.string.add_message),
-                                onClick = { showMessageContent = true },
+                                onClick = { onMessageStateChanged(true) },
                                 leadingIcon = {
                                     Icon(
-                                        painter = painterResource(
-                                            id = R.drawable.ic_add_message
-                                        ),
+                                        painter = painterResource(id = R.drawable.ic_add_message),
                                         contentDescription = ""
                                     )
                                 }
@@ -224,12 +222,12 @@ fun TransferContent(
                     }
                 }
 
-                if (showMessageContent) {
+                if (state.messageState is State.Message.Added) {
                     item {
                         TransferMessage(
-                            message = state.message,
+                            message = state.messageState.message,
                             onMessageChanged = onMessageChanged,
-                            onMessageClose = { showMessageContent = false }
+                            onMessageClose = { onMessageStateChanged(false) }
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     }
@@ -390,12 +388,12 @@ fun TransferContentPreview() {
             onBackClick = {},
             onSendTransferClick = {},
             state = State(
-                message = "",
                 fromAccount = SampleDataProvider().sampleAccount(
                     address = "rdx_t_12382918379821",
                     name = "Savings account"
                 )
             ),
+            onMessageStateChanged = {},
             onMessageChanged = {},
             onAddressTyped = {},
             onOwnedAccountSelected = {},
