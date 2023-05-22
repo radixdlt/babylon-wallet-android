@@ -117,6 +117,8 @@ fun ChooseAssetsSheet(
                 pagerState = pagerState
             )
 
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
             Box(modifier = modifier.fillMaxSize()) {
                 HorizontalPager(
                     pageCount = ChooseAssets.Tab.values().size,
