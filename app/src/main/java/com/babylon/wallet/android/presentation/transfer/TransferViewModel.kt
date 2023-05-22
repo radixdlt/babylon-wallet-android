@@ -201,10 +201,12 @@ class TransferViewModel @Inject constructor(
     fun onChooseAssetTabSelected(tab: State.Sheet.ChooseAssets.Tab) = assetsChooserDelegate.onTabSelected(tab)
 
     fun onAddAssetsClick(targetAccount: TargetAccount) {
-        val fromAccount = state.value.fromAccount ?: return
+        val currentState = state.value
+        val fromAccount = currentState.fromAccount ?: return
         assetsChooserDelegate.onChooseAssets(
             fromAccount = fromAccount,
-            targetAccount = targetAccount
+            targetAccount = targetAccount,
+            restOfTargetAccounts = currentState.targetAccounts.filterNot { it.address == targetAccount.address }
         )
     }
 
