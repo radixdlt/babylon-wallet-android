@@ -48,7 +48,7 @@ class AccountsChooserDelegate(
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
                 val selectedAccountAddresses = state.value.targetAccounts.map { it.address }
-                if (address in selectedAccountAddresses) {
+                if (address in selectedAccountAddresses || address == state.value.fromAccount?.address) {
                     TargetAccount.Other.AddressValidity.USED
                 } else {
                     TargetAccount.Other.AddressValidity.VALID
