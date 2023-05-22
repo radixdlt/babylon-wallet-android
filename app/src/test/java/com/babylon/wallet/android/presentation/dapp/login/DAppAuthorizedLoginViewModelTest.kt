@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.PersonaData
-import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.data.transaction.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
@@ -29,6 +29,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -41,7 +42,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val rolaClient = mockk<ROLAClient>()
+    private val buildAuthorizedDappResponseUseCase = mockk<BuildAuthorizedDappResponseUseCase>()
     private val dAppMessenger = DappMessengerFake()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
@@ -58,8 +59,9 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+            true, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            null
         )
     )
 
@@ -73,8 +75,9 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+            true, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            null
         )
     )
 
@@ -88,10 +91,14 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+            true, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            null
         ),
-        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaData.PersonaDataField.GivenName), true)
+        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+            listOf(PersonaData.PersonaDataField.GivenName),
+            true
+        )
     )
 
     private val usePersonaRequestOngoingDataOnly = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
@@ -103,7 +110,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             "address"
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
-        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaData.PersonaDataField.GivenName), true)
+        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+            listOf(PersonaData.PersonaDataField.GivenName),
+            true
+        )
     )
 
     private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
@@ -116,8 +126,9 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            false, false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+            false, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            null
         )
     )
 
@@ -131,10 +142,14 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            false, false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+            false, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            null
         ),
-        oneTimePersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaData.PersonaDataField.GivenName), false)
+        oneTimePersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+            listOf(PersonaData.PersonaDataField.GivenName),
+            false
+        )
     )
 
     override fun initVM(): DAppAuthorizedLoginViewModel {
@@ -146,7 +161,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             getCurrentGatewayUseCase,
             dappMetadataRepository,
             incomingRequestRepository,
-            rolaClient
+            buildAuthorizedDappResponseUseCase
         )
     }
 
@@ -155,15 +170,20 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         super.setUp()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        every { getProfileUseCase() } returns flowOf(profile(
-            personas = listOf(samplePersona),
-            dApps = listOf(Network.AuthorizedDapp(
-                networkID = Radix.Gateway.nebunet.network.id,
-                dAppDefinitionAddress = "dapp_address",
-                displayName = "1",
-                referencesToAuthorizedPersonas = emptyList()
-            ))
-        ))
+        coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
+        every { getProfileUseCase() } returns flowOf(
+            profile(
+                personas = listOf(samplePersona),
+                dApps = listOf(
+                    Network.AuthorizedDapp(
+                        networkID = Radix.Gateway.nebunet.network.id,
+                        dAppDefinitionAddress = "dapp_address",
+                        displayName = "1",
+                        referencesToAuthorizedPersonas = emptyList()
+                    )
+                )
+            )
+        )
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
 

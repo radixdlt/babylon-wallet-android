@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.dapp.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -21,6 +20,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,8 +43,9 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+            true, 1,
+            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            null
         )
     )
 

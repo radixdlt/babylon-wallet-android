@@ -27,9 +27,9 @@ class IncomingRequestRepositoryTest {
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
-            requiresProofOfOwnership = false,
             numberOfAccounts = 1,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
+            challenge = null
         )
     )
 

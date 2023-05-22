@@ -9,9 +9,9 @@ val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRe
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
-        requiresProofOfOwnership = false,
         numberOfAccounts = 1,
-        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
+        challenge = null
     )
 )
 val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
@@ -20,9 +20,9 @@ val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.Unauthorize
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
-        requiresProofOfOwnership = false,
         numberOfAccounts = 2,
-        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
+        challenge = null
     )
 )
 
@@ -32,8 +32,8 @@ val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.Unauthorized
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
-        requiresProofOfOwnership = false,
         numberOfAccounts = 2,
-        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+        challenge = null
     )
 )
