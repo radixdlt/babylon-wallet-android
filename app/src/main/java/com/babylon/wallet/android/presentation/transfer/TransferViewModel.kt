@@ -111,18 +111,27 @@ class TransferViewModel @Inject constructor(
         val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) } + amountDecimal
+        val isExceedingBalance = spentAmount > maxAmount
 
         _state.update { state ->
             state.copy(
                 targetAccounts = state.targetAccounts.mapWhen(
-                    predicate = { it.address == account.address },
-                    mutation = {
-                        it.updateAsset(
-                            asset.copy(
-                                amountString = amount,
-                                exceedingBalance = spentAmount > maxAmount
-                            )
-                        )
+                    predicate = { target -> target.assets.any { it.address == asset.address } },
+                    mutation = { target ->
+                        target.updateAssets { assets ->
+                            assets.map { updatingAsset ->
+                                if (updatingAsset is SpendingAsset.Fungible && updatingAsset.address == asset.address) {
+                                    updatingAsset.copy(
+                                        // Update the amount of the asset only for the currently editing target account
+                                        amountString = if (target.address == account.address) amount else updatingAsset.amountString,
+                                        // Update the flag for all assets with the same address of the one that is being edited
+                                        exceedingBalance = isExceedingBalance
+                                    )
+                                } else {
+                                    updatingAsset
+                                }
+                            }.toSet()
+                        }
                     }
                 )
             )
@@ -136,18 +145,28 @@ class TransferViewModel @Inject constructor(
         val spendAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
+        val remainingAmount = maxAmount - spendAmount
+        val remainingAmountString = (maxAmount - spendAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
 
         _state.update { state ->
             state.copy(
                 targetAccounts = state.targetAccounts.mapWhen(
-                    predicate = { it.address == account.address },
-                    mutation = {
-                        it.updateAsset(
-                            asset.copy(
-                                amountString = (maxAmount - spendAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString(),
-                                exceedingBalance = false
-                            )
-                        )
+                    predicate = { target -> target.assets.any { it.address == asset.address } },
+                    mutation = { target ->
+                        target.updateAssets { assets ->
+                            assets.map { updatingAsset ->
+                                if (updatingAsset is SpendingAsset.Fungible && updatingAsset.address == asset.address) {
+                                    updatingAsset.copy(
+                                        // Update the amount of the asset only for the currently editing target account
+                                        amountString = if (target.address == account.address) remainingAmountString else updatingAsset.amountString,
+                                        // Update the flag for all assets with the same address of the one that is being edited
+                                        exceedingBalance = remainingAmount < BigDecimal.ZERO
+                                    )
+                                } else {
+                                    updatingAsset
+                                }
+                            }.toSet()
+                        }
                     }
                 )
             )
@@ -273,15 +292,11 @@ sealed class TargetAccount {
         .find { it.address == fungibleAsset.address }
         ?.amountDecimal ?: BigDecimal.ZERO
 
-    fun updateAsset(asset: SpendingAsset.Fungible): TargetAccount {
-        val newAssets = assets.mapWhen(
-            predicate = { it.address == asset.address },
-            mutation = { asset }
-        ).toSet()
+    fun updateAssets(onUpdate: (Set<SpendingAsset>) -> Set<SpendingAsset>): TargetAccount {
         return when (this) {
-            is Owned -> copy(assets = newAssets)
-            is Other -> copy(assets = newAssets)
-            is Skeleton -> copy(assets = newAssets)
+            is Owned -> copy(assets = onUpdate(assets))
+            is Other -> copy(assets = onUpdate(assets))
+            is Skeleton -> copy(assets = onUpdate(assets))
         }
     }
 
