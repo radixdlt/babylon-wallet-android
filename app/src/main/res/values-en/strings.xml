@@ -55,7 +55,7 @@
     <string name="you_have_no_nfts">You have no NFTs</string>
     <string name="what_are_nfts">What are NFTs?</string>
     <string name="empty" />
-    <string name="nft_id">NFT ID</string>
+    <string name="nft_id">ID</string>
     <string name="wallet_settings">Wallet Settings</string>
     <string name="add_connection">Add Connection</string>
     <string name="save_link">Save Link</string>
