@@ -61,7 +61,8 @@ fun AccountAssetsRow(
     maxVisibleFungibles: Int = 5
 ) {
     AssetsContent(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
             .height(height = iconSize + bordersSize * 2)
             .placeholder(
                 visible = isLoading,
@@ -139,7 +140,12 @@ private fun AssetsContent(
                 }
             }
 
-            val nonFungibleSectionOffset = iconsOverlap * (sortedFungibles.size - 1) + iconSize
+            val nonFungibleSectionOffset = if (remainingFungiblesCount > 0) {
+                iconSize
+            } else {
+                0.dp
+            } + iconsOverlap * (sortedFungibles.size - 1)
+
             if (remainingFungiblesCount > 0) {
                 CounterBox(
                     modifier = Modifier
@@ -229,6 +235,17 @@ fun AssetsContentRowPreview() {
         ) {
             AccountAssetsRow(resources = null, isLoading = true)
 
+            val otherFungible = Resource.FungibleResource(
+                resourceAddress = "resource_address",
+                amount = BigDecimal.valueOf(237659),
+                nameMetadataItem = NameMetadataItem("AWE"),
+                symbolMetadataItem = SymbolMetadataItem("AWE"),
+                iconUrlMetadataItem = IconUrlMetadataItem(
+                    url = Uri.parse(
+                        "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                    )
+                )
+            )
             AccountAssetsRow(
                 resources = Resources(
                     fungibleResources = listOf(
@@ -238,19 +255,23 @@ fun AssetsContentRowPreview() {
                             nameMetadataItem = NameMetadataItem("Radix"),
                             symbolMetadataItem = SymbolMetadataItem("XRD")
                         ),
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_address",
-                            amount = BigDecimal.valueOf(237659),
-                            nameMetadataItem = NameMetadataItem("AWE"),
-                            symbolMetadataItem = SymbolMetadataItem("AWE"),
-                            iconUrlMetadataItem = IconUrlMetadataItem(
-                                url = Uri.parse(
-                                    "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
-                                )
-                            )
-                        ),
+                        otherFungible,
+                        otherFungible,
+                        otherFungible,
+                        otherFungible,
+                        otherFungible,
+                        otherFungible,
+                        otherFungible,
+                        otherFungible
                     ),
-                    nonFungibleResources = listOf()
+                    nonFungibleResources = listOf(
+                        Resource.NonFungibleResource(
+                            resourceAddress = "resource_address",
+                            amount = 1000,
+                            nameMetadataItem = NameMetadataItem("AWE"),
+                            items = listOf()
+                        )
+                    )
                 ),
                 isLoading = false
             )
