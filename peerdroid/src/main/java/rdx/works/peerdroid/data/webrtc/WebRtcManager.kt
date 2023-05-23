@@ -31,8 +31,8 @@ private val STUN_SERVERS_LIST = listOf(
     "stun:stun4.l.google.com:19302"
 )
 private val TURN_DEV_SERVERS_LIST = listOf(
-    "turn:turn-dev-udp.rdx-works-main.extratools.works",
-    "turn:turn-dev-tcp.rdx-works-main.extratools.works"
+    "turn:turn-dev-udp.rdx-works-main.extratools.works:80?transport=udp",
+    "turn:turn-dev-tcp.rdx-works-main.extratools.works:80?transport=tcp"
 )
 private val TURN_SERVERS_LIST = listOf(
     "turn:turn-rcnet-udp.radixdlt.com:80?transport=udp",
