@@ -146,7 +146,6 @@ private fun AssetsContent(
                 0.dp
             } + iconsOverlap * (sortedFungibles.size - 1)
 
-
             if (remainingFungiblesCount > 0) {
                 CounterBox(
                     modifier = Modifier
