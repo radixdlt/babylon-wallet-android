@@ -45,6 +45,14 @@ Deploy to Google Play Console
 
 
 
+### get_version_name
+
+```sh
+[bundle exec] fastlane get_version_name
+```
+
+
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
