@@ -157,7 +157,8 @@ class DappDetailViewModel @Inject constructor(
                 requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
                     authorizedDapp.networkID,
                     "",
-                    authorizedDapp.dAppDefinitionAddress
+                    authorizedDapp.dAppDefinitionAddress,
+                    isInternal = false
                 ),
                 authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(persona.address),
                 ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(

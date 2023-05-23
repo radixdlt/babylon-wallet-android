@@ -58,15 +58,13 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
-    onBackClick: () -> Unit,
-    onSendTransferClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     TransferContent(
         modifier = modifier,
         onBackClick = onBackClick,
-        onSendTransferClick = onSendTransferClick,
         state = state,
         onMessageStateChanged = viewModel::onMessageStateChanged,
         onMessageChanged = viewModel::onMessageChanged,
@@ -87,7 +85,8 @@ fun TransferScreen(
         onMaxAmountClicked = viewModel::onMaxAmount,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown,
-        onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted
+        onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
+        onTransferSubmit = viewModel::onTransferSubmit
     )
 }
 
@@ -96,7 +95,6 @@ fun TransferScreen(
 fun TransferContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
-    onSendTransferClick: () -> Unit,
     state: State,
     onMessageStateChanged: (Boolean) -> Unit,
     onMessageChanged: (String) -> Unit,
@@ -117,7 +115,8 @@ fun TransferContent(
     onMaxAmountClicked: (TargetAccount, SpendingAsset) -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onUiMessageShown: () -> Unit,
-    onChooseAssetsSubmitted: () -> Unit
+    onChooseAssetsSubmitted: () -> Unit,
+    onTransferSubmit: () -> Unit
 ) {
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
 
@@ -343,7 +342,7 @@ fun TransferContent(
                             .fillMaxWidth(),
                         text = stringResource(id = R.string.send_transfer_request),
                         enabled = isEnabled,
-                        onClick = onSendTransferClick
+                        onClick = onTransferSubmit
                     )
                 }
             }
@@ -386,7 +385,6 @@ fun TransferContentPreview() {
                 .padding(10.dp)
                 .background(color = Color.Gray),
             onBackClick = {},
-            onSendTransferClick = {},
             state = State(
                 fromAccount = SampleDataProvider().sampleAccount(
                     address = "rdx_t_12382918379821",
@@ -412,7 +410,8 @@ fun TransferContentPreview() {
             onMaxAmountClicked = { _, _ -> },
             onAssetSelectionChanged = { _, _ -> },
             onUiMessageShown = {},
-            onChooseAssetsSubmitted = {}
+            onChooseAssetsSubmitted = {},
+            onTransferSubmit = {}
         )
     }
 }

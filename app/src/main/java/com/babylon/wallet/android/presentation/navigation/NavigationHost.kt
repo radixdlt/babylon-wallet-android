@@ -218,8 +218,7 @@ fun NavigationHost(
         transferScreen(
             onBackClick = {
                 navController.popBackStack()
-            },
-            onSendTransferClick = {}
+            }
         )
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()

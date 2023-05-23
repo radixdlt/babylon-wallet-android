@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -10,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
+import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
@@ -26,6 +28,7 @@ import javax.inject.Inject
 class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransferViewModel.State>() {
 
@@ -43,6 +46,12 @@ class TransferViewModel @Inject constructor(
         state = _state,
         viewModelScope = viewModelScope,
         getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+    )
+
+    private val prepareManifestDelegate = PrepareManifestDelegate(
+        state = _state,
+        incomingRequestRepository = incomingRequestRepository,
+        getProfileUseCase = getProfileUseCase
     )
 
     init {
@@ -183,6 +192,10 @@ class TransferViewModel @Inject constructor(
                 )
             )
         }
+    }
+
+    fun onTransferSubmit() {
+        viewModelScope.launch { prepareManifestDelegate.onSubmit() }
     }
 
     // Choose accounts flow

@@ -89,7 +89,8 @@ sealed interface MessageFromDataChannel {
         data class RequestMetadata(
             val networkId: Int,
             val origin: String,
-            val dAppDefinitionAddress: String
+            val dAppDefinitionAddress: String,
+            val isInternal: Boolean // Indicates that the request is made from the wallet app itself.
         )
 
         data class AccountsRequestItem(
