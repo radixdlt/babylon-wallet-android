@@ -10,8 +10,8 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,10 +19,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 class GetFreeXrdUseCase @Inject constructor(
     private val transactionClient: TransactionClient,
     private val transactionRepository: TransactionRepository,
@@ -38,25 +38,25 @@ class GetFreeXrdUseCase @Inject constructor(
         address: String
     ): Result<String> {
         return withContext(ioDispatcher) {
-            networkInfoRepository.getFaucetComponentAddress().value()?.let { faucetComponentAddress ->
-            }
-            val manifest = buildFaucetManifest(
-                networkId = getCurrentGatewayUseCase().network.networkId(),
-                address = address,
-                includeLockFeeInstruction = includeLockFeeInstruction
-            )
-            when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                is Result.Error -> epochResult
-                is Result.Success -> {
-                    val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
-                    val submitResult = transactionClient.signAndSubmitTransaction(request)
-                    submitResult.onValue { txId ->
-                        val transactionStatus = pollTransactionStatusUseCase(txId)
-                        transactionStatus.onValue {
-                            preferencesManager.updateEpoch(address, epochResult.data)
+            networkInfoRepository.getFaucetComponentAddress(getCurrentGatewayUseCase().url).value()?.let { faucetComponentAddress ->
+                val manifest = buildFaucetManifest(
+                    address = address,
+                    includeLockFeeInstruction = includeLockFeeInstruction,
+                    faucetComponentAddress = faucetComponentAddress
+                )
+                when (val epochResult = transactionRepository.getLedgerEpoch()) {
+                    is Result.Error -> epochResult
+                    is Result.Success -> {
+                        val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
+                        val submitResult = transactionClient.signAndSubmitTransaction(request)
+                        submitResult.onValue { txId ->
+                            val transactionStatus = pollTransactionStatusUseCase(txId)
+                            transactionStatus.onValue {
+                                preferencesManager.updateEpoch(address, epochResult.data)
+                            }
                         }
+                        submitResult
                     }
-                    submitResult
                 }
             } ?: run {
                 Result.Error(Throwable("Unable to fetch faucet address"))

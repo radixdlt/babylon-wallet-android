@@ -17,4 +17,7 @@ interface StatusApi {
      */
     @POST("status/gateway-status")
     fun gatewayStatus(): Call<GatewayStatusResponse>
+
+    @POST("status/network-configuration")
+    fun gatewayNetworkConfigurationUrl(): Call<NetworkConfigurationResponse>
 }

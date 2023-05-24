@@ -18,7 +18,7 @@ class GetValidDAppMetadataUseCase @Inject constructor(
         val encounteredAddresses = mutableListOf<ConnectedDAppsUiModel>()
 
         dappMetadataRepository.getDAppsMetadata(
-            defitnionAddresses = componentAddresses,
+            definitionAddresses = componentAddresses,
             needMostRecentData = false
         ).map { metadataList ->
             val dAppDefinitionAddresses = metadataList.map { metadata ->

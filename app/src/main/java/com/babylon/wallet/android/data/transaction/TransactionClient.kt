@@ -22,18 +22,17 @@ import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.address.EntityAddress
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.crypto.Signature
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
-import com.radixdlt.toolkit.models.request.AnalyzeManifestRequest
-import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextRequest
-import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextResponse
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionRequest
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionRequest
 import com.radixdlt.toolkit.models.request.CompileTransactionIntentRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
 import com.radixdlt.toolkit.models.request.DecompileNotarizedTransactionRequest
+import com.radixdlt.toolkit.models.request.ExtractAddressesFromManifestRequest
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
@@ -195,7 +194,7 @@ class TransactionClient @Inject constructor(
 
     suspend fun selectAccountAddressToLockFee(networkId: Int, manifestJson: TransactionManifest): String? {
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-        val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
+        val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
         val searchedAccounts = mutableSetOf<Network.Account>()
         return result.getOrNull()?.let { analyzeManifestResponse ->
             val withdrawnFromCandidates = findFeePayerCandidates(
@@ -227,11 +226,10 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private fun findFeePayerCandidates(entityAddress: List<EntityAddress>, accounts: List<Network.Account>): List<Network.Account> {
+    private fun findFeePayerCandidates(entityAddress: List<String>, accounts: List<Network.Account>): List<Network.Account> {
         return entityAddress
-            .filterIsInstance<EntityAddress.ComponentAddress>()
-            .mapNotNull { componentAddress ->
-                accounts.find { it.address == componentAddress.address }
+            .mapNotNull { address ->
+                accounts.find { it.address == address }
             }
     }
 
@@ -257,7 +255,7 @@ class TransactionClient @Inject constructor(
                         nonce = generateNonce(),
                         notaryPublicKey = notaryAndSigners.notaryPublicKey(),
                         notaryAsSignatory = notaryAndSigners.notaryAsSignatory,
-                        costUnitLimit = TransactionConfig.COST_UNIT_LIMIT,
+                        costUnitLimit = COST_UNIT_LIMIT,
                         tipPercentage = TransactionConfig.TIP_PERCENTAGE
                     )
                 )
@@ -326,12 +324,10 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<SigningEntity> {
-        val result = engine.analyzeManifest(AnalyzeManifestRequest(networkId.toUByte(), manifestJson))
+        val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         return result.getOrNull()?.let { analyzeManifestResponse ->
-            val addressesNeededToSign = analyzeManifestResponse.accountsRequiringAuth
-                .filterIsInstance<EntityAddress.ComponentAddress>()
-                .map { it.address }.toSet()
+            val addressesNeededToSign = analyzeManifestResponse.accountsRequiringAuth.toSet()
             allAccounts.filter { addressesNeededToSign.contains(it.address) }
         }.orEmpty()
     }
@@ -340,9 +336,9 @@ class TransactionClient @Inject constructor(
         networkId: NetworkId,
         transactionManifest: TransactionManifest,
         transactionReceipt: ByteArray
-    ): kotlin.Result<AnalyzeManifestWithPreviewContextResponse> {
-        return engine.analyzeManifestWithPreviewContext(
-            AnalyzeManifestWithPreviewContextRequest(
+    ): kotlin.Result<AnalyzeTransactionExecutionResponse> {
+        return engine.analyzeTransactionExecution(
+            AnalyzeTransactionExecutionRequest(
                 networkId = networkId.value.toUByte(),
                 manifest = transactionManifest,
                 transactionReceipt = transactionReceipt

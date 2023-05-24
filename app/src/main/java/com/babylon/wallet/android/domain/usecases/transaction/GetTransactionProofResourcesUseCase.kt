@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryRCNetImpl
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.transaction.PresentingProofUiModel
 import javax.inject.Inject
 
 class GetTransactionProofResourcesUseCase @Inject constructor(
-    private val dappMetadataRepository: DappMetadataRepository
+    private val dappMetadataRepository: DappMetadataRepositoryRCNetImpl
 ) {
 
     suspend operator fun invoke(
@@ -16,9 +16,9 @@ class GetTransactionProofResourcesUseCase @Inject constructor(
 
         val proofs = mutableListOf<PresentingProofUiModel>()
 
-        val metadataResults = dappMetadataRepository.getDappsMetadata(
-            defitnionAddresses = accountProofResources.toList(),
-            needMostRecentData = false
+        val metadataResults = dappMetadataRepository.getDAppsMetadata(
+            needMostRecentData = false,
+            definitionAddresses = accountProofResources.toList()
         )
         metadataResults.onValue { dAppsMetadata ->
             dAppsMetadata.forEach { dAppMetadata ->
