@@ -50,8 +50,7 @@ class TransferViewModel @Inject constructor(
 
     private val prepareManifestDelegate = PrepareManifestDelegate(
         state = _state,
-        incomingRequestRepository = incomingRequestRepository,
-        getProfileUseCase = getProfileUseCase
+        incomingRequestRepository = incomingRequestRepository
     )
 
     init {
@@ -240,7 +239,13 @@ class TransferViewModel @Inject constructor(
         isChecked = isSelected
     )
 
-    fun onUiMessageShown() = assetsChooserDelegate.onUiMessageShown()
+    fun onUiMessageShown() {
+        if (_state.value.sheet is State.Sheet.ChooseAssets) {
+            assetsChooserDelegate.onUiMessageShown()
+        } else {
+            _state.update { it.copy(error = null) }
+        }
+    }
 
     fun onChooseAssetsSubmitted() = assetsChooserDelegate.onChooseAssetsSubmitted()
 
@@ -252,13 +257,17 @@ class TransferViewModel @Inject constructor(
         val fromAccount: Network.Account? = null,
         val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton()),
         val messageState: Message = Message.None,
-        val sheet: Sheet = Sheet.None
+        val sheet: Sheet = Sheet.None,
+        val error: UiMessage? = null
     ) : UiState {
 
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
 
         val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all { it.isValidForSubmission }
+
+        val submittedMessage: String?
+            get() = (messageState as? Message.Added)?.message
 
         sealed interface Sheet {
             object None : Sheet

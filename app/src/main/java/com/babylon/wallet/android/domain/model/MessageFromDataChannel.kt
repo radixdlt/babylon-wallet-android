@@ -91,7 +91,17 @@ sealed interface MessageFromDataChannel {
             val origin: String,
             val dAppDefinitionAddress: String,
             val isInternal: Boolean // Indicates that the request is made from the wallet app itself.
-        )
+        ) {
+
+            companion object {
+                fun internal(networkId: Int) = RequestMetadata(
+                    networkId = networkId,
+                    origin = "",
+                    dAppDefinitionAddress = "",
+                    isInternal = true
+                )
+            }
+        }
 
         data class AccountsRequestItem(
             val isOngoing: Boolean,
