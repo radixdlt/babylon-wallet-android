@@ -20,7 +20,6 @@ import com.radixdlt.toolkit.models.ValueKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.pernetwork.Network
-import timber.log.Timber
 import java.math.BigDecimal
 
 class PrepareManifestDelegate(
@@ -31,10 +30,8 @@ class PrepareManifestDelegate(
     suspend fun onSubmit() {
         val fromAccount = state.value.fromAccount ?: return
         prepareRequest(fromAccount, state.value).onValue {
-            Timber.tag("PrepareManifestDelegate").d(it.transactionManifestData.instructions)
             incomingRequestRepository.add(it)
         }.onError { error ->
-            Timber.e(error)
             state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
         }
     }
@@ -63,7 +60,7 @@ class PrepareManifestDelegate(
     private fun ManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
-    ): ManifestBuilder  = apply {
+    ): ManifestBuilder = apply {
         state.value.withdrawingFungibles().forEach { (resource, amount) ->
             // Withdraw the total amount for each fungible
             addInstruction(
@@ -114,6 +111,8 @@ class PrepareManifestDelegate(
             val nonFungibleSpendingAssets = targetAccount.assets.filterIsInstance<SpendingAsset.NFT>()
             nonFungibleSpendingAssets.forEach { nft ->
                 val bucket = ManifestAstValue.Bucket(identifier = "${targetAccount.address}_${nft.address}")
+                val nftManifestId = nft.item.toManifestLocalId()
+
                 addInstruction(
                     Instruction.CallMethod(
                         componentAddress = ManifestAstValue.Address(address = fromAccount.address),
@@ -122,7 +121,7 @@ class PrepareManifestDelegate(
                             ManifestAstValue.Address(nft.item.collectionAddress),
                             ManifestAstValue.Array(
                                 elementKind = ValueKind.NonFungibleLocalId,
-                                elements = arrayOf(ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.String(nft.item.localId)))
+                                elements = arrayOf(nftManifestId)
                             )
                         )
                     )
@@ -131,7 +130,7 @@ class PrepareManifestDelegate(
                 addInstruction(
                     Instruction.TakeFromWorktopByIds(
                         resourceAddress = ManifestAstValue.Address(nft.item.collectionAddress),
-                        ids = setOf(ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.String(nft.item.localId))),
+                        ids = setOf(nftManifestId),
                         intoBucket = bucket
                     )
                 )
@@ -159,5 +158,30 @@ class PrepareManifestDelegate(
         }
 
         return fungibleAmounts
+    }
+
+    private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId = run {
+        if (nftLocalIdStringRegex.matches(localId)) {
+            val (stringId) = nftLocalIdStringRegex.find(localId)!!.destructured
+            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.String(stringId))
+        } else if (nftLocalIdIntegerRegex.matches(localId)) {
+            val (intId) = nftLocalIdIntegerRegex.find(localId)!!.destructured
+            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Integer(intId.toULong()))
+        } else if (nftLocalIdHexRegex.matches(localId)) {
+            val (hexId) = nftLocalIdHexRegex.find(localId)!!.destructured
+            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Bytes(hexId.toByteArray()))
+        } else if (nftLocalIdUUIDRegex.matches(localId)) {
+            val (uuidString) = nftLocalIdUUIDRegex.find(localId)!!.destructured
+            // TODO this will fail
+            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.UUID(uuidString))
+        } else {
+            throw RuntimeException("Could not recognize id $localId")
+        }
+    }
+    companion object {
+        val nftLocalIdStringRegex = "^<(([a-zA-Z]|_|\\d)+)>\$".toRegex()
+        val nftLocalIdIntegerRegex = "^#(\\d+)#\$".toRegex()
+        val nftLocalIdHexRegex = "^\\[([A-Fa-f\\d]+)]\$".toRegex()
+        val nftLocalIdUUIDRegex = "^\\{(.+)\\}\$".toRegex()
     }
 }
