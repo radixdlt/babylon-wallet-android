@@ -16,31 +16,26 @@
 desc "Deploy merges to main and any other manual trigger"
 lane :alpha do
 
-  branch_name = git_branch
-  version_name = android_get_version_name
-  commit = last_git_commit
-  ENV["RELEASE_NOTES"] = "Branch: " + branch_name + "\n" + "Commit: " + commit[:message]
-  short_hash = commit[:abbreviated_commit_hash]
-  version = version_name + "-" + short_hash
-  android_set_version_name(
-    version_name: version
-  )
-  gradle(
-      task: "assemble",
-      flavor: "Debug",
-      build_type: "Alpha",
-      properties: {
+    branch_name = git_branch
+    commit = last_git_commit
+    ENV["RELEASE_NOTES"] = "Branch: " + branch_name + "\n" + "Commit: " + commit[:message]
+
+    gradle(
+        task: "assemble",
+        flavor: "Debug",
+        build_type: "Alpha",
+        properties: {
           "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
           "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
           "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
           "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
         }
-      )
-  firebase_app_distribution(
-      app: ENV["FIREBASE_APP_ID"],
-      release_notes: ENV["RELEASE_NOTES"],
-      groups: ENV["GROUPS"]
-  )
+    )
+    firebase_app_distribution(
+        app: ENV["FIREBASE_APP_ID"],
+        release_notes: ENV["RELEASE_NOTES"],
+        groups: ENV["GROUPS"]
+    )
 
 end
 
@@ -57,15 +52,15 @@ lane :preview do
             "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
             "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
             "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
-          }
-        )
+        }
+    )
     firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
         release_notes: ENV["RELEASE_NOTES"],
         groups: ENV["GROUPS"]
     )
     build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
-    version_name = android_get_version_name
+    version_name = get_version_name output_file: Actions.lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
     git_commit(
         path: "./versioning/#{BUILD_NUMBER_FILE}",
         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
@@ -83,15 +78,17 @@ lane :release_to_google_play do
     BUILD_NUMBER_FILE = "PLAYSTORE_BUILD_NUMBER"
     bump_build_number versioning_file: "../versioning/#{BUILD_NUMBER_FILE}"
     gradle(
-        task: "bundle",
-        build_type: "releasePreview",
+        tasks: [
+            "bundleReleasePreview",  # Builds the bundle for PlayStore
+            "assembleReleasePreview" # Builds the APK that extracts the output.json for the version
+        ],
         properties: {
             "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
             "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
             "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
             "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
-          }
-        )
+        }
+    )
 
     upload_to_play_store(
         package_name: "com.babylon.wallet.android.preview",
@@ -102,10 +99,10 @@ lane :release_to_google_play do
         skip_upload_screenshots: true,
         release_status: "draft",
         json_key: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE"]
-        )
+    )
 
     build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
-    version_name = android_get_version_name
+    version_name = get_version_name output_file: Actions.lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
     git_commit(
         path: "./versioning/#{BUILD_NUMBER_FILE}",
         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Playstore"
@@ -146,4 +143,9 @@ lane :bump_build_number do |options|
         gradle_file: "app/build.gradle"
     )
 
+end
+
+lane :get_version_name do |options|
+    output = read_json(json_path: options[:output_file])
+    output[:elements][0][:versionName]
 end
