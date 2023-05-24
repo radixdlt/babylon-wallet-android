@@ -104,7 +104,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         AppEvent.DerivedAccountPublicKeyWithLedger(
                             factorSourceID = ledgerFactorSource.id,
                             derivationPath = derivationPath,
-                            derivedPublicKeyHex = response.publicKeyHex
+                            derivedPublicKeyHex = response.publicKeyHex // this is a list now
                         )
                     )
                     sendEvent(CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount)
