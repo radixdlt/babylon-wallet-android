@@ -9,15 +9,21 @@ import kotlinx.serialization.Serializable
 sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
 
 @Serializable
-data class SignatureOfSigner(
+data class DerivedPublicKey(
     @SerialName("curve")
     val curve: Curve,
+    @SerialName("publicKey")
+    val publicKey: String,
     @SerialName("derivationPath")
-    val derivationPath: String,
+    val derivationPath: String
+)
+
+@Serializable
+data class SignatureOfSigner(
+    @SerialName("derivedPublicKey")
+    val derivedPublicKey: DerivedPublicKey,
     @SerialName("signature")
     val signature: String,
-    @SerialName("publicKey")
-    val publicKeyHex: String
 )
 
 @Serializable
@@ -39,19 +45,13 @@ data class GetDeviceInfoResponse(
 }
 
 @Serializable
-@SerialName("derivePublicKey")
+@SerialName("derivePublicKeys")
 data class DerivePublicKeyResponse(
     @SerialName("interactionId")
     val interactionId: String,
     @SerialName("success")
-    val success: Success
-) : LedgerInteractionResponse {
-    @Serializable
-    data class Success(
-        @SerialName("publicKey")
-        val publicKeyHex: String
-    )
-}
+    val success: List<DerivedPublicKey>
+) : LedgerInteractionResponse
 
 @Serializable
 @SerialName("importOlympiaDevice")
@@ -69,15 +69,7 @@ data class ImportOlympiaDeviceResponse(
         val id: String,
         @SerialName("derivedPublicKeys")
         val derivedPublicKeys: List<DerivedPublicKey>
-    ) {
-        @Serializable
-        data class DerivedPublicKey(
-            @SerialName("publicKey")
-            val publicKey: String,
-            @SerialName("path")
-            val path: String
-        )
-    }
+    )
 }
 
 @Serializable
@@ -115,19 +107,17 @@ data class LedgerInteractionErrorResponse(
     )
 }
 
-fun Curve.toDomainModel(): LedgerResponse.SignatureOfSigner.Curve {
+fun Curve.toDomainModel(): LedgerResponse.DerivedPublicKey.Curve {
     return when (this) {
-        Curve.Curve25519 -> LedgerResponse.SignatureOfSigner.Curve.Curve25519
-        Curve.Secp256k1 -> LedgerResponse.SignatureOfSigner.Curve.Secp256k1
+        Curve.Curve25519 -> LedgerResponse.DerivedPublicKey.Curve.Curve25519
+        Curve.Secp256k1 -> LedgerResponse.DerivedPublicKey.Curve.Secp256k1
     }
 }
 
 fun SignatureOfSigner.toDomainModel(): LedgerResponse.SignatureOfSigner {
     return LedgerResponse.SignatureOfSigner(
-        curve.toDomainModel(),
-        derivationPath,
-        signature,
-        publicKeyHex
+        derivedPublicKey = derivedPublicKey.toDomainModel(),
+        signature = signature,
     )
 }
 
@@ -139,15 +129,25 @@ fun LedgerDeviceModel.toDomainModel(): LedgerResponse.LedgerDeviceModel {
     }
 }
 
-fun ImportOlympiaDeviceResponse.Success.DerivedPublicKey.toDomainModel(): LedgerResponse.ImportOlympiaDeviceResponse.DerivedPublicKey {
-    return LedgerResponse.ImportOlympiaDeviceResponse.DerivedPublicKey(publicKey, path)
+fun DerivedPublicKey.toDomainModel(): LedgerResponse.DerivedPublicKey {
+    return LedgerResponse.DerivedPublicKey(
+        curve = curve.toDomainModel(),
+        publicKeyHex = publicKey,
+        derivationPath = derivationPath
+    )
+}
+
+fun List<DerivedPublicKey>.toDomainModel() = map { derivedPublicKey ->
+    derivedPublicKey.toDomainModel()
 }
 
 fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
     return when (this) {
         is DerivePublicKeyResponse -> LedgerResponse.DerivePublicKeyResponse(
             interactionId,
-            success.publicKeyHex
+            success.toDomainModel().map {
+                it.publicKeyHex
+            }
         )
         is GetDeviceInfoResponse -> LedgerResponse.GetDeviceInfoResponse(
             interactionId,
