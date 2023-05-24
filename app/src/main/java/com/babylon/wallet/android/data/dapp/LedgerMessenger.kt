@@ -96,7 +96,7 @@ class LedgerMessengerImpl @Inject constructor(
     ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse> {
         val ledgerRequest: LedgerInteractionRequest = DerivePublicKeyRequest(
             interactionId = interactionId,
-            keyParameters = DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, derivationPath),
+            keysParameters = listOf(DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, derivationPath)),
             ledgerDevice = ledgerDevice
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>> {
