@@ -156,7 +156,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 if (amount.isBlank()) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = "0.0",
+                        text = "0.00",
                         style = RadixTheme.typography.header.copy(
                             color = RadixTheme.colors.gray3,
                             textAlign = TextAlign.End
