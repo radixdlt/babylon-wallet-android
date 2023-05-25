@@ -423,7 +423,7 @@ sealed class SpendingAsset {
             get() = resource.resourceAddress
 
         override val isValidForSubmission: Boolean
-            get() = !exceedingBalance
+            get() = !exceedingBalance && amountDecimal != BigDecimal.ZERO
 
         val amountDecimal: BigDecimal
             get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
