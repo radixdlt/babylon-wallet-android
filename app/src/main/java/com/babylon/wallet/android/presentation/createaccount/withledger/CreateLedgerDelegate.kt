@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.Stateful
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
@@ -66,10 +67,8 @@ class CreateLedgerDelegate(
                     )
                 }
             }
-            result.onFailure {
-                _state.update { state ->
-                    state.copy(waitingForLedgerResponse = false)
-                }
+            result.onFailure { error ->
+                _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error), waitingForLedgerResponse = false) }
             }
         }
     }
@@ -103,7 +102,8 @@ class CreateLedgerDelegate(
         val hasP2pLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
-        var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
+        val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
+        val uiMessage: UiMessage? = null
     ) : UiState
 
     override fun initialState(): CreateLedgerDelegateState {

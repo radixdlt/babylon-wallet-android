@@ -86,7 +86,8 @@ class OlympiaImportViewModel @Inject constructor(
                         ledgerFactorSources = delegateState.ledgerFactorSources,
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
-                        hasP2pLinks = delegateState.hasP2pLinks
+                        hasP2pLinks = delegateState.hasP2pLinks,
+                        uiMessage = delegateState.uiMessage
                     )
                 }
             }
