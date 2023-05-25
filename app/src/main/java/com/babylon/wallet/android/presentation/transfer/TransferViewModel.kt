@@ -13,7 +13,10 @@ import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooser
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
@@ -118,7 +121,7 @@ class TransferViewModel @Inject constructor(
                 targetAccounts = state.targetAccounts.mapWhen(
                     predicate = { it == account },
                     mutation = { it.removeAsset(asset) }
-                )
+                ).toPersistentList()
             )
         }
     }
@@ -153,7 +156,7 @@ class TransferViewModel @Inject constructor(
                             }.toPersistentSet()
                         }
                     }
-                )
+                ).toPersistentList()
             )
         }
     }
@@ -192,7 +195,7 @@ class TransferViewModel @Inject constructor(
                             }.toPersistentSet()
                         }
                     }
-                )
+                ).toPersistentList()
             )
         }
     }
@@ -259,7 +262,7 @@ class TransferViewModel @Inject constructor(
 
     data class State(
         val fromAccount: Network.Account? = null,
-        val targetAccounts: List<TargetAccount> = listOf(TargetAccount.Skeleton()),
+        val targetAccounts: ImmutableList<TargetAccount> = persistentListOf(TargetAccount.Skeleton()),
         val messageState: Message = Message.None,
         val sheet: Sheet = Sheet.None,
         val error: UiMessage? = null
@@ -278,7 +281,7 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAccounts(
                 val selectedAccount: TargetAccount,
-                val ownedAccounts: List<Network.Account>,
+                val ownedAccounts: PersistentList<Network.Account>,
                 val mode: Mode = Mode.Chooser
             ) : Sheet {
 

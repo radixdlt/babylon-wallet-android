@@ -5,6 +5,8 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.request.DecodeAddressRequest
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -28,7 +30,7 @@ class AccountsChooserDelegate(
             it.copy(
                 sheet = ChooseAccounts(
                     selectedAccount = slotAccount,
-                    ownedAccounts = emptyList(),
+                    ownedAccounts = persistentListOf(),
                 )
             )
         }
@@ -38,7 +40,7 @@ class AccountsChooserDelegate(
                 account.address == fromAccount.address || selectedAccounts.any { it.address == account.address }
             }
 
-            updateSheetState { it.copy(ownedAccounts = accounts) }
+            updateSheetState { it.copy(ownedAccounts = accounts.toPersistentList()) }
         }
     }
 
@@ -114,7 +116,7 @@ class AccountsChooserDelegate(
             }
 
             state.copy(
-                targetAccounts = targetAccounts,
+                targetAccounts = targetAccounts.toPersistentList(),
                 sheet = TransferViewModel.State.Sheet.None
             )
         }
