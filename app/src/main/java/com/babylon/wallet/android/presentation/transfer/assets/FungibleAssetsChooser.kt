@@ -41,13 +41,15 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import rdx.works.core.displayableQuantity
 
 @Composable
 fun FungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    resources: List<Resource.FungibleResource>,
-    selectedAssets: Set<SpendingAsset>,
+    resources: ImmutableList<Resource.FungibleResource>,
+    selectedAssets: ImmutableSet<SpendingAsset>,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit
 ) {
     val (xrdResource, restResources) = remember(resources) {

@@ -34,6 +34,7 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
 import java.math.BigDecimal
 
@@ -60,18 +61,20 @@ fun TargetAccountCard(
     ) {
         val cardModifier = when (targetAccount) {
             is TargetAccount.Skeleton -> Modifier
-            is TargetAccount.Owned -> Modifier
-                .background(
-                    brush = Brush.linearGradient(
-                        getAccountGradientColorsFor(targetAccount.account.appearanceID)
-                    ),
-                    shape = RadixTheme.shapes.roundedRectTopMedium
-                )
-            is TargetAccount.Other -> Modifier
-                .background(
-                    color = RadixTheme.colors.gray2,
-                    shape = RadixTheme.shapes.roundedRectTopMedium
-                )
+            is TargetAccount.Owned ->
+                Modifier
+                    .background(
+                        brush = Brush.linearGradient(
+                            getAccountGradientColorsFor(targetAccount.account.appearanceID)
+                        ),
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    )
+            is TargetAccount.Other ->
+                Modifier
+                    .background(
+                        color = RadixTheme.colors.gray2,
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    )
         }
         Row(
             modifier = cardModifier
@@ -184,8 +187,6 @@ fun TargetAccountCard(
                 onClick = onAddAssetsClick
             )
         }
-
-
     }
 }
 
@@ -217,7 +218,7 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Owned(
                     account = SampleDataProvider().sampleAccount(),
                     id = UUIDGenerator.uuid().toString(),
-                    assets = setOf(
+                    assets = persistentSetOf(
                         SpendingAsset.Fungible(
                             resource = Resource.FungibleResource(
                                 resourceAddress = "resource_rdx_abcd",
@@ -237,6 +238,5 @@ fun TargetAccountCardPreview() {
                 )
             )
         }
-
     }
 }

@@ -160,6 +160,7 @@ class PrepareManifestDelegate(
         return fungibleAmounts
     }
 
+    @Suppress("UnsafeCallOnNullableType")
     private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId = run {
         if (nftLocalIdStringRegex.matches(localId)) {
             val (stringId) = nftLocalIdStringRegex.find(localId)!!.destructured
@@ -172,10 +173,10 @@ class PrepareManifestDelegate(
             ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Bytes(hexId.toByteArray()))
         } else if (nftLocalIdUUIDRegex.matches(localId)) {
             val (uuidString) = nftLocalIdUUIDRegex.find(localId)!!.destructured
-            // TODO this will fail
+            // FIXME this will fail
             ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.UUID(uuidString))
         } else {
-            throw RuntimeException("Could not recognize id $localId")
+            error("Could not recognize id $localId")
         }
     }
     companion object {

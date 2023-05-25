@@ -18,7 +18,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Surface
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -48,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -92,7 +92,6 @@ fun ChooseAssetsSheet(
                     enabled = state.targetAccount.assets.isNotEmpty()
                 )
             }
-
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -103,7 +102,7 @@ fun ChooseAssetsSheet(
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,13 +112,14 @@ fun ChooseAssetsSheet(
             Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingDefault))
 
             ResourcesTabs(
-                selectedTab = state.selectedTab, onTabSelected = onTabSelected,
+                selectedTab = state.selectedTab,
+                onTabSelected = onTabSelected,
                 pagerState = pagerState
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            Box(modifier = modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(
                     pageCount = ChooseAssets.Tab.values().size,
                     state = pagerState,
@@ -131,12 +131,12 @@ fun ChooseAssetsSheet(
 
                     when (tab) {
                         ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
-                            resources = state.resources?.fungibleResources.orEmpty(),
+                            resources = state.resources?.fungibleResources.orEmpty().toPersistentList(),
                             selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )
                         ChooseAssets.Tab.NFTs -> NonFungibleAssetsChooser(
-                            resources = state.resources?.nonFungibleResources.orEmpty(),
+                            resources = state.resources?.nonFungibleResources.orEmpty().toPersistentList(),
                             selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )
@@ -219,7 +219,7 @@ fun ChooseAssets.Tab.name(): String = when (this) {
 
 @Preview
 @Composable
-private fun ChooseAssetsSheetPreview() {
+fun ChooseAssetsSheetPreview() {
     RadixWalletTheme {
         ChooseAssetsSheet(
             state = ChooseAssets(
@@ -237,4 +237,3 @@ private fun ChooseAssetsSheetPreview() {
         )
     }
 }
-

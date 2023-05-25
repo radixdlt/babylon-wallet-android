@@ -43,12 +43,14 @@ import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
 import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
 fun NonFungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    resources: List<Resource.NonFungibleResource>,
-    selectedAssets: Set<SpendingAsset>,
+    resources: ImmutableList<Resource.NonFungibleResource>,
+    selectedAssets: ImmutableSet<SpendingAsset>,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit
 ) {
     val collapsedState = remember(resources) { resources.map { true }.toMutableStateList() }

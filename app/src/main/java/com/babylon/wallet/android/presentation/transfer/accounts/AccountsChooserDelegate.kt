@@ -124,7 +124,7 @@ class AccountsChooserDelegate(
      * As per [REP 39 Bech32m and Addressing](https://radixdlt.atlassian.net/wiki/spaces/S/pages/2781839425/REP+39+Bech32m+and+Addressing)
      * The address need to be at least 26 chars long, and should be validated against KET.
      *
-     * TODO: this should be a use case or a helper function
+     * FIXME: this should be a use case or a helper function
      */
     private fun isAddressValid(address: String): Boolean {
         return address.length >= 26 && RadixEngineToolkit.decodeAddress(DecodeAddressRequest(address)).isSuccess

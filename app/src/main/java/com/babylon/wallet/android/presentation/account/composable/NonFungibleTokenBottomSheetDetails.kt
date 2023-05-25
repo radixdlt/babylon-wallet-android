@@ -28,7 +28,6 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    nonFungibleResource: Resource.NonFungibleResource,
     item: Resource.NonFungibleResource.Item,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,

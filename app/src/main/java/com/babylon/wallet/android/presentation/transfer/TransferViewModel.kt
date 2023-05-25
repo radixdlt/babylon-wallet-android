@@ -13,7 +13,10 @@ import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooser
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -24,6 +27,7 @@ import rdx.works.profile.domain.accountOnCurrentNetwork
 import java.math.BigDecimal
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
@@ -146,7 +150,7 @@ class TransferViewModel @Inject constructor(
                                 } else {
                                     updatingAsset
                                 }
-                            }.toSet()
+                            }.toPersistentSet()
                         }
                     }
                 )
@@ -185,7 +189,7 @@ class TransferViewModel @Inject constructor(
                                 } else {
                                     updatingAsset
                                 }
-                            }.toSet()
+                            }.toPersistentSet()
                         }
                     }
                 )
@@ -311,8 +315,8 @@ class TransferViewModel @Inject constructor(
         }
 
         sealed interface Message {
-            object None: Message
-            data class Added(val message: String = ""): Message
+            object None : Message
+            data class Added(val message: String = "") : Message
         }
     }
 }
@@ -320,7 +324,7 @@ class TransferViewModel @Inject constructor(
 sealed class TargetAccount {
     abstract val address: String
     abstract val id: String
-    abstract val assets: Set<SpendingAsset>
+    abstract val assets: ImmutableSet<SpendingAsset>
 
     val isAddressValid: Boolean
         get() = when (this) {
@@ -341,7 +345,7 @@ sealed class TargetAccount {
         .find { it.address == fungibleAsset.address }
         ?.amountDecimal ?: BigDecimal.ZERO
 
-    fun updateAssets(onUpdate: (Set<SpendingAsset>) -> Set<SpendingAsset>): TargetAccount {
+    fun updateAssets(onUpdate: (ImmutableSet<SpendingAsset>) -> ImmutableSet<SpendingAsset>): TargetAccount {
         return when (this) {
             is Owned -> copy(assets = onUpdate(assets))
             is Other -> copy(assets = onUpdate(assets))
@@ -352,7 +356,7 @@ sealed class TargetAccount {
     fun addAsset(asset: SpendingAsset): TargetAccount {
         val newAssets = assets.toMutableSet().apply {
             add(asset)
-        }
+        }.toPersistentSet()
 
         return when (this) {
             is Owned -> copy(assets = newAssets)
@@ -364,7 +368,7 @@ sealed class TargetAccount {
     fun removeAsset(asset: SpendingAsset): TargetAccount {
         val newAssets = assets.toMutableSet().apply {
             remove(asset)
-        }
+        }.toPersistentSet()
 
         return when (this) {
             is Owned -> copy(assets = newAssets)
@@ -375,7 +379,7 @@ sealed class TargetAccount {
 
     data class Skeleton(
         override val id: String = UUIDGenerator.uuid().toString(),
-        override val assets: Set<SpendingAsset> = emptySet()
+        override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: String = ""
     }
@@ -384,7 +388,7 @@ sealed class TargetAccount {
         override val address: String,
         val validity: AddressValidity,
         override val id: String,
-        override val assets: Set<SpendingAsset> = emptySet()
+        override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
 
         enum class AddressValidity {
@@ -397,7 +401,7 @@ sealed class TargetAccount {
     data class Owned(
         val account: Network.Account,
         override val id: String,
-        override val assets: Set<SpendingAsset> = emptySet()
+        override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: String
             get() = account.address

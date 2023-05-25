@@ -28,7 +28,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,7 +93,10 @@ fun SpendingAssetItem(
                 isExceedingBalance = asset.exceedingBalance,
                 onAmountChanged = onAmountTyped,
                 focusRequester = focusRequester,
-                isEditingState = isEditingState,
+                isEditing = isEditingState.value,
+                onEditStateChanged = {
+                    isEditingState.value = it
+                },
                 onMaxClicked = onMaxClicked
             )
             is SpendingAsset.NFT -> NonFungibleSpendingAsset(nft = asset.item)
@@ -110,7 +112,8 @@ private fun ColumnScope.FungibleSpendingAsset(
     isExceedingBalance: Boolean,
     onAmountChanged: (String) -> Unit,
     focusRequester: FocusRequester,
-    isEditingState: MutableState<Boolean>,
+    isEditing: Boolean,
+    onEditStateChanged: (Boolean) -> Unit,
     onMaxClicked: () -> Unit
 ) {
     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -166,7 +169,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                         .onFocusChanged { focusState ->
-                            isEditingState.value = focusState.isFocused
+                            onEditStateChanged(focusState.isFocused)
                         },
                     value = amount,
                     onValueChange = {
@@ -204,7 +207,7 @@ private fun ColumnScope.FungibleSpendingAsset(
     }
 
     AnimatedVisibility(
-        visible = isEditingState.value,
+        visible = isEditing,
         enter = fadeIn(),
         exit = fadeOut()
     ) {

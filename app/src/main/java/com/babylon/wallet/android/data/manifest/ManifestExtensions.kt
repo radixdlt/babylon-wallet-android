@@ -176,9 +176,11 @@ fun TransactionManifest.toTransactionRequest(
     return convertManifestInstructionsToString(networkId).switchMap {
         val stringInstructions = it.getStringInstructions()
         if (stringInstructions == null) {
-            Result.Error(DappRequestException(
-                failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
-                msg = "Converted instructions are null")
+            Result.Error(
+                DappRequestException(
+                    failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
+                    msg = "Converted instructions are null"
+                )
             )
         } else {
             Result.Success(
