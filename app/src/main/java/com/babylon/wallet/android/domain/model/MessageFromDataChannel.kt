@@ -158,13 +158,6 @@ sealed interface MessageFromDataChannel {
             val publicKeysHex: List<String>
         ) : LedgerResponse(interactionId)
 
-        data class ImportOlympiaDeviceResponse(
-            val interactionId: String,
-            val model: LedgerDeviceModel,
-            val deviceId: String,
-            val derivedPublicKeys: List<DerivedPublicKey>
-        ) : LedgerResponse(interactionId)
-
         data class SignTransactionResponse(
             val interactionId: String,
             val signatures: List<SignatureOfSigner>

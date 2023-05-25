@@ -63,15 +63,6 @@ data class DerivePublicKeyRequest(
 }
 
 @Serializable
-@SerialName("importOlympiaDevice")
-data class ImportOlympiaDeviceRequest(
-    @SerialName("interactionId")
-    val interactionId: String,
-    @SerialName("derivationPaths")
-    val derivationPaths: List<String>,
-) : LedgerInteractionRequest
-
-@Serializable
 @SerialName("signTransaction")
 data class SignTransactionRequest(
     @SerialName("interactionId")

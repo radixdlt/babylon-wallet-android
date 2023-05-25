@@ -3,7 +3,6 @@ package com.babylon.wallet.android.data.dapp
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.GetDeviceInfoRequest
-import com.babylon.wallet.android.data.dapp.model.ImportOlympiaDeviceRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.dapp.model.SignTransactionRequest
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
@@ -22,16 +21,6 @@ import javax.inject.Inject
 interface LedgerMessenger {
 
     suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>
-    suspend fun sendImportOlympiaDeviceRequest(
-        interactionId: String,
-        derivationPaths: List<String>
-    ): Result<MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse>
-
-    suspend fun sendDeriveCurve25519PublicKeyRequest(
-        interactionId: String,
-        derivationPath: String,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice
-    ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>
 
     suspend fun signTransactionRequest(
         interactionId: String,
@@ -40,6 +29,12 @@ interface LedgerMessenger {
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean = true
     ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>
+
+    suspend fun sendDerivePublicKeyRequest(
+        interactionId: String,
+        keyParameters: List<DerivePublicKeyRequest.KeyParameters>,
+        ledgerDevice: DerivePublicKeyRequest.LedgerDevice
+    ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>
 }
 
 class LedgerMessengerImpl @Inject constructor(
@@ -66,37 +61,14 @@ class LedgerMessengerImpl @Inject constructor(
         }.first()
     }
 
-    override suspend fun sendImportOlympiaDeviceRequest(
+    override suspend fun sendDerivePublicKeyRequest(
         interactionId: String,
-        derivationPaths: List<String>
-    ): Result<MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse> {
-        val request: LedgerInteractionRequest = ImportOlympiaDeviceRequest(interactionId, derivationPaths)
-        return flow<Result<MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse>> {
-            when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
-                is Success -> {
-                    peerdroidClient.listenForLedgerResponses().filter {
-                        it.id == interactionId
-                    }.catch {
-                        emit(Result.failure(exception = it))
-                    }.filterIsInstance<MessageFromDataChannel.LedgerResponse.ImportOlympiaDeviceResponse>().collect {
-                        emit(Result.success(it))
-                    }
-                }
-                is Error -> {
-                    emit(Result.failure(Exception("Failed to receive Olympia Import response")))
-                }
-            }
-        }.first()
-    }
-
-    override suspend fun sendDeriveCurve25519PublicKeyRequest(
-        interactionId: String,
-        derivationPath: String,
+        keyParameters: List<DerivePublicKeyRequest.KeyParameters>,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice
     ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse> {
         val ledgerRequest: LedgerInteractionRequest = DerivePublicKeyRequest(
             interactionId = interactionId,
-            keysParameters = listOf(DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, derivationPath)),
+            keysParameters = keyParameters,
             ledgerDevice = ledgerDevice
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>> {

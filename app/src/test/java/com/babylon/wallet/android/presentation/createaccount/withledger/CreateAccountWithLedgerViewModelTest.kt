@@ -47,8 +47,8 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             )
         )
         coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns FactorSource.ID("2")
-        coEvery { ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(any(), any(), any()) } returns Result.success(
-            MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse("1", "publicKeyHex")
+        coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
+            MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse("1", listOf("publicKeyHex"))
         )
     }
 
@@ -131,7 +131,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         vm.onUseLedger()
         advanceUntilIdle()
         val event = slot<AppEvent.DerivedAccountPublicKeyWithLedger>()
-        coVerify(exactly = 1) { ledgerMessenger.sendDeriveCurve25519PublicKeyRequest(any(), any(), any()) }
+        coVerify(exactly = 1) { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) }
         coVerify(exactly = 1) { eventBus.sendEvent(capture(event)) }
         assert(event.captured.derivedPublicKeyHex == "publicKeyHex")
         assert(event.captured.factorSourceID.value == "Ledger1")

@@ -1,6 +1,10 @@
 @file:Suppress("CyclomaticComplexMethod")
 @file:OptIn(
     ExperimentalPermissionsApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class
 )
 
@@ -9,15 +13,12 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,9 +68,12 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
+import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
@@ -79,13 +86,12 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 
@@ -121,7 +127,6 @@ fun OlympiaImportScreen(
         onMessageShown = viewModel::onMessageShown,
         migratedAccounts = state.migratedAccounts,
         onContinue = onCloseScreen,
-        onHardwareImport = viewModel::onHardwareImport,
         currentPage = state.currentPage,
         onToggleSelectAll = viewModel::onToggleSelectAll,
         qrChunkInfo = state.qrChunkInfo,
@@ -130,12 +135,16 @@ fun OlympiaImportScreen(
         onSkipRemainingHardwareAccounts = viewModel::onSkipRemainingHardwareAccounts,
         accountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
-        addLedgerName = state.addLedgerName,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
         onSkipLedgerName = viewModel::onSkipLedgerName,
-        ledgerDevices = state.ledgerDevices,
         hasP2pLinks = state.hasP2pLinks,
-        onAddP2PLink = onAddP2PLink
+        onAddP2PLink = onAddP2PLink,
+        ledgerFactorSources = state.ledgerFactorSources,
+        addLedgerSheetState = state.addLedgerSheetState,
+        onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
+        selectedFactorSourceID = state.selectedFactorSourceID,
+        onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
+        onUseLedger = viewModel::onUseLedger
     )
 }
 
@@ -162,7 +171,6 @@ private fun OlympiaImportContent(
     onMessageShown: () -> Unit,
     migratedAccounts: ImmutableList<AccountItemUiModel>,
     onContinue: () -> Unit,
-    onHardwareImport: () -> Unit,
     currentPage: ImportPage,
     onToggleSelectAll: () -> Unit,
     qrChunkInfo: ChunkInfo?,
@@ -171,12 +179,16 @@ private fun OlympiaImportContent(
     onSkipRemainingHardwareAccounts: () -> Unit,
     accountsLeft: Int,
     waitingForLedgerResponse: Boolean,
-    addLedgerName: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onSkipLedgerName: () -> Unit,
-    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>,
     hasP2pLinks: Boolean,
-    onAddP2PLink: () -> Unit
+    onAddP2PLink: () -> Unit,
+    ledgerFactorSources: ImmutableList<FactorSource>,
+    addLedgerSheetState: AddLedgerSheetState,
+    onSendAddLedgerRequest: () -> Unit,
+    selectedFactorSourceID: FactorSource.ID?,
+    onUseLedger: () -> Unit,
+    onLedgerFactorSourceSelected: (FactorSource) -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -184,13 +196,20 @@ private fun OlympiaImportContent(
     var cameraVisible by remember {
         mutableStateOf(false)
     }
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val closeSheetCallback = {
+        scope.launch {
+            bottomSheetState.hide()
+        }
+    }
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     BackHandler {
-        if (currentPage == ImportPage.ImportComplete || currentPage == ImportPage.ScanQr) {
-            onCloseScreen()
-        } else {
-            onBackClick()
+        when {
+            bottomSheetState.isVisible -> closeSheetCallback()
+            currentPage == ImportPage.ImportComplete || currentPage == ImportPage.ScanQr -> onCloseScreen()
+            else -> onBackClick()
         }
     }
     LaunchedEffect(Unit) {
@@ -241,100 +260,129 @@ private fun OlympiaImportContent(
             }
         })
     }
-    Box(modifier = modifier) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.import_legacy_wallet),
-                onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1,
-                backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.None else BackIconType.Back,
-                actions = {
-                    if (currentPage == ImportPage.AccountList) {
-                        IconButton(onClick = onToggleSelectAll) {
-                            Icon(
-                                painterResource(
-                                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_done_all
-                                ),
-                                tint = RadixTheme.colors.gray1,
-                                contentDescription = null
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = bottomSheetState,
+        sheetContent = {
+            AddLedgerBottomSheet(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                hasP2pLinks = hasP2pLinks,
+                onAddP2PLink = onAddP2PLink,
+                onSendAddLedgerRequest = onSendAddLedgerRequest,
+                addLedgerSheetState = addLedgerSheetState,
+                onConfirmLedgerName = {
+                    onConfirmLedgerName(it)
+                    closeSheetCallback()
+                },
+                onSkipLedgerName = {
+                    onSkipLedgerName()
+                    closeSheetCallback()
+                },
+                waitingForLedgerResponse = waitingForLedgerResponse
+            )
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.import_legacy_wallet),
+                    onBackClick = onBackClick,
+                    contentColor = RadixTheme.colors.gray1,
+                    backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.None else BackIconType.Back,
+                    actions = {
+                        if (currentPage == ImportPage.AccountList) {
+                            IconButton(onClick = onToggleSelectAll) {
+                                Icon(
+                                    painterResource(
+                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_done_all
+                                    ),
+                                    tint = RadixTheme.colors.gray1,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                )
+                Divider(color = RadixTheme.colors.gray5)
+                HorizontalPager(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    pageCount = pages.size,
+                    state = pagerState,
+                    userScrollEnabled = false
+                ) { page ->
+                    when (pages[page]) {
+                        ImportPage.ScanQr -> {
+                            ScanQrPage(
+                                cameraPermissionGranted = cameraPermissionState.status.isGranted,
+                                onQrCodeScanned = onQrCodeScanned,
+                                isVisible = cameraVisible,
+                                modifier = Modifier.fillMaxSize(),
+                                qrChunkInfo = qrChunkInfo
+                            )
+                        }
+                        ImportPage.AccountList -> {
+                            AccountListPage(
+                                modifier = Modifier.fillMaxSize(),
+                                olympiaAccounts = legacyAccountDetails,
+                                onAccountSelected = onAccountSelected,
+                                onImportAccounts = onImportAccounts,
+                                importButtonEnabled = importButtonEnabled
+                            )
+                        }
+                        ImportPage.MnemonicInput -> {
+                            InputMnemonicPage(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                seedPhrase = seedPhrase,
+                                bip39Passphrase = bip39Passphrase,
+                                onSeedPhraseChanged = onSeedPhraseChanged,
+                                onPassphraseChanged = onPassphraseChanged,
+                                importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
+                                onImportSoftwareAccounts = onImportSoftwareAccounts,
+                                onMnemonicAlreadyImported = onMnemonicAlreadyImported
+                            )
+                        }
+                        ImportPage.HardwareAccount -> {
+                            HardwareImportScreen(
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                accountsLeft = accountsLeft,
+                                onSkipRemainingHardwareAccounts = onSkipRemainingHardwareAccounts,
+                                waitingForLedgerResponse = waitingForLedgerResponse,
+                                hasP2pLinks = hasP2pLinks,
+                                onAddP2PLink = onAddP2PLink,
+                                ledgerFactorSources = ledgerFactorSources,
+                                selectedFactorSourceID = selectedFactorSourceID,
+                                onAddNewLedger = {
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                onUseLedger = onUseLedger,
+                                onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                            )
+                        }
+                        ImportPage.ImportComplete -> {
+                            ImportCompletePage(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                migratedAccounts = migratedAccounts,
+                                onContinue = onContinue
                             )
                         }
                     }
                 }
-            )
-            Divider(color = RadixTheme.colors.gray5)
-            HorizontalPager(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                pageCount = pages.size,
-                state = pagerState,
-                userScrollEnabled = false
-            ) { page ->
-                when (pages[page]) {
-                    ImportPage.ScanQr -> {
-                        ScanQrPage(
-                            cameraPermissionGranted = cameraPermissionState.status.isGranted,
-                            onQrCodeScanned = onQrCodeScanned,
-                            isVisible = cameraVisible,
-                            modifier = Modifier.fillMaxSize(),
-                            qrChunkInfo = qrChunkInfo
-                        )
-                    }
-                    ImportPage.AccountList -> {
-                        AccountListPage(
-                            modifier = Modifier.fillMaxSize(),
-                            olympiaAccounts = legacyAccountDetails,
-                            onAccountSelected = onAccountSelected,
-                            onImportAccounts = onImportAccounts,
-                            importButtonEnabled = importButtonEnabled
-                        )
-                    }
-                    ImportPage.MnemonicInput -> {
-                        InputMnemonicPage(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(RadixTheme.dimensions.paddingDefault),
-                            seedPhrase = seedPhrase,
-                            bip39Passphrase = bip39Passphrase,
-                            onSeedPhraseChanged = onSeedPhraseChanged,
-                            onPassphraseChanged = onPassphraseChanged,
-                            importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
-                            onImportSoftwareAccounts = onImportSoftwareAccounts,
-                            onMnemonicAlreadyImported = onMnemonicAlreadyImported
-                        )
-                    }
-                    ImportPage.HardwareAccount -> {
-                        HardwareImportScreen(
-                            Modifier
-                                .fillMaxSize()
-                                .padding(RadixTheme.dimensions.paddingDefault),
-                            onHardwareImport = onHardwareImport,
-                            accountsLeft = accountsLeft,
-                            onSkipRemainingHardwareAccounts = onSkipRemainingHardwareAccounts,
-                            waitingForLedgerResponse = waitingForLedgerResponse,
-                            addLedgerName = addLedgerName,
-                            onConfirmLedgerName = onConfirmLedgerName,
-                            onSkipLedgerName = onSkipLedgerName,
-                            ledgerDevices = ledgerDevices,
-                            hasP2pLinks = hasP2pLinks,
-                            onAddP2PLink = onAddP2PLink
-                        )
-                    }
-                    ImportPage.ImportComplete -> {
-                        ImportCompletePage(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(RadixTheme.dimensions.paddingDefault),
-                            migratedAccounts = migratedAccounts,
-                            onContinue = onContinue
-                        )
-                    }
-                }
             }
-        }
-        SnackbarUiMessageHandler(message = uiMessage) {
-            onMessageShown()
+            SnackbarUiMessageHandler(message = uiMessage) {
+                onMessageShown()
+            }
         }
     }
 }
@@ -458,20 +506,17 @@ private fun AccountListPage(
 @Composable
 private fun HardwareImportScreen(
     modifier: Modifier = Modifier,
-    onHardwareImport: () -> Unit,
     accountsLeft: Int,
     onSkipRemainingHardwareAccounts: () -> Unit,
     waitingForLedgerResponse: Boolean,
-    addLedgerName: Boolean,
-    onConfirmLedgerName: (String) -> Unit,
-    onSkipLedgerName: () -> Unit,
-    ledgerDevices: ImmutableMap<LedgerDeviceUiModel, Int>,
     hasP2pLinks: Boolean,
-    onAddP2PLink: () -> Unit
+    onAddP2PLink: () -> Unit,
+    ledgerFactorSources: ImmutableList<FactorSource>,
+    selectedFactorSourceID: FactorSource.ID?,
+    onAddNewLedger: () -> Unit,
+    onLedgerFactorSourceSelected: (FactorSource) -> Unit,
+    onUseLedger: () -> Unit
 ) {
-    var ledgerNameValue by remember {
-        mutableStateOf("")
-    }
     Box(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -491,102 +536,60 @@ private fun HardwareImportScreen(
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
+            }
+            if (ledgerFactorSources.isEmpty()) {
+                Text(
+                    text = stringResource(id = com.babylon.wallet.android.R.string.you_have_no_ledgers_added),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                LedgerSelector(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    selectedLedgerFactorSourceID = selectedFactorSourceID,
+                    ledgerFactorSources = ledgerFactorSources,
+                    onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            if (hasP2pLinks) {
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding(),
+                    onClick = onAddNewLedger,
+                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_ledger)
+                )
+            } else {
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onAddP2PLink,
                     text = stringResource(id = com.babylon.wallet.android.R.string.add_new_p2p_link)
                 )
             }
-            if (addLedgerName) {
-                Spacer(modifier = Modifier.weight(1f))
-                RadixTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    onValueChanged = { ledgerNameValue = it },
-                    value = ledgerNameValue,
-                    leftLabel = stringResource(id = R.string.name_this_ledger),
-                    hint = stringResource(id = R.string.ledger_hint),
-                    optionalHint = stringResource(id = R.string.ledger_name_bottom_hint)
-                )
+            AnimatedVisibility(visible = hasP2pLinks && ledgerFactorSources.isNotEmpty()) {
                 RadixPrimaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.confirm_name),
-                    onClick = {
-                        onConfirmLedgerName(ledgerNameValue)
-                        ledgerNameValue = ""
-                    },
-                    throttleClicks = true
-                )
-                RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .imePadding(),
-                    text = stringResource(R.string.skip),
-                    onClick = onSkipLedgerName,
-                    throttleClicks = true
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    items(ledgerDevices.entries.toList()) { entry ->
-                        ImportedHardwareAccountsRow(
-                            deviceName = entry.key.name ?: entry.key.model.name,
-                            importedAccountsCount = entry.value,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    RadixTheme.colors.gray5,
-                                    shape = RadixTheme.shapes.roundedRectMedium
-                                )
-                                .padding(RadixTheme.dimensions.paddingDefault)
-                        )
-                    }
-                }
-                AnimatedVisibility(visible = hasP2pLinks, enter = fadeIn(), exit = fadeOut()) {
-                    RadixPrimaryButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.send_add_ledger_request),
-                        onClick = onHardwareImport,
-                        enabled = !waitingForLedgerResponse,
-                        throttleClicks = true
-                    )
-                }
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.skip_remaining_accounts),
-                    onClick = onSkipRemainingHardwareAccounts,
-                    enabled = !waitingForLedgerResponse,
-                    throttleClicks = true
+                    onClick = onUseLedger,
+                    text = stringResource(id = com.babylon.wallet.android.R.string.use_ledger)
                 )
             }
+            RadixSecondaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.skip_remaining_accounts),
+                onClick = onSkipRemainingHardwareAccounts,
+                enabled = !waitingForLedgerResponse
+            )
         }
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
         }
-    }
-}
-
-@Composable
-private fun ImportedHardwareAccountsRow(deviceName: String, importedAccountsCount: Int, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
-        Text(
-            text = deviceName,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = pluralStringResource(
-                id = R.plurals.accounts_per_device,
-                count = importedAccountsCount,
-                importedAccountsCount
-            ),
-            style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
-        )
     }
 }
 
@@ -708,7 +711,6 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             onMessageShown = {},
             migratedAccounts = persistentListOf(),
             onContinue = {},
-            onHardwareImport = {},
             currentPage = ImportPage.ScanQr,
             onToggleSelectAll = {},
             qrChunkInfo = null,
@@ -717,12 +719,15 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             onSkipRemainingHardwareAccounts = {},
             accountsLeft = 5,
             waitingForLedgerResponse = false,
-            addLedgerName = false,
             onConfirmLedgerName = {},
             onSkipLedgerName = {},
-            ledgerDevices = persistentMapOf(),
             hasP2pLinks = true,
-            onAddP2PLink = {}
-        )
+            onAddP2PLink = {},
+            ledgerFactorSources = persistentListOf(),
+            addLedgerSheetState = AddLedgerSheetState.Connect,
+            onSendAddLedgerRequest = {},
+            selectedFactorSourceID = null,
+            onUseLedger = {}
+        ) {}
     }
 }
