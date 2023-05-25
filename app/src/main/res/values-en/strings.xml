@@ -345,7 +345,7 @@
   <string name="common_systemSettings">Settings</string>
   <string name="common_confirm">Confirm</string>
   <string name="common_save">Save</string>
-  <string name="error_dappRequest_invalidPersonaId">Invalid persona Id specified by dApp</string>
+  <string name="error_dappRequest_invalidPersonaId">Invalid persona id specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to create Wallet from backup: %s</string>
   <string name="error_profileLoad_failedToCreateProfileFromSnapshot">Failed to create Wallet from backup, error: %s, version: %s</string>
