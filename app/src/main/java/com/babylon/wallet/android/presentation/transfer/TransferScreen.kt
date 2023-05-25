@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -289,11 +290,14 @@ fun TransferContent(
                 items(state.targetAccounts.size) { index ->
                     val targetAccount = state.targetAccounts[index]
 
+                    val focusManager = LocalFocusManager.current
                     TargetAccountCard(
                         onChooseAccountClick = {
+                            focusManager.clearFocus()
                             onChooseAccountForSkeleton(targetAccount)
                         },
                         onAddAssetsClick = {
+                            focusManager.clearFocus()
                             onAddAssetsClick(targetAccount)
                         },
                         onRemoveAssetClicked = { spendingAsset ->
@@ -303,6 +307,7 @@ fun TransferContent(
                             onAmountTyped(targetAccount, spendingAsset, amount)
                         },
                         onMaxAmountClicked = { spendingAsset ->
+                            focusManager.clearFocus()
                             onMaxAmountClicked(targetAccount, spendingAsset)
                         },
                         onDeleteClick = {
