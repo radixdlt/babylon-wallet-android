@@ -24,7 +24,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.UUID
 
-
 class PrepareManifestDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
     private val incomingRequestRepository: IncomingRequestRepository
@@ -175,51 +174,51 @@ class PrepareManifestDelegate(
         methodName = ManifestAstValue.String(MethodName.Deposit.stringValue),
         arguments = arrayOf(bucket)
     )
+}
 
-    // This will be obsolete when the KET is compatible with ASH since there will be a generic constructor for Local Ids
-    // that takes a string and internally infers its type.
-    @Suppress("UnsafeCallOnNullableType")
-    private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId = run {
-        if (nftLocalIdStringRegex.matches(localId)) {
-            val (stringId) = nftLocalIdStringRegex.find(localId)!!.destructured
-            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.String(stringId))
-        } else if (nftLocalIdIntegerRegex.matches(localId)) {
-            val (intId) = nftLocalIdIntegerRegex.find(localId)!!.destructured
-            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Integer(intId.toULong()))
-        } else if (nftLocalIdHexRegex.matches(localId)) {
-            val (hexId) = nftLocalIdHexRegex.find(localId)!!.destructured
-            ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Bytes(hexId.toByteArray()))
-        } else if (nftLocalIdUUIDRegex.matches(localId)) {
-            val (uuidString) = nftLocalIdUUIDRegex.find(localId)!!.destructured
-            val uuid = UUID.fromString(uuidString)
-            ManifestAstValue.NonFungibleLocalId(uuid.toLocalIdInternal())
-        } else {
-            error("Could not recognize id $localId")
-        }
-    }
-
-    // https://gist.github.com/drmalex07/9008c611ffde6cb2ef3a2db8668bc251
-    private fun UUID.toLocalIdInternal(): NonFungibleLocalIdInternal {
-        val shl = BigInteger.ONE.shiftLeft(64)
-        var lo = BigInteger.valueOf(leastSignificantBits)
-        var hi = BigInteger.valueOf(mostSignificantBits)
-
-        if (hi.signum() < 0) {
-            hi = hi.add(shl)
-        }
-
-        if (lo.signum() < 0) {
-            lo = lo.add(shl)
-        }
-
-        val integer = lo.add(hi.multiply(shl));
-        return NonFungibleLocalIdInternal.UUID(integer.toString())
-    }
-
-    companion object {
-        val nftLocalIdStringRegex = "^<(([a-zA-Z]|_|\\d)+)>\$".toRegex()
-        val nftLocalIdIntegerRegex = "^#(\\d+)#\$".toRegex()
-        val nftLocalIdHexRegex = "^\\[([A-Fa-f\\d]+)]\$".toRegex()
-        val nftLocalIdUUIDRegex = "^\\{(.+)\\}\$".toRegex()
+// TO BE REMOVED AFTER KET IS COMPATIBLE WITH ASH
+// This will be obsolete when the KET is compatible with ASH since there will be a generic constructor for Local Ids
+// that takes a string and internally infers its type.
+@Suppress("UnsafeCallOnNullableType")
+private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId = run {
+    if (nftLocalIdStringRegex.matches(localId)) {
+        val (stringId) = nftLocalIdStringRegex.find(localId)!!.destructured
+        ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.String(stringId))
+    } else if (nftLocalIdIntegerRegex.matches(localId)) {
+        val (intId) = nftLocalIdIntegerRegex.find(localId)!!.destructured
+        ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Integer(intId.toULong()))
+    } else if (nftLocalIdHexRegex.matches(localId)) {
+        val (hexId) = nftLocalIdHexRegex.find(localId)!!.destructured
+        ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Bytes(hexId.toByteArray()))
+    } else if (nftLocalIdUUIDRegex.matches(localId)) {
+        val (uuidString) = nftLocalIdUUIDRegex.find(localId)!!.destructured
+        val uuid = UUID.fromString(uuidString)
+        ManifestAstValue.NonFungibleLocalId(uuid.toLocalIdInternal())
+    } else {
+        error("Could not recognize id $localId")
     }
 }
+
+// https://gist.github.com/drmalex07/9008c611ffde6cb2ef3a2db8668bc251
+@Suppress("MagicNumber")
+private fun UUID.toLocalIdInternal(): NonFungibleLocalIdInternal {
+    val shl = BigInteger.ONE.shiftLeft(64)
+    var lo = BigInteger.valueOf(leastSignificantBits)
+    var hi = BigInteger.valueOf(mostSignificantBits)
+
+    if (hi.signum() < 0) {
+        hi = hi.add(shl)
+    }
+
+    if (lo.signum() < 0) {
+        lo = lo.add(shl)
+    }
+
+    val integer = lo.add(hi.multiply(shl))
+    return NonFungibleLocalIdInternal.UUID(integer.toString())
+}
+
+private val nftLocalIdStringRegex = "^<(([a-zA-Z]|_|\\d)+)>\$".toRegex()
+private val nftLocalIdIntegerRegex = "^#(\\d+)#\$".toRegex()
+private val nftLocalIdHexRegex = "^\\[([A-Fa-f\\d]+)]\$".toRegex()
+private val nftLocalIdUUIDRegex = "^\\{(.+)\\}\$".toRegex()
