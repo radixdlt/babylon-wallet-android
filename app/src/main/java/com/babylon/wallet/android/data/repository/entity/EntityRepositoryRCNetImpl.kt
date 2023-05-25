@@ -102,6 +102,10 @@ class EntityRepositoryRCNetImpl @Inject constructor(
             resource.address == item.resourceAddress
         } ?: return@mapNotNull null
 
+        if (item.amount == 0L) {
+            return@mapNotNull null
+        }
+
         val metadataMap = resourceDetails.metadata.asMetadataStringMap()
 
         Resource.NonFungibleResource(

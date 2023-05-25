@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -28,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,6 +44,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.allNftItemsSize
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -149,9 +153,13 @@ private fun AssetsContent(
             if (remainingFungiblesCount > 0) {
                 CounterBox(
                     modifier = Modifier
-                        .size(width = 56.dp, height = iconSize)
+                        .height(iconSize)
                         .offset(x = -nonFungibleSectionOffset),
-                    text = "+$remainingFungiblesCount"
+                    text = "+$remainingFungiblesCount",
+                    contentPadding = PaddingValues(
+                        start = iconSize + RadixTheme.dimensions.paddingXSmall,
+                        end = RadixTheme.dimensions.paddingSmall
+                    )
                 )
             }
 
@@ -166,10 +174,13 @@ private fun AssetsContent(
                 ) {
                     CounterBox(
                         modifier = Modifier
-                            .padding(horizontal = bordersSize)
-                            .size(width = 54.dp, height = iconSize)
-                            .align(Alignment.Center),
-                        text = "${resources.nonFungibleResources.size}"
+                            .height(iconSize)
+                            .align(Alignment.CenterStart),
+                        text = "${resources.nonFungibleResources.allNftItemsSize()}",
+                        contentPadding = PaddingValues(
+                            start = iconSize + RadixTheme.dimensions.paddingSmall,
+                            end = RadixTheme.dimensions.paddingSmall
+                        )
                     )
 
                     Image(
@@ -205,19 +216,25 @@ private fun Modifier.collectionImageModifier(iconSize: Dp, bordersSize: Dp) = co
 @Composable
 private fun CounterBox(
     modifier: Modifier,
-    text: String
+    text: String,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     Box(
         modifier = modifier
-            .background(RadixTheme.colors.white.copy(alpha = 0.3f), shape = RadixTheme.shapes.roundedRectDefault),
+            .background(
+                color = RadixTheme.colors.white.copy(alpha = 0.3f),
+                shape = RadixTheme.shapes.roundedRectDefault
+            ),
         contentAlignment = Alignment.CenterEnd
     ) {
         Text(
             modifier = Modifier
-                .padding(end = RadixTheme.dimensions.paddingSmall),
+                .padding(contentPadding)
+                .widthIn(min = 12.dp),
             text = text,
             style = RadixTheme.typography.body1Header.copy(fontSize = 11.sp, lineHeight = 18.sp),
-            color = White
+            color = White,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -270,9 +287,25 @@ fun AssetsContentRowPreview() {
                     nonFungibleResources = listOf(
                         Resource.NonFungibleResource(
                             resourceAddress = "resource_address",
-                            amount = 1000,
+                            amount = 3,
                             nameMetadataItem = NameMetadataItem("AWE"),
-                            items = listOf()
+                            items = listOf(
+                                Resource.NonFungibleResource.Item(
+                                    collectionAddress = "resource_address",
+                                    localId = "<dbooker_dunk_01>",
+                                    iconMetadataItem = null
+                                ),
+                                Resource.NonFungibleResource.Item(
+                                    collectionAddress = "resource_address",
+                                    localId = "<dbooker_dunk_02>",
+                                    iconMetadataItem = null
+                                ),
+                                Resource.NonFungibleResource.Item(
+                                    collectionAddress = "resource_address",
+                                    localId = "<dbooker_dunk_03>",
+                                    iconMetadataItem = null
+                                )
+                            )
                         )
                     )
                 ),
