@@ -13,6 +13,8 @@ import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -155,7 +157,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assertEquals(
             TransferViewModel.State.Sheet.ChooseAccounts(
                 selectedAccount = skeleton,
-                ownedAccounts = emptyList()
+                ownedAccounts = persistentListOf()
             ),
             awaitItem().sheet
         )
@@ -167,7 +169,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             assertEquals(
                 TransferViewModel.State.Sheet.ChooseAccounts(
                     selectedAccount = skeleton,
-                    ownedAccounts = remainingAccounts
+                    ownedAccounts = remainingAccounts.toPersistentList()
                 ),
                 awaitItem().sheet
             )
@@ -191,7 +193,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assertEquals(
             TransferViewModel.State(
                 fromAccount = fromAccount,
-                targetAccounts = listOf(
+                targetAccounts = persistentListOf(
                     TargetAccount.Owned(
                         account = account,
                         id = skeletonAccount.id
@@ -223,7 +225,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assertEquals(
             TransferViewModel.State(
                 fromAccount = fromAccount,
-                targetAccounts = listOf(
+                targetAccounts = persistentListOf(
                     TargetAccount.Other(
                         address = address,
                         validity = TargetAccount.Other.AddressValidity.VALID,

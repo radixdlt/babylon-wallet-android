@@ -3,14 +3,13 @@ package com.babylon.wallet.android.presentation.transfer.accounts
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DecodeAddressRequest
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.AddressValidator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -46,7 +45,7 @@ class AccountsChooserDelegate(
 
     fun addressTyped(address: String) {
         updateSheetState { sheetState ->
-            val validity = if (!isAddressValid(address)) {
+            val validity = if (!AddressValidator.isValid(address)) {
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
                 val selectedAccountAddresses = state.value.targetAccounts.map { it.address }
@@ -120,16 +119,6 @@ class AccountsChooserDelegate(
                 sheet = TransferViewModel.State.Sheet.None
             )
         }
-    }
-
-    /**
-     * As per [REP 39 Bech32m and Addressing](https://radixdlt.atlassian.net/wiki/spaces/S/pages/2781839425/REP+39+Bech32m+and+Addressing)
-     * The address need to be at least 26 chars long, and should be validated against KET.
-     *
-     * FIXME: this should be a use case or a helper function
-     */
-    private fun isAddressValid(address: String): Boolean {
-        return address.length >= 26 && RadixEngineToolkit.decodeAddress(DecodeAddressRequest(address)).isSuccess
     }
 
     private fun updateSheetState(
