@@ -165,9 +165,7 @@ private fun DerivePublicKeyResponse.toDomainModel() =
     if (success != null) {
         LedgerResponse.DerivePublicKeyResponse(
             interactionId,
-            success.toDomainModel().map {
-                it.publicKeyHex
-            }
+            success.toDomainModel()
         )
     } else {
         LedgerResponse.LedgerErrorResponse(interactionId, error?.code ?: 0, error?.message.orEmpty())

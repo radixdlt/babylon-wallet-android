@@ -93,10 +93,10 @@ class OlympiaImportViewModel @Inject constructor(
         }
     }
 
-    private suspend fun processDerivePublicKeyResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse) {
+    private suspend fun processLedgerResponse(ledgerResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
-        val derivedKeys = ledgerResponse.publicKeysHex.toSet()
+        val derivedKeys = ledgerResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
         val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
         if (validatedAccounts.isEmpty()) {
             _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
@@ -349,9 +349,9 @@ class OlympiaImportViewModel @Inject constructor(
                     },
                     ledgerDevice = ledgerDevice
                 ).onFailure { error ->
-                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error.cause), waitingForLedgerResponse = false) }
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), waitingForLedgerResponse = false) }
                 }.onSuccess { r ->
-                    processDerivePublicKeyResponse(r)
+                    processLedgerResponse(r)
                 }
             }
         }

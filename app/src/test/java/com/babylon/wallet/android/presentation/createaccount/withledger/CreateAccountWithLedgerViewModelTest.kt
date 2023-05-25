@@ -48,7 +48,16 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         )
         coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns FactorSource.ID("2")
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
-            MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse("1", listOf("publicKeyHex"))
+            MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse(
+                "1",
+                listOf(
+                    MessageFromDataChannel.LedgerResponse.DerivedPublicKey(
+                        MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519,
+                        "publicKeyHex",
+                        "path"
+                    )
+                )
+            )
         )
     }
 

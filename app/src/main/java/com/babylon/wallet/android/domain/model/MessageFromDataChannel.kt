@@ -155,7 +155,7 @@ sealed interface MessageFromDataChannel {
 
         data class DerivePublicKeyResponse(
             val interactionId: String,
-            val publicKeysHex: List<String>
+            val publicKeysHex: List<DerivedPublicKey>
         ) : LedgerResponse(interactionId)
 
         data class SignTransactionResponse(

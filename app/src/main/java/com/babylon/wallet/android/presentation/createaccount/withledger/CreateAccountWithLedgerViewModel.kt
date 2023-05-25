@@ -90,7 +90,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         AppEvent.DerivedAccountPublicKeyWithLedger(
                             factorSourceID = ledgerFactorSource.id,
                             derivationPath = derivationPath,
-                            derivedPublicKeyHex = response.publicKeysHex.first()
+                            derivedPublicKeyHex = response.publicKeysHex.first().publicKeyHex
                         )
                     )
                     sendEvent(CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount)

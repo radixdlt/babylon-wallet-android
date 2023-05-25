@@ -6,10 +6,11 @@ import com.babylon.wallet.android.data.dapp.model.GetDeviceInfoRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.dapp.model.SignTransactionRequest
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
+import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
@@ -50,8 +51,18 @@ class LedgerMessengerImpl @Inject constructor(
                         it.id == interactionId
                     }.catch {
                         emit(Result.failure(it))
-                    }.filterIsInstance<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>().collect {
-                        emit(Result.success(it))
+                    }.collect { response ->
+                        when (response) {
+                            is MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse -> {
+                                emit(Result.success(response))
+                            }
+                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
+                                emit(
+                                    Result.failure(DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToGetDeviceId))
+                                )
+                            }
+                            else -> {}
+                        }
                     }
                 }
                 is Error -> {
@@ -78,8 +89,20 @@ class LedgerMessengerImpl @Inject constructor(
                         it.id == interactionId
                     }.catch {
                         emit(Result.failure(it))
-                    }.filterIsInstance<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>().collect {
-                        emit(Result.success(it))
+                    }.collect { response ->
+                        when (response) {
+                            is MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse -> {
+                                emit(Result.success(response))
+                            }
+                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
+                                emit(
+                                    Result.failure(
+                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+                                    )
+                                )
+                            }
+                            else -> {}
+                        }
                     }
                 }
                 is Error -> {
@@ -111,8 +134,20 @@ class LedgerMessengerImpl @Inject constructor(
                         it.id == interactionId
                     }.catch { e ->
                         emit(Result.failure(e))
-                    }.filterIsInstance<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>().collect {
-                        emit(Result.success(it))
+                    }.collect { response ->
+                        when (response) {
+                            is MessageFromDataChannel.LedgerResponse.SignTransactionResponse -> {
+                                emit(Result.success(response))
+                            }
+                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
+                                emit(
+                                    Result.failure(
+                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+                                    )
+                                )
+                            }
+                            else -> {}
+                        }
                     }
                 }
                 is Error -> {

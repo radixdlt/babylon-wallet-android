@@ -536,24 +536,25 @@ private fun HardwareImportScreen(
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
-            }
-            if (ledgerFactorSources.isEmpty()) {
-                Text(
-                    text = stringResource(id = com.babylon.wallet.android.R.string.you_have_no_ledgers_added),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
             } else {
-                LedgerSelector(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    selectedLedgerFactorSourceID = selectedFactorSourceID,
-                    ledgerFactorSources = ledgerFactorSources,
-                    onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
-                )
+                if (ledgerFactorSources.isEmpty()) {
+                    Text(
+                        text = stringResource(id = com.babylon.wallet.android.R.string.you_have_no_ledgers_added),
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.gray1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    LedgerSelector(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        selectedLedgerFactorSourceID = selectedFactorSourceID,
+                        ledgerFactorSources = ledgerFactorSources,
+                        onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                    )
+                }
             }
             Spacer(Modifier.weight(1f))
             if (hasP2pLinks) {
