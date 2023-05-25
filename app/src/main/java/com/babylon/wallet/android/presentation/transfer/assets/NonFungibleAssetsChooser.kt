@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -154,24 +155,21 @@ private fun Item(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             if (resource.imageUrl != null) {
-                val painter = rememberAsyncImagePainter(
-                    model = rememberImageUrl(
-                        fromUrl = resource.imageUrl.toString(),
-                        size = ImageSize.LARGE
-                    ),
-                    placeholder = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder),
-                    error = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder)
-                )
-
                 AsyncImage(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .applyImageAspectRatio(painter = painter)
+                        .heightIn(max = 150.dp)
                         .clip(RadixTheme.shapes.roundedRectMedium)
                         .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
-                    model = rememberImageUrl(fromUrl = resource.imageUrl.toString(), size = ImageSize.MEDIUM),
+                    model = rememberImageUrl(
+                        fromUrl = resource.imageUrl.toString(),
+                        size = ImageSize.LARGE,
+                        placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
+                        error = com.babylon.wallet.android.R.drawable.img_placeholder
+                    ),
                     contentDescription = null,
-                    contentScale = ContentScale.FillWidth
+                    alignment = Alignment.Center,
+                    contentScale = ContentScale.Crop
                 )
             }
 
