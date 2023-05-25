@@ -28,12 +28,10 @@ class AssetsChooserDelegate(
      *
      * [fromAccount] is used to fetch the resources of that account
      * [targetAccount] is the account which we target to attach assets
-     * [restOfTargetAccounts] is used to potentially filter out non fungibles that have been already used
      */
     fun onChooseAssets(
         fromAccount: Network.Account,
-        targetAccount: TargetAccount,
-        restOfTargetAccounts: List<TargetAccount>
+        targetAccount: TargetAccount
     ) {
         state.update {
             it.copy(sheet = Sheet.ChooseAssets(targetAccount = targetAccount))
@@ -44,27 +42,7 @@ class AssetsChooserDelegate(
                 .onValue { accountWithResources ->
                     val resources = accountWithResources.firstOrNull()?.resources
 
-                    if (resources == null) {
-                        updateSheetState { it.copy(resources = null) }
-                    } else {
-                        // Compile a list of all used nft items
-                        val usedNftItemIds = restOfTargetAccounts.map { target ->
-                            target.assets.filterIsInstance<SpendingAsset.NFT>().map { it.address }
-                        }.flatten()
-
-                        val nftCollections = resources.nonFungibleResources.map { collection ->
-                            // Remove any "already used" nft items
-                            collection.copy(
-                                items = collection.items.filterNot { it.globalAddress in usedNftItemIds }
-                            )
-                        }.filterNot { it.items.isEmpty() } // And also remove any collection that ended up with no items
-
-                        updateSheetState {
-                            it.copy(
-                                resources = resources.copy(nonFungibleResources = nftCollections)
-                            )
-                        }
-                    }
+                    updateSheetState { it.copy(resources = resources) }
                 }.onError { error ->
                     updateSheetState {
                         it.copy(
