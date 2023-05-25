@@ -57,22 +57,14 @@ class PrepareManifestDelegate(
         )
     }
 
+    @Suppress("NestedBlockDepth")
     private fun ManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ): ManifestBuilder = apply {
         state.value.withdrawingFungibles().forEach { (resource, amount) ->
             // Withdraw the total amount for each fungible
-            addInstruction(
-                Instruction.CallMethod(
-                    componentAddress = ManifestAstValue.Address(address = fromAccount.address),
-                    methodName = ManifestAstValue.String(MethodName.Withdraw.stringValue),
-                    arguments = arrayOf(
-                        ManifestAstValue.Address(resource.resourceAddress),
-                        ManifestAstValue.Decimal(amount)
-                    )
-                )
-            )
+            addInstruction(withdraw(fromAccount = fromAccount, fungible = resource, amount = amount))
 
             // Deposit to each target account
             targetAccounts.filter { targetAccount ->
@@ -81,23 +73,12 @@ class PrepareManifestDelegate(
                 val spendingFungibleAsset = targetAccount.assets.find { it.address == resource.resourceAddress } as? SpendingAsset.Fungible
                 if (spendingFungibleAsset != null) {
                     val bucket = ManifestAstValue.Bucket(identifier = "${targetAccount.address}_${resource.resourceAddress}")
+
                     // First fill in a bucket from worktop with the correct amount
-                    addInstruction(
-                        Instruction.TakeFromWorktopByAmount(
-                            resourceAddress = ManifestAstValue.Address(address = resource.resourceAddress),
-                            amount = ManifestAstValue.Decimal(spendingFungibleAsset.amountDecimal),
-                            intoBucket = bucket
-                        )
-                    )
+                    addInstruction(pourToBucket(fungible = resource, amount = spendingFungibleAsset.amountDecimal, bucket = bucket))
 
                     // Then deposit that bucket
-                    addInstruction(
-                        Instruction.CallMethod(
-                            componentAddress = ManifestAstValue.Address(address = targetAccount.address),
-                            methodName = ManifestAstValue.String(MethodName.Deposit.stringValue),
-                            arguments = arrayOf(bucket)
-                        )
-                    )
+                    addInstruction(deposit(bucket = bucket, into = targetAccount))
                 }
             }
         }
@@ -111,41 +92,17 @@ class PrepareManifestDelegate(
             val nonFungibleSpendingAssets = targetAccount.assets.filterIsInstance<SpendingAsset.NFT>()
             nonFungibleSpendingAssets.forEach { nft ->
                 val bucket = ManifestAstValue.Bucket(identifier = "${targetAccount.address}_${nft.address}")
-                val nftManifestId = nft.item.toManifestLocalId()
 
-                addInstruction(
-                    Instruction.CallMethod(
-                        componentAddress = ManifestAstValue.Address(address = fromAccount.address),
-                        methodName = ManifestAstValue.String(MethodName.WithdrawNonFungibles.stringValue),
-                        arguments = arrayOf(
-                            ManifestAstValue.Address(nft.item.collectionAddress),
-                            ManifestAstValue.Array(
-                                elementKind = ValueKind.NonFungibleLocalId,
-                                elements = arrayOf(nftManifestId)
-                            )
-                        )
-                    )
-                )
-
-                addInstruction(
-                    Instruction.TakeFromWorktopByIds(
-                        resourceAddress = ManifestAstValue.Address(nft.item.collectionAddress),
-                        ids = setOf(nftManifestId),
-                        intoBucket = bucket
-                    )
-                )
-
-                addInstruction(
-                    Instruction.CallMethod(
-                        componentAddress = ManifestAstValue.Address(address = targetAccount.address),
-                        methodName = ManifestAstValue.String(MethodName.Deposit.stringValue),
-                        arguments = arrayOf(bucket)
-                    )
-                )
+                addInstruction(withdraw(fromAccount = fromAccount, nonFungible = nft.item))
+                addInstruction(pourToBucket(nonFungible = nft.item, bucket = bucket))
+                addInstruction(deposit(bucket = bucket, into = targetAccount))
             }
         }
     }
 
+    /**
+     * Sums all the amount needed to be withdrawn for each fungible
+     */
     private fun TransferViewModel.State.withdrawingFungibles(): Map<Resource.FungibleResource, BigDecimal> {
         val allFungibles: List<SpendingAsset.Fungible> =
             targetAccounts.map { it.assets.filterIsInstance<SpendingAsset.Fungible>() }.flatten()
@@ -159,6 +116,62 @@ class PrepareManifestDelegate(
 
         return fungibleAmounts
     }
+
+    private fun withdraw(
+        fromAccount: Network.Account,
+        fungible: Resource.FungibleResource,
+        amount: BigDecimal
+    ) = Instruction.CallMethod(
+        componentAddress = ManifestAstValue.Address(address = fromAccount.address),
+        methodName = ManifestAstValue.String(MethodName.Withdraw.stringValue),
+        arguments = arrayOf(
+            ManifestAstValue.Address(fungible.resourceAddress),
+            ManifestAstValue.Decimal(amount)
+        )
+    )
+
+    private fun pourToBucket(
+        fungible: Resource.FungibleResource,
+        amount: BigDecimal,
+        bucket: ManifestAstValue.Bucket
+    ) = Instruction.TakeFromWorktopByAmount(
+        resourceAddress = ManifestAstValue.Address(address = fungible.resourceAddress),
+        amount = ManifestAstValue.Decimal(amount),
+        intoBucket = bucket
+    )
+
+    private fun withdraw(
+        fromAccount: Network.Account,
+        nonFungible: Resource.NonFungibleResource.Item,
+    ) = Instruction.CallMethod(
+        componentAddress = ManifestAstValue.Address(address = fromAccount.address),
+        methodName = ManifestAstValue.String(MethodName.WithdrawNonFungibles.stringValue),
+        arguments = arrayOf(
+            ManifestAstValue.Address(nonFungible.collectionAddress),
+            ManifestAstValue.Array(
+                elementKind = ValueKind.NonFungibleLocalId,
+                elements = arrayOf(nonFungible.toManifestLocalId())
+            )
+        )
+    )
+
+    private fun pourToBucket(
+        nonFungible: Resource.NonFungibleResource.Item,
+        bucket: ManifestAstValue.Bucket
+    ) = Instruction.TakeFromWorktopByIds(
+        resourceAddress = ManifestAstValue.Address(nonFungible.collectionAddress),
+        ids = setOf(nonFungible.toManifestLocalId()),
+        intoBucket = bucket
+    )
+
+    private fun deposit(
+        bucket: ManifestAstValue.Bucket,
+        into: TargetAccount
+    ) = Instruction.CallMethod(
+        componentAddress = ManifestAstValue.Address(address = into.address),
+        methodName = ManifestAstValue.String(MethodName.Deposit.stringValue),
+        arguments = arrayOf(bucket)
+    )
 
     @Suppress("UnsafeCallOnNullableType")
     private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId = run {
@@ -179,6 +192,7 @@ class PrepareManifestDelegate(
             error("Could not recognize id $localId")
         }
     }
+
     companion object {
         val nftLocalIdStringRegex = "^<(([a-zA-Z]|_|\\d)+)>\$".toRegex()
         val nftLocalIdIntegerRegex = "^#(\\d+)#\$".toRegex()
