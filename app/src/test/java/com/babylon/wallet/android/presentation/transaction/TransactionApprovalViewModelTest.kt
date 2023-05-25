@@ -59,7 +59,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         dappId = "dappId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "", false)
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 
