@@ -144,7 +144,7 @@ private fun AssetsContent(
                 iconSize
             } else {
                 0.dp
-            } + iconsOverlap * (sortedFungibles.size - 1)
+            } + iconsOverlap * (sortedFungibles.size - 1).coerceAtLeast(0)
 
             if (remainingFungiblesCount > 0) {
                 CounterBox(
@@ -156,7 +156,10 @@ private fun AssetsContent(
             }
 
             if (resources.nonFungibleResources.isNotEmpty()) {
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+                if (sortedFungibles.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+                }
+
                 Box(
                     modifier = Modifier
                         .offset(x = -nonFungibleSectionOffset)
