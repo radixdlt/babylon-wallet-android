@@ -450,6 +450,8 @@ class TransactionApprovalViewModel @Inject constructor(
                                 _state.update { it.copy(isSigning = false) }
                                 approvalJob = null
                                 appEventBus.sendEvent(AppEvent.SuccessfulTransaction(args.requestId))
+                                // TODO: We need to find a better way to notify that this request is handled.
+                                incomingRequestRepository.requestHandled(args.requestId)
                                 sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                             }
                             transactionStatus.onError { error ->
@@ -468,6 +470,8 @@ class TransactionApprovalViewModel @Inject constructor(
                                         message = exception.failure.getDappMessage()
                                     )
                                     approvalJob = null
+                                    // TODO: We need to find a better way to notify that this request is handled.
+                                    incomingRequestRepository.requestHandled(args.requestId)
                                     sendEvent(
                                         TransactionApprovalEvent.FlowCompletedWithError(
                                             requestId = args.requestId,
