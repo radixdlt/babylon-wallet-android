@@ -451,6 +451,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 approvalJob = null
                                 appEventBus.sendEvent(AppEvent.SuccessfulTransaction(args.requestId))
                                 // TODO: We need to find a better way to notify that this request is handled.
+                                // https://radixdlt.atlassian.net/browse/ABW-1578
                                 incomingRequestRepository.requestHandled(args.requestId)
                                 sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                             }
@@ -471,6 +472,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                     approvalJob = null
                                     // TODO: We need to find a better way to notify that this request is handled.
+                                    // https://radixdlt.atlassian.net/browse/ABW-1578
                                     incomingRequestRepository.requestHandled(args.requestId)
                                     sendEvent(
                                         TransactionApprovalEvent.FlowCompletedWithError(
