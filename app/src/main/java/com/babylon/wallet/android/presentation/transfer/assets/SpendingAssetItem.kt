@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -265,25 +266,28 @@ private fun NonFungibleSpendingAsset(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = 69.dp)
             .padding(RadixTheme.dimensions.paddingSmall),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = rememberImageUrl(
-                fromUrl = nft.imageUrl.toString(),
-                size = ImageSize.SMALL,
-                placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
-                error = com.babylon.wallet.android.R.drawable.img_placeholder
-            ),
-            contentDescription = "Nft image",
-            contentScale = ContentScale.Crop,
-            alignment = Alignment.Center,
-            modifier = Modifier
-                .size(55.dp)
-                .clip(RadixTheme.shapes.roundedRectSmall),
-        )
+        if (nft.imageUrl != null) {
+            AsyncImage(
+                model = rememberImageUrl(
+                    fromUrl = nft.imageUrl.toString(),
+                    size = ImageSize.SMALL,
+                    placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
+                    error = com.babylon.wallet.android.R.drawable.img_placeholder
+                ),
+                contentDescription = "Nft image",
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                modifier = Modifier
+                    .size(55.dp)
+                    .clip(RadixTheme.shapes.roundedRectSmall),
+            )
+        }
 
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
             Text(
                 text = nft.localId,
