@@ -396,7 +396,7 @@ sealed class TargetAccount {
 
     fun removeAsset(asset: SpendingAsset): TargetAccount {
         val newAssets = assets.toMutableSet().apply {
-            remove(asset)
+            removeIf { it.address == asset.address }
         }.toPersistentSet()
 
         return when (this) {
