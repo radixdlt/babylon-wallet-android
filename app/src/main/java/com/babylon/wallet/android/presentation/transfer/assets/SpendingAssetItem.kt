@@ -102,7 +102,10 @@ fun SpendingAssetItem(
                 },
                 onMaxClicked = onMaxClicked
             )
-            is SpendingAsset.NFT -> NonFungibleSpendingAsset(nft = asset.item)
+            is SpendingAsset.NFT -> NonFungibleSpendingAsset(
+                nft = asset.item,
+                isExceedingBalance = asset.exceedingBalance,
+            )
         }
     }
 }
@@ -208,6 +211,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = "Total Sum is over your current balance",
             style = RadixTheme.typography.body2HighImportance.copy(
+                fontSize = 12.sp,
                 color = RadixTheme.colors.red1,
                 textAlign = TextAlign.End
             ),
@@ -256,6 +260,7 @@ private fun ColumnScope.FungibleSpendingAsset(
 private fun NonFungibleSpendingAsset(
     modifier: Modifier = Modifier,
     nft: Resource.NonFungibleResource.Item,
+    isExceedingBalance: Boolean,
 ) {
     Row(
         modifier = modifier
@@ -291,6 +296,23 @@ private fun NonFungibleSpendingAsset(
 //                color = RadixTheme.colors.gray1,
 //                style = RadixTheme.typography.body1HighImportance
 //            )
+
+            AnimatedVisibility(
+                visible = isExceedingBalance,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "This NFT is already used in another account",
+                    style = RadixTheme.typography.body2HighImportance.copy(
+                        fontSize = 12.sp,
+                        color = RadixTheme.colors.red1,
+                        textAlign = TextAlign.Start
+                    ),
+                    maxLines = 2,
+                )
+            }
         }
     }
 }
@@ -354,6 +376,27 @@ fun SpendingAssetItemsPreview() {
                             )
                         )
                     )
+                ),
+                onAmountTyped = {
+                    secondAmount = it
+                },
+                onMaxClicked = {
+                    secondAmount = "10"
+                }
+            )
+
+            SpendingAssetItem(
+                asset = SpendingAsset.NFT(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcd",
+                        localId = "dbooker_dunk_39",
+                        iconMetadataItem = IconUrlMetadataItem(
+                            url = Uri.parse(
+                                "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                            )
+                        )
+                    ),
+                    exceedingBalance = true
                 ),
                 onAmountTyped = {
                     secondAmount = it

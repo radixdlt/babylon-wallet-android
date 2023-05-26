@@ -76,17 +76,9 @@ class AssetsChooserDelegate(
         state.update { state ->
             val chooseAssetState = (state.sheet as? Sheet.ChooseAssets) ?: return@update state
 
-            state.copy(
-                targetAccounts = state.targetAccounts.mapWhen(
-                    predicate = {
-                        it.id == chooseAssetState.targetAccount.id
-                    },
-                    mutation = {
-                        chooseAssetState.targetAccount
-                    }
-                ).toPersistentList(),
-                sheet = Sheet.None
-            )
+            state
+                .replace(chooseAssetState.targetAccount)
+                .copy(sheet = Sheet.None)
         }
     }
 

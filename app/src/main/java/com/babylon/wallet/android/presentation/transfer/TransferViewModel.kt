@@ -89,115 +89,33 @@ class TransferViewModel @Inject constructor(
     }
 
     fun addAccountClick() {
-        _state.update {
-            it.copy(
-                targetAccounts = it.targetAccounts.toMutableList().apply {
-                    add(TargetAccount.Skeleton())
-                }.toPersistentList()
-            )
-        }
+        _state.update { it.addSkeleton() }
     }
 
     fun deleteAccountClick(from: TargetAccount) {
-        _state.update {
-            val targetAccounts = it.targetAccounts.toMutableList()
-            val index = it.targetAccounts.indexOf(from)
-
-            if (index != -1) {
-                targetAccounts.removeAt(index)
-            }
-
-            if (targetAccounts.isEmpty()) {
-                targetAccounts.add(TargetAccount.Skeleton())
-            }
-
-            it.copy(targetAccounts = targetAccounts.toPersistentList())
-        }
+        _state.update { it.remove(from) }
     }
 
     fun onRemoveAsset(account: TargetAccount, asset: SpendingAsset) {
-        _state.update { state ->
-            state.copy(
-                targetAccounts = state.targetAccounts.mapWhen(
-                    predicate = { it == account },
-                    mutation = { it.removeAsset(asset) }
-                ).toPersistentList()
-            )
-        }
+        _state.update { it.removeAsset(account, asset) }
     }
 
     fun onAmountTyped(account: TargetAccount, asset: SpendingAsset, amount: String) {
         val fungibleAsset = asset as? SpendingAsset.Fungible ?: return
 
-        val amountDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val maxAmount = fungibleAsset.resource.amount
-        val spentAmount = _state.value.targetAccounts
-            .filterNot { it.address == account.address }
-            .sumOf { it.amountSpent(fungibleAsset) } + amountDecimal
-        val isExceedingBalance = spentAmount > maxAmount
-
-        _state.update { state ->
-            state.copy(
-                targetAccounts = state.targetAccounts.mapWhen(
-                    predicate = { target -> target.assets.any { it.address == asset.address } },
-                    mutation = { target ->
-                        target.updateAssets { assets ->
-                            assets.map { updatingAsset ->
-                                if (updatingAsset is SpendingAsset.Fungible && updatingAsset.address == asset.address) {
-                                    updatingAsset.copy(
-                                        // Update the amount of the asset only for the currently editing target account
-                                        amountString = if (target.address == account.address) amount else updatingAsset.amountString,
-                                        // Update the flag for all assets with the same address of the one that is being edited
-                                        exceedingBalance = isExceedingBalance
-                                    )
-                                } else {
-                                    updatingAsset
-                                }
-                            }.toPersistentSet()
-                        }
-                    }
-                ).toPersistentList()
-            )
-        }
+        _state.update { it.updateAssetAmount(account, fungibleAsset, amount) }
     }
 
     fun onMaxAmount(account: TargetAccount, asset: SpendingAsset) {
         val fungibleAsset = asset as? SpendingAsset.Fungible ?: return
 
         val maxAmount = fungibleAsset.resource.amount
-        val spendAmount = _state.value.targetAccounts
+        val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
-        val remainingAmount = maxAmount - spendAmount
-        val remainingAmountString = (maxAmount - spendAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
+        val remainingAmountString = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
 
-        _state.update { state ->
-            state.copy(
-                targetAccounts = state.targetAccounts.mapWhen(
-                    predicate = { target -> target.assets.any { it.address == asset.address } },
-                    mutation = { target ->
-                        target.updateAssets { assets ->
-                            assets.map { updatingAsset ->
-                                if (updatingAsset is SpendingAsset.Fungible && updatingAsset.address == asset.address) {
-                                    updatingAsset.copy(
-                                        // Update the amount of the asset only for the currently editing target account
-                                        amountString = if (target.address == account.address) {
-                                            remainingAmountString
-                                        } else {
-                                            updatingAsset.amountString
-                                        },
-                                        // Update the flag for all assets with the same address of the one that is being edited
-                                        exceedingBalance = remainingAmount < BigDecimal.ZERO
-                                    )
-                                } else {
-                                    updatingAsset
-                                }
-                            }.toPersistentSet()
-                        }
-                    }
-                ).toPersistentList()
-            )
-        }
+        _state.update { it.updateAssetAmount(account, fungibleAsset, remainingAmountString) }
     }
 
     fun onTransferSubmit() {
@@ -274,6 +192,95 @@ class TransferViewModel @Inject constructor(
 
         val submittedMessage: String?
             get() = (messageState as? Message.Added)?.message
+
+        fun addSkeleton(): State = copy(
+            targetAccounts = targetAccounts.toMutableList().apply {
+                add(TargetAccount.Skeleton())
+            }.toPersistentList()
+        ).withCheckedBalances()
+
+        fun replace(account: TargetAccount): State = copy(
+            targetAccounts = targetAccounts.mapWhen(
+                predicate = {
+                    it.id == account.id
+                },
+                mutation = { account }
+            ).toPersistentList()
+        ).withCheckedBalances()
+
+        fun remove(at: TargetAccount): State {
+            val targetAccounts = targetAccounts.toMutableList()
+            val index = targetAccounts.indexOf(at)
+
+            if (index != -1) {
+                targetAccounts.removeAt(index)
+            }
+
+            if (targetAccounts.isEmpty()) {
+                targetAccounts.add(TargetAccount.Skeleton())
+            }
+
+            return copy(targetAccounts = targetAccounts.toPersistentList()).withCheckedBalances()
+        }
+
+        fun removeAsset(account: TargetAccount, asset: SpendingAsset): State = copy(
+            targetAccounts = targetAccounts.mapWhen(
+                predicate = { it.id == account.id },
+                mutation = { it.removeAsset(asset) }
+            ).toPersistentList()
+        ).withCheckedBalances()
+
+        fun updateAssetAmount(account: TargetAccount, asset: SpendingAsset.Fungible, amountString: String): State = copy(
+            targetAccounts = targetAccounts.mapWhen(
+                predicate = { it.id == account.id },
+                mutation = { target ->
+                    target.updateAssets { assets ->
+                        assets.mapWhen(
+                            predicate = { it.address == asset.address },
+                            mutation = { asset.copy(amountString = amountString) }
+                        ).toPersistentSet()
+                    }
+                }
+            ).toPersistentList()
+        ).withCheckedBalances()
+
+        private fun withCheckedBalances(): State {
+            val fungibleBalances = mutableMapOf<Resource.FungibleResource, BigDecimal>()
+            val nonFungibleBalances = mutableMapOf<Resource.NonFungibleResource.Item, Int>()
+
+            targetAccounts
+                .map { it.assets.filterIsInstance<SpendingAsset.Fungible>() }
+                .flatten()
+                .forEach { fungible ->
+                    val spentAmount = fungibleBalances[fungible.resource] ?: BigDecimal.ZERO
+                    fungibleBalances[fungible.resource] = spentAmount + fungible.amountDecimal
+                }
+
+            targetAccounts
+                .map { it.assets.filterIsInstance<SpendingAsset.NFT>() }
+                .flatten()
+                .forEach { nft ->
+                    val spent = nonFungibleBalances[nft.item] ?: 0
+                    nonFungibleBalances[nft.item] = spent + 1
+                }
+
+            return copy(
+                targetAccounts = targetAccounts.map { targetAccount ->
+                    targetAccount.updateAssets { assets ->
+                        assets.map { asset ->
+                            when (asset) {
+                                is SpendingAsset.Fungible -> asset.copy(
+                                    exceedingBalance = fungibleBalances.getOrDefault(asset.resource, BigDecimal.ZERO) > asset.resource.amount
+                                )
+                                is SpendingAsset.NFT -> asset.copy(
+                                    exceedingBalance = nonFungibleBalances.getOrDefault(asset.item, 0) > 1
+                                )
+                            }
+                        }.toPersistentSet()
+                    }
+                }.toPersistentList()
+            )
+        }
 
         sealed interface Sheet {
             object None : Sheet
@@ -429,10 +436,14 @@ sealed class SpendingAsset {
             get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
     }
 
-    data class NFT(val item: Resource.NonFungibleResource.Item) : SpendingAsset() {
+    data class NFT(
+        val item: Resource.NonFungibleResource.Item,
+        val exceedingBalance: Boolean = false
+    ) : SpendingAsset() {
         override val address: String
             get() = item.globalAddress
 
-        override val isValidForSubmission: Boolean = true
+        override val isValidForSubmission: Boolean
+            get() = !exceedingBalance
     }
 }
