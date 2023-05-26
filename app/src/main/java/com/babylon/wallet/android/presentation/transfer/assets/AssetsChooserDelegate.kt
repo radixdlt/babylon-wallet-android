@@ -34,7 +34,7 @@ class AssetsChooserDelegate(
         targetAccount: TargetAccount
     ) {
         state.update {
-            it.copy(sheet = Sheet.ChooseAssets(targetAccount = targetAccount))
+            it.copy(sheet = Sheet.ChooseAssets.init(forTargetAccount = targetAccount))
         }
 
         viewModelScope.launch {

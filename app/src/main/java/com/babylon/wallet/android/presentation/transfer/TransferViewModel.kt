@@ -327,14 +327,31 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAssets(
                 val resources: Resources? = null,
+                private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
                 val targetAccount: TargetAccount,
                 val selectedTab: Tab = Tab.Tokens,
                 val uiMessage: UiMessage? = null
             ) : Sheet {
 
+                val isSubmitEnabled: Boolean
+                    get() {
+                        val currentAssetAddresses = targetAccount.assets.map { it.address }.toSet()
+                        val currentSub = currentAssetAddresses subtract initialAssetAddress
+                        val initialSub = initialAssetAddress subtract currentAssetAddresses
+                        val result = currentSub union initialSub
+                        return result.isNotEmpty()
+                    }
+
                 enum class Tab {
                     Tokens,
                     NFTs
+                }
+
+                companion object {
+                    fun init(forTargetAccount: TargetAccount): ChooseAssets = ChooseAssets(
+                        initialAssetAddress = forTargetAccount.assets.map { it.address }.toPersistentSet(),
+                        targetAccount = forTargetAccount
+                    )
                 }
             }
         }

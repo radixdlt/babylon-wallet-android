@@ -89,7 +89,7 @@ fun ChooseAssetsSheet(
                         .fillMaxWidth(),
                     text = "Select Assets",
                     onClick = onChooseAssetsSubmitted,
-                    enabled = state.targetAccount.assets.isNotEmpty()
+                    enabled = state.isSubmitEnabled
                 )
             }
         },
@@ -222,12 +222,8 @@ fun ChooseAssets.Tab.name(): String = when (this) {
 fun ChooseAssetsSheetPreview() {
     RadixWalletTheme {
         ChooseAssetsSheet(
-            state = ChooseAssets(
-                resources = Resources(
-                    fungibleResources = listOf(),
-                    nonFungibleResources = listOf()
-                ),
-                targetAccount = TargetAccount.Skeleton()
+            state = ChooseAssets.init(
+                forTargetAccount = TargetAccount.Skeleton()
             ),
             onTabSelected = {},
             onCloseClick = {},
