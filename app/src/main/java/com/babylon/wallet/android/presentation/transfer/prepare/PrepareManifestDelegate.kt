@@ -20,6 +20,7 @@ import com.radixdlt.toolkit.models.ValueKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.UUID
@@ -33,6 +34,8 @@ class PrepareManifestDelegate(
         val fromAccount = state.value.fromAccount ?: return
         prepareRequest(fromAccount, state.value).onValue { request ->
             state.update { it.copy(transferRequestId = request.requestId) }
+            Timber.d("Manifest for ${request.requestId} prepared:")
+            Timber.d(request.transactionManifestData.instructions)
             incomingRequestRepository.add(request)
         }.onError { error ->
             state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
