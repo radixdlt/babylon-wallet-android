@@ -72,7 +72,7 @@ fun ChooseAssetsSheet(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
             SheetHeader(
-                title = "Choose Asset(s)",
+                title = stringResource(id = R.string.choose_assets),
                 onLeadingActionClicked = onCloseClick
             )
         },
@@ -87,7 +87,7 @@ fun ChooseAssetsSheet(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    text = "Select Assets",
+                    text = stringResource(id = R.string.select_assets),
                     onClick = onChooseAssetsSubmitted,
                     enabled = state.isSubmitEnabled
                 )

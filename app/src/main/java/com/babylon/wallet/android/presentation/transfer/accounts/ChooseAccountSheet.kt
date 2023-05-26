@@ -198,7 +198,7 @@ private fun ChooseAccountContent(
         }
 
         item {
-            val (typedAddress, error) = remember(state.selectedAccount) {
+            val (typedAddress, errorResource) = remember(state.selectedAccount) {
                 if (state.selectedAccount is TargetAccount.Other) {
                     val address = state.selectedAccount.address
 
@@ -207,13 +207,13 @@ private fun ChooseAccountContent(
                         return@remember "" to null
                     }
 
-                    val errorText = when (state.selectedAccount.validity) {
+                    val errorResource = when (state.selectedAccount.validity) {
                         TargetAccount.Other.AddressValidity.VALID -> null
-                        TargetAccount.Other.AddressValidity.INVALID -> "Invalid address"
-                        TargetAccount.Other.AddressValidity.USED -> "Already used address"
+                        TargetAccount.Other.AddressValidity.INVALID -> R.string.invalid_address
+                        TargetAccount.Other.AddressValidity.USED -> R.string.used_address
                     }
 
-                    address to errorText
+                    address to errorResource
                 } else {
                     "" to null
                 }
@@ -233,7 +233,11 @@ private fun ChooseAccountContent(
                 value = typedAddress,
                 hint = stringResource(id = R.string.enter_or_paste_address),
                 hintColor = RadixTheme.colors.gray2,
-                error = if (!isFocused) error else null,
+                error = if (!isFocused) {
+                    errorResource?.let { stringResource(id = it) }
+                } else {
+                    null
+                },
                 singleLine = true,
                 trailingIcon = {
                     Row(
