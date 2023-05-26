@@ -72,7 +72,7 @@ fun NonFungibleAssetsChooser(
                     ),
                     nftImageUrl = collection.iconUrl.toString(),
                     nftName = collection.name,
-                    nftsInCirculation = collection.amount.toString(),
+                    nftsInCirculation = "?",
                     nftsInPossession = collection.items.size.toString(),
                     nftChildCount = collection.items.size,
                     collapsed = collapsed

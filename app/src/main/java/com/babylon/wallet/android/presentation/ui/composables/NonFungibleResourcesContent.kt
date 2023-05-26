@@ -36,7 +36,7 @@ fun NonFungibleResourcesContent(
                         .padding(horizontal = 20.dp),
                     nftImageUrl = nft.iconUrl.toString(),
                     nftName = nft.name,
-                    nftsInCirculation = nft.amount.toString(),
+                    nftsInCirculation = "?",
                     nftsInPossession = nft.items.size.toString(),
                     nftChildCount = nft.items.size,
                     collapsed = collapsed
