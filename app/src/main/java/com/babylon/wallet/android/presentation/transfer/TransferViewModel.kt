@@ -6,12 +6,17 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -20,6 +25,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -36,8 +42,9 @@ class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     incomingRequestRepository: IncomingRequestRepository,
-    savedStateHandle: SavedStateHandle
-) : StateViewModel<TransferViewModel.State>() {
+    savedStateHandle: SavedStateHandle,
+    appEventBus: AppEventBus
+) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
     internal val args = TransferArgs(savedStateHandle)
 
@@ -66,6 +73,14 @@ class TransferViewModel @Inject constructor(
 
             _state.update {
                 it.copy(fromAccount = sourceAccount)
+            }
+        }
+
+        viewModelScope.launch {
+            appEventBus.events.filter { event ->
+                event is AppEvent.TransactionSent && event.requestId == _state.value.transferRequestId
+            }.collect {
+                sendEvent(Event.Dismiss)
             }
         }
     }
@@ -182,7 +197,8 @@ class TransferViewModel @Inject constructor(
         val targetAccounts: ImmutableList<TargetAccount> = persistentListOf(TargetAccount.Skeleton()),
         val messageState: Message = Message.None,
         val sheet: Sheet = Sheet.None,
-        val error: UiMessage? = null
+        val error: UiMessage? = null,
+        val transferRequestId: String? = null
     ) : UiState {
 
         val isSheetVisible: Boolean
@@ -327,6 +343,10 @@ class TransferViewModel @Inject constructor(
             object None : Message
             data class Added(val message: String = "") : Message
         }
+    }
+
+    sealed interface Event: OneOffEvent {
+        object Dismiss: Event
     }
 }
 

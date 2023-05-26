@@ -25,7 +25,8 @@ fun NavController.transfer(accountId: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transferScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onDismiss: (String) -> Unit,
 ) {
     composable(
         route = "transfer/{$ARG_ACCOUNT_ID}",
@@ -35,7 +36,10 @@ fun NavGraphBuilder.transferScreen(
     ) {
         TransferScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onDismiss = {
+                onDismiss("transfer/{$ARG_ACCOUNT_ID}")
+            }
         )
     }
 }

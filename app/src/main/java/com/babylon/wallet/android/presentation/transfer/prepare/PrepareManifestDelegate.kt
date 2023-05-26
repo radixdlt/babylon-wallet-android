@@ -31,8 +31,9 @@ class PrepareManifestDelegate(
 
     suspend fun onSubmit() {
         val fromAccount = state.value.fromAccount ?: return
-        prepareRequest(fromAccount, state.value).onValue {
-            incomingRequestRepository.add(it)
+        prepareRequest(fromAccount, state.value).onValue { request ->
+            state.update { it.copy(transferRequestId = request.requestId) }
+            incomingRequestRepository.add(request)
         }.onError { error ->
             state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
         }

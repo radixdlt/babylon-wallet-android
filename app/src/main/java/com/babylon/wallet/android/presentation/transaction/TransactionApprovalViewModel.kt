@@ -443,11 +443,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                 txId = txId
                             )
 
+                            appEventBus.sendEvent(AppEvent.TransactionSent(args.requestId))
+
                             val transactionStatus = pollTransactionStatusUseCase(txId)
                             transactionStatus.onValue { _ ->
                                 _state.update { it.copy(isSigning = false) }
                                 approvalJob = null
-                                appEventBus.sendEvent(AppEvent.ApprovedTransaction)
+                                appEventBus.sendEvent(AppEvent.SuccessfulTransaction(args.requestId))
                                 sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                             }
                             transactionStatus.onError { error ->
