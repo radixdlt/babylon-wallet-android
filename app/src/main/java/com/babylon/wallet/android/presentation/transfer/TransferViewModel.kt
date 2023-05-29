@@ -286,7 +286,10 @@ class TransferViewModel @Inject constructor(
                         assets.map { asset ->
                             when (asset) {
                                 is SpendingAsset.Fungible -> asset.copy(
-                                    exceedingBalance = fungibleBalances.getOrDefault(asset.resource, BigDecimal.ZERO) > asset.resource.amount
+                                    exceedingBalance = fungibleBalances.getOrDefault(
+                                        asset.resource,
+                                        BigDecimal.ZERO
+                                    ) > asset.resource.amount
                                 )
                                 is SpendingAsset.NFT -> asset.copy(
                                     exceedingBalance = nonFungibleBalances.getOrDefault(asset.item, 0) > 1
@@ -362,8 +365,8 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    sealed interface Event: OneOffEvent {
-        object Dismiss: Event
+    sealed interface Event : OneOffEvent {
+        object Dismiss : Event
     }
 }
 

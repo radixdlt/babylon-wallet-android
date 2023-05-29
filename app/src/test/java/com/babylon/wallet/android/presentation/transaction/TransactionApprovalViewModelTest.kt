@@ -102,6 +102,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             )
         } returns Result.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
+        coEvery { appEventBus.sendEvent(any()) } returns Unit
     }
 
     override fun initVM(): TransactionApprovalViewModel {

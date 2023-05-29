@@ -4,28 +4,26 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import java.math.BigDecimal
 
 @ExperimentalCoroutinesApi
 class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
@@ -34,6 +32,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
+    private val appEventBus = mockk<AppEventBus>()
 
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
@@ -59,7 +58,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             getProfileUseCase = getProfileUseCase,
             getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
             incomingRequestRepository = incomingRequestRepository,
-            savedStateHandle = savedStateHandle
+            savedStateHandle = savedStateHandle,
+            appEventBus = appEventBus
         )
     }
 
