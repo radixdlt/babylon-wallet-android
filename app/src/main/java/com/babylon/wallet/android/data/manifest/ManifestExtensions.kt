@@ -17,7 +17,7 @@ fun ManifestBuilder.addFreeXrdInstruction(
 ): ManifestBuilder {
     return addInstruction(
         Instruction.CallMethod(
-            componentAddress = ManifestAstValue.String(faucetComponentAddress),
+            componentAddress = ManifestAstValue.Address(faucetComponentAddress),
             methodName = ManifestAstValue.String(MethodName.Free.stringValue),
             arguments = arrayOf()
         )
