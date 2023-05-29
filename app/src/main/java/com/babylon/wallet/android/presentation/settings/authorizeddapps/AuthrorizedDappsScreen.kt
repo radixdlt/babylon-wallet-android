@@ -75,12 +75,12 @@ private fun AuthorizedDappsContent(
             item {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.here_are_all_the_decentralized_apps),
+                    text = stringResource(R.string.authorizedDapps_subtitle),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                InfoLink(stringResource(R.string.what_is_dapp), modifier = Modifier.fillMaxWidth())
+                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             items(dapps) { dapp ->

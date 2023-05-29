@@ -209,7 +209,7 @@ private fun SettingsEditGatewayContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.add_new_gateway),
+                        text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
                         onClick = {
                             scope.launch {
                                 bottomSheetState.show()
@@ -249,7 +249,7 @@ private fun AddGatewaySheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.add_new_gateway),
+            text = stringResource(id = R.string.gateways_addNewGateway_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -257,7 +257,7 @@ private fun AddGatewaySheet(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.enter_a_gateway_url),
+            text = stringResource(id = R.string.gateways_addNewGateway_subtitle),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -269,18 +269,18 @@ private fun AddGatewaySheet(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             onValueChanged = onNewUrlChanged,
             value = newUrl,
-            hint = stringResource(id = R.string.enter_full_url),
+            hint = stringResource(id = R.string.gateways_addNewGateway_textFieldPlaceholder),
             singleLine = true,
             error = when (gatewayAddFailure) {
-                GatewayAddFailure.AlreadyExist -> stringResource(id = R.string.already_exist)
-                GatewayAddFailure.ErrorWhileAdding -> stringResource(id = R.string.adding_gateway_failed)
+                GatewayAddFailure.AlreadyExist -> stringResource(id = R.string.gateways_addNewGateway_errorDuplicateURL)
+                GatewayAddFailure.ErrorWhileAdding -> stringResource(id = R.string.gateways_addNewGateway_establishingConnectionErrorMessage)
                 else -> null
             }
         )
         Spacer(modifier = Modifier.height(40.dp))
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.add_gateway),
+            text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             onClick = {
                 onAddGateway()
             },
@@ -351,21 +351,27 @@ private fun GatewayCard(
             },
             title = {
                 Text(
-                    text = stringResource(id = R.string.remove_gateway),
+                    text = stringResource(id = R.string.gateways_removeGatewayAlert_title),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.you_will_no_longer_be_able),
+                    text = stringResource(id = R.string.gateways_removeGatewayAlert_message),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
             },
-            confirmText = stringResource(id = R.string.remove),
+            confirmText = stringResource(id = R.string.common_remove),
         )
     }
+}
+
+@Composable
+private fun Radix.Gateway.displayName(): String = when (network.id) {
+    Radix.Network.kisharnet.id -> stringResource(id = R.string.gateways_rcNetGateway)
+    else -> url
 }
 
 @Preview(showBackground = true)

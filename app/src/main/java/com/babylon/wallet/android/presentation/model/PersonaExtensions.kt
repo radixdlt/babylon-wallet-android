@@ -10,10 +10,10 @@ import rdx.works.profile.data.model.pernetwork.Network
 @StringRes
 fun Network.Persona.Field.ID.toDisplayResource(): Int {
     return when (this) {
-        Network.Persona.Field.ID.GivenName -> R.string.given_name
-        Network.Persona.Field.ID.FamilyName -> R.string.family_name
-        Network.Persona.Field.ID.EmailAddress -> R.string.email
-        Network.Persona.Field.ID.PhoneNumber -> R.string.phone
+        Network.Persona.Field.ID.GivenName -> R.string.authorizedDapps_personaDetails_firstName
+        Network.Persona.Field.ID.FamilyName -> R.string.authorizedDapps_personaDetails_lastName
+        Network.Persona.Field.ID.EmailAddress -> R.string.authorizedDapps_personaDetails_emailAddress
+        Network.Persona.Field.ID.PhoneNumber -> R.string.authorizedDapps_personaDetails_phoneNumber
     }
 }
 

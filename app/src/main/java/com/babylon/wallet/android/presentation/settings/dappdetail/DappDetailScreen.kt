@@ -230,18 +230,19 @@ private fun DappDetailContent(
                 },
                 title = {
                     Text(
-                        text = stringResource(id = R.string.forget_this_dapp),
+                        text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_title),
                         style = RadixTheme.typography.body2Header,
                         color = RadixTheme.colors.gray1
                     )
                 },
                 text = {
                     Text(
-                        text = stringResource(id = R.string.disconnect_dapp_prompt),
+                        text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray1
                     )
-                }
+                },
+                confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget)
             )
         }
     }
@@ -327,7 +328,7 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.here_are_the_personas),
+                        text = stringResource(R.string.authorizedDapps_dAppDetails_personasHeading),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2,
                         textAlign = TextAlign.Center
@@ -374,7 +375,7 @@ private fun DappDetails(
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.forget_this_dapp),
+                        text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
                         style = RadixTheme.typography.body1Header,
                         maxLines = 1,
                     )
@@ -395,9 +396,7 @@ private fun DappDefinitionAddressRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = stringResource(id = R.string.dapp_definition).replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            },
+            text = stringResource(id = R.string.authorizedDapps_dAppDetails_dAppDefinition),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )
@@ -455,14 +454,14 @@ private fun PersonaDetailsSheet(
             },
             title = {
                 Text(
-                    text = stringResource(id = R.string.remove_authorization),
+                    text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_title),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.disconnect_persona_prompt),
+                    text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -505,7 +504,7 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = R.string.persona_label),
+                label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 value = persona.persona.displayName
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
@@ -520,7 +519,10 @@ private fun PersonaDetailList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(R.string.here_is_the_personal_data, dappName),
+                    text = stringResource(
+                        R.string.authorizedDapps_personaDetails_personalDataSharingDescription,
+                        dappName
+                    ),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
@@ -543,7 +545,7 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),
-                text = stringResource(R.string.edit_persona),
+                text = stringResource(R.string.authorizedDapps_personaDetails_editPersona),
                 onClick = onEditPersona
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -554,7 +556,7 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.here_are_the_account_names, dappName),
+                        text = stringResource(R.string.authorizedDapps_personaDetails_accountSharingDescription, dappName),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2,
                     )
@@ -585,7 +587,9 @@ private fun PersonaDetailList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingLarge),
-                        text = stringResource(R.string.edit_account_sharing),
+                        text = stringResource(
+                            R.string.authorizedDapps_personaDetails_editAccountSharing
+                        ),
                         onClick = onEditAccountSharing
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -608,7 +612,7 @@ private fun PersonaDetailList(
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.remove_authorization),
+                        text = stringResource(R.string.authorizedDapps_personaDetails_removeAuthorization),
                         style = RadixTheme.typography.body1Header,
                         maxLines = 1,
                     )

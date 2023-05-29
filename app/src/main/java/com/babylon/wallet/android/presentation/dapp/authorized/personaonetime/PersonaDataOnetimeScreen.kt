@@ -204,7 +204,7 @@ private fun PersonaDataOnetimeContent(
             }
             item {
                 RadixSecondaryButton(
-                    text = stringResource(id = R.string.create_a_new_persona),
+                    text = stringResource(id = R.string.createPersona_introduction_title),
                     onClick = onCreatePersona
                 )
                 Spacer(modifier = Modifier.height(40.dp))

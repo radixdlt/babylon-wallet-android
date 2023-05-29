@@ -46,7 +46,7 @@ fun AddFieldSheet(
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.add_a_field),
+            title = stringResource(id = R.string.editPersona_addAField_title),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1,
         )
@@ -63,7 +63,7 @@ fun AddFieldSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(R.string.select_from_the_following),
+                    text = stringResource(R.string.editPersona_addAField_subtitle),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
@@ -89,7 +89,7 @@ fun AddFieldSheet(
                 .fillMaxWidth()
                 .padding(dimensions.paddingDefault),
             enabled = anyFieldSelected,
-            text = stringResource(id = R.string.add),
+            text = stringResource(id = R.string.editPersona_addAField_add),
             onClick = onAddFields,
         )
     }

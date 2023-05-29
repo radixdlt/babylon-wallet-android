@@ -219,7 +219,7 @@ private fun SelectPersonaContent(
                         }
                         item {
                             RadixSecondaryButton(
-                                text = stringResource(id = R.string.create_a_new_persona),
+                                text = stringResource(id = R.string.personas_createNewPersona),
                                 onClick = createNewPersona
                             )
                             Spacer(modifier = Modifier.height(100.dp))
