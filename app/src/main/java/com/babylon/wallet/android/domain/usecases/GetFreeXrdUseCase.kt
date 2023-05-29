@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -45,7 +46,10 @@ class GetFreeXrdUseCase @Inject constructor(
                     faucetComponentAddress = faucetComponentAddress
                 )
                 when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                    is Result.Error -> epochResult
+                    is Result.Error -> {
+                        Timber.e("GetFreeXrdUseCase failed to get ledger epoch")
+                        epochResult
+                    }
                     is Result.Success -> {
                         val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
                         val submitResult = transactionClient.signAndSubmitTransaction(request)
