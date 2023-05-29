@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.accountpreference
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
@@ -58,7 +57,7 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
-        coEvery { getFreeXrdUseCase(true, any()) } returns Result.Success(sampleTxId)
+        coEvery { getFreeXrdUseCase(true, any()) } returns Result.success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_ADDRESS) } returns sampleAddress
         coEvery { eventBus.sendEvent(any()) } just Runs
     }
@@ -94,7 +93,7 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
 
     @Test
     fun `get free xrd failure sets proper state`() = runTest {
-        coEvery { getFreeXrdUseCase(true, any()) } returns Result.Error(Exception())
+        coEvery { getFreeXrdUseCase(true, any()) } returns Result.failure(Exception())
         val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()

@@ -29,6 +29,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -36,6 +38,8 @@ import com.babylon.wallet.android.utils.toAmount
 import com.babylon.wallet.android.utils.toResourceRequest
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
+import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.request.ResourceSpecifier
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -89,6 +93,8 @@ class TransactionApprovalViewModel @Inject constructor(
 
     private var depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf()
 
+    private lateinit var manifestToApprove: TransactionManifest
+
     init {
         viewModelScope.launch {
             transactionClient.signingState.filterNotNull().collect { event ->
@@ -113,19 +119,16 @@ class TransactionApprovalViewModel @Inject constructor(
             val transactionPreview = transactionClient.getTransactionPreview(
                 manifest = manifestInStringFormat,
                 ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
-                networkId = getCurrentGatewayUseCase().network.networkId().value,
                 blobs = manifestInStringFormat.blobs.orEmpty()
             )
-            transactionPreview.onError { error ->
+            transactionPreview.onFailure { error ->
                 _state.update {
                     it.copy(
                         isLoading = false,
                         error = UiMessage.ErrorMessage(error)
                     )
                 }
-            }
-            transactionPreview.onValue { transactionPreviewResponse ->
-
+            }.onSuccess { transactionPreviewResponse ->
                 if (transactionPreviewResponse.receipt.isFailed) {
                     _state.update {
                         it.copy(
@@ -145,7 +148,6 @@ class TransactionApprovalViewModel @Inject constructor(
                     }
 
                     val manifestPreview = transactionClient.analyzeManifestWithPreviewContext(
-                        networkId = getCurrentGatewayUseCase().network.networkId(),
                         transactionManifest = manifestInStringFormat,
                         transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                     )
@@ -317,8 +319,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
                 } else {
-                    _state.update { it.copy(isSigning = true) }
-
+                    _state.update { it.copy(isLoading = true) }
                     val txManifest = TransactionManifest(
                         instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
                         blobs = manifestData.blobs.toTypedArray()
@@ -326,7 +327,7 @@ class TransactionApprovalViewModel @Inject constructor(
 
                     transactionClient.convertManifestInstructionsToJSON(
                         txManifest
-                    ).onValue { manifestJsonResponse ->
+                    ).onSuccess { manifestJsonResponse ->
                         var manifestJson = manifestJsonResponse
                         _state.value.depositingAccounts.map { previewAccountItemsUiModel ->
                             previewAccountItemsUiModel.accounts.map { accountItemUiModel ->
@@ -339,61 +340,23 @@ class TransactionApprovalViewModel @Inject constructor(
                                 }
                             }
                         }
-                        val request = TransactionApprovalRequest(manifestJson, ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey)
-                        val signAndSubmitResult = transactionClient.signAndSubmitTransaction(request)
-                        signAndSubmitResult.onValue { txId ->
-                            // Send confirmation to the dApp that tx was submitted before status polling
-                            if (!transactionWriteRequest.isInternal) {
-                                dAppMessenger.sendTransactionWriteResponseSuccess(
-                                    dappId = transactionWriteRequest.dappId,
-                                    requestId = args.requestId,
-                                    txId = txId
-                                )
-                            }
-
-                            val transactionStatus = pollTransactionStatusUseCase(txId)
-                            transactionStatus.onValue { _ ->
-                                _state.update { it.copy(isSigning = false) }
-                                approvalJob = null
-                                appEventBus.sendEvent(AppEvent.ApprovedTransaction(args.requestId))
-                                sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
-                            }
-                            transactionStatus.onError { error ->
-                                _state.update {
-                                    it.copy(
-                                        isSigning = false,
-                                        error = UiMessage.ErrorMessage(error = error)
+                        manifestToApprove = manifestJson
+                        transactionClient.findFeePayerInManifest(manifestJson).onSuccess { feePayerResult ->
+                            _state.update { it.copy(isLoading = false) }
+                            if (feePayerResult.feePayerAddressFromManifest != null) {
+                                handleTransactionApprovalForFeePayer(feePayerResult.feePayerAddressFromManifest, manifestJson)
+                            } else {
+                                _state.update { state ->
+                                    state.copy(
+                                        feePayerCandidates = feePayerResult.candidates.map { it.toUiModel() }.toPersistentList(),
+                                        bottomSheetMode = BottomSheetMode.FeePayerSelection
                                     )
                                 }
-                                val exception = error as? DappRequestException
-                                if (exception != null) {
-                                    if (!transactionWriteRequest.isInternal) {
-                                        dAppMessenger.sendWalletInteractionResponseFailure(
-                                            dappId = transactionWriteRequest.dappId,
-                                            requestId = args.requestId,
-                                            error = exception.failure.toWalletErrorType(),
-                                            message = exception.failure.getDappMessage()
-                                        )
-                                    }
-                                    approvalJob = null
-                                    sendEvent(
-                                        TransactionApprovalEvent.FlowCompletedWithError(
-                                            requestId = args.requestId,
-                                            errorTextRes = exception.failure.toDescriptionRes()
-                                        )
-                                    )
-                                }
+                                sendEvent(TransactionApprovalEvent.SelectFeePayer)
                             }
-                        }
-                        signAndSubmitResult.onError { error ->
-                            _state.update {
-                                it.copy(
-                                    isSigning = false,
-                                    error = UiMessage.ErrorMessage(error = error)
-                                )
-                            }
-                            val exception = error as? DappRequestException
-                            if (exception != null) {
+                        }.onFailure { t ->
+                            _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage(error = t)) }
+                            (t as? DappRequestException)?.let { exception ->
                                 if (!transactionWriteRequest.isInternal) {
                                     dAppMessenger.sendWalletInteractionResponseFailure(
                                         dappId = transactionWriteRequest.dappId,
@@ -402,17 +365,93 @@ class TransactionApprovalViewModel @Inject constructor(
                                         message = exception.failure.getDappMessage()
                                     )
                                 }
-                                approvalJob = null
-                                sendEvent(
-                                    TransactionApprovalEvent.FlowCompletedWithError(
-                                        requestId = args.requestId,
-                                        errorTextRes = exception.failure.toDescriptionRes()
-                                    )
-                                )
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Suppress("LongMethod")
+    private suspend fun handleTransactionApprovalForFeePayer(
+        feePayerAddress: String,
+        manifestJson: ConvertManifestResponse
+    ) {
+        _state.update { it.copy(isSigning = true) }
+        val request = TransactionApprovalRequest(
+            manifestJson,
+            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
+            feePayerAddress = feePayerAddress
+        )
+        val signAndSubmitResult = transactionClient.signAndSubmitTransaction(request)
+        signAndSubmitResult.onSuccess { txId ->
+            // Send confirmation to the dApp that tx was submitted before status polling
+            if (!transactionWriteRequest.isInternal) {
+                dAppMessenger.sendTransactionWriteResponseSuccess(
+                    dappId = transactionWriteRequest.dappId,
+                    requestId = args.requestId,
+                    txId = txId
+                )
+            }
+            val transactionStatus = pollTransactionStatusUseCase(txId)
+            transactionStatus.onValue { _ ->
+                _state.update { it.copy(isSigning = false) }
+                approvalJob = null
+                appEventBus.sendEvent(AppEvent.ApprovedTransaction(args.requestId))
+                sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
+            }
+            transactionStatus.onError { error ->
+                _state.update {
+                    it.copy(
+                        isSigning = false,
+                        error = UiMessage.ErrorMessage(error = error)
+                    )
+                }
+                val exception = error as? DappRequestException
+                if (exception != null) {
+                    if (!transactionWriteRequest.isInternal) {
+                        dAppMessenger.sendWalletInteractionResponseFailure(
+                            dappId = transactionWriteRequest.dappId,
+                            requestId = args.requestId,
+                            error = exception.failure.toWalletErrorType(),
+                            message = exception.failure.getDappMessage()
+                        )
+                    }
+                    approvalJob = null
+                    sendEvent(
+                        TransactionApprovalEvent.FlowCompletedWithError(
+                            requestId = args.requestId,
+                            errorTextRes = exception.failure.toDescriptionRes()
+                        )
+                    )
+                }
+            }
+        }
+        signAndSubmitResult.onFailure { error ->
+            _state.update {
+                it.copy(
+                    isSigning = false,
+                    error = UiMessage.ErrorMessage(error = error)
+                )
+            }
+            val exception = error as? DappRequestException
+            if (exception != null) {
+                if (!transactionWriteRequest.isInternal) {
+                    dAppMessenger.sendWalletInteractionResponseFailure(
+                        dappId = transactionWriteRequest.dappId,
+                        requestId = args.requestId,
+                        error = exception.failure.toWalletErrorType(),
+                        message = exception.failure.getDappMessage()
+                    )
+                }
+                approvalJob = null
+                sendEvent(
+                    TransactionApprovalEvent.FlowCompletedWithError(
+                        requestId = args.requestId,
+                        errorTextRes = exception.failure.toDescriptionRes()
+                    )
+                )
             }
         }
     }
@@ -450,6 +489,30 @@ class TransactionApprovalViewModel @Inject constructor(
         _state.update {
             it.copy(
                 guaranteesAccounts = depositingAccounts.toGuaranteesAccountsUiModel()
+            )
+        }
+    }
+
+    fun resetBottomSheetMode() {
+        // Reset local depositing accounts to initial values
+        _state.update {
+            it.copy(bottomSheetMode = BottomSheetMode.Guarantees)
+        }
+    }
+
+    fun onPayerConfirmed() {
+        viewModelScope.launch {
+            val selectedPayer = state.value.feePayerCandidates.first()
+            handleTransactionApprovalForFeePayer(selectedPayer.address, manifestToApprove)
+        }
+    }
+
+    fun onPayerSelected(accountItemUiModel: AccountItemUiModel) {
+        _state.update { state ->
+            state.copy(
+                feePayerCandidates = state.feePayerCandidates.map {
+                    it.copy(isSelected = it.address == accountItemUiModel.address)
+                }.toPersistentList()
             )
         }
     }
@@ -607,12 +670,19 @@ data class TransactionUiState(
     val guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
     val connectedDApps: ImmutableList<ConnectedDAppsUiModel> = persistentListOf(),
-    val guaranteePercent: BigDecimal = BigDecimal("100")
+    val guaranteePercent: BigDecimal = BigDecimal("100"),
+    val bottomSheetMode: BottomSheetMode = BottomSheetMode.Guarantees,
+    val feePayerCandidates: ImmutableList<AccountItemUiModel> = persistentListOf()
 ) : UiState
+
+enum class BottomSheetMode {
+    FeePayerSelection, Guarantees
+}
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
     object NavigateBack : TransactionApprovalEvent
     data class FlowCompletedWithSuccess(val requestId: String) : TransactionApprovalEvent
+    object SelectFeePayer : TransactionApprovalEvent
     data class FlowCompletedWithError(
         val requestId: String,
         @StringRes val errorTextRes: Int

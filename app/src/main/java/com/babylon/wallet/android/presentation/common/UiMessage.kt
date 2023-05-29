@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.common
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import rdx.works.core.UUIDGenerator
 
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
@@ -12,7 +13,9 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     @StringRes
     fun getUserFriendlyDescriptionRes(): Int? {
         return when (this) {
-            is ErrorMessage -> (this.error as? DappRequestException)?.failure?.toDescriptionRes()
+            is ErrorMessage -> {
+                (error as? DappRequestException)?.failure?.toDescriptionRes() ?: (error as? DappRequestFailure)?.toDescriptionRes()
+            }
             is InfoMessage -> this.type?.userFriendlyDescriptionRes()
         }
     }

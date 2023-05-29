@@ -374,4 +374,7 @@
     <string name="scan_qr_code_of_radix_account_address">Scan a QR code of a Radix account address</string>
     <string name="create_and_upload_auth_key"><![CDATA[Create & Upload Auth Key]]></string>
     <string name="failed_to_sign_auth_challenge">Failed to sign auth challenge</string>
+    <string name="no_account_to_pay_fee">The transaction you are about to sign does not reference your accounts so you must choose which account you would like to pay the transaction fee with.</string>
+    <string name="pay_tx_fee">Select account to pay %d XRD fee</string>
+    <string name="confirm_fee_payer">Confirm fee payer</string>
 </resources>

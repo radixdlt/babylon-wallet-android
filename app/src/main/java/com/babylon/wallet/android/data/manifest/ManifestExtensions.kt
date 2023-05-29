@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.babylon.wallet.android.domain.common.Result
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.EnumDiscriminator
@@ -151,7 +150,7 @@ fun TransactionManifest.convertManifestInstructionsToString(
     networkId: Int
 ): Result<ConvertManifestResponse> {
     return try {
-        Result.Success(
+        Result.success(
             RadixEngineToolkit.convertManifest(
                 ConvertManifestRequest(
                     networkId = networkId.toUByte(),
@@ -161,7 +160,7 @@ fun TransactionManifest.convertManifestInstructionsToString(
             ).getOrThrow()
         )
     } catch (e: Exception) {
-        Result.Error(
+        Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                 e.message,

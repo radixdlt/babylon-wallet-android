@@ -9,8 +9,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
@@ -39,6 +39,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionApprovalViewModelTest : StateViewModelTest<TransactionApprovalViewModel>() {
@@ -80,24 +81,25 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { getTransactionProofResourcesUseCase.invoke(any()) } returns listOf(
             PresentingProofUiModel("", "")
         )
-        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.Success(sampleTxId)
-        coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.Success(sampleManifest)
+        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.success(sampleTxId)
+        coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.success(sampleManifest)
+        coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
-        coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.Success(sampleManifest)
-        coEvery { transactionClient.getTransactionPreview(any(), any(), any(), any()) } returns Result.Success(
+        coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.success(sampleManifest)
+        coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.success(
             previewResponse()
         )
-        coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any(), any()) } returns kotlin.Result.success(
+        coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any()) } returns Result.success(
             analyzeManifestResponse()
         )
-        coEvery { pollTransactionStatusUseCase(any()) } returns Result.Success("")
+        coEvery { pollTransactionStatusUseCase(any()) } returns ResultInternal.Success("")
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",
                 requestId = sampleRequestId,
                 txId = sampleTxId
             )
-        } returns Result.Success(Unit)
+        } returns ResultInternal.Success(Unit)
         coEvery {
             dAppMessenger.sendWalletInteractionResponseFailure(
                 dappId = "dappId",
@@ -105,7 +107,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 error = any(),
                 message = any()
             )
-        } returns Result.Success(Unit)
+        } returns ResultInternal.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
     }
 
@@ -163,7 +165,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { pollTransactionStatusUseCase(any()) } returns Result.Error(
+        coEvery { pollTransactionStatusUseCase(any()) } returns ResultInternal.Error(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )

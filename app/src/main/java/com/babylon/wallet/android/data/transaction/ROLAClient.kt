@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.manifest.addSetMetadataInstructionForOwne
 import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToString
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
@@ -44,7 +43,7 @@ class ROLAClient @Inject constructor(
             }
             resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(signingEntity.address, ownerKeys).build()
         }
-        return resultManifest?.convertManifestInstructionsToString(signingEntity.networkID)?.value()
+        return resultManifest?.convertManifestInstructionsToString(signingEntity.networkID)?.getOrNull()
     }
 
     suspend fun signAuthChallenge(

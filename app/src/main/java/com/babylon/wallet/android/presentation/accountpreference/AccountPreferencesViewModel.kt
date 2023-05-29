@@ -7,8 +7,6 @@ import com.babylon.wallet.android.data.manifest.getStringInstructions
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
@@ -24,6 +22,7 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -32,7 +31,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -81,26 +80,26 @@ class AccountPreferenceViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            val account = requireNotNull(getProfileUseCase.accountOnCurrentNetwork(args.address))
-            _state.update {
-                it.copy(
-                    account = account,
-                    isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
-                    hasAuthKey = account.hasAuthSigning()
-                )
-            }
+            getProfileUseCase.accountsOnCurrentNetwork.map { accounts -> accounts.first { it.address == args.address } }
+                .collect { account ->
+                    _state.update {
+                        it.copy(
+                            account = account,
+                            isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
+                            hasAuthKey = account.hasAuthSigning()
+                        )
+                    }
+                }
         }
     }
 
     fun onGetFreeXrdClick() {
         appScope.launch {
             _state.update { it.copy(isLoading = true) }
-            val result = getFreeXrdUseCase(true, args.address)
-            result.onValue { _ ->
+            getFreeXrdUseCase(true, args.address).onSuccess { _ ->
                 _state.update { it.copy(isLoading = false, gotFreeXrd = true) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
-            }
-            result.onError { error ->
+            }.onFailure { error ->
                 _state.update {
                     it.copy(
                         isLoading = false,
