@@ -27,17 +27,17 @@ sealed interface SettingsItem {
         fun descriptionRes(): Int {
             return when (this) {
                 Connection -> R.string.add_connection
-                DeleteAll -> R.string.delete_all
-                Gateways -> R.string.gateways
+                DeleteAll -> R.string.settings_deleteWalletData
+                Gateways -> R.string.settings_gateways
                 InspectProfile -> R.string.inspect_profile
-                LinkedConnector -> R.string.linked_connector
+                LinkedConnector -> R.string.settings_linkedConnectors
                 Personas -> R.string.settings_personas
-                AuthorizedDapps -> R.string.authorized_dapps
-                AppSettings -> R.string.app_settings
+                AuthorizedDapps -> R.string.settings_authorizedDapps
+                AppSettings -> R.string.settings_appSettings
                 ShowMnemonic -> R.string.view_mnemonics
-                ImportFromLegacyWallet -> R.string.import_from_legacy_wallet
+                ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
                 LedgerHardwareWallets -> R.string.ledger_hardware_wallets
-                is Backups -> R.string.backups
+                is Backups -> R.string.settings_backups
             }
         }
 

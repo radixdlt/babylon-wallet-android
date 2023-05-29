@@ -114,7 +114,7 @@ private fun AccountPreferenceContent(
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.account_preferences),
+            title = stringResource(R.string.accountSettings_title),
             onBackClick = onBackClick,
             containerColor = RadixTheme.colors.gray5
         )
@@ -133,7 +133,7 @@ private fun AccountPreferenceContent(
                 val context = LocalContext.current
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.get_free_xrd),
+                    text = stringResource(R.string.accountSettings_getXrdTestTokens),
                     onClick = {
                         if (isDeviceSecure) {
                             context.findFragmentActivity()?.let { activity ->
@@ -160,7 +160,7 @@ private fun AccountPreferenceContent(
                 if (loading) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
                     Text(
-                        text = stringResource(R.string.this_may_take_several),
+                        text = stringResource(R.string.accountSettings_loadingPrompt),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray1,
                     )

@@ -114,9 +114,7 @@ private fun ResourceAddressRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = stringResource(id = R.string.resource_address).replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            },
+            text = stringResource(id = R.string.assetDetails_resourceAddress),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )

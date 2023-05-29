@@ -157,7 +157,7 @@ private fun SettingsEditGatewayContent(
             horizontalAlignment = Alignment.Start
         ) {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.gateways),
+                title = stringResource(R.string.gateways_title),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1
             )
@@ -170,13 +170,13 @@ private fun SettingsEditGatewayContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.choose_the_gateway_your_wallet),
+                        text = stringResource(id = R.string.gateways_subtitle),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     InfoLink(
-                        stringResource(R.string.what_is_a_gateway),
+                        stringResource(R.string.gateways_whatIsAGateway),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)

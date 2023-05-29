@@ -109,7 +109,7 @@ fun PersonasContent(
                     ApplySecuritySettingsLabel(
                         modifier = Modifier.fillMaxWidth(),
                         labelColor = Color.Black.copy(alpha = 0.2f),
-                        text = stringResource(id = R.string.apply_security_settings),
+                        text = stringResource(id = R.string.homePage_applySecuritySettings),
                         onClick = onApplySecuritySettings
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

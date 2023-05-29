@@ -86,7 +86,12 @@ fun AccountCardView(
                     start.linkTo(addressLabel.end, margin = 8.dp)
                     bottom.linkTo(addressLabel.bottom)
                 },
-                text = stringResource(id = R.string.legacy_label),
+                text = StringBuilder()
+                    .append(" ")
+                    .append(stringResource(id = R.string.dot_separator))
+                    .append(" ")
+                    .append(stringResource(id = R.string.homePage_legacyAccountHeading))
+                    .toString(),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.white
             )
@@ -134,7 +139,7 @@ fun AccountCardView(
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onApplySecuritySettings,
-                    text = stringResource(id = R.string.apply_security_settings)
+                    text = stringResource(id = R.string.homePage_applySecuritySettings)
                 )
             }
         }

@@ -144,7 +144,7 @@ fun CreateAccountContent(
                 text = if (firstTime) {
                     stringResource(id = R.string.create_first_account)
                 } else {
-                    stringResource(id = R.string.create_new_account)
+                    stringResource(id = R.string.homePage_createNewAccount)
                 },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1

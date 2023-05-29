@@ -112,7 +112,7 @@ private fun WalletContent(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = RadixTheme.colors.defaultBackground),
                 title = {
                     Text(
-                        text = stringResource(id = R.string.home_toolbar_title),
+                        text = stringResource(id = R.string.homePage_title),
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1
                     )
@@ -190,7 +190,7 @@ private fun WalletAccountList(
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
             Text(
-                text = stringResource(id = R.string.home_welcome_text),
+                text = stringResource(id = R.string.homePage_subtitle),
                 modifier = Modifier.padding(
                     vertical = RadixTheme.dimensions.paddingMedium,
                     horizontal = RadixTheme.dimensions.paddingXLarge
@@ -218,7 +218,7 @@ private fun WalletAccountList(
         item {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RadixSecondaryButton(
-                text = stringResource(id = R.string.create_new_account),
+                text = stringResource(id = R.string.homePage_createNewAccount),
                 onClick = onAccountCreationClick,
                 modifier = Modifier
                     .fillMaxWidth(0.8f)

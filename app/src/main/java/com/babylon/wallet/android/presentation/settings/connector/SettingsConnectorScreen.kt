@@ -124,9 +124,9 @@ private fun SettingsLinkConnectorContent(
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
             title = if (settingsMode == SettingsConnectorMode.ShowDetails) {
-                stringResource(R.string.linked_connector)
+                stringResource(R.string.linkedConnectors_title)
             } else {
-                stringResource(R.string.link_to_connector)
+                stringResource(R.string.linkedConnectors_newConnection_title)
             },
             onBackClick = backHandler,
             contentColor = RadixTheme.colors.gray1
@@ -176,14 +176,14 @@ private fun SettingsLinkConnectorContent(
                     },
                     title = {
                         Text(
-                            text = stringResource(id = R.string.remove_connector),
+                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
                             style = RadixTheme.typography.body2Header,
                             color = RadixTheme.colors.gray1
                         )
                     },
                     text = {
                         Text(
-                            text = stringResource(id = R.string.you_will_no_longer),
+                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
                             style = RadixTheme.typography.body2Regular,
                             color = RadixTheme.colors.gray1
                         )
@@ -208,7 +208,7 @@ private fun ActiveConnectorDetails(
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-            text = stringResource(R.string.your_radix_wallet_is_linked),
+            text = stringResource(R.string.linkedConnectors_subtitle),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray2
         )
@@ -224,7 +224,7 @@ private fun ActiveConnectorDetails(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.link_new_connector),
+                    text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
                     onClick = {
                         onLinkConnector()
                         cameraPermissionState.launchPermissionRequest()
@@ -314,8 +314,8 @@ private fun ConnectorNameInput(
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             onValueChanged = onConnectorDisplayNameChanged,
             value = connectorDisplayName,
-            hint = stringResource(R.string.name_of_connector),
-            optionalHint = stringResource(id = R.string.hint_name_this_connector),
+            hint = stringResource(R.string.linkedConnectors_newConnection_textFieldPlaceholder),
+            optionalHint = stringResource(id = R.string.linkedConnectors_newConnection_textFieldHint),
             singleLine = true
         )
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
@@ -324,7 +324,7 @@ private fun ConnectorNameInput(
                 .fillMaxWidth()
                 .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.save_link),
+            text = stringResource(id = R.string.linkedConnectors_newConnection_saveLinkButtonTitle),
             onClick = onLinkNewConnectorClick,
             enabled = buttonEnabled
         )

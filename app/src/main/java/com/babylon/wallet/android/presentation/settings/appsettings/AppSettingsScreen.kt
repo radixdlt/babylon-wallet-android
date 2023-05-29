@@ -54,7 +54,7 @@ private fun AppSettingsContent(
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.app_settings),
+            title = stringResource(R.string.appSettings_title),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )

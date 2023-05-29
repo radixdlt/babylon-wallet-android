@@ -82,7 +82,7 @@ fun ShowMnemonicScreen(
                         color = RadixTheme.colors.gray1
                     )
                 },
-                confirmText = stringResource(id = R.string.backed_up_mnemonic)
+                confirmText = stringResource(id = R.string.homePage_backedUpMnemonicHeading)
             )
         }
         else -> {}

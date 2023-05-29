@@ -64,7 +64,7 @@ private fun BackupScreenContent(
         modifier = modifier,
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.backups),
+            title = stringResource(R.string.settings_backups),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )

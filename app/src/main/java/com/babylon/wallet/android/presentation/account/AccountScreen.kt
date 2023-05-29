@@ -378,7 +378,7 @@ private fun AccountSummaryContent(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         RadixSecondaryButton(
-            text = stringResource(id = R.string.account_transfer_button_title),
+            text = stringResource(id = R.string.account_transfer),
             onClick = { onTransferClick(accountAddress) },
             containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
             contentColor = RadixTheme.colors.white,
@@ -402,7 +402,7 @@ private fun AccountSummaryContent(
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onApplySecuritySettings,
-                text = stringResource(id = R.string.apply_security_settings)
+                text = stringResource(id = R.string.homePage_applySecuritySettings)
             )
         }
     }
