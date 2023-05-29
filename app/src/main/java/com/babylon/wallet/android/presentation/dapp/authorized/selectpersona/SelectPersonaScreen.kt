@@ -175,9 +175,9 @@ private fun SelectPersonaContent(
                             Text(
                                 text = stringResource(
                                     id = if (firstTimeLogin) {
-                                        R.string.new_login_request
+                                        R.string.dAppRequest_login_titleNewDapp
                                     } else {
-                                        R.string.login_request
+                                        R.string.dAppRequest_login_titleKnownDapp
                                     }
                                 ),
                                 textAlign = TextAlign.Center,
@@ -193,7 +193,7 @@ private fun SelectPersonaContent(
                             if (personas.isNotEmpty()) {
                                 Text(
                                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(R.string.choose_a_persona),
+                                    text = stringResource(R.string.dAppRequest_login_choosePersona),
                                     textAlign = TextAlign.Center,
                                     style = RadixTheme.typography.body1Header,
                                     color = RadixTheme.colors.gray1

@@ -189,7 +189,6 @@
   <string name="backup_openSystemBackupSettings">Open System Backup Settings</string>
   <string name="backup_backupWalletData_title">Backup Wallet Data</string>
   <string name="backup_backupWalletData_message">Warning: If disabled you might lose access to accounts/personas.</string>
-
   <string name="importLegacyWallet_title">Import Legacy Wallet</string>
   <string name="importLegacyWallet_scanQRCodeInstructions">Open your Olympia Wallet and export the accounts you would like to migrate to this wallet.</string>
   <string name="importLegacyWallet_selectAccountsToImport_accountType">Type</string>
@@ -256,6 +255,7 @@
   <string name="dAppRequest_accountPermission_numberOfAccountsAtLeastZero">Any number of accounts</string>
   <string name="dAppRequest_accountPermission_numberOfAccountsExactly">%d accounts</string>
   <string name="dAppRequest_accountPermission_numberOfAccountsExactlyOne">1 account</string>
+
   <string name="dAppRequest_accountPermission_subtitle">*%s* is requesting permission to *always* be able to view account information when you login with this Persona.</string>
   <string name="dAppRequest_accountPermission_updateInSettingsExplanation">You can update this permission in your settings at any time.</string>
   <string name="dAppRequest_chooseAccounts_createNewAccount">Create a New Account</string>
@@ -403,7 +403,6 @@
   <string name="transactionSigning_signingAndSubmittingTransaction">Submitting transaction...</string>
 
 <!-- OLD STRINGS -->
-  <string name="create_first_account">Create First Account</string>
   <string name="dollar_sign">$</string>
   <string name="onboarding_title_1">Welcome to Radix Wallet</string>
   <string name="onboarding_title_2">Your wallet holds your accounts, assets, and identity</string>
@@ -419,14 +418,7 @@
   <string name="cancel">Cancel</string>
   <string name="please_confirm_dialog_title">Your device is not secured</string>
   <string name="please_confirm_dialog_body">Do you want to continue?</string>
-  <string name="account_creation_text">What would you like to call your account?</string>
-  <string name="this_can_be_changed_any_time">This can be changed any time</string>
-  <string name="hint_account_name">e.g. My Main Account</string>
   <string name="continue_button_title">Continue</string>
-  <string name="congratulations">Congratulations</string>
-  <string name="your_account_has_been_created">Your account has been created.</string>
-  <string name="account_created_info">Your account lives on the Radix Network and you can access it anytime in the Radix Wallet.</string>
-  <string name="go_to_home">Go to Home</string>
   <string name="dapp_connection_request">dApp Connection Request</string>
   <string name="radaswap_wants_to_connect_wallet">Radaswap wants to connect to your wallet</string>
   <string name="for_this_dapp_to_function">For this dApp to function, it needs the following:</string>
@@ -439,7 +431,6 @@
   <string name="create_dapp_accounts_button_title">+ Create a New Account</string>
   <string name="dapp_successful_title">dApp Connection Successful</string>
   <string name="dapp_successful_body">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
-  <string name="dapp_successful_button_title">Go to %s</string>
   <string name="dapp_verification_error_title">DApp error</string>
   <string name="empty_content_description" />
   <string name="history">History</string>
@@ -465,9 +456,6 @@
   <string name="transaction_approved_success">Your transaction was successful</string>
   <string name="ok">Ok</string>
   <string name="development_use_only">Development use only. Not usable on Radix mainnet.</string>
-  <string name="go_to_account_list">Go to Account List</string>
-  <string name="go_to_choose_accounts">Go to Choose Accounts</string>
-  <string name="go_to_gateways">Go to Gateways</string>
   <string name="tx_fail_header">Failed to build transaction header</string>
   <string name="tx_fail_manifest">Failed to convert transaction manifest</string>
   <string name="tx_fail_poll_status">Failed to poll transaction status</string>
@@ -481,21 +469,13 @@
   <string name="tx_fail_submit">Failed to submit transaction</string>
   <string name="tx_fail_network">Wrong network</string>
   <string name="space">" "</string>
-  <string name="create_account">Create Account</string>
   <string name="no_funds_to_approve_transaction">No funds to approve transaction</string>
-  <string name="hint_persona_name">e.g. My Main Persona</string>
   <string name="create_persona">Create Persona</string>
-  <string name="your_persona_has_been_created">Your Persona has been created.</string>
-  <string name="your_first_persona_has_been_created">You\'ve created your first Persona.</string>
-  <string name="create_a_persona">Create a Persona</string>
-  <string name="login_request">Login Request</string>
   <string name="dapp_login_subtitle">%s is requesting you login with a Persona.</string>
   <string name="dapp_login_first_time_subtitle">%s is requesting you login for the first time with a Persona.</string>
-  <string name="choose_a_persona">Choose a Persona</string>
   <string name="change_persona">Change Persona</string>
   <string name="login">Login</string>
   <string name="select_a_persona">Select a Persona</string>
-  <string name="account_permission">Account Permission</string>
   <string name="dapp_is_requesting_ongoing_permission">%s is requesting permission to always be able to view account information when you login with this Persona.</string>
   <string name="dapp_is_requesting_ongoing_persona_data_permission">%s is requesting permission to always be able to view the following personal data when you login with this Persona.</string>
   <string name="dapp_is_requesting_onetime_persona_data_permission">%s is requesting that you provide some pieces personal data just one time.</string>
@@ -503,21 +483,11 @@
   <string name="dapp_is_requesting_permission">%s is requesting permission to view the following</string>
   <string name="revoke">Revoke</string>
   <string name="bullet_string">\u2022 %s</string>
-  <plurals name="view_exactly_x_accounts">
-    <item quantity="one">\u2022 %d account</item>
-    <item quantity="other">\u2022 %d accounts</item>
-  </plurals>
-  <string name="view_at_least_x_accounts">\u2022 %d or more accounts</string>
-  <string name="any_number_of_accounts">\u2022 Any number of accounts</string>
   <string name="agree">Agree</string>
-  <string name="new_login_request">New Login Request</string>
   <string name="account_request">Account Request</string>
-  <string name="your_last_login">Your last login was on %s</string>
   <string name="sharing">Sharing</string>
   <string name="success">Success</string>
   <string name="request_complete">Request from %s complete</string>
-  <string name="the_personal_data_you_specify">Personal data that you add to your Persona will only be shared with dApp websites with your permission in the Radix Wallet.</string>
-  <string name="go_to_choose_personas">Go to Choose Personas</string>
   <string name="you_can_update_permission_at_any_time">You can update this permission in your settings at any time.</string>
   <string name="personal_identification_number">Personal Identification Number</string>
   <string name="zip_code">Zip Code</string>
@@ -572,12 +542,6 @@
   <string name="action_open_in_dashboard">View on Radix Dashboard</string>
   <string name="action_show_qr_code">Show QR Code</string>
   <string name="no_web_browser_installed">There is no web browser installed in this device</string>
-  <string name="learn_about_personas">Learn about Personas</string>
-  <string name="a_persona_is_an_identity">A Persona is an identity that you own and control. You can have as many as you like.</string>
-  <string name="you_will_choose_personas">You will choose Personas to login to dApps, and dApps may request access to personal information associated with that Persona.</string>
-  <string name="this_will_be_shared_with_dapps">This will be shared with dApps you login to</string>
-  <string name="some_dapps_may_request">Some dApps may request personal information, like name or email address, that can be added to your Persona. Add some of this data now if you like.</string>
-  <string name="save_and_continue">Save and Continue</string>
   <string name="review_your_transaction">Review Your Transaction</string>
   <string name="xrd_amount">XRD %s</string>
   <string name="network_is_congested_info">The network is currently congested. Add a tip to speed up your transfer.</string>
@@ -592,7 +556,6 @@
   <string name="personal_data_permission">Personal Data Permission</string>
   <string name="required_information">Required information:\u0020</string>
   <string name="empty_phone">Empty phone number</string>
-  <string name="empty_display_name">Empty display name</string>
   <string name="one_time_data_request">One-Time Data Request</string>
   <string name="just_one_time">just one time</string>
   <string name="choose_data_to_provide">Choose the data to provide</string>
@@ -600,11 +563,6 @@
   <string name="unknown_dapp">Unknown dApp</string>
   <string name="discard">Discard</string>
   <string name="invalid_request">Invalid request</string>
-  <string name="you_ve_created_your_first_account">You\'ve created your first Account.</string>
-  <string name="import_legacy_wallet">Import Legacy Wallet</string>
-  <string name="name">Name</string>
-  <string name="olympia_address">Olympia Address</string>
-  <string name="path">Path</string>
   <string name="import_olympia_accounts">Import Olympia Accounts</string>
   <string name="seed_phrase">Seed phrase</string>
   <string name="change_seed_phrase_length">Change seed phrase length</string>
@@ -612,15 +570,8 @@
   <string name="passphrase">Passphrase</string>
   <string name="bip_39_passphrase">BIP39 passphrase</string>
   <string name="import_label">Import</string>
-  <string name="type">Type</string>
   <string name="invalid_mnemonic">Invalid Mnemonic</string>
-  <string name="account_already_imported">Account already imported</string>
   <string name="already_imported">Already imported</string>
-  <plurals name="imported_x_accounts">
-    <item quantity="zero">No accounts imported.</item>
-    <item quantity="one">Imported %d account.</item>
-    <item quantity="other">Imported %d accounts.</item>
-  </plurals>
   <plurals name="accounts_left_to_import">
     <item quantity="one">%d account left to import.</item>
     <item quantity="other">%d accounts left to import.</item>
@@ -654,12 +605,6 @@
   <string name="ledger_hint">My Ledger</string>
   <string name="ledger_name_bottom_hint">Displayed when you are prompted to sign with this device.</string>
   <string name="no_accounts_for_ledger">No Accounts found to import on this device</string>
-  <string name="create_with_ledger_hardware_wallet">Create with Ledger hardware wallet</string>
-  <string name="requires_you_to_sign_transactions">Requires you to sign transactions using your Ledger</string>
-  <string name="create_ledger_account">Create Ledger Account</string>
-  <string name="add_new_ledger">Add new Ledger</string>
-  <string name="use_ledger">Use Ledger</string>
-  <string name="you_have_no_ledgers_added">You have no Ledgers added, add a ledger to get started...</string>
   <string name="add_new_p2p_link">Add New P2P Link</string>
   <string name="found_no_radix_connect_connections">Found no open RadixConnect connections.</string>
   <string name="connect_the_ledger_device">Connect the Ledger device you wanna add to a computer on which you have a Browser you have RadixConnect linked to. Unlock your Ledger and open the Radix Babylon Ledger App on your ledger. Look for a new tab in your linked Browser and follow the instructions on the screen.</string>

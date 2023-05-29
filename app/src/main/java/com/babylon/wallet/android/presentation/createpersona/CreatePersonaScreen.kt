@@ -220,7 +220,7 @@ fun CreatePersonaContent(
                     }
                 },
                 enabled = continueButtonEnabled,
-                text = stringResource(id = R.string.save_and_continue)
+                text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle)
             )
             if (showNotSecuredDialog) {
                 NotSecureAlertDialog(finish = {
@@ -259,13 +259,13 @@ private fun CreatePersonaContentList(
     ) {
         item {
             Text(
-                text = stringResource(id = R.string.create_a_persona),
+                text = stringResource(id = R.string.createPersona_introduction_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             InfoLink(
-                stringResource(R.string.learn_about_personas),
+                stringResource(R.string.createPersona_introduction_learnAboutPersonas),
                 modifier = Modifier
                     .padding(horizontal = dimensions.paddingDefault)
             )
@@ -293,12 +293,12 @@ private fun CreatePersonaContentList(
                 leftLabel = stringResource(
                     id = R.string.authorizedDapps_personaDetails_personaLabelHeading
                 ),
-                hint = stringResource(id = R.string.hint_persona_name),
+                hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
                 onFocusChanged = {
                     onPersonaDisplayNameFocusChanged(it.hasFocus)
                 },
                 error = if (personaName.shouldDisplayValidationError && personaName.valid == false) {
-                    stringResource(id = R.string.empty_display_name)
+                    stringResource(id = R.string.createPersona_emptyDisplayName)
                 } else {
                     null
                 },
@@ -306,7 +306,7 @@ private fun CreatePersonaContentList(
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.this_will_be_shared_with_dapps),
+                text = stringResource(id = R.string.createPersona_explanation_thisWillBeShared),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -342,7 +342,7 @@ private fun CreatePersonaContentList(
             Divider(color = RadixTheme.colors.gray5)
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             Text(
-                text = stringResource(id = R.string.some_dapps_may_request),
+                text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )

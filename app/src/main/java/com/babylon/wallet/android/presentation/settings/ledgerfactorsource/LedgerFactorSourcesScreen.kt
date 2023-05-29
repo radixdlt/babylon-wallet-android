@@ -168,7 +168,7 @@ private fun LedgerFactorSourcesDetails(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.add_new_ledger),
+            text = stringResource(id = R.string.createEntity_ledger_addNewLedger),
             onClick = onAddLedger,
             throttleClicks = true
         )

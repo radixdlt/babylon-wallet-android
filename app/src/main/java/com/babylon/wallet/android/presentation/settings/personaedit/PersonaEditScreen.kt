@@ -289,7 +289,7 @@ private fun PersonaDetailList(
                 value = personaDisplayName.value,
                 leftLabel = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 error = if (personaDisplayName.shouldDisplayValidationError && personaDisplayName.valid == false) {
-                    stringResource(id = R.string.empty_display_name)
+                    stringResource(id = R.string.createPersona_emptyDisplayName)
                 } else {
                     null
                 },

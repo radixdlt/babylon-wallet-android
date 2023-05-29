@@ -94,7 +94,10 @@ private fun ChooseAccountsCompletionContent(
         ) {
             Text(
                 color = White,
-                text = stringResource(id = R.string.dapp_successful_button_title, dAppName),
+                text = stringResource(
+                    id = R.string.createEntity_completion_goToDestination,
+                    dAppName
+                ),
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall

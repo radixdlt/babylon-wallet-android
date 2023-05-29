@@ -97,7 +97,7 @@ fun ChooseAccountContent(
                         text = if (isOneTime) {
                             stringResource(id = R.string.account_request)
                         } else {
-                            stringResource(id = R.string.account_permission)
+                            stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_title)
                         },
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.title,

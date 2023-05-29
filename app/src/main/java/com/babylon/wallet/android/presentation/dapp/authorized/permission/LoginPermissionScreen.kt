@@ -139,7 +139,7 @@ private fun LoginPermissionContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
-                text = stringResource(id = R.string.account_permission),
+                text = stringResource(id = R.string.dAppRequest_accountPermission_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
@@ -183,22 +183,22 @@ private fun RequestedPermissionsList(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        val text = if (isExactAccountsCount) {
-            pluralStringResource(
-                id = R.plurals.view_exactly_x_accounts,
-                numberOfAccounts,
-                numberOfAccounts
-            )
-        } else {
-            if (numberOfAccounts == 0) {
-                stringResource(id = R.string.any_number_of_accounts)
+        val text = StringBuilder(stringResource(id = R.string.dot_separator)).apply {
+            append(" ")
+            if (isExactAccountsCount) {
+                if (numberOfAccounts > 1) {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsExactly, numberOfAccounts))
+                } else {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsExactlyOne))
+                }
             } else {
-                stringResource(
-                    id = R.string.view_at_least_x_accounts,
-                    numberOfAccounts
-                )
+                if (numberOfAccounts == 0) {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsAtLeastZero))
+                } else {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsAtLeast, numberOfAccounts))
+                }
             }
-        }
+        }.toString()
         Text(
             text = text,
             style = RadixTheme.typography.body1Regular,
