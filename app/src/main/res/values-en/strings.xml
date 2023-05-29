@@ -383,8 +383,8 @@
   <string name="importProfile_importProfile">Import Radix Wallet backup</string>
   <string name="onboarding_newUser">I\'m a new Radix Wallet user</string>
   <string name="onboarding_restoreFromBackup">Restore Wallet from Backup</string>
-  <string name="onboarding_step1_subtitle">Your direct connection to the Radix Network</string>
   <string name="onboarding_step1_title">Welcome to the Radix Wallet</string>
+  <string name="onboarding_step1_subtitle">Your direct connection to the Radix Network</string>
   <string name="onboarding_step2_title">A World of Possibilities</string>
   <string name="onboarding_step2_subtitle">Let\'s get started</string>
   <string name="onboarding_step3_title">Your phone is your login</string>
@@ -400,64 +400,4 @@
   <string name="transactionSigning_preparingTransaction">Preparing transaction...</string>
   <string name="transactionSigning_signTransactionButtonTitle">Approve Transaction</string>
   <string name="transactionSigning_signingAndSubmittingTransaction">Submitting transaction...</string>
-
-<!-- OLD STRINGS -->
-
-  <string name="gateway_updated">Gateway updated!</string>
-  <string name="gateway_invalid">Gateway invalid!</string>
-  <string name="tx_fail_compile">Failed to compile transaction</string>
-  <string name="always">always</string>
-  <string name="radix_json_file_is_missing">radix.json file is missing</string>
-  <string name="definition_address_does_not_match">Definition address does not match any well known definition address</string>
-  <string name="expected_to_find_dapp_account_type">Expected to find dapp definition account type</string>
-  <string name="origin_does_not_match">Origin does not match any related website</string>
-  <string name="first_name_empty">First name can\'t be empty</string>
-  <string name="last_name_empty">Empty last name</string>
-  <string name="email_wrong">Wrong email address</string>
-  <string name="copied_to_clipboard">Copied to clipboard.</string>
-  <string name="action_show_qr_code">Show QR Code</string>
-  <string name="empty_phone">Empty phone number</string>
-  <string name="change_seed_phrase_length">Change seed phrase length</string>
-  <string name="word_seed_phrase">%1$s word seed phrase</string>
-  <plurals name="accounts_left_to_import">
-    <item quantity="one">%d account left to import.</item>
-    <item quantity="other">%d accounts left to import.</item>
-  </plurals>
-  <string name="recover_mnemonic">Recover Mnemonic</string>
-  <string name="skip_remaining_accounts">Skip remaining accounts</string>
-  <string name="send_add_ledger_request">Send Add Ledger Request</string>
-  <string name="confirm_name">Confirm Name</string>
-  <string name="skip">Skip</string>
-  <string name="name_this_ledger">Name this Ledger</string>
-  <string name="ledger_hint">My Ledger</string>
-  <string name="ledger_name_bottom_hint">Displayed when you are prompted to sign with this device.</string>
-  <string name="no_accounts_for_ledger">No Accounts found to import on this device</string>
-  <string name="add_new_p2p_link">Add New P2P Link</string>
-  <string name="found_no_radix_connect_connections">Found no open RadixConnect connections.</string>
-  <string name="connect_the_ledger_device">Connect the Ledger device you wanna add to a computer on which you have a Browser you have RadixConnect linked to. Unlock your Ledger and open the Radix Babylon Ledger App on your ledger. Look for a new tab in your linked Browser and follow the instructions on the screen.</string>
-  <string name="selected_ledger_description">%s | added on: %s</string>
-  <string name="select_ledger_device">Select Ledger Device</string>
-  <string name="what_is_ledger_factor_source">What is Ledger Factor Source</string>
-  <string name="all_ledgers_info">Here are all the Ledger devices connected to your account</string>
-  <plurals name="accounts_per_device">
-    <item quantity="one">%d account</item>
-    <item quantity="other">%d accounts</item>
-  </plurals>
-  <string name="transfer">Transfer</string>
-  <string name="send_transfer_request">Send Transfer Request</string>
-  <string name="choose_accounts">Choose Account</string>
-  <string name="add_assets">Add Assets</string>
-  <string name="from">From</string>
-  <string name="to">To</string>
-  <string name="add_message">Add Message</string>
-  <string name="add_account">Add Account</string>
-  <string name="ledger_hardware_wallets">Ledger Hardware Wallets</string>
-  <string name="tx_fail_sign">Failed to sign transaction</string>
-  <string name="choose_receiving_account">Choose Receiving Account</string>
-  <string name="scan_qr_code">Scan QR Code</string>
-  <string name="enter_account_address_manually">Enter an account address manually</string>
-  <string name="enter_or_paste_address">Enter or paste address</string>
-  <string name="or_choose_one_of_your_accounts">Or choose one of your own accounts</string>
-  <string name="choose">Choose</string>
-  <string name="scan_qr_code_of_radix_account_address">Scan a QR code of a Radix account address</string>
 </resources>
