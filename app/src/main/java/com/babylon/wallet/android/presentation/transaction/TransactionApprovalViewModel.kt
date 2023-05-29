@@ -171,6 +171,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 )
 
                                 manifestPreview.exceptionOrNull().let { error ->
+                                    Timber.e("Analyze manifest failed with error: $error")
                                     _state.update {
                                         it.copy(
                                             isLoading = false,
