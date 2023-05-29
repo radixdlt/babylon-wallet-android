@@ -26,6 +26,9 @@ import kotlinx.serialization.Serializable
  * @param accessRulesChain 
  * @param vaultAccessRulesChain 
  * @param nonFungibleIdType 
+ * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalBurned String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
 
@@ -41,7 +44,19 @@ data class StateEntityDetailsResponseNonFungibleResourceDetails (
 //    val vaultAccessRulesChain: kotlin.Any,
 
     @Contextual @SerialName(value = "non_fungible_id_type")
-    val nonFungibleIdType: NonFungibleIdType
+    val nonFungibleIdType: NonFungibleIdType,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_supply")
+    val totalSupply: kotlin.String,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_minted")
+    val totalMinted: kotlin.String,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_burned")
+    val totalBurned: kotlin.String
 
 ) : StateEntityDetailsResponseItemDetails()
 

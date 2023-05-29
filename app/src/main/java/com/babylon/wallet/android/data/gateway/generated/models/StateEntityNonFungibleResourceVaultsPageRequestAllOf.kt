@@ -15,8 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequestOptIns
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleResourceVaultsPageOptIns
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -26,22 +25,23 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param address Bech32m-encoded human readable version of the address.
- * @param aggregationLevel 
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
  * @param optIns 
  */
 @Serializable
 
-data class StateEntityNonFungiblesPageRequestAllOf (
+data class StateEntityNonFungibleResourceVaultsPageRequestAllOf (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Contextual @SerialName(value = "aggregation_level")
-    val aggregationLevel: ResourceAggregationLevel? = null,
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "resource_address")
+    val resourceAddress: kotlin.String,
 
     @SerialName(value = "opt_ins")
-    val optIns: StateEntityNonFungiblesPageRequestOptIns? = null
+    val optIns: StateEntityNonFungibleResourceVaultsPageOptIns? = null
 
 )
 

@@ -35,16 +35,20 @@ data class ScryptoSborValue (
     @Contextual @SerialName(value = "raw_json")
     val rawJson: RawJson
 
-)
+) {
 
-@Serializable
-data class RawJson(
-    val elements: List<RawJsonElement>,
-    val type: String
-)
+    @Serializable
+    data class RawJson(
+        val elements: List<RawJsonElement>,
+        val type: String
+    ) {
 
-@Serializable
-data class RawJsonElement(
-    val type: String,
-    val value: String
-)
+        @Serializable
+        data class RawJsonElement(
+            val type: String,
+            val value: String
+        )
+    }
+}
+
+

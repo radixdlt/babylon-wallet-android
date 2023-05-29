@@ -22,7 +22,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
+ * @param address Bech32m-encoded human readable version of the address.
  * @param currentStake String-encoded decimal representing the amount of a related fungible resource.
  * @param metadata 
  * @param state 
@@ -32,7 +32,7 @@ import kotlinx.serialization.Contextual
 
 data class ValidatorCollectionItem (
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
@@ -43,8 +43,8 @@ data class ValidatorCollectionItem (
     @SerialName(value = "metadata")
     val metadata: EntityMetadataCollection,
 
-//    @Contextual @SerialName(value = "state")
-//    val state: kotlin.Any? = null,
+    @Contextual @SerialName(value = "state")
+    val state: kotlin.Any? = null,
 
     @SerialName(value = "active_in_epoch")
     val activeInEpoch: ValidatorCollectionItemActiveInEpoch? = null

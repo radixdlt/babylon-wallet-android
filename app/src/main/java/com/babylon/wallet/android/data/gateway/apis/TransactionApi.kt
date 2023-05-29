@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.data.gateway.apis
 
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionConstructionResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
@@ -70,4 +72,19 @@ interface TransactionApi {
     fun transactionPreview(
         @Body transactionPreviewRequest: TransactionPreviewRequest
     ): Call<TransactionPreviewResponse>
+
+    /**
+     * Get Committed Transaction Details
+     * Returns the committed details and receipt of the transaction for a given transaction identifier. Transaction identifiers which don&#39;t correspond to a committed transaction will return a &#x60;TransactionNotFoundError&#x60;.
+     * Responses:
+     *  - 200: Transaction Status
+     *  - 4XX: Client-originated request error
+     *
+     * @param transactionCommittedDetailsRequest
+     * @return [TransactionCommittedDetailsResponse]
+     */
+    @POST("transaction/committed-details")
+    fun transactionCommittedDetails(
+        @Body transactionCommittedDetailsRequest: TransactionCommittedDetailsRequest
+    ): Call<TransactionCommittedDetailsResponse>
 }

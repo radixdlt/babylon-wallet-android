@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
  * 
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
- * @param address Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
+ * @param address Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
@@ -32,7 +32,7 @@ data class InvalidEntityError(
     @SerialName(value = "type")
     override val type: kotlin.String,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "address")
     val address: kotlin.String
 
