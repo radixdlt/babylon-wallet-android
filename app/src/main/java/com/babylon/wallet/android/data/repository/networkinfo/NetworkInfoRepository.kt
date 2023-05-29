@@ -35,7 +35,7 @@ class NetworkInfoRepositoryImpl @Inject constructor(
             baseUrl = networkUrl,
             okHttpClient = okHttpClient,
             jsonConverterFactory = jsonConverterFactory
-        ).gatewayNetworkConfigurationUrl().execute(
+        ).networkConfiguration().execute(
             map = {
                 it.wellKnownAddresses.faucet
             }
