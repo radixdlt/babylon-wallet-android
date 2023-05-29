@@ -139,7 +139,7 @@ private fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier
         )
         Text(
             modifier = Modifier.alignByBaseline(),
-            text = " $resource.symbol",
+            text = " ${resource.symbol}",
             style = RadixTheme.typography.header,
             color = RadixTheme.colors.gray1
         )
