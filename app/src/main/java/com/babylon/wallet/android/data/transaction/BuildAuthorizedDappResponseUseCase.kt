@@ -20,7 +20,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     private val rolaClient: ROLAClient
 ) {
 
-    @Suppress("LongParameterList")
+    @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: MessageFromDataChannel.IncomingRequest.AuthorizedRequest,
         selectedPersona: Network.Persona,
