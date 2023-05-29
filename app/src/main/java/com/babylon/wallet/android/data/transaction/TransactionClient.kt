@@ -106,11 +106,15 @@ class TransactionClient @Inject constructor(
                     transactionHeaderResult.data,
                     manifestWithTransactionFee
                 )
-                val txId = compileTransactionIntentRequest.transactionId().getOrNull() ?: return Result.Error(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.CompileTransactionIntent
+                val txId = compileTransactionIntentRequest.transactionId().getOrNull()
+                if (txId == null) {
+                    Timber.e("Failed to compile intent request: transactionId is null")
+                    return Result.Error(
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.CompileTransactionIntent
+                        )
                     )
-                )
+                }
                 val compiledTransactionIntent = engine.compileTransactionIntent(
                     compileTransactionIntentRequest
                 ).getOrNull()?.compiledIntent ?: return Result.Error(
