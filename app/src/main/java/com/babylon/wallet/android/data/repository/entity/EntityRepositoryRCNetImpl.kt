@@ -34,7 +34,7 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
-class EntityRepositoryRCNetImpl @Inject constructor(
+/*class EntityRepositoryRCNetImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
 ) : EntityRepository {
@@ -174,4 +174,4 @@ class EntityRepositoryRCNetImpl @Inject constructor(
         val value = element.value
         value.contains("https") && (value.contains(".jpg") || value.contains(".png") || value.contains(".svg"))
     }?.value?.toUri()
-}
+}*/

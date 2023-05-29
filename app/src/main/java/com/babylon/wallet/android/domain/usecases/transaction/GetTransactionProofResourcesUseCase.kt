@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryRCNetImpl
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.transaction.PresentingProofUiModel
 import javax.inject.Inject
 
 class GetTransactionProofResourcesUseCase @Inject constructor(
-    private val dappMetadataRepository: DappMetadataRepositoryRCNetImpl
+    private val dappMetadataRepository: DappMetadataRepository
 ) {
 
     suspend operator fun invoke(

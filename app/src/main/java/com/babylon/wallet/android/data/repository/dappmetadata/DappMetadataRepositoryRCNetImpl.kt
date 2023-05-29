@@ -35,7 +35,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Converter
 import javax.inject.Inject
 
-class DappMetadataRepositoryRCNetImpl @Inject constructor(
+/*class DappMetadataRepositoryRCNetImpl @Inject constructor(
     @SimpleHttpClient private val okHttpClient: OkHttpClient,
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     private val stateApi: StateApi,
@@ -148,4 +148,4 @@ class DappMetadataRepositoryRCNetImpl @Inject constructor(
             )
         }
     }
-}
+}*/
