@@ -74,7 +74,7 @@ private fun SuccessBottomDialogContent(
             text = if (isFromTransaction) {
                 stringResource(R.string.transaction_approved_success)
             } else {
-                stringResource(id = R.string.request_complete, dAppName)
+                stringResource(id = R.string.dAppRequest_completion_subtitle, dAppName)
             },
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1

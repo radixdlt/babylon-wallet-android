@@ -156,7 +156,7 @@ private fun PersonaDataOnetimeContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
-                    text = stringResource(id = R.string.one_time_data_request),
+                    text = stringResource(id = R.string.dAppRequest_personalDataOneTime_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1
@@ -165,7 +165,7 @@ private fun PersonaDataOnetimeContent(
                 PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
-                    text = stringResource(id = R.string.choose_data_to_provide),
+                    text = stringResource(id = R.string.dAppRequest_personalDataOneTime_chooseDataToProvide),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.header,
                     color = RadixTheme.colors.gray1
@@ -223,7 +223,7 @@ private fun PermissionRequestHeader(
 ) {
     val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
     val oneTime = stringResource(id = R.string.just_one_time)
-    val text = stringResource(id = R.string.dapp_is_requesting_onetime_persona_data_permission, dappName).setSpanForPlaceholder(
+    val text = stringResource(id = R.string.dAppRequest_personalDataOneTime_subtitle, dappName).setSpanForPlaceholder(
         dappName,
         spanStyle
     ).setSpanForPlaceholder(oneTime, spanStyle)

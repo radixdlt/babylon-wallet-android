@@ -67,7 +67,7 @@ private fun ChooseAccountsCompletionContent(
         )
         Spacer(modifier = Modifier.height(40.dp))
         Text(
-            text = stringResource(id = R.string.dapp_successful_title),
+            text = stringResource(id = R.string.dAppRequest_chooseAccounts_successTitle),
             textAlign = TextAlign.Center,
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold
@@ -75,7 +75,7 @@ private fun ChooseAccountsCompletionContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
             color = RadixGrey2,
-            text = stringResource(id = R.string.dapp_successful_body, dAppName),
+            text = stringResource(id = R.string.dAppRequest_chooseAccounts_successMessage, dAppName),
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal

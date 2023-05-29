@@ -76,7 +76,7 @@ fun OneTimeChooseAccountsScreen(
     )
     state.error?.let { error ->
         DAppAlertDialog(
-            title = stringResource(id = R.string.dapp_verification_error_title),
+            title = stringResource(id = R.string.dAppRequest_chooseAccounts_verificationErrorTitle),
             body = error,
             dismissErrorDialog = dismissErrorDialog
         )

@@ -95,7 +95,7 @@ fun ChooseAccountContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
                         text = if (isOneTime) {
-                            stringResource(id = R.string.account_request)
+                            stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_title)
                         } else {
                             stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_title)
                         },
@@ -136,7 +136,7 @@ fun ChooseAccountContent(
                 }
                 item {
                     RadixTextButton(
-                        text = stringResource(id = R.string.create_dapp_accounts_button_title),
+                        text = stringResource(id = R.string.dAppRequest_chooseAccounts_createNewAccount),
                         onClick = onCreateNewAccount
                     )
                     Spacer(Modifier.height(100.dp))
@@ -164,35 +164,31 @@ private fun ChooseAccountsSubtitle(
 ) {
     val text = if (isOneTime) {
         if (isExactAccountsCount) {
-            pluralStringResource(
-                id = R.plurals.one_time_exactly_request,
-                count = numberOfAccounts,
-                dappName,
-                numberOfAccounts
-            )
+            if (numberOfAccounts > 1) {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_subtitleExactly, dappName, numberOfAccounts)
+            } else {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_subtitleExactlyOne, dappName)
+            }
         } else {
-            pluralStringResource(
-                id = R.plurals.one_time_at_least_request,
-                count = numberOfAccounts,
-                dappName,
-                numberOfAccounts
-            )
+            if (numberOfAccounts > 1) {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_subtitleAtLeast, dappName, numberOfAccounts)
+            } else {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_subtitleAtLeastOne, dappName)
+            }
         }
     } else {
         if (isExactAccountsCount) {
-            pluralStringResource(
-                id = R.plurals.ongoing_exactly_request,
-                count = numberOfAccounts,
-                numberOfAccounts,
-                dappName
-            )
+            if (numberOfAccounts > 1) {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleExactly, numberOfAccounts, dappName)
+            } else {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleExactlyOne, dappName)
+            }
         } else {
-            pluralStringResource(
-                id = R.plurals.ongoing_at_least_request,
-                count = numberOfAccounts,
-                numberOfAccounts,
-                dappName
-            )
+            if (numberOfAccounts > 1) {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleAtLeast, numberOfAccounts, dappName)
+            } else {
+                stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleAtLeastOne, dappName)
+            }
         }
     }.setSpanForPlaceholder(dappName, SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold))
     Text(

@@ -159,7 +159,7 @@ private fun LoginPermissionContent(
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.you_can_update_permission_at_any_time),
+                text = stringResource(R.string.dAppRequest_accountPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -214,7 +214,7 @@ private fun PermissionRequestHeader(
 ) {
     val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
     val always = stringResource(id = R.string.always)
-    val text = stringResource(id = R.string.dapp_is_requesting_ongoing_permission, dappName).setSpanForPlaceholder(
+    val text = stringResource(id = R.string.dAppRequest_accountPermission_subtitle, dappName).setSpanForPlaceholder(
         dappName,
         spanStyle
     ).setSpanForPlaceholder(always, spanStyle)
