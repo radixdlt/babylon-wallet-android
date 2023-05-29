@@ -156,16 +156,16 @@ private fun resolveActions(
     val copyAction = PopupActionItem(
         name = stringResource(
             id = when {
-                actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.copy_transaction_id
-                actionableAddress.isNft -> R.string.copy_nft_id
-                else -> R.string.copy_address
+                actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.addressAction_copyTransactionId
+                actionableAddress.isNft -> R.string.addressAction_copyNftId
+                else -> R.string.addressAction_copyAddress
             }
         ),
         icon = R.drawable.ic_copy
     ) { OnAction.CopyToClipboard(actionableAddress) }
 
     val openExternalAction = PopupActionItem(
-        name = stringResource(id = R.string.action_open_in_dashboard),
+        name = stringResource(id = R.string.addressAction_viewOnDashboard),
         icon = R.drawable.ic_external_link
     ) { OnAction.OpenExternalWebView(actionableAddress) }
 
@@ -257,7 +257,11 @@ private sealed class OnAction {
             try {
                 context.startActivity(intent)
             } catch (activityNotFound: ActivityNotFoundException) {
-                Toast.makeText(context, R.string.no_web_browser_installed, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    R.string.addressAction_noWebBrowserInstalled,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

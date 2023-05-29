@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -103,7 +104,7 @@ fun PersonaDetailCard(
                 onClick = {
                     onEditClick(persona.persona.address)
                 },
-                text = stringResource(id = R.string.edit)
+                text = stringResource(id = R.string.dAppRequest_personalDataBox_edit)
             )
         } else {
             RadixSecondaryButton(
@@ -113,7 +114,7 @@ fun PersonaDetailCard(
                 onClick = {
                     onEditClick(persona.persona.address)
                 },
-                text = stringResource(id = R.string.edit)
+                text = stringResource(id = R.string.dAppRequest_personalDataBox_edit)
             )
         }
     }
@@ -124,11 +125,11 @@ private fun RequiredInformationInfo(
     requiredFields: ImmutableList<Network.Persona.Field.ID>,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold)
-    val text = stringResource(id = R.string.required_information)
-    val formattedText = text.setSpanForPlaceholder(text, spanStyle)
+    val text = stringResource(id = R.string.dAppRequest_personalDataBox_requiredInformation)
     val finalText = buildAnnotatedString {
-        append(formattedText)
+        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+            append("$text ")
+        }
         append(requiredFields.map { stringResource(id = it.toDisplayResource()) }.joinToString())
     }
     Row(

@@ -161,7 +161,8 @@ private fun PersonaDataOngoingPermissionContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             PermissionRequestHeader(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) }
+                dappName = dappWithMetadata?.name.orEmpty()
+                    .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
             )
             persona?.let {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -197,7 +198,7 @@ private fun PersonaDataOngoingPermissionContent(
                 .padding(RadixTheme.dimensions.paddingDefault),
             onClick = onContinueClick,
             enabled = continueButtonEnabled,
-            text = stringResource(id = R.string.continue_button_title)
+            text = stringResource(id = R.string.common_continue)
         )
     }
 }
@@ -208,11 +209,9 @@ private fun PermissionRequestHeader(
     modifier: Modifier = Modifier
 ) {
     val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val always = stringResource(id = R.string.always)
     val text = stringResource(id = R.string.dAppRequest_personalDataPermission_subtitle, dappName).setSpanForPlaceholder(
-        dappName,
         spanStyle
-    ).setSpanForPlaceholder(always, spanStyle)
+    )
     Text(
         modifier = modifier,
         text = text,

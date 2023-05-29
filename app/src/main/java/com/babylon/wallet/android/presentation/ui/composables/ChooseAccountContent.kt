@@ -105,7 +105,8 @@ fun ChooseAccountContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     ChooseAccountsSubtitle(
-                        dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                        dappName = dappWithMetadata?.name.orEmpty()
+                            .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
                         isOneTime = isOneTime,
                         numberOfAccounts = numberOfAccounts,
                         isExactAccountsCount = isExactAccountsCount
@@ -190,7 +191,7 @@ private fun ChooseAccountsSubtitle(
                 stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleAtLeastOne, dappName)
             }
         }
-    }.setSpanForPlaceholder(dappName, SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold))
+    }.setSpanForPlaceholder(SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold))
     Text(
         modifier = modifier,
         text = text,

@@ -99,7 +99,7 @@ fun DAppAlertDialog(
             TextButton(
                 onClick = dismissErrorDialog
             ) {
-                Text(stringResource(id = R.string.ok), color = Color.Black)
+                Text(stringResource(id = R.string.common_ok), color = Color.Black)
             }
         }
     )

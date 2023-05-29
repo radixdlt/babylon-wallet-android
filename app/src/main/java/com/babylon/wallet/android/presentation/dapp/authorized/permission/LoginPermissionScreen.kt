@@ -145,7 +145,9 @@ private fun LoginPermissionContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
+            PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty()
+                .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+            )
             Spacer(modifier = Modifier.weight(0.5f))
             RequestedPermissionsList(
                 modifier = Modifier
@@ -167,7 +169,7 @@ private fun LoginPermissionContent(
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onContinueClick,
-                text = stringResource(id = R.string.continue_button_title)
+                text = stringResource(id = R.string.common_continue)
             )
         }
     }
@@ -213,11 +215,9 @@ private fun PermissionRequestHeader(
     modifier: Modifier = Modifier
 ) {
     val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val always = stringResource(id = R.string.always)
     val text = stringResource(id = R.string.dAppRequest_accountPermission_subtitle, dappName).setSpanForPlaceholder(
-        dappName,
         spanStyle
-    ).setSpanForPlaceholder(always, spanStyle)
+    )
     Text(
         modifier = modifier,
         text = text,

@@ -206,7 +206,7 @@ private fun PersonaEditContent(
                     BottomPrimaryButton(
                         onClick = onSave,
                         enabled = saveButtonEnabled,
-                        text = stringResource(id = R.string.save),
+                        text = stringResource(id = R.string.common_save),
                         modifier = Modifier
                             .imePadding()
                             .fillMaxWidth()

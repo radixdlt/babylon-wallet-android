@@ -423,7 +423,11 @@ private fun ScanQrPage(
             ) {
                 qrChunkInfo?.let { chunkInfo ->
                     Text(
-                        text = stringResource(id = R.string.scanned_x_out_of_y, chunkInfo.scanned, chunkInfo.total),
+                        text = stringResource(
+                            id = R.string.importOlympiaAccounts_scannedProgress,
+                            chunkInfo.scanned,
+                            chunkInfo.total
+                        ),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1
                     )
@@ -495,7 +499,7 @@ private fun AccountListPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.import_olympia_accounts),
+            text = stringResource(R.string.importOlympiaAccounts_title),
             onClick = onImportAccounts,
             enabled = importButtonEnabled,
             throttleClicks = true
@@ -638,7 +642,7 @@ private fun ImportCompletePage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.continue_button_title),
+            text = stringResource(R.string.common_continue),
             onClick = onContinue,
             throttleClicks = true
         )
@@ -661,26 +665,26 @@ private fun InputMnemonicPage(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = onSeedPhraseChanged,
             value = seedPhrase,
-            leftLabel = stringResource(id = R.string.seed_phrase),
-            hint = stringResource(id = R.string.seed_phrase),
+            leftLabel = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
+            hint = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
         )
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = onPassphraseChanged,
             value = bip39Passphrase,
-            leftLabel = stringResource(id = R.string.bip_39_passphrase),
-            hint = stringResource(id = R.string.passphrase),
+            leftLabel = stringResource(id = R.string.importOlympiaAccounts_bip39passphrase),
+            hint = stringResource(id = R.string.importOlympiaAccounts_passphrase),
         )
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.import_label),
+            text = stringResource(R.string.importOlympiaAccounts_importLabel),
             onClick = onImportSoftwareAccounts,
             enabled = importSoftwareAccountsEnabled,
             throttleClicks = true
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.already_imported),
+            text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
             onClick = onMnemonicAlreadyImported,
             enabled = importSoftwareAccountsEnabled,
             throttleClicks = true

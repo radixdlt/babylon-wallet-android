@@ -19,30 +19,17 @@ fun String.truncatedHash(): String {
     return "$first...$last"
 }
 
-fun String.setSpanForPlaceholder(placeholder: String, spanStyle: SpanStyle): AnnotatedString {
-    val index = indexOf(placeholder)
+fun String.setSpanForPlaceholder(spanStyle: SpanStyle): AnnotatedString {
+    val index = 0
     if (index == -1) return AnnotatedString(this)
     val spans = listOf(
         AnnotatedString.Range(
             spanStyle,
             index,
-            index + placeholder.length
+            index
         ),
     )
     return AnnotatedString(this, spanStyles = spans)
-}
-
-fun AnnotatedString.setSpanForPlaceholder(placeholder: String, spanStyle: SpanStyle): AnnotatedString {
-    val index = indexOf(placeholder)
-    if (index == -1) return this
-    val spans = listOf(
-        AnnotatedString.Range(
-            spanStyle,
-            index,
-            index + placeholder.length
-        ),
-    )
-    return AnnotatedString(this.text, spanStyles = this.spanStyles + spans)
 }
 
 fun String.formatDecimalSeparator(): String {

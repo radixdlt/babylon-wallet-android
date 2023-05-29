@@ -169,7 +169,8 @@ private fun PersonaDataOnetimeContent(
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
+                PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty()
+                    .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) })
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(id = R.string.dAppRequest_personalDataOneTime_chooseDataToProvide),
@@ -218,7 +219,7 @@ private fun PersonaDataOnetimeContent(
                 .padding(RadixTheme.dimensions.paddingDefault),
             enabled = continueButtonEnabled,
             onClick = onContinueClick,
-            text = stringResource(id = R.string.continue_button_title)
+            text = stringResource(id = R.string.common_continue)
         )
     }
 }
@@ -229,11 +230,9 @@ private fun PermissionRequestHeader(
     modifier: Modifier = Modifier
 ) {
     val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val oneTime = stringResource(id = R.string.just_one_time)
     val text = stringResource(id = R.string.dAppRequest_personalDataOneTime_subtitle, dappName).setSpanForPlaceholder(
-        dappName,
         spanStyle
-    ).setSpanForPlaceholder(oneTime, spanStyle)
+    )
     Text(
         modifier = modifier,
         text = text,

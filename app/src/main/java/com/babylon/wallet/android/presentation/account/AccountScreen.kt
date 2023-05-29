@@ -296,7 +296,7 @@ private fun AccountScreenContent(
 @Composable
 private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> Unit) {
     RadixSecondaryButton(
-        text = stringResource(id = R.string.history),
+        text = stringResource(id = R.string.common_history),
         onClick = onHistoryClick,
         modifier = modifier,
         containerColor = RadixTheme.colors.gray2,

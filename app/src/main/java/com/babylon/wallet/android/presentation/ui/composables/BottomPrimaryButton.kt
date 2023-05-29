@@ -20,7 +20,7 @@ fun BottomPrimaryButton(
     enabled: Boolean,
     modifier: Modifier = Modifier,
     buttonPadding: PaddingValues = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
-    text: String = stringResource(id = R.string.continue_button_title)
+    text: String = stringResource(id = R.string.common_continue)
 ) {
     Column(modifier = modifier) {
         Divider(color = RadixTheme.colors.gray5)

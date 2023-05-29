@@ -186,7 +186,7 @@ private fun SelectPersonaContent(
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             LoginRequestHeader(
-                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
                                 firstTimeLogin = firstTimeLogin,
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                             )
@@ -244,14 +244,14 @@ private fun LoginRequestHeader(dappName: String, firstTimeLogin: Boolean, modifi
     val spanStyle = SpanStyle(color = RadixTheme.colors.gray1)
     val text = if (firstTimeLogin) {
         stringResource(
-            R.string.dapp_login_first_time_subtitle,
+            R.string.dAppRequest_login_subtitleNewDapp,
             dappName
-        ).setSpanForPlaceholder(dappName, spanStyle)
+        ).setSpanForPlaceholder(spanStyle)
     } else {
         stringResource(
-            R.string.dapp_login_subtitle,
+            R.string.dAppRequest_login_subtitleKnownDapp,
             dappName
-        ).setSpanForPlaceholder(dappName, spanStyle)
+        ).setSpanForPlaceholder(spanStyle)
     }
     Text(
         modifier = modifier,

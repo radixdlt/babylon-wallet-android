@@ -66,13 +66,13 @@ private fun SuccessBottomDialogContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(id = R.string.success),
+            text = stringResource(id = R.string.transaction_status_success_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         Text(
             text = if (isFromTransaction) {
-                stringResource(R.string.transaction_approved_success)
+                stringResource(R.string.transaction_status_success_text)
             } else {
                 stringResource(id = R.string.dAppRequest_completion_subtitle, dAppName)
             },

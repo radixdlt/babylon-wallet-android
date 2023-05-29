@@ -105,7 +105,7 @@ private fun RestoreMnemonicContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(all = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.continue_button_title),
+                text = stringResource(R.string.common_continue),
                 onClick = onRestore,
                 enabled = state.isSubmitButtonEnabled,
                 throttleClicks = true
@@ -138,8 +138,8 @@ private fun RestoreMnemonicContent(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onMnemonicWordsTyped,
                 value = state.wordsPhrase,
-                leftLabel = stringResource(id = R.string.seed_phrase),
-                hint = stringResource(id = R.string.seed_phrase),
+                leftLabel = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
+                hint = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
                 rightLabel = state.wordsHint,
                 keyboardActions = KeyboardActions(
                     onNext = {
@@ -192,8 +192,8 @@ private fun RestoreMnemonicContent(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onPassphraseTyped,
                 value = state.passphrase,
-                leftLabel = stringResource(id = R.string.bip_39_passphrase),
-                hint = stringResource(id = R.string.passphrase),
+                leftLabel = stringResource(id = R.string.importOlympiaAccounts_bip39passphrase),
+                hint = stringResource(id = R.string.importOlympiaAccounts_passphrase),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 )

@@ -188,7 +188,7 @@ private fun SettingsLinkConnectorContent(
                             color = RadixTheme.colors.gray1
                         )
                     },
-                    confirmText = stringResource(id = R.string.remove)
+                    confirmText = stringResource(id = R.string.common_remove)
                 )
             }
         }

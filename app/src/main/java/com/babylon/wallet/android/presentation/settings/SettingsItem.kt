@@ -26,15 +26,15 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                Connection -> R.string.add_connection
+                Connection -> R.string.empty
                 DeleteAll -> R.string.settings_deleteWalletData
                 Gateways -> R.string.settings_gateways
-                InspectProfile -> R.string.inspect_profile
+                InspectProfile -> R.string.settings_inspectProfile
                 LinkedConnector -> R.string.settings_linkedConnectors
                 Personas -> R.string.settings_personas
                 AuthorizedDapps -> R.string.settings_authorizedDapps
                 AppSettings -> R.string.settings_appSettings
-                ShowMnemonic -> R.string.view_mnemonics
+                ShowMnemonic -> R.string.importOlympiaAccounts_viewMnemonics
                 ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
                 LedgerHardwareWallets -> R.string.ledger_hardware_wallets
                 is Backups -> R.string.settings_backups
