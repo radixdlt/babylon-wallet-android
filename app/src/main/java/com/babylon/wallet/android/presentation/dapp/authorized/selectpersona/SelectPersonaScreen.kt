@@ -51,7 +51,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.Network
@@ -241,18 +241,17 @@ private fun SelectPersonaContent(
 
 @Composable
 private fun LoginRequestHeader(dappName: String, firstTimeLogin: Boolean, modifier: Modifier = Modifier) {
-    val spanStyle = SpanStyle(color = RadixTheme.colors.gray1)
     val text = if (firstTimeLogin) {
         stringResource(
             R.string.dAppRequest_login_subtitleNewDapp,
             dappName
-        ).setSpanForPlaceholder(spanStyle)
+        )
     } else {
         stringResource(
             R.string.dAppRequest_login_subtitleKnownDapp,
             dappName
-        ).setSpanForPlaceholder(spanStyle)
-    }
+        )
+    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

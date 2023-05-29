@@ -30,7 +30,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.pernetwork.Network
 

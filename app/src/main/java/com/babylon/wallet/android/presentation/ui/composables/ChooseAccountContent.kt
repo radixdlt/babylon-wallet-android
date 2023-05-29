@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +39,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DappWithMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -191,7 +190,7 @@ private fun ChooseAccountsSubtitle(
                 stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleAtLeastOne, dappName)
             }
         }
-    }.setSpanForPlaceholder(SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold))
+    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold))
     Text(
         modifier = modifier,
         text = text,

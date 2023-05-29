@@ -50,7 +50,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.Per
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
 fun PersonaDataOngoingScreen(
@@ -208,10 +208,8 @@ private fun PermissionRequestHeader(
     dappName: String,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val text = stringResource(id = R.string.dAppRequest_personalDataPermission_subtitle, dappName).setSpanForPlaceholder(
-        spanStyle
-    )
+    val text = stringResource(id = R.string.dAppRequest_personalDataPermission_subtitle, dappName)
+        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

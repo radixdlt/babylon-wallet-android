@@ -54,7 +54,7 @@ import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDet
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.Network
@@ -229,10 +229,8 @@ private fun PermissionRequestHeader(
     dappName: String,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val text = stringResource(id = R.string.dAppRequest_personalDataOneTime_subtitle, dappName).setSpanForPlaceholder(
-        spanStyle
-    )
+    val text = stringResource(id = R.string.dAppRequest_personalDataOneTime_subtitle, dappName)
+        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

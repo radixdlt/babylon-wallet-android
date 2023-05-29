@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +46,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
 fun LoginPermissionScreen(
@@ -214,10 +213,8 @@ private fun PermissionRequestHeader(
     dappName: String,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val text = stringResource(id = R.string.dAppRequest_accountPermission_subtitle, dappName).setSpanForPlaceholder(
-        spanStyle
-    )
+    val text = stringResource(id = R.string.dAppRequest_accountPermission_subtitle, dappName)
+        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

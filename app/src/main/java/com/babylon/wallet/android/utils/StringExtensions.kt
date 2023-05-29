@@ -4,8 +4,12 @@ package com.babylon.wallet.android.utils
 
 import android.util.Patterns
 import android.webkit.URLUtil
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.DecimalFormat
@@ -19,17 +23,26 @@ fun String.truncatedHash(): String {
     return "$first...$last"
 }
 
-fun String.setSpanForPlaceholder(spanStyle: SpanStyle): AnnotatedString {
-    val index = 0
-    if (index == -1) return AnnotatedString(this)
-    val spans = listOf(
-        AnnotatedString.Range(
-            spanStyle,
-            index,
-            index
-        ),
-    )
-    return AnnotatedString(this, spanStyles = spans)
+fun String.formattedSpans(
+    boldStyle: SpanStyle
+): AnnotatedString {
+    val asteriskRegex = "(?<!\\*)\\*(?!\\*).*?(?<!\\*)\\*(?!\\*)".toRegex()
+    val annotatedWords = asteriskRegex.findAll(input = this).map { it.value }.toList()
+    return buildAnnotatedString {
+        var startIndex = 0
+        val inputText = this@formattedSpans
+        annotatedWords.forEach { word ->
+            val indexOfThisWord = inputText.indexOf(word)
+            append(inputText.substring(startIndex, indexOfThisWord))
+
+            startIndex = indexOfThisWord + word.length
+            val strippedFromAnnotations = word.removeSurrounding("*")
+            withStyle(boldStyle) {
+                append(strippedFromAnnotations)
+            }
+        }
+        append(inputText.substring(startIndex, inputText.length))
+    }
 }
 
 fun String.formatDecimalSeparator(): String {
