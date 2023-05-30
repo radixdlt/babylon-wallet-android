@@ -22,10 +22,6 @@ class VerifyDappUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
-        if (request.metadata.isInternal) {
-            return Result.Success(true)
-        }
-
         val developerMode = getProfileUseCase.security.first().isDeveloperModeEnabled
         val decodeResult = RadixEngineToolkit.decodeAddress(
             request = DecodeAddressRequest(request.metadata.dAppDefinitionAddress)
