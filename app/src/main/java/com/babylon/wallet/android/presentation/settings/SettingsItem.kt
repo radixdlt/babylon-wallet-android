@@ -36,7 +36,7 @@ sealed interface SettingsItem {
                 AppSettings -> R.string.settings_appSettings
                 ShowMnemonic -> R.string.importOlympiaAccounts_viewMnemonics
                 ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
-                LedgerHardwareWallets -> R.string.ledger_hardware_wallets
+                LedgerHardwareWallets -> R.string.ledgerImport_heading
                 is Backups -> R.string.settings_backups
             }
         }

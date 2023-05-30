@@ -186,7 +186,7 @@ fun CreateAccountWithLedgerContent(
                         )
                     } else {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.select_ledger_device),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_selectDevice),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             textAlign = TextAlign.Center

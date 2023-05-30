@@ -96,7 +96,7 @@ private fun RestoreMnemonicContent(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.recover_mnemonic),
+                title = stringResource(id = R.string.restoreMnemonic_heading),
                 onBackClick = onBackClick
             )
         },
@@ -156,7 +156,7 @@ private fun RestoreMnemonicContent(
 
                 Box {
                     UnderlineTextButton(
-                        text = stringResource(R.string.change_seed_phrase_length),
+                        text = stringResource(R.string.restoreMnemonic_changeSeedLength),
                         onClick = { isSeedPhraseMenuExpanded = true }
                     )
 
@@ -168,7 +168,7 @@ private fun RestoreMnemonicContent(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        text = stringResource(id = R.string.word_seed_phrase, seedPhraseLength.words),
+                                        text = stringResource(id = R.string.restoreMnemonic_seedLength, seedPhraseLength.words),
                                         style = RadixTheme.typography.body1Regular,
                                         color = RadixTheme.colors.defaultText
                                     )

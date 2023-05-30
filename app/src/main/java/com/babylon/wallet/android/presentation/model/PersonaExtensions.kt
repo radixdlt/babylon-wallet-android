@@ -36,13 +36,3 @@ fun Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccoun
         }
     }
 }
-
-@StringRes
-fun Network.Persona.Field.ID.toValidationError(): Int {
-    return when (this) {
-        Network.Persona.Field.ID.GivenName -> R.string.first_name_empty
-        Network.Persona.Field.ID.FamilyName -> R.string.last_name_empty
-        Network.Persona.Field.ID.EmailAddress -> R.string.email_wrong
-        Network.Persona.Field.ID.PhoneNumber -> R.string.empty_phone
-    }
-}

@@ -152,7 +152,7 @@ private fun AccountPreferenceContent(
 
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.action_show_qr_code),
+                    text = stringResource(R.string.addressAction_showQRCode),
                     onClick = onShowQRCodeClick,
                     enabled = !loading
                 )

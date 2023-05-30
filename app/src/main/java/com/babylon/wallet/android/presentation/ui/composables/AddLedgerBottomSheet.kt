@@ -49,7 +49,7 @@ fun AddLedgerBottomSheet(
                 AddLedgerSheetState.Connect -> {
                     if (!hasP2pLinks) {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.found_no_radix_connect_connections),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_noConnections),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             overflow = TextOverflow.Ellipsis,
@@ -58,11 +58,11 @@ fun AddLedgerBottomSheet(
                         RadixSecondaryButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = onAddP2PLink,
-                            text = stringResource(id = com.babylon.wallet.android.R.string.add_new_p2p_link)
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_addNewConnection)
                         )
                     }
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.connect_the_ledger_device),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_instructions),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -72,7 +72,7 @@ fun AddLedgerBottomSheet(
                     RadixSecondaryButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onSendAddLedgerRequest,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.send_add_ledger_request),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_addLedger),
                         enabled = hasP2pLinks
                     )
                 }
@@ -81,13 +81,13 @@ fun AddLedgerBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         onValueChanged = { ledgerNameValue = it },
                         value = ledgerNameValue,
-                        leftLabel = stringResource(id = com.babylon.wallet.android.R.string.name_this_ledger),
-                        hint = stringResource(id = com.babylon.wallet.android.R.string.ledger_hint),
-                        optionalHint = stringResource(id = com.babylon.wallet.android.R.string.ledger_name_bottom_hint)
+                        leftLabel = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_textFieldLabel),
+                        hint = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_textFieldPlaceholder),
+                        optionalHint = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_textFieldHint)
                     )
                     RadixPrimaryButton(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(com.babylon.wallet.android.R.string.confirm_name),
+                        text = stringResource(com.babylon.wallet.android.R.string.common_confirm),
                         onClick = {
                             onConfirmLedgerName(ledgerNameValue)
                             ledgerNameValue = ""
@@ -98,7 +98,7 @@ fun AddLedgerBottomSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding(),
-                        text = stringResource(com.babylon.wallet.android.R.string.skip),
+                        text = stringResource(com.babylon.wallet.android.R.string.common_skip),
                         onClick = onSkipLedgerName,
                         throttleClicks = true
                     )

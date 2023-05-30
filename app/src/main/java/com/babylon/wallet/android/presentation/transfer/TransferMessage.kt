@@ -92,7 +92,7 @@ fun TransferMessage(
                     modifier = Modifier,
                     onValueChanged = onMessageChanged,
                     value = message,
-                    hint = stringResource(id = R.string.add_message),
+                    hint = stringResource(id = R.string.transfer_addMessage),
                     hintColor = RadixTheme.colors.gray2,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,

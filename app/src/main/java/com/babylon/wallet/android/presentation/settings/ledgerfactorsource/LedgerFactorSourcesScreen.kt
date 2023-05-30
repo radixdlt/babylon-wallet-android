@@ -117,7 +117,7 @@ private fun SettingsLinkConnectorContent(
     }) {
         Column(modifier = Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.ledger_hardware_wallets),
+                title = stringResource(R.string.ledgerImport_heading),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1
             )
@@ -143,13 +143,13 @@ private fun LedgerFactorSourcesDetails(
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.all_ledgers_info),
+            text = stringResource(id = R.string.ledgerImport_allLedgerDevicesInfo),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         InfoLink(
-            stringResource(R.string.what_is_ledger_factor_source),
+            stringResource(R.string.ledgerImport_whatIsLedger),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)

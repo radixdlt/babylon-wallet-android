@@ -170,7 +170,7 @@ private fun resolveActions(
     ) { OnAction.OpenExternalWebView(actionableAddress) }
 
     val qrAction = PopupActionItem(
-        name = stringResource(id = R.string.action_show_qr_code),
+        name = stringResource(id = R.string.addressAction_showQRCode),
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
     ) { OnAction.QRCode(actionableAddress) }
 
@@ -236,7 +236,7 @@ private sealed class OnAction {
 
             // From Android 13, the system handles the copy confirmation
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
             }
         }
     }
