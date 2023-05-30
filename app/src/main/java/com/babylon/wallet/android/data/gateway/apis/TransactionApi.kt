@@ -75,7 +75,8 @@ interface TransactionApi {
 
     /**
      * Get Committed Transaction Details
-     * Returns the committed details and receipt of the transaction for a given transaction identifier. Transaction identifiers which don&#39;t correspond to a committed transaction will return a &#x60;TransactionNotFoundError&#x60;.
+     * Returns the committed details and receipt of the transaction for a given transaction identifier.
+     * Transaction identifiers which don&#39;t correspond to a committed transaction will return a &#x60;TransactionNotFoundError&#x60;.
      * Responses:
      *  - 200: Transaction Status
      *  - 4XX: Client-originated request error

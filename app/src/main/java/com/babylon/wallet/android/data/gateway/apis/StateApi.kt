@@ -76,7 +76,8 @@ interface StateApi {
 
     /**
      * Get vault page of Entity Fungible resource aggregated per vault
-     * Returns vaults for fungible resource owned by a given global entity. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Returns vaults for fungible resource owned by a given global entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
      *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
@@ -124,7 +125,8 @@ interface StateApi {
 
     /**
      * Get vault page of Entity Non Fungible aggregated per vault
-     * Returns vaults for non fungible resource owned by a given global entity. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Returns vaults for non fungible resource owned by a given global entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
      *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
@@ -139,7 +141,8 @@ interface StateApi {
 
     /**
      * Get Entity Non-Fungible IDs
-     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity. The returned response is in a paginated format, ordered by the resource&#39;s first appearence on the ledger.
+     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearence on the ledger.
      * Responses:
      *  - 200: Entity Non-Fungible IDs (paginated)
      *  - 4XX: Client-originated request error
