@@ -196,7 +196,7 @@ fun TargetAccountCardPreview() {
     RadixWalletTheme {
         Column(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             TargetAccountCard(
                 onChooseAccountClick = {},

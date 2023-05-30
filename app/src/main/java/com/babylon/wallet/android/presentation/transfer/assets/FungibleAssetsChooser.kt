@@ -84,18 +84,19 @@ fun FungibleAssetsChooser(
 
         itemsIndexed(restResources) { index, resource ->
             val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
+            val shadowPadding = RadixTheme.dimensions.paddingDefault
             ItemContainer(
                 modifier = Modifier
                     .padding(top = topPadding)
                     .drawWithContent {
                         // Needed to remove shadow casted above of previous elements in the top side
                         if (index != 0 && restResources.size != 1) {
-                            val shadowPadding = 16.dp.toPx()
+                            val shadowPaddingPx = shadowPadding.toPx()
                             clipRect(
                                 top = 0f,
-                                left = -shadowPadding,
-                                right = size.width + shadowPadding,
-                                bottom = size.height + shadowPadding
+                                left = -shadowPaddingPx,
+                                right = size.width + shadowPaddingPx,
+                                bottom = size.height + shadowPaddingPx
                             ) {
                                 this@drawWithContent.drawContent()
                             }
