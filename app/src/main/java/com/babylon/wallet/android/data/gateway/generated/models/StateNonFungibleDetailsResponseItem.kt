@@ -34,7 +34,7 @@ data class StateNonFungibleDetailsResponseItem (
     val nonFungibleId: kotlin.String,
 
     @SerialName(value = "data")
-    val `data`: ScryptoSborValue,
+    val data: ScryptoSborValue,
 
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")
