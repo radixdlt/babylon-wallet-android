@@ -170,7 +170,7 @@ private fun resolveActions(
     ) { OnAction.OpenExternalWebView(actionableAddress) }
 
     val qrAction = PopupActionItem(
-        name = stringResource(id = R.string.addressAction_showQRCode),
+        name = stringResource(id = R.string.addressAction_showAccountQR),
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
     ) { OnAction.QRCode(actionableAddress) }
 

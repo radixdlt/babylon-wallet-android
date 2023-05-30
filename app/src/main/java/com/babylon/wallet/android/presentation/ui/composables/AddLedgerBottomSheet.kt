@@ -62,7 +62,7 @@ fun AddLedgerBottomSheet(
                         )
                     }
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_instructions),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_addDevice_body2),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,

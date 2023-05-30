@@ -177,13 +177,14 @@ fun CreateAccountWithLedgerContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     if (ledgerFactorSources.isEmpty()) {
-                        Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.createEntity_ledger_subtitleNoLedgers),
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
+                        // TODO
+//                        Text(
+//                            text = stringResource(id = com.babylon.wallet.android.R.string.createEntity_ledger_subtitleNoLedgers),
+//                            style = RadixTheme.typography.body1Header,
+//                            color = RadixTheme.colors.gray1,
+//                            overflow = TextOverflow.Ellipsis,
+//                            textAlign = TextAlign.Center
+//                        )
                     } else {
                         Text(
                             text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_selectDevice),

@@ -121,9 +121,9 @@ fun ChooseAccountSheet(
                         .align(alignment = Alignment.Center)
                         .padding(RadixTheme.dimensions.paddingLarge),
                     text = if (state.mode == ChooseAccounts.Mode.Chooser) {
-                        stringResource(id = R.string.transfer_chooseAccount_heading)
+                        stringResource(id = R.string.assetTransfer_chooseReceivingAccount_navigationTitle)
                     } else {
-                        stringResource(id = R.string.transfer_chooseAccount_scanQRCode_heading)
+                        stringResource(id = R.string.assetTransfer_chooseReceivingAccount_scanQRNavigationTitle)
                     },
                     style = RadixTheme.typography.body1StandaloneLink,
                     color = RadixTheme.colors.gray1
@@ -136,7 +136,7 @@ fun ChooseAccountSheet(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    text = stringResource(id = R.string.transfer_chooseAccount_submit),
+                    text = stringResource(id = R.string.common_choose),
                     onClick = onChooseAccountSubmitted,
                     enabled = state.isChooseButtonEnabled
                 )
@@ -191,7 +191,7 @@ private fun ChooseAccountContent(
             Text(
                 modifier = Modifier
                     .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.transfer_chooseAccount_enterAddress),
+                text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_enterManually),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -231,7 +231,7 @@ private fun ChooseAccountContent(
                     .padding(RadixTheme.dimensions.paddingDefault),
                 onValueChanged = onAddressChanged,
                 value = typedAddress,
-                hint = stringResource(id = R.string.transfer_chooseAccount_textFieldPlaceholder),
+                hint = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_addressFieldPlaceholder),
                 hintColor = RadixTheme.colors.gray2,
                 error = if (!isFocused) {
                     errorResource?.let { stringResource(id = it) }
@@ -299,7 +299,7 @@ private fun ChooseAccountContent(
             Text(
                 modifier = Modifier
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.transfer_chooseAccount_chooseOwnedAccount),
+                text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -352,7 +352,7 @@ fun ScanQRContent(
         Text(
             modifier = Modifier
                 .padding(vertical = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transfer_chooseAccount_scanQRCode_subtitle),
+            text = stringResource(id = R.string.assetTransfer_qrScanInstructions),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )

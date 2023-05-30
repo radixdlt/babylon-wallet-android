@@ -117,7 +117,7 @@ private fun SettingsLinkConnectorContent(
     }) {
         Column(modifier = Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.ledgerImport_heading),
+                title = stringResource(R.string.settings_ledgerHardwareWallets),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1
             )
