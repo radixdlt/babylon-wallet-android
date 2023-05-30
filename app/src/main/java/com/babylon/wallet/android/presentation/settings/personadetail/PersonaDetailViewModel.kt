@@ -8,9 +8,6 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
@@ -43,7 +40,7 @@ class PersonaDetailViewModel @Inject constructor(
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
-) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<PersonaDetailEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<PersonaDetailUiState>() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
     private var authSigningFactorInstance: FactorInstance? = null
@@ -101,17 +98,12 @@ class PersonaDetailViewModel @Inject constructor(
                         ),
                         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.EMPTY
                     )
-                    incomingRequestRepository.add(internalMessage, skipCurrentlyHandledQueue = true)
-                    sendEvent(PersonaDetailEvent.TransactionApproval(uploadAuthKeyRequestId))
+                    incomingRequestRepository.add(internalMessage)
                 }
                 _state.update { it.copy(loading = false) }
             }
         }
     }
-}
-
-sealed interface PersonaDetailEvent : OneOffEvent {
-    data class TransactionApproval(val requestId: String) : PersonaDetailEvent
 }
 
 data class PersonaDetailUiState(

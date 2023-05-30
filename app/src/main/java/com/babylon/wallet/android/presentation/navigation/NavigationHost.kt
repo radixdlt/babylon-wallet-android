@@ -38,7 +38,6 @@ import com.babylon.wallet.android.presentation.settings.personadetail.personaDet
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
-import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
@@ -191,14 +190,10 @@ fun NavigationHost(
             },
             onPersonaEdit = {
                 navController.personaEditScreen(it)
-            },
-            onDappClick = {
-                navController.dappDetailScreen(it)
-            },
-            goToTransactionApproval = {
-                navController.transactionApproval(it)
             }
-        )
+        ) {
+            navController.dappDetailScreen(it)
+        }
         personaEditScreen(onBackClick = {
             navController.navigateUp()
         })
@@ -225,14 +220,9 @@ fun NavigationHost(
             },
             onSendTransferClick = {}
         )
-        accountPreferencesScreen(
-            onBackClick = {
-                navController.popBackStack()
-            },
-            onApproveTransaction = {
-                navController.transactionApproval(it)
-            }
-        )
+        accountPreferencesScreen {
+            navController.popBackStack()
+        }
         dAppLoginAuthorized(
             navController,
             onBackClick = {

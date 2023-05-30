@@ -168,15 +168,13 @@ class DappDetailViewModel @Inject constructor(
                 ),
                 resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
             )
-            incomingRequestRepository.add(incomingRequest = request, skipCurrentlyHandledQueue = true)
-            sendEvent(DappDetailEvent.HandleInternalRequest(requestId = request.interactionId))
+            incomingRequestRepository.add(incomingRequest = request)
         }
     }
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
     data class EditPersona(val personaAddress: String, val requiredFieldsStringEncoded: String) : DappDetailEvent
-    data class HandleInternalRequest(val requestId: String) : DappDetailEvent
     object LastPersonaDeleted : DappDetailEvent
     object DappDeleted : DappDetailEvent
 }

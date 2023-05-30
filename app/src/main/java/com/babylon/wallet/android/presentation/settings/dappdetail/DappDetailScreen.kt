@@ -90,8 +90,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String, String) -> Unit,
-    onHandleInternalRequest: (String) -> Unit
+    onEditPersona: (String, String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -102,7 +101,6 @@ fun DappDetailScreen(
                 is DappDetailEvent.EditPersona -> {
                     onEditPersona(it.personaAddress, it.requiredFieldsStringEncoded)
                 }
-                is DappDetailEvent.HandleInternalRequest -> onHandleInternalRequest(it.requestId)
             }
         }
     }

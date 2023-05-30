@@ -10,9 +10,6 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -47,7 +44,7 @@ class AccountPreferenceViewModel @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
     private val appEventBus: AppEventBus
-) : StateViewModel<AccountPreferenceUiState>(), OneOffEventHandler<AccountPreferenceEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<AccountPreferenceUiState>() {
 
     private val args = AccountPreferencesArgs(savedStateHandle)
     private var authSigningFactorInstance: FactorInstance? = null
@@ -134,17 +131,12 @@ class AccountPreferenceViewModel @Inject constructor(
                         ),
                         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.EMPTY
                     )
-                    incomingRequestRepository.add(internalMessage, skipCurrentlyHandledQueue = true)
-                    sendEvent(AccountPreferenceEvent.TransactionApproval(uploadAuthKeyRequestId))
+                    incomingRequestRepository.add(internalMessage)
                 }
                 _state.update { it.copy(isLoading = false) }
             }
         }
     }
-}
-
-sealed interface AccountPreferenceEvent : OneOffEvent {
-    data class TransactionApproval(val requestId: String) : AccountPreferenceEvent
 }
 
 data class AccountPreferenceUiState(

@@ -38,9 +38,8 @@ import com.babylon.wallet.android.utils.toAmount
 import com.babylon.wallet.android.utils.toResourceRequest
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
-import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.ResourceSpecifier
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
+import com.radixdlt.toolkit.models.request.ConvertManifestResponse
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -62,7 +61,7 @@ import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
@@ -152,27 +151,27 @@ class TransactionApprovalViewModel @Inject constructor(
                         transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                     )
 
-                                manifestPreview.exceptionOrNull().let { error ->
-                                    Timber.e("Analyze manifest failed with error: $error")
-                                    _state.update {
-                                        it.copy(
-                                            isLoading = false,
-                                            error = UiMessage.ErrorMessage(error)
-                                        )
-                                    }
-                                }
+                    manifestPreview.exceptionOrNull().let { error ->
+                        Timber.e("Analyze manifest failed with error: $error")
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = UiMessage.ErrorMessage(error)
+                            )
+                        }
+                    }
 
-                                manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
-                                    Timber.d("Manifest : $analyzeManifestWithPreviewResponse")
-                                    val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
-                                        .componentAddresses.userApplications
+                    manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
+                        Timber.d("Manifest : $analyzeManifestWithPreviewResponse")
+                        val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
+                            .componentAddresses.userApplications
 
-                                    val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
-                                        componentAddresses.toList()
-                                    )
+                        val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
+                            componentAddresses.toList()
+                        )
 
-                                    val depositJobs = processAccountDeposits(analyzeManifestWithPreviewResponse)
-                                    val withdrawJobs = processWithdrawJobs(analyzeManifestWithPreviewResponse)
+                        val depositJobs = processAccountDeposits(analyzeManifestWithPreviewResponse)
+                        val withdrawJobs = processWithdrawJobs(analyzeManifestWithPreviewResponse)
 
                         val depositResults = depositJobs.awaitAll()
                         val withdrawResults = withdrawJobs.awaitAll()

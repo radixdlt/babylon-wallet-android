@@ -15,7 +15,6 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,8 +45,7 @@ import kotlinx.coroutines.launch
 fun AccountPreferenceScreen(
     viewModel: AccountPreferenceViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    onApproveTransaction: (String) -> Unit
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -55,13 +53,6 @@ fun AccountPreferenceScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is AccountPreferenceEvent.TransactionApproval -> onApproveTransaction(event.requestId)
-            }
-        }
-    }
     ModalBottomSheetLayout(
         modifier = modifier
 //            .systemBarsPadding()

@@ -22,7 +22,6 @@ import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 /**
@@ -83,7 +82,7 @@ fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
     return addInstruction(
         Instruction.SetMetadata(
             entityAddress = ManifestAstValue.Address(
-                address = entityAddress
+                value = entityAddress
             ),
             key = ManifestAstValue.String(ExplicitMetadataKey.OWNER_KEYS.key),
             value = ManifestAstValue.Enum(
@@ -201,8 +200,8 @@ fun faucetComponentAddress(
         request = KnownEntityAddressesRequest(
             networkId = networkId
         )
-    ).getOrThrow().faucetComponentAddress
-    return ManifestAstValue.Address(faucetComponentAddress.toString())
+    ).getOrThrow().faucetPackageAddress
+    return ManifestAstValue.Address(faucetComponentAddress)
 }
 
 fun FactorInstance.PublicKey.curveKindScryptoDiscriminator(): EnumDiscriminator.U8 {

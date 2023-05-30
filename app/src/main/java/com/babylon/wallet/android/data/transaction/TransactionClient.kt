@@ -45,6 +45,7 @@ import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.domain.personaOnCurrentNetwork
 import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
 import timber.log.Timber
 import java.security.SecureRandom
@@ -321,18 +322,23 @@ class TransactionClient @Inject constructor(
         val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         return result.getOrNull()?.let { analyzeManifestResponse ->
-            val addressesNeededToSign = analyzeManifestResponse.accountsRequiringAuth.toSet()
-            allAccounts.filter { addressesNeededToSign.contains(it.address) }
+            val accountsNeededToSign = analyzeManifestResponse.accountsRequiringAuth.toSet()
+            val identitiesNeededToSign = analyzeManifestResponse.identitiesRequiringAuth.toSet()
+            allAccounts.filter {
+                accountsNeededToSign.contains(it.address)
+            } + identitiesNeededToSign.mapNotNull { identityAddress ->
+                getProfileUseCase.personaOnCurrentNetwork(identityAddress)
+            }
         }.orEmpty()
     }
 
     suspend fun analyzeManifestWithPreviewContext(
         transactionManifest: TransactionManifest,
         transactionReceipt: ByteArray
-    ): kotlin.Result<AnalyzeManifestWithPreviewContextResponse> {
+    ): Result<AnalyzeTransactionExecutionResponse> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
-        return engine.analyzeManifestWithPreviewContext(
-            AnalyzeManifestWithPreviewContextRequest(
+        return engine.analyzeTransactionExecution(
+            AnalyzeTransactionExecutionRequest(
                 networkId = networkId.toUByte(),
                 manifest = transactionManifest,
                 transactionReceipt = transactionReceipt

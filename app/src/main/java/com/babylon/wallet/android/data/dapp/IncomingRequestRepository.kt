@@ -13,7 +13,7 @@ interface IncomingRequestRepository {
 
     val currentRequestToHandle: Flow<IncomingRequest>
 
-    suspend fun add(incomingRequest: IncomingRequest, skipCurrentlyHandledQueue: Boolean = false)
+    suspend fun add(incomingRequest: IncomingRequest)
 
     suspend fun requestHandled(requestId: String)
 
@@ -30,27 +30,31 @@ interface IncomingRequestRepository {
 
 class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepository {
 
-    private val listOfIncomingRequests = mutableMapOf<String, IncomingRequest>()
+    private val listOfIncomingRequests = mutableListOf<IncomingRequest>()
 
     private val _currentRequestToHandle = MutableSharedFlow<IncomingRequest>()
     override val currentRequestToHandle = _currentRequestToHandle.asSharedFlow()
 
     private val mutex = Mutex()
 
-    override suspend fun add(incomingRequest: IncomingRequest, skipCurrentlyHandledQueue: Boolean) {
+    override suspend fun add(incomingRequest: IncomingRequest) {
         mutex.withLock {
-            if (listOfIncomingRequests.isEmpty() && !skipCurrentlyHandledQueue) {
+            if (listOfIncomingRequests.isEmpty()) {
                 _currentRequestToHandle.emit(incomingRequest)
             }
-            listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)
+            if (incomingRequest.isInternal) {
+                listOfIncomingRequests.add(0, incomingRequest)
+            } else {
+                listOfIncomingRequests.add(incomingRequest)
+            }
             Timber.d("🗂 new incoming request with id ${incomingRequest.id} added in list, so size now is ${listOfIncomingRequests.size}")
         }
     }
 
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
-            listOfIncomingRequests.remove(requestId)
-            listOfIncomingRequests.values.firstOrNull()?.let { nextRequest ->
+            listOfIncomingRequests.removeIf { it.id == requestId }
+            listOfIncomingRequests.firstOrNull()?.let { nextRequest ->
                 _currentRequestToHandle.emit(nextRequest)
             }
             Timber.d("🗂 request $requestId handled so size of list is now: ${listOfIncomingRequests.size}")
@@ -58,27 +62,27 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
     }
 
     override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest {
-        require(listOfIncomingRequests.containsKey(requestId)) {
+        require(listOfIncomingRequests.any { it.id == requestId }) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.UnauthorizedRequest)
+        return (listOfIncomingRequests.first { it.id == requestId } as IncomingRequest.UnauthorizedRequest)
     }
 
     override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest {
-        require(listOfIncomingRequests.containsKey(requestId)) {
+        require(listOfIncomingRequests.any { it.id == requestId }) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionRequest)
+        return (listOfIncomingRequests.first { it.id == requestId } as IncomingRequest.TransactionRequest)
     }
 
     override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest {
-        require(listOfIncomingRequests.containsKey(requestId)) {
+        require(listOfIncomingRequests.any { it.id == requestId }) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests[requestId] as IncomingRequest.AuthorizedRequest)
+        return (listOfIncomingRequests.first { it.id == requestId } as IncomingRequest.AuthorizedRequest)
     }
 
     override fun removeAll() {

@@ -19,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
@@ -66,6 +67,7 @@ class MainViewModel @Inject constructor(
         )
 
     init {
+        listenForInternalRequests()
         viewModelScope.launch {
             getProfileStateUseCase()
                 .collect { profileState ->
@@ -105,7 +107,7 @@ class MainViewModel @Inject constructor(
 
     private fun listenForIncomingDappRequests() {
         handlingCurrentRequestJob = viewModelScope.launch {
-            incomingRequestRepository.currentRequestToHandle.collect { request ->
+            incomingRequestRepository.currentRequestToHandle.filter { !it.isInternal }.collect { request ->
                 delay(REQUEST_HANDLING_DELAY)
                 when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
                     is com.babylon.wallet.android.domain.common.Result.Error -> {
@@ -136,6 +138,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun listenForInternalRequests() {
+        viewModelScope.launch {
+            incomingRequestRepository.currentRequestToHandle.filter { it.isInternal }.collect { request ->
+                delay(REQUEST_HANDLING_DELAY)
+                sendEvent(MainEvent.IncomingRequestEvent(request))
+            }
+        }
+    }
+
     private fun processIncomingRequest(request: IncomingRequest) {
         processingRequestJob = viewModelScope.launch {
             val verificationResult = verifyDappUseCase(request)
@@ -159,7 +170,7 @@ class MainViewModel @Inject constructor(
 
     companion object {
         private val PEERDROID_STOP_TIMEOUT = 60.seconds
-        private const val REQUEST_HANDLING_DELAY = 500L
+        private const val REQUEST_HANDLING_DELAY = 300L
     }
 }
 
