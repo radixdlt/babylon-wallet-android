@@ -3,6 +3,8 @@ package com.babylon.wallet.android.data.gateway.model
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
+import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DomainMetadataItem
@@ -25,6 +27,8 @@ enum class ExplicitMetadataKey(val key: String) {
     DOMAIN("domain"),
     DAPP_DEFINITION("dapp_definition"),
     RELATED_WEBSITES("related_websites"),
+    CLAIMED_WEBSITES("claimed_websites"),
+    CLAIMED_ENTITIES("claimed_entities"),
     ACCOUNT_TYPE("account_type"),
     TAGS("tags"),
     KEY_IMAGE_URL("key_image_url"),
@@ -32,6 +36,7 @@ enum class ExplicitMetadataKey(val key: String) {
     INFO_URL("info_url"),
     URL("url"); // TODO it should be info_url ?
 
+    @Suppress("CyclomaticComplexMethod")
     fun toStandardMetadataItem(value: String): StandardMetadataItem = when (this) {
         DESCRIPTION -> DescriptionMetadataItem(description = value)
         SYMBOL -> SymbolMetadataItem(symbol = value)
@@ -39,6 +44,8 @@ enum class ExplicitMetadataKey(val key: String) {
         DOMAIN -> DomainMetadataItem(domain = Uri.parse(value))
         DAPP_DEFINITION -> DAppDefinitionMetadataItem(address = value)
         RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value)
+        CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value)
+        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value)
         ACCOUNT_TYPE -> AccountTypeMetadataItem(type = AccountType.valueOf(value))
         TAGS -> TagsMetadataItem(tags = listOf(value))
         KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value))

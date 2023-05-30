@@ -8,6 +8,8 @@ import com.babylon.wallet.android.data.gateway.extensions.amount
 import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
@@ -25,6 +27,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
@@ -66,17 +69,52 @@ class EntityRepositoryRCNetImpl @Inject constructor(
             AccountWithResources(
                 account = profileAccount,
                 resources = Resources(
-                    fungibleResources = fungibleResources(accountOnGateway, allResources),
-                    nonFungibleResources = nonFungibleResources(accountOnGateway, allResources, nonFungiblesWithData)
+                    fungibleResources = fungibleResources(
+                        accountOnGateway.fungibleResources?.items.orEmpty(),
+                        allResources
+                    ),
+                    nonFungibleResources = nonFungibleResources(
+                        accountOnGateway.nonFungibleResources?.items.orEmpty(),
+                        allResources,
+                        nonFungiblesWithData
+                    )
+                )
+            )
+        }
+    }
+
+    override suspend fun getDAppResources(
+        dAppMetadata: DAppWithMetadata,
+        isRefreshing: Boolean
+    ): Result<Resources> {
+        val associatedAddresses = dAppMetadata.associatedFungibleResourceAddresses + dAppMetadata.associatedNonFungibleResourceAddresses
+
+        return stateEntityDetails(
+            addresses = associatedAddresses,
+            isRefreshing = isRefreshing
+        ).map { response ->
+            val allResources = response.items
+
+            val nonFungibleAddresses = dAppMetadata.associatedNonFungibleResourceAddresses
+
+            // A map of <Non fungible ResourceAddress, List of NFT items>
+            val nonFungiblesWithData = resolveNonFungibleData(nonFungibleAddresses, isRefreshing)
+
+            Resources(
+                fungibleResources = fungibleResources(dAppMetadata.fungibleResources, allResources),
+                nonFungibleResources = nonFungibleResources(
+                    dAppMetadata.nonFungibleResources,
+                    allResources,
+                    nonFungiblesWithData
                 )
             )
         }
     }
 
     private fun fungibleResources(
-        accountOnGateway: StateEntityDetailsResponseItem,
+        fungibleResources: List<FungibleResourcesCollectionItem>,
         allResources: List<StateEntityDetailsResponseItem>
-    ) = accountOnGateway.fungibleResources?.items?.mapNotNull { item ->
+    ) = fungibleResources.mapNotNull { item ->
         val resourceDetails = allResources.find { resource ->
             resource.address == item.resourceAddress
         } ?: return@mapNotNull null
@@ -91,13 +129,13 @@ class EntityRepositoryRCNetImpl @Inject constructor(
             descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
             iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
         )
-    }.orEmpty()
+    }
 
     private fun nonFungibleResources(
-        accountOnGateway: StateEntityDetailsResponseItem,
+        nonFungibleResources: List<NonFungibleResourcesCollectionItem>,
         allResources: List<StateEntityDetailsResponseItem>,
         nonFungiblesWithData: Map<String, List<Resource.NonFungibleResource.Item>>
-    ) = accountOnGateway.nonFungibleResources?.items?.mapNotNull { item ->
+    ) = nonFungibleResources.mapNotNull { item ->
         val resourceDetails = allResources.find { resource ->
             resource.address == item.resourceAddress
         } ?: return@mapNotNull null
@@ -112,7 +150,7 @@ class EntityRepositoryRCNetImpl @Inject constructor(
             iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) },
             items = nonFungiblesWithData[item.resourceAddress].orEmpty()
         )
-    }.orEmpty()
+    }
 
     private suspend fun resolveNonFungibleData(
         nonFungibleAddresses: List<String>,

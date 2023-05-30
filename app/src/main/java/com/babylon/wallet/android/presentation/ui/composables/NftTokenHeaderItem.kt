@@ -46,7 +46,7 @@ fun NftTokenHeaderItem(
     val cardShape = RoundedCornerShape(12.dp, 12.dp, bottomCorners, bottomCorners)
     Box(
         modifier = modifier
-            .padding(20.dp, 10.dp, 20.dp, bottomPadding)
+            .padding(0.dp, 10.dp, 0.dp, bottomPadding)
     ) {
         if (collapsed) {
             if (nftChildCount > 1) {

@@ -4,6 +4,8 @@ package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.FungibleToken
 import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.Resource
@@ -170,6 +172,18 @@ class SampleDataProvider {
                 )
             }
         }
+    }
+
+    fun sampleDAppWithResources(): DAppWithAssociatedResources {
+        return DAppWithAssociatedResources(
+            dAppWithMetadata = DAppWithMetadata(
+                dAppAddress = "account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"
+            ),
+            resources = Resources(
+                fungibleResources = emptyList(),
+                nonFungibleResources = emptyList()
+            )
+        )
     }
 
     fun sampleManifest(): TransactionManifest {

@@ -17,11 +17,12 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -63,12 +64,12 @@ class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
-    private val getValidDAppMetadataUseCase: GetValidDAppMetadataUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithAssociatedResourcesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
@@ -186,13 +187,19 @@ class TransactionApprovalViewModel @Inject constructor(
                                     val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
                                         mutableListOf()
 
-                                    val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
-                                        .componentAddresses.userApplications
+                                    val componentAccountsAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
+                                        .componentAddresses.accounts
                                         .filterIsInstance<EntityAddress.ComponentAddress>()
 
-                                    val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
-                                        componentAddresses
-                                    )
+                                    val encounteredAddressesResults = componentAccountsAddresses.map {
+                                        dAppWithAssociatedResourcesUseCase.invoke(
+                                            definitionAddress = it.address,
+                                            needMostRecentData = false
+                                        ).value()
+                                    }
+                                    val connectedDApps = encounteredAddressesResults.mapNotNull { dAppWithResources ->
+                                        dAppWithResources
+                                    }
 
                                     analyzeManifestWithPreviewResponse
                                         .accountDeposits.forEachIndexed { index, accountDeposit ->
@@ -366,7 +373,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                             depositingAccounts = depositPreviewAccounts,
                                             guaranteesAccounts = guaranteesAccounts,
                                             presentingProofs = proofs.toPersistentList(),
-                                            connectedDApps = encounteredAddresses.toPersistentList(),
+                                            connectedDApps = connectedDApps.toPersistentList(),
                                             manifestString = manifestInStringFormatConversionResult.data.toPrettyString(),
                                             canApprove = true,
                                             isLoading = false
@@ -601,6 +608,22 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
+    fun promptForGuaranteesClick() {
+        _state.update {
+            it.copy(
+                selectedSheetState = SelectedSheetState.Guarantees
+            )
+        }
+    }
+
+    fun onDAppClick(dApp: DAppWithAssociatedResources) {
+        _state.update {
+            it.copy(
+                selectedSheetState = SelectedSheetState.DApp(dApp)
+            )
+        }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(error = null) }
     }
@@ -648,11 +671,6 @@ data class PresentingProofUiModel(
     val title: String
 )
 
-data class ConnectedDAppsUiModel(
-    val iconUrl: String,
-    val title: String
-)
-
 data class PreviewAccountItemsUiModel(
     val address: String,
     val accountName: String,
@@ -692,8 +710,9 @@ data class TransactionUiState(
     val depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
     val guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
-    val connectedDApps: ImmutableList<ConnectedDAppsUiModel> = persistentListOf(),
-    val guaranteePercent: BigDecimal = BigDecimal("100")
+    val connectedDApps: ImmutableList<DAppWithAssociatedResources> = persistentListOf(),
+    val guaranteePercent: BigDecimal = BigDecimal("100"),
+    val selectedSheetState: SelectedSheetState? = null
 ) : UiState
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
@@ -703,4 +722,11 @@ sealed interface TransactionApprovalEvent : OneOffEvent {
         val requestId: String,
         @StringRes val errorTextRes: Int
     ) : TransactionApprovalEvent
+}
+
+sealed interface SelectedSheetState {
+    object Guarantees : SelectedSheetState
+    data class DApp(
+        val dApp: DAppWithAssociatedResources
+    ) : SelectedSheetState
 }

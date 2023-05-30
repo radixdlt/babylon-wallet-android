@@ -154,7 +154,7 @@
     <string name="authorized_dapps">Authorized dApps</string>
     <string name="here_are_all_the_decentralized_apps">Here are all the dApps that you have logged into using this Radix Wallet.</string>
     <string name="here_are_the_personas">Here are the Personas that you have previously used to connect to this dApp.</string>
-    <string name="dapp_definition">dApp Definition</string>
+    <string name="dapp_definition">Address</string>
     <string name="given_name">Given Name</string>
     <string name="family_name">Family Name</string>
     <string name="email">Email</string>
@@ -372,4 +372,7 @@
     <string name="or_choose_one_of_your_accounts">Or choose one of your own accounts</string>
     <string name="choose">Choose</string>
     <string name="scan_qr_code_of_radix_account_address">Scan a QR code of a Radix account address</string>
+    <string name="associated_tokens">Associated Tokens</string>
+    <string name="associated_nfts">Associated NFTs</string>
+    <string name="website">Website</string>
 </resources>

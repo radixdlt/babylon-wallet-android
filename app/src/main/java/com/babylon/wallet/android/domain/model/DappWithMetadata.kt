@@ -1,7 +1,11 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
@@ -11,15 +15,21 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 
-data class DappWithMetadata(
+data class DAppWithMetadata(
     val dAppAddress: String,
     private val nameItem: NameMetadataItem? = null,
     private val descriptionItem: DescriptionMetadataItem? = null,
     private val iconMetadataItem: IconUrlMetadataItem? = null,
     private val relatedWebsitesItem: RelatedWebsiteMetadataItem? = null,
+    private val claimedWebsiteItem: ClaimedWebsiteMetadataItem? = null,
+    private val claimedEntitiesItem: ClaimedEntitiesMetadataItem? = null,
     private val accountTypeItem: AccountTypeMetadataItem? = null,
     private val dAppDefinitionMetadataItem: DAppDefinitionMetadataItem? = null,
-    private val nonExplicitMetadataItems: List<StringMetadataItem> = emptyList()
+    private val nonExplicitMetadataItems: List<StringMetadataItem> = emptyList(),
+    val associatedFungibleResourceAddresses: List<String> = emptyList(),
+    val associatedNonFungibleResourceAddresses: List<String> = emptyList(),
+    val fungibleResources: List<FungibleResourcesCollectionItem> = emptyList(),
+    val nonFungibleResources: List<NonFungibleResourcesCollectionItem> = emptyList()
 ) {
 
     val name: String?
@@ -40,15 +50,20 @@ data class DappWithMetadata(
     val definitionAddress: String?
         get() = dAppDefinitionMetadataItem?.address
 
+    val claimedWebsite: String?
+        get() = claimedWebsiteItem?.website
+
+    val claimedEntities: List<String>
+        get() = claimedEntitiesItem?.entity?.split(",").orEmpty()
     fun isRelatedWith(origin: String): Boolean {
         return relatedWebsitesItem?.website == origin
     }
 
     companion object {
-        fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DappWithMetadata {
+        fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DAppWithMetadata {
             val remainingItems = metadataItems.toMutableList()
 
-            return DappWithMetadata(
+            return DAppWithMetadata(
                 dAppAddress = address,
                 nameItem = remainingItems.consume(),
                 descriptionItem = remainingItems.consume(),

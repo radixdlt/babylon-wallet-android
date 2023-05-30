@@ -54,6 +54,18 @@ data class RelatedWebsiteMetadataItem(
     override val key: String = ExplicitMetadataKey.RELATED_WEBSITES.key
 }
 
+data class ClaimedWebsiteMetadataItem(
+    val website: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.CLAIMED_WEBSITES.key
+}
+
+data class ClaimedEntitiesMetadataItem(
+    val entity: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.CLAIMED_ENTITIES.key
+}
+
 data class AccountTypeMetadataItem(
     val type: AccountType
 ) : StandardMetadataItem {

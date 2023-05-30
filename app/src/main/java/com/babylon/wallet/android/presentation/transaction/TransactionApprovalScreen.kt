@@ -44,8 +44,10 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.transaction.composables.ConnectedDAppsContent
 import com.babylon.wallet.android.presentation.transaction.composables.DepositAccountContent
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
@@ -63,6 +65,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -95,9 +98,12 @@ fun TransactionApprovalScreen(
         withdrawingAccounts = state.withdrawingAccounts,
         depositingAccounts = state.depositingAccounts,
         guaranteesAccounts = state.guaranteesAccounts,
+        selectedSheetState = state.selectedSheetState,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
-        onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged
+        onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
+        promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
+        onDAppClick = viewModel::onDAppClick,
     )
 
     LaunchedEffect(Unit) {
@@ -135,12 +141,15 @@ private fun TransactionPreviewContent(
     networkFee: String,
     rawManifestContent: String,
     presentingProofs: ImmutableList<PresentingProofUiModel>,
-    connectedDApps: ImmutableList<ConnectedDAppsUiModel>,
+    connectedDApps: ImmutableList<DAppWithAssociatedResources>,
     withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     depositingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
+    selectedSheetState: SelectedSheetState?,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
+    promptForGuaranteesClick: () -> Unit,
+    onDAppClick: (DAppWithAssociatedResources) -> Unit,
     onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
@@ -167,23 +176,47 @@ private fun TransactionPreviewContent(
             .fillMaxSize(),
         sheetState = bottomSheetState,
         sheetContent = {
-            GuaranteesSheet(
-                modifier = Modifier.fillMaxWidth(),
-                guaranteesAccounts = guaranteesAccounts,
-                onClose = {
-                    scope.launch {
-                        bottomSheetState.hide()
+            Column(
+                Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                when (selectedSheetState) {
+                    is SelectedSheetState.Guarantees -> {
+                        GuaranteesSheet(
+                            modifier = Modifier.fillMaxWidth(),
+                            guaranteesAccounts = guaranteesAccounts,
+                            onClose = {
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                }
+                                onGuaranteesCloseClick()
+                            },
+                            onApplyClick = { ->
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                }
+                                onGuaranteesApplyClick()
+                            },
+                            onGuaranteeValueChanged = onGuaranteeValueChanged
+                        )
                     }
-                    onGuaranteesCloseClick()
-                },
-                onApplyClick = { ->
-                    scope.launch {
-                        bottomSheetState.hide()
+                    is SelectedSheetState.DApp -> {
+                        DAppDetailsSheetContent(
+                            onBackClick = {
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            dappName = selectedSheetState.dApp.dAppWithMetadata.name.orEmpty(),
+                            dappWithMetadata = selectedSheetState.dApp.dAppWithMetadata,
+                            associatedFungibleTokens = selectedSheetState.dApp.fungibleResources.toPersistentList(),
+                            associatedNonFungibleTokens = selectedSheetState.dApp.nonFungibleResources.toPersistentList()
+                        )
                     }
-                    onGuaranteesApplyClick()
-                },
-                onGuaranteeValueChanged = onGuaranteeValueChanged
-            )
+                    else -> {}
+                }
+            }
         }
     ) {
         Box(
@@ -234,13 +267,22 @@ private fun TransactionPreviewContent(
 
                             StrokeLine(height = 40.dp)
 
-                            ConnectedDAppsContent(connectedDApps = connectedDApps)
+                            ConnectedDAppsContent(
+                                connectedDApps = connectedDApps,
+                                onDAppClick = {
+                                    onDAppClick(it)
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                }
+                            )
 
                             StrokeLine()
 
                             DepositAccountContent(
                                 previewAccounts = depositingAccounts,
                                 promptForGuarantees = {
+                                    promptForGuaranteesClick()
                                     scope.launch {
                                         bottomSheetState.show()
                                     }
@@ -379,8 +421,8 @@ fun TransactionPreviewContentPreview() {
                 PresentingProofUiModel("", "Proof")
             ),
             connectedDApps = persistentListOf(
-                ConnectedDAppsUiModel("", "DApp"),
-                ConnectedDAppsUiModel("", "DApp")
+//                ConnectedDAppsUiModel("", "DApp"),
+//                ConnectedDAppsUiModel("", "DApp")
             ),
             withdrawingAccounts = persistentListOf(
                 PreviewAccountItemsUiModel(
@@ -469,6 +511,7 @@ fun TransactionPreviewContentPreview() {
                     )
                 )
             ).toGuaranteesAccountsUiModel(),
+            selectedSheetState = null,
             onApproveTransaction = {},
             error = null,
             onMessageShown = {},
@@ -476,7 +519,9 @@ fun TransactionPreviewContentPreview() {
             canApprove = true,
             onGuaranteesApplyClick = {},
             onGuaranteesCloseClick = {},
-            onGuaranteeValueChanged = {}
+            onGuaranteeValueChanged = {},
+            onDAppClick = {},
+            promptForGuaranteesClick = {}
         )
     }
 }

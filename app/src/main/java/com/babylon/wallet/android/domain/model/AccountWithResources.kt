@@ -16,6 +16,9 @@ data class AccountWithResources(
 
     fun hasXrd(minimumBalance: Long = 1L): Boolean {
         return fungibleResources.any {
+            if (it.amount == null) {
+                return false
+            }
             it.symbol == MetadataConstants.SYMBOL_XRD && it.amount >= BigDecimal(minimumBalance)
         }
     }

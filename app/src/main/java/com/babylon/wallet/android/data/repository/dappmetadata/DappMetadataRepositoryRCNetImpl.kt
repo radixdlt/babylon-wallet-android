@@ -4,6 +4,8 @@ import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
+import com.babylon.wallet.android.data.gateway.extensions.fungibleResourceAddresses
+import com.babylon.wallet.android.data.gateway.extensions.nonFungibleResourceAddresses
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
@@ -19,9 +21,11 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
+import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
@@ -79,7 +83,7 @@ class DappMetadataRepositoryRCNetImpl @Inject constructor(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata> = getDAppsMetadata(
+    ): Result<DAppWithMetadata> = getDAppsMetadata(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
@@ -91,7 +95,7 @@ class DappMetadataRepositoryRCNetImpl @Inject constructor(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>, // Not needed in rcnet
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> = withContext(ioDispatcher) {
+    ): Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
         stateApi.entityDetails(
             StateEntityDetailsRequest(
                 addresses = definitionAddresses
@@ -104,14 +108,19 @@ class DappMetadataRepositoryRCNetImpl @Inject constructor(
             map = { response ->
                 response.items.map { dAppResponse ->
                     val metadata = response.items.first().metadata.asMetadataStringMap()
-                    DappWithMetadata(
+                    DAppWithMetadata(
                         dAppAddress = dAppResponse.address,
                         nameItem = metadata[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
                         descriptionItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
                         iconMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) },
                         relatedWebsitesItem = metadata[ExplicitMetadataKey.RELATED_WEBSITES.key]?.let { RelatedWebsiteMetadataItem(it) },
+                        claimedWebsiteItem = metadata[ExplicitMetadataKey.CLAIMED_WEBSITES.key]?.let { ClaimedWebsiteMetadataItem(it) },
+                        claimedEntitiesItem = metadata[ExplicitMetadataKey.CLAIMED_ENTITIES.key]?.let { ClaimedEntitiesMetadataItem(it) },
                         accountTypeItem = metadata[ExplicitMetadataKey.ACCOUNT_TYPE.key]?.let {
-                            AccountTypeMetadataItem(type = AccountType.valueOf(it))
+                            val accountType = AccountType.values().find { value -> value.asString == it }
+                            accountType?.let { type ->
+                                AccountTypeMetadataItem(type = type)
+                            }
                         },
                         dAppDefinitionMetadataItem = metadata[ExplicitMetadataKey.DAPP_DEFINITION.key]?.let {
                             DAppDefinitionMetadataItem(it)
@@ -121,10 +130,14 @@ class DappMetadataRepositoryRCNetImpl @Inject constructor(
                                 entry.key in ExplicitMetadataKey.forDapp.map { it.key }
                             }.map {
                                 StringMetadataItem(it.key, it.value)
-                            }
+                            },
+                        associatedFungibleResourceAddresses = dAppResponse.fungibleResourceAddresses,
+                        associatedNonFungibleResourceAddresses = dAppResponse.nonFungibleResourceAddresses,
+                        fungibleResources = dAppResponse.fungibleResources?.items.orEmpty(),
+                        nonFungibleResources = dAppResponse.nonFungibleResources?.items.orEmpty()
                     )
                 }
-            },
+            }
         )
     }
 

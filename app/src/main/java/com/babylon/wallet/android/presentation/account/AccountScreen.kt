@@ -484,7 +484,9 @@ fun AssetsContent(
                         AssetTypeTab.NTF_TAB -> {
                             NonFungibleResourcesContent(
                                 items = resources?.nonFungibleResources.orEmpty(),
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                                 onNftClick = onNonFungibleItemClick
                             )
                         }

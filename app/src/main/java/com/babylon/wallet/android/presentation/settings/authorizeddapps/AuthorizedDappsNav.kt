@@ -11,14 +11,14 @@ import com.google.accompanist.navigation.animation.composable
 
 const val ROUTE_AUTHORIZED_DAPPS = "settings_authorized_dapps"
 
-fun NavController.authorizedDappsScreen() {
+fun NavController.authorizedDAppsScreen() {
     navigate(ROUTE_AUTHORIZED_DAPPS)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.authorizedDappsScreen(
+fun NavGraphBuilder.authorizedDAppsScreen(
     onBackClick: () -> Unit,
-    onDappClick: (String) -> Unit
+    onDAppClick: (String) -> Unit
 ) {
     composable(
         route = ROUTE_AUTHORIZED_DAPPS,
@@ -41,10 +41,10 @@ fun NavGraphBuilder.authorizedDappsScreen(
             EnterTransition.None
         },
     ) {
-        AuthorizedDappsScreen(
+        AuthorizedDAppsScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onDappClick = onDappClick
+            onDAppClick = onDAppClick
         )
     }
 }

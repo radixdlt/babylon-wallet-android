@@ -3,10 +3,13 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,9 +28,9 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
         state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
     }
-    private val dappMetadataRepository = DappMetadataRepositoryFake()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithAssociatedResourcesUseCase>()
     private val samplePersonas = listOf(
         sampleDataProvider.samplePersona("address1"),
         sampleDataProvider.samplePersona(sampleDataProvider.randomAddress())
@@ -36,7 +39,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     override fun initVM(): DappDetailViewModel {
         return DappDetailViewModel(
             dAppConnectionRepository,
-            dappMetadataRepository,
+            getDAppWithAssociatedResourcesUseCase,
             getProfileUseCase,
             incomingRequestRepository,
             savedStateHandle
@@ -69,6 +72,10 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
                 )
             )
         )
+        coEvery { getDAppWithAssociatedResourcesUseCase("address1", false) } returns
+                Result.Success(
+                    SampleDataProvider().sampleDAppWithResources()
+                )
     }
 
     @Test

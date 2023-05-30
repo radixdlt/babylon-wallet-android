@@ -19,7 +19,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -37,13 +37,13 @@ interface DappMetadataRepository {
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata>
+    ): Result<DAppWithMetadata>
 
     suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>>
+    ): Result<List<DAppWithMetadata>>
 }
 
 class DappMetadataRepositoryEnkinetImpl @Inject constructor(
@@ -90,7 +90,7 @@ class DappMetadataRepositoryEnkinetImpl @Inject constructor(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata> = getDAppsMetadata(
+    ): Result<DAppWithMetadata> = getDAppsMetadata(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
@@ -102,7 +102,7 @@ class DappMetadataRepositoryEnkinetImpl @Inject constructor(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> = withContext(ioDispatcher) {
+    ): Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
         val optIns = if (explicitMetadata.isNotEmpty()) {
             StateEntityDetailsOptIns(
                 explicitMetadata = explicitMetadata.map { it.key }
@@ -123,7 +123,7 @@ class DappMetadataRepositoryEnkinetImpl @Inject constructor(
             ),
             map = { response ->
                 response.items.map { dAppResponse ->
-                    DappWithMetadata.from(
+                    DAppWithMetadata.from(
                         address = dAppResponse.address,
                         metadataItems = dAppResponse.explicitMetadata?.asMetadataItems().orEmpty()
                     )
