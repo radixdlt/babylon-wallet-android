@@ -566,10 +566,4 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger hardware wallet device</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have connected to</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
-
-  <string name="assetTransfer_accountList_externalAccountName">Account</string>
-  <string name="assetTransfer_chooseAssets_navigationTitle">Choose Asset(s)</string>
-  <string name="assetTransfer_chooseAssets_buttonAssetsNone">Select Assets</string>
-  <string name="assetTransfer_chooseAssets_buttonAssetsOne">Choose 1 Asset</string>
-  <string name="assetTransfer_chooseAssets_buttonAssets">Choose %d Assets</string>
 </resources>
