@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -157,6 +158,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         )
     }
 
+    @Ignore("until we have the validated addresses from iOS")
     @Test
     fun `when valid address decoded from qr scanner, verify view mode is back to Default and choose button enabled`() =
         runTest {
