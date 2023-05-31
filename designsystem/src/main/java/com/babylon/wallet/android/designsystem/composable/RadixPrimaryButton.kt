@@ -34,7 +34,7 @@ fun RadixPrimaryButton(
     enabled: Boolean = true,
     icon: (@Composable () -> Unit)? = null,
     isLoading: Boolean = false,
-    throttleClicks: Boolean = false
+    throttleClicks: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
