@@ -3,9 +3,11 @@ package com.babylon.wallet.android.data.transaction
 enum class MethodName(val stringValue: String) {
     LockFee("lock_fee"),
     Free("free"),
+    Deposit("deposit"),
     DepositBatch("deposit_batch"),
     LockContingentFee("lock_contingent_fee"),
     Withdraw("withdraw"),
+    WithdrawNonFungibles("withdraw_non_fungibles"),
     WithdrawByAmount("withdraw_by_amount"),
     WithdrawByIds("withdraw_by_ids"),
     LockFeeAndWithdraw("lock_fee_and_withdraw"),

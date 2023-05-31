@@ -42,9 +42,10 @@ fun NftTokenDetailItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(20.dp, 0.dp, 20.dp, 1.dp),
+            .padding(20.dp, 0.dp, 20.dp),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
         backgroundColor = RadixTheme.colors.defaultBackground,
+        elevation = 4.dp,
         onClick = {
             onItemClicked()
         }
@@ -55,24 +56,27 @@ fun NftTokenDetailItem(
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            val painter = rememberAsyncImagePainter(
-                model = rememberImageUrl(
-                    fromUrl = item.imageUrl.toString(),
-                    size = ImageSize.LARGE
-                ),
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder)
-            )
-            Image(
-                painter = painter,
-                contentDescription = "Nft image",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
-                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-            )
+            if (item.imageUrl != null) {
+                val painter = rememberAsyncImagePainter(
+                    model = rememberImageUrl(
+                        fromUrl = item.imageUrl.toString(),
+                        size = ImageSize.LARGE
+                    ),
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    error = painterResource(id = R.drawable.img_placeholder)
+                )
+                Image(
+                    painter = painter,
+                    contentDescription = "Nft image",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyImageAspectRatio(painter = painter)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
+                )
+            }
+
             Text(
                 item.localId,
                 color = RadixTheme.colors.gray2,
@@ -90,6 +94,7 @@ fun CollapsableChildItemPreview() {
     RadixWalletTheme {
         NftTokenDetailItem(
             item = Resource.NonFungibleResource.Item(
+                collectionAddress = "resource_rdx_abcd",
                 localId = "#12",
                 iconMetadataItem = null
             ),

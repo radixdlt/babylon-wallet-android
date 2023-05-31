@@ -55,7 +55,7 @@
     <string name="you_have_no_nfts">You have no NFTs</string>
     <string name="what_are_nfts">What are NFTs?</string>
     <string name="empty" />
-    <string name="nft_id">NFT ID</string>
+    <string name="nft_id">ID</string>
     <string name="wallet_settings">Wallet Settings</string>
     <string name="add_connection">Add Connection</string>
     <string name="save_link">Save Link</string>
@@ -372,5 +372,9 @@
     <string name="or_choose_one_of_your_accounts">Or choose one of your own accounts</string>
     <string name="choose">Choose</string>
     <string name="scan_qr_code_of_radix_account_address">Scan a QR code of a Radix account address</string>
+    <string name="invalid_address">Invalid address</string>
+    <string name="used_address">Already used address</string>
+    <string name="choose_assets">Choose Asset(s)</string>
+    <string name="select_assets">Select Assets</string>
     <string name="ledger_failure">Failed to communicate with Ledger Device</string>
 </resources>

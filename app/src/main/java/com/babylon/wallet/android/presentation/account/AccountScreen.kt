@@ -174,7 +174,6 @@ private fun AccountScreenContent(
                         is SelectedResource.SelectedNonFungibleResource -> {
                             NonFungibleTokenBottomSheetDetails(
                                 modifier = Modifier.fillMaxSize(),
-                                nonFungibleResource = state.selectedResource.nonFungible,
                                 item = state.selectedResource.item,
                                 onCloseClick = {
                                     scope.launch {

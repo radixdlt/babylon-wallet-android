@@ -59,7 +59,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         dappId = "dappId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "", false)
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 
@@ -102,6 +102,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             )
         } returns Result.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
+        coEvery { appEventBus.sendEvent(any()) } returns Unit
     }
 
     override fun initVM(): TransactionApprovalViewModel {

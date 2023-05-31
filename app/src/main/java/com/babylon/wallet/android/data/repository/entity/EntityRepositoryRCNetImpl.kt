@@ -32,6 +32,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
+import java.math.BigDecimal
 import javax.inject.Inject
 
 class EntityRepositoryRCNetImpl @Inject constructor(
@@ -81,6 +82,10 @@ class EntityRepositoryRCNetImpl @Inject constructor(
             resource.address == item.resourceAddress
         } ?: return@mapNotNull null
 
+        if (item.amountDecimal == BigDecimal.ZERO) {
+            return@mapNotNull null
+        }
+
         val metadataMap = resourceDetails.metadata.asMetadataStringMap()
 
         Resource.FungibleResource(
@@ -101,6 +106,10 @@ class EntityRepositoryRCNetImpl @Inject constructor(
         val resourceDetails = allResources.find { resource ->
             resource.address == item.resourceAddress
         } ?: return@mapNotNull null
+
+        if (item.amount == 0L) {
+            return@mapNotNull null
+        }
 
         val metadataMap = resourceDetails.metadata.asMetadataStringMap()
 
@@ -146,6 +155,7 @@ class EntityRepositoryRCNetImpl @Inject constructor(
                 map = { response ->
                     response.nonFungibleIds.map {
                         Resource.NonFungibleResource.Item(
+                            collectionAddress = nonFungibleResourceAddress,
                             localId = it.nonFungibleId,
                             iconMetadataItem = it.nftImage()?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
                         )
