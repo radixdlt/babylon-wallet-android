@@ -169,19 +169,4 @@ interface StateApi {
     fun nonFungibleData(
         @Body stateNonFungibleDataRequest: StateNonFungibleDataRequest
     ): Call<StateNonFungibleDataResponse>
-
-    /**
-     * Get Validators List
-     *
-     * Responses:
-     *  - 200: Validators List
-     *  - 4XX: Client-originated request error
-     *
-     * @param stateValidatorsListRequest
-     * @return [StateValidatorsListResponse]
-     */
-    @POST("state/validators/list")
-    fun stateValidatorsList(
-        @Body stateValidatorsListRequest: StateValidatorsListRequest
-    ): Call<StateValidatorsListResponse>
 }

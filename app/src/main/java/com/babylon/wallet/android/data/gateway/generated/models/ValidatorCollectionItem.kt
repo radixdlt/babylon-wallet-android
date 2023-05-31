@@ -43,8 +43,8 @@ data class ValidatorCollectionItem (
     @SerialName(value = "metadata")
     val metadata: EntityMetadataCollection,
 
-    @Contextual @SerialName(value = "state")
-    val state: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "state")
+//    val state: kotlin.Any? = null,
 
     @SerialName(value = "active_in_epoch")
     val activeInEpoch: ValidatorCollectionItemActiveInEpoch? = null
