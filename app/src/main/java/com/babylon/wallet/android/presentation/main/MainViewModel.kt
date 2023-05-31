@@ -139,8 +139,6 @@ class MainViewModel @Inject constructor(
                 sendEvent(mainEvent)
             }
         }
-
-
     }
 
     private fun processIncomingRequest(request: IncomingRequest) {

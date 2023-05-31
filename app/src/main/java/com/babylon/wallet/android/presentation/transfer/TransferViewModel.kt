@@ -52,13 +52,11 @@ class TransferViewModel @Inject constructor(
 
     private val accountsChooserDelegate = AccountsChooserDelegate(
         state = _state,
-        viewModelScope = viewModelScope,
         getProfileUseCase = getProfileUseCase
     )
 
     private val assetsChooserDelegate = AssetsChooserDelegate(
         state = _state,
-        viewModelScope = viewModelScope,
         getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
     )
 
@@ -141,11 +139,14 @@ class TransferViewModel @Inject constructor(
 
     fun onChooseAccountForSkeleton(from: TargetAccount) {
         val fromAccount = _state.value.fromAccount ?: return
-        accountsChooserDelegate.onChooseAccount(
-            fromAccount = fromAccount,
-            slotAccount = from,
-            selectedAccounts = _state.value.targetAccounts
-        )
+
+        viewModelScope.launch {
+            accountsChooserDelegate.onChooseAccount(
+                fromAccount = fromAccount,
+                slotAccount = from,
+                selectedAccounts = _state.value.targetAccounts
+            )
+        }
     }
 
     fun onAddressTyped(address: String) = accountsChooserDelegate.addressTyped(address = address)
@@ -167,10 +168,13 @@ class TransferViewModel @Inject constructor(
     fun onAddAssetsClick(targetAccount: TargetAccount) {
         val currentState = state.value
         val fromAccount = currentState.fromAccount ?: return
-        assetsChooserDelegate.onChooseAssets(
-            fromAccount = fromAccount,
-            targetAccount = targetAccount
-        )
+
+        viewModelScope.launch {
+            assetsChooserDelegate.onChooseAssets(
+                fromAccount = fromAccount,
+                targetAccount = targetAccount
+            )
+        }
     }
 
     fun onAssetSelectionChanged(asset: SpendingAsset, isSelected: Boolean) = assetsChooserDelegate.onAssetSelectionChanged(

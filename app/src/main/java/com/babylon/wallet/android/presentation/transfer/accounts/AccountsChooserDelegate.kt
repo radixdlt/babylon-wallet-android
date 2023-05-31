@@ -5,10 +5,8 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import rdx.works.core.AddressValidator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -16,11 +14,10 @@ import rdx.works.profile.domain.accountsOnCurrentNetwork
 
 class AccountsChooserDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
-    private val viewModelScope: CoroutineScope,
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
-    fun onChooseAccount(
+    suspend fun onChooseAccount(
         fromAccount: Network.Account,
         slotAccount: TargetAccount,
         selectedAccounts: List<TargetAccount>
@@ -34,13 +31,11 @@ class AccountsChooserDelegate(
             )
         }
 
-        viewModelScope.launch {
-            val accounts = getProfileUseCase.accountsOnCurrentNetwork().filterNot { account ->
-                account.address == fromAccount.address || selectedAccounts.any { it.address == account.address }
-            }
-
-            updateSheetState { it.copy(ownedAccounts = accounts.toPersistentList()) }
+        val accounts = getProfileUseCase.accountsOnCurrentNetwork().filterNot { account ->
+            account.address == fromAccount.address || selectedAccounts.any { it.address == account.address }
         }
+
+        updateSheetState { it.copy(ownedAccounts = accounts.toPersistentList()) }
     }
 
     fun addressTyped(address: String) {

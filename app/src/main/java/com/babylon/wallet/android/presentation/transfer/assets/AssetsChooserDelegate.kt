@@ -9,15 +9,12 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 
 class AssetsChooserDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
-    private val viewModelScope: CoroutineScope,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase
 ) {
 
@@ -27,7 +24,7 @@ class AssetsChooserDelegate(
      * [fromAccount] is used to fetch the resources of that account
      * [targetAccount] is the account which we target to attach assets
      */
-    fun onChooseAssets(
+    suspend fun onChooseAssets(
         fromAccount: Network.Account,
         targetAccount: TargetAccount
     ) {
@@ -35,21 +32,19 @@ class AssetsChooserDelegate(
             it.copy(sheet = Sheet.ChooseAssets.init(forTargetAccount = targetAccount))
         }
 
-        viewModelScope.launch {
-            getAccountsWithResourcesUseCase(accounts = listOf(fromAccount), isRefreshing = false)
-                .onValue { accountWithResources ->
-                    val resources = accountWithResources.firstOrNull()?.resources
+        getAccountsWithResourcesUseCase(accounts = listOf(fromAccount), isRefreshing = false)
+            .onValue { accountWithResources ->
+                val resources = accountWithResources.firstOrNull()?.resources
 
-                    updateSheetState { it.copy(resources = resources) }
-                }.onError { error ->
-                    updateSheetState {
-                        it.copy(
-                            resources = Resources.EMPTY,
-                            uiMessage = UiMessage.ErrorMessage(error)
-                        )
-                    }
+                updateSheetState { it.copy(resources = resources) }
+            }.onError { error ->
+                updateSheetState {
+                    it.copy(
+                        resources = Resources.EMPTY,
+                        uiMessage = UiMessage.ErrorMessage(error)
+                    )
                 }
-        }
+            }
     }
 
     fun onTabSelected(tab: Sheet.ChooseAssets.Tab) {
