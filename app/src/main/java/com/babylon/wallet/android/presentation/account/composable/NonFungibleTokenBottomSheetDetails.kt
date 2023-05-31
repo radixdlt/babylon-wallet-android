@@ -63,7 +63,6 @@ fun NonFungibleTokenBottomSheetDetails(
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
                     .clip(RadixTheme.shapes.roundedRectMedium)
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )

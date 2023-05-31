@@ -66,7 +66,7 @@ fun NftTokenDetailItem(
             Image(
                 painter = painter,
                 contentDescription = "Nft image",
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .applyImageAspectRatio(painter = painter)
