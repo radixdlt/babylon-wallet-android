@@ -18,6 +18,14 @@ interface StatusApi {
     @POST("status/gateway-status")
     fun gatewayStatus(): Call<GatewayStatusResponse>
 
+    /**
+     * Get Network Configuration
+     * Returns network identifier, network name and well-known network addresses.
+     * Responses:
+     *  - 200: Network Configuration
+     *
+     * @return [NetworkConfigurationResponse]
+     */
     @POST("status/network-configuration")
-    fun gatewayNetworkConfigurationUrl(): Call<NetworkConfigurationResponse>
+    fun networkConfiguration(): Call<NetworkConfigurationResponse>
 }

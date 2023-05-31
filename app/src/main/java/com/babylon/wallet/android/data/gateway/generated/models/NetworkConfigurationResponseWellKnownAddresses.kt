@@ -21,40 +21,145 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param faucet Bech32m-encoded human readable version of the component (normal, account, system) global address or hex-encoded id.
- * @param epochManager Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
- * @param clock Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
- * @param ecdsaSecp256k1 Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
- * @param eddsaEd25519 Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
- * @param xrd Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param xrd Bech32m-encoded human readable version of the address.
+ * @param secp256k1SignatureVirtualBadge Bech32m-encoded human readable version of the address.
+ * @param ed25519SignatureVirtualBadge Bech32m-encoded human readable version of the address.
+ * @param packageOfDirectCallerVirtualBadge Bech32m-encoded human readable version of the address.
+ * @param globalCallerVirtualBadge Bech32m-encoded human readable version of the address.
+ * @param systemTransactionBadge Bech32m-encoded human readable version of the address.
+ * @param packageOwnerBadge Bech32m-encoded human readable version of the address.
+ * @param validatorOwnerBadge Bech32m-encoded human readable version of the address.
+ * @param accountOwnerBadge Bech32m-encoded human readable version of the address.
+ * @param identityOwnerBadge Bech32m-encoded human readable version of the address.
+ * @param packagePackage Bech32m-encoded human readable version of the address.
+ * @param resourcePackage Bech32m-encoded human readable version of the address.
+ * @param accountPackage Bech32m-encoded human readable version of the address.
+ * @param identityPackage Bech32m-encoded human readable version of the address.
+ * @param epochManagerPackage Bech32m-encoded human readable version of the address.
+ * @param clockPackage Bech32m-encoded human readable version of the address.
+ * @param accessControllerPackage Bech32m-encoded human readable version of the address.
+ * @param transactionProcessorPackage Bech32m-encoded human readable version of the address.
+ * @param metadataModulePackage Bech32m-encoded human readable version of the address.
+ * @param royaltyModulePackage Bech32m-encoded human readable version of the address.
+ * @param accessRulesPackage Bech32m-encoded human readable version of the address.
+ * @param genesisHelperPackage Bech32m-encoded human readable version of the address.
+ * @param faucetPackage Bech32m-encoded human readable version of the address.
+ * @param epochManager Bech32m-encoded human readable version of the address.
+ * @param clock Bech32m-encoded human readable version of the address.
+ * @param genesisHelper Bech32m-encoded human readable version of the address.
+ * @param faucet Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
 data class NetworkConfigurationResponseWellKnownAddresses (
 
-    /* Bech32m-encoded human readable version of the component (normal, account, system) global address or hex-encoded id. */
-    @SerialName(value = "faucet")
-    val faucet: kotlin.String,
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "xrd")
+    val xrd: kotlin.String,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "secp256k1_signature_virtual_badge")
+    val secp256k1SignatureVirtualBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "ed25519_signature_virtual_badge")
+    val ed25519SignatureVirtualBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "package_of_direct_caller_virtual_badge")
+    val packageOfDirectCallerVirtualBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "global_caller_virtual_badge")
+    val globalCallerVirtualBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "system_transaction_badge")
+    val systemTransactionBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "package_owner_badge")
+    val packageOwnerBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "validator_owner_badge")
+    val validatorOwnerBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "account_owner_badge")
+    val accountOwnerBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "identity_owner_badge")
+    val identityOwnerBadge: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "package_package")
+    val packagePackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "resource_package")
+    val resourcePackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "account_package")
+    val accountPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "identity_package")
+    val identityPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "epoch_manager_package")
+    val epochManagerPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "clock_package")
+    val clockPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "access_controller_package")
+    val accessControllerPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "transaction_processor_package")
+    val transactionProcessorPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "metadata_module_package")
+    val metadataModulePackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "royalty_module_package")
+    val royaltyModulePackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "access_rules_package")
+    val accessRulesPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "genesis_helper_package")
+    val genesisHelperPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "faucet_package")
+    val faucetPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "epoch_manager")
     val epochManager: kotlin.String,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "clock")
     val clock: kotlin.String,
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
-    @SerialName(value = "ecdsa_secp256k1")
-    val ecdsaSecp256k1: kotlin.String,
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "genesis_helper")
+    val genesisHelper: kotlin.String,
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
-    @SerialName(value = "eddsa_ed25519")
-    val eddsaEd25519: kotlin.String,
-
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
-    @SerialName(value = "xrd")
-    val xrd: kotlin.String
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "faucet")
+    val faucet: kotlin.String
 
 )
 

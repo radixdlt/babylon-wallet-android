@@ -27,7 +27,7 @@ import kotlinx.serialization.Contextual
  * @param feeSummary Fees paid, Only present if the `status` is not `Rejected`.
  * @param stateUpdates Transaction state updates (only present if status is Succeeded or Failed).
  * @param nextEpoch Information (number and active validator list) about new epoch if occured.
- * @param items The manifest line-by-line engine return data (only present if `status` is `Succeeded`).
+ * @param output The manifest line-by-line engine return data (only present if `status` is `Succeeded`).
  * @param events Events emitted by a transaction.
  * @param errorMessage Error message (only present if status is `Failed` or `Rejected`)
  */
@@ -51,8 +51,8 @@ data class TransactionReceipt (
 //    val nextEpoch: kotlin.Any? = null,
 
     /* The manifest line-by-line engine return data (only present if `status` is `Succeeded`). */
-//    @SerialName(value = "items")
-//    val items: kotlin.Any? = null,
+//    @SerialName(value = "output")
+//    val output: kotlin.Any? = null,
 
     /* Events emitted by a transaction. */
 //    @SerialName(value = "events")

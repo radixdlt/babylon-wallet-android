@@ -84,11 +84,11 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `network switch calls for create account`() = runTest {
-        val sampleUrl = Radix.Gateway.hammunet.url
-        val gateway = Radix.Gateway(sampleUrl, Radix.Network.hammunet)
+        val sampleUrl = Radix.Gateway.kisharnet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.kisharnet)
         vm.onNewUrlChanged(sampleUrl)
         coEvery { changeGatewayUseCase(gateway) } returns false
-        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.kisharnet))
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
@@ -98,11 +98,11 @@ class SettingsEditGatewayViewModelTest {
 
     @Test
     fun `network switch calls changes gateway when there are accounts present`() = runTest {
-        val sampleUrl = Radix.Gateway.hammunet.url
-        val gateway = Radix.Gateway(sampleUrl, Radix.Network.hammunet)
+        val sampleUrl = Radix.Gateway.kisharnet.url
+        val gateway = Radix.Gateway(sampleUrl, Radix.Network.kisharnet)
         vm.onNewUrlChanged(sampleUrl)
         coEvery { changeGatewayUseCase(gateway) } returns true
-        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.hammunet))
+        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.kisharnet))
         advanceUntilIdle()
         coVerify(exactly = 1) { changeGatewayUseCase(gateway) }
     }

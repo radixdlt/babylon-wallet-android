@@ -15,32 +15,22 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Non-fungible resource IDs collection.
  *
- * @param ledgerState 
- * @param items 
- * @param address Bech32m-encoded human readable version of the address.
  * @param totalCount Total number of items in underlying collection, fragment of which is available in `items` collection.
  * @param previousCursor If specified, contains a cursor to query previous page of the `items` collection.
  * @param nextCursor If specified, contains a cursor to query next page of the `items` collection.
+ * @param items 
  */
 @Serializable
 
-data class StateEntityFungiblesPageResponse (
-
-    @SerialName(value = "ledger_state")
-    val ledgerState: LedgerState,
-
-    @SerialName(value = "items")
-    val items: kotlin.collections.List<FungibleResourcesCollectionItem>,
-
-    /* Bech32m-encoded human readable version of the address. */
-    @SerialName(value = "address")
-    val address: kotlin.String,
+data class OptionalNonFungibleIdsCollection (
 
     /* Total number of items in underlying collection, fragment of which is available in `items` collection. */
     @SerialName(value = "total_count")
@@ -52,7 +42,10 @@ data class StateEntityFungiblesPageResponse (
 
     /* If specified, contains a cursor to query next page of the `items` collection. */
     @SerialName(value = "next_cursor")
-    val nextCursor: kotlin.String? = null
+    val nextCursor: kotlin.String? = null,
+
+    @SerialName(value = "items")
+    val items: kotlin.collections.List<kotlin.String>? = null
 
 )
 

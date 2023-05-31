@@ -23,11 +23,15 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
+ * @param nonFungibleIncludeNfids 
  * @param explicitMetadata 
  */
 @Serializable
 
 data class StateEntityNonFungiblesPageRequestOptIns (
+
+    @SerialName(value = "non_fungible_include_nfids")
+    val nonFungibleIncludeNfids: kotlin.Boolean? = null,
 
     @SerialName(value = "explicit_metadata")
     val explicitMetadata: kotlin.collections.List<kotlin.String>? = null

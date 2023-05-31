@@ -15,27 +15,28 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
  * @param vaultAddress Bech32m-encoded human readable version of the address.
- * @param amount String-encoded decimal representing the amount of a related fungible resource.
+ * @param totalCount 
  * @param lastUpdatedAtStateVersion TBD
  */
 @Serializable
 
-data class FungibleResourcesCollectionItemVaultAggregatedVaultItem (
+data class NonFungibleResourcesCollectionItemVaultAggregatedVaultItemAllOf (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "vault_address")
     val vaultAddress: kotlin.String,
 
-    /* String-encoded decimal representing the amount of a related fungible resource. */
-    @SerialName(value = "amount")
-    val amount: kotlin.String,
+    @SerialName(value = "total_count")
+    val totalCount: kotlin.Long,
 
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")

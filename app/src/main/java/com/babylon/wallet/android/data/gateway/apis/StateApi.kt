@@ -2,10 +2,16 @@ package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungibleResourceVaultsPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungibleResourceVaultsPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityMetadataPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityMetadataPageResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleResourceVaultsPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleResourceVaultsPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
@@ -67,20 +73,20 @@ interface StateApi {
     ): Call<StateEntityFungiblesPageResponse>
 
     /**
-     * Get Non-Fungible Collection
-     * Returns the non-fungible IDs of a given non-fungible resource.
-     * Returned response is in a paginated format, ordered by their first appearance on the ledger.
+     * Get vault page of Entity Fungible resource aggregated per vault
+     * Returns vaults for fungible resource owned by a given global entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
-     *  - 200: Non-Fungible IDs (paginated)
+     *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateNonFungibleIdsRequest
-     * @return [StateNonFungibleIdsResponse]
+     * @param stateEntityFungibleResourceVaultsPageRequest
+     * @return [StateEntityFungibleResourceVaultsPageResponse]
      */
-    @POST("state/non-fungible/ids") // TODO not the right one ?
-    fun nonFungibleIds(
-        @Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest
-    ): Call<StateNonFungibleIdsResponse>
+    @POST("state/entity/page/fungible-vaults")
+    fun entityFungibleResourceVaultPage(
+        @Body stateEntityFungibleResourceVaultsPageRequest: StateEntityFungibleResourceVaultsPageRequest
+    ): Call<StateEntityFungibleResourceVaultsPageResponse>
 
     /**
      * Get Entity Non-Fungible Resource Totals Page aggregated globally
@@ -99,6 +105,64 @@ interface StateApi {
         @Body stateEntityNonFungiblesPageRequest: StateEntityNonFungiblesPageRequest
     ): Call<StateEntityNonFungiblesPageResponse>
 
+    /**
+     * Get Non-Fungible Collection
+     * Returns the non-fungible IDs of a given non-fungible resource.
+     * Returned response is in a paginated format, ordered by their first appearance on the ledger.
+     * Responses:
+     *  - 200: Non-Fungible IDs (paginated)
+     *  - 4XX: Client-originated request error
+     *
+     * @param stateNonFungibleIdsRequest
+     * @return [StateNonFungibleIdsResponse]
+     */
+    @POST("state/non-fungible/ids")
+    fun nonFungibleIds(
+        @Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest
+    ): Call<StateNonFungibleIdsResponse>
+
+    /**
+     * Get vault page of Entity Non Fungible aggregated per vault
+     * Returns vaults for non fungible resource owned by a given global entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Responses:
+     *  - 200: Entity Fungibles (paginated)
+     *  - 4XX: Client-originated request error
+     *
+     * @param stateEntityNonFungibleResourceVaultsPageRequest
+     * @return [StateEntityNonFungibleResourceVaultsPageResponse]
+     */
+    @POST("state/entity/page/non-fungible-vaults")
+    fun entityNonFungibleResourceVaultPage(
+        @Body stateEntityNonFungibleResourceVaultsPageRequest: StateEntityNonFungibleResourceVaultsPageRequest
+    ): Call<StateEntityNonFungibleResourceVaultsPageResponse>
+
+    /**
+     * Get Entity Non-Fungible IDs
+     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearence on the ledger.
+     * Responses:
+     *  - 200: Entity Non-Fungible IDs (paginated)
+     *  - 4XX: Client-originated request error
+     *
+     * @param stateEntityNonFungibleIdsPageRequest
+     * @return [StateEntityNonFungibleIdsPageResponse]
+     */
+    @POST("state/entity/page/non-fungible-vault/ids")
+    fun entityNonFungibleIdsPage(
+        @Body stateEntityNonFungibleIdsPageRequest: StateEntityNonFungibleIdsPageRequest
+    ): Call<StateEntityNonFungibleIdsPageResponse>
+
+    /**
+     * Get Non-Fungible Data
+     * Returns data associated with a given non-fungible ID of a given non-fungible resource.
+     * Responses:
+     *  - 200: Non-Fungible ID Data
+     *  - 4XX: Client-originated request error
+     *
+     * @param stateNonFungibleDataRequest
+     * @return [StateNonFungibleDataResponse]
+     */
     @POST("state/non-fungible/data")
     fun nonFungibleData(
         @Body stateNonFungibleDataRequest: StateNonFungibleDataRequest

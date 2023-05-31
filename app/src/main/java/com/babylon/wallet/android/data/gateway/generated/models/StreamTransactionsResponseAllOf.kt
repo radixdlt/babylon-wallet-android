@@ -15,24 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransactionInfo
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param ledgerState 
- * @param entities 
+ * @param items The page of user transactions.
  */
 @Serializable
 
-data class EntityOverviewResponse (
+data class StreamTransactionsResponseAllOf (
 
-    @SerialName(value = "ledger_state")
-    val ledgerState: LedgerState,
-
-    @SerialName(value = "entities")
-    val entities: kotlin.collections.List<EntityOverviewResponseEntityItem>
+    /* The page of user transactions. */
+    @SerialName(value = "items")
+    val items: kotlin.collections.List<CommittedTransactionInfo>
 
 )
 
