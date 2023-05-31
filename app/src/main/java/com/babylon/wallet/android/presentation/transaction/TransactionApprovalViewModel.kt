@@ -383,11 +383,16 @@ class TransactionApprovalViewModel @Inject constructor(
                                 txId = txId
                             )
 
+                            appEventBus.sendEvent(AppEvent.TransactionSent(args.requestId))
+
                             val transactionStatus = pollTransactionStatusUseCase(txId)
                             transactionStatus.onValue { _ ->
                                 _state.update { it.copy(isSigning = false) }
                                 approvalJob = null
-                                appEventBus.sendEvent(AppEvent.ApprovedTransaction)
+                                appEventBus.sendEvent(AppEvent.SuccessfulTransaction(args.requestId))
+                                // We need to find a better way to notify that this request is handled.
+                                // https://radixdlt.atlassian.net/browse/ABW-1578
+                                incomingRequestRepository.requestHandled(args.requestId)
                                 sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                             }
                             transactionStatus.onError { error ->
@@ -406,6 +411,9 @@ class TransactionApprovalViewModel @Inject constructor(
                                         message = exception.failure.getDappMessage()
                                     )
                                     approvalJob = null
+                                    // We need to find a better way to notify that this request is handled.
+                                    // https://radixdlt.atlassian.net/browse/ABW-1578
+                                    incomingRequestRepository.requestHandled(args.requestId)
                                     sendEvent(
                                         TransactionApprovalEvent.FlowCompletedWithError(
                                             requestId = args.requestId,

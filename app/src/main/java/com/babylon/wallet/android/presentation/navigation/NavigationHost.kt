@@ -219,7 +219,12 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onSendTransferClick = {}
+            onDismiss = {
+                navController.popBackStack(
+                    route = it,
+                    inclusive = true,
+                )
+            }
         )
         accountPreferencesScreen(onBackClick = {
             navController.popBackStack()

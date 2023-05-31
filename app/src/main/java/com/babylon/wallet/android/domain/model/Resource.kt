@@ -61,6 +61,7 @@ sealed class Resource {
             get() = iconMetadataItem?.url
 
         data class Item(
+            val collectionAddress: String,
             val localId: String,
             val iconMetadataItem: IconUrlMetadataItem?
         ) {
@@ -68,7 +69,8 @@ sealed class Resource {
             val imageUrl: Uri?
                 get() = iconMetadataItem?.url
 
-            fun globalAddress(nftAddress: String) = "$nftAddress:$localId"
+            val globalAddress: String
+                get() = "$collectionAddress:$localId"
         }
     }
 }

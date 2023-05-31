@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -26,16 +28,27 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import kotlinx.collections.immutable.persistentSetOf
+import rdx.works.core.UUIDGenerator
+import java.math.BigDecimal
 
 @Composable
 fun TargetAccountCard(
     modifier: Modifier = Modifier,
     onChooseAccountClick: () -> Unit,
     onAddAssetsClick: () -> Unit,
+    onRemoveAssetClicked: (SpendingAsset) -> Unit,
+    onAmountTyped: (SpendingAsset, String) -> Unit,
+    onMaxAmountClicked: (SpendingAsset) -> Unit,
     onDeleteClick: () -> Unit,
     isDeletable: Boolean = false,
-    selectedAccount: TransferViewModel.State.SelectedAccountForTransfer,
+    targetAccount: TargetAccount,
 ) {
     Column(
         modifier = modifier
@@ -46,26 +59,22 @@ fun TargetAccountCard(
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {
-        val cardModifier = when (selectedAccount.type) {
-            TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount -> {
-                Modifier
-            }
-            TransferViewModel.State.SelectedAccountForTransfer.Type.ExistingAccount -> {
+        val cardModifier = when (targetAccount) {
+            is TargetAccount.Skeleton -> Modifier
+            is TargetAccount.Owned ->
                 Modifier
                     .background(
                         brush = Brush.linearGradient(
-                            getAccountGradientColorsFor(selectedAccount.account?.appearanceID ?: 0)
+                            getAccountGradientColorsFor(targetAccount.account.appearanceID)
                         ),
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
-            }
-            TransferViewModel.State.SelectedAccountForTransfer.Type.ThirdPartyAccount -> {
+            is TargetAccount.Other ->
                 Modifier
                     .background(
                         color = RadixTheme.colors.gray2,
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
-            }
         }
         Row(
             modifier = cardModifier
@@ -78,37 +87,48 @@ fun TargetAccountCard(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selectedAccount.type == TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount) {
-                RadixTextButton(
-                    text = stringResource(id = R.string.choose_accounts),
-                    textStyle = RadixTheme.typography.body1Header,
-                    contentColor = RadixTheme.colors.gray2,
-                    onClick = onChooseAccountClick
-                )
-            } else {
-                Text(
-                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                    text = selectedAccount.account?.displayName.orEmpty(),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.white
-                )
+            when (targetAccount) {
+                is TargetAccount.Skeleton -> {
+                    RadixTextButton(
+                        text = stringResource(id = R.string.choose_accounts),
+                        textStyle = RadixTheme.typography.body1Header,
+                        contentColor = RadixTheme.colors.gray2,
+                        onClick = onChooseAccountClick
+                    )
+                }
+                is TargetAccount.Other -> {
+                    Text(
+                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
+                        text = stringResource(id = R.string.unknown),
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.white
+                    )
+                }
+                is TargetAccount.Owned -> {
+                    Text(
+                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
+                        text = targetAccount.account.displayName,
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.white
+                    )
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
-            val hasAccount = selectedAccount.type != TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
-            if (hasAccount) {
+            if (targetAccount.isAddressValid) {
                 ActionableAddressView(
-                    address = selectedAccount.account?.address.orEmpty(),
+                    address = targetAccount.address,
                     textStyle = RadixTheme.typography.body2HighImportance,
                     textColor = RadixTheme.colors.white.copy(alpha = 0.8f),
                     iconColor = RadixTheme.colors.white.copy(alpha = 0.8f)
                 )
             }
-            if (isDeletable || hasAccount) {
+
+            if (isDeletable) {
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear",
-                        tint = if (hasAccount) RadixTheme.colors.white else RadixTheme.colors.gray1,
+                        tint = if (targetAccount.isAddressValid) RadixTheme.colors.white else RadixTheme.colors.gray1,
                     )
                 }
             }
@@ -116,17 +136,51 @@ fun TargetAccountCard(
 
         Divider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
 
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 68.dp)
                 .background(
                     color = RadixTheme.colors.gray5,
                     shape = RadixTheme.shapes.roundedRectBottomMedium
                 )
-                .padding(RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingXSmall
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            targetAccount.assets.forEach { spendingAsset ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SpendingAssetItem(
+                        modifier = Modifier.weight(1f),
+                        asset = spendingAsset,
+                        onAmountTyped = {
+                            onAmountTyped(spendingAsset, it)
+                        },
+                        onMaxClicked = {
+                            onMaxAmountClicked(spendingAsset)
+                        }
+                    )
+
+                    IconButton(
+                        onClick = {
+                            onRemoveAssetClicked(spendingAsset)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            tint = RadixTheme.colors.gray2,
+                            contentDescription = "clear"
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+
             RadixTextButton(
                 text = stringResource(id = R.string.add_assets),
                 contentColor = RadixTheme.colors.gray2,
@@ -140,11 +194,49 @@ fun TargetAccountCard(
 @Composable
 fun TargetAccountCardPreview() {
     RadixWalletTheme {
-        TargetAccountCard(
-            onChooseAccountClick = {},
-            onAddAssetsClick = {},
-            onDeleteClick = {},
-            selectedAccount = TransferViewModel.State.SelectedAccountForTransfer()
-        )
+        Column(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            TargetAccountCard(
+                onChooseAccountClick = {},
+                onAddAssetsClick = {},
+                onRemoveAssetClicked = {},
+                onAmountTyped = { _, _ -> },
+                onMaxAmountClicked = {},
+                onDeleteClick = {},
+                targetAccount = TargetAccount.Skeleton()
+            )
+
+            TargetAccountCard(
+                onChooseAccountClick = {},
+                onAddAssetsClick = {},
+                onRemoveAssetClicked = {},
+                onAmountTyped = { _, _ -> },
+                onMaxAmountClicked = {},
+                onDeleteClick = {},
+                targetAccount = TargetAccount.Owned(
+                    account = SampleDataProvider().sampleAccount(),
+                    id = UUIDGenerator.uuid().toString(),
+                    assets = persistentSetOf(
+                        SpendingAsset.Fungible(
+                            resource = Resource.FungibleResource(
+                                resourceAddress = "resource_rdx_abcd",
+                                amount = BigDecimal.TEN,
+                                nameMetadataItem = NameMetadataItem("Radix"),
+                                symbolMetadataItem = SymbolMetadataItem("XRD")
+                            )
+                        ),
+                        SpendingAsset.NFT(
+                            item = Resource.NonFungibleResource.Item(
+                                collectionAddress = "resource_rdx_abcde",
+                                localId = "local_id",
+                                iconMetadataItem = null
+                            )
+                        )
+                    )
+                )
+            )
+        }
     }
 }
