@@ -9,9 +9,9 @@ import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryRCNetImpl
+import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.data.repository.entity.EntityRepositoryRCNetImpl
+import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
@@ -28,7 +28,7 @@ interface DataModule {
 
     @Binds
     fun bindEntityRepository(
-        entityRepository: EntityRepositoryRCNetImpl
+        entityRepository: EntityRepositoryImpl
     ): EntityRepository
 
     @Binds
@@ -43,7 +43,7 @@ interface DataModule {
 
     @Binds
     fun bindDappMetadataRepository(
-        dappMetadataRepository: DappMetadataRepositoryRCNetImpl
+        dappMetadataRepository: DappMetadataRepositoryImpl
     ): DappMetadataRepository
 
     @Binds

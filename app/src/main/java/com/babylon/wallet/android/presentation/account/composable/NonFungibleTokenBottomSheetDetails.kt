@@ -28,7 +28,6 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    nonFungibleResource: Resource.NonFungibleResource,
     item: Resource.NonFungibleResource.Item,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -73,7 +72,7 @@ fun NonFungibleTokenBottomSheetDetails(
                 key = stringResource(id = R.string.nft_id)
             ) {
                 ActionableAddressView(
-                    address = item.globalAddress(nftAddress = nonFungibleResource.resourceAddress),
+                    address = item.globalAddress,
                     textStyle = RadixTheme.typography.body1Regular,
                     textColor = RadixTheme.colors.gray1
                 )

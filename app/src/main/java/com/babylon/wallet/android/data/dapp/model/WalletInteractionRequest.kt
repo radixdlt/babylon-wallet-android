@@ -106,7 +106,8 @@ fun WalletInteraction.toDomainModel(dappId: String): MessageFromDataChannel.Inco
     val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
         networkId = metadata.networkId,
         origin = metadata.origin,
-        dAppDefinitionAddress = metadata.dAppDefinitionAddress
+        dAppDefinitionAddress = metadata.dAppDefinitionAddress,
+        isInternal = false
     )
     return when (items) {
         is WalletTransactionItems -> {

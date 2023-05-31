@@ -45,9 +45,8 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
-    private var incomingRequestsJob: Job? = null
-    private var handlingCurrentRequestJob: Job? = null
-    private var processingRequestJob: Job? = null
+    private var incomingDappRequestsJob: Job? = null
+    private var processingDappRequestJob: Job? = null
 
     val observeP2PLinks = getProfileUseCase
         .p2pLinks
@@ -74,6 +73,8 @@ class MainViewModel @Inject constructor(
                     _state.update { MainUiState(initialAppState = AppState.from(profileState)) }
                 }
         }
+
+        handleAllIncomingRequests()
     }
 
     override fun initialState(): MainUiState {
@@ -88,13 +89,23 @@ class MainViewModel @Inject constructor(
             when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
                 is Result.Success -> {
                     Timber.d("Link connection established")
-                    if (handlingCurrentRequestJob == null) {
+                    if (incomingDappRequestsJob == null) {
                         Timber.d("Listen for incoming requests from dapps")
                         // We must run this only once
                         // otherwise for each new link connection
                         // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
                         // I think this can be improved.
-                        listenForIncomingDappRequests()
+                        incomingDappRequestsJob = viewModelScope.launch {
+                            peerdroidClient
+                                .listenForIncomingRequests()
+                                .cancellable()
+                                .collect { incomingRequest ->
+                                    val remoteClient = incomingRequest.remoteClientId
+                                    val requestId = incomingRequest.id
+                                    Timber.d("📯 wallet received incoming request from remote client $remoteClient with id $requestId")
+                                    processIncomingRequest(incomingRequest)
+                                }
+                        }
                     }
                 }
                 is Result.Error -> {
@@ -105,36 +116,30 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun listenForIncomingDappRequests() {
-        handlingCurrentRequestJob = viewModelScope.launch {
-            incomingRequestRepository.currentRequestToHandle.filter { !it.isInternal }.collect { request ->
-                delay(REQUEST_HANDLING_DELAY)
-                when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
-                    is com.babylon.wallet.android.domain.common.Result.Error -> {
-                        sendEvent(MainEvent.IncomingRequestEvent(request))
-                    }
-                    is com.babylon.wallet.android.domain.common.Result.Success -> {
-                        sendEvent(
+    /**
+     * Listens for incoming requests made either from connected dApps, or the app itself.
+     */
+    private fun handleAllIncomingRequests() {
+        viewModelScope.launch {
+            incomingRequestRepository.currentRequestToHandle.collect { request ->
+                val mainEvent = if (request.metadata.isInternal) {
+                    MainEvent.IncomingRequestEvent(request)
+                } else {
+                    delay(REQUEST_HANDLING_DELAY)
+                    when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
+                        is com.babylon.wallet.android.domain.common.Result.Error -> {
+                            MainEvent.IncomingRequestEvent(request)
+                        }
+                        is com.babylon.wallet.android.domain.common.Result.Success -> {
                             MainEvent.HandledUsePersonaAuthRequest(
                                 requestId = dAppData.data.requestId,
                                 dAppName = dAppData.data.name
                             )
-                        )
+                        }
                     }
                 }
+                sendEvent(mainEvent)
             }
-        }
-
-        incomingRequestsJob = viewModelScope.launch {
-            peerdroidClient
-                .listenForIncomingRequests()
-                .cancellable()
-                .collect { incomingRequest ->
-                    val remoteClient = incomingRequest.remoteClientId
-                    val requestId = incomingRequest.id
-                    Timber.d("📯 wallet received incoming request from remote client $remoteClient with id $requestId")
-                    processIncomingRequest(incomingRequest)
-                }
         }
     }
 
@@ -148,7 +153,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun processIncomingRequest(request: IncomingRequest) {
-        processingRequestJob = viewModelScope.launch {
+        processingDappRequestJob = viewModelScope.launch {
             val verificationResult = verifyDappUseCase(request)
             verificationResult.onValue { verified ->
                 if (verified) {
@@ -159,10 +164,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun terminatePeerdroid() {
-        incomingRequestsJob?.cancel()
-        handlingCurrentRequestJob?.cancel()
-        handlingCurrentRequestJob = null
-        processingRequestJob?.cancel()
+        incomingDappRequestsJob?.cancel()
+        processingDappRequestJob?.cancel()
+        processingDappRequestJob = null
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
         Timber.d("Peerdroid terminated")

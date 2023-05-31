@@ -1,22 +1,29 @@
 package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.ReceiveTurbine
+import app.cash.turbine.test
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
@@ -24,437 +31,213 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val incomingRequestRepository = mockk<IncomingRequestRepository>()
+    private val appEventBus = mockk<AppEventBus>()
 
-    private val accounts = listOf(
-        account(
-            address = "account_tdx_19jd32jd3928jd3892jd329",
-            name = "Account1"
-        ),
+    private val fromAccount = account(
+        address = "account_tdx_19jd32jd3928jd3892jd329",
+        name = "From Account"
+    )
+    private val otherAccounts = listOf(
         account(
             address = "account_tdx_3j892dj3289dj32d2d2d2d9",
-            name = "Account2"
+            name = "To Account 1"
         ),
         account(
             address = "account_tdx_39jfc32jd932ke9023j89r9",
-            name = "Account3"
+            name = "To Account 2"
         ),
         account(
             address = "account_tdx_12901829jd9281jd189jd98",
-            name = "Account4"
+            name = "To account 3"
         )
     )
 
     override fun initVM(): TransferViewModel {
-       return TransferViewModel(
-           getProfileUseCase = getProfileUseCase,
-           savedStateHandle = savedStateHandle
-       )
+        return TransferViewModel(
+            getProfileUseCase = getProfileUseCase,
+            getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+            incomingRequestRepository = incomingRequestRepository,
+            savedStateHandle = savedStateHandle,
+            appEventBus = appEventBus
+        )
     }
 
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns accounts.first().address
-        every { getProfileUseCase() } returns flowOf(profile(accounts = accounts))
-    }
-
-    @Test
-    fun `when viewmodel init, verify correcy sender acc is displayed and destination accounts are shown`() = runTest {
-        val firstAccount = accounts[0]
-        val secondAccount = accounts[1]
-        val thirdAccount = accounts[2]
-        val fourthAccount = accounts[3]
-
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        // then
-        Assert.assertEquals(
-            AccountItemUiModel(
-                address = firstAccount.address,
-                displayName = firstAccount.displayName,
-                appearanceID = firstAccount.appearanceID,
-                isSelected = false
-            ),
-            viewModel.state.first().fromAccount
-        )
-        Assert.assertEquals(
-            persistentListOf(
-                AccountItemUiModel(
-                    address = secondAccount.address,
-                    displayName = secondAccount.displayName,
-                    appearanceID = secondAccount.appearanceID,
-                    isSelected = false
-                ),
-                AccountItemUiModel(
-                    address = thirdAccount.address,
-                    displayName = thirdAccount.displayName,
-                    appearanceID = thirdAccount.appearanceID,
-                    isSelected = false
-                ),
-                AccountItemUiModel(
-                    address = fourthAccount.address,
-                    displayName = fourthAccount.displayName,
-                    appearanceID = fourthAccount.appearanceID,
-                    isSelected = false
-                )
-            ),
-            viewModel.state.first().receivingAccounts
-        )
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
+        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
     }
 
     @Test
     fun `when message changed verify it is reflected in the ui state`() = runTest {
-        val message = "New Message"
         val viewModel = vm.value
-        advanceUntilIdle()
+        viewModel.state.test {
+            assertFromAccountSet()
 
-        viewModel.onMessageChanged(message)
-
-        Assert.assertEquals(
-            viewModel.state.first().message,
-            message
-        )
-    }
-
-    @Test
-    fun `when chose account clicked with index verify it is reflected in the ui state with correct index`() = runTest {
-        val selectedIndex = 1
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onChooseClick(selectedIndex)
-
-        Assert.assertEquals(
-            viewModel.state.first().recipientAccountContainerIndex,
-            selectedIndex
-        )
-    }
-
-    @Test
-    fun `when qrcode icon clicked, verify view mode is changed to ScanQR`() = runTest {
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onQrCodeIconClick()
-
-        Assert.assertEquals(
-            viewModel.state.first().chooseAccountSheetMode,
-            ChooseAccountSheetMode.QRScanner
-        )
-    }
-
-    @Test
-    fun `when cancel qrscan invoked, verify view mode is changed to Default`() = runTest {
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.cancelQrScan()
-
-        Assert.assertEquals(
-            viewModel.state.first().chooseAccountSheetMode,
-            ChooseAccountSheetMode.Chooser
-        )
-    }
-
-    @Test
-    fun `when valid address decoded from qr scanner, verify view mode is back to Default and choose button enabled`() =
-        runTest {
-            val address = "account_tdx_c_1pykx7m9uv9szcuqe2ydgagtl2xtzrrxst79gz59um6eq8rfj6d"
-            val viewModel = vm.value
-            advanceUntilIdle()
-
-            viewModel.onAddressDecoded(address)
-
-            Assert.assertEquals(
-                viewModel.state.first().address,
-                address
+            viewModel.onMessageStateChanged(isOpen = true)
+            assertEquals(
+                awaitItem().messageState,
+                TransferViewModel.State.Message.Added(message = "")
             )
-            Assert.assertEquals(
-                viewModel.state.first().chooseAccountSheetMode,
-                ChooseAccountSheetMode.Chooser
-            )
-            Assert.assertEquals(
-                viewModel.state.first().buttonEnabled,
-                true
+
+            val message = "New Message"
+            viewModel.onMessageChanged(message)
+            assertEquals(
+                awaitItem().messageState,
+                TransferViewModel.State.Message.Added(message = message)
             )
         }
+    }
 
     @Test
-    fun `when empty address decoded from qr scanner, verify view mode is back to Default and choose button disabled`() =
-        runTest {
-            val address = ""
-            val viewModel = vm.value
-            advanceUntilIdle()
+    fun `choosing an owned account from the accounts chooser`() = runTest {
+        val viewModel = vm.value
+        viewModel.state.test {
+            assertFromAccountSet()
+            assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
+            assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
+        }
+    }
 
-            viewModel.onAddressDecoded(address)
+    @Ignore("until we have the validated addresses from iOS")
+    @Test
+    fun `choosing an third party address from the accounts chooser`() = runTest {
+        val viewModel = vm.value
+        viewModel.state.test {
+            assertFromAccountSet()
+            assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
+            assertOtherAccountSubmitted(viewModel, "account_tdx_c_1pyq480rav9n99eq9hmrjdz8u9km05zx7u2kluh79dnpsr962km")
+        }
+    }
 
-            Assert.assertEquals(
-                viewModel.state.first().address,
-                address
-            )
-            Assert.assertEquals(
-                viewModel.state.first().chooseAccountSheetMode,
-                ChooseAccountSheetMode.Chooser
-            )
-            Assert.assertEquals(
-                viewModel.state.first().buttonEnabled,
-                false
+    @Test
+    fun `given owned account already chosen, the chooser has less accounts to show`() = runTest {
+        val viewModel = vm.value
+        viewModel.state.test {
+            assertFromAccountSet()
+            assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
+            assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
+
+            viewModel.addAccountClick()
+            val secondSkeleton = awaitItem().targetAccounts[1] as TargetAccount.Skeleton
+            assertOpenSheetForSkeleton(viewModel, secondSkeleton)
+        }
+    }
+
+    @Test
+    fun `given account already chosen, the user can delete the account`() = runTest {
+        val viewModel = vm.value
+        viewModel.state.test {
+            assertFromAccountSet()
+            val initialSkeletonAccount = viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton
+            assertOpenSheetForSkeleton(viewModel, initialSkeletonAccount)
+            assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
+
+            viewModel.deleteAccountClick(from = TargetAccount.Owned(
+                account = otherAccounts[0],
+                id = initialSkeletonAccount.id
+            ))
+            val resultState = awaitItem()
+            assertTrue(resultState.targetAccounts.size == 1)
+            assertTrue(resultState.targetAccounts[0] is TargetAccount.Skeleton)
+        }
+    }
+
+    private suspend fun ReceiveTurbine<TransferViewModel.State>.assertFromAccountSet() {
+        assertNull(awaitItem().fromAccount)
+        assertEquals(fromAccount, awaitItem().fromAccount)
+    }
+
+    private suspend fun ReceiveTurbine<TransferViewModel.State>.assertOpenSheetForSkeleton(
+        viewModel: TransferViewModel,
+        skeleton: TargetAccount.Skeleton
+    ) {
+        viewModel.onChooseAccountForSkeleton(skeleton)
+        assertEquals(
+            TransferViewModel.State.Sheet.ChooseAccounts(
+                selectedAccount = skeleton,
+                ownedAccounts = persistentListOf()
+            ),
+            awaitItem().sheet
+        )
+
+        val remainingAccounts = otherAccounts.filterNot { account ->
+            viewModel.state.value.targetAccounts.any { it.address == account.address }
+        }
+        if (remainingAccounts.isNotEmpty()) {
+            assertEquals(
+                TransferViewModel.State.Sheet.ChooseAccounts(
+                    selectedAccount = skeleton,
+                    ownedAccounts = remainingAccounts.toPersistentList()
+                ),
+                awaitItem().sheet
             )
         }
-
-    @Test
-    fun `when valid address entered in the field, verify all accounts are disabled and unselected`() = runTest {
-        val address = "account_rdx_1923ej83292"
-        val receivingAccounts = accounts.toMutableList()
-        receivingAccounts.removeFirst()
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onAddressChanged(address)
-
-        Assert.assertEquals(
-            viewModel.state.first().address,
-            address
-        )
-        Assert.assertEquals(
-            viewModel.state.first().receivingAccounts,
-            receivingAccounts.map {
-                AccountItemUiModel(
-                    address = it.address,
-                    displayName = it.displayName,
-                    appearanceID = it.appearanceID,
-                    isSelected = false
-                )
-            }
-        )
-        Assert.assertEquals(
-            viewModel.state.first().accountsDisabled,
-            true
-        )
     }
 
-    @Test
-    fun `when new empty account added, verify two accounts are shown`() = runTest {
-        val expectedAccounts = persistentListOf(
-            TransferViewModel.State.SelectedAccountForTransfer(
-                account = null,
-                type = TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
-            ),
-            TransferViewModel.State.SelectedAccountForTransfer(
-                account = null,
-                type = TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
+    private suspend fun ReceiveTurbine<TransferViewModel.State>.assertSubmittingOwnedAccount(
+        viewModel: TransferViewModel,
+        account: Network.Account
+    ) {
+        val skeletonAccount = viewModel.state.value.targetAccounts[0]
+        viewModel.onOwnedAccountSelected(account)
+        assertTrue(
+            (awaitItem().sheet as TransferViewModel.State.Sheet.ChooseAccounts).selectedAccount == TargetAccount.Owned(
+                account = account,
+                id = skeletonAccount.id
             )
         )
-        val viewModel = vm.value
-        advanceUntilIdle()
 
-        viewModel.addAccountClick()
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            expectedAccounts
+        viewModel.onChooseAccountSubmitted()
+        assertEquals(
+            TransferViewModel.State(
+                fromAccount = fromAccount,
+                targetAccounts = persistentListOf(
+                    TargetAccount.Owned(
+                        account = account,
+                        id = skeletonAccount.id
+                    )
+                ),
+                sheet = TransferViewModel.State.Sheet.None
+            ),
+            awaitItem()
         )
     }
 
-    @Test
-    fun `when empty account added and removed, verify just one account is shown`() = runTest {
-        val expectedAccounts = persistentListOf(
-            TransferViewModel.State.SelectedAccountForTransfer(
-                account = null,
-                type = TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
+    private suspend fun ReceiveTurbine<TransferViewModel.State>.assertOtherAccountSubmitted(viewModel: TransferViewModel, address: String) {
+        val skeletonAccount = viewModel.state.value.targetAccounts[0]
+        viewModel.onAddressTyped(address)
+
+        val sheetState = awaitItem().sheet as TransferViewModel.State.Sheet.ChooseAccounts
+        // Check that the address is passed as valid
+        assertTrue(
+            sheetState.selectedAccount == TargetAccount.Other(
+                address = address,
+                validity = TargetAccount.Other.AddressValidity.VALID,
+                id = skeletonAccount.id
             )
         )
-        val viewModel = vm.value
-        advanceUntilIdle()
+        // Check that the owned accounts are disabled for selection
+        assertFalse(sheetState.isOwnedAccountsEnabled)
 
-        viewModel.addAccountClick()
-        advanceUntilIdle()
-        viewModel.deleteAccountClick(1)
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            expectedAccounts
-        )
-    }
-
-    @Test
-    fun `when empty account added twice and removed just one, verify just two accounts are shown`() = runTest {
-        val expectedAccounts = persistentListOf(
-            TransferViewModel.State.SelectedAccountForTransfer(
-                account = null,
-                type = TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
+        viewModel.onChooseAccountSubmitted()
+        assertEquals(
+            TransferViewModel.State(
+                fromAccount = fromAccount,
+                targetAccounts = persistentListOf(
+                    TargetAccount.Other(
+                        address = address,
+                        validity = TargetAccount.Other.AddressValidity.VALID,
+                        id = skeletonAccount.id
+                    )
+                ),
+                sheet = TransferViewModel.State.Sheet.None
             ),
-            TransferViewModel.State.SelectedAccountForTransfer(
-                account = null,
-                type = TransferViewModel.State.SelectedAccountForTransfer.Type.NoAccount
-            )
-        )
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.addAccountClick()
-        advanceUntilIdle()
-        viewModel.addAccountClick()
-        advanceUntilIdle()
-        viewModel.deleteAccountClick(1)
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            expectedAccounts
-        )
-    }
-
-    @Test
-    fun `when selected first account, verify it is selected in ui state`() = runTest {
-        val destinationAccounts = accounts.toMutableList()
-        destinationAccounts.removeFirst()
-        val receivingAccounts = destinationAccounts.mapIndexed { index, account ->
-            AccountItemUiModel(
-                address = account.address,
-                displayName = account.displayName,
-                appearanceID = account.appearanceID,
-                isSelected = index == 0
-            )
-        }.toPersistentList()
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onAccountSelect(0)
-
-        Assert.assertEquals(
-            viewModel.state.first().buttonEnabled,
-            true
-        )
-        Assert.assertEquals(
-            viewModel.state.first().accountsDisabled,
-            false
-        )
-        Assert.assertEquals(
-            viewModel.state.first().receivingAccounts,
-            receivingAccounts
-        )
-        Assert.assertEquals(
-            viewModel.state.first().receivingAccountIndex,
-            0
-        )
-    }
-
-    @Test
-    fun `when selected first account, verify it is shown in selected accounts`() = runTest {
-        val selectedIndex = 0
-        val destinationAccounts = accounts.toMutableList()
-        destinationAccounts.removeFirst()
-        val account = destinationAccounts[selectedIndex]
-        val selectedAccount = TransferViewModel.State.SelectedAccountForTransfer(
-            account = AccountItemUiModel(
-                address = account.address,
-                displayName = account.displayName,
-                appearanceID = account.appearanceID,
-                isSelected = true
-            ),
-            type = TransferViewModel.State.SelectedAccountForTransfer.Type.ExistingAccount
-        )
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onChooseClick(0)
-        advanceUntilIdle()
-        viewModel.onAccountSelect(selectedIndex)
-        advanceUntilIdle()
-        viewModel.onChooseDestinationAccountClick()
-        advanceUntilIdle()
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            persistentListOf(selectedAccount)
-        )
-    }
-
-    @Test
-    fun `when selected second account, verify it is shown in selected accounts`() = runTest {
-        val selectedIndex = 1
-        val destinationAccounts = accounts.toMutableList()
-        destinationAccounts.removeFirst()
-        val account = destinationAccounts[selectedIndex]
-        val selectedAccount = TransferViewModel.State.SelectedAccountForTransfer(
-            account = AccountItemUiModel(
-                address = account.address,
-                displayName = account.displayName,
-                appearanceID = account.appearanceID,
-                isSelected = true
-            ),
-            type = TransferViewModel.State.SelectedAccountForTransfer.Type.ExistingAccount
-        )
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onChooseClick(0)
-        advanceUntilIdle()
-        viewModel.onAccountSelect(selectedIndex)
-        advanceUntilIdle()
-        viewModel.onChooseDestinationAccountClick()
-        advanceUntilIdle()
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            persistentListOf(selectedAccount)
-        )
-    }
-
-    @Test
-    fun `when scanned third party account and confirmed, verify it is shown in selected accounts`() = runTest {
-        val thirdPartyAccountsAddress = "account_tdx_19k2019dk20"
-        val selectedAccount = TransferViewModel.State.SelectedAccountForTransfer(
-            account = AccountItemUiModel(
-                address = thirdPartyAccountsAddress,
-                displayName = "Account",
-                appearanceID = 0,
-                isSelected = false
-            ),
-            type = TransferViewModel.State.SelectedAccountForTransfer.Type.ThirdPartyAccount
-        )
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onChooseClick(0)
-        advanceUntilIdle()
-        viewModel.onAddressDecoded(thirdPartyAccountsAddress)
-        advanceUntilIdle()
-        viewModel.onChooseDestinationAccountClick()
-        advanceUntilIdle()
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            persistentListOf(selectedAccount)
-        )
-    }
-
-    @Test
-    fun `when entered third party account and confirmed, verify it is shown in selected accounts`() = runTest {
-        val thirdPartyAccountsAddress = "account_tdx_19k2019dk20"
-        val selectedAccount = TransferViewModel.State.SelectedAccountForTransfer(
-            account = AccountItemUiModel(
-                address = thirdPartyAccountsAddress,
-                displayName = "Account",
-                appearanceID = 0,
-                isSelected = false
-            ),
-            type = TransferViewModel.State.SelectedAccountForTransfer.Type.ThirdPartyAccount
-        )
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        viewModel.onChooseClick(0)
-        advanceUntilIdle()
-        viewModel.onAddressChanged(thirdPartyAccountsAddress)
-        advanceUntilIdle()
-        viewModel.onChooseDestinationAccountClick()
-        advanceUntilIdle()
-
-        Assert.assertEquals(
-            viewModel.state.first().selectedAccounts,
-            persistentListOf(selectedAccount)
+            awaitItem()
         )
     }
 }
+

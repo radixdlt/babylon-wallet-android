@@ -38,7 +38,8 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
