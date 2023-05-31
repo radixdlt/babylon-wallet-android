@@ -289,7 +289,9 @@ fun TransferContent(
                                     horizontal = RadixTheme.dimensions.paddingMedium,
                                     vertical = RadixTheme.dimensions.paddingXSmall
                                 ),
-                            text = stringResource(id = R.string.transfer_toAccounts).uppercase(),
+                            text = stringResource(
+                                id = R.string.assetTransfer_accountList_toLabel
+                            ).uppercase(),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray2,
                             overflow = TextOverflow.Ellipsis,
@@ -338,7 +340,9 @@ fun TransferContent(
                         horizontalArrangement = Arrangement.End
                     ) {
                         RadixTextButton(
-                            text = stringResource(id = R.string.transfer_addAccount),
+                            text = stringResource(
+                                id = R.string.assetTransfer_accountList_addAccountButton
+                            ),
                             onClick = addAccountClick,
                             leadingIcon = {
                                 Icon(
