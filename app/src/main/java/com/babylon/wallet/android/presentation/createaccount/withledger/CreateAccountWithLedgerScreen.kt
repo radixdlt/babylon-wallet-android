@@ -128,16 +128,10 @@ fun CreateAccountWithLedgerContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                hasP2pLinks = hasP2pLinks,
-                onAddP2PLink = onAddP2PLink,
                 onSendAddLedgerRequest = onSendAddLedgerRequest,
                 addLedgerSheetState = addLedgerSheetState,
                 onConfirmLedgerName = {
                     onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                onSkipLedgerName = {
-                    onSkipLedgerName()
                     closeSheetCallback()
                 },
                 waitingForLedgerResponse = waitingForLedgerResponse
@@ -186,7 +180,9 @@ fun CreateAccountWithLedgerContent(
                         )
                     } else {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
+                            text = stringResource(
+                                id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection
+                            ),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             textAlign = TextAlign.Center

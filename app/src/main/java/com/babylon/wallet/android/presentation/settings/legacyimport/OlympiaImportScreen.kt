@@ -5,6 +5,7 @@
     ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class
 )
 
@@ -12,7 +13,6 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +52,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +71,7 @@ import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -268,16 +268,10 @@ private fun OlympiaImportContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                hasP2pLinks = hasP2pLinks,
-                onAddP2PLink = onAddP2PLink,
                 onSendAddLedgerRequest = onSendAddLedgerRequest,
                 addLedgerSheetState = addLedgerSheetState,
                 onConfirmLedgerName = {
                     onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                onSkipLedgerName = {
-                    onSkipLedgerName()
                     closeSheetCallback()
                 },
                 waitingForLedgerResponse = waitingForLedgerResponse
@@ -432,6 +426,13 @@ private fun ScanQrPage(
                         color = RadixTheme.colors.gray1
                     )
                 }
+                Text(
+                    text = stringResource(id = com.babylon.wallet.android.R.string.importLegacyWallet_scanQRCodeInstructions),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
                 CameraPreview(
                     modifier = Modifier
                         .weight(1f)
@@ -521,6 +522,9 @@ private fun HardwareImportScreen(
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
     onUseLedger: () -> Unit
 ) {
+    var showNoP2pLinksDialog by remember {
+        mutableStateOf(false)
+    }
     Box(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -528,72 +532,84 @@ private fun HardwareImportScreen(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = pluralStringResource(id = R.plurals.diverging_accounts_left_to_import, accountsLeft, accountsLeft),
+                text = stringResource(id = R.string.importOlympiaLedgerAccounts_unverifiedAccountsLeft, accountsLeft, accountsLeft),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
-            if (!hasP2pLinks) {
+            if (ledgerFactorSources.isEmpty()) {
                 Text(
-                    text = stringResource(id = R.string.diverging_noConnections),
+                    text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
             } else {
-                if (ledgerFactorSources.isEmpty()) {
-                    Text(
-                        text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
-                        style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    LedgerSelector(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        selectedLedgerFactorSourceID = selectedFactorSourceID,
-                        ledgerFactorSources = ledgerFactorSources,
-                        onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
-                    )
-                }
+                LedgerSelector(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    selectedLedgerFactorSourceID = selectedFactorSourceID,
+                    ledgerFactorSources = ledgerFactorSources,
+                    onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                )
             }
             Spacer(Modifier.weight(1f))
-            if (hasP2pLinks) {
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding(),
-                    onClick = onAddNewLedger,
-                    text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
-                )
-            } else {
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onAddP2PLink,
-                    text = stringResource(id = R.string.diverging_addNewConnection)
-                )
-            }
-            AnimatedVisibility(visible = hasP2pLinks && ledgerFactorSources.isNotEmpty()) {
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding(),
-                    onClick = onUseLedger,
-                    text = stringResource(id = R.string.diverging_useLedger)
-                )
-            }
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding(),
+                onClick = {
+                    if (hasP2pLinks) {
+                        onAddNewLedger()
+                    } else {
+                        showNoP2pLinksDialog = true
+                    }
+                },
+                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
+            )
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding(),
+                onClick = onUseLedger,
+                text = stringResource(id = R.string.common_continue),
+                enabled = hasP2pLinks && ledgerFactorSources.isNotEmpty()
+            )
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.diverging_skipRemaining),
+                text = "Skip remaining accounts", // TODO skip feature will be available on iOS, so maybe we can add a String to crowdin
                 onClick = onSkipRemainingHardwareAccounts,
                 enabled = !waitingForLedgerResponse
             )
         }
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
+        }
+        if (showNoP2pLinksDialog) {
+            BasicPromptAlertDialog(
+                finish = {
+                    if (it) {
+                        onAddP2PLink()
+                    }
+                    showNoP2pLinksDialog = false
+                },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                confirmText = stringResource(id = R.string.common_continue)
+            )
         }
     }
 }
@@ -615,7 +631,15 @@ private fun ImportCompletePage(
         ) {
             item {
                 Text(
-                    text = pluralStringResource(id = R.plurals.diverging_imported_x_accounts, migratedAccounts.size, migratedAccounts.size),
+                    stringResource(
+                        id = when (migratedAccounts.size) {
+                            0 -> R.string.importLegacyWallet_completion_titleNoAccounts
+                            1 -> R.string.importLegacyWallet_completion_titleOneAccount
+                            else -> R.string.importLegacyWallet_completion_titleManyAccounts
+                        },
+                        migratedAccounts.size,
+                        migratedAccounts.size
+                    ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )

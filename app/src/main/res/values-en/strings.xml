@@ -541,4 +541,14 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger hardware wallet device</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have connected to</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
+
+
+  <!--  Strings we still need-->
+  <string name="transfer_toAccounts">To</string>
+  <string name="transfer_addAccount">Add Account</string>
+
+  <!--  Need to be changed when we implement the proper restoration of mnemonic-->
+  <string name="restoreMnemonic_changeSeedLength">Change seed phrase length</string>
+  <string name="restoreMnemonic_seedLength">%1$s word seed phrase</string>
+  <string name="restoreMnemonic_heading">Recover Mnemonic</string>
 </resources>

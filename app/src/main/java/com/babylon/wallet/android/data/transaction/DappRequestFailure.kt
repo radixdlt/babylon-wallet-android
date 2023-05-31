@@ -89,17 +89,17 @@ sealed interface DappRequestFailure {
             TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
             is WrongNetwork -> R.string.error_transactionFailure_network
             TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee -> R.string.error_transactionFailure_noFundsToApproveTransaction
-            DappVerificationFailure.RadixJsonNotFound -> R.string.diverging_radixMissing
-            DappVerificationFailure.UnknownDefinitionAddress -> R.string.diverging_definitionMismatch
-            DappVerificationFailure.UnknownWebsite -> R.string.diverging_invalidOrigin
-            DappVerificationFailure.WrongAccountType -> R.string.diverging_definitionMissing
+            DappVerificationFailure.RadixJsonNotFound -> R.string.dAppRequest_validationOutcome_shortExplanationBadContent
+            DappVerificationFailure.UnknownDefinitionAddress -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
+            DappVerificationFailure.UnknownWebsite -> R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
+            DappVerificationFailure.WrongAccountType -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             InvalidPersona -> R.string.error_dappRequest_invalidPersonaId
             InvalidRequest -> R.string.error_dappRequest_invalidRequest
             TransactionApprovalFailure.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
-            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.diverging_sign
-            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.diverging_ledgerCommunication
-            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.diverging_ledgerCommunication
-            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.diverging_ledgerCommunication
+            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.error_transactionFailure_prepare
+            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
+            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.common_somethingWentWrong // TODO consider different copy
+            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.common_somethingWentWrong // TODO consider different copy
         }
     }
 

@@ -27,7 +27,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 }
 
 enum class InfoMessageType {
-    InvalidMnemonic, InvalidPayload, NoMnemonicForAccounts, NoAccountsForLedger;
+    InvalidMnemonic, InvalidPayload, NoMnemonicForAccounts, NoAccountsForLedger, LedgerAlreadyExist;
 
     @StringRes
     fun userFriendlyDescriptionRes(): Int {
@@ -35,7 +35,8 @@ enum class InfoMessageType {
             InvalidMnemonic -> R.string.importOlympiaAccounts_invalidMnemonic
             InvalidPayload -> R.string.importOlympiaAccounts_invalidPayload
             NoMnemonicForAccounts -> R.string.importOlympiaAccounts_noMnemonicFound
-            NoAccountsForLedger -> R.string.diverging_noHardwareAccounts
+            NoAccountsForLedger -> R.string.common_somethingWentWrong
+            LedgerAlreadyExist -> R.string.common_continue
         }
     }
 }

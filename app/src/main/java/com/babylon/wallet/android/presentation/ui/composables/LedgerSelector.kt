@@ -51,11 +51,11 @@ fun LedgerSelector(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val selectedFactorSource = ledgerFactorSources.firstOrNull { it.id == selectedLedgerFactorSourceID }
-            val selectedLedgerDescription = stringResource(
-                id = com.babylon.wallet.android.R.string.diverging_description,
-                selectedFactorSource?.label.orEmpty(),
-                selectedFactorSource?.addedOnTimestampFormatted().orEmpty()
-            )
+            val selectedLedgerDescription =
+                selectedFactorSource?.label.orEmpty() + " " + stringResource(
+                    id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addedHeading
+                ) + selectedFactorSource?.addedOnTimestampFormatted()
+                    .orEmpty()
             Text(
                 modifier = Modifier.weight(1f),
                 text = selectedLedgerDescription,

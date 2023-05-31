@@ -3,7 +3,9 @@ package com.babylon.wallet.android.presentation.settings.ledgerfactorsource
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
+import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
@@ -18,6 +20,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.LedgerAddResult
 import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
@@ -69,13 +72,21 @@ class LedgerFactorSourcesViewModel @Inject constructor(
     private fun addLedgerFactorSource() {
         viewModelScope.launch {
             state.value.recentlyConnectedLedgerDevice?.let { ledger ->
-                addLedgerFactorSourceUseCase(
+                val addResult = addLedgerFactorSourceUseCase(
                     id = FactorSource.ID(ledger.id),
                     model = ledger.model.toProfileLedgerDeviceModel(),
                     name = ledger.name
                 )
-                _state.update { state ->
-                    state.copy(addLedgerSheetState = AddLedgerSheetState.Connect)
+                when (addResult) {
+                    is LedgerAddResult.Added -> _state.update { state ->
+                        state.copy(addLedgerSheetState = AddLedgerSheetState.Connect)
+                    }
+                    is LedgerAddResult.Exist -> _state.update { state ->
+                        state.copy(
+                            addLedgerSheetState = AddLedgerSheetState.Connect,
+                            uiMessage = UiMessage.InfoMessage(InfoMessageType.LedgerAlreadyExist)
+                        )
+                    }
                 }
             }
         }
@@ -95,5 +106,6 @@ data class LedgerFactorSourcesUiState(
     val hasP2pLinks: Boolean = false,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
     val waitingForLedgerResponse: Boolean = false,
-    var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
+    val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
+    val uiMessage: UiMessage? = null
 ) : UiState

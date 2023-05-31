@@ -22,7 +22,10 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,8 +37,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -67,6 +70,7 @@ fun LedgerFactorSourcesScreen(
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun SettingsLinkConnectorContent(
     modifier: Modifier = Modifier,
@@ -80,6 +84,9 @@ private fun SettingsLinkConnectorContent(
     onSkipLedgerName: () -> Unit,
     onConfirmLedgerName: (String) -> Unit
 ) {
+    var showNoP2pLinksDialog by remember {
+        mutableStateOf(false)
+    }
     val scope = rememberCoroutineScope()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -100,16 +107,10 @@ private fun SettingsLinkConnectorContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            hasP2pLinks = hasP2pLinks,
-            onAddP2PLink = onAddP2PLink,
             onSendAddLedgerRequest = onSendAddLedgerRequest,
             addLedgerSheetState = addLedgerSheetState,
             onConfirmLedgerName = {
                 onConfirmLedgerName(it)
-                closeSheetCallback()
-            },
-            onSkipLedgerName = {
-                onSkipLedgerName()
                 closeSheetCallback()
             },
             waitingForLedgerResponse = waitingForLedgerResponse
@@ -124,13 +125,43 @@ private fun SettingsLinkConnectorContent(
             Divider(color = RadixTheme.colors.gray5)
             LedgerFactorSourcesDetails(
                 modifier = Modifier.fillMaxWidth(),
-                ledgerFactorSources = ledgerFactorSources
-            ) {
-                scope.launch {
-                    bottomSheetState.show()
+                ledgerFactorSources = ledgerFactorSources,
+                onAddLedger = {
+                    if (hasP2pLinks) {
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
+                    } else {
+                        showNoP2pLinksDialog = true
+                    }
                 }
-            }
+            )
         }
+    }
+    if (showNoP2pLinksDialog) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    onAddP2PLink()
+                }
+                showNoP2pLinksDialog = false
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.common_continue)
+        )
     }
 }
 
@@ -148,12 +179,6 @@ private fun LedgerFactorSourcesDetails(
             color = RadixTheme.colors.gray2
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        InfoLink(
-            stringResource(R.string.diverging_whatIsLedger),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-        )
         if (ledgerFactorSources.isNotEmpty()) {
             LedgerFactorSourcesListContent(
                 modifier = Modifier
@@ -168,7 +193,7 @@ private fun LedgerFactorSourcesDetails(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingMedium),
-            text = "stringResource(id = R.string.createEntity_ledger_addNewLedger)",
+            text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
             onClick = onAddLedger,
             throttleClicks = true
         )
