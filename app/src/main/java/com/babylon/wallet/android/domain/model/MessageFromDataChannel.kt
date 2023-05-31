@@ -128,20 +128,24 @@ sealed interface MessageFromDataChannel {
 
     sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
 
-        enum class LedgerDeviceModel {
-            NanoS, NanoSPlus, NanoX;
-        }
-
-        data class SignatureOfSigner(
+        data class DerivedPublicKey(
             val curve: Curve,
-            val derivationPath: String,
-            val signature: String,
-            val publicKeyHex: String
+            val publicKeyHex: String,
+            val derivationPath: String
         ) {
             enum class Curve {
                 Curve25519, Secp256k1
             }
         }
+
+        enum class LedgerDeviceModel {
+            NanoS, NanoSPlus, NanoX;
+        }
+
+        data class SignatureOfSigner(
+            val derivedPublicKey: DerivedPublicKey,
+            val signature: String,
+        )
 
         data class GetDeviceInfoResponse(
             val interactionId: String,
@@ -151,21 +155,8 @@ sealed interface MessageFromDataChannel {
 
         data class DerivePublicKeyResponse(
             val interactionId: String,
-            val publicKeyHex: String
+            val publicKeysHex: List<DerivedPublicKey>
         ) : LedgerResponse(interactionId)
-
-        data class ImportOlympiaDeviceResponse(
-            val interactionId: String,
-            val model: LedgerDeviceModel,
-            val deviceId: String,
-            val derivedPublicKeys: List<DerivedPublicKey>
-        ) : LedgerResponse(interactionId) {
-
-            data class DerivedPublicKey(
-                val publicKeyHex: String,
-                val derivationPath: String
-            )
-        }
 
         data class SignTransactionResponse(
             val interactionId: String,
