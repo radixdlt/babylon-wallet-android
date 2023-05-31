@@ -177,17 +177,16 @@ fun CreateAccountWithLedgerContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     if (ledgerFactorSources.isEmpty()) {
-                        // TODO
-//                        Text(
-//                            text = stringResource(id = com.babylon.wallet.android.R.string.createEntity_ledger_subtitleNoLedgers),
-//                            style = RadixTheme.typography.body1Header,
-//                            color = RadixTheme.colors.gray1,
-//                            overflow = TextOverflow.Ellipsis,
-//                            textAlign = TextAlign.Center
-//                        )
+                        Text(
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
+                            style = RadixTheme.typography.body1Header,
+                            color = RadixTheme.colors.gray1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
                     } else {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_selectDevice),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             textAlign = TextAlign.Center
@@ -212,7 +211,7 @@ fun CreateAccountWithLedgerContent(
                             bottomSheetState.show()
                         }
                     },
-                    text = stringResource(id = com.babylon.wallet.android.R.string.createEntity_ledger_addNewLedger)
+                    text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
                 )
                 AnimatedVisibility(visible = ledgerFactorSources.isNotEmpty()) {
                     RadixPrimaryButton(
@@ -220,7 +219,7 @@ fun CreateAccountWithLedgerContent(
                             .fillMaxWidth()
                             .imePadding(),
                         onClick = onUseLedger,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.createEntity_ledger_useLedger)
+                        text = stringResource(id = com.babylon.wallet.android.R.string.common_continue)
                     )
                 }
             }

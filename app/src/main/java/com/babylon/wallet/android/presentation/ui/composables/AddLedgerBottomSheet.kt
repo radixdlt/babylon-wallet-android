@@ -72,7 +72,7 @@ fun AddLedgerBottomSheet(
                     RadixSecondaryButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onSendAddLedgerRequest,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_addLedger),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger),
                         enabled = hasP2pLinks
                     )
                 }

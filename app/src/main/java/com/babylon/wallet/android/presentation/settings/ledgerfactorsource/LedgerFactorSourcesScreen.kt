@@ -143,7 +143,7 @@ private fun LedgerFactorSourcesDetails(
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.ledgerImport_allLedgerDevicesInfo),
+            text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )
@@ -168,7 +168,7 @@ private fun LedgerFactorSourcesDetails(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.createEntity_ledger_addNewLedger),
+            text = "stringResource(id = R.string.createEntity_ledger_addNewLedger)",
             onClick = onAddLedger,
             throttleClicks = true
         )
