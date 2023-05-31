@@ -209,8 +209,10 @@ private fun ChooseAccountContent(
 
                     val errorResource = when (state.selectedAccount.validity) {
                         TargetAccount.Other.AddressValidity.VALID -> null
-                        TargetAccount.Other.AddressValidity.INVALID -> R.string.invalid_address
-                        TargetAccount.Other.AddressValidity.USED -> R.string.used_address
+                        TargetAccount.Other.AddressValidity.INVALID ->
+                            R.string.assetTransfer_chooseReceivingAccount_invalidAddressError
+                        TargetAccount.Other.AddressValidity.USED ->
+                            R.string.assetTransfer_chooseReceivingAccount_alreadyAddedError
                     }
 
                     address to errorResource

@@ -99,7 +99,7 @@ fun TargetAccountCard(
                 is TargetAccount.Other -> {
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                        text = stringResource(id = R.string.unknown),
+                        text = stringResource(id = R.string.assetTransfer_accountList_externalAccountName),
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.white
                     )
