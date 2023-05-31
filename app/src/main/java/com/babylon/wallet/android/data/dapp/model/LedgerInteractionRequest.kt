@@ -33,12 +33,12 @@ data class GetDeviceInfoRequest(
 ) : LedgerInteractionRequest
 
 @Serializable
-@SerialName("derivePublicKey")
+@SerialName("derivePublicKeys")
 data class DerivePublicKeyRequest(
     @SerialName("interactionId")
     val interactionId: String,
-    @SerialName("keyParameters")
-    val keyParameters: KeyParameters,
+    @SerialName("keysParameters")
+    val keysParameters: List<KeyParameters>,
     @SerialName("ledgerDevice")
     val ledgerDevice: LedgerDevice,
 ) : LedgerInteractionRequest {
@@ -61,15 +61,6 @@ data class DerivePublicKeyRequest(
         val id: String
     )
 }
-
-@Serializable
-@SerialName("importOlympiaDevice")
-data class ImportOlympiaDeviceRequest(
-    @SerialName("interactionId")
-    val interactionId: String,
-    @SerialName("derivationPaths")
-    val derivationPaths: List<String>,
-) : LedgerInteractionRequest
 
 @Serializable
 @SerialName("signTransaction")
