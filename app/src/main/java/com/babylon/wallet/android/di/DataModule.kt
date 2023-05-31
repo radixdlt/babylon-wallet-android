@@ -43,7 +43,7 @@ interface DataModule {
 
     @Binds
     fun bindDappMetadataRepository(
-        dappMetadataRepository: DappMetadataRepositoryEnkinetImpl
+        dappMetadataRepository: DappMetadataRepositoryImpl
     ): DappMetadataRepository
 
     @Binds
