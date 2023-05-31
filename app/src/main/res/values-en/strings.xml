@@ -560,15 +560,15 @@
 
 Install the Connector extension, open it to see the linking QR code, and tap continue.</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
-  <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Ledger Device</string>
-  <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Hardware Wallets</string>
+  <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Device</string>
+  <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Devices</string>
   <string name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">What is a Ledger Factor Source</string>
-  <string name="ledgerHardwareDevices_addNewLedger">Add New Ledger</string>
+  <string name="ledgerHardwareDevices_addNewLedger">Add Ledger Device</string>
   <string name="ledgerHardwareDevices_addedHeading">Added</string>
-  <string name="ledgerHardwareDevices_usedHeading">Used</string>
+  <string name="ledgerHardwareDevices_usedHeading">Last Used</string>
   <string name="ledgerHardwareDevices_continueWithLedger">Continue</string>
   <string name="ledgerHardwareDevices_subtitleNoLedgers">You have no Ledgers added, add a ledger to get started…</string>
-  <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger hardware wallet device</string>
+  <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger device to use</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have connected to</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
   <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
