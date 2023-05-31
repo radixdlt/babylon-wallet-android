@@ -379,11 +379,11 @@
   <string name="addressAction_qrCodeView_failureLabel">Could not create QR code</string>
   <string name="biometrics_prompt_title">Use your biometric to continue</string>
   <string name="biometrics_prompt_creationOfEntity">Authenticate to create new %s with this phone.</string>
-  <string name="biometrics_prompt_importOlympiaAccounts">Check if seed phrase already exists.</string>
   <string name="biometrics_prompt_signAuthChallenge">Authenticate to sign auth chellenge with this phone.</string>
   <string name="biometrics_prompt_signTransaction">Authenticate to sign transaction with this phone.</string>
   <string name="biometrics_prompt_displaySeedPhrase">Display seed phrase.</string>
   <string name="biometrics_prompt_createSignAuthKey">Create Auth signing key.</string>
+  <string name="biometrics_prompt_importOlympiaAccounts">Check if seed phrase already exists.</string>
   <string name="biometrics_prompt_checkingAccounts">Checking accounts.</string>
   <string name="biometrics_prompt_updateAccountMetadata">Update account metadata.</string>
   <string name="biometrics_deviceNotSecureAlert_title">Your device is not secured</string>
@@ -507,6 +507,7 @@
   <string name="assetTransfer_transactionMessage">Message</string>
   <string name="assetTransfer_qrScanInstructions">Scan a QR code of a Radix account address</string>
   <string name="assetTransfer_sendTransferButton">Send Transfer Request</string>
+  <string name="assetTransfer_accountList_externalAccountName">Account</string>
   <string name="assetTransfer_accountList_fromLabel">From</string>
   <string name="assetTransfer_accountList_toLabel">To</string>
   <string name="assetTransfer_accountList_addAccountButton">Add Account</string>
@@ -519,6 +520,10 @@
   <string name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">Or choose one of your own accounts</string>
   <string name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">Scan QR Code</string>
   <string name="assetTransfer_chooseReceivingAccount_addressFieldPlaceholder">Enter or paste address</string>
+  <string name="assetTransfer_addAssets_navigationTitle">Choose Asset(s)</string>
+  <string name="assetTransfer_addAssets_buttonAssetsNone">Select Assets</string>
+  <string name="assetTransfer_addAssets_buttonAssetsOne">Choose 1 Asset</string>
+  <string name="assetTransfer_addAssets_buttonAssets">Choose %d Assets</string>
   <string name="assetTransfer_fungibleResource_totalExceedsBalance">The total amount exceeds your current balance</string>
   <string name="assetTransfer_fungibleResource_balance">Balance: %s</string>
   <string name="assetTransfer_receivingAccount_chooseAccountButton">Choose Account</string>
@@ -566,4 +571,12 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger hardware wallet device</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have connected to</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
+  <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
+  <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed phrase</string>
+  <string name="displayMnemonics_cautionAlert_message">Make sure no person or camera can see your display. Don\'t read or mouth the words. We have prevented you from taking screenshots</string>
+  <string name="displayMnemonics_labelSeedPhraseKindOlympia">Legacy Seed Phrase</string>
+  <string name="displayMnemonics_labelSeedPhraseKind">Main Seed Phrase</string>
+  <string name="displayMnemonics_labelDateOlympia">Imported on</string>
+  <string name="displayMnemonics_labelDate">Generated on</string>
+  <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
 </resources>
