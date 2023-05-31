@@ -74,7 +74,7 @@ fun NftTokenDetailItem(
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )
             Text(
-                item.localId,
+                item.displayableLocalId,
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2HighImportance
             )

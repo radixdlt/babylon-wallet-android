@@ -68,6 +68,19 @@ sealed class Resource {
             val imageUrl: Uri?
                 get() = iconMetadataItem?.url
 
+            /**
+             * We strip id indicators from the UI as per
+             * https://docs-babylon.radixdlt.com/main/reference-materials/
+             * resource-addressing.html#_non_fungibles_individual_units_of_non_fungible_resources
+             */
+            val displayableLocalId: String
+                get() = localId.filterNot {
+                    it == '<' || it == '>' ||
+                            it == '#' ||
+                            it == '[' || it == ']' ||
+                            it == '{' || it == '}'
+                }
+
             fun globalAddress(nftAddress: String) = "$nftAddress:$localId"
         }
     }
