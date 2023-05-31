@@ -15,15 +15,12 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
-import com.radixdlt.toolkit.models.NonFungibleLocalIdInternal
 import com.radixdlt.toolkit.models.ValueKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
-import java.math.BigInteger
-import java.util.UUID
 
 class PrepareManifestDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
@@ -78,7 +75,7 @@ class PrepareManifestDelegate(
             }.forEach { targetAccount ->
                 val spendingFungibleAsset = targetAccount.assets.find { it.address == resource.resourceAddress } as? SpendingAsset.Fungible
                 if (spendingFungibleAsset != null) {
-                    val bucket = ManifestAstValue.Bucket(identifier = "${targetAccount.address}_${resource.resourceAddress}")
+                    val bucket = ManifestAstValue.Bucket(value = "${targetAccount.address}_${resource.resourceAddress}")
 
                     // First fill in a bucket from worktop with the correct amount
                     addInstruction(pourToBucket(fungible = resource, amount = spendingFungibleAsset.amountDecimal, bucket = bucket))
@@ -97,7 +94,7 @@ class PrepareManifestDelegate(
         targetAccounts.forEach { targetAccount ->
             val nonFungibleSpendingAssets = targetAccount.assets.filterIsInstance<SpendingAsset.NFT>()
             nonFungibleSpendingAssets.forEach { nft ->
-                val bucket = ManifestAstValue.Bucket(identifier = "${targetAccount.address}_${nft.address}")
+                val bucket = ManifestAstValue.Bucket(value = "${targetAccount.address}_${nft.address}")
 
                 addInstruction(withdraw(fromAccount = fromAccount, nonFungible = nft.item))
                 addInstruction(pourToBucket(nonFungible = nft.item, bucket = bucket))
@@ -128,7 +125,7 @@ class PrepareManifestDelegate(
         fungible: Resource.FungibleResource,
         amount: BigDecimal
     ) = Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(address = fromAccount.address),
+        componentAddress = ManifestAstValue.Address(value = fromAccount.address),
         methodName = ManifestAstValue.String(MethodName.Withdraw.stringValue),
         arguments = arrayOf(
             ManifestAstValue.Address(fungible.resourceAddress),
@@ -141,7 +138,7 @@ class PrepareManifestDelegate(
         amount: BigDecimal,
         bucket: ManifestAstValue.Bucket
     ) = Instruction.TakeFromWorktopByAmount(
-        resourceAddress = ManifestAstValue.Address(address = fungible.resourceAddress),
+        resourceAddress = ManifestAstValue.Address(value = fungible.resourceAddress),
         amount = ManifestAstValue.Decimal(amount),
         intoBucket = bucket
     )
@@ -150,7 +147,7 @@ class PrepareManifestDelegate(
         fromAccount: Network.Account,
         nonFungible: Resource.NonFungibleResource.Item,
     ) = Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(address = fromAccount.address),
+        componentAddress = ManifestAstValue.Address(value = fromAccount.address),
         methodName = ManifestAstValue.String(MethodName.WithdrawNonFungibles.stringValue),
         arguments = arrayOf(
             ManifestAstValue.Address(nonFungible.collectionAddress),
@@ -174,55 +171,12 @@ class PrepareManifestDelegate(
         bucket: ManifestAstValue.Bucket,
         into: TargetAccount
     ) = Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(address = into.address),
+        componentAddress = ManifestAstValue.Address(value = into.address),
         methodName = ManifestAstValue.String(MethodName.Deposit.stringValue),
         arguments = arrayOf(bucket)
     )
 }
 
-// TO BE REMOVED AFTER KET IS COMPATIBLE WITH ASH
-// This will be obsolete when the KET is compatible with ASH since there will be a generic constructor for Local Ids
-// that takes a string and internally infers its type.
-@Suppress("UnsafeCallOnNullableType")
-private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId = run {
-    if (nftLocalIdStringRegex.matches(localId)) {
-        val (stringId) = nftLocalIdStringRegex.find(localId)!!.destructured
-        ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.String(stringId))
-    } else if (nftLocalIdIntegerRegex.matches(localId)) {
-        val (intId) = nftLocalIdIntegerRegex.find(localId)!!.destructured
-        ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Integer(intId.toULong()))
-    } else if (nftLocalIdHexRegex.matches(localId)) {
-        val (hexId) = nftLocalIdHexRegex.find(localId)!!.destructured
-        ManifestAstValue.NonFungibleLocalId(NonFungibleLocalIdInternal.Bytes(hexId.toByteArray()))
-    } else if (nftLocalIdUUIDRegex.matches(localId)) {
-        val (uuidString) = nftLocalIdUUIDRegex.find(localId)!!.destructured
-        val uuid = UUID.fromString(uuidString)
-        ManifestAstValue.NonFungibleLocalId(uuid.toLocalIdInternal())
-    } else {
-        error("Could not recognize id $localId")
-    }
+private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId {
+    return ManifestAstValue.NonFungibleLocalId(localId)
 }
-
-// https://gist.github.com/drmalex07/9008c611ffde6cb2ef3a2db8668bc251
-@Suppress("MagicNumber")
-private fun UUID.toLocalIdInternal(): NonFungibleLocalIdInternal {
-    val shl = BigInteger.ONE.shiftLeft(64)
-    var lo = BigInteger.valueOf(leastSignificantBits)
-    var hi = BigInteger.valueOf(mostSignificantBits)
-
-    if (hi.signum() < 0) {
-        hi = hi.add(shl)
-    }
-
-    if (lo.signum() < 0) {
-        lo = lo.add(shl)
-    }
-
-    val integer = lo.add(hi.multiply(shl))
-    return NonFungibleLocalIdInternal.UUID(integer.toString())
-}
-
-private val nftLocalIdStringRegex = "^<(([a-zA-Z]|_|\\d)+)>\$".toRegex()
-private val nftLocalIdIntegerRegex = "^#(\\d+)#\$".toRegex()
-private val nftLocalIdHexRegex = "^\\[([A-Fa-f\\d]+)]\$".toRegex()
-private val nftLocalIdUUIDRegex = "^\\{(.+)\\}\$".toRegex()

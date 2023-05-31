@@ -15,7 +15,6 @@ import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -129,17 +128,6 @@ private fun guaranteeInstruction(
         resourceAddress = ManifestAstValue.Address(resourceAddress),
         amount = ManifestAstValue.Decimal(guaranteedAmount)
     )
-}
-
-fun faucetComponentAddress(
-    networkId: UByte
-): ManifestAstValue.Address {
-    val faucetComponentAddress = RadixEngineToolkit.knownEntityAddresses(
-        request = KnownEntityAddressesRequest(
-            networkId = networkId
-        )
-    ).getOrThrow().faucetComponentAddress
-    return ManifestAstValue.Address(faucetComponentAddress.toString())
 }
 
 fun TransactionManifest.getStringInstructions(): String? {
