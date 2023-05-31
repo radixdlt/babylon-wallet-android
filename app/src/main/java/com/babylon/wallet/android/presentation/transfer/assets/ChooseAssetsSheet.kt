@@ -71,7 +71,7 @@ fun ChooseAssetsSheet(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
             SheetHeader(
-                title = stringResource(id = R.string.assetTransfer_chooseAssets_navigationTitle),
+                title = stringResource(id = R.string.assetTransfer_addAssets_navigationTitle),
                 onLeadingActionClicked = onCloseClick
             )
         },
@@ -87,9 +87,9 @@ fun ChooseAssetsSheet(
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
                     text = when (val count = state.assetsSelectedCount) {
-                        0 -> stringResource(id = R.string.assetTransfer_chooseAssets_buttonAssetsNone)
-                        1 -> stringResource(id = R.string.assetTransfer_chooseAssets_buttonAssetsOne)
-                        else -> stringResource(id = R.string.assetTransfer_chooseAssets_buttonAssets, count)
+                        0 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsNone)
+                        1 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsOne)
+                        else -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssets, count)
                     },
                     onClick = onChooseAssetsSubmitted,
                     enabled = state.isSubmitEnabled
