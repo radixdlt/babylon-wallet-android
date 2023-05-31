@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.GatewayStatusResponse
+import com.babylon.wallet.android.data.gateway.generated.models.NetworkConfigurationResponse
 import retrofit2.Call
 import retrofit2.http.POST
 
@@ -16,4 +17,15 @@ interface StatusApi {
      */
     @POST("status/gateway-status")
     fun gatewayStatus(): Call<GatewayStatusResponse>
+
+    /**
+     * Get Network Configuration
+     * Returns network identifier, network name and well-known network addresses.
+     * Responses:
+     *  - 200: Network Configuration
+     *
+     * @return [NetworkConfigurationResponse]
+     */
+    @POST("status/network-configuration")
+    fun networkConfiguration(): Call<NetworkConfigurationResponse>
 }

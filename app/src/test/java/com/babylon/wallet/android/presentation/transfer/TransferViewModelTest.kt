@@ -21,6 +21,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -101,6 +102,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         }
     }
 
+    @Ignore("until we have the validated addresses from iOS")
     @Test
     fun `choosing an third party address from the accounts chooser`() = runTest {
         val viewModel = vm.value

@@ -15,11 +15,9 @@ import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -27,11 +25,11 @@ import java.util.UUID
  * Instruction to add free xrd from given address
  */
 fun ManifestBuilder.addFreeXrdInstruction(
-    networkId: NetworkId
+    faucetComponentAddress: String
 ): ManifestBuilder {
     return addInstruction(
         Instruction.CallMethod(
-            componentAddress = faucetComponentAddress(networkId.value.toUByte()),
+            componentAddress = ManifestAstValue.Address(faucetComponentAddress),
             methodName = ManifestAstValue.String(MethodName.Free.stringValue),
             arguments = arrayOf()
         )
@@ -48,7 +46,7 @@ fun ManifestBuilder.addDepositBatchInstruction(
     return addInstruction(
         Instruction.CallMethod(
             componentAddress = ManifestAstValue.Address(
-                address = recipientComponentAddress
+                value = recipientComponentAddress
             ),
             methodName = ManifestAstValue.String(MethodName.DepositBatch.stringValue),
             arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
@@ -130,17 +128,6 @@ private fun guaranteeInstruction(
         resourceAddress = ManifestAstValue.Address(resourceAddress),
         amount = ManifestAstValue.Decimal(guaranteedAmount)
     )
-}
-
-fun faucetComponentAddress(
-    networkId: UByte
-): ManifestAstValue.Address {
-    val faucetComponentAddress = RadixEngineToolkit.knownEntityAddresses(
-        request = KnownEntityAddressesRequest(
-            networkId = networkId
-        )
-    ).getOrThrow().faucetComponentAddress
-    return ManifestAstValue.Address(faucetComponentAddress.toString())
 }
 
 fun TransactionManifest.getStringInstructions(): String? {

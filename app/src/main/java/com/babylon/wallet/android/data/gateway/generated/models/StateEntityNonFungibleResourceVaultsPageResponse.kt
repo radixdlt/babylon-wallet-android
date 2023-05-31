@@ -23,8 +23,8 @@ import kotlinx.serialization.SerialName
  *
  * @param ledgerState 
  * @param items 
- * @param address Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
- * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param address Bech32m-encoded human readable version of the address.
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
  * @param totalCount Total number of items in underlying collection, fragment of which is available in `items` collection.
  * @param previousCursor If specified, contains a cursor to query previous page of the `items` collection.
  * @param nextCursor If specified, contains a cursor to query next page of the `items` collection.
@@ -39,11 +39,11 @@ data class StateEntityNonFungibleResourceVaultsPageResponse (
     @SerialName(value = "items")
     val items: kotlin.collections.List<NonFungibleResourcesCollectionItemVaultAggregatedVaultItem>,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String,
 

@@ -15,25 +15,22 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the entity's global address.
- * @param metadata 
+ * @param nonFungibleIncludeNfids 
  */
 @Serializable
 
-data class EntityOverviewResponseEntityItem (
+data class StateEntityNonFungibleResourceVaultsPageOptIns (
 
-    /* Bech32m-encoded human readable version of the entity's global address. */
-    @SerialName(value = "address")
-    val address: kotlin.String,
-
-    @SerialName(value = "metadata")
-    val metadata: EntityMetadataCollection
+    @SerialName(value = "non_fungible_include_nfids")
+    val nonFungibleIncludeNfids: kotlin.Boolean? = null
 
 )
 

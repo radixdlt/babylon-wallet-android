@@ -12,6 +12,7 @@ import javax.inject.Inject
 
 interface NetworkInfoRepository {
     suspend fun getNetworkInfo(networkUrl: String): Result<String>
+    suspend fun getFaucetComponentAddress(networkUrl: String): Result<String>
 }
 
 class NetworkInfoRepositoryImpl @Inject constructor(
@@ -24,6 +25,20 @@ class NetworkInfoRepositoryImpl @Inject constructor(
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     ).gatewayStatus().execute(
-        map = { it.ledgerState.network }
+        map = {
+            it.ledgerState.network
+        }
     )
+
+    override suspend fun getFaucetComponentAddress(networkUrl: String): Result<String> {
+        return buildApi<StatusApi>(
+            baseUrl = networkUrl,
+            okHttpClient = okHttpClient,
+            jsonConverterFactory = jsonConverterFactory
+        ).networkConfiguration().execute(
+            map = {
+                it.wellKnownAddresses.faucet
+            }
+        )
+    }
 }

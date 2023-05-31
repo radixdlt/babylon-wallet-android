@@ -1,2945 +1,2175 @@
-{
-  "openapi": "3.0.1",
-  "info": {
-    "title": "Babylon Gateway API - RCnet V2",
-    "description": "This API is exposed by the Babylon Radix Gateway to enable clients to efficiently query current and historic\nstate on the RadixDLT ledger, and intelligently handle transaction submission.\n\nIt is designed for use by wallets and explorers. For simple use cases, you can typically use the Core API on\na Node. A Gateway is only needed for reading historic snapshots of ledger states or a more robust set-up.\n\nThe Gateway API is implemented by the [Network Gateway](https://github.com/radixdlt/babylon-gateway),\nwhich is configured to read from [full node(s)](https://github.com/radixdlt/babylon-node) to extract\nand index data from the network.\n\nThis document is an API reference documentation, visit [User Guide](https://docs-babylon.radixdlt.com/) to learn more\nabout how to run a Gateway of your own.\n\n## Integration and forward compatibility guarantees\n\nWe give no guarantees that other endpoints will not change before Babylon mainnet launch, although changes are expected to\nbe minimal.\n",
-    "license": {
-      "name": "The Radix License, Version 1.0",
-      "url": "https://www.radixfoundation.org/licenses/license-v1"
-    },
-    "version": "0.4.0",
-    "x-logo": {
-      "url": "https://docs-babylon.radixdlt.com/main/_images/radix-logo-banner.png",
-      "href": "https://docs-babylon.radixdlt.com"
-    }
-  },
-  "servers": [
-    {
-      "url": "/"
-    }
-  ],
-  "paths": {
-    "/status/gateway-status": {
-      "post": {
-        "tags": [
-          "Status"
-        ],
-        "summary": "Get Gateway Status",
-        "description": "Returns the Gateway API version and current ledger state.\n",
-        "operationId": "GatewayStatus",
-        "responses": {
-          "200": {
-            "description": "Network Gateway Information",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GatewayStatusResponse"
-                }
-              }
-            }
-          }
-        }
+openapi: 3.0.0
+info:
+  version: 0.4.0
+  title: Babylon Gateway API - RCnet V2
+  license:
+    name: The Radix License, Version 1.0
+    url: https://www.radixfoundation.org/licenses/license-v1
+  x-logo:
+    url: https://docs-babylon.radixdlt.com/main/_images/radix-logo-banner.png
+    href: https://docs-babylon.radixdlt.com
+  description: |
+    This API is exposed by the Babylon Radix Gateway to enable clients to efficiently query current and historic
+    state on the RadixDLT ledger, and intelligently handle transaction submission.
+
+    It is designed for use by wallets and explorers. For simple use cases, you can typically use the Core API on
+    a Node. A Gateway is only needed for reading historic snapshots of ledger states or a more robust set-up.
+
+    The Gateway API is implemented by the [Network Gateway](https://github.com/radixdlt/babylon-gateway),
+    which is configured to read from [full node(s)](https://github.com/radixdlt/babylon-node) to extract
+    and index data from the network.
+
+    This document is an API reference documentation, visit [User Guide](https://docs-babylon.radixdlt.com/) to learn more
+    about how to run a Gateway of your own.
+
+    ## Integration and forward compatibility guarantees
+
+    We give no guarantees that other endpoints will not change before Babylon mainnet launch, although changes are expected to
+    be minimal.
+servers:
+  - url: https://rcnet.radixdlt.com
+x-tagGroups:
+  - name: Overview
+    tags:
+      - SubAPIs
+      - Concepts
+      - Architecture
+  - name: Endpoints
+    tags:
+      - Status
+      - Transaction
+      - Stream
+      - State
+tags:
+  - name: SubAPIs
+    x-displayName: Sub-APIs
+    x-traitTag: true
+    description: |
+      The Gateway API is split into 4 sub APIs:
+      - **Status** (`/status/*`) - For status and configuration details for the Gateway / Network.
+      - **Transaction** (`/transaction/*`) - For transaction construction, preview, submission, and monitoring the status of an individual transaction.
+      - **Stream** (`/transaction/*`) - For reading committed transactions.
+      - **State** (`/state/*`, `/entity/*` and `/non-fungible/*`) - For reading the current or past ledger state of the network.
+  - name: Architecture
+    x-traitTag: true
+    description: |
+
+      ## Request-Response Format
+
+      The API is designed in a JSON-RPC-like style, using HTTP as a transport layer, which means that:
+      - Requests always use HTTP POST method.
+      - There is no HTTP cache involved.
+      - Client-originated errors result in HTTP 4xx error responses.
+      - Server-originated errors result in HTTP 5xx error responses:
+          - The error object contains an HTTP-like `code`
+          - The error object also contains a structured/typed properties, with a `type` discriminator, allowing for structured error interpretation in client software.
+
+      ## Pagination Model
+
+      Collections can grow in size therefore every dynamic-length collection is a subject to pagination where a generic data struct is used to represent a chunk (page) of
+      underlying data. Gateway API uses cursor-based pagination model where the sole existence of the cursor indicates that next chunk (page) of the underlying collection is
+      available.
+
+      ```
+      collection {
+        int64? total_count,
+        string? next_cursor,
+        string? previous_cursor,
+        T[] items
       }
-    },
-    "/status/network-configuration": {
-      "post": {
-        "tags": [
-          "Status"
-        ],
-        "summary": "Get Network Configuration",
-        "description": "Returns network identifier, network name and well-known network addresses.\n",
-        "operationId": "NetworkConfiguration",
-        "responses": {
-          "200": {
-            "description": "Network Configuration",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NetworkConfigurationResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/transaction/construction": {
-      "post": {
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "Get Construction Metadata",
-        "description": "Returns information needed to construct a new transaction including current `epoch` number.\n",
-        "operationId": "TransactionConstruction",
-        "responses": {
-          "200": {
-            "description": "Returns information needed to construct transaction.\n",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionConstructionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/transaction/preview": {
-      "post": {
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "Preview Transaction",
-        "description": "Previews transaction against the network.\nThis endpoint is effectively a proxy towards CoreApi's `/v0/transaction/preview` endpoint. See CoreApi's documentation for more details.\n",
-        "operationId": "TransactionPreview",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransactionPreviewRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Preview",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionPreviewResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/transaction/submit": {
-      "post": {
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "Submit Transaction",
-        "description": "Submits a signed transaction payload to the network.\n",
-        "operationId": "TransactionSubmit",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransactionSubmitRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Submission",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionSubmitResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/transaction/committed-details": {
-      "post": {
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "Get Committed Transaction Details",
-        "description": "Returns the committed details and receipt of the transaction for a given transaction identifier.\nTransaction identifiers which don't correspond to a committed transaction will return a `TransactionNotFoundError`.\n",
-        "operationId": "TransactionCommittedDetails",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransactionCommittedDetailsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Transaction Status",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionCommittedDetailsResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/transaction/status": {
-      "post": {
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "Get Transaction Status",
-        "description": "Returns overall transaction status and all of its known payloads based on supplied intent hash.\n",
-        "operationId": "TransactionStatus",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransactionStatusRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Transaction Status",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionStatusResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/stream/transactions": {
-      "post": {
-        "tags": [
-          "Stream"
-        ],
-        "summary": "Get Transactions Stream",
-        "description": "Returns transactions which have been committed to the ledger.\n",
-        "operationId": "StreamTransactions",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StreamTransactionsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Transactions (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StreamTransactionsResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/details": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Entity Details",
-        "description": "Returns detailed information for collection of entities. Aggregate resources globally by default.\n",
-        "operationId": "StateEntityDetails",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityDetailsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityDetailsResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/page/metadata": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Entity Metadata Page",
-        "description": "Returns all the metadata properties associated with a given global entity.\nThe returned response is in a paginated format, ordered by first appearance on the ledger.\n",
-        "operationId": "EntityMetadataPage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityMetadataPageRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Metadata (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityMetadataPageResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/page/fungibles/": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Entity Fungible Resource Totals Page aggregated globally",
-        "description": "Returns the total amount of each fungible resource owned by a given global entity.\nResult can be aggregated globally or per vault.\nThe returned response is in a paginated format, ordered by the resource's first appearance on the ledger.\n",
-        "operationId": "EntityFungiblesPage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityFungiblesPageRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Fungibles (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityFungiblesPageResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/page/fungible-vaults/": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get vault page of Entity Fungible resource aggregated per vault",
-        "description": "Returns vaults for fungible resource owned by a given global entity.\nThe returned response is in a paginated format, ordered by the resource's first appearance on the ledger.\n",
-        "operationId": "EntityFungibleResourceVaultPage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityFungibleResourceVaultsPageRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Fungibles (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityFungibleResourceVaultsPageResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/page/non-fungibles/": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Entity Non-Fungible Resource Totals Page aggregated globally",
-        "description": "Returns the total amount of each non-fungible resource owned by a given global entity.\nResult can be aggregated globally or per vault.\nThe returned response is in a paginated format, ordered by the resource's first appearance on the ledger.\n",
-        "operationId": "EntityNonFungiblesPage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityNonFungiblesPageRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Non-Fungibles (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityNonFungiblesPageResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/page/non-fungible-vaults/": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get vault page of Entity Non Fungible aggregated per vault",
-        "description": "Returns vaults for non fungible resource owned by a given global entity.\nThe returned response is in a paginated format, ordered by the resource's first appearance on the ledger.\n",
-        "operationId": "EntityNonFungibleResourceVaultPage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityNonFungibleResourceVaultsPageRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Fungibles (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityNonFungibleResourceVaultsPageResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/entity/page/non-fungible-vault/ids": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Entity Non-Fungible IDs",
-        "description": "Returns all non-fungible IDs of a given non-fungible resource owned by a given entity.\nThe returned response is in a paginated format, ordered by the resource's first appearence on the ledger.\n",
-        "operationId": "EntityNonFungibleIdsPage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateEntityNonFungibleIdsPageRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Entity Non-Fungible IDs (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateEntityNonFungibleIdsPageResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/non-fungible/ids": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Non-Fungible Collection",
-        "description": "Returns the non-fungible IDs of a given non-fungible resource.\nReturned response is in a paginated format, ordered by their first appearance on the ledger.\n",
-        "operationId": "NonFungibleIds",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateNonFungibleIdsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Non-Fungible IDs (paginated)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateNonFungibleIdsResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/non-fungible/data": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Non-Fungible Data",
-        "description": "Returns data associated with a given non-fungible ID of a given non-fungible resource.\n",
-        "operationId": "NonFungibleData",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateNonFungibleDataRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Non-Fungible ID Data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateNonFungibleDataResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/state/validators/list": {
-      "post": {
-        "tags": [
-          "State"
-        ],
-        "summary": "Get Validators List",
-        "operationId": "StateValidatorsList",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StateValidatorsListRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Validators List",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateValidatorsListResponse"
-                }
-              }
-            }
-          },
-          "4XX": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "NetworkId": {
-        "maximum": 255,
-        "minimum": 0,
-        "type": "integer",
-        "description": "The logical id of the network",
-        "format": "int32",
-        "example": "33"
-      },
-      "NetworkName": {
-        "type": "string",
-        "description": "The logical name of the network",
-        "example": "enkinet"
-      },
-      "EntityAddress": {
-        "type": "string",
-        "description": "Bech32m-encoded human readable version of the entity's global address or hex-encoded id."
-      },
-      "ComponentAddress": {
-        "type": "string",
-        "description": "Bech32m-encoded human readable version of the component (normal, account, system) global address or hex-encoded id."
-      },
-      "ResourceAddress": {
-        "type": "string",
-        "description": "Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id."
-      },
-      "BigDecimal": {
-        "type": "string",
-        "description": "String-encoded decimal representing the amount of a related fungible resource."
-      },
-      "NonFungibleId": {
-        "type": "string",
-        "description": "String-encoded non-fungible ID."
-      },
-      "HashHexString": {
-        "type": "string",
-        "description": "Hex-encoded SHA-256 hash."
-      },
-      "HexString": {
-        "type": "string",
-        "description": "Hex-encoded binary blob."
-      },
-      "NotarizedTransactionHexString": {
-        "type": "string",
-        "description": "Hex-encoded notarized transaction payload which can be submitted."
-      },
-      "AccessRulesChain": {
-        "type": "object",
-        "description": "Refer to `#/components/schemas/AccessRules` of CoreApi for more details."
-      },
-      "LastUpdatedAtStateVersion": {
-        "type": "integer",
-        "description": "TBD",
-        "format": "int64"
-      },
-      "PublicKeyType": {
-        "enum": [
-          "EcdsaSecp256k1",
-          "EddsaEd25519"
-        ],
-        "type": "string"
-      },
-      "PublicKey": {
-        "required": [
-          "key_type"
-        ],
-        "type": "object",
-        "properties": {
-          "key_type": {
-            "$ref": "#/components/schemas/PublicKeyType"
-          }
-        },
-        "discriminator": {
-          "propertyName": "key_type",
-          "mapping": {
-            "EcdsaSecp256k1": "#/components/schemas/PublicKeyEcdsaSecp256k1",
-            "EddsaEd25519": "#/components/schemas/PublicKeyEddsaEd25519"
-          }
-        }
-      },
-      "PublicKeyEcdsaSecp256k1": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PublicKey"
-          },
-          {
-            "required": [
-              "key_hex"
-            ],
-            "type": "object",
-            "properties": {
-              "key_hex": {
-                "maxLength": 66,
-                "minLength": 66,
-                "type": "string",
-                "description": "The hex-encoded compressed ECDSA Secp256k1 public key (33 bytes)"
-              }
-            }
-          }
-        ]
-      },
-      "PublicKeyEddsaEd25519": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PublicKey"
-          },
-          {
-            "required": [
-              "key_hex"
-            ],
-            "type": "object",
-            "properties": {
-              "key_hex": {
-                "maxLength": 64,
-                "minLength": 64,
-                "type": "string",
-                "description": "The hex-encoded compressed EdDSA Ed25519 public key (32 bytes)"
-              }
-            }
-          }
-        ]
-      },
-      "AtLedgerStateMixin": {
-        "type": "object",
-        "properties": {
-          "at_ledger_state": {
-            "$ref": "#/components/schemas/LedgerStateSelector"
-          }
-        }
-      },
-      "LedgerStateSelector": {
-        "type": "object",
-        "properties": {
-          "state_version": {
-            "type": "integer",
-            "description": "If provided, the latest ledger state lower than or equal to the given state version is returned.",
-            "format": "int64",
-            "nullable": true
-          },
-          "timestamp": {
-            "type": "string",
-            "description": "If provided, the latest ledger state lower than or equal to the given round timestamp is returned.",
-            "format": "date-time",
-            "nullable": true
-          },
-          "epoch": {
-            "type": "integer",
-            "description": "If provided, the ledger state lower than or equal to the given epoch at round 0 is returned.",
-            "format": "int64",
-            "nullable": true
-          },
-          "round": {
-            "type": "integer",
-            "description": "If provided must be accompanied with `epoch`, the ledger state lower than or equal to the given epoch and round is returned.",
-            "format": "int64",
-            "nullable": true
-          }
-        },
-        "description": "Optional. This allows for a request to be made against a historic state.\nIf a constraint is specified, the Gateway will resolve the request against the ledger state at that time.\nIf not specified, requests will be made with respect to the top of the committed ledger.\n",
-        "nullable": true
-      },
-      "CursorLimitMixin": {
-        "type": "object",
-        "properties": {
-          "cursor": {
-            "type": "string",
-            "description": "This cursor allows forward pagination, by providing the cursor from the previous request.",
-            "nullable": true
-          },
-          "limit_per_page": {
-            "type": "integer",
-            "description": "The page size requested.",
-            "nullable": true
-          }
-        }
-      },
-      "LedgerStateMixin": {
-        "required": [
-          "ledger_state"
-        ],
-        "type": "object",
-        "properties": {
-          "ledger_state": {
-            "$ref": "#/components/schemas/LedgerState"
-          }
-        }
-      },
-      "ResultSetCursorMixin": {
-        "type": "object",
-        "properties": {
-          "total_count": {
-            "type": "integer",
-            "description": "Total number of items in underlying collection, fragment of which is available in `items` collection.",
-            "format": "int64",
-            "nullable": true
-          },
-          "previous_cursor": {
-            "type": "string",
-            "description": "If specified, contains a cursor to query previous page of the `items` collection.",
-            "nullable": true
-          },
-          "next_cursor": {
-            "type": "string",
-            "description": "If specified, contains a cursor to query next page of the `items` collection.",
-            "nullable": true
-          }
-        }
-      },
-      "LedgerState": {
-        "required": [
-          "network",
-          "state_version",
-          "proposer_round_timestamp",
-          "epoch",
-          "round"
-        ],
-        "type": "object",
-        "properties": {
-          "network": {
-            "$ref": "#/components/schemas/NetworkName"
-          },
-          "state_version": {
-            "type": "integer",
-            "description": "The state version of the ledger. Each transaction increments the state version by 1.",
-            "format": "int64"
-          },
-          "proposer_round_timestamp": {
-            "type": "string",
-            "description": "The proposer round timestamp of the consensus round when this transaction was committed to ledger.\nThis is not guaranteed to be strictly increasing, as it is computed as an average across the validator set.\nIf this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated\ninformation, or the network has stalled.\n"
-          },
-          "epoch": {
-            "type": "integer",
-            "description": "The epoch number of the ledger at this state version.",
-            "format": "int64"
-          },
-          "round": {
-            "type": "integer",
-            "description": "The consensus round in the epoch that this state version was committed in.",
-            "format": "int64"
-          }
-        },
-        "description": "The ledger state against which the response was generated.\nCan be used to detect if the Network Gateway is returning up-to-date information.\n"
-      },
-      "ResourceAggregationLevel": {
-        "enum": [
-          "Global",
-          "Vault"
-        ],
-        "type": "string"
-      },
-      "ScryptoSborValue": {
-        "required": [
-          "raw_hex",
-          "raw_json"
-        ],
-        "type": "object",
-        "properties": {
-          "raw_hex": {
-            "type": "string"
-          },
-          "raw_json": {
-            "type": "object"
-          }
-        }
-      },
-      "EntityMetadataCollection": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/EntityMetadataItem"
-                }
-              }
-            }
-          }
-        ],
-        "description": "Entity metadata collection."
-      },
-      "EntityMetadataItem": {
-        "required": [
-          "key",
-          "value",
-          "last_updated_at_state_version"
-        ],
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "description": "Entity metadata key."
-          },
-          "value": {
-            "$ref": "#/components/schemas/EntityMetadataItemValue"
-          },
-          "last_updated_at_state_version": {
-            "$ref": "#/components/schemas/LastUpdatedAtStateVersion"
-          }
-        },
-        "description": "Entity metadata key-value pair."
-      },
-      "EntityMetadataItemValue": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ScryptoSborValue"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "as_string": {
-                "type": "string"
-              },
-              "as_string_collection": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "FungibleResourcesCollection": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/FungibleResourcesCollectionItem"
-                }
-              }
-            }
-          }
-        ],
-        "description": "Fungible resources collection."
-      },
-      "FungibleResourcesCollectionItem": {
-        "required": [
-          "aggregation_level",
-          "resource_address"
-        ],
-        "type": "object",
-        "properties": {
-          "aggregation_level": {
-            "$ref": "#/components/schemas/ResourceAggregationLevel"
-          },
-          "resource_address": {
-            "$ref": "#/components/schemas/ResourceAddress"
-          },
-          "explicit_metadata": {
-            "$ref": "#/components/schemas/EntityMetadataCollection"
-          }
-        },
-        "discriminator": {
-          "propertyName": "aggregation_level",
-          "mapping": {
-            "Global": "#/components/schemas/FungibleResourcesCollectionItemGloballyAggregated",
-            "Vault": "#/components/schemas/FungibleResourcesCollectionItemVaultAggregated"
-          }
-        }
-      },
-      "FungibleResourcesCollectionItemGloballyAggregated": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/FungibleResourcesCollectionItem"
-          },
-          {
-            "required": [
-              "amount",
-              "last_updated_at_state_version"
-            ],
-            "type": "object",
-            "properties": {
-              "amount": {
-                "$ref": "#/components/schemas/BigDecimal"
-              },
-              "last_updated_at_state_version": {
-                "$ref": "#/components/schemas/LastUpdatedAtStateVersion"
-              }
-            }
-          }
-        ]
-      },
-      "FungibleResourcesCollectionItemVaultAggregated": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/FungibleResourcesCollectionItem"
-          },
-          {
-            "required": [
-              "vaults"
-            ],
-            "type": "object",
-            "properties": {
-              "vaults": {
-                "$ref": "#/components/schemas/FungibleResourcesCollectionItemVaultAggregatedVault"
-              }
-            }
-          }
-        ]
-      },
-      "FungibleResourcesCollectionItemVaultAggregatedVault": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/FungibleResourcesCollectionItemVaultAggregatedVaultItem"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "FungibleResourcesCollectionItemVaultAggregatedVaultItem": {
-        "required": [
-          "vault_address",
-          "amount",
-          "last_updated_at_state_version"
-        ],
-        "type": "object",
-        "properties": {
-          "vault_address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          },
-          "amount": {
-            "$ref": "#/components/schemas/BigDecimal"
-          },
-          "last_updated_at_state_version": {
-            "$ref": "#/components/schemas/LastUpdatedAtStateVersion"
-          }
-        }
-      },
-      "NonFungibleResourcesCollection": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/NonFungibleResourcesCollectionItem"
-                }
-              }
-            }
-          }
-        ],
-        "description": "Non-fungible resources collection."
-      },
-      "NonFungibleResourcesCollectionItem": {
-        "required": [
-          "aggregation_level",
-          "resource_address"
-        ],
-        "type": "object",
-        "properties": {
-          "aggregation_level": {
-            "$ref": "#/components/schemas/ResourceAggregationLevel"
-          },
-          "resource_address": {
-            "$ref": "#/components/schemas/ResourceAddress"
-          },
-          "explicit_metadata": {
-            "$ref": "#/components/schemas/EntityMetadataCollection"
-          }
-        },
-        "discriminator": {
-          "propertyName": "aggregation_level",
-          "mapping": {
-            "Global": "#/components/schemas/NonFungibleResourcesCollectionItemGloballyAggregated",
-            "Vault": "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregated"
-          }
-        }
-      },
-      "NonFungibleResourcesCollectionItemGloballyAggregated": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/NonFungibleResourcesCollectionItem"
-          },
-          {
-            "required": [
-              "amount",
-              "last_updated_at_state_version"
-            ],
-            "type": "object",
-            "properties": {
-              "amount": {
-                "type": "integer",
-                "description": "TBA",
-                "format": "int64"
-              },
-              "last_updated_at_state_version": {
-                "$ref": "#/components/schemas/LastUpdatedAtStateVersion"
-              }
-            }
-          }
-        ]
-      },
-      "NonFungibleResourcesCollectionItemVaultAggregated": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/NonFungibleResourcesCollectionItem"
-          },
-          {
-            "required": [
-              "vaults"
-            ],
-            "type": "object",
-            "properties": {
-              "vaults": {
-                "$ref": "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregatedVault"
-              }
-            }
-          }
-        ]
-      },
-      "NonFungibleResourcesCollectionItemVaultAggregatedVault": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregatedVaultItem"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "NonFungibleResourcesCollectionItemVaultAggregatedVaultItem": {
-        "required": [
-          "vault_address",
-          "total_count",
-          "last_updated_at_state_version"
-        ],
-        "type": "object",
-        "properties": {
-          "vault_address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          },
-          "total_count": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "last_updated_at_state_version": {
-            "$ref": "#/components/schemas/LastUpdatedAtStateVersion"
-          }
-        }
-      },
-      "NonFungibleIdsCollection": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/NonFungibleIdsCollectionItem"
-                }
-              }
-            }
-          }
-        ],
-        "description": "Non-fungible resource IDs collection."
-      },
-      "NonFungibleIdsCollectionItem": {
-        "required": [
-          "non_fungible_id"
-        ],
-        "type": "object",
-        "properties": {
-          "non_fungible_id": {
-            "$ref": "#/components/schemas/NonFungibleId"
-          }
-        }
-      },
-      "CommittedTransactionInfo": {
-        "required": [
-          "state_version",
-          "transaction_status"
-        ],
-        "type": "object",
-        "properties": {
-          "state_version": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "transaction_status": {
-            "$ref": "#/components/schemas/TransactionStatus"
-          },
-          "payload_hash_hex": {
-            "$ref": "#/components/schemas/HashHexString"
-          },
-          "intent_hash_hex": {
-            "$ref": "#/components/schemas/HashHexString"
-          },
-          "fee_paid": {
-            "$ref": "#/components/schemas/TokenAmount"
-          },
-          "confirmed_at": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "error_message": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "TransactionStatus": {
-        "enum": [
-          "Unknown",
-          "CommittedSuccess",
-          "CommittedFailure",
-          "Pending",
-          "Rejected"
-        ],
-        "type": "string"
-      },
-      "TransactionReceipt": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "object",
-            "description": "The status of the transaction."
-          },
-          "fee_summary": {
-            "type": "object",
-            "description": "Fees paid, Only present if the `status` is not `Rejected`."
-          },
-          "state_updates": {
-            "type": "object",
-            "description": "Transaction state updates (only present if status is Succeeded or Failed)."
-          },
-          "next_epoch": {
-            "type": "object",
-            "description": "Information (number and active validator list) about new epoch if occured."
-          },
-          "items": {
-            "type": "object",
-            "description": "The manifest line-by-line engine return data (only present if `status` is `Succeeded`)."
-          },
-          "events": {
-            "type": "object",
-            "description": "Events emitted by a transaction."
-          },
-          "error_message": {
-            "type": "string",
-            "description": "Error message (only present if status is `Failed` or `Rejected`)",
-            "nullable": true
-          }
-        }
-      },
-      "TokenAmount": {
-        "required": [
-          "value",
-          "token_identifier"
-        ],
-        "type": "object",
-        "properties": {
-          "value": {
-            "$ref": "#/components/schemas/BigDecimal"
-          },
-          "address": {
-            "$ref": "#/components/schemas/ResourceAddress"
-          }
-        },
-        "description": "Represents a decimal amount of a given resource."
-      },
-      "NonFungibleIdType": {
-        "enum": [
-          "String",
-          "Integer",
-          "Bytes",
-          "Uuid"
-        ],
-        "type": "string"
-      },
-      "ValidatorCollection": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ResultSetCursorMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ValidatorCollectionItem"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "ValidatorCollectionItem": {
-        "required": [
-          "address",
-          "metadata",
-          "current_stake"
-        ],
-        "type": "object",
-        "properties": {
-          "address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          },
-          "state": {
-            "type": "object",
-            "nullable": true
-          },
-          "current_stake": {
-            "$ref": "#/components/schemas/BigDecimal"
-          },
-          "active_in_epoch": {
-            "$ref": "#/components/schemas/ValidatorCollectionItemActiveInEpoch"
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/EntityMetadataCollection"
-          }
-        }
-      },
-      "ValidatorCollectionItemActiveInEpoch": {
-        "required": [
-          "stake",
-          "stake_percentage",
-          "key"
-        ],
-        "type": "object",
-        "properties": {
-          "stake": {
-            "$ref": "#/components/schemas/BigDecimal"
-          },
-          "stake_percentage": {
-            "type": "number",
-            "format": "double"
-          },
-          "key": {
-            "$ref": "#/components/schemas/PublicKey"
-          }
-        }
-      },
-      "NetworkConfigurationResponse": {
-        "required": [
-          "network_id",
-          "network_name",
-          "well_known_addresses"
-        ],
-        "type": "object",
-        "properties": {
-          "network_id": {
-            "$ref": "#/components/schemas/NetworkId"
-          },
-          "network_name": {
-            "$ref": "#/components/schemas/NetworkName"
-          },
-          "well_known_addresses": {
-            "required": [
-              "faucet",
-              "epoch_manager",
-              "clock",
-              "ecdsa_secp256k1",
-              "eddsa_ed25519",
-              "xrd"
-            ],
-            "type": "object",
-            "properties": {
-              "faucet": {
-                "$ref": "#/components/schemas/ComponentAddress"
-              },
-              "epoch_manager": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "clock": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "ecdsa_secp256k1": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              },
-              "eddsa_ed25519": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              },
-              "xrd": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        }
-      },
-      "GatewayStatusResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "release_info"
-            ],
-            "type": "object",
-            "properties": {
-              "release_info": {
-                "$ref": "#/components/schemas/GatewayInfoResponseReleaseInfo"
-              }
-            }
-          }
-        ]
-      },
-      "GatewayInfoResponseKnownTarget": {
-        "required": [
-          "state_version"
-        ],
-        "type": "object",
-        "properties": {
-          "state_version": {
-            "type": "integer",
-            "description": "The latest-seen state version of the tip of the network's ledger. If this is significantly ahead of the current ledger state version, the Network Gateway is possibly behind and may be reporting outdated information.\n",
-            "format": "int64"
-          }
-        }
-      },
-      "GatewayInfoResponseReleaseInfo": {
-        "required": [
-          "release_version",
-          "image_tag",
-          "open_api_schema_version"
-        ],
-        "type": "object",
-        "properties": {
-          "release_version": {
-            "type": "string",
-            "description": "The release that is currently deployed to the Gateway API."
-          },
-          "open_api_schema_version": {
-            "type": "string",
-            "description": "The Open API Schema version that was used to generate the API models."
-          },
-          "image_tag": {
-            "type": "string",
-            "description": "Image tag that is currently deployed to the Gateway API."
-          }
-        }
-      },
-      "TransactionConstructionResponse": {
-        "allOf": [
-          {
-            "type": "object"
-          },
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          }
-        ]
-      },
-      "TransactionPreviewRequest": {
-        "required": [
-          "manifest",
-          "start_epoch_inclusive",
-          "end_epoch_exclusive",
-          "cost_unit_limit",
-          "tip_percentage",
-          "nonce",
-          "signer_public_keys",
-          "flags"
-        ],
-        "type": "object",
-        "properties": {
-          "manifest": {
-            "type": "string",
-            "description": "A text-representation of a transaction manifest"
-          },
-          "blobs_hex": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "An array of hex-encoded blob data (optional)"
-          },
-          "start_epoch_inclusive": {
-            "maximum": 10000000000,
-            "minimum": 0,
-            "type": "integer",
-            "description": "An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid",
-            "format": "int64"
-          },
-          "end_epoch_exclusive": {
-            "maximum": 10000000000,
-            "minimum": 0,
-            "type": "integer",
-            "description": "An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid",
-            "format": "int64"
-          },
-          "notary_public_key": {
-            "$ref": "#/components/schemas/PublicKey"
-          },
-          "notary_as_signatory": {
-            "type": "boolean",
-            "description": "Whether the notary should count as a signatory (optional, default false)"
-          },
-          "cost_unit_limit": {
-            "maximum": 4294967295,
-            "minimum": 0,
-            "type": "integer",
-            "description": "An integer between `0` and `2^32 - 1`, giving the maximum number of cost units available for transaction execution",
-            "format": "int64"
-          },
-          "tip_percentage": {
-            "maximum": 255,
-            "minimum": 0,
-            "type": "integer",
-            "description": "An integer between `0` and `255`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee.",
-            "format": "int32"
-          },
-          "nonce": {
-            "type": "string",
-            "description": "A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique."
-          },
-          "signer_public_keys": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PublicKey"
-            },
-            "description": "A list of public keys to be used as transaction signers"
-          },
-          "flags": {
-            "required": [
-              "unlimited_loan",
-              "assume_all_signature_proofs",
-              "permit_duplicate_intent_hash",
-              "permit_invalid_header_epoch"
-            ],
-            "type": "object",
-            "properties": {
-              "unlimited_loan": {
-                "type": "boolean"
-              },
-              "assume_all_signature_proofs": {
-                "type": "boolean"
-              },
-              "permit_duplicate_intent_hash": {
-                "type": "boolean"
-              },
-              "permit_invalid_header_epoch": {
-                "type": "boolean"
-              }
-            }
-          }
-        }
-      },
-      "TransactionPreviewResponse": {
-        "required": [
-          "encoded_receipt",
-          "receipt",
-          "resource_changes",
-          "logs"
-        ],
-        "type": "object",
-        "properties": {
-          "encoded_receipt": {
-            "$ref": "#/components/schemas/HexString"
-          },
-          "receipt": {
-            "type": "object"
-          },
-          "resource_changes": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "logs": {
-            "type": "array",
-            "items": {
-              "required": [
-                "level",
-                "message"
-              ],
-              "type": "object",
-              "properties": {
-                "level": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      },
-      "TransactionSubmitRequest": {
-        "required": [
-          "notarized_transaction_hex"
-        ],
-        "type": "object",
-        "properties": {
-          "notarized_transaction_hex": {
-            "$ref": "#/components/schemas/NotarizedTransactionHexString"
-          }
-        }
-      },
-      "TransactionSubmitResponse": {
-        "required": [
-          "duplicate"
-        ],
-        "type": "object",
-        "properties": {
-          "duplicate": {
-            "type": "boolean",
-            "description": "Is true if the transaction is a duplicate of an existing pending transaction."
-          }
-        }
-      },
-      "TransactionStatusRequest": {
-        "allOf": [
-          {
-            "required": [
-              "intent_hash_hex"
-            ],
-            "type": "object",
-            "properties": {
-              "intent_hash_hex": {
-                "$ref": "#/components/schemas/HashHexString"
-              }
-            }
-          }
-        ],
-        "example": {
-          "intent_hash_hex": "<transaction-intent-hash>"
-        }
-      },
-      "TransactionStatusResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "status",
-              "known_payloads"
-            ],
-            "type": "object",
-            "properties": {
-              "status": {
-                "$ref": "#/components/schemas/TransactionStatus"
-              },
-              "known_payloads": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/TransactionStatusResponseKnownPayloadItem"
-                }
-              },
-              "error_message": {
-                "type": "string",
-                "nullable": true
-              }
-            }
-          }
-        ]
-      },
-      "TransactionStatusResponseKnownPayloadItem": {
-        "required": [
-          "payload_hash_hex",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "payload_hash_hex": {
-            "$ref": "#/components/schemas/HashHexString"
-          },
-          "status": {
-            "$ref": "#/components/schemas/TransactionStatus"
-          },
-          "error_message": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "TransactionCommittedDetailsRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "required": [
-              "intent_hash_hex"
-            ],
-            "type": "object",
-            "properties": {
-              "intent_hash_hex": {
-                "$ref": "#/components/schemas/HashHexString"
-              },
-              "opt_ins": {
-                "$ref": "#/components/schemas/TransactionCommittedDetailsOptIns"
-              }
-            }
-          }
-        ],
-        "example": {
-          "intent_hash_hex": "<transaction-intent-hash>"
-        }
-      },
-      "TransactionCommittedDetailsOptIns": {
-        "type": "object",
-        "properties": {
-          "raw_hex": {
-            "type": "boolean"
-          },
-          "receipt_state_changes": {
-            "type": "boolean"
-          },
-          "receipt_fee_summary": {
-            "type": "boolean"
-          },
-          "receipt_events": {
-            "type": "boolean"
-          }
-        }
-      },
-      "TransactionCommittedDetailsResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "transaction",
-              "details"
-            ],
-            "type": "object",
-            "properties": {
-              "transaction": {
-                "$ref": "#/components/schemas/CommittedTransactionInfo"
-              },
-              "details": {
-                "$ref": "#/components/schemas/TransactionCommittedDetailsResponseDetails"
-              }
-            }
-          }
-        ]
-      },
-      "TransactionCommittedDetailsResponseDetails": {
-        "required": [
-          "receipt",
-          "referenced_global_entities"
-        ],
-        "type": "object",
-        "properties": {
-          "raw_hex": {
-            "$ref": "#/components/schemas/HexString"
-          },
-          "receipt": {
-            "$ref": "#/components/schemas/TransactionReceipt"
-          },
-          "referenced_global_entities": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "message_hex": {
-            "$ref": "#/components/schemas/HexString"
-          }
-        }
-      },
-      "StreamTransactionsRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "from_ledger_state": {
-                "$ref": "#/components/schemas/LedgerStateSelector"
-              },
-              "kind_filter": {
-                "enum": [
-                  "User",
-                  "EpochChange",
-                  "All"
-                ],
-                "type": "string",
-                "description": "Limit returned transactions by their kind. Defaults to `user`."
-              },
-              "order": {
-                "enum": [
-                  "Asc",
-                  "Desc"
-                ],
-                "type": "string",
-                "description": "Configures the order of returned result set. Defaults to `desc`."
-              }
-            }
-          }
-        ],
-        "example": {
-          "limit_per_page": 5
-        }
-      },
-      "StreamTransactionsResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ResultSetCursorMixin"
-              },
-              {
-                "required": [
-                  "items"
-                ],
-                "type": "object",
-                "properties": {
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/CommittedTransactionInfo"
-                    },
-                    "description": "The page of user transactions."
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "StateEntityDetailsRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "required": [
-              "addresses"
-            ],
-            "type": "object",
-            "properties": {
-              "opt_ins": {
-                "$ref": "#/components/schemas/StateEntityDetailsOptIns"
-              },
-              "addresses": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/EntityAddress"
-                }
-              },
-              "aggregation_level": {
-                "$ref": "#/components/schemas/ResourceAggregationLevel"
-              }
-            }
-          }
-        ],
-        "example": {
-          "addresses": [
-            "resource_tdx_21_1qyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq4jz0v"
-          ]
-        }
-      },
-      "StateEntityDetailsOptIns": {
-        "type": "object",
-        "properties": {
-          "ancestor_identities": {
-            "type": "boolean"
-          },
-          "component_royalty_vault_balance": {
-            "type": "boolean"
-          },
-          "package_royalty_vault_balance": {
-            "type": "boolean"
-          },
-          "explicit_metadata": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "StateEntityDetailsResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "items"
-            ],
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/StateEntityDetailsResponseItem"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityDetailsResponseItem": {
-        "required": [
-          "address",
-          "metadata"
-        ],
-        "type": "object",
-        "properties": {
-          "address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          },
-          "fungible_resources": {
-            "$ref": "#/components/schemas/FungibleResourcesCollection"
-          },
-          "non_fungible_resources": {
-            "$ref": "#/components/schemas/NonFungibleResourcesCollection"
-          },
-          "ancestor_identities": {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemAncestorIdentities"
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/EntityMetadataCollection"
-          },
-          "explicit_metadata": {
-            "$ref": "#/components/schemas/EntityMetadataCollection"
-          },
-          "details": {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          }
-        }
-      },
-      "StateEntityDetailsResponseItemAncestorIdentities": {
-        "type": "object",
-        "properties": {
-          "parent_address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          },
-          "owner_address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          },
-          "global_address": {
-            "$ref": "#/components/schemas/EntityAddress"
-          }
-        }
-      },
-      "StateEntityDetailsResponseItemDetailsType": {
-        "enum": [
-          "FungibleResource",
-          "NonFungibleResource",
-          "FungibleVault",
-          "NonFungibleVault",
-          "Package",
-          "Component"
-        ],
-        "type": "string"
-      },
-      "StateEntityDetailsResponseItemDetails": {
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetailsType"
-          }
-        },
-        "discriminator": {
-          "propertyName": "type",
-          "mapping": {
-            "FungibleResource": "#/components/schemas/StateEntityDetailsResponseFungibleResourceDetails",
-            "NonFungibleResource": "#/components/schemas/StateEntityDetailsResponseNonFungibleResourceDetails",
-            "FungibleVault": "#/components/schemas/StateEntityDetailsResponseFungibleVaultDetails",
-            "NonFungibleVault": "#/components/schemas/StateEntityDetailsResponseNonFungibleVaultDetails",
-            "Package": "#/components/schemas/StateEntityDetailsResponsePackageDetails",
-            "Component": "#/components/schemas/StateEntityDetailsResponseComponentDetails"
-          }
-        }
-      },
-      "StateEntityDetailsResponseFungibleResourceDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          },
-          {
-            "required": [
-              "access_rules_chain",
-              "vault_access_rules_chain",
-              "divisibility"
-            ],
-            "type": "object",
-            "properties": {
-              "access_rules_chain": {
-                "type": "object"
-              },
-              "vault_access_rules_chain": {
-                "type": "object"
-              },
-              "divisibility": {
-                "minimum": 0,
-                "type": "integer"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityDetailsResponseNonFungibleResourceDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          },
-          {
-            "required": [
-              "access_rules_chain",
-              "vault_access_rules_chain",
-              "non_fungible_id_type"
-            ],
-            "type": "object",
-            "properties": {
-              "access_rules_chain": {
-                "type": "object"
-              },
-              "vault_access_rules_chain": {
-                "type": "object"
-              },
-              "non_fungible_id_type": {
-                "$ref": "#/components/schemas/NonFungibleIdType"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityDetailsResponseFungibleVaultDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          },
-          {
-            "type": "object"
-          }
-        ]
-      },
-      "StateEntityDetailsResponseNonFungibleVaultDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          },
-          {
-            "type": "object"
-          }
-        ]
-      },
-      "StateEntityDetailsResponsePackageDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "code_hex": {
-                "$ref": "#/components/schemas/HexString"
-              },
-              "royalty_vault_balance": {
-                "$ref": "#/components/schemas/BigDecimal"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityDetailsResponseComponentDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/StateEntityDetailsResponseItemDetails"
-          },
-          {
-            "required": [
-              "blueprint_name",
-              "access_rules_chain"
-            ],
-            "type": "object",
-            "properties": {
-              "package_address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "blueprint_name": {
-                "type": "string"
-              },
-              "state": {
-                "type": "object"
-              },
-              "access_rules_chain": {
-                "type": "object"
-              },
-              "royalty_vault_balance": {
-                "$ref": "#/components/schemas/BigDecimal"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityMetadataPageRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              }
-            }
-          }
-        ],
-        "example": {
-          "address": "resource_tdx_21_1qyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq4jz0v"
-        }
-      },
-      "StateEntityMetadataPageResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/EntityMetadataCollection"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityFungiblesPageRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "aggregation_level": {
-                "$ref": "#/components/schemas/ResourceAggregationLevel"
-              },
-              "opt_ins": {
-                "$ref": "#/components/schemas/StateEntityFungiblesPageRequestOptIns"
-              }
-            }
-          }
-        ],
-        "example": {
-          "address": "component_tdx_21_1q0kryz5scup945usk39qjc2yjh6l5zsyuh8t7v5pk0ts0dmslu"
-        }
-      },
-      "StateEntityFungiblesPageRequestOptIns": {
-        "type": "object",
-        "properties": {
-          "explicit_metadata": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "StateEntityFungiblesPageResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/FungibleResourcesCollection"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityFungibleResourceVaultsPageRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "address",
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ],
-        "example": {
-          "address": "component_tdx_21_1q0kryz5scup945usk39qjc2yjh6l5zsyuh8t7v5pk0ts0dmslu",
-          "resource_address": "<resource_address>"
-        }
-      },
-      "StateEntityFungibleResourceVaultsPageResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/FungibleResourcesCollectionItemVaultAggregatedVault"
-          },
-          {
-            "required": [
-              "address",
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityNonFungiblesPageRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "aggregation_level": {
-                "$ref": "#/components/schemas/ResourceAggregationLevel"
-              },
-              "opt_ins": {
-                "$ref": "#/components/schemas/StateEntityNonFungiblesPageRequestOptIns"
-              }
-            }
-          }
-        ],
-        "example": {
-          "address": "component_tdx_21_1q0kryz5scup945usk39qjc2yjh6l5zsyuh8t7v5pk0ts0dmslu"
-        }
-      },
-      "StateEntityNonFungiblesPageRequestOptIns": {
-        "type": "object",
-        "properties": {
-          "explicit_metadata": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "StateEntityNonFungiblesPageResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/NonFungibleResourcesCollection"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityNonFungibleResourceVaultsPageRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "address",
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ],
-        "example": {
-          "address": "component_tdx_21_1q0kryz5scup945usk39qjc2yjh6l5zsyuh8t7v5pk0ts0dmslu",
-          "resource_address": "<resource_address>"
-        }
-      },
-      "StateEntityNonFungibleResourceVaultsPageResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregatedVault"
-          },
-          {
-            "required": [
-              "address",
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ]
-      },
-      "StateEntityNonFungibleIdsPageRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "address",
-              "vault_address",
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "vault_address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ],
-        "example": {
-          "address": "component_tdx_21_1q0kryz5scup945usk39qjc2yjh6l5zsyuh8t7v5pk0ts0dmslu",
-          "resource_address": null,
-          "vault_address": null
-        }
-      },
-      "StateEntityNonFungibleIdsPageResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/NonFungibleIdsCollection"
-          },
-          {
-            "required": [
-              "address",
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              },
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ]
-      },
-      "StateNonFungibleIdsRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "resource_address"
-            ],
-            "type": "object",
-            "properties": {
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              }
-            }
-          }
-        ],
-        "example": {
-          "resource_address": "<non-fungible-entity-address>"
-        }
-      },
-      "StateNonFungibleIdsResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "resource_address",
-              "non_fungible_ids"
-            ],
-            "type": "object",
-            "properties": {
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              },
-              "non_fungible_ids": {
-                "$ref": "#/components/schemas/NonFungibleIdsCollection"
-              }
-            }
-          }
-        ]
-      },
-      "StateNonFungibleDataRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "$ref": "#/components/schemas/CursorLimitMixin"
-          },
-          {
-            "required": [
-              "resource_address",
-              "non_fungible_ids"
-            ],
-            "type": "object",
-            "properties": {
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              },
-              "non_fungible_ids": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/NonFungibleId"
-                }
-              }
-            }
-          }
-        ],
-        "example": {
-          "resource_address": "<non-fungible-entity-address>",
-          "non_fungible_ids": [
-            "#1#"
-          ]
-        }
-      },
-      "StateNonFungibleDataResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "resource_address",
-              "non_fungible_id_type",
-              "non_fungible_ids"
-            ],
-            "type": "object",
-            "properties": {
-              "resource_address": {
-                "$ref": "#/components/schemas/ResourceAddress"
-              },
-              "non_fungible_id_type": {
-                "$ref": "#/components/schemas/NonFungibleIdType"
-              },
-              "non_fungible_ids": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/StateNonFungibleDetailsResponseItem"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "StateNonFungibleDetailsResponseItem": {
-        "required": [
-          "non_fungible_id",
-          "data",
-          "last_updated_at_state_version"
-        ],
-        "type": "object",
-        "properties": {
-          "non_fungible_id": {
-            "$ref": "#/components/schemas/NonFungibleId"
-          },
-          "data": {
-            "$ref": "#/components/schemas/ScryptoSborValue"
-          },
-          "last_updated_at_state_version": {
-            "$ref": "#/components/schemas/LastUpdatedAtStateVersion"
-          }
-        }
-      },
-      "StateValidatorsListRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AtLedgerStateMixin"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "cursor": {
-                "type": "string",
-                "description": "This cursor allows forward pagination, by providing the cursor from the previous request.",
-                "nullable": true
-              }
-            }
-          }
-        ],
-        "example": {
-          "at_ledger_state": null
-        }
-      },
-      "StateValidatorsListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/LedgerStateMixin"
-          },
-          {
-            "required": [
-              "validators"
-            ],
-            "type": "object",
-            "properties": {
-              "validators": {
-                "$ref": "#/components/schemas/ValidatorCollection"
-              }
-            }
-          }
-        ]
-      },
-      "ErrorResponse": {
-        "required": [
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "A human-readable error message."
-          },
-          "code": {
-            "type": "integer",
-            "description": "A numeric code corresponding to the given error type."
-          },
-          "details": {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          "trace_id": {
-            "type": "string",
-            "description": "A unique request identifier to be used when reporting errors, to allow correlation with the Gateway API's error logs."
-          }
-        }
-      },
-      "GatewayError": {
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "The type of error. Each subtype may have its own additional structured fields."
-          }
-        },
-        "discriminator": {
-          "propertyName": "type",
-          "mapping": {
-            "EntityNotFoundError": "#/components/schemas/EntityNotFoundError",
-            "InvalidEntityError": "#/components/schemas/InvalidEntityError",
-            "NotSyncedUpError": "#/components/schemas/NotSyncedUpError",
-            "InvalidRequestError": "#/components/schemas/InvalidRequestError",
-            "InvalidTransactionError": "#/components/schemas/InvalidTransactionError",
-            "TransactionNotFoundError": "#/components/schemas/TransactionNotFoundError",
-            "InternalServerError": "#/components/schemas/InternalServerError"
-          }
-        }
-      },
-      "EntityNotFoundError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              }
-            }
-          }
-        ]
-      },
-      "InvalidEntityError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "required": [
-              "address"
-            ],
-            "type": "object",
-            "properties": {
-              "address": {
-                "$ref": "#/components/schemas/EntityAddress"
-              }
-            }
-          }
-        ]
-      },
-      "NotSyncedUpError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "required": [
-              "request_type",
-              "current_sync_delay_seconds",
-              "max_allowed_sync_delay_seconds"
-            ],
-            "type": "object",
-            "properties": {
-              "request_type": {
-                "type": "string",
-                "description": "The request type that triggered this exception."
-              },
-              "current_sync_delay_seconds": {
-                "type": "integer",
-                "description": "The current delay between the Gateway DB and the network ledger round timestamp.",
-                "format": "int64"
-              },
-              "max_allowed_sync_delay_seconds": {
-                "type": "integer",
-                "description": "The maximum allowed delay between the Gateway DB and the network ledger round timestamp for this `request_type`.",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "InvalidRequestError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "required": [
-              "validation_errors"
-            ],
-            "type": "object",
-            "properties": {
-              "validation_errors": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ValidationErrorsAtPath"
-                },
-                "description": "One or more validation errors which occurred when validating the request."
-              }
-            }
-          }
-        ]
-      },
-      "InvalidTransactionError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "type": "object"
-          }
-        ]
-      },
-      "TransactionNotFoundError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "required": [
-              "intent_hash_hex"
-            ],
-            "type": "object",
-            "properties": {
-              "intent_hash_hex": {
-                "$ref": "#/components/schemas/HashHexString"
-              }
-            }
-          }
-        ]
-      },
-      "InternalServerError": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GatewayError"
-          },
-          {
-            "required": [
-              "exception",
-              "cause"
-            ],
-            "type": "object",
-            "properties": {
-              "exception": {
-                "type": "string",
-                "description": "Gives an error type which occurred within the Gateway API when serving the request."
-              },
-              "cause": {
-                "type": "string",
-                "description": "Gives a human readable message - likely just a trace ID for reporting the error."
-              }
-            }
-          }
-        ]
-      },
-      "ValidationErrorsAtPath": {
-        "required": [
-          "path",
-          "errors"
-        ],
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string"
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "responses": {
-      "ErrorResponse": {
-        "description": "Client-originated request error",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            }
-          }
-        }
-      }
-    }
-  },
-  "tags": [
-    {
-      "name": "SubAPIs",
-      "description": "The Gateway API is split into 4 sub APIs:\n- **Status** (`/status/*`) - For status and configuration details for the Gateway / Network.\n- **Transaction** (`/transaction/*`) - For transaction construction, preview, submission, and monitoring the status of an individual transaction.\n- **Stream** (`/transaction/*`) - For reading committed transactions.\n- **State** (`/state/*`, `/entity/*` and `/non-fungible/*`) - For reading the current or past ledger state of the network.\n",
-      "x-displayName": "Sub-APIs",
-      "x-traitTag": true
-    },
-    {
-      "name": "Architecture",
-      "description": "\n## Request-Response Format\n\nThe API is designed in a JSON-RPC-like style, using HTTP as a transport layer, which means that:\n- Requests always use HTTP POST method.\n- There is no HTTP cache involved.\n- Client-originated errors result in HTTP 4xx error responses.\n- Server-originated errors result in HTTP 5xx error responses:\n    - The error object contains an HTTP-like `code`\n    - The error object also contains a structured/typed properties, with a `type` discriminator, allowing for structured error interpretation in client software.\n\n## Pagination Model\n\nCollections can grow in size therefore every dynamic-length collection is a subject to pagination where a generic data struct is used to represent a chunk (page) of\nunderlying data. Gateway API uses cursor-based pagination model where the sole existence of the cursor indicates that next chunk (page) of the underlying collection is\navailable.\n\n```\ncollection {\n  int64? total_count,\n  string? next_cursor,\n  string? previous_cursor,\n  T[] items\n}\n```\n\n- `total_count` *(optional)* if present specifies the overall size of the underlying collection,\n- `next_cursor` *(optional)* if present indicates that the next chunk (page) exists and can be fetched using collection-specific endpoint and cursor value,\n- `previous_cursor` *(optional)* if present indicates that the previous chunk (page) exists and can be fetched using collection-specific endpoint and cursor value,\n- `items` a chunk (page) of unerlying collection items.\n",
-      "x-traitTag": true
-    },
-    {
-      "name": "Concepts",
-      "description": "Interacting with this API effectively may require knowledge about the Radix Babylon Transaction Model and the State Model.\n\nWe share some very high-level details below, but please see the [official documentation](http://docs.radixdlt.com) for more details on this.\n\n## Transactions and the Gateway\n\nUser transactions are formed of a core \"intent\", which is then signed by 0+ signatories, before being notarized. The output is called a notarized payload.\nIt is this notarized transaction payload which is submitted to the network.\n\nFor most users, this construction process will generally happen in their Radix Wallet. If you wish to construct transactions programmatically or offline,\nyou will need to integrate the Radix Engine Toolkit into your application for construction and finalization.\n\nOnce submitted, a transaction payload can end up being either rejected or committed. Transactions get rejected if they fail to pass certain criteria at the given time.\nA transaction payload can be marked as a:\n- **Permanent Rejection** if it is never possible for it to be committed (eg it's statically invalid, or only valid up until epoch 100 and it's now epoch 101)\n- **Temporary Rejection** if it still may be possible that the transaction payload could be committed\n\nA given intent typically is only part of one submitted notarized payload, but it's possible for a notary to notarize and submit multiple payloads for the same intent.\nThe Radix Engine ensures that any intent can only be committed once.\n\nA committed transaction is either committed with an outcome of \"Success\" or \"Failure\":\n- **Committed Failure** will result in fees being paid up until the failure point, but all other changes will be discarded.\n- **Committed Success** will result in all changes being committed.\n\nOnly committed transactions appear on ledger.\n\nThe gateway will attempt to submit your transaction to nodes on the network.\nIf it gets temporarily rejected, the error message will be recorded against the transaction, but the Gateway will\nretry submission for a limited time. During this time, the status will be reported as pending.\n\n## State Model\n\nThe Radix Engine consists of \"global entities\".\nA global entity has a Bech32m Address, with a human-readable-prefix (and prefix byte) matching the entity type.\n\nAs an example, entities include concepts like Components, Packages, Vaults, Resource Managers and Key-Value Stores.\n\nEach entity owns substates which store data, and these substates can own other entities.\nFor example, an Account Component has a struct substate which owns a Key-Value Store. This Key-Value store has an\nentry for each resoure the Account owns, and each Key-Value Store Entry owns a corresponding Vault.\n\nFor each global entity, the Gateway aggregates its owned resources by looking at the contents of Vaults in the\nsubtree of entities under that global entity.\n",
-      "x-displayName": "Concepts",
-      "x-traitTag": true
-    },
-    {
-      "name": "Status",
-      "description": "Query information about the Gateway API status.",
-      "x-displayName": "Status Endpoints"
-    },
-    {
-      "name": "Transaction",
-      "description": "Query status of, construct, preview and submit transactions.",
-      "x-displayName": "Transaction Endpoints"
-    },
-    {
-      "name": "Stream",
-      "description": "Browse through the history of transactions.",
-      "x-displayName": "Stream Endpoints"
-    },
-    {
-      "name": "State",
-      "description": "Query information snapshot about state of ledger entities at present or past time.",
-      "x-displayName": "State Endpoints"
-    }
-  ],
-  "x-tagGroups": [
-    {
-      "name": "Overview",
-      "tags": [
-        "SubAPIs",
-        "Concepts",
-        "Architecture"
-      ]
-    },
-    {
-      "name": "Endpoints",
-      "tags": [
-        "Status",
-        "Transaction",
-        "Stream",
-        "State"
-      ]
-    }
-  ]
-}
+      ```
+
+      - `total_count` *(optional)* if present specifies the overall size of the underlying collection,
+      - `next_cursor` *(optional)* if present indicates that the next chunk (page) exists and can be fetched using collection-specific endpoint and cursor value,
+      - `previous_cursor` *(optional)* if present indicates that the previous chunk (page) exists and can be fetched using collection-specific endpoint and cursor value,
+      - `items` a chunk (page) of unerlying collection items.
+  - name: Concepts
+    x-displayName: Concepts
+    x-traitTag: true # Don't display endpoints under this tag
+    description: |
+      Interacting with this API effectively may require knowledge about the Radix Babylon Transaction Model and the State Model.
+
+      We share some very high-level details below, but please see the [official documentation](http://docs.radixdlt.com) for more details on this.
+
+      ## Transactions and the Gateway
+
+      User transactions are formed of a core "intent", which is then signed by 0+ signatories, before being notarized. The output is called a notarized payload.
+      It is this notarized transaction payload which is submitted to the network.
+
+      For most users, this construction process will generally happen in their Radix Wallet. If you wish to construct transactions programmatically or offline,
+      you will need to integrate the Radix Engine Toolkit into your application for construction and finalization.
+
+      Once submitted, a transaction payload can end up being either rejected or committed. Transactions get rejected if they fail to pass certain criteria at the given time.
+      A transaction payload can be marked as a:
+      - **Permanent Rejection** if it is never possible for it to be committed (eg it's statically invalid, or only valid up until epoch 100 and it's now epoch 101)
+      - **Temporary Rejection** if it still may be possible that the transaction payload could be committed
+
+      A given intent typically is only part of one submitted notarized payload, but it's possible for a notary to notarize and submit multiple payloads for the same intent.
+      The Radix Engine ensures that any intent can only be committed once.
+
+      A committed transaction is either committed with an outcome of "Success" or "Failure":
+      - **Committed Failure** will result in fees being paid up until the failure point, but all other changes will be discarded.
+      - **Committed Success** will result in all changes being committed.
+
+      Only committed transactions appear on ledger.
+
+      The gateway will attempt to submit your transaction to nodes on the network.
+      If it gets temporarily rejected, the error message will be recorded against the transaction, but the Gateway will
+      retry submission for a limited time. During this time, the status will be reported as pending.
+
+      ## State Model
+
+      The Radix Engine consists of "global entities".
+      A global entity has a Bech32m Address, with a human-readable-prefix (and prefix byte) matching the entity type.
+
+      As an example, entities include concepts like Components, Packages, Vaults, Resource Managers and Key-Value Stores.
+
+      Each entity owns substates which store data, and these substates can own other entities.
+      For example, an Account Component has a struct substate which owns a Key-Value Store. This Key-Value store has an
+      entry for each resoure the Account owns, and each Key-Value Store Entry owns a corresponding Vault.
+
+      For each global entity, the Gateway aggregates its owned resources by looking at the contents of Vaults in the
+      subtree of entities under that global entity.
+  - name: Status
+    x-displayName: Status Endpoints
+    description: Query information about the Gateway API status.
+  - name: Transaction
+    x-displayName: Transaction Endpoints
+    description: Query status of, construct, preview and submit transactions.
+  - name: Stream
+    x-displayName: Stream Endpoints
+    description: Browse through the history of transactions.
+  - name: State
+    x-displayName: State Endpoints
+    description: Query information snapshot about state of ledger entities at present or past time.
+paths:
+  "/status/gateway-status":
+    post:
+      operationId: GatewayStatus
+      summary: Get Gateway Status
+      description: |
+        Returns the Gateway API version and current ledger state.
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Network Gateway Information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GatewayStatusResponse"
+  "/status/network-configuration":
+    post:
+      operationId: NetworkConfiguration
+      summary: Get Network Configuration
+      description: |
+        Returns network identifier, network name and well-known network addresses.
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Network Configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NetworkConfigurationResponse"
+
+  "/transaction/construction":
+    post:
+      operationId: TransactionConstruction
+      summary: Get Construction Metadata
+      description: |
+        Returns information needed to construct a new transaction including current `epoch` number.
+      tags:
+        - Transaction
+      responses:
+        "200":
+          description: |
+            Returns information needed to construct transaction.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionConstructionResponse"
+  "/transaction/preview":
+    post:
+      operationId: TransactionPreview
+      summary: Preview Transaction
+      description: |
+        Previews transaction against the network.
+        This endpoint is effectively a proxy towards CoreApi's `/v0/transaction/preview` endpoint. See CoreApi's documentation for more details.
+      tags:
+        - Transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionPreviewRequest"
+      responses:
+        "200":
+          description: Successful Preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionPreviewResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+  "/transaction/submit":
+    post:
+      operationId: TransactionSubmit
+      summary: Submit Transaction
+      description: |
+        Submits a signed transaction payload to the network.
+      tags:
+        - Transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionSubmitRequest"
+      responses:
+        "200":
+          description: Successful Submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionSubmitResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+  "/transaction/committed-details":
+    post:
+      operationId: TransactionCommittedDetails
+      summary: Get Committed Transaction Details
+      description: |
+        Returns the committed details and receipt of the transaction for a given transaction identifier.
+        Transaction identifiers which don't correspond to a committed transaction will return a `TransactionNotFoundError`.
+      tags:
+        - Transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionCommittedDetailsRequest"
+      responses:
+        "200":
+          description: Transaction Status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionCommittedDetailsResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+  "/transaction/status":
+    post:
+      operationId: TransactionStatus
+      summary: Get Transaction Status
+      description: |
+        Returns overall transaction status and all of its known payloads based on supplied intent hash.
+      tags:
+        - Transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionStatusRequest"
+      responses:
+        "200":
+          description: Transaction Status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionStatusResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  "/stream/transactions":
+    post:
+      operationId: StreamTransactions
+      summary: Get Transactions Stream
+      description: |
+        Returns transactions which have been committed to the ledger.
+      tags:
+        - Stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamTransactionsRequest"
+      responses:
+        "200":
+          description: Transactions (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamTransactionsResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/details:
+    post:
+      operationId: StateEntityDetails
+      summary: Get Entity Details
+      description: |
+        Returns detailed information for collection of entities. Aggregate resources globally by default.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityDetailsRequest"
+      responses:
+        "200":
+          description: Entity Details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityDetailsResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/page/metadata:
+    post:
+      operationId: EntityMetadataPage
+      summary: Get Entity Metadata Page
+      description: |
+        Returns all the metadata properties associated with a given global entity.
+        The returned response is in a paginated format, ordered by first appearance on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityMetadataPageRequest"
+      responses:
+        "200":
+          description: Entity Metadata (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityMetadataPageResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/page/fungibles/:
+    post:
+      operationId: EntityFungiblesPage
+      summary: Get Entity Fungible Resource Totals Page aggregated globally
+      description: |
+        Returns the total amount of each fungible resource owned by a given global entity.
+        Result can be aggregated globally or per vault.
+        The returned response is in a paginated format, ordered by the resource's first appearance on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityFungiblesPageRequest"
+      responses:
+        "200":
+          description: Entity Fungibles (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityFungiblesPageResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/page/fungible-vaults/:
+    post:
+      operationId: EntityFungibleResourceVaultPage
+      summary: Get vault page of Entity Fungible resource aggregated per vault
+      description: |
+        Returns vaults for fungible resource owned by a given global entity.
+        The returned response is in a paginated format, ordered by the resource's first appearance on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityFungibleResourceVaultsPageRequest"
+      responses:
+        "200":
+          description: Entity Fungibles (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityFungibleResourceVaultsPageResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/page/non-fungibles/:
+    post:
+      operationId: EntityNonFungiblesPage
+      summary: Get Entity Non-Fungible Resource Totals Page aggregated globally
+      description: |
+        Returns the total amount of each non-fungible resource owned by a given global entity.
+        Result can be aggregated globally or per vault.
+        The returned response is in a paginated format, ordered by the resource's first appearance on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityNonFungiblesPageRequest"
+      responses:
+        "200":
+          description: Entity Non-Fungibles (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityNonFungiblesPageResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/page/non-fungible-vaults/:
+    post:
+      operationId: EntityNonFungibleResourceVaultPage
+      summary: Get vault page of Entity Non Fungible aggregated per vault
+      description: |
+        Returns vaults for non fungible resource owned by a given global entity.
+        The returned response is in a paginated format, ordered by the resource's first appearance on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityNonFungibleResourceVaultsPageRequest"
+      responses:
+        "200":
+          description: Entity Fungibles (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityNonFungibleResourceVaultsPageResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/entity/page/non-fungible-vault/ids:
+    post:
+      operationId: EntityNonFungibleIdsPage
+      summary: Get Entity Non-Fungible IDs
+      description: |
+        Returns all non-fungible IDs of a given non-fungible resource owned by a given entity.
+        The returned response is in a paginated format, ordered by the resource's first appearence on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateEntityNonFungibleIdsPageRequest"
+      responses:
+        "200":
+          description: Entity Non-Fungible IDs (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateEntityNonFungibleIdsPageResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/non-fungible/ids:
+    post:
+      operationId: NonFungibleIds
+      summary: Get Non-Fungible Collection
+      description: |
+        Returns the non-fungible IDs of a given non-fungible resource.
+        Returned response is in a paginated format, ordered by their first appearance on the ledger.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateNonFungibleIdsRequest"
+      responses:
+        "200":
+          description: Non-Fungible IDs (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateNonFungibleIdsResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+  /state/non-fungible/data:
+    post:
+      operationId: NonFungibleData
+      summary: Get Non-Fungible Data
+      description: |
+        Returns data associated with a given non-fungible ID of a given non-fungible resource.
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateNonFungibleDataRequest"
+      responses:
+        "200":
+          description: Non-Fungible ID Data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateNonFungibleDataResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /state/validators/list:
+    post:
+      operationId: StateValidatorsList
+      summary: Get Validators List
+      tags:
+        - State
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StateValidatorsListRequest"
+      responses:
+        "200":
+          description: Validators List
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateValidatorsListResponse"
+        "4XX":
+          $ref: "#/components/responses/ErrorResponse"
+
+components:
+  responses:
+    ErrorResponse:
+      description: Client-originated request error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+
+    #
+    # Aliases
+    #
+
+    NetworkId:
+      description: The logical id of the network
+      type: integer
+      format: int32
+      minimum: 0
+      maximum: 255
+      example: "<network-id>"
+
+    NetworkName:
+      description: The logical name of the network
+      type: string
+      example: "<network-name>"
+
+    Address:
+      description: Bech32m-encoded human readable version of the address.
+      type: string
+
+    BigDecimal:
+      description: String-encoded decimal representing the amount of a related fungible resource.
+      type: string
+
+    NonFungibleId:
+      description: String-encoded non-fungible ID.
+      type: string
+
+    HashHexString:
+      description: Hex-encoded SHA-256 hash.
+      type: string
+    HexString:
+      description: Hex-encoded binary blob.
+      type: string
+    NotarizedTransactionHexString:
+      description: Hex-encoded notarized transaction payload which can be submitted.
+      type: string
+
+    AccessRulesChain:
+      description: Refer to `#/components/schemas/AccessRules` of CoreApi for more details.
+      type: object
+
+    LastUpdatedAtStateVersion:
+      description: TBD # TODO describe
+      type: integer
+      format: int64
+
+    #
+    # Keys
+    #
+
+    PublicKeyType:
+      type: string
+      enum:
+        - EcdsaSecp256k1
+        - EddsaEd25519
+    PublicKey:
+      type: object
+      required:
+        - key_type
+      properties:
+        key_type:
+          $ref: "#/components/schemas/PublicKeyType"
+      discriminator:
+        propertyName: key_type
+        mapping:
+          # NOTE: These need to match PublicKeyType
+          EcdsaSecp256k1: "#/components/schemas/PublicKeyEcdsaSecp256k1"
+          EddsaEd25519: "#/components/schemas/PublicKeyEddsaEd25519"
+    PublicKeyEcdsaSecp256k1:
+      allOf:
+        - $ref: "#/components/schemas/PublicKey"
+        - type: object
+          required:
+            - key_hex
+          properties:
+            key_hex:
+              type: string
+              minLength: 66
+              maxLength: 66
+              description: The hex-encoded compressed ECDSA Secp256k1 public key (33 bytes)
+    PublicKeyEddsaEd25519:
+      allOf:
+        - $ref: "#/components/schemas/PublicKey"
+        - type: object
+          required:
+            - key_hex
+          properties:
+            key_hex:
+              type: string
+              minLength: 64
+              maxLength: 64
+              description: The hex-encoded compressed EdDSA Ed25519 public key (32 bytes)
+
+    #
+    # Common Request Types
+    #
+
+    AtLedgerStateMixin:
+      type: object
+      properties:
+        at_ledger_state:
+          $ref: "#/components/schemas/LedgerStateSelector"
+
+    LedgerStateSelector:
+      description: |
+        Optional. This allows for a request to be made against a historic state.
+        If a constraint is specified, the Gateway will resolve the request against the ledger state at that time.
+        If not specified, requests will be made with respect to the top of the committed ledger.
+      type: object
+      nullable: true
+      properties:
+        state_version:
+          description: If provided, the latest ledger state lower than or equal to the given state version is returned.
+          nullable: true
+          type: integer
+          format: int64
+        timestamp:
+          description: If provided, the latest ledger state lower than or equal to the given round timestamp is returned.
+          nullable: true
+          type: string
+          format: date-time
+        epoch:
+          description: If provided, the ledger state lower than or equal to the given epoch at round 0 is returned.
+          nullable: true
+          type: integer
+          format: int64
+        round:
+          description: If provided must be accompanied with `epoch`, the ledger state lower than or equal to the given epoch and round is returned.
+          nullable: true
+          type: integer
+          format: int64
+
+    CursorLimitMixin:
+      type: object
+      properties:
+        cursor:
+          description: This cursor allows forward pagination, by providing the cursor from the previous request.
+          type: string
+          nullable: true
+        limit_per_page:
+          description: The page size requested.
+          type: integer
+          nullable: true
+
+    #
+    # Common Response Types
+    #
+
+    LedgerStateMixin:
+      type: object
+      required:
+        - ledger_state
+      properties:
+        ledger_state:
+          $ref: "#/components/schemas/LedgerState"
+    ResultSetCursorMixin:
+      type: object
+      properties:
+        total_count:
+          description: Total number of items in underlying collection, fragment of which is available in `items` collection.
+          type: integer
+          format: int64
+          nullable: true
+        previous_cursor:
+          description: If specified, contains a cursor to query previous page of the `items` collection.
+          type: string
+          nullable: true
+        next_cursor:
+          description: If specified, contains a cursor to query next page of the `items` collection.
+          type: string
+          nullable: true
+
+    LedgerState:
+      description: |
+        The ledger state against which the response was generated.
+        Can be used to detect if the Network Gateway is returning up-to-date information.
+      type: object
+      required:
+        - network
+        - state_version
+        - proposer_round_timestamp
+        - epoch
+        - round
+      properties:
+        network:
+          $ref: "#/components/schemas/NetworkName"
+        state_version:
+          description: The state version of the ledger. Each transaction increments the state version by 1.
+          type: integer
+          format: int64
+        proposer_round_timestamp:
+          description: |
+            The proposer round timestamp of the consensus round when this transaction was committed to ledger.
+            This is not guaranteed to be strictly increasing, as it is computed as an average across the validator set.
+            If this is significantly behind the current timestamp, the Network Gateway is likely reporting out-dated
+            information, or the network has stalled.
+          type: string
+          # TODO add format: date-time once OAS generator get fixed support for required value-types
+        epoch:
+          description: The epoch number of the ledger at this state version.
+          type: integer
+          format: int64
+        round:
+          description: The consensus round in the epoch that this state version was committed in.
+          type: integer
+          format: int64
+
+    ResourceAggregationLevel:
+      type: string
+      enum:
+        - Global
+        - Vault
+
+    ScryptoSborValue:
+      type: object
+      required:
+        - raw_hex
+        - raw_json
+      properties:
+        raw_hex:
+          type: string
+        raw_json:
+          type: object
+
+    EntityMetadataCollection:
+      description: Entity metadata collection.
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/EntityMetadataItem"
+    EntityMetadataItem:
+      description: Entity metadata key-value pair.
+      type: object
+      required:
+        - key
+        - value
+        - last_updated_at_state_version
+      properties:
+        key:
+          description: Entity metadata key.
+          type: string
+        value:
+          $ref: "#/components/schemas/EntityMetadataItemValue"
+        last_updated_at_state_version:
+          $ref: "#/components/schemas/LastUpdatedAtStateVersion"
+    EntityMetadataItemValue:
+      allOf:
+        - $ref: "#/components/schemas/ScryptoSborValue"
+        - type: object
+          properties:
+            as_string:
+              type: string
+            as_string_collection:
+              type: array
+              items:
+                type: string
+
+    FungibleResourcesCollection:
+      description: Fungible resources collection.
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/FungibleResourcesCollectionItem"
+    FungibleResourcesCollectionItem:
+      type: object
+      required:
+        - aggregation_level
+        - resource_address
+      properties:
+        aggregation_level:
+          $ref: "#/components/schemas/ResourceAggregationLevel"
+        resource_address:
+          $ref: "#/components/schemas/Address"
+        explicit_metadata:
+          $ref: "#/components/schemas/EntityMetadataCollection"
+      discriminator:
+        propertyName: aggregation_level
+        mapping:
+          # NOTE: These need to match ResourceAggregationLevel
+          Global: '#/components/schemas/FungibleResourcesCollectionItemGloballyAggregated'
+          Vault: '#/components/schemas/FungibleResourcesCollectionItemVaultAggregated'
+    FungibleResourcesCollectionItemGloballyAggregated:
+      allOf:
+        - $ref: "#/components/schemas/FungibleResourcesCollectionItem"
+        - type: object
+          required:
+            - amount
+            - last_updated_at_state_version
+          properties:
+            amount:
+              $ref: "#/components/schemas/BigDecimal"
+            last_updated_at_state_version:
+              $ref: "#/components/schemas/LastUpdatedAtStateVersion"
+    FungibleResourcesCollectionItemVaultAggregated:
+      allOf:
+        - $ref: "#/components/schemas/FungibleResourcesCollectionItem"
+        - type: object
+          required:
+            - vaults
+          properties:
+            vaults:
+              $ref: "#/components/schemas/FungibleResourcesCollectionItemVaultAggregatedVault"
+    FungibleResourcesCollectionItemVaultAggregatedVault:
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/FungibleResourcesCollectionItemVaultAggregatedVaultItem"
+    FungibleResourcesCollectionItemVaultAggregatedVaultItem:
+      type: object
+      required:
+        - vault_address
+        - amount
+        - last_updated_at_state_version
+      properties:
+        vault_address:
+          $ref: "#/components/schemas/Address"
+        amount:
+          $ref: "#/components/schemas/BigDecimal"
+        last_updated_at_state_version:
+          $ref: "#/components/schemas/LastUpdatedAtStateVersion"
+
+    NonFungibleResourcesCollection:
+      description: Non-fungible resources collection.
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/NonFungibleResourcesCollectionItem"
+    NonFungibleResourcesCollectionItem:
+      type: object
+      required:
+        - aggregation_level
+        - resource_address
+      properties:
+        aggregation_level:
+          $ref: "#/components/schemas/ResourceAggregationLevel"
+        resource_address:
+          $ref: "#/components/schemas/Address"
+        explicit_metadata:
+          $ref: "#/components/schemas/EntityMetadataCollection"
+      discriminator:
+        propertyName: aggregation_level
+        mapping:
+          # NOTE: These need to match ResourceAggregationLevel
+          Global: '#/components/schemas/NonFungibleResourcesCollectionItemGloballyAggregated'
+          Vault: '#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregated'
+    NonFungibleResourcesCollectionItemGloballyAggregated:
+      allOf:
+        - $ref: "#/components/schemas/NonFungibleResourcesCollectionItem"
+        - type: object
+          required:
+            - amount
+            - last_updated_at_state_version
+          properties:
+            amount:
+              description: TBA # TODO describe
+              type: integer
+              format: int64
+            last_updated_at_state_version:
+              $ref: "#/components/schemas/LastUpdatedAtStateVersion"
+    NonFungibleResourcesCollectionItemVaultAggregated:
+      allOf:
+        - $ref: "#/components/schemas/NonFungibleResourcesCollectionItem"
+        - type: object
+          required:
+            - vaults
+          properties:
+            vaults:
+              $ref: "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregatedVault"
+    NonFungibleResourcesCollectionItemVaultAggregatedVault:
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregatedVaultItem"
+    NonFungibleResourcesCollectionItemVaultAggregatedVaultItem:
+      allOf:
+        - $ref: "#/components/schemas/OptionalNonFungibleIdsCollection"
+        - type: object
+          required:
+            - vault_address
+            - total_count
+            - last_updated_at_state_version
+          properties:
+            vault_address:
+              $ref: "#/components/schemas/Address"
+            total_count:
+              type: integer
+              format: int64
+            last_updated_at_state_version:
+              $ref: "#/components/schemas/LastUpdatedAtStateVersion"
+
+    OptionalNonFungibleIdsCollection:
+      description: Non-fungible resource IDs collection.
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/NonFungibleId"
+
+    NonFungibleIdsCollection:
+      description: Non-fungible resource IDs collection.
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/NonFungibleId"
+
+    CommittedTransactionInfo:
+      type: object
+      required:
+        - state_version
+        - epoch
+        - round
+        - round_timestamp
+        - transaction_status
+      properties:
+        state_version:
+          type: integer
+          format: int64
+        epoch:
+          type: integer
+          format: int64
+        round:
+          type: integer
+          format: int64
+        round_timestamp:
+          type: string
+          # TODO add format: date-time once OAS generator get fixed support for required value-types
+        transaction_status:
+          $ref: "#/components/schemas/TransactionStatus"
+        payload_hash_hex:
+          $ref: "#/components/schemas/HashHexString"
+        intent_hash_hex:
+          $ref: "#/components/schemas/HashHexString"
+        fee_paid:
+          $ref: "#/components/schemas/BigDecimal"
+        confirmed_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_message:
+          type: string
+          nullable: true
+        raw_hex:
+          $ref: "#/components/schemas/HexString"
+        receipt:
+          $ref: "#/components/schemas/TransactionReceipt"
+        referenced_global_entities:
+          type: array
+          items:
+            type: string
+        message_hex:
+          $ref: "#/components/schemas/HexString"
+
+    TransactionStatus:
+      type: string
+      enum:
+        - Unknown
+        - CommittedSuccess
+        - CommittedFailure
+        - Pending
+        - Rejected
+
+    TransactionReceipt:
+      type: object
+      properties:
+        status:
+          description: The status of the transaction.
+          type: object
+        fee_summary:
+          description: Fees paid, Only present if the `status` is not `Rejected`.
+          type: object
+        state_updates:
+          description: Transaction state updates (only present if status is Succeeded or Failed).
+          type: object
+        next_epoch:
+          description: Information (number and active validator list) about new epoch if occured.
+          type: object
+        output:
+          description: The manifest line-by-line engine return data (only present if `status` is `Succeeded`).
+          type: object
+        events:
+          description: Events emitted by a transaction.
+          type: object
+        error_message:
+          description: Error message (only present if status is `Failed` or `Rejected`)
+          type: string
+          nullable: true
+
+    NonFungibleIdType:
+      type: string
+      enum:
+        - String
+        - Integer
+        - Bytes
+        - Uuid
+
+    ValidatorCollection:
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/ValidatorCollectionItem"
+    ValidatorCollectionItem:
+      type: object
+      required:
+        - address
+        - metadata
+        - current_stake
+      properties:
+        address:
+          $ref: "#/components/schemas/Address"
+        state:
+          type: object
+          nullable: true
+        current_stake:
+          $ref: "#/components/schemas/BigDecimal"
+        active_in_epoch:
+          $ref: "#/components/schemas/ValidatorCollectionItemActiveInEpoch"
+        metadata:
+          $ref: "#/components/schemas/EntityMetadataCollection"
+    ValidatorCollectionItemActiveInEpoch:
+      type: object
+      required:
+        - stake
+        - stake_percentage
+        - key
+      properties:
+        stake:
+          $ref: "#/components/schemas/BigDecimal"
+        stake_percentage:
+          type: number
+          format: double
+        key:
+          $ref: "#/components/schemas/PublicKey"
+
+    #
+    # /status/* Request & Response Types
+    #
+    NetworkConfigurationResponse:
+      type: object
+      required:
+        - network_id
+        - network_name
+        - well_known_addresses
+      properties:
+        network_id:
+          $ref: "#/components/schemas/NetworkId"
+        network_name:
+          $ref: "#/components/schemas/NetworkName"
+        well_known_addresses:
+          type: object
+          required:
+            - xrd
+            - secp256k1_signature_virtual_badge
+            - ed25519_signature_virtual_badge
+            - package_of_direct_caller_virtual_badge
+            - global_caller_virtual_badge
+            - system_transaction_badge
+            - package_owner_badge
+            - validator_owner_badge
+            - account_owner_badge
+            - identity_owner_badge
+            - package_package
+            - resource_package
+            - account_package
+            - identity_package
+            - epoch_manager_package
+            - clock_package
+            - access_controller_package
+            - transaction_processor_package
+            - metadata_module_package
+            - royalty_module_package
+            - access_rules_package
+            - genesis_helper_package
+            - faucet_package
+            - epoch_manager
+            - clock
+            - genesis_helper
+            - faucet
+          properties:
+            xrd:
+              $ref: "#/components/schemas/Address"
+            secp256k1_signature_virtual_badge:
+              $ref: "#/components/schemas/Address"
+            ed25519_signature_virtual_badge:
+              $ref: "#/components/schemas/Address"
+            package_of_direct_caller_virtual_badge:
+              $ref: "#/components/schemas/Address"
+            global_caller_virtual_badge:
+              $ref: "#/components/schemas/Address"
+            system_transaction_badge:
+              $ref: "#/components/schemas/Address"
+            package_owner_badge:
+              $ref: "#/components/schemas/Address"
+            validator_owner_badge:
+              $ref: "#/components/schemas/Address"
+            account_owner_badge:
+              $ref: "#/components/schemas/Address"
+            identity_owner_badge:
+              $ref: "#/components/schemas/Address"
+            package_package:
+              $ref: "#/components/schemas/Address"
+            resource_package:
+              $ref: "#/components/schemas/Address"
+            account_package:
+              $ref: "#/components/schemas/Address"
+            identity_package:
+              $ref: "#/components/schemas/Address"
+            epoch_manager_package:
+              $ref: "#/components/schemas/Address"
+            clock_package:
+              $ref: "#/components/schemas/Address"
+            access_controller_package:
+              $ref: "#/components/schemas/Address"
+            transaction_processor_package:
+              $ref: "#/components/schemas/Address"
+            metadata_module_package:
+              $ref: "#/components/schemas/Address"
+            royalty_module_package:
+              $ref: "#/components/schemas/Address"
+            access_rules_package:
+              $ref: "#/components/schemas/Address"
+            genesis_helper_package:
+              $ref: "#/components/schemas/Address"
+            faucet_package:
+              $ref: "#/components/schemas/Address"
+            epoch_manager:
+              $ref: "#/components/schemas/Address"
+            clock:
+              $ref: "#/components/schemas/Address"
+            genesis_helper:
+              $ref: "#/components/schemas/Address"
+            faucet:
+              $ref: "#/components/schemas/Address"
+
+    GatewayStatusResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - release_info
+          properties:
+            release_info:
+              $ref: "#/components/schemas/GatewayInfoResponseReleaseInfo"
+    GatewayInfoResponseKnownTarget:
+      type: object
+      required:
+        - state_version
+      properties:
+        state_version:
+          description: |
+            The latest-seen state version of the tip of the network's ledger. If this is significantly ahead of the current ledger state version, the Network Gateway is possibly behind and may be reporting outdated information.
+          type: integer
+          format: int64
+    GatewayInfoResponseReleaseInfo:
+      type: object
+      required:
+        - release_version
+        - image_tag
+        - open_api_schema_version
+      properties:
+        release_version:
+          description: The release that is currently deployed to the Gateway API.
+          type: string
+        open_api_schema_version:
+          description: The Open API Schema version that was used to generate the API models.
+          type: string
+        image_tag:
+          description: Image tag that is currently deployed to the Gateway API.
+          type: string
+
+    #
+    # /transaction/* Request & Response Types
+    #
+
+    TransactionConstructionResponse:
+      allOf:
+        - type: object
+        - $ref: "#/components/schemas/LedgerStateMixin"
+
+    TransactionPreviewRequest:
+      type: object
+      required:
+        - manifest
+        - start_epoch_inclusive
+        - end_epoch_exclusive
+        - cost_unit_limit
+        - tip_percentage
+        - nonce
+        - signer_public_keys
+        - flags
+      properties:
+        manifest:
+          description: A text-representation of a transaction manifest
+          type: string
+        blobs_hex:
+          description: An array of hex-encoded blob data (optional)
+          type: array
+          items:
+            type: string
+        start_epoch_inclusive:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 10000000000
+          description: An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid
+        end_epoch_exclusive:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 10000000000
+          description: An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid
+        notary_public_key:
+          $ref: "#/components/schemas/PublicKey"
+          description: The notary public key to use (optional)
+        notary_as_signatory:
+          type: boolean
+          description: Whether the notary should count as a signatory (optional, default false)
+        cost_unit_limit:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 4294967295
+          description: An integer between `0` and `2^32 - 1`, giving the maximum number of cost units available for transaction execution
+        tip_percentage:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 255
+          description: An integer between `0` and `255`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee.
+        nonce:
+          type: string
+          description: A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique.
+        signer_public_keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicKey"
+          description: A list of public keys to be used as transaction signers
+        flags:
+          type: object
+          required:
+            - unlimited_loan
+            - assume_all_signature_proofs
+            - permit_duplicate_intent_hash
+            - permit_invalid_header_epoch
+          properties:
+            unlimited_loan:
+              type: boolean
+            assume_all_signature_proofs:
+              type: boolean
+            permit_duplicate_intent_hash:
+              type: boolean
+            permit_invalid_header_epoch:
+              type: boolean
+    TransactionPreviewResponse:
+      type: object
+      required:
+        - encoded_receipt
+        - receipt
+        - resource_changes
+        - logs
+      properties:
+        encoded_receipt:
+          $ref: "#/components/schemas/HexString"
+        receipt:
+          type: object
+        resource_changes:
+          type: array
+          items:
+            type: object
+        logs:
+          type: array
+          items:
+            type: object
+            required:
+              - level
+              - message
+            properties:
+              level:
+                type: string
+              message:
+                type: string
+
+    TransactionSubmitRequest:
+      type: object
+      required:
+        - notarized_transaction_hex
+      properties:
+        notarized_transaction_hex:
+          $ref: "#/components/schemas/NotarizedTransactionHexString"
+    TransactionSubmitResponse:
+      type: object
+      required:
+        - duplicate
+      properties:
+        duplicate:
+          type: boolean
+          description: Is true if the transaction is a duplicate of an existing pending transaction.
+
+    TransactionStatusRequest:
+      allOf:
+        - type: object
+          required:
+            - intent_hash_hex
+          properties:
+            intent_hash_hex:
+              $ref: "#/components/schemas/HashHexString"
+      example:
+        intent_hash_hex: "<transaction-intent-hash>"
+    TransactionStatusResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - status
+            - known_payloads
+          properties:
+            status:
+              $ref: "#/components/schemas/TransactionStatus"
+            known_payloads:
+              type: array
+              items:
+                $ref: "#/components/schemas/TransactionStatusResponseKnownPayloadItem"
+            error_message:
+              type: string
+              nullable: true
+    TransactionStatusResponseKnownPayloadItem:
+      type: object
+      required:
+        - payload_hash_hex
+        - status
+      properties:
+        payload_hash_hex:
+          $ref: "#/components/schemas/HashHexString"
+        status:
+          $ref: "#/components/schemas/TransactionStatus"
+        error_message:
+          type: string
+          nullable: true
+
+    TransactionCommittedDetailsRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - type: object
+          required:
+            - intent_hash_hex
+          properties:
+            intent_hash_hex:
+              $ref: "#/components/schemas/HashHexString"
+            opt_ins:
+              $ref: "#/components/schemas/TransactionCommittedDetailsOptIns"
+      example:
+        intent_hash_hex: "<transaction-intent-hash>"
+    TransactionCommittedDetailsOptIns:
+      type: object
+      properties:
+        raw_hex:
+          type: boolean
+        receipt_state_changes:
+          type: boolean
+        receipt_fee_summary:
+          type: boolean
+        receipt_events:
+          type: boolean
+    TransactionCommittedDetailsResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - transaction
+          properties:
+            transaction:
+              $ref: "#/components/schemas/CommittedTransactionInfo"
+
+    #
+    # /stream/* Request & Response Types
+    #
+
+    StreamTransactionsRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          properties:
+            from_ledger_state:
+              $ref: "#/components/schemas/LedgerStateSelector"
+            kind_filter:
+              description: Limit returned transactions by their kind. Defaults to `user`.
+              type: string
+              enum:
+                - User
+                - EpochChange
+                - All
+            manifest_accounts_withdrawn_from_filter:
+              type: array
+              items:
+                $ref: "#/components/schemas/Address"
+            manifest_accounts_deposited_into_filter:
+              type: array
+              items:
+                $ref: "#/components/schemas/Address"
+            manifest_resources_filter:
+              type: array
+              items:
+                $ref: "#/components/schemas/Address"
+            events_filter:
+              type: array
+              items:
+                $ref: "#/components/schemas/StreamTransactionsRequestEventFilterItem"
+            order:
+              description: Configures the order of returned result set. Defaults to `desc`.
+              type: string
+              enum:
+                - Asc
+                - Desc
+            opt_ins:
+              $ref: "#/components/schemas/TransactionCommittedDetailsOptIns"
+      example:
+        limit_per_page: 5
+    StreamTransactionsRequestEventFilterItem:
+      type: object
+      required:
+        - event
+      properties:
+        event:
+          type: string
+          enum:
+            - Deposit
+            - Withdrawal
+        emitter_address:
+          $ref: "#/components/schemas/Address"
+        resource_address:
+          $ref: "#/components/schemas/Address"
+        quantity:
+          $ref: "#/components/schemas/BigDecimal"
+    StreamTransactionsResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              description: The page of user transactions.
+              type: array
+              items:
+                $ref: "#/components/schemas/CommittedTransactionInfo"
+
+    #
+    # /state/entity/* Request & Response Types
+    #
+
+    StateEntityDetailsRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - type: object
+          required:
+            - addresses
+          properties:
+            opt_ins:
+              $ref: "#/components/schemas/StateEntityDetailsOptIns"
+            addresses:
+              type: array
+              items:
+                $ref: "#/components/schemas/Address"
+            aggregation_level:
+              $ref: "#/components/schemas/ResourceAggregationLevel"
+      example:
+        addresses:
+          - "<entity-address>"
+    StateEntityDetailsOptIns:
+      type: object
+      properties:
+        ancestor_identities:
+          type: boolean
+        component_royalty_vault_balance:
+          type: boolean
+        package_royalty_vault_balance:
+          type: boolean
+        non_fungible_include_nfids:
+          type: boolean
+        explicit_metadata:
+          type: array
+          items:
+            type: string
+    StateEntityDetailsResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/StateEntityDetailsResponseItem"
+    StateEntityDetailsResponseItem:
+      type: object
+      required:
+        - address
+        - metadata
+      properties:
+        address:
+          $ref: "#/components/schemas/Address"
+        fungible_resources:
+          $ref: "#/components/schemas/FungibleResourcesCollection"
+        non_fungible_resources:
+          $ref: "#/components/schemas/NonFungibleResourcesCollection"
+        ancestor_identities:
+          $ref: "#/components/schemas/StateEntityDetailsResponseItemAncestorIdentities"
+        metadata:
+          $ref: "#/components/schemas/EntityMetadataCollection"
+        explicit_metadata:
+          $ref: "#/components/schemas/EntityMetadataCollection"
+        details:
+          $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+    StateEntityDetailsResponseItemAncestorIdentities:
+      type: object
+      properties:
+        parent_address:
+          $ref: "#/components/schemas/Address"
+        owner_address:
+          $ref: "#/components/schemas/Address"
+        global_address:
+          $ref: "#/components/schemas/Address"
+    StateEntityDetailsResponseItemDetailsType:
+      type: string
+      enum:
+        - FungibleResource
+        - NonFungibleResource
+        - FungibleVault
+        - NonFungibleVault
+        - Package
+        - Component
+    StateEntityDetailsResponseItemDetails:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: "#/components/schemas/StateEntityDetailsResponseItemDetailsType"
+      discriminator:
+        propertyName: type
+        mapping:
+          # Must match StateEntityDetailsResponseDetailsType
+          FungibleResource: "#/components/schemas/StateEntityDetailsResponseFungibleResourceDetails"
+          NonFungibleResource: "#/components/schemas/StateEntityDetailsResponseNonFungibleResourceDetails"
+          FungibleVault: "#/components/schemas/StateEntityDetailsResponseFungibleVaultDetails"
+          NonFungibleVault: "#/components/schemas/StateEntityDetailsResponseNonFungibleVaultDetails"
+          Package: "#/components/schemas/StateEntityDetailsResponsePackageDetails"
+          Component: "#/components/schemas/StateEntityDetailsResponseComponentDetails"
+    StateEntityDetailsResponseFungibleResourceDetails:
+      allOf:
+        - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+        - type: object
+          required:
+            - access_rules_chain
+            - vault_access_rules_chain
+            - divisibility
+            - total_supply
+            - total_minted
+            - total_burned
+          properties:
+            access_rules_chain:
+              type: object
+            vault_access_rules_chain:
+              type: object
+            divisibility:
+              type: integer
+              minimum: 0
+            total_supply:
+              $ref: "#/components/schemas/BigDecimal"
+            total_minted:
+              $ref: "#/components/schemas/BigDecimal"
+            total_burned:
+              $ref: "#/components/schemas/BigDecimal"
+    StateEntityDetailsResponseNonFungibleResourceDetails:
+      allOf:
+        - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+        - type: object
+          required:
+            - access_rules_chain
+            - vault_access_rules_chain
+            - non_fungible_id_type
+            - total_supply
+            - total_minted
+            - total_burned
+          properties:
+            access_rules_chain:
+              type: object
+            vault_access_rules_chain:
+              type: object
+            non_fungible_id_type:
+              $ref: "#/components/schemas/NonFungibleIdType"
+            total_supply:
+              $ref: "#/components/schemas/BigDecimal"
+            total_minted:
+              $ref: "#/components/schemas/BigDecimal"
+            total_burned:
+              $ref: "#/components/schemas/BigDecimal"
+    StateEntityDetailsResponseFungibleVaultDetails:
+      allOf:
+        - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+        - type: object
+    StateEntityDetailsResponseNonFungibleVaultDetails:
+      allOf:
+        - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+        - type: object
+    StateEntityDetailsResponsePackageDetails:
+      allOf:
+        - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+        - type: object
+          properties:
+            code_hex:
+              $ref: "#/components/schemas/HexString"
+            royalty_vault_balance:
+              $ref: "#/components/schemas/BigDecimal"
+    StateEntityDetailsResponseComponentDetails:
+      allOf:
+        - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
+        - type: object
+          required:
+            - blueprint_name
+            - access_rules_chain
+          properties:
+            package_address:
+              $ref: "#/components/schemas/Address"
+            blueprint_name:
+              type: string
+            state:
+              type: object
+            access_rules_chain:
+              type: object
+            royalty_vault_balance:
+              $ref: "#/components/schemas/BigDecimal"
+
+    StateEntityMetadataPageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+      example:
+        address: "<entity-address>"
+    StateEntityMetadataPageResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/EntityMetadataCollection"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+
+    StateEntityFungiblesPageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            aggregation_level:
+              $ref: "#/components/schemas/ResourceAggregationLevel"
+            opt_ins:
+              $ref: "#/components/schemas/StateEntityFungiblesPageRequestOptIns"
+      example:
+        address: "<component-entity-address>"
+    StateEntityFungiblesPageRequestOptIns:
+      type: object
+      properties:
+        explicit_metadata:
+          type: array
+          items:
+            type: string
+    StateEntityFungiblesPageResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/FungibleResourcesCollection"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+    StateEntityFungibleResourceVaultsPageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - address
+            - resource_address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            resource_address:
+              $ref: "#/components/schemas/Address"
+      example:
+        address: "<component-entity-address>"
+        resource_address: "<resource_address>"
+    StateEntityFungibleResourceVaultsPageResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/FungibleResourcesCollectionItemVaultAggregatedVault"
+        - type: object
+          required:
+            - address
+            - resource_address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            resource_address:
+              $ref: "#/components/schemas/Address"
+
+    StateEntityNonFungiblesPageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            aggregation_level:
+              $ref: "#/components/schemas/ResourceAggregationLevel"
+            opt_ins:
+              $ref: "#/components/schemas/StateEntityNonFungiblesPageRequestOptIns"
+      example:
+        address: "<component-entity-address>"
+    StateEntityNonFungiblesPageRequestOptIns:
+      type: object
+      properties:
+        non_fungible_include_nfids:
+          type: boolean
+        explicit_metadata:
+          type: array
+          items:
+            type: string
+    StateEntityNonFungiblesPageResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/NonFungibleResourcesCollection"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+
+    StateEntityNonFungibleResourceVaultsPageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - address
+            - resource_address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            resource_address:
+              $ref: "#/components/schemas/Address"
+            opt_ins:
+              $ref: "#/components/schemas/StateEntityNonFungibleResourceVaultsPageOptIns"
+      example:
+        address: "<component-entity-address>"
+        resource_address: "<resource_address>"
+    StateEntityNonFungibleResourceVaultsPageOptIns:
+      type: object
+      properties:
+        non_fungible_include_nfids:
+          type: boolean
+
+    StateEntityNonFungibleResourceVaultsPageResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/NonFungibleResourcesCollectionItemVaultAggregatedVault"
+        - type: object
+          required:
+            - address
+            - resource_address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            resource_address:
+              $ref: "#/components/schemas/Address"
+
+    StateEntityNonFungibleIdsPageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - address
+            - vault_address
+            - resource_address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            vault_address:
+              $ref: "#/components/schemas/Address"
+            resource_address:
+              $ref: "#/components/schemas/Address"
+      example:
+        address: "<component-entity-address>"
+        resource_address: null
+        vault_address: null
+    StateEntityNonFungibleIdsPageResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - $ref: "#/components/schemas/NonFungibleIdsCollection"
+        - type: object
+          required:
+            - address
+            - resource_address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+            resource_address:
+              $ref: "#/components/schemas/Address"
+
+    #
+    # /state/non-fungible/* Request & Response Types
+    #
+
+    StateNonFungibleIdsRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - $ref: "#/components/schemas/CursorLimitMixin"
+        - type: object
+          required:
+            - resource_address
+          properties:
+            resource_address:
+              $ref: "#/components/schemas/Address"
+      example:
+        resource_address: "<non-fungible-entity-address>"
+    StateNonFungibleIdsResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - resource_address
+            - non_fungible_ids
+          properties:
+            resource_address:
+              $ref: "#/components/schemas/Address"
+            non_fungible_ids:
+              $ref: "#/components/schemas/NonFungibleIdsCollection"
+
+    StateNonFungibleDataRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - type: object
+          required:
+            - resource_address
+            - non_fungible_ids
+          properties:
+            resource_address:
+              $ref: "#/components/schemas/Address"
+            non_fungible_ids:
+              type: array
+              items:
+                $ref: "#/components/schemas/NonFungibleId"
+      example:
+        resource_address: "<non-fungible-entity-address>"
+        non_fungible_ids: ["#1#"]
+    StateNonFungibleDataResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - resource_address
+            - non_fungible_id_type
+            - non_fungible_ids
+          properties:
+            resource_address:
+              $ref: "#/components/schemas/Address"
+            non_fungible_id_type:
+              $ref: "#/components/schemas/NonFungibleIdType"
+            non_fungible_ids:
+              type: array
+              items:
+                $ref: "#/components/schemas/StateNonFungibleDetailsResponseItem"
+    StateNonFungibleDetailsResponseItem:
+      type: object
+      required:
+        - non_fungible_id
+        - data
+        - last_updated_at_state_version
+      properties:
+        non_fungible_id:
+          $ref: "#/components/schemas/NonFungibleId"
+        data:
+          $ref: "#/components/schemas/ScryptoSborValue"
+        last_updated_at_state_version:
+          $ref: "#/components/schemas/LastUpdatedAtStateVersion"
+
+
+    #
+    # /state/validators/* Request & Response Types
+    #
+
+    StateValidatorsListRequest:
+      allOf:
+        - $ref: "#/components/schemas/AtLedgerStateMixin"
+        - type: object
+          properties:
+            cursor:
+              description: This cursor allows forward pagination, by providing the cursor from the previous request.
+              type: string
+              nullable: true
+      example:
+        at_ledger_state: null
+    StateValidatorsListResponse:
+      allOf:
+        - $ref: "#/components/schemas/LedgerStateMixin"
+        - type: object
+          required:
+            - validators
+          properties:
+            validators:
+              $ref: "#/components/schemas/ValidatorCollection"
+
+    #
+    # Errors
+    #
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          description: A human-readable error message.
+          type: string
+        code:
+          description: A numeric code corresponding to the given error type.
+          type: integer
+        details:
+          $ref: "#/components/schemas/GatewayError"
+        trace_id:
+          description: A unique request identifier to be used when reporting errors, to allow correlation with the Gateway API's error logs.
+          type: string
+
+    GatewayError:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          description: The type of error. Each subtype may have its own additional structured fields.
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          EntityNotFoundError: "#/components/schemas/EntityNotFoundError"
+          InvalidEntityError: "#/components/schemas/InvalidEntityError"
+          NotSyncedUpError: "#/components/schemas/NotSyncedUpError"
+          InvalidRequestError: "#/components/schemas/InvalidRequestError"
+          InvalidTransactionError: "#/components/schemas/InvalidTransactionError"
+          TransactionNotFoundError: "#/components/schemas/TransactionNotFoundError"
+          InternalServerError: "#/components/schemas/InternalServerError"
+    EntityNotFoundError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+    InvalidEntityError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+          required:
+            - address
+          properties:
+            address:
+              $ref: "#/components/schemas/Address"
+    NotSyncedUpError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+          required:
+            - request_type
+            - current_sync_delay_seconds
+            - max_allowed_sync_delay_seconds
+          properties:
+            request_type:
+              description: The request type that triggered this exception.
+              type: string
+            current_sync_delay_seconds:
+              description: The current delay between the Gateway DB and the network ledger round timestamp.
+              type: integer
+              format: int64
+            max_allowed_sync_delay_seconds:
+              description: The maximum allowed delay between the Gateway DB and the network ledger round timestamp for this `request_type`.
+              type: integer
+              format: int64
+    InvalidRequestError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+          required:
+            - validation_errors
+          properties:
+            validation_errors:
+              description: One or more validation errors which occurred when validating the request.
+              type: array
+              items:
+                $ref: "#/components/schemas/ValidationErrorsAtPath"
+    InvalidTransactionError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+    TransactionNotFoundError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+          required:
+            - intent_hash_hex
+          properties:
+            intent_hash_hex:
+              $ref: "#/components/schemas/HashHexString"
+    InternalServerError:
+      allOf:
+        - $ref: "#/components/schemas/GatewayError"
+        - type: object
+          required:
+            - exception
+            - cause
+          properties:
+            exception:
+              description: Gives an error type which occurred within the Gateway API when serving the request.
+              type: string
+            cause:
+              description: Gives a human readable message - likely just a trace ID for reporting the error.
+              type: string
+    ValidationErrorsAtPath:
+      type: object
+      required:
+        - path
+        - errors
+      properties:
+        path:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
