@@ -316,6 +316,7 @@ class EntityRepositoryImpl @Inject constructor(
                     nonFungibleDataResponse.map {
                         it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
                             Resource.NonFungibleResource.Item(
+                                collectionAddress = resourceAddress,
                                 localId = stateNonFungibleDetailsResponseItem.nonFungibleId,
                                 iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
                                     ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
