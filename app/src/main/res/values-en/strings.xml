@@ -181,6 +181,7 @@
   <string name="authorizedDapps_forgetDappAlert_forget">Forget</string>
   <string name="authorizedDapps_removeAuthorizationAlert_title">Remove Authorization</string>
   <string name="authorizedDapps_removeAuthorizationAlert_message">This dApp will no longer have authorization to see data associated with this persona, unless you choose to login with it again in the future.</string>
+  <string name="authorizedDapps_removeAuthorizationAlert_confirm">Confirm</string>
   <string name="editPersona_requiredByDapp">Required by dApp</string>
   <string name="editPersona_sharedInformationHeading">The following information can be seen if requested by the dApp</string>
   <string name="editPersona_error_blank">Label cannot be blank</string>
@@ -229,6 +230,7 @@
   <string name="createAccount_completion_subtitleNotFirst">Your Account has been created.</string>
   <string name="createAccount_nameNewAccount_placeholder">e.g. My Main Account</string>
   <string name="createAccount_nameNewAccount_subtitle">What would you like to call your account?</string>
+  <string name="createAccount_nameNewAccount_continue">Continue</string>
   <string name="createAccount_introduction_title">Create an Account</string>
   <string name="createAccount_titleFirst">Create First Account</string>
   <string name="createAccount_titleNotFirst">Create New Account</string>
@@ -254,8 +256,10 @@
   <string name="createPersona_introduction_subtitle1">A Persona is an identity that you own and control. You can have as many as you like.</string>
   <string name="createPersona_introduction_subtitle2">You will chosose Peronas to login to dApps, and dApps may request access to personal information associated with that Persona.</string>
   <string name="createPersona_introduction_learnAboutPersonas">Learn about Personas</string>
+  <string name="createPersona_introduction_continue">Continue</string>
   <string name="createPersona_nameNewPersona_subtitle">What would you like to call your persona?</string>
   <string name="createPersona_nameNewPersona_placeholder">e.g. My Main Persona</string>
+  <string name="createPersona_nameNewPersona_continue">Continue</string>
   <string name="createPersona_requiredField">Required field</string>
   <string name="createPersona_saveAndContinueButtonTitle">Save and Continue</string>
   <string name="dAppRequest_login_titleKnownDapp">Login Request</string>
@@ -264,17 +268,20 @@
   <string name="dAppRequest_login_subtitleNewDapp">%s  is requesting you to login for the first time with a Persona.</string>
   <string name="dAppRequest_login_choosePersona">Choose a Persona</string>
   <string name="dAppRequest_login_lastLoginWasOn">Your last login was on %s</string>
+  <string name="dAppRequest_login_continue">Continue</string>
   <string name="dAppRequest_accountPermission_title">Account Permission</string>
   <string name="dAppRequest_accountPermission_numberOfAccountsAtLeast">%d or more accounts</string>
   <string name="dAppRequest_accountPermission_numberOfAccountsAtLeastZero">Any number of accounts</string>
   <string name="dAppRequest_accountPermission_numberOfAccountsExactly">%d accounts</string>
   <string name="dAppRequest_accountPermission_numberOfAccountsExactlyOne">1 account</string>
+  <string name="dAppRequest_accountPermission_continue">Continue</string>
   <string name="dAppRequest_accountPermission_subtitle">*%s* is requesting permission to *always* be able to view account information when you login with this Persona.</string>
   <string name="dAppRequest_accountPermission_updateInSettingsExplanation">You can update this permission in your settings at any time.</string>
   <string name="dAppRequest_chooseAccounts_createNewAccount">Create a New Account</string>
   <string name="dAppRequest_chooseAccounts_successMessage">You are now connected to %s. You can change your preferences for this dApp in your Settings at any time.</string>
   <string name="dAppRequest_chooseAccounts_successTitle">dApp Connection Successful</string>
   <string name="dAppRequest_chooseAccounts_verificationErrorTitle">DApp error</string>
+  <string name="dAppRequest_chooseAccounts_continue">Continue</string>
   <string name="dAppRequest_chooseAccountsOneTime_title">Account Request</string>
   <string name="dAppRequest_chooseAccountsOneTime_subtitleAtLeast">*%s* is making a one-time request for at least %d accounts.</string>
   <string name="dAppRequest_chooseAccountsOneTime_subtitleAtLeastZero">*%s* is making a one-time request for any number of accounts.</string>
@@ -290,9 +297,11 @@
   <string name="dAppRequest_personalDataOneTime_title">One-Time Data Request</string>
   <string name="dAppRequest_personalDataOneTime_chooseDataToProvide">Choose the data to provide</string>
   <string name="dAppRequest_personalDataOneTime_subtitle">*%s* is requesting that you provide some pieces of personal data *just one time*</string>
+  <string name="dAppRequest_personalDataOneTime_continue">Continue</string>
   <string name="dAppRequest_personalDataPermission_title">Personal Data Permission</string>
   <string name="dAppRequest_personalDataPermission_subtitle">*%s* is requesting permission to *always* be able to view the following personal data when you login with this Persona.</string>
   <string name="dAppRequest_personalDataPermission_updateInSettingsExplanation">You can update this permission in your Settings at any time.</string>
+  <string name="dAppRequest_personalDataPermission_continue">Continue</string>
   <string name="dAppRequest_validationOutcome_subtitleBadContent">Invalid content</string>
   <string name="dAppRequest_validationOutcome_subtitleIncompatibleVersion">Incompatible connector extension</string>
   <string name="dAppRequest_validationOutcome_subtitleWrongNetworkID">Network mismatch</string>
@@ -460,6 +469,7 @@
   <string name="addLedger_addDevice_title">Add Ledger Device.</string>
   <string name="addLedger_addDevice_body1">Let’s set up a Ledger hardware wallet device. You will be able to use it to create new Ledger-secured Accounts, or import Ledger-secured Accounts from the Radix Olympia Desktop Wallet.</string>
   <string name="addLedger_addDevice_body2">Connect your Ledger to a computer running a linked Radix Connector browser extension, and make sure the Radix Babylon app is running on the Ledger device.</string>
+  <string name="addLedger_addDevice_continue">Continue</string>
   <string name="addLedger_nameLedger_title">Name Your Ledger</string>
   <string name="addLedger_nameLedger_body">Enter a name for this Ledger device</string>
   <string name="addLedger_nameLedger_namePlaceholder">My green Ledger</string>
@@ -480,6 +490,9 @@
   <string name="importMnemonic_offDevice_locationHint">Without revealing location, vague hint on where this mnemonic is backed up, if anywhere.</string>
   <string name="importMnemonic_offDevice_saveWithDescription">Save with description</string>
   <string name="importMnemonic_offDevice_saveWithoutDescription">Save without description</string>
+  <string name="importMnemonic_tempAndroid_changeSeedPhrase">Change seed phrase length</string>
+  <string name="importMnemonic_tempAndroid_seedLength">%d word seed phrase</string>
+  <string name="importMnemonic_tempAndroid_heading">Recover Mnemonic</string>
   <string name="misc_remoteThumbnails_vectorImageFailure">Can\'t displays image of vector type</string>
   <string name="misc_remoteThumbnails_loadingFailure">Can\'t load image</string>
   <string name="generalSettings_title">App Settings</string>
@@ -495,6 +508,8 @@
   <string name="assetTransfer_qrScanInstructions">Scan a QR code of a Radix account address</string>
   <string name="assetTransfer_sendTransferButton">Send Transfer Request</string>
   <string name="assetTransfer_accountList_fromLabel">From</string>
+  <string name="assetTransfer_accountList_toLabel">To</string>
+  <string name="assetTransfer_accountList_addAccountButton">Add Account</string>
   <string name="assetTransfer_header_transfer">Transfer</string>
   <string name="assetTransfer_header_addMessageButton">Add Message</string>
   <string name="assetTransfer_chooseReceivingAccount_invalidAddressError">Invalid address</string>
@@ -527,28 +542,28 @@
   <string name="importOlympiaLedgerAccounts_accountCount">%s - #%d accounts</string>
   <string name="signing_withDeviceFactorSource_signTransaction">Sign transaction with phone</string>
   <string name="signing_withDeviceFactorSource_idLabel">Factor Source ID: %s</string>
+  <string name="signing_useLedgerPurpose_createAccount">Creating account</string>
+  <string name="signing_useLedgerPurpose_createAuthSigningKey">Creating auth key</string>
+  <string name="signing_useLedgerPurpose_signAuth">Sign auth challenge</string>
+  <string name="signing_useLedgerPurpose_signTX">Sign transaction</string>
+  <string name="signing_useLedgerPurpose_importLegacyAccounts">Import Legacy Accounts</string>
+  <string name="signing_useLedgerLabel_Ledger">Ledger</string>
+  <string name="signing_useLedgerLabel_lastUsed">Last used</string>
+  <string name="signing_useLedgerLabel_addedOn">Added on</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_title">Link a Connector</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
 
 Install the Connector extension, open it to see the linking QR code, and tap continue.</string>
+  <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
   <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Ledger Device</string>
   <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Hardware Wallets</string>
   <string name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">What is a Ledger Factor Source</string>
   <string name="ledgerHardwareDevices_addNewLedger">Add New Ledger</string>
   <string name="ledgerHardwareDevices_addedHeading">Added</string>
   <string name="ledgerHardwareDevices_usedHeading">Used</string>
+  <string name="ledgerHardwareDevices_continueWithLedger">Continue</string>
   <string name="ledgerHardwareDevices_subtitleNoLedgers">You have no Ledgers added, add a ledger to get started...</string>
   <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger hardware wallet device</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have connected to</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
-
-
-  <!--  Strings we still need-->
-  <string name="transfer_toAccounts">To</string>
-  <string name="transfer_addAccount">Add Account</string>
-
-  <!--  Need to be changed when we implement the proper restoration of mnemonic-->
-  <string name="restoreMnemonic_changeSeedLength">Change seed phrase length</string>
-  <string name="restoreMnemonic_seedLength">%1$s word seed phrase</string>
-  <string name="restoreMnemonic_heading">Recover Mnemonic</string>
 </resources>
