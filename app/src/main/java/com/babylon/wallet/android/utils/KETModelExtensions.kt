@@ -10,7 +10,9 @@ fun ResourceQuantifier.toResourceRequest(newlyCreated: NewlyCreated): ResourceRe
         is ResourceQuantifier.Amount -> {
             when (val resAddress = resourceAddress) {
                 is ResourceManagerSpecifier.Existing -> {
-                    ResourceRequest.Existing(resAddress.address)
+                    ResourceRequest.Existing(
+                        resAddress.address
+                    )
                 }
                 is ResourceManagerSpecifier.NewlyCreated -> {
                     ResourceRequest.NewlyCreated(newlyCreated.resources[resAddress.index.toInt()].metadata)

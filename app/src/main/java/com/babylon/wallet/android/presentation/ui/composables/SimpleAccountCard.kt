@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun SimpleAccountCard(
@@ -24,6 +25,32 @@ fun SimpleAccountCard(
         Text(
             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
             text = account.displayName.orEmpty(),
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            color = RadixTheme.colors.white,
+            overflow = TextOverflow.Ellipsis
+        )
+        ActionableAddressView(
+            address = account.address,
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+fun SimpleAccountCard(
+    modifier: Modifier = Modifier,
+    account: Network.Account
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
+            text = account.displayName,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.white,

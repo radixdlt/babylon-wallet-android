@@ -32,12 +32,13 @@ class SampleDataProvider {
 
     fun sampleAccount(
         address: String = "fj3489fj348f",
+        name: String = "my account",
         factorSourceId: FactorSource.ID = FactorSource.ID("IDIDDIIDD")
     ): Network.Account {
         return Network.Account(
             address = address,
             appearanceID = 123,
-            displayName = "my account",
+            displayName = name,
             networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
