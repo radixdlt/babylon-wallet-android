@@ -12,7 +12,13 @@ data class ActionableAddress(
     val isCopyPrimaryAction: Boolean = type != Type.TRANSACTION
 
     val displayAddress: String = if (isNft) {
-        address.split(NFT_DELIMITER)[1]
+        val localId = address.split(NFT_DELIMITER)[1]
+        localId.filterNot {
+            it == '<' || it == '>' ||
+                    it == '#' ||
+                    it == '[' || it == ']' ||
+                    it == '{' || it == '}'
+        }
     } else {
         address.truncatedHash()
     }
