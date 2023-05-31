@@ -98,7 +98,7 @@ class EntityRepositoryImpl @Inject constructor(
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
-                    entityDetailsResponseItem.address
+                    entityDetailsResponseItem.address // this is account address
                 }
                 .foldTo(mutableMapOf(), listOf<Resource.FungibleResource>()) { _, entityItem ->
                     val fungibleResourcesItemsList = if (entityItem.fungibleResources != null) {
@@ -135,7 +135,7 @@ class EntityRepositoryImpl @Inject constructor(
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
-                    entityDetailsResponseItem.address
+                    entityDetailsResponseItem.address // this is account address
                 }
                 .foldTo(mutableMapOf(), listOf<Resource.NonFungibleResource>()) { _, entityItem ->
                     val nonFungibleResourcesItemsList = if (entityItem.nonFungibleResources != null) {
