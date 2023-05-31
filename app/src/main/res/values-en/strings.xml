@@ -552,22 +552,30 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="restoreMnemonic_heading">Recover Mnemonic</string>
 
   <!--  Strings that diverge from iOS-->
-  <string name="error_dappRequest_radixMissing">radix.json file is missing</string>
-  <string name="error_dappRequest_definitionMismatch">Definition address does not match any well known definition address</string>
-  <string name="error_dappRequest_definitionMissing">Expected to find dapp definition account type</string>
-  <string name="error_dappRequest_invalidOrigin">Origin does not match any related website</string>
-  <string name="error_transactionFailure_sign">Failed to sign transaction</string>
-  <string name="importOlympiaAccounts_skipRemaining">Skip remaining accounts</string>
-  <string name="importOlympiaAccounts_accountsPerDeviceOne">1 account</string>
-  <string name="importOlympiaAccounts_accountsPerDevice">%d accounts</string>
-  <string name="importOlympiaAccounts_noHardwareAccounts">No Accounts found to import on this device</string>
-  <string name="ledgerImport_addLedger">Add Ledger</string>
-  <string name="ledgerImport_textFieldLabel">Name this Ledger</string>
-  <string name="ledgerImport_textFieldPlaceholder">My Ledger</string>
-  <string name="ledgerImport_textFieldHint">Displayed when you are prompted to sign with this device.</string>
-  <string name="ledgerImport_addNewConnection">Add New P2P Link</string>
-  <string name="ledgerImport_noConnections">Found no open RadixConnect connections.</string>
-  <string name="selected_ledger_description">%s | added on: %s</string>
-  <string name="ledgerImport_whatIsLedger">What is Ledger Factor Source</string>
-  <string name="common_skip">Skip</string>
+  <string name="diverging_radixMissing">radix.json file is missing</string>
+  <string name="diverging_definitionMismatch">Definition address does not match any well known definition address</string>
+  <string name="diverging_definitionMissing">Expected to find dapp definition account type</string>
+  <string name="diverging_invalidOrigin">Origin does not match any related website</string>
+  <string name="diverging_sign">Failed to sign transaction</string>
+  <string name="diverging_skipRemaining">Skip remaining accounts</string>
+  <string name="diverging_noHardwareAccounts">No Accounts found to import on this device</string>
+  <string name="diverging_textFieldLabel">Name this Ledger</string>
+  <string name="diverging_textFieldPlaceholder">My Ledger</string>
+  <string name="diverging_textFieldHint">Displayed when you are prompted to sign with this device.</string>
+  <string name="diverging_addNewConnection">Add New P2P Link</string>
+  <string name="diverging_noConnections">Found no open RadixConnect connections.</string>
+  <string name="diverging_useLedger">Use Ledger</string>
+  <string name="diverging_description">%s | added on: %s</string>
+  <string name="diverging_whatIsLedger">What is Ledger Factor Source</string>
+  <string name="diverging_skip">Skip</string>
+  <string name="diverging_ledgerCommunication">Failed to communicate with Ledger Device</string>
+  <plurals name="diverging_imported_x_accounts">
+    <item quantity="zero">No accounts imported.</item>
+    <item quantity="one">Imported %d account.</item>
+    <item quantity="other">Imported %d accounts.</item>
+  </plurals>
+  <plurals name="diverging_accounts_left_to_import">
+    <item quantity="one">%d account left to import.</item>
+    <item quantity="other">%d accounts left to import.</item>
+  </plurals>
 </resources>

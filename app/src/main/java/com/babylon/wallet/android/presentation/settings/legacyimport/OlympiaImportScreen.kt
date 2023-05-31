@@ -287,7 +287,7 @@ private fun OlympiaImportContent(
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
-                    title = stringResource(R.string.import_legacy_wallet),
+                    title = stringResource(R.string.importLegacyWallet_title),
                     onBackClick = onBackClick,
                     contentColor = RadixTheme.colors.gray1,
                     backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.None else BackIconType.Back,
@@ -528,13 +528,13 @@ private fun HardwareImportScreen(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = pluralStringResource(id = R.plurals.accounts_left_to_import, accountsLeft, accountsLeft),
+                text = pluralStringResource(id = R.plurals.diverging_accounts_left_to_import, accountsLeft, accountsLeft),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             if (!hasP2pLinks) {
                 Text(
-                    text = stringResource(id = com.babylon.wallet.android.R.string.found_no_radix_connect_connections),
+                    text = stringResource(id = R.string.diverging_noConnections),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
@@ -543,7 +543,7 @@ private fun HardwareImportScreen(
             } else {
                 if (ledgerFactorSources.isEmpty()) {
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.you_have_no_ledgers_added),
+                        text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -567,13 +567,13 @@ private fun HardwareImportScreen(
                         .fillMaxWidth()
                         .imePadding(),
                     onClick = onAddNewLedger,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_ledger)
+                    text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
                 )
             } else {
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onAddP2PLink,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_p2p_link)
+                    text = stringResource(id = R.string.diverging_addNewConnection)
                 )
             }
             AnimatedVisibility(visible = hasP2pLinks && ledgerFactorSources.isNotEmpty()) {
@@ -582,12 +582,12 @@ private fun HardwareImportScreen(
                         .fillMaxWidth()
                         .imePadding(),
                     onClick = onUseLedger,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.use_ledger)
+                    text = stringResource(id = R.string.diverging_useLedger)
                 )
             }
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.skip_remaining_accounts),
+                text = stringResource(R.string.diverging_skipRemaining),
                 onClick = onSkipRemainingHardwareAccounts,
                 enabled = !waitingForLedgerResponse
             )
@@ -615,7 +615,7 @@ private fun ImportCompletePage(
         ) {
             item {
                 Text(
-                    text = pluralStringResource(id = R.plurals.imported_x_accounts, migratedAccounts.size, migratedAccounts.size),
+                    text = pluralStringResource(id = R.plurals.diverging_imported_x_accounts, migratedAccounts.size, migratedAccounts.size),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )

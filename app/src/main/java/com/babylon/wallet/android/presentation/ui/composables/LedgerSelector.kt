@@ -52,7 +52,7 @@ fun LedgerSelector(
         ) {
             val selectedFactorSource = ledgerFactorSources.firstOrNull { it.id == selectedLedgerFactorSourceID }
             val selectedLedgerDescription = stringResource(
-                id = com.babylon.wallet.android.R.string.selected_ledger_description,
+                id = com.babylon.wallet.android.R.string.diverging_description,
                 selectedFactorSource?.label.orEmpty(),
                 selectedFactorSource?.addedOnTimestampFormatted().orEmpty()
             )

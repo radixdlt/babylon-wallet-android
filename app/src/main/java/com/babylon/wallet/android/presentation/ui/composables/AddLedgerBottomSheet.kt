@@ -49,7 +49,7 @@ fun AddLedgerBottomSheet(
                 AddLedgerSheetState.Connect -> {
                     if (!hasP2pLinks) {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_noConnections),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.diverging_noConnections),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             overflow = TextOverflow.Ellipsis,
@@ -58,7 +58,7 @@ fun AddLedgerBottomSheet(
                         RadixSecondaryButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = onAddP2PLink,
-                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_addNewConnection)
+                            text = stringResource(id = com.babylon.wallet.android.R.string.diverging_addNewConnection)
                         )
                     }
                     Text(
@@ -81,9 +81,9 @@ fun AddLedgerBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         onValueChanged = { ledgerNameValue = it },
                         value = ledgerNameValue,
-                        leftLabel = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_textFieldLabel),
-                        hint = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_textFieldPlaceholder),
-                        optionalHint = stringResource(id = com.babylon.wallet.android.R.string.ledgerImport_textFieldHint)
+                        leftLabel = stringResource(id = com.babylon.wallet.android.R.string.diverging_textFieldLabel),
+                        hint = stringResource(id = com.babylon.wallet.android.R.string.diverging_textFieldPlaceholder),
+                        optionalHint = stringResource(id = com.babylon.wallet.android.R.string.diverging_textFieldHint)
                     )
                     RadixPrimaryButton(
                         modifier = Modifier.fillMaxWidth(),
@@ -98,7 +98,7 @@ fun AddLedgerBottomSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding(),
-                        text = stringResource(com.babylon.wallet.android.R.string.common_skip),
+                        text = stringResource(com.babylon.wallet.android.R.string.diverging_skip),
                         onClick = onSkipLedgerName,
                         throttleClicks = true
                     )

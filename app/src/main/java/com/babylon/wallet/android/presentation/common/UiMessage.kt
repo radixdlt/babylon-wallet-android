@@ -35,7 +35,7 @@ enum class InfoMessageType {
             InvalidMnemonic -> R.string.importOlympiaAccounts_invalidMnemonic
             InvalidPayload -> R.string.importOlympiaAccounts_invalidPayload
             NoMnemonicForAccounts -> R.string.importOlympiaAccounts_noMnemonicFound
-            NoAccountsForLedger -> R.string.importOlympiaAccounts_noHardwareAccounts
+            NoAccountsForLedger -> R.string.diverging_noHardwareAccounts
         }
     }
 }

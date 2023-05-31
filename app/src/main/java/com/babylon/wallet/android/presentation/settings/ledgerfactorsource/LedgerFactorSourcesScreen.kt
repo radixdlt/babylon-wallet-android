@@ -149,7 +149,7 @@ private fun LedgerFactorSourcesDetails(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         InfoLink(
-            stringResource(R.string.ledgerImport_whatIsLedger),
+            stringResource(R.string.diverging_whatIsLedger),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)

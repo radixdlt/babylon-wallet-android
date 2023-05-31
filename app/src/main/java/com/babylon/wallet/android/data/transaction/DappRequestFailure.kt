@@ -89,17 +89,17 @@ sealed interface DappRequestFailure {
             TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
             is WrongNetwork -> R.string.error_transactionFailure_network
             TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee -> R.string.error_transactionFailure_noFundsToApproveTransaction
-            DappVerificationFailure.RadixJsonNotFound -> R.string.radix_json_file_is_missing
-            DappVerificationFailure.UnknownDefinitionAddress -> R.string.definition_address_does_not_match
-            DappVerificationFailure.UnknownWebsite -> R.string.origin_does_not_match
-            DappVerificationFailure.WrongAccountType -> R.string.expected_to_find_dapp_account_type
+            DappVerificationFailure.RadixJsonNotFound -> R.string.diverging_radixMissing
+            DappVerificationFailure.UnknownDefinitionAddress -> R.string.diverging_definitionMismatch
+            DappVerificationFailure.UnknownWebsite -> R.string.diverging_invalidOrigin
+            DappVerificationFailure.WrongAccountType -> R.string.diverging_definitionMissing
             InvalidPersona -> R.string.error_dappRequest_invalidPersonaId
             InvalidRequest -> R.string.error_dappRequest_invalidRequest
             TransactionApprovalFailure.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
-            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.tx_fail_sign
-            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.ledger_failure
-            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.ledger_failure
-            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.ledger_failure
+            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.diverging_sign
+            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.diverging_ledgerCommunication
+            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.diverging_ledgerCommunication
+            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.diverging_ledgerCommunication
         }
     }
 
