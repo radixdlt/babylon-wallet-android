@@ -18,8 +18,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateValidatorsListRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateValidatorsListResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
