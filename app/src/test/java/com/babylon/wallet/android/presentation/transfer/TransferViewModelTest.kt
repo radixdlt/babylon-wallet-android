@@ -102,6 +102,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         }
     }
 
+    @Ignore("until we have the validated addresses from iOS")
     @Test
     fun `choosing an third party address from the accounts chooser`() = runTest {
         val viewModel = vm.value
