@@ -104,6 +104,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
             LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.common_somethingWentWrong // TODO consider different copy
             LedgerCommunicationFailure.FailedToSignTransaction -> R.string.common_somethingWentWrong // TODO consider different copy
+            is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
         }
     }
 

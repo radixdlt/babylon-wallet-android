@@ -152,7 +152,7 @@ private fun AccountPreferenceContent(
                 if (!hasAuthKey) {
                     RadixSecondaryButton(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.create_and_upload_auth_key),
+                        text = stringResource(R.string.accountSettings_debug_createAndUploadAuthKey),
                         onClick = onCreateAndUploadAuthKey,
                         enabled = !loading,
                         throttleClicks = true

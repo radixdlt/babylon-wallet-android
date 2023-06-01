@@ -179,7 +179,7 @@ private fun PersonaDetailList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(R.string.create_and_upload_auth_key),
+                    text = stringResource(R.string.accountSettings_debug_createAndUploadAuthKey),
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,
                     throttleClicks = true

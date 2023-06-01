@@ -62,7 +62,7 @@ fun FeePayerSelectionSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.no_account_to_pay_fee),
+                    text = stringResource(id = R.string.transactionReview_selectFeePayer_navigationTitle),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
@@ -72,7 +72,10 @@ fun FeePayerSelectionSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.pay_tx_fee, TransactionConfig.DEFAULT_LOCK_FEE),
+                    text = stringResource(
+                        id = R.string.transactionReview_selectFeePayer_selectAccount,
+                        TransactionConfig.DEFAULT_LOCK_FEE.toString()
+                    ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
@@ -108,7 +111,7 @@ fun FeePayerSelectionSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.confirm_fee_payer),
+            text = stringResource(id = R.string.transactionReview_selectFeePayer_confirmButton),
             onClick = onPayerConfirmed,
             enabled = true
         )
