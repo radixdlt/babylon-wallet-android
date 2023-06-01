@@ -198,10 +198,6 @@
   <string name="personas_subtitle">Here are all of your current Personas in your Wallet.</string>
   <string name="personas_whatIsPersona">What is a Persona</string>
   <string name="personas_createNewPersona">Create a New Persona</string>
-  <string name="appSettings_title">App Settings</string>
-  <string name="appSettings_subtitle">Customize your Radix Wallet</string>
-  <string name="appSettings_developerMode_title">Developer Mode</string>
-  <string name="appSettings_developerMode_subtitle">Warning: Disables website validity checks</string>
   <string name="backup_disabledText">Back up is turned off</string>
   <string name="backup_lastBackedUp">Last Backed up: %s</string>
   <string name="backup_noLastBackUp">Not Backed up yet</string>
