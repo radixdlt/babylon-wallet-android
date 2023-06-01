@@ -1,3 +1,5 @@
+@file:Suppress("LongParameterList")
+
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.Curve
@@ -42,7 +44,9 @@ interface LedgerMessenger {
         interactionId: String,
         signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
-        challengeHex: String
+        challengeHex: String,
+        origin: String,
+        dAppDefinitionAddress: String
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>
 }
 
@@ -169,13 +173,17 @@ class LedgerMessengerImpl @Inject constructor(
         interactionId: String,
         signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
-        challengeHex: String
+        challengeHex: String,
+        origin: String,
+        dAppDefinitionAddress: String
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
         val ledgerRequest: LedgerInteractionRequest = SignChallengeRequest(
             interactionId = interactionId,
             signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(Curve.from(it.second), it.first) },
             ledgerDevice = ledgerDevice,
-            challengeHex = challengeHex
+            challengeHex = challengeHex,
+            origin = origin,
+            dAppDefinitionAddress = dAppDefinitionAddress
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {

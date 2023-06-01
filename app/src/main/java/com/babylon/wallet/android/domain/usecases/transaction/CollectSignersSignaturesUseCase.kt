@@ -24,7 +24,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
 
     suspend operator fun invoke(
         signers: List<SigningEntity>,
-        dataToSign: ByteArray,
+        signRequest: SignRequest,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
         val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
@@ -35,7 +35,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
-                        dataToSign = dataToSign,
+                        dataToSign = signRequest.dataToSign,
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
@@ -45,7 +45,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
                         signers = signers,
-                        dataToSign = dataToSign,
+                        signRequest = signRequest,
                         signingPurpose = signingPurpose
                     ).onSuccess { signatures ->
                         _signingEvent.update { SigningEvent.SigningWithLedgerSuccess(factorSource.id) }
@@ -59,4 +59,11 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         }
         return Result.success(signaturesWithPublicKeys)
     }
+}
+
+sealed class SignRequest(val dataToSign: ByteArray) {
+    data class SignTransactionRequest(val compiledTransactionIntent: ByteArray) : SignRequest(compiledTransactionIntent)
+    data class SignAuthChallengeRequest(private val data: ByteArray, val origin: String, val dAppDefinitionAddress: String) : SignRequest(
+        data
+    )
 }

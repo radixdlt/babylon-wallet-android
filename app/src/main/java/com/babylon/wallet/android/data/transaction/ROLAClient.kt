@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -53,7 +54,15 @@ class ROLAClient @Inject constructor(
         origin: String
     ): Result<SignatureWithPublicKey> {
         val dataToSign = payloadToHash(challengeHex, dAppDefinitionAddress, origin)
-        return collectSignersSignaturesUseCase(listOf(signingEntity), dataToSign, SigningPurpose.SignAuth).mapCatching { signatures ->
+        return collectSignersSignaturesUseCase(
+            signers = listOf(signingEntity),
+            signRequest = SignRequest.SignAuthChallengeRequest(
+                data = dataToSign,
+                origin = origin,
+                dAppDefinitionAddress = dAppDefinitionAddress
+            ),
+            signingPurpose = SigningPurpose.SignAuth
+        ).mapCatching { signatures ->
             if (signatures.size == 1) {
                 signatures.first()
             } else {

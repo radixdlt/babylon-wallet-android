@@ -29,19 +29,19 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,
     private val profileRepository: ProfileRepository
 ) {
-
     suspend operator fun invoke(
         ledgerFactorSource: FactorSource,
         signers: List<SigningEntity>,
-        dataToSign: ByteArray,
+        signRequest: SignRequest,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
         return when (signingPurpose) {
             SigningPurpose.SignAuth -> {
+                require(signRequest is SignRequest.SignAuthChallengeRequest)
                 signAuth(
                     signers = signers,
                     ledgerFactorSource = ledgerFactorSource,
-                    dataToSign = dataToSign,
+                    request = signRequest,
                     signingPurpose = signingPurpose
                 )
             }
@@ -49,7 +49,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 signTransaction(
                     signers = signers,
                     ledgerFactorSource = ledgerFactorSource,
-                    dataToSign = dataToSign,
+                    dataToSign = signRequest.dataToSign,
                     signingPurpose = signingPurpose
                 )
             }
@@ -85,7 +85,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private suspend fun signAuth(
         signers: List<SigningEntity>,
         ledgerFactorSource: FactorSource,
-        dataToSign: ByteArray,
+        request: SignRequest.SignAuthChallengeRequest,
         signingPurpose: SigningPurpose
     ): Result<List<SignatureWithPublicKey>> {
         return signCommon(
@@ -101,7 +101,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                     ledgerFactorSource.id.value
                 ),
                 signersDerivationPathToCurve = pathToCurve,
-                challengeHex = dataToSign.toHexString()
+                challengeHex = request.dataToSign.toHexString(),
+                origin = request.origin,
+                dAppDefinitionAddress = request.dAppDefinitionAddress
             ).mapCatching { response ->
                 response.signatures
             }

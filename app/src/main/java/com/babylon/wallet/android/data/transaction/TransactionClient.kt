@@ -16,6 +16,7 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.crypto.toECKeyPair
@@ -116,7 +117,10 @@ class TransactionClient @Inject constructor(
                     DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                 )
             )
-            val signaturesResult = collectSignersSignaturesUseCase(signers, compiledTransactionIntent)
+            val signaturesResult = collectSignersSignaturesUseCase(
+                signers = signers,
+                signRequest = SignRequest.SignTransactionRequest(compiledTransactionIntent)
+            )
             if (signaturesResult.isFailure) {
                 return Result.failure(
                     DappRequestException(

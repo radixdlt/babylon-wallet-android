@@ -100,6 +100,10 @@ data class SignChallengeRequest(
     val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
     @SerialName("challenge")
     val challengeHex: String,
+    @SerialName("origin")
+    val origin: String,
+    @SerialName("dAppDefinitionAddress")
+    val dAppDefinitionAddress: String,
 ) : LedgerInteractionRequest
 
 @Serializable
