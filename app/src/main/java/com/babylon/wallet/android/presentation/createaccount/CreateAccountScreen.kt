@@ -194,7 +194,7 @@ fun CreateAccountContent(
                     }
                 },
                 enabled = buttonEnabled,
-                text = stringResource(id = R.string.createAccount_introduction_title),
+                text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 throttleClicks = true
             )
         }
