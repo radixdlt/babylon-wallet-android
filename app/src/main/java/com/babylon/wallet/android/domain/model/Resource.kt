@@ -5,6 +5,9 @@ import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.radixdlt.toolkit.RadixEngineToolkit
+import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
+import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 
 sealed class Resource {
@@ -17,7 +20,7 @@ sealed class Resource {
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-    ) : Resource() {
+    ) : Resource(), Comparable<FungibleResource> {
         val name: String?
             get() = nameMetadataItem?.name // .orEmpty()
 
@@ -25,7 +28,9 @@ sealed class Resource {
             get() = symbolMetadataItem?.symbol.orEmpty()
 
         val isXrd: Boolean
-            get() = symbolMetadataItem?.isXrd ?: false
+            get() = RadixEngineToolkit.knownEntityAddresses(
+                KnownEntityAddressesRequest(networkId = Radix.Gateway.default.network.id.toUByte())
+            ).getOrNull()?.xrdResourceAddress == resourceAddress
 
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
@@ -41,6 +46,34 @@ sealed class Resource {
             } else {
                 ""
             }
+
+        override fun compareTo(other: FungibleResource): Int {
+            compareValuesBy(
+                this,
+                other,
+                { it.amount },
+                { it.name }
+            )
+            val symbolDiff = symbol.compareTo(other.symbol)
+            if (symbolDiff == 0) {
+
+            }
+            if (symbol.isNotBlank() && other.symbol.isBlank()) {
+                return 1
+            } else if (symbol.isBlank() && other.symbol.isNotBlank()) {
+                return -1
+            } else if (symbol.isNotBlank() && other.symbol.isNotBlank()) {
+                return if (symbol == other.symbol) {
+                    resourceAddress.compareTo(other.resourceAddress)
+                } else {
+                    symbol.compareTo(other.symbol)
+                }
+            }
+
+
+
+            return resourceAddress.compareTo(other.resourceAddress)
+        }
     }
 
     data class NonFungibleResource(
