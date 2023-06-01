@@ -606,7 +606,7 @@ private fun HardwareImportScreen(
                         color = RadixTheme.colors.gray1
                     )
                 },
-                confirmText = stringResource(id = R.string.common_continue)
+                confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
             )
         }
     }
@@ -664,7 +664,7 @@ private fun ImportCompletePage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.common_continue),
+            text = stringResource(R.string.common_ok),
             onClick = onContinue,
             throttleClicks = true
         )

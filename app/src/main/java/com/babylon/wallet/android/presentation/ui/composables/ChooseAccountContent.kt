@@ -150,7 +150,7 @@ fun ChooseAccountContent(
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground)
                 .align(Alignment.BottomCenter),
-            text = stringResource(id = R.string.common_continue)
+            text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)
         )
     }
 }

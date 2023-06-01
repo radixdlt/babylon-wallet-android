@@ -64,14 +64,14 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                is DeveloperMode -> R.string.appSettings_developerMode_title
+                is DeveloperMode -> R.string.generalSettings_developerMode_title
             }
         }
 
         @StringRes
         fun subtitleRes(): Int {
             return when (this) {
-                is DeveloperMode -> R.string.appSettings_developerMode_subtitle
+                is DeveloperMode -> R.string.generalSettings_developerMode_subtitle
             }
         }
 
