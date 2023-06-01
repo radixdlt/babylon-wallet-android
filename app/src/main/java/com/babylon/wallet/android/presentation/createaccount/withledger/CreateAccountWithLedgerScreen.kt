@@ -54,7 +54,6 @@ fun CreateAccountWithLedgerScreen(
     viewModel: CreateAccountWithLedgerViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAddP2PLink: () -> Unit,
     goBackToCreateAccount: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -72,14 +71,11 @@ fun CreateAccountWithLedgerScreen(
             modifier = modifier,
             onBackClick = onBackClick,
             ledgerFactorSources = state.ledgerFactorSources,
-            hasP2pLinks = state.hasP2pLinks,
             selectedFactorSourceID = state.selectedFactorSourceID,
             onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
-            onAddP2PLink = onAddP2PLink,
             onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
             addLedgerSheetState = state.addLedgerSheetState,
             onConfirmLedgerName = viewModel::onConfirmLedgerName,
-            onSkipLedgerName = viewModel::onSkipLedgerName,
             onUseLedger = viewModel::onUseLedger,
             waitingForLedgerResponse = state.waitingForLedgerResponse
         )
@@ -91,14 +87,11 @@ fun CreateAccountWithLedgerContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
-    hasP2pLinks: Boolean,
     selectedFactorSourceID: FactorSource.ID?,
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
-    onAddP2PLink: () -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
-    onSkipLedgerName: () -> Unit,
     onUseLedger: () -> Unit,
     waitingForLedgerResponse: Boolean
 ) {
@@ -234,14 +227,11 @@ fun CreateAccountWithLedgerContentPreview() {
             modifier = Modifier.fillMaxSize(),
             onBackClick = {},
             ledgerFactorSources = persistentListOf(),
-            hasP2pLinks = false,
             selectedFactorSourceID = null,
             onLedgerFactorSourceSelected = {},
-            onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
-            onSkipLedgerName = {},
             onUseLedger = {},
             waitingForLedgerResponse = false
         )

@@ -83,7 +83,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import java.util.Locale
 
 @Composable
 fun DappDetailScreen(

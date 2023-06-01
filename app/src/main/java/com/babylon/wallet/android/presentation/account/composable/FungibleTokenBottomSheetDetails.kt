@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
-import java.util.Locale
 
 @Composable
 fun FungibleTokenBottomSheetDetails(

@@ -186,7 +186,11 @@ private fun SelectPersonaContent(
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             LoginRequestHeader(
-                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
+                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty {
+                                    stringResource(
+                                        id = R.string.dAppRequest_metadata_unknownName
+                                    )
+                                },
                                 firstTimeLogin = firstTimeLogin,
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                             )

@@ -65,7 +65,6 @@ fun LedgerFactorSourcesScreen(
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
         addLedgerSheetState = state.addLedgerSheetState,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
-        onSkipLedgerName = viewModel::onSkipLedgerName,
         onConfirmLedgerName = viewModel::onConfirmLedgerName
     )
 }
@@ -81,7 +80,6 @@ private fun SettingsLinkConnectorContent(
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     waitingForLedgerResponse: Boolean,
-    onSkipLedgerName: () -> Unit,
     onConfirmLedgerName: (String) -> Unit
 ) {
     var showNoP2pLinksDialog by remember {
@@ -261,8 +259,7 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
-            waitingForLedgerResponse = false,
-            onSkipLedgerName = {}
+            waitingForLedgerResponse = false
         ) {}
     }
 }

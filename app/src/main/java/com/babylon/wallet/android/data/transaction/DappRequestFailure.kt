@@ -88,9 +88,11 @@ sealed interface DappRequestFailure {
             RejectedByUser -> R.string.error_transactionFailure_rejectedByUser
             TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
             is WrongNetwork -> R.string.error_transactionFailure_network
-            TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee -> R.string.error_transactionFailure_noFundsToApproveTransaction
+            TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee ->
+                R.string.error_transactionFailure_noFundsToApproveTransaction
             DappVerificationFailure.RadixJsonNotFound -> R.string.dAppRequest_validationOutcome_shortExplanationBadContent
-            DappVerificationFailure.UnknownDefinitionAddress -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
+            DappVerificationFailure.UnknownDefinitionAddress ->
+                R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             DappVerificationFailure.UnknownWebsite -> R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
             DappVerificationFailure.WrongAccountType -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             InvalidPersona -> R.string.error_dappRequest_invalidPersonaId
