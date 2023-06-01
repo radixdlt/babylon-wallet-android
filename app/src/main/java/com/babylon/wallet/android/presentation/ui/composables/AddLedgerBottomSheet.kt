@@ -62,7 +62,7 @@ fun AddLedgerBottomSheet(
                     RadixPrimaryButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onSendAddLedgerRequest,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.common_continue)
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_addDevice_continue)
                     )
                 }
                 AddLedgerSheetState.InputLedgerName -> {

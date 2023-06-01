@@ -464,7 +464,8 @@ private fun PersonaDetailsSheet(
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
-            }
+            },
+            confirmText = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_confirm)
         )
     }
 }

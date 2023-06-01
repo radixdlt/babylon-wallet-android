@@ -208,7 +208,7 @@ fun CreateAccountWithLedgerContent(
                             .fillMaxWidth()
                             .imePadding(),
                         onClick = onUseLedger,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.common_continue)
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger)
                     )
                 }
             }

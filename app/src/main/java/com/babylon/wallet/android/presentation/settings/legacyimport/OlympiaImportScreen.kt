@@ -571,7 +571,7 @@ private fun HardwareImportScreen(
                     .fillMaxWidth()
                     .imePadding(),
                 onClick = onUseLedger,
-                text = stringResource(id = R.string.common_continue),
+                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
                 enabled = hasP2pLinks && ledgerFactorSources.isNotEmpty()
             )
             RadixSecondaryButton(

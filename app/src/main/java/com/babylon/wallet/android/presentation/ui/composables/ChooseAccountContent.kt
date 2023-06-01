@@ -149,7 +149,8 @@ fun ChooseAccountContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground)
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomCenter),
+            text = stringResource(id = R.string.common_continue)
         )
     }
 }

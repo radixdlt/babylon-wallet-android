@@ -119,7 +119,9 @@ private fun CreatePersonaInfoContent(
                     .fillMaxWidth()
                     .imePadding(),
                 onClick = onContinueClick,
-                text = stringResource(id = com.babylon.wallet.android.R.string.common_continue)
+                text = stringResource(
+                    id = com.babylon.wallet.android.R.string.createPersona_introduction_continue
+                )
             )
         }
     }

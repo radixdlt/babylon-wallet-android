@@ -221,7 +221,9 @@ private fun PersonaDataOnetimeContent(
                 .padding(RadixTheme.dimensions.paddingDefault),
             enabled = continueButtonEnabled,
             onClick = onContinueClick,
-            text = stringResource(id = R.string.common_continue)
+            text = stringResource(
+                id = R.string.dAppRequest_personalDataOneTime_continue
+            )
         )
     }
 }

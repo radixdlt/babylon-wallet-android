@@ -211,7 +211,7 @@ private fun PersonaEditContent(
                             .imePadding()
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground),
-                        buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault)
+                        buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault),
                     )
                     if (showCancelPrompt) {
                         BasicPromptAlertDialog(

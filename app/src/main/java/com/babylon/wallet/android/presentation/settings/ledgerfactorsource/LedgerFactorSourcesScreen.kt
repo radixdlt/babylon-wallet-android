@@ -146,19 +146,25 @@ private fun SettingsLinkConnectorContent(
             },
             title = {
                 Text(
-                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                    text = stringResource(
+                        id = R.string.ledgerHardwareDevices_linkConnectorAlert_title
+                    ),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                    text = stringResource(
+                        id = R.string.ledgerHardwareDevices_linkConnectorAlert_message
+                    ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
             },
-            confirmText = stringResource(id = R.string.common_continue)
+            confirmText = stringResource(
+                id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue
+            )
         )
     }
 }

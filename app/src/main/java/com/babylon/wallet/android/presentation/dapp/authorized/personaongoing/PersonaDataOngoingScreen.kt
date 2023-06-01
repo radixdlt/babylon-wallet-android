@@ -198,7 +198,7 @@ private fun PersonaDataOngoingPermissionContent(
                 .padding(RadixTheme.dimensions.paddingDefault),
             onClick = onContinueClick,
             enabled = continueButtonEnabled,
-            text = stringResource(id = R.string.common_continue)
+            text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
         )
     }
 }
