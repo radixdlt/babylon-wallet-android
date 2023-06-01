@@ -5,13 +5,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 
 @Suppress("CyclomaticComplexMethod")
-sealed class DappRequestFailure : Exception() {
+sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) {
 
     object GetEpoch : DappRequestFailure()
     object RejectedByUser : DappRequestFailure()
     object InvalidRequest : DappRequestFailure()
     object InvalidPersona : DappRequestFailure()
-    object FailedToSignAuthChallenge : DappRequestFailure()
+    data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
     data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
 
     sealed class TransactionApprovalFailure : DappRequestFailure() {
@@ -35,10 +35,10 @@ sealed class DappRequestFailure : Exception() {
         object UnknownDefinitionAddress : DappVerificationFailure()
     }
 
-    sealed interface LedgerCommunicationFailure : DappRequestFailure {
-        object FailedToGetDeviceId : LedgerCommunicationFailure
-        object FailedToDerivePublicKeys : LedgerCommunicationFailure
-        object FailedToSignTransaction : LedgerCommunicationFailure
+    sealed class LedgerCommunicationFailure : DappRequestFailure() {
+        object FailedToGetDeviceId : LedgerCommunicationFailure()
+        object FailedToDerivePublicKeys : LedgerCommunicationFailure()
+        object FailedToSignTransaction : LedgerCommunicationFailure()
     }
 
     fun toWalletErrorType(): WalletErrorType {
@@ -69,7 +69,7 @@ sealed class DappRequestFailure : Exception() {
             InvalidRequest -> WalletErrorType.InvalidRequest
             TransactionApprovalFailure.CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
             TransactionApprovalFailure.SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
-            FailedToSignAuthChallenge -> WalletErrorType.FailedToSignAuthChallenge
+            is FailedToSignAuthChallenge -> WalletErrorType.FailedToSignAuthChallenge
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
@@ -102,7 +102,7 @@ sealed class DappRequestFailure : Exception() {
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.ledger_failure
             LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.ledger_failure
             LedgerCommunicationFailure.FailedToSignTransaction -> R.string.ledger_failure
-            FailedToSignAuthChallenge -> R.string.failed_to_sign_auth_challenge
+            is FailedToSignAuthChallenge -> R.string.failed_to_sign_auth_challenge
         }
     }
 

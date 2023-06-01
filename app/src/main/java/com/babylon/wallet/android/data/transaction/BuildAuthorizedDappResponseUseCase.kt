@@ -34,12 +34,12 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             val oneTimeAccountsResponseItem =
                 buildAccountsResponseItem(request, oneTimeAccounts, request.oneTimeAccountsRequestItem?.challenge)
             if (oneTimeAccountsResponseItem.isFailure) {
-                return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge)
+                return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
             }
             val ongoingAccountsResponseItem =
                 buildAccountsResponseItem(request, ongoingAccounts, request.ongoingAccountsRequestItem?.challenge)
             if (ongoingAccountsResponseItem.isFailure) {
-                return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge)
+                return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
             }
             return Result.success(
                 WalletInteractionSuccessResponse(
@@ -54,7 +54,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             )
         } else {
-            return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge)
+            return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
         }
     }
 
@@ -64,7 +64,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     ): Result<AuthRequestResponseItem> {
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
             is MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
-                var response: Result<AuthRequestResponseItem> = Result.failure(DappRequestFailure.FailedToSignAuthChallenge)
+                var response: Result<AuthRequestResponseItem> = Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
                 rolaClient.signAuthChallenge(
                     selectedPersona,
                     authRequest.challenge,
@@ -125,7 +125,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     request.metadata.dAppDefinitionAddress,
                     request.metadata.origin
                 )
-                if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge)
+                if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
                 AccountProof(
                     account.address,
                     signatureWithPublicKey.getOrThrow().toProof(challengeHex)

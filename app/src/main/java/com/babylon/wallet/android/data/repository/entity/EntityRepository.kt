@@ -56,6 +56,7 @@ interface EntityRepository {
     suspend fun getEntityMetadata(address: String, isRefreshing: Boolean = false): Result<List<MetadataItem>>
 }
 
+@Suppress("TooManyFunctions")
 class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache

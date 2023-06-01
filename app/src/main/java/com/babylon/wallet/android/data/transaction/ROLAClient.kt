@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToStr
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
+import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -14,13 +15,12 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.domain.GenerateAuthSigningFactorInstanceUseCase
-import rdx.works.profile.domain.signing.SignWithDeviceFactorSourceUseCase
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
     private val entityRepository: EntityRepository,
     private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase,
-    private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase
+    private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
 
     suspend fun generateAuthSigningFactorInstance(signingEntity: SigningEntity): FactorInstance {
@@ -53,11 +53,14 @@ class ROLAClient @Inject constructor(
         origin: String
     ): Result<SignatureWithPublicKey> {
         val dataToSign = payloadToHash(challengeHex, dAppDefinitionAddress, origin)
-        val signatures = signWithDeviceFactorSourceUseCase(listOf(signingEntity), dataToSign, SigningPurpose.SignAuth)
-        return if (signatures.size == 1) {
-            Result.success(signatures.first())
-        } else {
-            Result.failure(Exception("Failed to sign challenge $challengeHex by entity: ${signingEntity.address}"))
+        return collectSignersSignaturesUseCase(listOf(signingEntity), dataToSign, SigningPurpose.SignAuth).mapCatching { signatures ->
+            if (signatures.size == 1) {
+                signatures.first()
+            } else {
+                throw DappRequestFailure.FailedToSignAuthChallenge(
+                    msg = "Failed to sign challenge $challengeHex by entity: ${signingEntity.address}"
+                )
+            }
         }
     }
 }

@@ -95,11 +95,11 @@ data class SignChallengeRequest(
     @SerialName("interactionId")
     val interactionId: String,
     @SerialName("signers")
-    val signers: DerivePublicKeyRequest.KeyParameters,
+    val signers: List<DerivePublicKeyRequest.KeyParameters>,
     @SerialName("ledgerDevice")
     val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
     @SerialName("challenge")
-    val challenge: String,
+    val challengeHex: String,
 ) : LedgerInteractionRequest
 
 @Serializable

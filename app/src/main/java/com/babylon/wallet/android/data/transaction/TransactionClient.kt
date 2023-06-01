@@ -46,7 +46,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
-import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
 import timber.log.Timber
 import java.security.SecureRandom
 import javax.inject.Inject
@@ -59,7 +58,6 @@ class TransactionClient @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    private val getFactorSourcesAndSigningEntitiesUseCase: GetFactorSourcesAndSigningEntitiesUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
@@ -100,7 +98,6 @@ class TransactionClient @Inject constructor(
         }
         Timber.d("Approving: \n${Json.encodeToString(manifestWithTransactionFee)}")
         val signers = getSigningEntities(networkId, manifestWithTransactionFee)
-        val signersPerFactorSource = getFactorSourcesAndSigningEntitiesUseCase(signers)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
         return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
             val compileTransactionIntentRequest = CompileTransactionIntentRequest(
@@ -119,7 +116,7 @@ class TransactionClient @Inject constructor(
                     DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                 )
             )
-            val signaturesResult = collectSignersSignaturesUseCase(signersPerFactorSource, compiledTransactionIntent)
+            val signaturesResult = collectSignersSignaturesUseCase(signers, compiledTransactionIntent)
             if (signaturesResult.isFailure) {
                 return Result.failure(
                     DappRequestException(

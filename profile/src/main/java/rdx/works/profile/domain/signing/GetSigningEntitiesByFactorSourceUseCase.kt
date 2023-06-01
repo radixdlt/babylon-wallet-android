@@ -8,7 +8,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSource
 import javax.inject.Inject
 
-class GetFactorSourcesAndSigningEntitiesUseCase @Inject constructor(
+class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 

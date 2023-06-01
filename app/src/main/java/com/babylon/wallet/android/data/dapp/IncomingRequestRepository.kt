@@ -43,8 +43,10 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
                 _currentRequestToHandle.emit(incomingRequest)
             }
             if (incomingRequest.isInternal) {
+                Timber.d("request test: adding internal ${incomingRequest.id}")
                 listOfIncomingRequests.add(0, incomingRequest)
             } else {
+                Timber.d("request test: adding ${incomingRequest.id}")
                 listOfIncomingRequests.add(incomingRequest)
             }
             Timber.d("🗂 new incoming request with id ${incomingRequest.id} added in list, so size now is ${listOfIncomingRequests.size}")

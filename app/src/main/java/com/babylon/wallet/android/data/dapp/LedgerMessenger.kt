@@ -40,8 +40,7 @@ interface LedgerMessenger {
 
     suspend fun signChallengeRequest(
         interactionId: String,
-        signerDerivationPathToCurve: Pair<String, Slip10Curve>,
-        compiledTransactionIntent: String,
+        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
         challengeHex: String
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>
@@ -168,19 +167,15 @@ class LedgerMessengerImpl @Inject constructor(
 
     override suspend fun signChallengeRequest(
         interactionId: String,
-        signerDerivationPathToCurve: Pair<String, Slip10Curve>,
-        compiledTransactionIntent: String,
+        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
         challengeHex: String
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
         val ledgerRequest: LedgerInteractionRequest = SignChallengeRequest(
             interactionId = interactionId,
-            signers = DerivePublicKeyRequest.KeyParameters(
-                Curve.from(signerDerivationPathToCurve.second),
-                signerDerivationPathToCurve.first
-            ),
+            signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(Curve.from(it.second), it.first) },
             ledgerDevice = ledgerDevice,
-            challenge = challengeHex
+            challengeHex = challengeHex
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
@@ -189,8 +184,20 @@ class LedgerMessengerImpl @Inject constructor(
                         it.id == interactionId
                     }.catch { e ->
                         emit(Result.failure(e))
-                    }.filterIsInstance<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>().collect {
-                        emit(Result.success(it))
+                    }.collect { response ->
+                        when (response) {
+                            is MessageFromDataChannel.LedgerResponse.SignChallengeResponse -> {
+                                emit(Result.success(response))
+                            }
+                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
+                                emit(
+                                    Result.failure(
+                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+                                    )
+                                )
+                            }
+                            else -> {}
+                        }
                     }
                 }
                 is Error -> {

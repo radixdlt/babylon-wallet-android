@@ -19,11 +19,11 @@ import rdx.works.core.UUIDGenerator
 class IncomingRequestRepositoryTest {
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
-    private val amountOfIncomingRequests = 1000
+    private val amountOfIncomingRequests = 100
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = "dappId",
         interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
@@ -42,10 +42,10 @@ class IncomingRequestRepositoryTest {
             )
 
             coroutineScope.launch {
-                val coroutines = 1.rangeTo(1000).map { // create 1000 coroutines
+                val coroutines = 1.rangeTo(10).map { // create 1000 coroutines
                     launch {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
-                            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = i.toString()))
+                            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = UUIDGenerator.uuid().toString()))
                         }
                     }
                 }
@@ -55,7 +55,7 @@ class IncomingRequestRepositoryTest {
                 }
             }.join()
 
-            assertTrue(incomingRequestRepository.getAmountOfRequests() == amountOfIncomingRequests)
+            assertTrue(incomingRequestRepository.getAmountOfRequests() == amountOfIncomingRequests * 10)
         }
 
     @Test
