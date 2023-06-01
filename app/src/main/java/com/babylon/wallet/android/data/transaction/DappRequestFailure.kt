@@ -79,30 +79,31 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     @StringRes
     fun toDescriptionRes(): Int {
         return when (this) {
-            TransactionApprovalFailure.BuildTransactionHeader -> R.string.tx_fail_header
-            TransactionApprovalFailure.ConvertManifest -> R.string.tx_fail_manifest
-            is TransactionApprovalFailure.FailedToPollTXStatus -> R.string.tx_fail_poll_status
-            is TransactionApprovalFailure.GatewayCommittedFailure -> R.string.tx_fail_commit
-            is TransactionApprovalFailure.GatewayRejected -> R.string.tx_fail_rejected
-            GetEpoch -> R.string.tx_fail_epoch
-            is TransactionApprovalFailure.InvalidTXDuplicate -> R.string.tx_fail_duplicate
-            TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.tx_fail_prepare
-            RejectedByUser -> R.string.tx_fail_rejected_by_user
-            TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.tx_fail_submit
-            is WrongNetwork -> R.string.tx_fail_network
-            TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee -> R.string.no_funds_to_approve_transaction
-            DappVerificationFailure.RadixJsonNotFound -> R.string.radix_json_file_is_missing
-            DappVerificationFailure.UnknownDefinitionAddress -> R.string.definition_address_does_not_match
-            DappVerificationFailure.UnknownWebsite -> R.string.origin_does_not_match
-            DappVerificationFailure.WrongAccountType -> R.string.expected_to_find_dapp_account_type
-            InvalidPersona -> R.string.invalid_persona_id_specified_by_dapp
-            InvalidRequest -> R.string.invalid_request
-            TransactionApprovalFailure.CompileTransactionIntent -> R.string.tx_fail_prepare
-            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.tx_fail_sign
-            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.ledger_failure
-            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.ledger_failure
-            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.ledger_failure
-            is FailedToSignAuthChallenge -> R.string.failed_to_sign_auth_challenge
+            TransactionApprovalFailure.BuildTransactionHeader -> R.string.error_transactionFailure_header
+            TransactionApprovalFailure.ConvertManifest -> R.string.error_transactionFailure_manifest
+            is TransactionApprovalFailure.FailedToPollTXStatus -> R.string.error_transactionFailure_pollStatus
+            is TransactionApprovalFailure.GatewayCommittedFailure -> R.string.error_transactionFailure_commit
+            is TransactionApprovalFailure.GatewayRejected -> R.string.error_transactionFailure_rejected
+            GetEpoch -> R.string.error_transactionFailure_epoch
+            is TransactionApprovalFailure.InvalidTXDuplicate -> R.string.error_transactionFailure_duplicate
+            TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
+            RejectedByUser -> R.string.error_transactionFailure_rejectedByUser
+            TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
+            is WrongNetwork -> R.string.error_transactionFailure_network
+            TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee ->
+                R.string.error_transactionFailure_noFundsToApproveTransaction
+            DappVerificationFailure.RadixJsonNotFound -> R.string.dAppRequest_validationOutcome_shortExplanationBadContent
+            DappVerificationFailure.UnknownDefinitionAddress ->
+                R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
+            DappVerificationFailure.UnknownWebsite -> R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
+            DappVerificationFailure.WrongAccountType -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
+            InvalidPersona -> R.string.error_dappRequest_invalidPersonaId
+            InvalidRequest -> R.string.error_dappRequest_invalidRequest
+            TransactionApprovalFailure.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
+            TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.error_transactionFailure_prepare
+            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
+            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.common_somethingWentWrong // TODO consider different copy
+            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.common_somethingWentWrong // TODO consider different copy
         }
     }
 

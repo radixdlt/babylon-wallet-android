@@ -44,7 +44,7 @@ fun DepositAccountContent(
             Text(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.depositing).uppercase(),
+                text = stringResource(id = R.string.transactionReview_depositsHeading).uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,
@@ -99,7 +99,7 @@ fun DepositAccountContent(
                 RadixTextButton(
                     modifier = Modifier
                         .padding(top = RadixTheme.dimensions.paddingXSmall),
-                    text = stringResource(id = R.string.customize_guarantees),
+                    text = stringResource(id = R.string.transactionReview_customizeGuaranteesButtonTitle),
                     onClick = promptForGuarantees
                 )
             }

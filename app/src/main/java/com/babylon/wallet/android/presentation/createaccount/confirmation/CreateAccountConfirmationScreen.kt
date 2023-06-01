@@ -80,15 +80,15 @@ fun CreateAccountConfirmationContent(
         CardStack(Modifier.fillMaxWidth(0.8f), appearanceId, accountName, accountId)
         Spacer(modifier = Modifier.weight(0.2f))
         Text(
-            text = stringResource(id = R.string.congratulations),
+            text = stringResource(id = R.string.createEntity_completion_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         val text = if (requestSource == CreateAccountRequestSource.FirstTime) {
-            stringResource(id = R.string.you_ve_created_your_first_account)
+            stringResource(id = R.string.createAccount_completion_subtitleFirst)
         } else {
-            stringResource(id = R.string.your_account_has_been_created)
+            stringResource(id = R.string.createAccount_completion_subtitleNotFirst)
         }
         Text(
             text = text,
@@ -98,7 +98,7 @@ fun CreateAccountConfirmationContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-            text = stringResource(id = R.string.account_created_info),
+            text = stringResource(id = R.string.createAccount_completion_explanation),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
@@ -108,10 +108,10 @@ fun CreateAccountConfirmationContent(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(
                 id = when (requestSource) {
-                    CreateAccountRequestSource.AccountsList -> R.string.go_to_account_list
-                    CreateAccountRequestSource.ChooseAccount -> R.string.go_to_choose_accounts
-                    CreateAccountRequestSource.FirstTime -> R.string.go_to_home
-                    CreateAccountRequestSource.Gateways -> R.string.go_to_gateways
+                    CreateAccountRequestSource.AccountsList -> R.string.createEntity_completion_destinationChooseAccounts
+                    CreateAccountRequestSource.ChooseAccount -> R.string.createEntity_completion_destinationChooseAccounts
+                    CreateAccountRequestSource.FirstTime -> R.string.createEntity_completion_destinationHome
+                    CreateAccountRequestSource.Gateways -> R.string.createEntity_completion_destinationGateways
                 }
             ),
             onClick = accountConfirmed

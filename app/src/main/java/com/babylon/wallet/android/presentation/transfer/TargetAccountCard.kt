@@ -90,7 +90,7 @@ fun TargetAccountCard(
             when (targetAccount) {
                 is TargetAccount.Skeleton -> {
                     RadixTextButton(
-                        text = stringResource(id = R.string.choose_accounts),
+                        text = stringResource(id = R.string.assetTransfer_receivingAccount_chooseAccountButton),
                         textStyle = RadixTheme.typography.body1Header,
                         contentColor = RadixTheme.colors.gray2,
                         onClick = onChooseAccountClick
@@ -99,7 +99,7 @@ fun TargetAccountCard(
                 is TargetAccount.Other -> {
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                        text = stringResource(id = R.string.unknown),
+                        text = stringResource(id = R.string.assetTransfer_accountList_externalAccountName),
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.white
                     )
@@ -182,7 +182,7 @@ fun TargetAccountCard(
             }
 
             RadixTextButton(
-                text = stringResource(id = R.string.add_assets),
+                text = stringResource(id = R.string.assetTransfer_receivingAccount_addAssetsButton),
                 contentColor = RadixTheme.colors.gray2,
                 onClick = onAddAssetsClick
             )

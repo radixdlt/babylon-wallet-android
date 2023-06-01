@@ -33,7 +33,7 @@ fun WithdrawAccountContent(
         Text(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.withdrawing).uppercase(),
+            text = stringResource(id = R.string.transactionReview_withdrawalsHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,
             overflow = TextOverflow.Ellipsis,

@@ -140,7 +140,7 @@ fun TransactionAccountCard(
                         if (token.guaranteedQuantity != null) {
                             Text(
                                 modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                                text = stringResource(id = com.babylon.wallet.android.R.string.estimated),
+                                text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
                                 style = RadixTheme.typography.body2Link,
                                 color = RadixTheme.colors.gray1,
                                 maxLines = 1,
@@ -162,7 +162,7 @@ fun TransactionAccountCard(
                         Row {
                             Text(
                                 modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                                text = stringResource(id = com.babylon.wallet.android.R.string.guaranteed),
+                                text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
                                 style = RadixTheme.typography.body2Regular,
                                 color = RadixTheme.colors.gray2,
                                 maxLines = 1,

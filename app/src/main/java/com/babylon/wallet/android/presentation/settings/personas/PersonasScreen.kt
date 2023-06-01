@@ -85,7 +85,7 @@ fun PersonasContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.personas),
+            title = stringResource(id = R.string.personas_title),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1,
             backIconType = BackIconType.Back
@@ -98,18 +98,18 @@ fun PersonasContent(
         ) {
             item {
                 Text(
-                    text = stringResource(id = R.string.all_personas_info),
+                    text = stringResource(id = R.string.personas_subtitle),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                InfoLink(stringResource(R.string.what_is_persona), modifier = Modifier.fillMaxWidth())
+                InfoLink(stringResource(R.string.personas_whatIsPersona), modifier = Modifier.fillMaxWidth())
                 if (displaySecurityPrompt) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     ApplySecuritySettingsLabel(
                         modifier = Modifier.fillMaxWidth(),
                         labelColor = Color.Black.copy(alpha = 0.2f),
-                        text = stringResource(id = R.string.apply_security_settings),
+                        text = stringResource(id = R.string.homePage_applySecuritySettings),
                         onClick = onApplySecuritySettings
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -142,7 +142,7 @@ fun PersonasContent(
 
             item {
                 RadixSecondaryButton(
-                    text = stringResource(id = R.string.create_a_new_persona),
+                    text = stringResource(id = R.string.personas_createNewPersona),
                     onClick = createNewPersona
                 )
                 Spacer(modifier = Modifier.height(100.dp))

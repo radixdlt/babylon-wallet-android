@@ -90,25 +90,25 @@ private fun CreatePersonaInfoContent(
             )
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.create_a_persona),
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(22.dp))
             InfoLink(
-                stringResource(com.babylon.wallet.android.R.string.learn_about_personas),
+                stringResource(com.babylon.wallet.android.R.string.createPersona_introduction_learnAboutPersonas),
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.a_persona_is_an_identity),
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_subtitle1),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.you_will_choose_personas),
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_subtitle2),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -119,7 +119,9 @@ private fun CreatePersonaInfoContent(
                     .fillMaxWidth()
                     .imePadding(),
                 onClick = onContinueClick,
-                text = stringResource(id = com.babylon.wallet.android.R.string.continue_button_title)
+                text = stringResource(
+                    id = com.babylon.wallet.android.R.string.createPersona_introduction_continue
+                )
             )
         }
     }

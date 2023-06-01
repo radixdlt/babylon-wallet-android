@@ -45,7 +45,7 @@ fun TransferMessage(
                     horizontal = RadixTheme.dimensions.paddingMedium,
                     vertical = RadixTheme.dimensions.paddingXSmall
                 ),
-            text = stringResource(id = R.string.message).uppercase(),
+            text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,
             overflow = TextOverflow.Ellipsis,
@@ -92,7 +92,7 @@ fun TransferMessage(
                     modifier = Modifier,
                     onValueChanged = onMessageChanged,
                     value = message,
-                    hint = stringResource(id = R.string.add_message),
+                    hint = stringResource(id = R.string.assetTransfer_header_addMessageButton),
                     hintColor = RadixTheme.colors.gray2,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,

@@ -87,7 +87,7 @@ fun ChooseAccountsScreen(
 
     state.error?.let { error ->
         ErrorAlertDialog(
-            title = stringResource(id = R.string.dapp_verification_error_title),
+            title = stringResource(id = R.string.dAppRequest_chooseAccounts_verificationErrorTitle),
             body = error,
             dismissErrorDialog = dismissErrorDialog
         )
@@ -110,7 +110,7 @@ private fun ErrorAlertDialog(
             TextButton(
                 onClick = dismissErrorDialog
             ) {
-                Text(stringResource(id = R.string.ok), color = Color.Black)
+                Text(stringResource(id = R.string.common_ok), color = Color.Black)
             }
         }
     )

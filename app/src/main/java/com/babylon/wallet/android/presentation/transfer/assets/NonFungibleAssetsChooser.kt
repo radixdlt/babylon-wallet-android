@@ -175,7 +175,7 @@ private fun Item(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(id = com.babylon.wallet.android.R.string.nft_id),
+                    text = stringResource(id = com.babylon.wallet.android.R.string.assetDetails_NFTDetails_id),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
                 )

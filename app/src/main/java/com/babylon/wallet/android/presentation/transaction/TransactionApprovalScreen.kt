@@ -276,7 +276,7 @@ private fun TransactionPreviewContent(
                                         vertical = RadixTheme.dimensions.paddingLarge,
                                         horizontal = RadixTheme.dimensions.paddingDefault
                                     ),
-                                text = stringResource(R.string.review_your_transaction),
+                                text = stringResource(R.string.transactionReview_title),
                                 style = RadixTheme.typography.title,
                                 color = RadixTheme.colors.gray1,
                                 maxLines = 2,
@@ -317,7 +317,7 @@ private fun TransactionPreviewContent(
                             RadixPrimaryButton(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                text = stringResource(id = R.string.approve_transaction),
+                                text = stringResource(id = R.string.transactionReview_approveButtonTitle),
                                 onClick = {
                                     if (isDeviceSecure) {
                                         context.findFragmentActivity()?.let { activity ->
@@ -445,7 +445,7 @@ private fun RawTransactionContent(
             }
 
             RadixTextButton(
-                text = stringResource(id = R.string.ok),
+                text = stringResource(id = R.string.common_ok),
                 onClick = finish
             )
         }

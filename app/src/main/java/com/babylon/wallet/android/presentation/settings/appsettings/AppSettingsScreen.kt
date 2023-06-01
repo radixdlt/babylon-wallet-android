@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -54,12 +55,20 @@ private fun AppSettingsContent(
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.app_settings),
+            title = stringResource(R.string.generalSettings_title),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
         Divider(color = RadixTheme.colors.gray5)
         LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                Text(
+                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.generalSettings_subtitle),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray2
+                )
+            }
             appSettings.forEachIndexed { index, settingsItem ->
                 item {
                     when (settingsItem) {
