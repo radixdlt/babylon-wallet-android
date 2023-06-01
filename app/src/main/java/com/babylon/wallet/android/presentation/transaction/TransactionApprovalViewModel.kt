@@ -352,6 +352,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                 }
                                 sendEvent(TransactionApprovalEvent.SelectFeePayer)
+                                approvalJob = null
                             }
                         }.onFailure { t ->
                             _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage(error = t)) }
@@ -365,6 +366,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                 }
                             }
+                            approvalJob = null
                         }
                     }
                 }
@@ -383,8 +385,7 @@ class TransactionApprovalViewModel @Inject constructor(
             ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
             feePayerAddress = feePayerAddress
         )
-        val signAndSubmitResult = transactionClient.signAndSubmitTransaction(request)
-        signAndSubmitResult.onSuccess { txId ->
+        transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionWriteRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -417,7 +418,6 @@ class TransactionApprovalViewModel @Inject constructor(
                             message = exception.failure.getDappMessage()
                         )
                     }
-                    approvalJob = null
                     sendEvent(
                         TransactionApprovalEvent.FlowCompletedWithError(
                             requestId = args.requestId,
@@ -425,15 +425,16 @@ class TransactionApprovalViewModel @Inject constructor(
                         )
                     )
                 }
+                approvalJob = null
             }
-        }
-        signAndSubmitResult.onFailure { error ->
+        }.onFailure { error ->
             _state.update {
                 it.copy(
                     isSigning = false,
                     error = UiMessage.ErrorMessage(error = error)
                 )
             }
+            approvalJob = null
             val exception = error as? DappRequestException
             if (exception != null) {
                 if (!transactionWriteRequest.isInternal) {
@@ -444,7 +445,6 @@ class TransactionApprovalViewModel @Inject constructor(
                         message = exception.failure.getDappMessage()
                     )
                 }
-                approvalJob = null
                 sendEvent(
                     TransactionApprovalEvent.FlowCompletedWithError(
                         requestId = args.requestId,
@@ -500,7 +500,7 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun onPayerConfirmed() {
-        viewModelScope.launch {
+        appScope.launch {
             val selectedPayer = state.value.feePayerCandidates.first()
             handleTransactionApprovalForFeePayer(selectedPayer.address, manifestToApprove)
         }

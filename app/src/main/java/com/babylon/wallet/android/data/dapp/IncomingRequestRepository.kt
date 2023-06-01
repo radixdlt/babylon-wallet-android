@@ -30,7 +30,7 @@ interface IncomingRequestRepository {
 
 class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepository {
 
-    private val listOfIncomingRequests = mutableListOf<IncomingRequest>()
+    private val listOfIncomingRequests = mutableMapOf<String, IncomingRequest>()
 
     private val _currentRequestToHandle = MutableSharedFlow<IncomingRequest>()
     override val currentRequestToHandle = _currentRequestToHandle.asSharedFlow()
@@ -42,21 +42,15 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
             if (listOfIncomingRequests.isEmpty()) {
                 _currentRequestToHandle.emit(incomingRequest)
             }
-            if (incomingRequest.isInternal) {
-                Timber.d("request test: adding internal ${incomingRequest.id}")
-                listOfIncomingRequests.add(0, incomingRequest)
-            } else {
-                Timber.d("request test: adding ${incomingRequest.id}")
-                listOfIncomingRequests.add(incomingRequest)
-            }
+            listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)
             Timber.d("🗂 new incoming request with id ${incomingRequest.id} added in list, so size now is ${listOfIncomingRequests.size}")
         }
     }
 
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
-            listOfIncomingRequests.removeIf { it.id == requestId }
-            listOfIncomingRequests.firstOrNull()?.let { nextRequest ->
+            listOfIncomingRequests.remove(requestId)
+            listOfIncomingRequests.values.firstOrNull()?.let { nextRequest ->
                 _currentRequestToHandle.emit(nextRequest)
             }
             Timber.d("🗂 request $requestId handled so size of list is now: ${listOfIncomingRequests.size}")
@@ -64,27 +58,27 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
     }
 
     override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest {
-        require(listOfIncomingRequests.any { it.id == requestId }) {
+        require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests.first { it.id == requestId } as IncomingRequest.UnauthorizedRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.UnauthorizedRequest)
     }
 
     override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest {
-        require(listOfIncomingRequests.any { it.id == requestId }) {
+        require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests.first { it.id == requestId } as IncomingRequest.TransactionRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.TransactionRequest)
     }
 
     override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest {
-        require(listOfIncomingRequests.any { it.id == requestId }) {
+        require(listOfIncomingRequests.containsKey(requestId)) {
             "IncomingRequestRepository does not contain this request"
         }
 
-        return (listOfIncomingRequests.first { it.id == requestId } as IncomingRequest.AuthorizedRequest)
+        return (listOfIncomingRequests[requestId] as IncomingRequest.AuthorizedRequest)
     }
 
     override fun removeAll() {
