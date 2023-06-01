@@ -33,8 +33,8 @@ import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
 import javax.inject.Inject
@@ -53,7 +53,7 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
 
-    suspend fun getEntityMetadata(address: String, isRefreshing: Boolean = false): Result<List<MetadataItem>>
+    suspend fun getEntityOwnerKeys(address: String, isRefreshing: Boolean = false): Result<OwnerKeysMetadataItem?>
 }
 
 @Suppress("TooManyFunctions")
@@ -393,7 +393,7 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getEntityMetadata(address: String, isRefreshing: Boolean): Result<List<MetadataItem>> {
+    override suspend fun getEntityOwnerKeys(address: String, isRefreshing: Boolean): Result<OwnerKeysMetadataItem?> {
         return stateApi.entityDetails(
             StateEntityDetailsRequest(
                 addresses = listOf(address)
@@ -404,7 +404,7 @@ class EntityRepositoryImpl @Inject constructor(
                 timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
             ),
             map = { response ->
-                response.items.first().metadata.asMetadataItems()
+                response.items.first().metadata.asMetadataItems().filterIsInstance<OwnerKeysMetadataItem>().firstOrNull()
             },
         )
     }

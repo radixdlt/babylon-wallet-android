@@ -2,7 +2,6 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.toKind
-import com.babylon.wallet.android.data.transaction.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest

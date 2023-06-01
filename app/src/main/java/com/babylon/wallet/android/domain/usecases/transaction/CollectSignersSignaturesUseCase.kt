@@ -63,7 +63,9 @@ class CollectSignersSignaturesUseCase @Inject constructor(
 
 sealed class SignRequest(val dataToSign: ByteArray) {
     data class SignTransactionRequest(val compiledTransactionIntent: ByteArray) : SignRequest(compiledTransactionIntent)
-    data class SignAuthChallengeRequest(private val data: ByteArray, val origin: String, val dAppDefinitionAddress: String) : SignRequest(
-        data
-    )
+    data class SignAuthChallengeRequest(
+        private val data: ByteArray,
+        val origin: String,
+        val dAppDefinitionAddress: String
+    ) : SignRequest(data)
 }

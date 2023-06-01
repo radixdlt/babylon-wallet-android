@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.manifest.addSetMetadataInstructionForOwne
 import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToString
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.toolkit.builders.ManifestBuilder
@@ -36,13 +35,13 @@ class ROLAClient @Inject constructor(
         val transactionSigningKey = when (val state = signingEntity.securityState) {
             is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
         }
-        entityRepository.getEntityMetadata(signingEntity.address, true).onValue { metadata ->
-            val ownerKeys = metadata.filterIsInstance<OwnerKeysMetadataItem>().firstOrNull()?.toPublicKeys().orEmpty().toMutableList()
-            ownerKeys.add(authSigningFactorInstance.publicKey)
-            if (!ownerKeys.contains(transactionSigningKey)) {
-                ownerKeys.add(transactionSigningKey)
+        entityRepository.getEntityOwnerKeys(signingEntity.address, true).onValue { ownerKeys ->
+            val publicKeys = ownerKeys?.toPublicKeys().orEmpty().toMutableList()
+            publicKeys.add(authSigningFactorInstance.publicKey)
+            if (!publicKeys.contains(transactionSigningKey)) {
+                publicKeys.add(transactionSigningKey)
             }
-            resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(signingEntity.address, ownerKeys).build()
+            resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(signingEntity.address, publicKeys).build()
         }
         return resultManifest?.convertManifestInstructionsToString(signingEntity.networkID)?.getOrNull()
     }

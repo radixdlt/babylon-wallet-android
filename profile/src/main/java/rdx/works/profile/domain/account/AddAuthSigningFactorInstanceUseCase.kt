@@ -6,6 +6,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.model.pernetwork.addAuthSigningFactorInstanceForEntity
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.updateProfile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 

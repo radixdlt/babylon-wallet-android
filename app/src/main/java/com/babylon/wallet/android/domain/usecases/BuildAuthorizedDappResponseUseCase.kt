@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.transaction
+package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.model.AccountProof
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
@@ -12,6 +12,8 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.toDataModel
 import com.babylon.wallet.android.data.dapp.model.toProof
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject

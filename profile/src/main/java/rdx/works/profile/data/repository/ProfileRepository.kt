@@ -46,8 +46,12 @@ interface ProfileRepository {
     suspend fun getRestoredProfileFromBackup(): Profile?
 
     suspend fun discardBackedUpProfile()
+}
 
-    suspend fun updateProfile(updateAction: (Profile) -> Profile)
+suspend fun ProfileRepository.updateProfile(updateAction: (Profile) -> Profile) {
+    val profile = profile.first()
+    val updatedProfile = updateAction(profile)
+    saveProfile(updatedProfile)
 }
 
 val ProfileRepository.profile: Flow<Profile>
@@ -163,12 +167,6 @@ class ProfileRepositoryImpl @Inject constructor(
         encryptedPreferencesManager.clearProfileSnapshotFromBackup()
         preferencesManager.removeLastBackupInstant()
         profileStateFlow.update { ProfileState.None() }
-    }
-
-    override suspend fun updateProfile(updateAction: (Profile) -> Profile) {
-        val profile = profile.first()
-        val updatedProfile = updateAction(profile)
-        saveProfile(updatedProfile)
     }
 
     @Suppress("SwallowedException")

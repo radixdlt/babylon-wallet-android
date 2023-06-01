@@ -14,7 +14,7 @@ sealed interface MessageFromDataChannel {
 
         val isInternal: Boolean
             get() {
-                return metadata == RequestMetadata.EMPTY
+                return metadata.isInternal
             }
 
         data class AuthorizedRequest(
@@ -103,8 +103,6 @@ sealed interface MessageFromDataChannel {
                     dAppDefinitionAddress = "",
                     isInternal = true
                 )
-
-                val EMPTY = RequestMetadata(0, "", "", true)
             }
         }
 

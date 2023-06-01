@@ -96,7 +96,7 @@ class PersonaDetailViewModel @Inject constructor(
                             networkId = persona.networkID,
                             blobs = manifest.blobs?.toList().orEmpty()
                         ),
-                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.EMPTY
+                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(0)
                     )
                     incomingRequestRepository.add(internalMessage)
                 }
