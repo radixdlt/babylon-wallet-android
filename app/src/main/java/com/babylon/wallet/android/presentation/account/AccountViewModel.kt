@@ -145,8 +145,8 @@ data class AccountUiState(
 }
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {
-    TOKEN_TAB(R.string.account_asset_row_tab_tokens),
-    NTF_TAB(R.string.account_asset_row_tab_nfts),
+    TOKEN_TAB(R.string.account_tokens),
+    NTF_TAB(R.string.account_nfts),
 }
 
 sealed interface SelectedResource {

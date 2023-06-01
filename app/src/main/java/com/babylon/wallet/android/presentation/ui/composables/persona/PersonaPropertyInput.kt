@@ -60,7 +60,7 @@ fun PersonaPropertyInput(
                 KeyboardOptions.Default.keyboardType
             }
         ),
-        rightLabel = if (required) stringResource(id = R.string.required_by_dapp) else null,
+        rightLabel = if (required) stringResource(id = R.string.editPersona_requiredByDapp) else null,
         error = error
     )
 }

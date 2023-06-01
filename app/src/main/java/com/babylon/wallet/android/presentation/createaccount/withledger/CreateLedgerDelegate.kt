@@ -76,13 +76,13 @@ class CreateLedgerDelegate(
     private fun addLedgerFactorSource() {
         scope.launch {
             state.value.recentlyConnectedLedgerDevice?.let { ledger ->
-                val ledgerFactorSourceId = addLedgerFactorSourceUseCase(
+                val ledgerAddResult = addLedgerFactorSourceUseCase(
                     id = FactorSource.ID(ledger.id),
                     model = ledger.model.toProfileLedgerDeviceModel(),
                     name = ledger.name
                 )
                 _state.update { state ->
-                    state.copy(selectedFactorSourceID = ledgerFactorSourceId, addLedgerSheetState = AddLedgerSheetState.Connect)
+                    state.copy(selectedFactorSourceID = ledgerAddResult.id, addLedgerSheetState = AddLedgerSheetState.Connect)
                 }
             }
         }

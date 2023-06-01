@@ -80,7 +80,7 @@ private fun SettingsContent(
         horizontalAlignment = Alignment.Start
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.wallet_settings),
+            title = stringResource(R.string.settings_title),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
@@ -139,9 +139,9 @@ private fun SettingsContent(
             item {
                 Text(
                     text = stringResource(
-                        R.string.version_and_build,
+                        R.string.settings_appVersion,
                         BuildConfig.VERSION_NAME,
-                        BuildConfig.VERSION_CODE
+                        BuildConfig.VERSION_CODE.toString()
                     ),
                     style = RadixTheme.typography.body2Link,
                     color = RadixTheme.colors.gray2,
@@ -254,20 +254,20 @@ private fun ConnectionSettingItem(
             contentDescription = null
         )
         Text(
-            text = stringResource(R.string.link_your_wallet),
+            text = stringResource(R.string.settings_linkToConnectorHeader_title),
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
         Text(
-            text = stringResource(R.string.scan_the_qr_code),
+            text = stringResource(R.string.settings_linkToConnectorHeader_subtitle),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray2,
             textAlign = TextAlign.Center
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.link_to_connector),
+            text = stringResource(R.string.settings_linkToConnectorHeader_linkToConnector),
             onClick = {
                 onSettingClick(settingsItem)
             },

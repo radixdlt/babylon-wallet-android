@@ -121,9 +121,9 @@ fun ChooseAccountSheet(
                         .align(alignment = Alignment.Center)
                         .padding(RadixTheme.dimensions.paddingLarge),
                     text = if (state.mode == ChooseAccounts.Mode.Chooser) {
-                        stringResource(id = R.string.choose_receiving_account)
+                        stringResource(id = R.string.assetTransfer_chooseReceivingAccount_navigationTitle)
                     } else {
-                        stringResource(id = R.string.scan_qr_code)
+                        stringResource(id = R.string.assetTransfer_chooseReceivingAccount_scanQRNavigationTitle)
                     },
                     style = RadixTheme.typography.body1StandaloneLink,
                     color = RadixTheme.colors.gray1
@@ -136,7 +136,7 @@ fun ChooseAccountSheet(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    text = stringResource(id = R.string.choose),
+                    text = stringResource(id = R.string.common_choose),
                     onClick = onChooseAccountSubmitted,
                     enabled = state.isChooseButtonEnabled
                 )
@@ -191,7 +191,7 @@ private fun ChooseAccountContent(
             Text(
                 modifier = Modifier
                     .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.enter_account_address_manually),
+                text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_enterManually),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -209,8 +209,10 @@ private fun ChooseAccountContent(
 
                     val errorResource = when (state.selectedAccount.validity) {
                         TargetAccount.Other.AddressValidity.VALID -> null
-                        TargetAccount.Other.AddressValidity.INVALID -> R.string.invalid_address
-                        TargetAccount.Other.AddressValidity.USED -> R.string.used_address
+                        TargetAccount.Other.AddressValidity.INVALID ->
+                            R.string.assetTransfer_chooseReceivingAccount_invalidAddressError
+                        TargetAccount.Other.AddressValidity.USED ->
+                            R.string.assetTransfer_chooseReceivingAccount_alreadyAddedError
                     }
 
                     address to errorResource
@@ -231,7 +233,7 @@ private fun ChooseAccountContent(
                     .padding(RadixTheme.dimensions.paddingDefault),
                 onValueChanged = onAddressChanged,
                 value = typedAddress,
-                hint = stringResource(id = R.string.enter_or_paste_address),
+                hint = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_addressFieldPlaceholder),
                 hintColor = RadixTheme.colors.gray2,
                 error = if (!isFocused) {
                     errorResource?.let { stringResource(id = it) }
@@ -299,7 +301,7 @@ private fun ChooseAccountContent(
             Text(
                 modifier = Modifier
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.or_choose_one_of_your_accounts),
+                text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -352,7 +354,7 @@ fun ScanQRContent(
         Text(
             modifier = Modifier
                 .padding(vertical = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.scan_qr_code_of_radix_account_address),
+            text = stringResource(id = R.string.assetTransfer_qrScanInstructions),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )

@@ -63,7 +63,7 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (N
                 Spacer(modifier = Modifier.height(paddingDefault))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.your_last_login, it),
+                    text = stringResource(id = R.string.dAppRequest_login_lastLoginWasOn, it),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
                 )

@@ -69,7 +69,7 @@ fun NonFungibleTokenBottomSheetDetails(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             AssetMetadataRow(
                 modifier = Modifier.fillMaxWidth(),
-                key = stringResource(id = R.string.nft_id)
+                key = stringResource(id = R.string.assetDetails_NFTDetails_id)
             ) {
                 ActionableAddressView(
                     address = item.globalAddress,

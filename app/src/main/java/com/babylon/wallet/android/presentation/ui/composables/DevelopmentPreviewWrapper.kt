@@ -35,7 +35,7 @@ fun DevelopmentPreviewWrapper(modifier: Modifier = Modifier, content: @Composabl
             Spacer(modifier = Modifier.height(insets.calculateTopPadding()))
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.development_use_only),
+                text = stringResource(R.string.common_developerDisclaimerText),
                 style = RadixTheme.typography.body2HighImportance,
                 color = Color.Black,
                 textAlign = TextAlign.Center,

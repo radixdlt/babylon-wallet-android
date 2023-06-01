@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +46,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
 fun LoginPermissionScreen(
@@ -139,13 +138,16 @@ private fun LoginPermissionContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
-                text = stringResource(id = R.string.account_permission),
+                text = stringResource(id = R.string.dAppRequest_accountPermission_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
+            PermissionRequestHeader(
+                dappName = dappWithMetadata?.name.orEmpty()
+                    .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+            )
             Spacer(modifier = Modifier.weight(0.5f))
             RequestedPermissionsList(
                 modifier = Modifier
@@ -159,7 +161,7 @@ private fun LoginPermissionContent(
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.you_can_update_permission_at_any_time),
+                text = stringResource(R.string.dAppRequest_accountPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -167,7 +169,7 @@ private fun LoginPermissionContent(
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onContinueClick,
-                text = stringResource(id = R.string.continue_button_title)
+                text = stringResource(id = R.string.dAppRequest_accountPermission_continue)
             )
         }
     }
@@ -183,22 +185,22 @@ private fun RequestedPermissionsList(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        val text = if (isExactAccountsCount) {
-            pluralStringResource(
-                id = R.plurals.view_exactly_x_accounts,
-                numberOfAccounts,
-                numberOfAccounts
-            )
-        } else {
-            if (numberOfAccounts == 0) {
-                stringResource(id = R.string.any_number_of_accounts)
+        val text = StringBuilder(stringResource(id = R.string.dot_separator)).apply {
+            append(" ")
+            if (isExactAccountsCount) {
+                if (numberOfAccounts > 1) {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsExactly, numberOfAccounts))
+                } else {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsExactlyOne))
+                }
             } else {
-                stringResource(
-                    id = R.string.view_at_least_x_accounts,
-                    numberOfAccounts
-                )
+                if (numberOfAccounts == 0) {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsAtLeastZero))
+                } else {
+                    append(stringResource(id = R.string.dAppRequest_accountPermission_numberOfAccountsAtLeast, numberOfAccounts))
+                }
             }
-        }
+        }.toString()
         Text(
             text = text,
             style = RadixTheme.typography.body1Regular,
@@ -212,12 +214,8 @@ private fun PermissionRequestHeader(
     dappName: String,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val always = stringResource(id = R.string.always)
-    val text = stringResource(id = R.string.dapp_is_requesting_ongoing_permission, dappName).setSpanForPlaceholder(
-        dappName,
-        spanStyle
-    ).setSpanForPlaceholder(always, spanStyle)
+    val text = stringResource(id = R.string.dAppRequest_accountPermission_subtitle, dappName)
+        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

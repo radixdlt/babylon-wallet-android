@@ -30,7 +30,6 @@ import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
-import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
@@ -138,9 +137,6 @@ fun NavigationHost(
         createAccountWithLedger(
             onBackClick = {
                 navController.navigateUp()
-            },
-            onAddP2PLink = {
-                navController.settingsConnectorScreen(scanQr = true)
             },
             goBackToCreateAccount = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)

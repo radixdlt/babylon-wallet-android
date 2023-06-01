@@ -54,7 +54,7 @@ import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDet
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.Network
@@ -163,16 +163,19 @@ private fun PersonaDataOnetimeContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
-                    text = stringResource(id = R.string.one_time_data_request),
+                    text = stringResource(id = R.string.dAppRequest_personalDataOneTime_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                PermissionRequestHeader(dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) })
+                PermissionRequestHeader(
+                    dappName = dappWithMetadata?.name.orEmpty()
+                        .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
-                    text = stringResource(id = R.string.choose_data_to_provide),
+                    text = stringResource(id = R.string.dAppRequest_personalDataOneTime_chooseDataToProvide),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.header,
                     color = RadixTheme.colors.gray1
@@ -204,7 +207,7 @@ private fun PersonaDataOnetimeContent(
             }
             item {
                 RadixSecondaryButton(
-                    text = stringResource(id = R.string.create_a_new_persona),
+                    text = stringResource(id = R.string.createPersona_introduction_title),
                     onClick = onCreatePersona
                 )
                 Spacer(modifier = Modifier.height(40.dp))
@@ -218,7 +221,9 @@ private fun PersonaDataOnetimeContent(
                 .padding(RadixTheme.dimensions.paddingDefault),
             enabled = continueButtonEnabled,
             onClick = onContinueClick,
-            text = stringResource(id = R.string.continue_button_title)
+            text = stringResource(
+                id = R.string.dAppRequest_personalDataOneTime_continue
+            )
         )
     }
 }
@@ -228,12 +233,8 @@ private fun PermissionRequestHeader(
     dappName: String,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val oneTime = stringResource(id = R.string.just_one_time)
-    val text = stringResource(id = R.string.dapp_is_requesting_onetime_persona_data_permission, dappName).setSpanForPlaceholder(
-        dappName,
-        spanStyle
-    ).setSpanForPlaceholder(oneTime, spanStyle)
+    val text = stringResource(id = R.string.dAppRequest_personalDataOneTime_subtitle, dappName)
+        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

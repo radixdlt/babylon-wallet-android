@@ -44,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -175,7 +175,9 @@ fun CreatePersonaContent(
 
             IconButton(onClick = onBackClick) {
                 Icon(
-                    painterResource(id = R.drawable.ic_arrow_back),
+                    painterResource(
+                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back
+                    ),
                     tint = RadixTheme.colors.gray1,
                     contentDescription = "navigate back"
                 )
@@ -218,7 +220,7 @@ fun CreatePersonaContent(
                     }
                 },
                 enabled = continueButtonEnabled,
-                text = stringResource(id = com.babylon.wallet.android.R.string.save_and_continue)
+                text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle)
             )
             if (showNotSecuredDialog) {
                 NotSecureAlertDialog(finish = {
@@ -257,13 +259,13 @@ private fun CreatePersonaContentList(
     ) {
         item {
             Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.create_a_persona),
+                text = stringResource(id = R.string.createPersona_introduction_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             InfoLink(
-                stringResource(com.babylon.wallet.android.R.string.learn_about_personas),
+                stringResource(R.string.createPersona_introduction_learnAboutPersonas),
                 modifier = Modifier
                     .padding(horizontal = dimensions.paddingDefault)
             )
@@ -279,19 +281,24 @@ private fun CreatePersonaContentList(
                     .size(90.dp)
                     .clip(RadixTheme.shapes.circle)
             )
-            UnderlineTextButton(text = stringResource(com.babylon.wallet.android.R.string.edit_avatar), onClick = onEditAvatar)
+            UnderlineTextButton(
+                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
+                onClick = onEditAvatar
+            )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onPersonaNameChange,
                 value = personaName.value,
-                leftLabel = stringResource(id = com.babylon.wallet.android.R.string.persona_label),
-                hint = stringResource(id = com.babylon.wallet.android.R.string.hint_persona_name),
+                leftLabel = stringResource(
+                    id = R.string.authorizedDapps_personaDetails_personaLabelHeading
+                ),
+                hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
                 onFocusChanged = {
                     onPersonaDisplayNameFocusChanged(it.hasFocus)
                 },
                 error = if (personaName.shouldDisplayValidationError && personaName.valid == false) {
-                    stringResource(id = com.babylon.wallet.android.R.string.empty_display_name)
+                    stringResource(id = R.string.createPersona_emptyDisplayName)
                 } else {
                     null
                 },
@@ -299,7 +306,7 @@ private fun CreatePersonaContentList(
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = com.babylon.wallet.android.R.string.this_will_be_shared_with_dapps),
+                text = stringResource(id = R.string.createPersona_explanation_thisWillBeShared),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -323,7 +330,7 @@ private fun CreatePersonaContentList(
                 },
                 required = field.required,
                 error = if (field.shouldDisplayValidationError && field.valid == false) {
-                    stringResource(id = com.babylon.wallet.android.R.string.required_field)
+                    stringResource(id = R.string.createPersona_requiredField)
                 } else {
                     null
                 },
@@ -335,13 +342,13 @@ private fun CreatePersonaContentList(
             Divider(color = RadixTheme.colors.gray5)
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.some_dapps_may_request),
+                text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
             Spacer(Modifier.height(30.dp))
             RadixSecondaryButton(
-                text = stringResource(id = com.babylon.wallet.android.R.string.add_a_field),
+                text = stringResource(id = R.string.editPersona_addAField),
                 onClick = onAddFieldClick,
                 enabled = addButtonEnabled
             )

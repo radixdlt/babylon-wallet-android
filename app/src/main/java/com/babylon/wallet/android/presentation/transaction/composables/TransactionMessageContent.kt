@@ -38,7 +38,7 @@ fun TransactionMessageContent(
         Text(
             modifier = Modifier
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.message).uppercase(),
+            text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,
             overflow = TextOverflow.Ellipsis,

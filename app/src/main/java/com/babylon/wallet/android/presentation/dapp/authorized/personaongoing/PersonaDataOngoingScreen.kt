@@ -50,7 +50,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.Per
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
 fun PersonaDataOngoingScreen(
@@ -153,7 +153,7 @@ private fun PersonaDataOngoingPermissionContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
-                text = stringResource(id = R.string.personal_data_permission),
+                text = stringResource(id = R.string.dAppRequest_personalDataPermission_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
@@ -161,7 +161,8 @@ private fun PersonaDataOngoingPermissionContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             PermissionRequestHeader(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) }
+                dappName = dappWithMetadata?.name.orEmpty()
+                    .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
             )
             persona?.let {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -183,7 +184,7 @@ private fun PersonaDataOngoingPermissionContent(
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.you_can_update_permission_at_any_time),
+                text = stringResource(R.string.dAppRequest_personalDataPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -197,7 +198,7 @@ private fun PersonaDataOngoingPermissionContent(
                 .padding(RadixTheme.dimensions.paddingDefault),
             onClick = onContinueClick,
             enabled = continueButtonEnabled,
-            text = stringResource(id = R.string.continue_button_title)
+            text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
         )
     }
 }
@@ -207,12 +208,8 @@ private fun PermissionRequestHeader(
     dappName: String,
     modifier: Modifier = Modifier
 ) {
-    val spanStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1)
-    val always = stringResource(id = R.string.always)
-    val text = stringResource(id = R.string.dapp_is_requesting_ongoing_persona_data_permission, dappName).setSpanForPlaceholder(
-        dappName,
-        spanStyle
-    ).setSpanForPlaceholder(always, spanStyle)
+    val text = stringResource(id = R.string.dAppRequest_personalDataPermission_subtitle, dappName)
+        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

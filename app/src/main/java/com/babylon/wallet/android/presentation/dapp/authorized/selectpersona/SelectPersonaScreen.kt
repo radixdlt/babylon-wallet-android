@@ -51,7 +51,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.setSpanForPlaceholder
+import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.Network
@@ -175,9 +175,9 @@ private fun SelectPersonaContent(
                             Text(
                                 text = stringResource(
                                     id = if (firstTimeLogin) {
-                                        R.string.new_login_request
+                                        R.string.dAppRequest_login_titleNewDapp
                                     } else {
-                                        R.string.login_request
+                                        R.string.dAppRequest_login_titleKnownDapp
                                     }
                                 ),
                                 textAlign = TextAlign.Center,
@@ -186,14 +186,18 @@ private fun SelectPersonaContent(
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             LoginRequestHeader(
-                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty { stringResource(id = R.string.unknown_dapp) },
+                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty {
+                                    stringResource(
+                                        id = R.string.dAppRequest_metadata_unknownName
+                                    )
+                                },
                                 firstTimeLogin = firstTimeLogin,
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                             )
                             if (personas.isNotEmpty()) {
                                 Text(
                                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(R.string.choose_a_persona),
+                                    text = stringResource(R.string.dAppRequest_login_choosePersona),
                                     textAlign = TextAlign.Center,
                                     style = RadixTheme.typography.body1Header,
                                     color = RadixTheme.colors.gray1
@@ -219,7 +223,7 @@ private fun SelectPersonaContent(
                         }
                         item {
                             RadixSecondaryButton(
-                                text = stringResource(id = R.string.create_a_new_persona),
+                                text = stringResource(id = R.string.personas_createNewPersona),
                                 onClick = createNewPersona
                             )
                             Spacer(modifier = Modifier.height(100.dp))
@@ -233,7 +237,8 @@ private fun SelectPersonaContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground)
-                    .align(Alignment.BottomCenter)
+                    .align(Alignment.BottomCenter),
+                text = stringResource(id = R.string.dAppRequest_login_continue)
             )
         }
     }
@@ -241,18 +246,17 @@ private fun SelectPersonaContent(
 
 @Composable
 private fun LoginRequestHeader(dappName: String, firstTimeLogin: Boolean, modifier: Modifier = Modifier) {
-    val spanStyle = SpanStyle(color = RadixTheme.colors.gray1)
     val text = if (firstTimeLogin) {
         stringResource(
-            R.string.dapp_login_first_time_subtitle,
+            R.string.dAppRequest_login_subtitleNewDapp,
             dappName
-        ).setSpanForPlaceholder(dappName, spanStyle)
+        )
     } else {
         stringResource(
-            R.string.dapp_login_subtitle,
+            R.string.dAppRequest_login_subtitleKnownDapp,
             dappName
-        ).setSpanForPlaceholder(dappName, spanStyle)
-    }
+        )
+    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.gray1))
     Text(
         modifier = modifier,
         text = text,

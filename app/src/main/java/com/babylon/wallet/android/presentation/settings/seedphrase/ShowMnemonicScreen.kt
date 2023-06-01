@@ -62,7 +62,7 @@ fun ShowMnemonicScreen(
                 },
                 title = {
                     Text(
-                        text = stringResource(id = R.string.mnemonic),
+                        text = stringResource(id = R.string.importOlympiaAccounts_mnemonic),
                         style = RadixTheme.typography.body2Header,
                         color = RadixTheme.colors.gray1
                     )
@@ -70,19 +70,17 @@ fun ShowMnemonicScreen(
                 text = {
                     Text(
                         text = stringResource(
-                            id = R.string.mnemonic_and_passphrase,
+                            id = R.string.importOlympiaAccounts_mnemonicAndPassphrase,
                             mnemonic.mnemonic,
                             mnemonic.bip39Passphrase.ifEmpty {
-                                stringResource(
-                                    id = R.string.none
-                                )
+                                stringResource(id = R.string.common_none)
                             }
                         ),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray1
                     )
                 },
-                confirmText = stringResource(id = R.string.backed_up_mnemonic)
+                confirmText = stringResource(id = R.string.homePage_backedUpMnemonicHeading)
             )
         }
         else -> {}
@@ -119,7 +117,7 @@ private fun SeedPhraseContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.mnemonics),
+            title = stringResource(id = R.string.importOlympiaAccounts_mnemonics),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1,
             backIconType = BackIconType.Back
@@ -132,12 +130,15 @@ private fun SeedPhraseContent(
         ) {
             item {
                 Text(
-                    text = stringResource(id = R.string.here_are_all_your_mnemonics),
+                    text = stringResource(id = R.string.importOlympiaAccounts_allMnemonicsHeading),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                InfoLink(stringResource(R.string.what_is_a_mnemonic), modifier = Modifier.fillMaxWidth())
+                InfoLink(
+                    text = stringResource(R.string.importOlympiaAccounts_whatIsMnemonic),
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
             itemsIndexed(items = factorSources) { _, factorSource ->

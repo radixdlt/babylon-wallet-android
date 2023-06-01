@@ -184,7 +184,7 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = R.string.persona_label),
+                label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 value = persona.displayName
             )
             Divider(
@@ -203,7 +203,7 @@ private fun PersonaDetailList(
         }
         item {
             RadixSecondaryButton(
-                text = stringResource(id = R.string.edit_persona),
+                text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
                 onClick = { onEditPersona(persona.address) },
                 throttleClicks = true
             )
@@ -215,7 +215,7 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.here_are_the_dapps_you_have),
+                        text = stringResource(R.string.authorizedDapps_personaDetails_authorizedDappsHeading),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
                     )

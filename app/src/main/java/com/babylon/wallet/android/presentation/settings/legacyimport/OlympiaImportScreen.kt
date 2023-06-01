@@ -5,6 +5,7 @@
     ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class
 )
 
@@ -12,7 +13,6 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +52,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +71,7 @@ import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -136,7 +136,6 @@ fun OlympiaImportScreen(
         accountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
-        onSkipLedgerName = viewModel::onSkipLedgerName,
         hasP2pLinks = state.hasP2pLinks,
         onAddP2PLink = onAddP2PLink,
         ledgerFactorSources = state.ledgerFactorSources,
@@ -180,7 +179,6 @@ private fun OlympiaImportContent(
     accountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
-    onSkipLedgerName: () -> Unit,
     hasP2pLinks: Boolean,
     onAddP2PLink: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
@@ -268,16 +266,10 @@ private fun OlympiaImportContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                hasP2pLinks = hasP2pLinks,
-                onAddP2PLink = onAddP2PLink,
                 onSendAddLedgerRequest = onSendAddLedgerRequest,
                 addLedgerSheetState = addLedgerSheetState,
                 onConfirmLedgerName = {
                     onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                onSkipLedgerName = {
-                    onSkipLedgerName()
                     closeSheetCallback()
                 },
                 waitingForLedgerResponse = waitingForLedgerResponse
@@ -287,7 +279,7 @@ private fun OlympiaImportContent(
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
-                    title = stringResource(R.string.import_legacy_wallet),
+                    title = stringResource(R.string.importLegacyWallet_title),
                     onBackClick = onBackClick,
                     contentColor = RadixTheme.colors.gray1,
                     backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.None else BackIconType.Back,
@@ -423,11 +415,22 @@ private fun ScanQrPage(
             ) {
                 qrChunkInfo?.let { chunkInfo ->
                     Text(
-                        text = stringResource(id = R.string.scanned_x_out_of_y, chunkInfo.scanned, chunkInfo.total),
+                        text = stringResource(
+                            id = R.string.importOlympiaAccounts_scannedProgress,
+                            chunkInfo.scanned,
+                            chunkInfo.total
+                        ),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1
                     )
                 }
+                Text(
+                    text = stringResource(id = com.babylon.wallet.android.R.string.importLegacyWallet_scanQRCodeInstructions),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
                 CameraPreview(
                     modifier = Modifier
                         .weight(1f)
@@ -495,7 +498,7 @@ private fun AccountListPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.import_olympia_accounts),
+            text = stringResource(R.string.importOlympiaAccounts_title),
             onClick = onImportAccounts,
             enabled = importButtonEnabled,
             throttleClicks = true
@@ -517,6 +520,9 @@ private fun HardwareImportScreen(
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
     onUseLedger: () -> Unit
 ) {
+    var showNoP2pLinksDialog by remember {
+        mutableStateOf(false)
+    }
     Box(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -524,72 +530,84 @@ private fun HardwareImportScreen(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = pluralStringResource(id = R.plurals.accounts_left_to_import, accountsLeft, accountsLeft),
+                text = stringResource(id = R.string.importOlympiaLedgerAccounts_unverifiedAccountsLeft, accountsLeft, accountsLeft),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
-            if (!hasP2pLinks) {
+            if (ledgerFactorSources.isEmpty()) {
                 Text(
-                    text = stringResource(id = com.babylon.wallet.android.R.string.found_no_radix_connect_connections),
+                    text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
             } else {
-                if (ledgerFactorSources.isEmpty()) {
-                    Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.you_have_no_ledgers_added),
-                        style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    LedgerSelector(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        selectedLedgerFactorSourceID = selectedFactorSourceID,
-                        ledgerFactorSources = ledgerFactorSources,
-                        onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
-                    )
-                }
+                LedgerSelector(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    selectedLedgerFactorSourceID = selectedFactorSourceID,
+                    ledgerFactorSources = ledgerFactorSources,
+                    onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                )
             }
             Spacer(Modifier.weight(1f))
-            if (hasP2pLinks) {
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding(),
-                    onClick = onAddNewLedger,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_ledger)
-                )
-            } else {
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onAddP2PLink,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_p2p_link)
-                )
-            }
-            AnimatedVisibility(visible = hasP2pLinks && ledgerFactorSources.isNotEmpty()) {
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding(),
-                    onClick = onUseLedger,
-                    text = stringResource(id = com.babylon.wallet.android.R.string.use_ledger)
-                )
-            }
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding(),
+                onClick = {
+                    if (hasP2pLinks) {
+                        onAddNewLedger()
+                    } else {
+                        showNoP2pLinksDialog = true
+                    }
+                },
+                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
+            )
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding(),
+                onClick = onUseLedger,
+                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
+                enabled = hasP2pLinks && ledgerFactorSources.isNotEmpty()
+            )
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.skip_remaining_accounts),
+                text = "Skip remaining accounts", // TODO skip feature will be available on iOS, so maybe we can add a String to crowdin
                 onClick = onSkipRemainingHardwareAccounts,
                 enabled = !waitingForLedgerResponse
             )
         }
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
+        }
+        if (showNoP2pLinksDialog) {
+            BasicPromptAlertDialog(
+                finish = {
+                    if (it) {
+                        onAddP2PLink()
+                    }
+                    showNoP2pLinksDialog = false
+                },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
+            )
         }
     }
 }
@@ -611,7 +629,15 @@ private fun ImportCompletePage(
         ) {
             item {
                 Text(
-                    text = pluralStringResource(id = R.plurals.imported_x_accounts, migratedAccounts.size, migratedAccounts.size),
+                    stringResource(
+                        id = when (migratedAccounts.size) {
+                            0 -> R.string.importLegacyWallet_completion_titleNoAccounts
+                            1 -> R.string.importLegacyWallet_completion_titleOneAccount
+                            else -> R.string.importLegacyWallet_completion_titleManyAccounts
+                        },
+                        migratedAccounts.size,
+                        migratedAccounts.size
+                    ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )
@@ -638,7 +664,7 @@ private fun ImportCompletePage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.continue_button_title),
+            text = stringResource(R.string.common_ok),
             onClick = onContinue,
             throttleClicks = true
         )
@@ -661,26 +687,26 @@ private fun InputMnemonicPage(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = onSeedPhraseChanged,
             value = seedPhrase,
-            leftLabel = stringResource(id = R.string.seed_phrase),
-            hint = stringResource(id = R.string.seed_phrase),
+            leftLabel = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
+            hint = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
         )
         RadixTextField(
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = onPassphraseChanged,
             value = bip39Passphrase,
-            leftLabel = stringResource(id = R.string.bip_39_passphrase),
-            hint = stringResource(id = R.string.passphrase),
+            leftLabel = stringResource(id = R.string.importOlympiaAccounts_bip39passphrase),
+            hint = stringResource(id = R.string.importOlympiaAccounts_passphrase),
         )
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.import_label),
+            text = stringResource(R.string.importOlympiaAccounts_importLabel),
             onClick = onImportSoftwareAccounts,
             enabled = importSoftwareAccountsEnabled,
             throttleClicks = true
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.already_imported),
+            text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
             onClick = onMnemonicAlreadyImported,
             enabled = importSoftwareAccountsEnabled,
             throttleClicks = true
@@ -721,7 +747,6 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             accountsLeft = 5,
             waitingForLedgerResponse = false,
             onConfirmLedgerName = {},
-            onSkipLedgerName = {},
             hasP2pLinks = true,
             onAddP2PLink = {},
             ledgerFactorSources = persistentListOf(),
