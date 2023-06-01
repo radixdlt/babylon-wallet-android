@@ -21,23 +21,23 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param parentAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
- * @param ownerAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
- * @param globalAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
+ * @param parentAddress Bech32m-encoded human readable version of the address.
+ * @param ownerAddress Bech32m-encoded human readable version of the address.
+ * @param globalAddress Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
 data class StateEntityDetailsResponseItemAncestorIdentities (
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "parent_address")
     val parentAddress: kotlin.String? = null,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "owner_address")
     val ownerAddress: kotlin.String? = null,
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "global_address")
     val globalAddress: kotlin.String? = null
 

@@ -26,6 +26,7 @@ import kotlinx.serialization.Contextual
  * @param ancestorIdentities 
  * @param componentRoyaltyVaultBalance 
  * @param packageRoyaltyVaultBalance 
+ * @param nonFungibleIncludeNfids 
  * @param explicitMetadata 
  */
 @Serializable
@@ -40,6 +41,9 @@ data class StateEntityDetailsOptIns (
 
     @SerialName(value = "package_royalty_vault_balance")
     val packageRoyaltyVaultBalance: kotlin.Boolean? = null,
+
+    @SerialName(value = "non_fungible_include_nfids")
+    val nonFungibleIncludeNfids: kotlin.Boolean? = null,
 
     @SerialName(value = "explicit_metadata")
     val explicitMetadata: kotlin.collections.List<kotlin.String>? = null

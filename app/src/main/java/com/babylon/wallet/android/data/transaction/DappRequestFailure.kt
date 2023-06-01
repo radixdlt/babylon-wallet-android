@@ -34,6 +34,12 @@ sealed interface DappRequestFailure {
         object UnknownDefinitionAddress : DappRequestFailure
     }
 
+    sealed interface LedgerCommunicationFailure : DappRequestFailure {
+        object FailedToGetDeviceId : LedgerCommunicationFailure
+        object FailedToDerivePublicKeys : LedgerCommunicationFailure
+        object FailedToSignTransaction : LedgerCommunicationFailure
+    }
+
     fun toWalletErrorType(): WalletErrorType {
         return when (this) {
             TransactionApprovalFailure.BuildTransactionHeader -> WalletErrorType.FailedToPrepareTransaction
@@ -62,6 +68,9 @@ sealed interface DappRequestFailure {
             InvalidRequest -> WalletErrorType.InvalidRequest
             TransactionApprovalFailure.CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
             TransactionApprovalFailure.SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
+            LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
+            LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
+            LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
         }
     }
 
@@ -88,6 +97,9 @@ sealed interface DappRequestFailure {
             InvalidRequest -> R.string.invalid_request
             TransactionApprovalFailure.CompileTransactionIntent -> R.string.tx_fail_prepare
             TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.tx_fail_sign
+            LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.ledger_failure
+            LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.ledger_failure
+            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.ledger_failure
         }
     }
 

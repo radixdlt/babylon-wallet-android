@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param vaultAddress Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
+ * @param vaultAddress Bech32m-encoded human readable version of the address.
  * @param amount String-encoded decimal representing the amount of a related fungible resource.
  * @param lastUpdatedAtStateVersion TBD
  */
@@ -29,7 +29,7 @@ import kotlinx.serialization.SerialName
 
 data class FungibleResourcesCollectionItemVaultAggregatedVaultItem (
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "vault_address")
     val vaultAddress: kotlin.String,
 

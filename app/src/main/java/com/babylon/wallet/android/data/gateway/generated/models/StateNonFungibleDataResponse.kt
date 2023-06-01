@@ -27,7 +27,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param ledgerState 
- * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
  * @param nonFungibleIdType 
  * @param nonFungibleIds 
  */
@@ -38,7 +38,7 @@ data class StateNonFungibleDataResponse (
     @SerialName(value = "ledger_state")
     val ledgerState: LedgerState,
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String,
 

@@ -4,11 +4,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -24,6 +27,18 @@ data class RadixShapes(
     val roundedRectBottomMedium: CornerBasedShape = RoundedCornerShape(bottomEnd = 12.dp, bottomStart = 12.dp),
     val roundedRectTopDefault: CornerBasedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
 )
+
+@Composable
+fun listItemShape(itemIndex: Int = 0, allItemsSize: Int = 1, cornerRadius: Dp = 12.dp): Shape =
+    if (allItemsSize == 1) {
+        RoundedCornerShape(cornerRadius)
+    } else if (itemIndex == 0 && allItemsSize > 1) {
+        RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
+    } else if (itemIndex == allItemsSize - 1 && allItemsSize > 1) {
+        RoundedCornerShape(bottomStart = cornerRadius, bottomEnd = cornerRadius)
+    } else {
+        RectangleShape
+    }
 
 fun bubbleShape(
     density: Density,

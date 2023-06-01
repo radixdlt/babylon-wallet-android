@@ -235,7 +235,6 @@ private fun DappDetailContent(
                             is SelectedSheetState.SelectedNonFungibleResource -> {
                                 NonFungibleTokenBottomSheetDetails(
                                     modifier = Modifier.fillMaxSize(),
-                                    nonFungibleResource = selectedSheetState.nonFungible,
                                     item = selectedSheetState.nftItem,
                                     onCloseClick = {
                                         scope.launch {
@@ -472,7 +471,7 @@ fun DappDetails(
                 }
                 items(
                     nft.items,
-                    key = { item -> item.globalAddress(nftAddress = nft.resourceAddress) }
+                    key = { item -> item.globalAddress }
                 ) { item ->
                     GrayBackgroundWrapper {
                         AnimatedVisibility(

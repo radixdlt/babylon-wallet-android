@@ -14,15 +14,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
@@ -32,52 +35,61 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NftTokenHeaderItem(
+    modifier: Modifier = Modifier,
     nftImageUrl: String?,
     nftName: String?,
     nftsInCirculation: String?,
     nftsInPossession: String?,
     nftChildCount: Int,
-    modifier: Modifier = Modifier,
+    cardHeight: Dp = 103.dp,
     collapsed: Boolean = false,
+    groupInnerPadding: Dp = 6.dp,
     parentSectionClick: () -> Unit,
 ) {
-    val bottomPadding = if (collapsed) RadixTheme.dimensions.paddingSmall else 0.dp
     val bottomCorners = if (collapsed) 12.dp else 0.dp
     val cardShape = RoundedCornerShape(12.dp, 12.dp, bottomCorners, bottomCorners)
     Box(
         modifier = modifier
-            .padding(0.dp, 10.dp, 0.dp, bottomPadding)
     ) {
         if (collapsed) {
-            if (nftChildCount > 1) {
-                Card(
+            if (nftChildCount >= 2) {
+                val scaleFactor = 0.8f
+                val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding + groupInnerPadding * scaleFactor
+                Surface(
                     modifier = Modifier
+                        .padding(top = topOffset)
                         .fillMaxWidth()
-                        .height(113.dp)
-                        .padding(20.dp, 10.dp, 20.dp, 0.dp),
+                        .height(cardHeight)
+                        .scale(scaleFactor, scaleFactor),
                     shape = RadixTheme.shapes.roundedRectMedium,
-                    backgroundColor = Color.White,
-                    elevation = 4.dp,
+                    color = Color.White,
+                    elevation = 2.dp,
                     content = {}
                 )
             }
+
             if (nftChildCount >= 1) {
-                Card(
+                val scaleFactor = 0.9f
+                val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding
+                Surface(
                     modifier = Modifier
+                        .padding(top = topOffset)
                         .fillMaxWidth()
-                        .height(103.dp)
-                        .padding(10.dp, 10.dp, 10.dp, 0.dp),
+                        .height(cardHeight)
+                        .scale(scaleFactor, scaleFactor),
                     shape = RadixTheme.shapes.roundedRectMedium,
-                    backgroundColor = Color.White,
-                    elevation = 4.dp,
+                    color = Color.White,
+                    elevation = 3.dp,
                     content = {}
                 )
             }
         }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .requiredHeight(93.dp).clickable { parentSectionClick() },
+                .requiredHeight(cardHeight)
+                .clickable { parentSectionClick() },
             shape = cardShape,
             backgroundColor = Color.White,
             elevation = 4.dp,
@@ -128,6 +140,7 @@ fun NftTokenHeaderItem(
 fun CollapsableParentItemPreview() {
     RadixWalletTheme {
         NftTokenHeaderItem(
+            modifier = Modifier.padding(all = 30.dp),
             nftImageUrl = "url",
             nftName = "Rypto Punks",
             nftsInCirculation = "300,000",
@@ -143,6 +156,7 @@ fun CollapsableParentItemPreview() {
 fun ExpandedParentItemPreview() {
     RadixWalletTheme {
         NftTokenHeaderItem(
+            modifier = Modifier.padding(all = 16.dp),
             nftImageUrl = "url",
             nftName = "Rypto Punks",
             nftsInCirculation = "300,000",
@@ -153,11 +167,28 @@ fun ExpandedParentItemPreview() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ExpandedParentItemPreviewWithTwo() {
+    RadixWalletTheme {
+        NftTokenHeaderItem(
+            modifier = Modifier.padding(all = 16.dp),
+            nftImageUrl = "url",
+            nftName = "Rypto Punks",
+            nftsInCirculation = "300,000",
+            nftsInPossession = "1",
+            nftChildCount = 2,
+            collapsed = true
+        ) { }
+    }
+}
+
 @Preview(fontScale = 2f, showBackground = true)
 @Composable
 fun CollapsableParentItemWithLargeFontPreview() {
     RadixWalletTheme {
         NftTokenHeaderItem(
+            modifier = Modifier.padding(all = 16.dp),
             nftImageUrl = "url",
             nftName = "Rypto Punks",
             nftsInCirculation = "300,000",

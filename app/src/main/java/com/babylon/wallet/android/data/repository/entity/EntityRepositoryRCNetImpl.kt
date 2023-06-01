@@ -164,7 +164,7 @@ class EntityRepositoryRCNetImpl @Inject constructor(
                         timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
                     ),
                     map = { nonFungibleIdsResponse ->
-                        nonFungibleIdsResponse.nonFungibleIds.items.map { it.nonFungibleId }
+                        nonFungibleIdsResponse.nonFungibleIds.items.map { it }
                     }
                 ).value().orEmpty()
             }
@@ -184,6 +184,7 @@ class EntityRepositoryRCNetImpl @Inject constructor(
                 map = { response ->
                     response.nonFungibleIds.map {
                         Resource.NonFungibleResource.Item(
+                            collectionAddress = nonFungibleResourceAddress,
                             localId = it.nonFungibleId,
                             iconMetadataItem = it.nftImage()?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
                         )
@@ -208,8 +209,8 @@ class EntityRepositoryRCNetImpl @Inject constructor(
         )
     }
 
-    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = mutable_data?.rawJson?.elements?.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = data.rawJson.fields.find { element ->
         val value = element.value
-        value.contains("https") && (value.contains(".jpg") || value.contains(".png") || value.contains(".svg"))
+        value.contains("https")
     }?.value?.toUri()
 }

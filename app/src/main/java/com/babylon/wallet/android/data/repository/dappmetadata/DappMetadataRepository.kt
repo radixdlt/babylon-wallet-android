@@ -46,7 +46,7 @@ interface DappMetadataRepository {
     ): Result<List<DAppWithMetadata>>
 }
 
-class DappMetadataRepositoryEnkinetImpl @Inject constructor(
+class DappMetadataRepositoryImpl @Inject constructor(
     @SimpleHttpClient private val okHttpClient: OkHttpClient,
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     private val stateApi: StateApi,

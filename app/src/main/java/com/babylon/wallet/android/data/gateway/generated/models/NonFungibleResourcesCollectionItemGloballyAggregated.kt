@@ -26,7 +26,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param aggregationLevel 
- * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
  * @param amount TBA
  * @param lastUpdatedAtStateVersion TBD
  * @param explicitMetadata 
@@ -38,7 +38,7 @@ data class NonFungibleResourcesCollectionItemGloballyAggregated (
     @Contextual @SerialName(value = "aggregation_level")
     override val aggregationLevel: ResourceAggregationLevel,
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
     override val resourceAddress: kotlin.String,
 

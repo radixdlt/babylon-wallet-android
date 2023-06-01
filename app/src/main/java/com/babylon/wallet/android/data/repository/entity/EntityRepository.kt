@@ -20,6 +20,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
@@ -45,6 +46,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.c
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
+import java.io.IOException
 import javax.inject.Inject
 
 interface EntityRepository {
@@ -67,8 +69,8 @@ interface EntityRepository {
     ): Result<Resources>
 }
 
-@Suppress("TooManyFunctions")
-class EntityRepositoryEnkinetImpl @Inject constructor(
+
+class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
 ) : EntityRepository {
@@ -87,8 +89,10 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
         return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
 
             val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses)
-
-            val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(entityDetailsResponses)
+            val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
+                entityDetailsResponses = entityDetailsResponses,
+                isRefreshing = isRefreshing
+            )
 
             // build result list of accounts with resources
             val listOfAccountsWithResources = accounts.map { account ->
@@ -111,7 +115,7 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
-                    entityDetailsResponseItem.address
+                    entityDetailsResponseItem.address // this is account address
                 }
                 .foldTo(mutableMapOf(), listOf<Resource.FungibleResource>()) { _, entityItem ->
                     val fungibleResourcesItemsList = if (entityItem.fungibleResources != null) {
@@ -142,12 +146,13 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
     }
 
     private suspend fun buildMapOfAccountsWithNonFungibles(
-        entityDetailsResponses: List<StateEntityDetailsResponse>
+        entityDetailsResponses: List<StateEntityDetailsResponse>,
+        isRefreshing: Boolean
     ): Map<String, List<Resource.NonFungibleResource>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
-                    entityDetailsResponseItem.address
+                    entityDetailsResponseItem.address // this is account address
                 }
                 .foldTo(mutableMapOf(), listOf<Resource.NonFungibleResource>()) { _, entityItem ->
                     val nonFungibleResourcesItemsList = if (entityItem.nonFungibleResources != null) {
@@ -165,7 +170,13 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
                             amount = nonFungibleResourcesItem.vaults.items.first().totalCount,
                             nameMetadataItem = metaDataItems.toMutableList().consume(),
                             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
-                            items = emptyList()
+                            iconMetadataItem = metaDataItems.toMutableList().consume(),
+                            items = getNonFungibleResourceItemsForAccount(
+                                accountAddress = entityItem.address,
+                                vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
+                                resourceAddress = nonFungibleResourcesItem.resourceAddress,
+                                isRefreshing
+                            ).value()?.toMutableList().orEmpty()
                         )
                     }
                 }
@@ -182,7 +193,7 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
         isRefreshing: Boolean
     ): Result<List<StateEntityDetailsResponse>> {
         val responses = addresses
-            .chunked(CHUNK_SIZE_OF_ADDRESSES)
+            .chunked(CHUNK_SIZE_OF_ITEMS)
             .map { chunkedAddresses ->
                 stateApi.entityDetails( // TODO use stateEntityDetails if possible
                     StateEntityDetailsRequest(
@@ -271,6 +282,74 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
         return allNonFungibles
     }
 
+    private suspend fun getNonFungibleResourceItemsForAccount(
+        accountAddress: String,
+        vaultAddress: String,
+        resourceAddress: String,
+        isRefreshing: Boolean = false
+    ): Result<List<Resource.NonFungibleResource.Item>> {
+        val stateEntityNonFungibleIdsPageResponse = stateApi.entityNonFungibleIdsPage(
+            StateEntityNonFungibleIdsPageRequest(
+                address = accountAddress,
+                vaultAddress = vaultAddress,
+                resourceAddress = resourceAddress
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+            ),
+            map = {
+                it
+            }
+        )
+
+        val nonFungibleIds = stateEntityNonFungibleIdsPageResponse.value()?.items
+        val nonFungibleDataResponsesListResult = nonFungibleIds
+            ?.chunked(CHUNK_SIZE_OF_ITEMS)
+            ?.map { ids ->
+                stateApi.nonFungibleData(
+                    StateNonFungibleDataRequest(
+                        resourceAddress = resourceAddress,
+                        nonFungibleIds = ids
+                    )
+                ).execute(
+                    cacheParameters = CacheParameters(
+                        httpCache = cache,
+                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+                    ),
+                    map = {
+                        it
+                    }
+                )
+            }.orEmpty()
+
+        // if you find any error response in the list of StateNonFungibleDataResponse then return error
+        return if (nonFungibleDataResponsesListResult.any { response -> response is Result.Error }) {
+            Result.Error(IOException("Failed to fetch the nonFungibleData"))
+        } else {
+            val nonFungibleResourceItemsList =
+                nonFungibleDataResponsesListResult.mapNotNull { nonFungibleDataResponse ->
+                    nonFungibleDataResponse.map {
+                        it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
+                            Resource.NonFungibleResource.Item(
+                                collectionAddress = resourceAddress,
+                                localId = stateNonFungibleDetailsResponseItem.nonFungibleId,
+                                iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
+                                    ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
+                            )
+                        }
+                    }.value()
+                }.flatten()
+            Result.Success(nonFungibleResourceItemsList)
+        }
+    }
+
+    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = data.rawJson.fields.find { element ->
+        val value = element.value
+        value.contains("https")
+    }?.value?.toUri()
+
     // TODO currently this is only used in GetTransactionComponentResourcesUseCase,
     //  we should refactor GetTransactionComponentResourcesUseCase to use the new domain models.
     override suspend fun stateEntityDetails(
@@ -293,32 +372,34 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
     ): Result<Resources> {
-        val fungibleAddresses = dAppMetadata.associatedFungibleResourceAddresses
-        val nonFungibleAddresses = dAppMetadata.associatedNonFungibleResourceAddresses
-        val nonFungiblesWithData = resolveNonFungibleData(nonFungibleAddresses, isRefreshing)
-
-        return stateApi.entityDetails(
-            StateEntityDetailsRequest(
-                addresses = fungibleAddresses + nonFungibleAddresses,
-                aggregationLevel = ResourceAggregationLevel.vault
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-            ),
-            map = {
-                Resources(
-                    fungibleResources = fungibleResources(dAppMetadata.fungibleResources, it.items),
-                    nonFungibleResources = nonFungibleResources(
-                        dAppMetadata.nonFungibleResources,
-                        it.items,
-                        nonFungiblesWithData
-                    )
-                )
-            }
-        )
+        TODO("Not yet implemented")
     }
+//        val fungibleAddresses = dAppMetadata.associatedFungibleResourceAddresses
+//        val nonFungibleAddresses = dAppMetadata.associatedNonFungibleResourceAddresses
+//        val nonFungiblesWithData = resolveNonFungibleData(nonFungibleAddresses, isRefreshing)
+//
+//        return stateApi.entityDetails(
+//            StateEntityDetailsRequest(
+//                addresses = fungibleAddresses + nonFungibleAddresses,
+//                aggregationLevel = ResourceAggregationLevel.vault
+//            )
+//        ).execute(
+//            cacheParameters = CacheParameters(
+//                httpCache = cache,
+//                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+//            ),
+//            map = {
+//                Resources(
+//                    fungibleResources = fungibleResources(dAppMetadata.fungibleResources, it.items),
+//                    nonFungibleResources = nonFungibleResources(
+//                        dAppMetadata.nonFungibleResources,
+//                        it.items,
+//                        nonFungiblesWithData
+//                    )
+//                )
+//            }
+//        )
+//    }
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,
@@ -399,53 +480,53 @@ class EntityRepositoryEnkinetImpl @Inject constructor(
         )
     }
 
-    private suspend fun resolveNonFungibleData(
-        nonFungibleAddresses: List<String>,
-        isRefreshing: Boolean
-    ): Map<String, List<Resource.NonFungibleResource.Item>> {
-        val nonFungibleAddressesWithIds = nonFungibleAddresses
-            .associateWith { nonFungibleResourceAddress ->
-                stateApi.nonFungibleIds(StateNonFungibleIdsRequest(nonFungibleResourceAddress)).execute(
-                    cacheParameters = CacheParameters(
-                        httpCache = cache,
-                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
-                    ),
-                    map = { nonFungibleIdsResponse ->
-                        nonFungibleIdsResponse.nonFungibleIds.items.map { it.nonFungibleId }
-                    }
-                ).value().orEmpty()
-            }
-
-        // A map of <Non fungible ResourceAddress, List of NFT data>
-        return nonFungibleAddresses.associateWith { nonFungibleResourceAddress ->
-            stateApi.nonFungibleData(
-                StateNonFungibleDataRequest(
-                    resourceAddress = nonFungibleResourceAddress,
-                    nonFungibleIds = nonFungibleAddressesWithIds[nonFungibleResourceAddress].orEmpty()
-                )
-            ).execute(
-                cacheParameters = CacheParameters(
-                    httpCache = cache,
-                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-                ),
-                map = { response ->
-                    response.nonFungibleIds.map {
-                        Resource.NonFungibleResource.Item(
-                            localId = it.nonFungibleId,
-                            iconMetadataItem = it.nftImage()?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
-                        )
-                    }
-                }
-            ).value().orEmpty()
-        }
-    }
-
-    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = mutable_data?.rawJson?.elements?.find { element ->
-        val value = element.value
-        value.contains("https") && (value.contains(".jpg") || value.contains(".png") || value.contains(".svg"))
-    }?.value?.toUri()
+//    private suspend fun resolveNonFungibleData(
+//        nonFungibleAddresses: List<String>,
+//        isRefreshing: Boolean
+//    ): Map<String, List<Resource.NonFungibleResource.Item>> {
+//        val nonFungibleAddressesWithIds = nonFungibleAddresses
+//            .associateWith { nonFungibleResourceAddress ->
+//                stateApi.nonFungibleIds(StateNonFungibleIdsRequest(nonFungibleResourceAddress)).execute(
+//                    cacheParameters = CacheParameters(
+//                        httpCache = cache,
+//                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+//                    ),
+//                    map = { nonFungibleIdsResponse ->
+//                        nonFungibleIdsResponse.nonFungibleIds.items.map { it.nonFungibleId }
+//                    }
+//                ).value().orEmpty()
+//            }
+//
+//        // A map of <Non fungible ResourceAddress, List of NFT data>
+//        return nonFungibleAddresses.associateWith { nonFungibleResourceAddress ->
+//            stateApi.nonFungibleData(
+//                StateNonFungibleDataRequest(
+//                    resourceAddress = nonFungibleResourceAddress,
+//                    nonFungibleIds = nonFungibleAddressesWithIds[nonFungibleResourceAddress].orEmpty()
+//                )
+//            ).execute(
+//                cacheParameters = CacheParameters(
+//                    httpCache = cache,
+//                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+//                ),
+//                map = { response ->
+//                    response.nonFungibleIds.map {
+//                        Resource.NonFungibleResource.Item(
+//                            localId = it.nonFungibleId,
+//                            iconMetadataItem = it.nftImage()?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
+//                        )
+//                    }
+//                }
+//            ).value().orEmpty()
+//        }
+//    }
+//
+//    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = mutable_data?.rawJson?.elements?.find { element ->
+//        val value = element.value
+//        value.contains("https") && (value.contains(".jpg") || value.contains(".png") || value.contains(".svg"))
+//    }?.value?.toUri()
 
     companion object {
-        private const val CHUNK_SIZE_OF_ADDRESSES = 20
+        private const val CHUNK_SIZE_OF_ITEMS = 20
     }
 }

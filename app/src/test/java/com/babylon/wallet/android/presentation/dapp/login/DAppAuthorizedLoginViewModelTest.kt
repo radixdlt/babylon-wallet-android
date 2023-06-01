@@ -51,7 +51,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
@@ -67,7 +68,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
@@ -82,7 +84,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
@@ -98,7 +101,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(listOf(PersonaData.PersonaDataField.GivenName), true)
@@ -110,7 +114,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
@@ -125,7 +130,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,
             "",
-            "address"
+            "address",
+            false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(

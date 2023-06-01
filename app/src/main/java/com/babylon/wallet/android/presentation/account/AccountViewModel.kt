@@ -55,7 +55,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
+                event is AppEvent.GotFreeXrd || event is AppEvent.SuccessfulTransaction
             }.collect {
                 refresh()
             }

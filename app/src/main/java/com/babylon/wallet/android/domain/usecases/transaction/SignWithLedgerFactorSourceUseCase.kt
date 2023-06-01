@@ -38,7 +38,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             }
         }
         val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-        val signResult = ledgerMessenger.signTransactionRequest(
+        val signTransactionResponse = ledgerMessenger.signTransactionRequest(
             interactionId = UUIDGenerator.uuid().toString(),
             signersDerivationPathToCurve = pathToCurve,
             compiledTransactionIntent = dataToSign.toHexString(),
@@ -48,18 +48,18 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 ledgerFactorSource.id.value
             )
         )
-        return if (signResult.isSuccess) {
-            val ledgerSignatures = signResult.getOrThrow().signatures.map { signature ->
-                when (signature.curve) {
-                    MessageFromDataChannel.LedgerResponse.SignatureOfSigner.Curve.Curve25519 -> {
+        return if (signTransactionResponse.isSuccess) {
+            val ledgerSignatures = signTransactionResponse.getOrThrow().signatures.map { signatureOfSigner ->
+                when (signatureOfSigner.derivedPublicKey.curve) {
+                    MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.EddsaEd25519(
-                            signature = Signature.EddsaEd25519(signature.signature.decodeHex()),
-                            publicKey = PublicKey.EddsaEd25519(signature.publicKeyHex)
+                            signature = Signature.EddsaEd25519(signatureOfSigner.signature.decodeHex()),
+                            publicKey = PublicKey.EddsaEd25519(signatureOfSigner.derivedPublicKey.publicKeyHex)
                         )
                     }
-                    MessageFromDataChannel.LedgerResponse.SignatureOfSigner.Curve.Secp256k1 -> {
+                    MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.EcdsaSecp256k1(
-                            signature = Signature.EcdsaSecp256k1(signature.signature.decodeHex())
+                            signature = Signature.EcdsaSecp256k1(signatureOfSigner.signature.decodeHex())
                         )
                     }
                 }
