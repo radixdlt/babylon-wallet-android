@@ -2,12 +2,17 @@ package com.babylon.wallet.android.domain.model
 
 data class DAppWithAssociatedResources(
     val dAppWithMetadata: DAppWithMetadata,
-    val resources: Resources?
+    val resources: DAppResources
 ) {
 
     val fungibleResources: List<Resource.FungibleResource>
-        get() = resources?.fungibleResources.orEmpty()
+        get() = resources.fungibleResources
 
-    val nonFungibleResources: List<Resource.NonFungibleResource>
-        get() = resources?.nonFungibleResources.orEmpty()
+    val nonFungibleResources: List<Resource.NonFungibleResource.Item>
+        get() = resources.nonFungibleResources
 }
+
+data class DAppResources(
+    val fungibleResources: List<Resource.FungibleResource>,
+    val nonFungibleResources: List<Resource.NonFungibleResource.Item>
+)

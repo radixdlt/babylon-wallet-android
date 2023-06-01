@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
@@ -164,7 +165,10 @@ fun ConnectedDAppsContentPreview() {
                 dAppWithMetadata = DAppWithMetadata(
                     dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
                 ),
-                resources = null
+                resources = DAppResources(
+                    emptyList(),
+                    emptyList()
+                )
             )
         ),
         onDAppClick = {}

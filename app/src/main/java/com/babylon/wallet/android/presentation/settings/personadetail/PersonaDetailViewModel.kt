@@ -80,5 +80,5 @@ data class PersonaDetailUiState(
     val persona: Network.Persona? = null,
     val selectedDAppWithMetadata: DAppWithMetadata? = null,
     val selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
-    val selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource> = persistentListOf(),
+    val selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),
 ) : UiState

@@ -125,7 +125,7 @@ class DappMetadataRepositoryImpl @Inject constructor(
                 response.items.map { dAppResponse ->
                     DAppWithMetadata.from(
                         address = dAppResponse.address,
-                        metadataItems = dAppResponse.explicitMetadata?.asMetadataItems().orEmpty()
+                        metadataItems = dAppResponse.metadata.asMetadataItems().orEmpty()
                     )
                 }
             },

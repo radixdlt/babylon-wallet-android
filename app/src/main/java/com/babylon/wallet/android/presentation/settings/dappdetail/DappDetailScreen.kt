@@ -5,11 +5,8 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import android.graphics.drawable.ColorDrawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,8 +76,6 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.NftTokenDetailItem
-import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
 import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -150,10 +145,10 @@ private fun DappDetailContent(
     personaList: ImmutableList<Network.Persona>,
     dappWithMetadata: DAppWithMetadata?,
     associatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource>,
+    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
-    onNftClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onNftClick: (Resource.NonFungibleResource.Item) -> Unit,
     selectedSheetState: SelectedSheetState?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
     onDisconnectPersona: (Network.Persona) -> Unit,
@@ -268,8 +263,8 @@ private fun DappDetailContent(
                                 bottomSheetState.show()
                             }
                         },
-                        onNftClick = { nonFungibleResource, nftItem ->
-                            onNftClick(nonFungibleResource, nftItem)
+                        onNftClick = { nftItem ->
+                            onNftClick(nftItem)
                             scope.launch {
                                 bottomSheetState.show()
                             }
@@ -320,15 +315,12 @@ fun DappDetails(
     dappWithMetadata: DAppWithMetadata?,
     personaList: ImmutableList<Network.Persona>,
     associatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource>,
+    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
-    onNftClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onNftClick: (Resource.NonFungibleResource.Item) -> Unit,
     onDeleteDapp: () -> Unit
 ) {
-    val collapsedState = remember(associatedNonFungibleTokens) {
-        associatedNonFungibleTokens.map { true }.toMutableStateList()
-    }
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
             title = dappName,
@@ -453,45 +445,30 @@ fun DappDetails(
                     }
                 }
             }
-            associatedNonFungibleTokens.forEachIndexed { i, nft ->
-                val collapsed = collapsedState[i]
-                item(key = "header_$i") {
-                    GrayBackgroundWrapper {
-                        NftTokenHeaderItem(
-                            nftImageUrl = nft.iconUrl.toString(),
-                            nftName = nft.name,
-                            nftsInCirculation = "?",
-                            nftsInPossession = nft.items.size.toString(),
-                            nftChildCount = nft.items.size,
-                            collapsed = collapsed
-                        ) {
-                            collapsedState[i] = !collapsed
-                        }
-                    }
-                }
-                items(
-                    nft.items,
-                    key = { item -> item.globalAddress }
-                ) { item ->
-                    GrayBackgroundWrapper {
-                        AnimatedVisibility(
-                            visible = !collapsed,
-                            enter = expandVertically(),
-                            exit = shrinkVertically(animationSpec = tween(150))
-                        ) {
-                            var bottomCornersRounded = false
-                            if (nft.items.last() == item) {
-                                bottomCornersRounded = true
+            items(associatedNonFungibleTokens) { nftItem ->
+                GrayBackgroundWrapper {
+                    StandardOneLineCard(
+                        image = nftItem.imageUrl?.toString().orEmpty(),
+                        title = nftItem.localId,// TODO Add code for stripping identifiers once PR is merged
+                        modifier = Modifier
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onNftClick(nftItem)
                             }
-                            NftTokenDetailItem(
-                                item = item,
-                                bottomCornersRounded = bottomCornersRounded,
-                                onItemClicked = {
-                                    onNftClick(nft, item)
-                                }
+                            .fillMaxWidth()
+                            .background(
+                                RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.roundedRectMedium
                             )
-                        }
-                    }
+                            .padding(
+                                horizontal = dimensions.paddingLarge,
+                                vertical = dimensions.paddingDefault
+                            ),
+                        showChevron = false,
+                        placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
             dappWithMetadata?.definitionAddress?.let {
@@ -847,9 +824,8 @@ fun DappDetailContentPreview() {
             associatedFungibleTokens = persistentListOf(),
             associatedNonFungibleTokens = persistentListOf(),
             onPersonaClick = {},
-//            selectedPersona = PersonaUiModel(SampleDataProvider().samplePersona()),
             onFungibleTokenClick = {},
-            onNftClick = { _, _ -> },
+            onNftClick = {},
             selectedSheetState = null,
             selectedPersonaSharedAccounts = persistentListOf(
                 AccountItemUiModel("account_tdx_efgh", "Account1", 0)

@@ -111,11 +111,13 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    fun onNftClick(nonFungibleResource: Resource.NonFungibleResource, nftItem: Resource.NonFungibleResource.Item) {
+    fun onNftClick(nftItem: Resource.NonFungibleResource.Item) {
         viewModelScope.launch {
             _state.update {
                 it.copy(
-                    selectedSheetState = SelectedSheetState.SelectedNonFungibleResource(nonFungibleResource, nftItem)
+                    selectedSheetState = SelectedSheetState.SelectedNonFungibleResource(
+                        nftItem = nftItem
+                    )
                 )
             }
         }
@@ -226,7 +228,7 @@ data class DappDetailUiState(
     val dapp: Network.AuthorizedDapp? = null,
     val dappWithMetadata: DAppWithMetadata? = null,
     val associatedTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
-    val associatedNfts: ImmutableList<Resource.NonFungibleResource> = persistentListOf(),
+    val associatedNfts: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null
@@ -235,7 +237,6 @@ data class DappDetailUiState(
 sealed interface SelectedSheetState {
     data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedSheetState
     data class SelectedNonFungibleResource(
-        val nonFungible: Resource.NonFungibleResource,
         val nftItem: Resource.NonFungibleResource.Item
     ) : SelectedSheetState
     data class SelectedPersona(

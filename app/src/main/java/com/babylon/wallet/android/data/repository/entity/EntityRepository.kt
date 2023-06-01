@@ -3,21 +3,17 @@ package com.babylon.wallet.android.data.repository.entity
 import android.net.Uri
 import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.extensions.amount
-import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
-import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
-import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
@@ -25,7 +21,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleIdsRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -37,6 +32,7 @@ import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
@@ -45,8 +41,10 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.presentation.model.ActionableAddress
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
+import java.math.BigDecimal
 import javax.inject.Inject
 
 interface EntityRepository {
@@ -66,7 +64,7 @@ interface EntityRepository {
     suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean = true
-    ): Result<Resources>
+    ): Result<DAppResources>
 }
 
 
@@ -371,35 +369,62 @@ class EntityRepositoryImpl @Inject constructor(
     override suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
-    ): Result<Resources> {
-        TODO("Not yet implemented")
+    ): Result<DAppResources> {
+
+        val claimedResources = dAppMetadata.claimedEntities.filter {
+            ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
+        }
+
+        val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
+            addresses = claimedResources,
+            explicitMetadata = ExplicitMetadataKey.forAssets,
+            isRefreshing = isRefreshing
+        )
+
+        return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
+            val allResources = entityDetailsResponses.map {
+                it.items
+            }.flatten()
+
+            val fungibleItems = allResources.filter {
+                it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
+            }
+            val nonFungibleItems = allResources.filter {
+                it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
+            }
+
+            val fungibleResources = fungibleItems.map { fungibleItem ->
+                val metadataMap = fungibleItem.metadata.asMetadataStringMap()
+                Resource.FungibleResource(
+                    resourceAddress = fungibleItem.address,
+                    amount = BigDecimal.ZERO, // No amount given in metadata
+                    nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
+                    symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
+                    descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
+                    iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
+                )
+            }
+
+            val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
+                val metadataMap = nonFungibleItem.metadata.asMetadataStringMap()
+
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = nonFungibleItem.address,
+                    localId = nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty(),
+                    iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
+                        IconUrlMetadataItem(it.toUri())
+                    }
+                )
+            }
+
+            val dAppsWithResources = DAppResources(
+                fungibleResources = fungibleResources,
+                nonFungibleResources = nonFungibleResource,
+            )
+
+            Result.Success(dAppsWithResources)
+        }
     }
-//        val fungibleAddresses = dAppMetadata.associatedFungibleResourceAddresses
-//        val nonFungibleAddresses = dAppMetadata.associatedNonFungibleResourceAddresses
-//        val nonFungiblesWithData = resolveNonFungibleData(nonFungibleAddresses, isRefreshing)
-//
-//        return stateApi.entityDetails(
-//            StateEntityDetailsRequest(
-//                addresses = fungibleAddresses + nonFungibleAddresses,
-//                aggregationLevel = ResourceAggregationLevel.vault
-//            )
-//        ).execute(
-//            cacheParameters = CacheParameters(
-//                httpCache = cache,
-//                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-//            ),
-//            map = {
-//                Resources(
-//                    fungibleResources = fungibleResources(dAppMetadata.fungibleResources, it.items),
-//                    nonFungibleResources = nonFungibleResources(
-//                        dAppMetadata.nonFungibleResources,
-//                        it.items,
-//                        nonFungiblesWithData
-//                    )
-//                )
-//            }
-//        )
-//    }
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,
@@ -438,93 +463,6 @@ class EntityRepositoryImpl @Inject constructor(
             map = { it }
         )
     }
-
-    private fun fungibleResources(
-        fungibleResources: List<FungibleResourcesCollectionItem>,
-        allResources: List<StateEntityDetailsResponseItem>
-    ) = fungibleResources.mapNotNull { item ->
-        val resourceDetails = allResources.find { resource ->
-            resource.address == item.resourceAddress
-        } ?: return@mapNotNull null
-
-        val metadataMap = resourceDetails.metadata.asMetadataStringMap()
-
-        Resource.FungibleResource(
-            resourceAddress = item.resourceAddress,
-            amount = item.amountDecimal,
-            nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-            symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
-            descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
-            iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
-        )
-    }
-
-    private fun nonFungibleResources(
-        nonFungibleResources: List<NonFungibleResourcesCollectionItem>,
-        allResources: List<StateEntityDetailsResponseItem>,
-        nonFungiblesWithData: Map<String, List<Resource.NonFungibleResource.Item>>
-    ) = nonFungibleResources.mapNotNull { item ->
-        val resourceDetails = allResources.find { resource ->
-            resource.address == item.resourceAddress
-        } ?: return@mapNotNull null
-
-        val metadataMap = resourceDetails.metadata.asMetadataStringMap()
-
-        Resource.NonFungibleResource(
-            resourceAddress = item.resourceAddress,
-            amount = item.amount,
-            nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-            descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
-            iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) },
-            items = nonFungiblesWithData[item.resourceAddress].orEmpty()
-        )
-    }
-
-//    private suspend fun resolveNonFungibleData(
-//        nonFungibleAddresses: List<String>,
-//        isRefreshing: Boolean
-//    ): Map<String, List<Resource.NonFungibleResource.Item>> {
-//        val nonFungibleAddressesWithIds = nonFungibleAddresses
-//            .associateWith { nonFungibleResourceAddress ->
-//                stateApi.nonFungibleIds(StateNonFungibleIdsRequest(nonFungibleResourceAddress)).execute(
-//                    cacheParameters = CacheParameters(
-//                        httpCache = cache,
-//                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
-//                    ),
-//                    map = { nonFungibleIdsResponse ->
-//                        nonFungibleIdsResponse.nonFungibleIds.items.map { it.nonFungibleId }
-//                    }
-//                ).value().orEmpty()
-//            }
-//
-//        // A map of <Non fungible ResourceAddress, List of NFT data>
-//        return nonFungibleAddresses.associateWith { nonFungibleResourceAddress ->
-//            stateApi.nonFungibleData(
-//                StateNonFungibleDataRequest(
-//                    resourceAddress = nonFungibleResourceAddress,
-//                    nonFungibleIds = nonFungibleAddressesWithIds[nonFungibleResourceAddress].orEmpty()
-//                )
-//            ).execute(
-//                cacheParameters = CacheParameters(
-//                    httpCache = cache,
-//                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-//                ),
-//                map = { response ->
-//                    response.nonFungibleIds.map {
-//                        Resource.NonFungibleResource.Item(
-//                            localId = it.nonFungibleId,
-//                            iconMetadataItem = it.nftImage()?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
-//                        )
-//                    }
-//                }
-//            ).value().orEmpty()
-//        }
-//    }
-//
-//    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = mutable_data?.rawJson?.elements?.find { element ->
-//        val value = element.value
-//        value.contains("https") && (value.contains(".jpg") || value.contains(".png") || value.contains(".svg"))
-//    }?.value?.toUri()
 
     companion object {
         private const val CHUNK_SIZE_OF_ITEMS = 20

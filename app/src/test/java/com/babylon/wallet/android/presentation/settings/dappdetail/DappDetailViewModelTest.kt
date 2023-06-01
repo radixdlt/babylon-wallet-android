@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResources
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -103,13 +104,14 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
 
     @Test
     fun `persona click sets persona detail data`() = runTest {
+        val expectedPersona = samplePersonas[0].toUiModel()
         val vm = vm.value
         advanceUntilIdle()
         vm.onPersonaClick(samplePersonas[0])
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.selectedPersona?.persona == samplePersonas[0])
+            assert((item.selectedSheetState as SelectedSheetState.SelectedPersona).persona == expectedPersona)
             assert(item.sharedPersonaAccounts.size == 1)
         }
     }
@@ -124,7 +126,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.selectedPersona == null)
+            assert((item.selectedSheetState as SelectedSheetState.SelectedPersona).persona == null)
             assert(item.sharedPersonaAccounts.size == 0)
         }
     }

@@ -42,7 +42,7 @@ fun DAppDetailsSheetContent(
     dappName: String,
     dappWithMetadata: DAppWithMetadata?,
     associatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource>
+    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
@@ -167,8 +167,8 @@ fun DAppDetailsSheetContent(
             items(associatedNonFungibleTokens) { nonFungibleToken ->
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
-                        nonFungibleToken.iconUrl.toString(),
-                        nonFungibleToken.name,
+                        image = nonFungibleToken.imageUrl.toString(),
+                        title = nonFungibleToken.localId,
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)

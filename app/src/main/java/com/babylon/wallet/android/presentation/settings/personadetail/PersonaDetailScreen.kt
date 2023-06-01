@@ -89,7 +89,7 @@ private fun PersonaDetailContent(
     authorizedDapps: ImmutableList<DAppWithAssociatedResources>,
     selectedDAppWithMetadata: DAppWithMetadata?,
     selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource>,
+    selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
     onDAppClick: (DAppWithAssociatedResources) -> Unit
 ) {
     val bottomSheetState =

@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
-import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
@@ -25,11 +23,7 @@ data class DAppWithMetadata(
     private val claimedEntitiesItem: ClaimedEntitiesMetadataItem? = null,
     private val accountTypeItem: AccountTypeMetadataItem? = null,
     private val dAppDefinitionMetadataItem: DAppDefinitionMetadataItem? = null,
-    private val nonExplicitMetadataItems: List<StringMetadataItem> = emptyList(),
-    val associatedFungibleResourceAddresses: List<String> = emptyList(),
-    val associatedNonFungibleResourceAddresses: List<String> = emptyList(),
-    val fungibleResources: List<FungibleResourcesCollectionItem> = emptyList(),
-    val nonFungibleResources: List<NonFungibleResourcesCollectionItem> = emptyList()
+    private val nonExplicitMetadataItems: List<StringMetadataItem> = emptyList()
 ) {
 
     val name: String?
@@ -54,7 +48,8 @@ data class DAppWithMetadata(
         get() = claimedWebsiteItem?.website
 
     val claimedEntities: List<String>
-        get() = claimedEntitiesItem?.entity?.split(",").orEmpty()
+        get() = claimedEntitiesItem?.entity?.split(",")?.map { it.trim() }.orEmpty()
+
     fun isRelatedWith(origin: String): Boolean {
         return relatedWebsitesItem?.website == origin
     }
@@ -69,6 +64,8 @@ data class DAppWithMetadata(
                 descriptionItem = remainingItems.consume(),
                 iconMetadataItem = remainingItems.consume(),
                 relatedWebsitesItem = remainingItems.consume(),
+                claimedWebsiteItem = remainingItems.consume(),
+                claimedEntitiesItem = remainingItems.consume(),
                 accountTypeItem = remainingItems.consume(),
                 nonExplicitMetadataItems = remainingItems.filterIsInstance<StringMetadataItem>()
             )

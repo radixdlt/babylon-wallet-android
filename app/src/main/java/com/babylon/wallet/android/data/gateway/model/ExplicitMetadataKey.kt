@@ -46,7 +46,9 @@ enum class ExplicitMetadataKey(val key: String) {
         RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value)
         CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value)
         CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value)
-        ACCOUNT_TYPE -> AccountTypeMetadataItem(type = AccountType.valueOf(value))
+        ACCOUNT_TYPE -> AccountTypeMetadataItem(
+            type = (AccountType.values().find { it.asString == value } ?: DAPP_DEFINITION) as AccountType
+        )
         TAGS -> TagsMetadataItem(tags = listOf(value))
         KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value))
         INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value))
