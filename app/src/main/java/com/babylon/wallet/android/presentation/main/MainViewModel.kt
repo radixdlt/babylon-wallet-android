@@ -19,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
@@ -66,14 +65,12 @@ class MainViewModel @Inject constructor(
         )
 
     init {
-        listenForInternalRequests()
         viewModelScope.launch {
             getProfileStateUseCase()
                 .collect { profileState ->
                     _state.update { MainUiState(initialAppState = AppState.from(profileState)) }
                 }
         }
-
         handleAllIncomingRequests()
     }
 
@@ -139,15 +136,6 @@ class MainViewModel @Inject constructor(
                     }
                 }
                 sendEvent(mainEvent)
-            }
-        }
-    }
-
-    private fun listenForInternalRequests() {
-        viewModelScope.launch {
-            incomingRequestRepository.currentRequestToHandle.filter { it.isInternal }.collect { request ->
-                delay(REQUEST_HANDLING_DELAY)
-                sendEvent(MainEvent.IncomingRequestEvent(request))
             }
         }
     }
