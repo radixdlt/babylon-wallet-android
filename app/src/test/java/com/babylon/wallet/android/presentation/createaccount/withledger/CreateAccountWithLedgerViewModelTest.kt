@@ -24,6 +24,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.LedgerAddResult
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateAccountWithLedgerViewModel>() {
@@ -46,7 +47,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
                 "1", MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS, "device1"
             )
         )
-        coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns FactorSource.ID("2")
+        coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns LedgerAddResult.Added(FactorSource.ID("2"))
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse(
                 "1",

@@ -71,7 +71,7 @@ fun ChooseAssetsSheet(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
             SheetHeader(
-                title = stringResource(id = R.string.choose_assets),
+                title = stringResource(id = R.string.assetTransfer_addAssets_navigationTitle),
                 onLeadingActionClicked = onCloseClick
             )
         },
@@ -86,7 +86,11 @@ fun ChooseAssetsSheet(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    text = stringResource(id = R.string.select_assets),
+                    text = when (val count = state.assetsSelectedCount) {
+                        0 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsNone)
+                        1 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsOne)
+                        else -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssets, count)
+                    },
                     onClick = onChooseAssetsSubmitted,
                     enabled = state.isSubmitEnabled
                 )
@@ -212,8 +216,8 @@ private fun ResourcesTabs(
 
 @Composable
 fun ChooseAssets.Tab.name(): String = when (this) {
-    ChooseAssets.Tab.Tokens -> stringResource(id = R.string.account_asset_row_tab_tokens)
-    ChooseAssets.Tab.NFTs -> stringResource(id = R.string.account_asset_row_tab_nfts)
+    ChooseAssets.Tab.Tokens -> stringResource(id = R.string.account_tokens)
+    ChooseAssets.Tab.NFTs -> stringResource(id = R.string.account_nfts)
 }
 
 @Preview

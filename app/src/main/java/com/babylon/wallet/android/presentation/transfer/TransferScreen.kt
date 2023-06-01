@@ -210,7 +210,7 @@ fun TransferContent(
                                 .padding(
                                     start = RadixTheme.dimensions.paddingSmall
                                 ),
-                            text = stringResource(id = R.string.transfer),
+                            text = stringResource(id = R.string.assetTransfer_header_transfer),
                             style = RadixTheme.typography.title,
                             color = RadixTheme.colors.gray1,
                             maxLines = 2,
@@ -219,7 +219,7 @@ fun TransferContent(
                         Spacer(modifier = Modifier.weight(1f))
                         if (state.messageState is State.Message.None) {
                             RadixTextButton(
-                                text = stringResource(id = R.string.add_message),
+                                text = stringResource(id = R.string.assetTransfer_header_addMessageButton),
                                 onClick = { onMessageStateChanged(true) },
                                 leadingIcon = {
                                     Icon(
@@ -251,7 +251,9 @@ fun TransferContent(
                                     horizontal = RadixTheme.dimensions.paddingMedium,
                                     vertical = RadixTheme.dimensions.paddingXSmall
                                 ),
-                            text = stringResource(id = R.string.from).uppercase(),
+                            text = stringResource(
+                                id = R.string.assetTransfer_accountList_fromLabel
+                            ).uppercase(),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray2,
                             overflow = TextOverflow.Ellipsis,
@@ -287,7 +289,9 @@ fun TransferContent(
                                     horizontal = RadixTheme.dimensions.paddingMedium,
                                     vertical = RadixTheme.dimensions.paddingXSmall
                                 ),
-                            text = stringResource(id = R.string.to).uppercase(),
+                            text = stringResource(
+                                id = R.string.assetTransfer_accountList_toLabel
+                            ).uppercase(),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray2,
                             overflow = TextOverflow.Ellipsis,
@@ -336,7 +340,9 @@ fun TransferContent(
                         horizontalArrangement = Arrangement.End
                     ) {
                         RadixTextButton(
-                            text = stringResource(id = R.string.add_account),
+                            text = stringResource(
+                                id = R.string.assetTransfer_accountList_addAccountButton
+                            ),
                             onClick = addAccountClick,
                             leadingIcon = {
                                 Icon(
@@ -355,7 +361,7 @@ fun TransferContent(
                         modifier = Modifier
                             .padding(vertical = RadixTheme.dimensions.paddingDefault)
                             .fillMaxWidth(),
-                        text = stringResource(id = R.string.send_transfer_request),
+                        text = stringResource(id = R.string.assetTransfer_sendTransferButton),
                         enabled = isEnabled,
                         onClick = onTransferSubmit
                     )

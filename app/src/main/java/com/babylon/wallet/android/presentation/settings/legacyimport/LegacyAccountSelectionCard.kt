@@ -42,7 +42,7 @@ fun LegacyAccountSelectionCard(
         ) {
             if (alreadyImported) {
                 Text(
-                    text = stringResource(id = R.string.account_already_imported),
+                    text = stringResource(id = R.string.importOlympiaAccounts_accountAlreadyImported),
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = RadixTheme.typography.body2Header,
@@ -51,7 +51,7 @@ fun LegacyAccountSelectionCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
                 Text(
-                    text = stringResource(id = R.string.type),
+                    text = stringResource(id = R.string.importLegacyWallet_selectAccountsToImport_accountType),
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = RadixTheme.typography.body2Header,
@@ -66,7 +66,7 @@ fun LegacyAccountSelectionCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
                 Text(
-                    text = stringResource(id = R.string.name),
+                    text = stringResource(id = R.string.importLegacyWallet_selectAccountsToImport_name),
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = RadixTheme.typography.body2Header,
@@ -81,7 +81,7 @@ fun LegacyAccountSelectionCard(
             }
             Column {
                 Text(
-                    text = stringResource(id = R.string.olympia_address),
+                    text = stringResource(id = R.string.importLegacyWallet_selectAccountsToImport_olympiaAddress),
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = RadixTheme.typography.body2Header,
@@ -97,7 +97,7 @@ fun LegacyAccountSelectionCard(
 
             Row(horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
                 Text(
-                    text = stringResource(id = R.string.path),
+                    text = stringResource(id = R.string.importLegacyWallet_selectAccountsToImport_derivationPath),
                     textAlign = TextAlign.Start,
                     style = RadixTheme.typography.body2Header,
                     color = Color.White

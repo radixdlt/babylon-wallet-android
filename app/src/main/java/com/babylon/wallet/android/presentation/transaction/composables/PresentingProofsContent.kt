@@ -57,7 +57,7 @@ fun PresentingProofsContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = stringResource(id = R.string.presenting).uppercase(),
+                text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,

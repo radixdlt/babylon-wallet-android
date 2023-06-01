@@ -349,6 +349,9 @@ class TransferViewModel @Inject constructor(
                         return result.isNotEmpty()
                     }
 
+                val assetsSelectedCount: Int
+                    get() = targetAccount.assets.size
+
                 enum class Tab {
                     Tokens,
                     NFTs

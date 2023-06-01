@@ -144,7 +144,7 @@ fun TransactionAccountWithGuaranteesCard(
                     ) {
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                            text = stringResource(id = com.babylon.wallet.android.R.string.estimated),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
                             style = RadixTheme.typography.body2Link,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -164,7 +164,7 @@ fun TransactionAccountWithGuaranteesCard(
                     Row {
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                            text = stringResource(id = com.babylon.wallet.android.R.string.guaranteed),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
                             style = RadixTheme.typography.body2Regular,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,
@@ -196,7 +196,7 @@ fun TransactionAccountWithGuaranteesCard(
             ) {
                 Text(
                     modifier = Modifier.weight(2f),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.set_guaranteed_minimum),
+                    text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_setGuaranteedMinimum),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
