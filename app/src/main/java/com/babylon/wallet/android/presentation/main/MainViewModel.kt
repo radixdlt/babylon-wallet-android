@@ -123,16 +123,14 @@ class MainViewModel @Inject constructor(
                     MainEvent.IncomingRequestEvent(request)
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
-                    when (val dAppData = authorizeSpecifiedPersonaUseCase(request)) {
-                        is com.babylon.wallet.android.domain.common.Result.Error -> {
-                            MainEvent.IncomingRequestEvent(request)
-                        }
-                        is com.babylon.wallet.android.domain.common.Result.Success -> {
-                            MainEvent.HandledUsePersonaAuthRequest(
-                                requestId = dAppData.data.requestId,
-                                dAppName = dAppData.data.name
-                            )
-                        }
+                    val dAppData = authorizeSpecifiedPersonaUseCase(request)
+                    if (dAppData.isSuccess) {
+                        MainEvent.HandledUsePersonaAuthRequest(
+                            requestId = dAppData.getOrThrow().requestId,
+                            dAppName = dAppData.getOrThrow().name
+                        )
+                    } else {
+                        MainEvent.IncomingRequestEvent(request)
                     }
                 }
                 sendEvent(mainEvent)
