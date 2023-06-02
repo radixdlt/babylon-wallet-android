@@ -126,11 +126,11 @@
   <string name="linkedConnectors_linkNewConnector">Link New Connector</string>
   <string name="linkedConnectors_newConnection_title">Link New Connector</string>
   <string name="linkedConnectors_newConnection_subtitle">Scan the QR code shown in the Radix Connector browser extension</string>
-  <string name="linkedConnectors_newConnection_connectionDefaultName">Unnamed</string>
   <string name="linkedConnectors_newConnection_linking">Linking…</string>
-  <string name="linkedConnectors_newConnection_textFieldPlaceholder">e.g. Chrome on Personal Laptop</string>
-  <string name="linkedConnectors_newConnection_textFieldHint">Give a name to this Radix Connector</string>
-  <string name="linkedConnectors_newConnection_saveLinkButtonTitle">Save Link and Continue</string>
+  <string name="linkedConnectors_nameNewConnector_title">Name New Connector</string>
+  <string name="linkedConnectors_nameNewConnector_textFieldPlaceholder">e.g. Chrome on Personal Laptop</string>
+  <string name="linkedConnectors_nameNewConnector_textFieldHint">Give a name to this Radix Connector</string>
+  <string name="linkedConnectors_nameNewConnector_saveLinkButtonTitle">Save Link and Continue</string>
   <string name="linkedConnectors_removeConnectionAlert_title">Remove Connection</string>
   <string name="linkedConnectors_removeConnectionAlert_message">Your Radix Wallet will no longer automatically connect to this Radix Connector.</string>
   <string name="linkedConnectors_cameraPermissionDeniedAlert_title">Access Required</string>
@@ -230,6 +230,8 @@
   <string name="createAccount_introduction_title">Create an Account</string>
   <string name="createAccount_titleFirst">Create First Account</string>
   <string name="createAccount_titleNotFirst">Create New Account</string>
+  <string name="createAccount_derivePublicKeys_title">Creating Account</string>
+  <string name="createAccount_derivePublicKeys_subtitle">Deriving public keys</string>
   <string name="createEntity_completion_destinationChooseAccounts">Choose Accounts</string>
   <string name="createEntity_completion_destinationChoosePersonas">Choose Personas</string>
   <string name="createEntity_completion_destinationGateways">Gateways</string>
@@ -543,14 +545,12 @@
   <string name="importOlympiaLedgerAccounts_accountCount">%s - #%d accounts</string>
   <string name="signing_withDeviceFactorSource_signTransaction">Sign transaction with phone</string>
   <string name="signing_withDeviceFactorSource_idLabel">Factor Source ID: %s</string>
-  <string name="signing_useLedgerPurpose_createAccount">Creating Account</string>
-  <string name="signing_useLedgerPurpose_createAuthSigningKey">Creating auth key</string>
-  <string name="signing_useLedgerPurpose_signAuth">Sign proof</string>
-  <string name="signing_useLedgerPurpose_signTX">Sign transaction</string>
-  <string name="signing_useLedgerPurpose_importLegacyAccounts">Import Legacy Accounts</string>
   <string name="signing_useLedgerLabel_Ledger">Ledger</string>
   <string name="signing_useLedgerLabel_lastUsed">Last used</string>
   <string name="signing_useLedgerLabel_addedOn">Added on</string>
+  <string name="signing_signatureRequest_title">Signature Request</string>
+  <string name="signing_signatureRequest_body">Make sure the following **Ledger hardware wallet device** is connected to a computer with a linked Radix Connector browser extension, and the Radix Babylon app is launched on the device.</string>
+  <string name="signing_signatureRequest_instructions">Review and sign the transaction on the Ledger device to continue.</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_title">Link a Connector</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
 
