@@ -47,6 +47,7 @@ sealed class Resource {
             KnownEntityAddressesRequest(networkId = Radix.Gateway.default.network.id.toUByte())
         ).getOrNull()?.xrdResourceAddress == resourceAddress
 
+        @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
             // XRD should always be first
             if (isXrd) {
@@ -131,7 +132,7 @@ sealed class Resource {
 
                 data class StringType(
                     private val id: String
-                ): ID(), Comparable<StringType> {
+                ) : ID(), Comparable<StringType> {
                     override val prefix: String = STRING_PREFIX
                     override val suffix: String = STRING_SUFFIX
 
@@ -189,6 +190,7 @@ sealed class Resource {
                      *
                      * More info [here](https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html#_non_fungibles_individual_units_of_non_fungible_resources)
                      */
+                    @Suppress("MaxLineLength")
                     fun from(value: String): ID = when {
                         value.startsWith(STRING_PREFIX) && value.endsWith(STRING_SUFFIX) -> StringType(
                             id = value.removeSurrounding(STRING_PREFIX, STRING_SUFFIX)
