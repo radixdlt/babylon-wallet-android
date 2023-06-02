@@ -31,7 +31,7 @@ import kotlinx.serialization.SerialName
 data class NonFungibleIdsCollection (
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<NonFungibleIdsCollectionItem>,
+    val items: kotlin.collections.List<kotlin.String>,
 
     /* Total number of items in underlying collection, fragment of which is available in `items` collection. */
     @SerialName(value = "total_count")

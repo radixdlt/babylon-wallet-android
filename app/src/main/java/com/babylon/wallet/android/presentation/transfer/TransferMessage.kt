@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Divider
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,7 +45,7 @@ fun TransferMessage(
                     horizontal = RadixTheme.dimensions.paddingMedium,
                     vertical = RadixTheme.dimensions.paddingXSmall
                 ),
-            text = stringResource(id = R.string.message).uppercase(),
+            text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,
             overflow = TextOverflow.Ellipsis,
@@ -90,11 +92,14 @@ fun TransferMessage(
                     modifier = Modifier,
                     onValueChanged = onMessageChanged,
                     value = message,
-                    hint = stringResource(id = R.string.add_message),
+                    hint = stringResource(id = R.string.assetTransfer_header_addMessageButton),
                     hintColor = RadixTheme.colors.gray2,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences
                     )
                 )
             }

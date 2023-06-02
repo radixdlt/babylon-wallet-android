@@ -71,7 +71,7 @@ fun ConnectedDAppsContent(
                 .clickable { expanded = !expanded }
         ) {
             Text(
-                text = stringResource(id = R.string.using_dapps),
+                text = stringResource(id = R.string.transactionReview_usingDappsHeading),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,
@@ -133,7 +133,7 @@ fun ConnectedDAppsContent(
                     )
                     Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
                     Text(
-                        text = connectedDApp.title.ifEmpty { stringResource(id = R.string.unknown) },
+                        text = connectedDApp.title.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis

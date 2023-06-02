@@ -23,12 +23,10 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
 fun NonFungibleTokenBottomSheetDetails(
-    nonFungibleResource: Resource.NonFungibleResource,
     item: Resource.NonFungibleResource.Item,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -69,10 +67,10 @@ fun NonFungibleTokenBottomSheetDetails(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             AssetMetadataRow(
                 modifier = Modifier.fillMaxWidth(),
-                key = stringResource(id = R.string.nft_id)
+                key = stringResource(id = R.string.assetDetails_NFTDetails_id)
             ) {
                 ActionableAddressView(
-                    address = item.globalAddress(nftAddress = nonFungibleResource.resourceAddress),
+                    address = item.globalAddress,
                     textStyle = RadixTheme.typography.body1Regular,
                     textColor = RadixTheme.colors.gray1
                 )

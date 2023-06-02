@@ -21,17 +21,15 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
  * @param nonFungibleIds 
  * @param atLedgerState 
- * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
- * @param limitPerPage The page size requested.
  */
 @Serializable
 
 data class StateNonFungibleDataRequest (
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String,
 
@@ -39,15 +37,7 @@ data class StateNonFungibleDataRequest (
     val nonFungibleIds: kotlin.collections.List<kotlin.String>,
 
     @SerialName(value = "at_ledger_state")
-    val atLedgerState: LedgerStateSelector? = null,
-
-    /* This cursor allows forward pagination, by providing the cursor from the previous request. */
-    @SerialName(value = "cursor")
-    val cursor: kotlin.String? = null,
-
-    /* The page size requested. */
-    @SerialName(value = "limit_per_page")
-    val limitPerPage: kotlin.Int? = null
+    val atLedgerState: LedgerStateSelector? = null
 
 )
 

@@ -174,7 +174,6 @@ private fun AccountScreenContent(
                         is SelectedResource.SelectedNonFungibleResource -> {
                             NonFungibleTokenBottomSheetDetails(
                                 modifier = Modifier.fillMaxSize(),
-                                nonFungibleResource = state.selectedResource.nonFungible,
                                 item = state.selectedResource.item,
                                 onCloseClick = {
                                     scope.launch {
@@ -297,7 +296,7 @@ private fun AccountScreenContent(
 @Composable
 private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> Unit) {
     RadixSecondaryButton(
-        text = stringResource(id = R.string.history),
+        text = stringResource(id = R.string.common_history),
         onClick = onHistoryClick,
         modifier = modifier,
         containerColor = RadixTheme.colors.gray2,
@@ -379,7 +378,7 @@ private fun AccountSummaryContent(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         RadixSecondaryButton(
-            text = stringResource(id = R.string.account_transfer_button_title),
+            text = stringResource(id = R.string.account_transfer),
             onClick = { onTransferClick(accountAddress) },
             containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
             contentColor = RadixTheme.colors.white,
@@ -403,7 +402,7 @@ private fun AccountSummaryContent(
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onApplySecuritySettings,
-                text = stringResource(id = R.string.apply_security_settings)
+                text = stringResource(id = R.string.homePage_applySecuritySettings)
             )
         }
     }

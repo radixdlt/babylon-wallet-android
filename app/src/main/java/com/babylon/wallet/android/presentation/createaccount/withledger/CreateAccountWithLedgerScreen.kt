@@ -54,7 +54,6 @@ fun CreateAccountWithLedgerScreen(
     viewModel: CreateAccountWithLedgerViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAddP2PLink: () -> Unit,
     goBackToCreateAccount: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -72,14 +71,11 @@ fun CreateAccountWithLedgerScreen(
             modifier = modifier,
             onBackClick = onBackClick,
             ledgerFactorSources = state.ledgerFactorSources,
-            hasP2pLinks = state.hasP2pLinks,
             selectedFactorSourceID = state.selectedFactorSourceID,
             onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
-            onAddP2PLink = onAddP2PLink,
             onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
             addLedgerSheetState = state.addLedgerSheetState,
             onConfirmLedgerName = viewModel::onConfirmLedgerName,
-            onSkipLedgerName = viewModel::onSkipLedgerName,
             onUseLedger = viewModel::onUseLedger,
             waitingForLedgerResponse = state.waitingForLedgerResponse
         )
@@ -91,14 +87,11 @@ fun CreateAccountWithLedgerContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
-    hasP2pLinks: Boolean,
     selectedFactorSourceID: FactorSource.ID?,
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
-    onAddP2PLink: () -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
-    onSkipLedgerName: () -> Unit,
     onUseLedger: () -> Unit,
     waitingForLedgerResponse: Boolean
 ) {
@@ -128,16 +121,10 @@ fun CreateAccountWithLedgerContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                hasP2pLinks = hasP2pLinks,
-                onAddP2PLink = onAddP2PLink,
                 onSendAddLedgerRequest = onSendAddLedgerRequest,
                 addLedgerSheetState = addLedgerSheetState,
                 onConfirmLedgerName = {
                     onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                onSkipLedgerName = {
-                    onSkipLedgerName()
                     closeSheetCallback()
                 },
                 waitingForLedgerResponse = waitingForLedgerResponse
@@ -168,7 +155,9 @@ fun CreateAccountWithLedgerContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.create_ledger_account),
+                        text = stringResource(
+                            id = com.babylon.wallet.android.R.string.createEntity_ledger_createAccount
+                        ),
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis
@@ -176,7 +165,7 @@ fun CreateAccountWithLedgerContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     if (ledgerFactorSources.isEmpty()) {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.you_have_no_ledgers_added),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             overflow = TextOverflow.Ellipsis,
@@ -184,7 +173,9 @@ fun CreateAccountWithLedgerContent(
                         )
                     } else {
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.select_ledger_device),
+                            text = stringResource(
+                                id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection
+                            ),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray1,
                             textAlign = TextAlign.Center
@@ -209,7 +200,7 @@ fun CreateAccountWithLedgerContent(
                             bottomSheetState.show()
                         }
                     },
-                    text = stringResource(id = com.babylon.wallet.android.R.string.add_new_ledger)
+                    text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
                 )
                 AnimatedVisibility(visible = ledgerFactorSources.isNotEmpty()) {
                     RadixPrimaryButton(
@@ -217,7 +208,7 @@ fun CreateAccountWithLedgerContent(
                             .fillMaxWidth()
                             .imePadding(),
                         onClick = onUseLedger,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.use_ledger)
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger)
                     )
                 }
             }
@@ -236,14 +227,11 @@ fun CreateAccountWithLedgerContentPreview() {
             modifier = Modifier.fillMaxSize(),
             onBackClick = {},
             ledgerFactorSources = persistentListOf(),
-            hasP2pLinks = false,
             selectedFactorSourceID = null,
             onLedgerFactorSourceSelected = {},
-            onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
-            onSkipLedgerName = {},
             onUseLedger = {},
             waitingForLedgerResponse = false
         )

@@ -25,7 +25,7 @@ fun NavController.successBottomDialog(
     dAppName: String? = null
 ) {
     val name = dAppName?.ifEmpty {
-        context.resources.getString(R.string.unknown_dapp)
+        context.resources.getString(R.string.dAppRequest_metadata_unknownName)
     }
     navigate("success_bottom_dialog/$isFromTransaction/$requestId/$name")
 }

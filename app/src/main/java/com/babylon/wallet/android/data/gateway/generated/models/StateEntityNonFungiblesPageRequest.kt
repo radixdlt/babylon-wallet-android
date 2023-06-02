@@ -21,7 +21,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
+ * @param address Bech32m-encoded human readable version of the address.
  * @param atLedgerState 
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limitPerPage The page size requested.
@@ -32,7 +32,7 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityNonFungiblesPageRequest (
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 

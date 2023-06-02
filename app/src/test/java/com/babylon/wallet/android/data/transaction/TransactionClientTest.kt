@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -83,6 +84,7 @@ internal class TransactionClientTest {
         coEvery { getAccountsWithResourcesUseCase(accounts = listOf(), isRefreshing = true) } returns Result.Success(emptyList())
     }
 
+    @Ignore("until we have the validated addresses from iOS")
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
@@ -120,6 +122,7 @@ internal class TransactionClientTest {
             )
         }
 
+    @Ignore("until we have the validated addresses from iOS")
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =

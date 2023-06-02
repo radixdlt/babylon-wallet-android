@@ -9,8 +9,9 @@ import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_NAME
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import com.radixdlt.toolkit.models.address.EntityAddress
-import com.radixdlt.toolkit.models.request.CreatedEntities
+import com.radixdlt.toolkit.models.request.MetadataEntry
+import com.radixdlt.toolkit.models.request.MetadataKeyValue
+import com.radixdlt.toolkit.models.request.MetadataValue
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
@@ -19,25 +20,18 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val entityRepository: EntityRepository
 ) {
-    @Suppress("LongMethod", "LongParameterList")
+    @Suppress("LongMethod", "LongParameterList", "CyclomaticComplexMethod")
     suspend fun invoke(
         componentAddress: String,
-        resourceAddress: String,
-        createdEntities: CreatedEntities,
+        resourceRequest: ResourceRequest,
         amount: String,
         instructionIndex: Int? = null,
         includesGuarantees: Boolean,
         index: Int? = null
     ): Result<TransactionAccountItemUiModel> {
-        val createdEntitiesAddresses = createdEntities
-            .resourceAddresses.filterIsInstance<EntityAddress.ResourceAddress>()
-            .map { resAddress ->
-                resAddress.address
-            }
-
         // do not ask gateway for it, lets skip this address
-        val createdEntity = createdEntitiesAddresses.contains(resourceAddress)
-
+        val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
+        val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
         val validatedAddresses = if (createdEntity) {
             listOf(
                 componentAddress
@@ -45,7 +39,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         } else {
             listOf(
                 componentAddress,
-                resourceAddress
+                (resourceRequest as ResourceRequest.Existing).address
             )
         }
 
@@ -64,33 +58,52 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
             var iconUrl = ""
             var isTokenAmountVisible = true
 
-            if (!createdEntity) {
-                val fungibleResourceItem = stateEntityDetailsResponse.items.find {
-                    it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
-                }
-                val nonFungibleResourceItem = stateEntityDetailsResponse.items.find {
-                    it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
-                }
-
-                // Do not display amount if its empty AND its NFT
-                val amountHidden = nonFungibleResourceItem != null && amount.isEmpty()
-                isTokenAmountVisible = !amountHidden
-
-                fungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
-                    if (it.containsKey(KEY_SYMBOL)) {
-                        tokenSymbol = it.getValue(KEY_SYMBOL)
+            when (resourceRequest) {
+                is ResourceRequest.Existing -> {
+                    val fungibleResourceItem = stateEntityDetailsResponse.items.find {
+                        it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
                     }
-                    if (it.containsKey(KEY_ICON)) {
-                        iconUrl = it.getValue(KEY_ICON)
+                    val nonFungibleResourceItem = stateEntityDetailsResponse.items.find {
+                        it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
+                    }
+
+                    // Do not display amount if its empty AND its NFT
+                    val amountHidden = nonFungibleResourceItem != null && amount.isEmpty()
+                    isTokenAmountVisible = !amountHidden
+
+                    fungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
+                        if (it.containsKey(KEY_SYMBOL)) {
+                            tokenSymbol = it.getValue(KEY_SYMBOL)
+                        }
+                        if (it.containsKey(KEY_ICON)) {
+                            iconUrl = it.getValue(KEY_ICON)
+                        }
+                    }
+
+                    nonFungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
+                        if (it.containsKey(KEY_NAME)) {
+                            tokenSymbol = it.getValue(KEY_NAME)
+                        }
+                        if (it.containsKey(KEY_ICON)) {
+                            iconUrl = it.getValue(KEY_ICON)
+                        }
                     }
                 }
-
-                nonFungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
-                    if (it.containsKey(KEY_NAME)) {
-                        tokenSymbol = it.getValue(KEY_NAME)
+                is ResourceRequest.NewlyCreated -> {
+                    tokenSymbol = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_SYMBOL }?.value) {
+                        is MetadataEntry.Value -> when (val value = entry.value) {
+                            is MetadataValue.String -> value.value
+                            else -> "Unknown"
+                        }
+                        else -> "Unknown"
                     }
-                    if (it.containsKey(KEY_ICON)) {
-                        iconUrl = it.getValue(KEY_ICON)
+                    iconUrl = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_SYMBOL }?.value) {
+                        is MetadataEntry.Value -> when (val value = entry.value) {
+                            is MetadataValue.Url -> value.value
+                            is MetadataValue.String -> value.value
+                            else -> ""
+                        }
+                        else -> ""
                     }
                 }
             }
@@ -125,4 +138,9 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         }
         return account
     }
+}
+
+sealed interface ResourceRequest {
+    data class Existing(val address: String) : ResourceRequest
+    data class NewlyCreated(val metadata: Array<MetadataKeyValue>) : ResourceRequest
 }

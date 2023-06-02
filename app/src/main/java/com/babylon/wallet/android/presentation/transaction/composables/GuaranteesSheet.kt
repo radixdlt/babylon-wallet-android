@@ -50,7 +50,7 @@ fun GuaranteesSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = stringResource(id = com.babylon.wallet.android.R.string.customize_guarantees),
+            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -62,7 +62,7 @@ fun GuaranteesSheet(
         ) {
             item {
                 InfoLink(
-                    stringResource(com.babylon.wallet.android.R.string.how_do_guarantees_work),
+                    stringResource(com.babylon.wallet.android.R.string.transactionReview_guarantees_howDoGuaranteesWork),
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 )
@@ -72,7 +72,7 @@ fun GuaranteesSheet(
                 Text(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.guarantees_sheet_body_text),
+                    text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_subtitle),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
@@ -104,7 +104,7 @@ fun GuaranteesSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.apply),
+                    text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_applyButtonText),
                     onClick = {
                         onApplyClick()
                     },

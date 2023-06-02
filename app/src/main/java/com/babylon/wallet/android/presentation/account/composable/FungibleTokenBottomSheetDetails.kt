@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
-import java.util.Locale
 
 @Composable
 fun FungibleTokenBottomSheetDetails(
@@ -114,9 +113,7 @@ private fun ResourceAddressRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = stringResource(id = R.string.resource_address).replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            },
+            text = stringResource(id = R.string.assetDetails_resourceAddress),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )
@@ -141,7 +138,7 @@ private fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier
         )
         Text(
             modifier = Modifier.alignByBaseline(),
-            text = stringResource(id = R.string.space) + resource.symbol,
+            text = " ${resource.symbol}",
             style = RadixTheme.typography.header,
             color = RadixTheme.colors.gray1
         )

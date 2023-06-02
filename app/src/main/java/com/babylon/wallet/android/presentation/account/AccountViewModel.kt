@@ -55,7 +55,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.ApprovedTransaction
+                event is AppEvent.GotFreeXrd || event is AppEvent.SuccessfulTransaction
             }.collect {
                 refresh()
             }
@@ -145,8 +145,8 @@ data class AccountUiState(
 }
 
 enum class AssetTypeTab(@StringRes val stringId: Int) {
-    TOKEN_TAB(R.string.account_asset_row_tab_tokens),
-    NTF_TAB(R.string.account_asset_row_tab_nfts),
+    TOKEN_TAB(R.string.account_tokens),
+    NTF_TAB(R.string.account_nfts),
 }
 
 sealed interface SelectedResource {

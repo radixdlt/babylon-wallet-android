@@ -41,7 +41,7 @@ fun NetworkFeeContent(
         ) {
             Text(
                 modifier = Modifier,
-                text = stringResource(id = R.string.network_fee).uppercase(),
+                text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2
             )
@@ -53,7 +53,7 @@ fun NetworkFeeContent(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = stringResource(id = R.string.xrd_amount, networkFee),
+                text = stringResource(id = R.string.transactionReview_xrdAmount, networkFee),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )
@@ -66,14 +66,14 @@ fun NetworkFeeContent(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingSmall
                     ),
-                text = stringResource(id = R.string.network_is_congested_info),
+                text = stringResource(id = R.string.transactionReview_networkFee_congestedText),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.orange1
             )
         }
         // TODO hidden for now
 //        RadixTextButton(
-//            text = stringResource(id = R.string.customize),
+//            text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
 //            onClick = onCustomizeClick
 //        )
     }

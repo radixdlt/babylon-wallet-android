@@ -34,3 +34,5 @@ data class Resources(
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
     it.hasXrd(minimumBalance)
 }
+
+fun List<Resource.NonFungibleResource>.allNftItemsSize() = map { it.items }.flatten().size

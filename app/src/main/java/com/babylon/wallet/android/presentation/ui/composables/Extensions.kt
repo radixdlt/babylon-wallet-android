@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import android.content.Context
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,8 +24,8 @@ fun Modifier.applyImageAspectRatio(
                 // crop the image to the largest possible centered square
                 if (intrinsicSize.height > intrinsicSize.width) {
                     Modifier.aspectRatio(1f)
-                // If the image is wider in aspect ratio than 16:9,
-                // crop the image to the largest possible centered 16:9 recntangle
+                    // If the image is wider in aspect ratio than 16:9,
+                    // crop the image to the largest possible centered 16:9 recntangle
                 } else if (intrinsicSize.width / intrinsicSize.height > IMAGE_RATIO) {
                     Modifier.aspectRatio(IMAGE_RATIO)
                 } else {
@@ -35,20 +36,39 @@ fun Modifier.applyImageAspectRatio(
 }
 
 // For some reason Coil library requires this header to be added when using with cloudflare service. Otherwise it fails
-private fun Context.buildImageRequest(imageUrl: String?): ImageRequest {
+private fun Context.buildImageRequest(
+    imageUrl: String?,
+    @DrawableRes placeholder: Int?,
+    @DrawableRes error: Int?
+): ImageRequest {
     return ImageRequest.Builder(this)
         .data(imageUrl)
+        .apply {
+            placeholder?.let {
+                this.placeholder(it)
+            } ?: this
+        }
+        .apply {
+            error?.let {
+                this.error(it)
+            } ?: this
+        }
         .decoderFactory(SvgDecoder.Factory())
         .addHeader("accept", "text/html")
         .build()
 }
 
 @Composable
-fun rememberImageUrl(fromUrl: String?, size: ImageSize = ImageSize.SMALL): ImageRequest {
+fun rememberImageUrl(
+    fromUrl: String?,
+    size: ImageSize = ImageSize.SMALL,
+    @DrawableRes placeholder: Int? = null,
+    @DrawableRes error: Int? = null
+): ImageRequest {
     val context = LocalContext.current
     val url = "${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=$fromUrl&imageSize=${size.toSizeString()}"
-    return remember(url) {
-        context.buildImageRequest(url)
+    return remember(url, placeholder, error) {
+        context.buildImageRequest(url, placeholder, error)
     }
 }
 

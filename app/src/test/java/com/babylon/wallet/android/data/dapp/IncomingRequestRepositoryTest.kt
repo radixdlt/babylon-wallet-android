@@ -23,7 +23,7 @@ class IncomingRequestRepositoryTest {
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         dappId = "dappId",
         requestId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", ""),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,

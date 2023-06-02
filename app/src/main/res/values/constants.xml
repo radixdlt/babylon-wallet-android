@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Strings not needing translation -->
+    <string name="dot_separator" translatable="false">\u2022</string>
+    <string name="empty" translatable="false"/>
+</resources>
