@@ -23,7 +23,7 @@ internal class DisplayableAddressTest(
         fun data() : Collection<Array<Any>> {
             return listOf(
                 arrayOf(RESOURCE_ADDRESS, "reso...8z96qp"),
-                arrayOf(RESOURCE_NFT_ADDRESS, "#1%23"),
+                arrayOf(RESOURCE_NFT_ADDRESS, "1%23"),
                 arrayOf(ACCOUNT_ADDRESS, "acco...8z96qp"),
                 arrayOf(PACKAGE_ADDRESS, "pack...8z96qp"),
                 arrayOf(TRANSACTION_ADDRESS, "tran...8z96qp"),
