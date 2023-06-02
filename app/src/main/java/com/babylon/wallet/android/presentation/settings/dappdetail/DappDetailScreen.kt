@@ -204,11 +204,11 @@ private fun DappDetailContent(
                                             )
                                             .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
                                         dappName = dappName,
-                                        onDisconnectPersona = {
+                                        onDisconnectPersona = { persona ->
                                             scope.launch {
                                                 bottomSheetState.hide()
                                             }
-                                            onDisconnectPersona(it)
+                                            onDisconnectPersona(persona)
                                         },
                                         onEditPersona = onEditPersona,
                                         onEditAccountSharing = onEditAccountSharing
@@ -449,7 +449,7 @@ fun DappDetails(
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
                         image = nftItem.imageUrl?.toString().orEmpty(),
-                        title = nftItem.localId,// TODO Add code for stripping identifiers once PR is merged
+                        title = nftItem.localId, // TODO Add code for stripping identifiers once PR is merged
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)

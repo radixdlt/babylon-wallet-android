@@ -67,7 +67,7 @@ interface EntityRepository {
     ): Result<DAppResources>
 }
 
-
+@Suppress("TooManyFunctions")
 class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
@@ -370,7 +370,6 @@ class EntityRepositoryImpl @Inject constructor(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
     ): Result<DAppResources> {
-
         val claimedResources = dAppMetadata.claimedEntities.filter {
             ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
         }

@@ -183,12 +183,7 @@ class TransactionApprovalViewModel @Inject constructor(
 
                                 manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
                                     Timber.d("Manifest : $analyzeManifestWithPreviewResponse")
-//<<<<<<< HEAD
-//                                    val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
-//                                        mutableListOf()
-//                                    val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
-//                                        mutableListOf()
-//
+
                                     val componentAccountsAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
                                         .componentAddresses.accounts
 
@@ -201,14 +196,6 @@ class TransactionApprovalViewModel @Inject constructor(
                                     val connectedDApps = encounteredAddressesResults.mapNotNull { dAppWithResources ->
                                         dAppWithResources
                                     }
-//=======
-//                                    val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
-//                                        .componentAddresses.userApplications
-
-//                                    val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
-//                                        componentAddresses.toList()
-//                                    )
-//>>>>>>> main
 
                                     val depositJobs = processAccountDeposits(analyzeManifestWithPreviewResponse)
                                     val withdrawJobs = processWithdrawJobs(analyzeManifestWithPreviewResponse)
