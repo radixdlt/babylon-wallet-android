@@ -181,7 +181,7 @@ private fun Item(
                 )
 
                 Text(
-                    text = resource.localId,
+                    text = resource.localId.displayable,
                     style = RadixTheme.typography.body1HighImportance.copy(
                         textAlign = TextAlign.End
                     ),

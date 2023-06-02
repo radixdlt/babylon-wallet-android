@@ -19,15 +19,7 @@ data class DescriptionMetadataItem(
 data class SymbolMetadataItem(
     val symbol: String
 ) : StandardMetadataItem {
-
-    val isXrd: Boolean
-        get() = symbol == KnownSymbol.XRD
-
     override val key: String = ExplicitMetadataKey.SYMBOL.key
-
-    private object KnownSymbol {
-        const val XRD = "XRD"
-    }
 }
 
 data class NameMetadataItem(

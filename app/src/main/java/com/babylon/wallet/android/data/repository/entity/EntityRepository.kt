@@ -83,8 +83,8 @@ class EntityRepositoryImpl @Inject constructor(
                 AccountWithResources(
                     account = account,
                     resources = Resources(
-                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
-                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
+                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
+                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted()
                     )
                 )
             }
@@ -158,7 +158,7 @@ class EntityRepositoryImpl @Inject constructor(
                             vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
                             resourceAddress = nonFungibleResourcesItem.resourceAddress,
                             isRefreshing
-                        ).value().orEmpty()
+                        ).value().orEmpty().sorted()
 
                         if (nfts.isEmpty()) return@mapNotNull null
 
@@ -326,7 +326,7 @@ class EntityRepositoryImpl @Inject constructor(
                         it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
-                                localId = stateNonFungibleDetailsResponseItem.nonFungibleId,
+                                localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
                                 iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
                                     ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
                             )

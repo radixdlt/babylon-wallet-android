@@ -178,5 +178,5 @@ class PrepareManifestDelegate(
 }
 
 private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId {
-    return ManifestAstValue.NonFungibleLocalId(localId)
+    return ManifestAstValue.NonFungibleLocalId(localId.code)
 }

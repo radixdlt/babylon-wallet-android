@@ -292,17 +292,17 @@ fun AssetsContentRowPreview() {
                             items = listOf(
                                 Resource.NonFungibleResource.Item(
                                     collectionAddress = "resource_address",
-                                    localId = "<dbooker_dunk_01>",
+                                    localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_01>"),
                                     iconMetadataItem = null
                                 ),
                                 Resource.NonFungibleResource.Item(
                                     collectionAddress = "resource_address",
-                                    localId = "<dbooker_dunk_02>",
+                                    localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_02>"),
                                     iconMetadataItem = null
                                 ),
                                 Resource.NonFungibleResource.Item(
                                     collectionAddress = "resource_address",
-                                    localId = "<dbooker_dunk_03>",
+                                    localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_03>"),
                                     iconMetadataItem = null
                                 )
                             )
