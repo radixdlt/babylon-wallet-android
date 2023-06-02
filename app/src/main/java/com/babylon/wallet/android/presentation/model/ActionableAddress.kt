@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.utils.truncatedHash
 
 data class ActionableAddress(
@@ -12,7 +13,8 @@ data class ActionableAddress(
     val isCopyPrimaryAction: Boolean = type != Type.TRANSACTION
 
     val displayAddress: String = if (isNft) {
-        address.split(NFT_DELIMITER)[1]
+        val localId = address.split(NFT_DELIMITER)[1]
+        Resource.NonFungibleResource.Item.ID.from(localId).displayable
     } else {
         address.truncatedHash()
     }
