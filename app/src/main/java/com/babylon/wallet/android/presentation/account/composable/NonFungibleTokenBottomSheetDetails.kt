@@ -23,7 +23,6 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @Composable
@@ -62,7 +61,6 @@ fun NonFungibleTokenBottomSheetDetails(
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
                     .clip(RadixTheme.shapes.roundedRectMedium)
                     .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
             )
