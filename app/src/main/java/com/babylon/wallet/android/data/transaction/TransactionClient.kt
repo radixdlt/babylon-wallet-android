@@ -12,6 +12,8 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
+import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -403,15 +405,3 @@ class TransactionClient @Inject constructor(
         return nonce
     }
 }
-
-data class TransactionApprovalRequest(
-    val manifest: TransactionManifest,
-    val hasLockFee: Boolean = false,
-    val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
-    val feePayerAddress: String? = null
-)
-
-data class FeePayerSearchResult(
-    val feePayerAddressFromManifest: String? = null,
-    val candidates: List<Network.Account> = emptyList()
-)
