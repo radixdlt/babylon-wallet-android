@@ -25,7 +25,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.pe
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ROUTE_SELECT_PERSONA
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.selectPersona
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.utils.decodeUtf8
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -116,9 +115,6 @@ fun DappAuthorizedLoginNavigationHost(
         createAccountWithLedger(
             onBackClick = {
                 navController.navigateUp()
-            },
-            onAddP2PLink = {
-                navController.settingsConnectorScreen(scanQr = true)
             },
             goBackToCreateAccount = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)

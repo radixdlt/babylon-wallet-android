@@ -68,7 +68,7 @@ fun CreatePersonaConfirmationContent(
     ) {
         Spacer(modifier = Modifier.weight(0.2f))
         Text(
-            text = stringResource(id = R.string.congratulations),
+            text = stringResource(id = R.string.createEntity_completion_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
@@ -77,9 +77,9 @@ fun CreatePersonaConfirmationContent(
             text = stringResource(
                 id =
                 if (isFirstPersona) {
-                    R.string.your_first_persona_has_been_created
+                    R.string.createPersona_completion_subtitleFirst
                 } else {
-                    R.string.your_persona_has_been_created
+                    R.string.createPersona_completion_subtitleNotFirst
                 }
             ),
             style = RadixTheme.typography.body2Regular,
@@ -87,7 +87,7 @@ fun CreatePersonaConfirmationContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
-            text = stringResource(id = R.string.the_personal_data_you_specify),
+            text = stringResource(id = R.string.createPersona_completion_explanation),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -95,7 +95,7 @@ fun CreatePersonaConfirmationContent(
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.go_to_choose_personas),
+            text = stringResource(R.string.createEntity_completion_destinationChoosePersonas),
             onClick = personaConfirmed
         )
     }

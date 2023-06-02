@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param address Bech32m-encoded human readable version of the entity's global address or hex-encoded id.
+ * @param address Bech32m-encoded human readable version of the address.
  * @param metadata 
  * @param fungibleResources 
  * @param nonFungibleResources 
@@ -33,7 +33,7 @@ import kotlinx.serialization.Serializable
 
 data class StateEntityDetailsResponseItem (
 
-    /* Bech32m-encoded human readable version of the entity's global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "address")
     val address: kotlin.String,
 

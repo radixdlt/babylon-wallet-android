@@ -28,7 +28,7 @@ import kotlinx.serialization.SerialName
 data class NonFungibleIdsCollectionAllOf (
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<NonFungibleIdsCollectionItem>
+    val items: kotlin.collections.List<kotlin.String>
 
 )
 

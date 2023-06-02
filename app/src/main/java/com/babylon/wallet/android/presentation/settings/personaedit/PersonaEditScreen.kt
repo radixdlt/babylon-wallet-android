@@ -206,11 +206,12 @@ private fun PersonaEditContent(
                     BottomPrimaryButton(
                         onClick = onSave,
                         enabled = saveButtonEnabled,
-                        text = stringResource(id = R.string.save),
-                        modifier = Modifier.imePadding()
+                        text = stringResource(id = R.string.common_save),
+                        modifier = Modifier
+                            .imePadding()
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground),
-                        buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault)
+                        buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault),
                     )
                     if (showCancelPrompt) {
                         BasicPromptAlertDialog(
@@ -222,12 +223,19 @@ private fun PersonaEditContent(
                             },
                             text = {
                                 Text(
-                                    text = stringResource(R.string.are_you_sure_you_want_to_discard),
+                                    text = stringResource(
+                                        R.string.editPersona_closeConfirmationDialog_message
+                                    ),
                                     style = RadixTheme.typography.body2Regular,
                                     color = RadixTheme.colors.gray1
                                 )
                             },
-                            confirmText = stringResource(id = R.string.discard),
+                            confirmText = stringResource(
+                                id = R.string.editPersona_closeConfirmationDialog_discardChanges
+                            ),
+                            dismissText = stringResource(
+                                id = R.string.editPersona_closeConfirmationDialog_keepEditing
+                            )
                         )
                     }
                 }
@@ -266,7 +274,10 @@ private fun PersonaDetailList(
                     .padding(vertical = dimensions.paddingDefault)
                     .size(104.dp)
             )
-            UnderlineTextButton(text = stringResource(R.string.edit_avatar), onClick = onEditAvatar)
+            UnderlineTextButton(
+                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
+                onClick = onEditAvatar
+            )
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         }
         item {
@@ -276,9 +287,9 @@ private fun PersonaDetailList(
                     .padding(horizontal = dimensions.paddingDefault),
                 onValueChanged = onDisplayNameChanged,
                 value = personaDisplayName.value,
-                leftLabel = stringResource(id = R.string.persona_label),
+                leftLabel = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 error = if (personaDisplayName.shouldDisplayValidationError && personaDisplayName.valid == false) {
-                    stringResource(id = R.string.empty_display_name)
+                    stringResource(id = R.string.createPersona_emptyDisplayName)
                 } else {
                     null
                 },
@@ -297,7 +308,7 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                text = stringResource(R.string.the_following_information_can_be_seen),
+                text = stringResource(R.string.editPersona_sharedInformationHeading),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
@@ -305,9 +316,9 @@ private fun PersonaDetailList(
         }
         items(editedFields) { field ->
             val validationError = if (dappContextEdit) {
-                stringResource(id = R.string.required_field_for_this_dapp)
+                stringResource(id = R.string.editPersona_error_requiredByDapp)
             } else {
-                stringResource(id = R.string.required_field)
+                stringResource(id = R.string.createPersona_requiredField)
             }
             PersonaPropertyInput(
                 modifier = Modifier
@@ -337,7 +348,7 @@ private fun PersonaDetailList(
         item {
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             RadixSecondaryButton(
-                text = stringResource(id = R.string.add_a_field),
+                text = stringResource(id = R.string.editPersona_addAField),
                 onClick = onAddField,
                 enabled = addButtonEnabled
             )

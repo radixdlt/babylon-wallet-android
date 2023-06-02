@@ -142,16 +142,16 @@ fun CreateAccountContent(
         ) {
             Text(
                 text = if (firstTime) {
-                    stringResource(id = R.string.create_first_account)
+                    stringResource(id = R.string.createAccount_titleFirst)
                 } else {
-                    stringResource(id = R.string.create_new_account)
+                    stringResource(id = R.string.createAccount_titleNotFirst)
                 },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
-                text = stringResource(id = R.string.account_creation_text),
+                text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -167,11 +167,11 @@ fun CreateAccountContent(
                     modifier = Modifier.fillMaxWidth(),
                     onValueChanged = onAccountNameChange,
                     value = accountName,
-                    hint = stringResource(id = R.string.hint_account_name),
+                    hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
                     singleLine = true
                 )
                 Text(
-                    text = stringResource(id = R.string.this_can_be_changed_any_time),
+                    text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
                 )
@@ -194,7 +194,7 @@ fun CreateAccountContent(
                     }
                 },
                 enabled = buttonEnabled,
-                text = stringResource(id = R.string.create_account),
+                text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 throttleClicks = true
             )
         }
@@ -219,12 +219,12 @@ private fun UseLedgerSwitch(useLedgerSelected: Boolean, onUseLedgerSelectionChan
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(id = R.string.create_with_ledger_hardware_wallet),
+                text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerTitle),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = stringResource(id = R.string.requires_you_to_sign_transactions),
+                text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )

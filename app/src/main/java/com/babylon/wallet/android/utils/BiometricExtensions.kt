@@ -27,7 +27,7 @@ fun FragmentActivity.biometricAuthenticate(
     }
 
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
-        .setTitle(getString(R.string.biometric_prompt_title))
+        .setTitle(getString(R.string.biometrics_prompt_title))
         .setAllowedAuthenticators(
             BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL
         )

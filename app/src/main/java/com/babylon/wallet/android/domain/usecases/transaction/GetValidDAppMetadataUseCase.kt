@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepos
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.transaction.ConnectedDAppsUiModel
-import com.radixdlt.toolkit.models.address.EntityAddress
 import javax.inject.Inject
 
 class GetValidDAppMetadataUseCase @Inject constructor(
@@ -12,14 +11,14 @@ class GetValidDAppMetadataUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        componentAddresses: List<EntityAddress.ComponentAddress>
+        componentAddresses: List<String>
     ): List<ConnectedDAppsUiModel> {
         if (componentAddresses.isEmpty()) return emptyList()
 
         val encounteredAddresses = mutableListOf<ConnectedDAppsUiModel>()
 
         dappMetadataRepository.getDAppsMetadata(
-            definitionAddresses = componentAddresses.map { it.address },
+            definitionAddresses = componentAddresses,
             needMostRecentData = false
         ).map { metadataList ->
             val dAppDefinitionAddresses = metadataList.map { metadata ->

@@ -75,19 +75,13 @@ object Radix {
         val isDefault: Boolean
             get() = url == default.url
 
-        fun displayName(): String = when (network.id) {
-            Network.nebunet.id -> "Radix Betanet Gateway"
-            Network.kisharnet.id -> "RCnet Gateway"
-            else -> url
-        }
-
         fun displayDescription(): String {
             return network.displayDescription
         }
 
         companion object {
             val default: Gateway
-                get() = kisharnet
+                get() = hammunet
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",

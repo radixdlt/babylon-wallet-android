@@ -5,7 +5,6 @@ import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -22,6 +21,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import java.io.File
 import java.time.Instant
+import kotlin.test.Ignore
 
 class ProfileTest {
 
@@ -118,6 +118,7 @@ class ProfileTest {
         Assert.assertTrue(profile.header.id.isNotBlank())
     }
 
+    @Ignore("until we have the validated addresses from iOS")
     @Test
     fun `test against profile json vector`() {
         val profileTestVector = File("src/test/resources/raw/profile_snapshot.json").readText()

@@ -23,7 +23,12 @@ import kotlinx.serialization.SerialName
  *
  * @param fromLedgerState 
  * @param kindFilter Limit returned transactions by their kind. Defaults to `user`.
+ * @param manifestAccountsWithdrawnFromFilter 
+ * @param manifestAccountsDepositedIntoFilter 
+ * @param manifestResourcesFilter 
+ * @param eventsFilter 
  * @param order Configures the order of returned result set. Defaults to `desc`.
+ * @param optIns 
  */
 @Serializable
 
@@ -36,9 +41,24 @@ data class StreamTransactionsRequestAllOf (
     @SerialName(value = "kind_filter")
     val kindFilter: StreamTransactionsRequestAllOf.KindFilter? = null,
 
+    @SerialName(value = "manifest_accounts_withdrawn_from_filter")
+    val manifestAccountsWithdrawnFromFilter: kotlin.collections.List<kotlin.String>? = null,
+
+    @SerialName(value = "manifest_accounts_deposited_into_filter")
+    val manifestAccountsDepositedIntoFilter: kotlin.collections.List<kotlin.String>? = null,
+
+    @SerialName(value = "manifest_resources_filter")
+    val manifestResourcesFilter: kotlin.collections.List<kotlin.String>? = null,
+
+    @SerialName(value = "events_filter")
+    val eventsFilter: kotlin.collections.List<StreamTransactionsRequestEventFilterItem>? = null,
+
     /* Configures the order of returned result set. Defaults to `desc`. */
     @SerialName(value = "order")
-    val order: StreamTransactionsRequestAllOf.Order? = null
+    val order: StreamTransactionsRequestAllOf.Order? = null,
+
+    @SerialName(value = "opt_ins")
+    val optIns: TransactionCommittedDetailsOptIns? = null
 
 ) {
 

@@ -21,13 +21,13 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param resourceAddress Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id.
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
 data class StateNonFungibleIdsRequestAllOf (
 
-    /* Bech32m-encoded human readable version of the resource (fungible, non-fungible) global address or hex-encoded id. */
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String
 

@@ -32,10 +32,11 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.address.EntityAddress
+import com.babylon.wallet.android.utils.toAmount
+import com.babylon.wallet.android.utils.toResourceRequest
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
-import com.radixdlt.toolkit.models.request.ResourceSpecifier
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -170,6 +171,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 )
 
                                 manifestPreview.exceptionOrNull().let { error ->
+                                    Timber.e("Analyze manifest failed with error: $error")
                                     _state.update {
                                         it.copy(
                                             isLoading = false,
@@ -179,137 +181,16 @@ class TransactionApprovalViewModel @Inject constructor(
                                 }
 
                                 manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
-
                                     Timber.d("Manifest : $analyzeManifestWithPreviewResponse")
-                                    val depositJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
-                                        mutableListOf()
-                                    val withdrawJobs: MutableList<Deferred<Result<TransactionAccountItemUiModel>>> =
-                                        mutableListOf()
-
                                     val componentAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
                                         .componentAddresses.userApplications
-                                        .filterIsInstance<EntityAddress.ComponentAddress>()
 
                                     val encounteredAddresses = getValidDAppMetadataUseCase.invoke(
-                                        componentAddresses
+                                        componentAddresses.toList()
                                     )
 
-                                    analyzeManifestWithPreviewResponse
-                                        .accountDeposits.forEachIndexed { index, accountDeposit ->
-                                            when (accountDeposit) {
-                                                is AccountDeposit.Estimate -> {
-                                                    val amount = when (
-                                                        val resSpecifier =
-                                                            accountDeposit.resourceSpecifier
-                                                    ) {
-                                                        is ResourceSpecifier.Amount -> {
-                                                            resSpecifier.amount
-                                                        }
-                                                        is ResourceSpecifier.Ids -> {
-                                                            ""
-                                                        }
-                                                    }
-                                                    val resourceAddress = when (
-                                                        val resSpecifier =
-                                                            accountDeposit.resourceSpecifier
-                                                    ) {
-                                                        is ResourceSpecifier.Amount -> {
-                                                            resSpecifier.resourceAddress.address
-                                                        }
-                                                        is ResourceSpecifier.Ids -> {
-                                                            resSpecifier.resourceAddress.address
-                                                        }
-                                                    }
-
-                                                    val instructionIndex = accountDeposit.instructionIndex.toInt()
-
-                                                    depositJobs.add(
-                                                        async {
-                                                            getTransactionComponentResourcesUseCase.invoke(
-                                                                componentAddress = accountDeposit
-                                                                    .componentAddress.address,
-                                                                resourceAddress = resourceAddress,
-                                                                createdEntities = analyzeManifestWithPreviewResponse
-                                                                    .createdEntities,
-                                                                amount = amount,
-                                                                instructionIndex = instructionIndex,
-                                                                includesGuarantees = true,
-                                                                index = index
-                                                            )
-                                                        }
-                                                    )
-                                                }
-                                                is AccountDeposit.Exact -> {
-                                                    val amount = when (
-                                                        val resSpecifier =
-                                                            accountDeposit.resourceSpecifier
-                                                    ) {
-                                                        is ResourceSpecifier.Amount -> {
-                                                            resSpecifier.amount
-                                                        }
-                                                        is ResourceSpecifier.Ids -> {
-                                                            ""
-                                                        }
-                                                    }
-                                                    val resourceAddress = when (
-                                                        val resSpecifier =
-                                                            accountDeposit.resourceSpecifier
-                                                    ) {
-                                                        is ResourceSpecifier.Amount -> {
-                                                            resSpecifier.resourceAddress.address
-                                                        }
-                                                        is ResourceSpecifier.Ids -> {
-                                                            resSpecifier.resourceAddress.address
-                                                        }
-                                                    }
-                                                    depositJobs.add(
-                                                        async {
-                                                            getTransactionComponentResourcesUseCase.invoke(
-                                                                componentAddress = accountDeposit
-                                                                    .componentAddress.address,
-                                                                resourceAddress = resourceAddress,
-                                                                createdEntities = analyzeManifestWithPreviewResponse
-                                                                    .createdEntities,
-                                                                amount = amount,
-                                                                includesGuarantees = false
-                                                            )
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    analyzeManifestWithPreviewResponse.accountWithdraws.forEach { accountWithdraw ->
-                                        val amount =
-                                            when (val resSpecifier = accountWithdraw.resourceSpecifier) {
-                                                is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.amount
-                                                }
-                                                is ResourceSpecifier.Ids -> {
-                                                    ""
-                                                }
-                                            }
-                                        val resourceAddress =
-                                            when (val resSpecifier = accountWithdraw.resourceSpecifier) {
-                                                is ResourceSpecifier.Amount -> {
-                                                    resSpecifier.resourceAddress.address
-                                                }
-                                                is ResourceSpecifier.Ids -> {
-                                                    resSpecifier.resourceAddress.address
-                                                }
-                                            }
-                                        withdrawJobs.add(
-                                            async {
-                                                getTransactionComponentResourcesUseCase.invoke(
-                                                    componentAddress = accountWithdraw.componentAddress.address,
-                                                    resourceAddress = resourceAddress,
-                                                    createdEntities = analyzeManifestWithPreviewResponse
-                                                        .createdEntities,
-                                                    amount = amount,
-                                                    includesGuarantees = false
-                                                )
-                                            }
-                                        )
-                                    }
+                                    val depositJobs = processAccountDeposits(analyzeManifestWithPreviewResponse)
+                                    val withdrawJobs = processWithdrawJobs(analyzeManifestWithPreviewResponse)
 
                                     val depositResults = depositJobs.awaitAll()
                                     val withdrawResults = withdrawJobs.awaitAll()
@@ -394,6 +275,65 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
+    private fun CoroutineScope.processWithdrawJobs(
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse
+    ): List<Deferred<Result<TransactionAccountItemUiModel>>> {
+        return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
+            val amount = accountWithdraw.resourceQuantifier.toAmount()
+            val resourceRequest = accountWithdraw.resourceQuantifier.toResourceRequest(
+                newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
+            )
+            async {
+                getTransactionComponentResourcesUseCase.invoke(
+                    componentAddress = accountWithdraw.componentAddress,
+                    resourceRequest = resourceRequest,
+                    amount = amount,
+                    includesGuarantees = false
+                )
+            }
+        }
+    }
+
+    private fun CoroutineScope.processAccountDeposits(
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse
+    ): List<Deferred<Result<TransactionAccountItemUiModel>>> {
+        return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
+            when (accountDeposit) {
+                is AccountDeposit.Predicted -> {
+                    val amount = accountDeposit.resourceQuantifier.toAmount()
+                    val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
+                        newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
+                    )
+                    val instructionIndex = accountDeposit.instructionIndex.toInt()
+                    async {
+                        getTransactionComponentResourcesUseCase.invoke(
+                            componentAddress = accountDeposit.componentAddress,
+                            resourceRequest = resourceRequest,
+                            amount = amount,
+                            instructionIndex = instructionIndex,
+                            includesGuarantees = true,
+                            index = index
+                        )
+                    }
+                }
+                is AccountDeposit.Guaranteed -> {
+                    val amount = accountDeposit.resourceQuantifier.toAmount()
+                    val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
+                        newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
+                    )
+                    async {
+                        getTransactionComponentResourcesUseCase.invoke(
+                            componentAddress = accountDeposit.componentAddress,
+                            resourceRequest = resourceRequest,
+                            amount = amount,
+                            includesGuarantees = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     @Suppress("LongMethod")
     fun approveTransaction() {
         approvalJob = appScope.launch {
@@ -443,11 +383,16 @@ class TransactionApprovalViewModel @Inject constructor(
                                 txId = txId
                             )
 
+                            appEventBus.sendEvent(AppEvent.TransactionSent(args.requestId))
+
                             val transactionStatus = pollTransactionStatusUseCase(txId)
                             transactionStatus.onValue { _ ->
                                 _state.update { it.copy(isSigning = false) }
                                 approvalJob = null
-                                appEventBus.sendEvent(AppEvent.ApprovedTransaction)
+                                appEventBus.sendEvent(AppEvent.SuccessfulTransaction(args.requestId))
+                                // We need to find a better way to notify that this request is handled.
+                                // https://radixdlt.atlassian.net/browse/ABW-1578
+                                incomingRequestRepository.requestHandled(args.requestId)
                                 sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
                             }
                             transactionStatus.onError { error ->
@@ -466,6 +411,9 @@ class TransactionApprovalViewModel @Inject constructor(
                                         message = exception.failure.getDappMessage()
                                     )
                                     approvalJob = null
+                                    // We need to find a better way to notify that this request is handled.
+                                    // https://radixdlt.atlassian.net/browse/ABW-1578
+                                    incomingRequestRepository.requestHandled(args.requestId)
                                     sendEvent(
                                         TransactionApprovalEvent.FlowCompletedWithError(
                                             requestId = args.requestId,

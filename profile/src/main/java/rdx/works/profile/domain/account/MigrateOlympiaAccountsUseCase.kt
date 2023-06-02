@@ -38,7 +38,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                         networkId.value.toUByte(),
                         olympiaAccount.address
                     )
-                ).getOrThrow().babylonAccountAddress.address
+                ).getOrThrow().babylonAccountAddress
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },
                     address = babylonAddress,

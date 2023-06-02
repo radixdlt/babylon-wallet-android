@@ -20,10 +20,10 @@ import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionSta
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.request.AnalyzeManifestWithPreviewContextResponse
-import com.radixdlt.toolkit.models.request.CreatedEntities
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.request.EncounteredAddresses
 import com.radixdlt.toolkit.models.request.EncounteredComponents
+import com.radixdlt.toolkit.models.request.NewlyCreated
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -59,7 +59,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         dappId = "dappId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "")
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(11, "", "", false)
     )
     private val sampleManifest = sampleDataProvider.sampleManifest()
 
@@ -102,6 +102,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             )
         } returns Result.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
+        coEvery { appEventBus.sendEvent(any()) } returns Unit
     }
 
     override fun initVM(): TransactionApprovalViewModel {
@@ -200,7 +201,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         logs = emptyList()
     )
 
-    private fun analyzeManifestResponse() = AnalyzeManifestWithPreviewContextResponse(
+    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionResponse(
         encounteredAddresses = EncounteredAddresses(
             EncounteredComponents(
                 emptyArray(),
@@ -218,10 +219,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         accountProofResources = emptyArray(),
         accountWithdraws = emptyArray(),
         accountDeposits = emptyArray(),
-        createdEntities = CreatedEntities(
-            emptyArray(),
-            emptyArray(),
-            emptyArray()
+        newlyCreated = NewlyCreated(
+            resources = emptyArray()
         )
     )
 }

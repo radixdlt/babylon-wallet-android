@@ -22,17 +22,13 @@ import kotlinx.serialization.SerialName
  * 
  *
  * @param transaction 
- * @param details 
  */
 @Serializable
 
 data class TransactionCommittedDetailsResponseAllOf (
 
     @SerialName(value = "transaction")
-    val transaction: CommittedTransactionInfo,
-
-    @SerialName(value = "details")
-    val details: TransactionCommittedDetailsResponseDetails
+    val transaction: CommittedTransactionInfo
 
 )
 

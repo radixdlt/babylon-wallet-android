@@ -23,7 +23,6 @@ import kotlinx.serialization.SerialName
  *
  * @param ledgerState 
  * @param transaction 
- * @param details 
  */
 @Serializable
 
@@ -33,10 +32,7 @@ data class TransactionCommittedDetailsResponse (
     val ledgerState: LedgerState,
 
     @SerialName(value = "transaction")
-    val transaction: CommittedTransactionInfo,
-
-    @SerialName(value = "details")
-    val details: TransactionCommittedDetailsResponseDetails
+    val transaction: CommittedTransactionInfo
 
 )
 

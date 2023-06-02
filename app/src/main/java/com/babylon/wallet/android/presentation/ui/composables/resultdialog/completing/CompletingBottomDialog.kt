@@ -60,7 +60,7 @@ private fun CompletingBottomDialogContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(com.babylon.wallet.android.R.string.completing_transaction),
+            text = stringResource(com.babylon.wallet.android.R.string.transaction_status_completing_text),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )

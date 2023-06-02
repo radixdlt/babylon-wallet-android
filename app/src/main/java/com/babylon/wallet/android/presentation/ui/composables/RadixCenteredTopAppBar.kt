@@ -52,7 +52,7 @@ fun RadixCenteredTopAppBar(
                 }
                 BackIconType.Cancel -> {
                     UnderlineTextButton(
-                        text = stringResource(id = R.string.cancel),
+                        text = stringResource(id = R.string.common_cancel),
                         onClick = onBackClick
                     )
                 }

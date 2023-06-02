@@ -2,10 +2,7 @@
 
 package com.babylon.wallet.android.domain
 
-import com.babylon.wallet.android.domain.model.AccountAddress
 import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.domain.model.FungibleToken
-import com.babylon.wallet.android.domain.model.OwnedFungibleToken
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -35,12 +32,13 @@ class SampleDataProvider {
 
     fun sampleAccount(
         address: String = "fj3489fj348f",
+        name: String = "my account",
         factorSourceId: FactorSource.ID = FactorSource.ID("IDIDDIIDD")
     ): Network.Account {
         return Network.Account(
             address = address,
             appearanceID = 123,
-            displayName = "my account",
+            displayName = name,
             networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
@@ -129,29 +127,6 @@ class SampleDataProvider {
             ),
             networks = emptyList()
         )
-    }
-
-    fun sampleFungibleTokens(
-        ownerAddress: String = randomAddress(),
-        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
-    ): List<OwnedFungibleToken> {
-        val result = mutableListOf<OwnedFungibleToken>()
-        return result.apply {
-            repeat(3) {
-                val tokenAddress = randomAddress()
-                add(
-                    OwnedFungibleToken(
-                        AccountAddress(ownerAddress),
-                        amount.first,
-                        tokenAddress,
-                        FungibleToken(
-                            tokenAddress,
-                            metadata = mapOf("symbol" to amount.second)
-                        )
-                    )
-                )
-            }
-        }
     }
 
     fun sampleFungibleResources(

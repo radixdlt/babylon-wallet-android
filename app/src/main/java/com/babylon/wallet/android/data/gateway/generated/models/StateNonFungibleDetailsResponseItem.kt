@@ -34,10 +34,7 @@ data class StateNonFungibleDetailsResponseItem (
     val nonFungibleId: kotlin.String,
 
     @SerialName(value = "data")
-    val `data`: ScryptoSborValue? = null, // Used in enkinet TODO remove nullability when enkinet becomes default
-
-    @SerialName(value = "mutable_data")
-    val mutable_data: ScryptoSborValue? = null,  // For RC Net compatibility TODO delete when enkinet becomes default
+    val data: ScryptoSborValue,
 
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")

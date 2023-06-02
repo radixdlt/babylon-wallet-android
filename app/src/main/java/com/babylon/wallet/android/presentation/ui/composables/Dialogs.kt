@@ -116,8 +116,8 @@ fun BasicPromptAlertDialog(
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
-    confirmText: String = stringResource(id = R.string.confirm),
-    dismissText: String = stringResource(id = R.string.cancel),
+    confirmText: String = stringResource(id = R.string.common_confirm),
+    dismissText: String = stringResource(id = R.string.common_cancel),
     confirmTextColor: Color = RadixTheme.colors.blue2
 ) {
     AlertDialog(
@@ -143,13 +143,13 @@ fun NotSecureAlertDialog(
 ) {
     BasicPromptAlertDialog(modifier = modifier, finish = finish, title = {
         Text(
-            text = stringResource(id = R.string.please_confirm_dialog_title),
+            text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_title),
             style = RadixTheme.typography.body2Header,
             color = RadixTheme.colors.gray1
         )
     }, text = {
             Text(
-                text = stringResource(id = R.string.please_confirm_dialog_body),
+                text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_message),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -161,8 +161,8 @@ fun NotSecureAlertDialog(
 fun SomethingWentWrongDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
-    title: String = stringResource(id = R.string.something_went_wrong),
-    subtitle: String = stringResource(id = R.string.please_confirm_dialog_body)
+    subtitle: String,
+    title: String = stringResource(id = R.string.common_somethingWentWrong)
 ) {
     BottomSheetWrapper(onDismissRequest = onDismissRequest) {
         SomethingWentWrongDialogContent(

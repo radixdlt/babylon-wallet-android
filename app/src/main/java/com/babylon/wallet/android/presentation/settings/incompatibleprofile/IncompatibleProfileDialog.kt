@@ -51,19 +51,19 @@ fun IncompatibleProfileContent(
             },
             title = {
                 Text(
-                    text = stringResource(id = R.string.wallet_data_incompatible),
+                    text = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_title),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.for_this_preview_wallet_version),
+                    text = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_message),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
             },
-            confirmText = stringResource(id = R.string.delete_wallet_data),
+            confirmText = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_delete),
             confirmTextColor = RadixTheme.colors.red1
         )
     }
