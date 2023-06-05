@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import javax.inject.Inject
 
 class GetDAppWithAssociatedResourcesUseCase @Inject constructor(
@@ -29,10 +30,14 @@ class GetDAppWithAssociatedResourcesUseCase @Inject constructor(
         } ?: false
 
         val updatedDAppMetadata = dAppMetadata.copy(
-            claimedWebsiteItem = if (isWebsiteAuthentic) dAppMetadata.claimedWebsiteItem else null
+            claimedWebsiteItem = if (isWebsiteAuthentic) dAppMetadata.claimedWebsite?.let {
+                ClaimedWebsiteMetadataItem(
+                    it
+                )
+            } else null
         )
 
-        entityRepository.getDAppResources(dAppMetadata = dAppMetadata, needMostRecentData)
+        entityRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
             .map { resources ->
                 DAppWithAssociatedResources(
                     dAppWithMetadata = updatedDAppMetadata,

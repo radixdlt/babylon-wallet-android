@@ -19,7 +19,7 @@ data class DAppWithMetadata(
     private val descriptionItem: DescriptionMetadataItem? = null,
     private val iconMetadataItem: IconUrlMetadataItem? = null,
     private val relatedWebsitesItem: RelatedWebsiteMetadataItem? = null,
-    val claimedWebsiteItem: ClaimedWebsiteMetadataItem? = null,
+    private val claimedWebsiteItem: ClaimedWebsiteMetadataItem? = null,
     private val claimedEntitiesItem: ClaimedEntitiesMetadataItem? = null,
     private val accountTypeItem: AccountTypeMetadataItem? = null,
     private val dAppDefinitionMetadataItem: DAppDefinitionMetadataItem? = null,

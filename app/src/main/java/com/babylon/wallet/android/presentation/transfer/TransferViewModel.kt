@@ -121,14 +121,13 @@ class TransferViewModel @Inject constructor(
 
     fun onMaxAmount(account: TargetAccount, asset: SpendingAsset) {
         val fungibleAsset = asset as? SpendingAsset.Fungible ?: return
-        fungibleAsset.resource.amount?.let { maxAmount ->
-            val spentAmount = _state.value.targetAccounts
-                .filterNot { it.address == account.address }
-                .sumOf { it.amountSpent(fungibleAsset) }
-            val remainingAmountString = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
+        val maxAmount = fungibleAsset.resource.amount ?: return
+        val spentAmount = _state.value.targetAccounts
+            .filterNot { it.address == account.address }
+            .sumOf { it.amountSpent(fungibleAsset) }
+        val remainingAmountString = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
 
-            _state.update { it.updateAssetAmount(account, fungibleAsset, remainingAmountString) }
-        }
+        _state.update { it.updateAssetAmount(account, fungibleAsset, remainingAmountString) }
     }
 
     fun onTransferSubmit() {
