@@ -129,7 +129,7 @@ class AccountPreferenceViewModel @Inject constructor(
                             networkId = account.networkID,
                             blobs = manifest.blobs?.toList().orEmpty()
                         ),
-                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(0)
+                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(account.networkID)
                     )
                     incomingRequestRepository.add(internalMessage)
                 }
