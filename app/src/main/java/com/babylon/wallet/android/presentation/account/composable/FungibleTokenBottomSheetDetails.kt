@@ -47,7 +47,7 @@ fun FungibleTokenBottomSheetDetails(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = fungible.name.orEmpty(),
+            title = fungible.name,
             onBackClick = onCloseClick,
             modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,

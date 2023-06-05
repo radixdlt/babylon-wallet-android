@@ -44,6 +44,7 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
+import java.math.BigDecimal
 import javax.inject.Inject
 
 interface EntityRepository {
@@ -96,8 +97,8 @@ class EntityRepositoryImpl @Inject constructor(
                 AccountWithResources(
                     account = account,
                     resources = Resources(
-                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty(),
-                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty()
+                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
+                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted()
                     )
                 )
             }
@@ -123,11 +124,15 @@ class EntityRepositoryImpl @Inject constructor(
                     } else {
                         emptyList()
                     }
-                    fungibleResourcesItemsList.map { fungibleResourcesItem ->
+                    fungibleResourcesItemsList.mapNotNull { fungibleResourcesItem ->
                         val metaDataItems = fungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
+                        val amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
+
+                        if (amount == BigDecimal.ZERO) return@mapNotNull null
+
                         Resource.FungibleResource(
                             resourceAddress = fungibleResourcesItem.resourceAddress,
-                            amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal(),
+                            amount = amount,
                             nameMetadataItem = metaDataItems.toMutableList().consume(),
                             symbolMetadataItem = metaDataItems.toMutableList().consume(),
                             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
@@ -160,20 +165,24 @@ class EntityRepositoryImpl @Inject constructor(
                     } else {
                         emptyList()
                     }
-                    nonFungibleResourcesItemsList.map { nonFungibleResourcesItem ->
+                    nonFungibleResourcesItemsList.mapNotNull { nonFungibleResourcesItem ->
                         val metaDataItems = nonFungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
+                        val nfts = getNonFungibleResourceItemsForAccount(
+                            accountAddress = entityItem.address,
+                            vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
+                            resourceAddress = nonFungibleResourcesItem.resourceAddress,
+                            isRefreshing
+                        ).value().orEmpty().sorted()
+
+                        if (nfts.isEmpty()) return@mapNotNull null
+
                         Resource.NonFungibleResource(
                             resourceAddress = nonFungibleResourcesItem.resourceAddress,
                             amount = nonFungibleResourcesItem.vaults.items.first().totalCount,
                             nameMetadataItem = metaDataItems.toMutableList().consume(),
                             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
                             iconMetadataItem = metaDataItems.toMutableList().consume(),
-                            items = getNonFungibleResourceItemsForAccount(
-                                accountAddress = entityItem.address,
-                                vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
-                                resourceAddress = nonFungibleResourcesItem.resourceAddress,
-                                isRefreshing
-                            ).value()?.toMutableList().orEmpty()
+                            items = nfts
                         )
                     }
                 }
@@ -331,7 +340,7 @@ class EntityRepositoryImpl @Inject constructor(
                         it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
-                                localId = stateNonFungibleDetailsResponseItem.nonFungibleId,
+                                localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
                                 iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
                                     ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
                             )
@@ -408,7 +417,9 @@ class EntityRepositoryImpl @Inject constructor(
 
                 Resource.NonFungibleResource.Item(
                     collectionAddress = nonFungibleItem.address,
-                    localId = nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty(),
+                    localId = Resource.NonFungibleResource.Item.ID.from(
+                        nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty()
+                    ),
                     iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
                         IconUrlMetadataItem(it.toUri())
                     }

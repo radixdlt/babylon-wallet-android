@@ -30,11 +30,15 @@ class GetDAppWithAssociatedResourcesUseCase @Inject constructor(
         } ?: false
 
         val updatedDAppMetadata = dAppMetadata.copy(
-            claimedWebsiteItem = if (isWebsiteAuthentic) dAppMetadata.claimedWebsite?.let {
-                ClaimedWebsiteMetadataItem(
-                    it
-                )
-            } else null
+            claimedWebsiteItem = if (isWebsiteAuthentic) {
+                dAppMetadata.claimedWebsite?.let {
+                    ClaimedWebsiteMetadataItem(
+                        it
+                    )
+                }
+            } else {
+                null
+            }
         )
 
         entityRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)

@@ -450,7 +450,7 @@ fun DappDetails(
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
                         image = nftItem.imageUrl?.toString().orEmpty(),
-                        title = nftItem.localId, // TODO Add code for stripping identifiers once PR is merged
+                        title = nftItem.localId.displayable,
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)

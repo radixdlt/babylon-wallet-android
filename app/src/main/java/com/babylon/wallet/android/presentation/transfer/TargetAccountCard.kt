@@ -230,7 +230,7 @@ fun TargetAccountCardPreview() {
                         SpendingAsset.NFT(
                             item = Resource.NonFungibleResource.Item(
                                 collectionAddress = "resource_rdx_abcde",
-                                localId = "local_id",
+                                localId = Resource.NonFungibleResource.Item.ID.from("<local_id>"),
                                 iconMetadataItem = null
                             )
                         )

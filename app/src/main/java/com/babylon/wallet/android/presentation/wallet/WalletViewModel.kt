@@ -159,7 +159,7 @@ data class WalletUiState(
     fun isSecurityPromptVisible(forAccount: Network.Account): Boolean {
         val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
 
-        return accountsWithResources?.find { it.account == forAccount }?.hasXrd() == true &&
+        return accountsWithResources?.find { it.account == forAccount }?.resources?.hasXrd() == true &&
             backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
     }
 

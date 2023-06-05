@@ -12,7 +12,7 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.babylon.wallet.android.BuildConfig
 
-private const val IMAGE_RATIO = 9 / 16f
+private const val IMAGE_RATIO = 16 / 9f
 
 fun Modifier.applyImageAspectRatio(
     painter: AsyncImagePainter
@@ -20,7 +20,13 @@ fun Modifier.applyImageAspectRatio(
     return then(
         (painter.state as? AsyncImagePainter.State.Success)
             ?.painter?.intrinsicSize?.let { intrinsicSize ->
-                if (intrinsicSize.width / intrinsicSize.height < IMAGE_RATIO) {
+                // If the image is taller in aspect ratio than a square,
+                // crop the image to the largest possible centered square
+                if (intrinsicSize.height > intrinsicSize.width) {
+                    Modifier.aspectRatio(1f)
+                    // If the image is wider in aspect ratio than 16:9,
+                    // crop the image to the largest possible centered 16:9 recntangle
+                } else if (intrinsicSize.width / intrinsicSize.height > IMAGE_RATIO) {
                     Modifier.aspectRatio(IMAGE_RATIO)
                 } else {
                     Modifier

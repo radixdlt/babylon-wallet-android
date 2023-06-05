@@ -169,7 +169,7 @@ fun DAppDetailsSheetContent(
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
                         image = nonFungibleToken.imageUrl.toString(),
-                        title = nonFungibleToken.localId,
+                        title = nonFungibleToken.localId.displayable,
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)

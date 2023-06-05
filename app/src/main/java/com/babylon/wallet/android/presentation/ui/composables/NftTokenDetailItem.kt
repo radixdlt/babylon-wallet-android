@@ -68,7 +68,7 @@ fun NftTokenDetailItem(
                 Image(
                     painter = painter,
                     contentDescription = "Nft image",
-                    contentScale = ContentScale.FillWidth,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .applyImageAspectRatio(painter = painter)
@@ -78,7 +78,7 @@ fun NftTokenDetailItem(
             }
 
             Text(
-                item.localId,
+                text = item.localId.displayable,
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2HighImportance
             )
@@ -95,7 +95,7 @@ fun CollapsableChildItemPreview() {
         NftTokenDetailItem(
             item = Resource.NonFungibleResource.Item(
                 collectionAddress = "resource_rdx_abcd",
-                localId = "#12",
+                localId = Resource.NonFungibleResource.Item.ID.from("#12#"),
                 iconMetadataItem = null
             ),
             onItemClicked = { }
