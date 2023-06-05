@@ -352,8 +352,8 @@ class TransactionApprovalViewModel @Inject constructor(
                                     )
                                 }
                                 sendEvent(TransactionApprovalEvent.SelectFeePayer)
-                                approvalJob = null
                             }
+                            approvalJob = null
                         }.onFailure { t ->
                             _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage(error = t)) }
                             (t as? DappRequestException)?.let { exception ->
@@ -397,7 +397,6 @@ class TransactionApprovalViewModel @Inject constructor(
             val transactionStatus = pollTransactionStatusUseCase(txId)
             transactionStatus.onValue { _ ->
                 _state.update { it.copy(isSigning = false) }
-                approvalJob = null
                 appEventBus.sendEvent(AppEvent.ApprovedTransaction(args.requestId))
                 sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
             }
@@ -425,7 +424,6 @@ class TransactionApprovalViewModel @Inject constructor(
                         )
                     )
                 }
-                approvalJob = null
             }
         }.onFailure { error ->
             _state.update {
@@ -434,7 +432,6 @@ class TransactionApprovalViewModel @Inject constructor(
                     error = UiMessage.ErrorMessage(error = error)
                 )
             }
-            approvalJob = null
             val exception = error as? DappRequestException
             if (exception != null) {
                 if (!transactionWriteRequest.isInternal) {
