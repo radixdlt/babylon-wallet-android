@@ -20,12 +20,16 @@ class AppEventBus @Inject constructor() {
 
 sealed interface AppEvent {
     object GotFreeXrd : AppEvent
-    data class TransactionSent(val requestId: String) : AppEvent
-    data class SuccessfulTransaction(val requestId: String) : AppEvent
     object RestoredMnemonic : AppEvent
     data class DerivedAccountPublicKeyWithLedger(
         val factorSourceID: FactorSource.ID,
         val derivationPath: DerivationPath,
         val derivedPublicKeyHex: String
     ) : AppEvent
+
+    sealed interface TransactionEvent : AppEvent {
+        data class TransactionSent(val requestId: String) : TransactionEvent
+        data class SuccessfulTransaction(val requestId: String) : TransactionEvent
+        data class FailedTransaction(val requestId: String, val errorTextRes: Int?) : TransactionEvent
+    }
 }

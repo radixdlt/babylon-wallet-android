@@ -38,6 +38,9 @@ import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
@@ -62,6 +65,8 @@ class TransactionClient @Inject constructor(
 
     private val engine = RadixEngineToolkit
     val signingState = collectSignersSignaturesUseCase.signingEvent
+    private val _transactionState = MutableStateFlow<SigningEvent?>(null)
+    val transactionState: Flow<SigningEvent?> = _transactionState.asSharedFlow()
 
     suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value

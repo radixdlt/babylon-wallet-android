@@ -76,7 +76,7 @@ class TransferViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.TransactionSent && event.requestId == _state.value.transferRequestId
+                event is AppEvent.TransactionEvent.TransactionSent && event.requestId == _state.value.transferRequestId
             }.collect {
                 sendEvent(Event.Dismiss)
             }

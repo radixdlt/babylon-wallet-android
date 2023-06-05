@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
@@ -76,6 +75,8 @@ class TransactionApprovalViewModel @Inject constructor(
 ) : StateViewModel<TransactionUiState>(),
     OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
+    @Suppress("MagicNumber")
+    private val delayAfterCloseMs = 500L // TODO this is not necessary but on the UI looks smoother
     private val args = TransactionApprovalArgs(savedStateHandle)
     private val transactionWriteRequest =
         incomingRequestRepository.getTransactionWriteRequest(args.requestId)
@@ -352,12 +353,10 @@ class TransactionApprovalViewModel @Inject constructor(
                     approvalJob = null
                 } else {
                     _state.update { it.copy(isSigning = true) }
-
                     val txManifest = TransactionManifest(
                         instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
                         blobs = manifestData.blobs.toTypedArray()
                     )
-
                     transactionClient.convertManifestInstructionsToJSON(
                         txManifest
                     ).onValue { manifestJsonResponse ->
@@ -376,24 +375,19 @@ class TransactionApprovalViewModel @Inject constructor(
                         val request = TransactionApprovalRequest(manifestJson, ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey)
                         val signAndSubmitResult = transactionClient.signAndSubmitTransaction(request)
                         signAndSubmitResult.onValue { txId ->
+                            sendEvent(TransactionApprovalEvent.NavigateBack, delayAfterCloseMs)
                             // Send confirmation to the dApp that tx was submitted before status polling
                             dAppMessenger.sendTransactionWriteResponseSuccess(
                                 dappId = transactionWriteRequest.dappId,
                                 requestId = args.requestId,
                                 txId = txId
                             )
-
-                            appEventBus.sendEvent(AppEvent.TransactionSent(args.requestId))
-
+                            appEventBus.sendEvent(AppEvent.TransactionEvent.TransactionSent(args.requestId))
                             val transactionStatus = pollTransactionStatusUseCase(txId)
                             transactionStatus.onValue { _ ->
                                 _state.update { it.copy(isSigning = false) }
                                 approvalJob = null
-                                appEventBus.sendEvent(AppEvent.SuccessfulTransaction(args.requestId))
-                                // We need to find a better way to notify that this request is handled.
-                                // https://radixdlt.atlassian.net/browse/ABW-1578
-                                incomingRequestRepository.requestHandled(args.requestId)
-                                sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
+                                appEventBus.sendEvent(AppEvent.TransactionEvent.SuccessfulTransaction(args.requestId))
                             }
                             transactionStatus.onError { error ->
                                 _state.update {
@@ -411,13 +405,10 @@ class TransactionApprovalViewModel @Inject constructor(
                                         message = exception.failure.getDappMessage()
                                     )
                                     approvalJob = null
-                                    // We need to find a better way to notify that this request is handled.
-                                    // https://radixdlt.atlassian.net/browse/ABW-1578
-                                    incomingRequestRepository.requestHandled(args.requestId)
-                                    sendEvent(
-                                        TransactionApprovalEvent.FlowCompletedWithError(
-                                            requestId = args.requestId,
-                                            errorTextRes = exception.failure.toDescriptionRes()
+                                    appEventBus.sendEvent(
+                                        AppEvent.TransactionEvent.FailedTransaction(
+                                            args.requestId,
+                                            exception.failure.toDescriptionRes()
                                         )
                                     )
                                 }
@@ -439,13 +430,13 @@ class TransactionApprovalViewModel @Inject constructor(
                                     message = exception.failure.getDappMessage()
                                 )
                                 approvalJob = null
-                                sendEvent(
-                                    TransactionApprovalEvent.FlowCompletedWithError(
-                                        requestId = args.requestId,
-                                        errorTextRes = exception.failure.toDescriptionRes()
-                                    )
-                                )
                             }
+                            appEventBus.sendEvent(
+                                AppEvent.TransactionEvent.FailedTransaction(
+                                    requestId = args.requestId,
+                                    errorTextRes = exception?.failure?.toDescriptionRes()
+                                )
+                            )
                         }
                     }
                 }
@@ -646,9 +637,4 @@ data class TransactionUiState(
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
     object NavigateBack : TransactionApprovalEvent
-    data class FlowCompletedWithSuccess(val requestId: String) : TransactionApprovalEvent
-    data class FlowCompletedWithError(
-        val requestId: String,
-        @StringRes val errorTextRes: Int
-    ) : TransactionApprovalEvent
 }

@@ -12,6 +12,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -19,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
@@ -41,6 +44,7 @@ class MainViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDappUseCase,
+    private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
@@ -73,6 +77,20 @@ class MainViewModel @Inject constructor(
         }
 
         handleAllIncomingRequests()
+        observeGlobalAppEvents()
+    }
+
+    private fun observeGlobalAppEvents() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
+                when (event) {
+                    is AppEvent.TransactionEvent.TransactionSent -> {
+                        sendEvent(MainEvent.TransactionStatusEvent(event.requestId))
+                    }
+                    else -> {}
+                }
+            }
+        }
     }
 
     override fun initialState(): MainUiState {
@@ -170,7 +188,7 @@ class MainViewModel @Inject constructor(
 sealed class MainEvent : OneOffEvent {
 
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-
+    data class TransactionStatusEvent(val requestId: String) : MainEvent()
     data class HandledUsePersonaAuthRequest(
         val requestId: String,
         val dAppName: String

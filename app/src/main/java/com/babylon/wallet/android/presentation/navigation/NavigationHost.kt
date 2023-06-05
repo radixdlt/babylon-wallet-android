@@ -38,9 +38,9 @@ import com.babylon.wallet.android.presentation.settings.personaedit.personaEditS
 import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.failed.failedBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -197,18 +197,6 @@ fun NavigationHost(
         transactionApprovalScreen(
             onBackClick = {
                 navController.popBackStack()
-            },
-            showSuccessDialog = { requestId ->
-                navController.successBottomDialog(
-                    isFromTransaction = true,
-                    requestId = requestId
-                )
-            },
-            showErrorDialog = { requestId, errorTextRes ->
-                navController.failedBottomDialog(
-                    requestId = requestId,
-                    errorTextRes = errorTextRes
-                )
             }
         )
         transferScreen(
@@ -282,7 +270,7 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        failedBottomDialog(
+        transactionStatusDialog(
             onBackPress = {
                 navController.popBackStack()
             }

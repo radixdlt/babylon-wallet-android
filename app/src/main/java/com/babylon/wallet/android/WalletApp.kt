@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
+import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
@@ -52,6 +53,11 @@ fun WalletApp(
                         isFromTransaction = false,
                         requestId = event.requestId,
                         dAppName = event.dAppName
+                    )
+                }
+                is MainEvent.TransactionStatusEvent -> {
+                    navController.transactionStatusDialog(
+                        requestId = event.requestId
                     )
                 }
             }

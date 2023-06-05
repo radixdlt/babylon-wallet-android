@@ -20,7 +20,6 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,7 +57,6 @@ import com.babylon.wallet.android.presentation.transaction.composables.WithdrawA
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.completing.CompletingBottomDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
@@ -69,9 +67,7 @@ import kotlinx.coroutines.launch
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionApprovalViewModel,
-    onBackClick: () -> Unit,
-    showSuccessDialog: (requestId: String) -> Unit,
-    showErrorDialog: (requestId: String, errorTextRes: Int) -> Unit
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -105,14 +101,6 @@ fun TransactionApprovalScreen(
             when (event) {
                 TransactionApprovalEvent.NavigateBack -> {
                     onBackClick()
-                }
-                is TransactionApprovalEvent.FlowCompletedWithSuccess -> {
-                    onBackClick()
-                    showSuccessDialog(event.requestId)
-                }
-                is TransactionApprovalEvent.FlowCompletedWithError -> {
-                    onBackClick()
-                    showErrorDialog(event.requestId, event.errorTextRes)
                 }
             }
         }
@@ -150,8 +138,6 @@ private fun TransactionPreviewContent(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    // this is for the result bottom slide-up dialog
-    val resultBottomSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
     BackHandler(enabled = bottomSheetState.isVisible) {
@@ -176,7 +162,7 @@ private fun TransactionPreviewContent(
                     }
                     onGuaranteesCloseClick()
                 },
-                onApplyClick = { ->
+                onApplyClick = {
                     scope.launch {
                         bottomSheetState.hide()
                     }
@@ -290,18 +276,8 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
-            if (isLoading) {
-                FullscreenCircularProgressContent()
-            }
-            if (isSigning) {
-                CompletingBottomDialog(
-                    onDismissDialogClick = {
-                        scope.launch {
-                            resultBottomSheetState.hide()
-                        }
-                    },
-                    bottomSheetState = resultBottomSheetState
-                )
+            if (isLoading || isSigning) {
+                FullscreenCircularProgressContent(addOverlay = true, clickable = true)
             }
             SnackbarUiMessageHandler(message = error) {
                 onMessageShown()

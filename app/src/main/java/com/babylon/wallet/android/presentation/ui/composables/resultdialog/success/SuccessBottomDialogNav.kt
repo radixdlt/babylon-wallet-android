@@ -51,15 +51,13 @@ fun NavGraphBuilder.successBottomDialog(
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         val isFromTransaction = it.arguments?.getBoolean(ARG_IS_FROM_TRANSACTION) ?: false
-        val requestId = checkNotNull(it.arguments?.getString(ARG_REQUEST_ID))
         val dAppName = it.arguments?.getString(ARG_DAPP_NAME)
 
         SuccessBottomDialog(
             viewModel = hiltViewModel(),
-            requestId = requestId,
-            isFromTransaction = isFromTransaction,
             dAppName = dAppName.orEmpty(), // orEmpty because transaction requested the dialog
-            onBackPress = onBackPress
+            onBackPress = onBackPress,
+            isFromTransaction = isFromTransaction
         )
     }
 }

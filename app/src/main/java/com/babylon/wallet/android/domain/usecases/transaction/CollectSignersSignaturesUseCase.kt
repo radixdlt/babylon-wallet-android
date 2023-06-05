@@ -34,7 +34,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
                     _signingEvent.update { SigningEvent.SigningWithLedger(factorSource) }
                     signWithLedgerFactorSourceUseCase(factorSource, signers, dataToSign).onSuccess { signatures ->
-                        _signingEvent.update { SigningEvent.SigningWithLedgerSuccess(factorSource.id) }
+                        _signingEvent.update { SigningEvent.SigningWithLedgerSucceeded(factorSource.id) }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
                         _signingEvent.update { SigningEvent.SigningWithLedgerFailed(factorSource.id) }
