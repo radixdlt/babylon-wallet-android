@@ -245,6 +245,7 @@ fun AssetsContentRowPreview() {
     RadixWalletTheme {
         Column(
             modifier = Modifier
+                .padding(all = 32.dp)
                 .background(
                     Brush.linearGradient(AccountGradientList[0]),
                     shape = RadixTheme.shapes.roundedRectMedium
@@ -255,59 +256,51 @@ fun AssetsContentRowPreview() {
         ) {
             AccountAssetsRow(resources = null, isLoading = true)
 
-            val otherFungible = Resource.FungibleResource(
-                resourceAddress = "resource_address",
-                amount = BigDecimal.valueOf(237659),
-                nameMetadataItem = NameMetadataItem("AWE"),
-                symbolMetadataItem = SymbolMetadataItem("AWE"),
-                iconUrlMetadataItem = IconUrlMetadataItem(
-                    url = Uri.parse(
-                        "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
-                    )
-                )
-            )
-            AccountAssetsRow(
-                resources = Resources(
-                    fungibleResources = listOf(
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_address",
-                            amount = BigDecimal.valueOf(237659),
-                            nameMetadataItem = NameMetadataItem("Radix"),
-                            symbolMetadataItem = SymbolMetadataItem("XRD")
-                        ),
-                        otherFungible,
-                        otherFungible,
-                        otherFungible,
-                        otherFungible,
-                        otherFungible,
-                        otherFungible,
-                        otherFungible,
-                        otherFungible
-                    ),
-                    nonFungibleResources = listOf(
-                        Resource.NonFungibleResource(
-                            resourceAddress = "resource_address",
-                            amount = 3,
-                            nameMetadataItem = NameMetadataItem("AWE"),
-                            items = listOf(
-                                Resource.NonFungibleResource.Item(
-                                    collectionAddress = "resource_address",
-                                    localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_01>"),
-                                    iconMetadataItem = null
-                                ),
-                                Resource.NonFungibleResource.Item(
-                                    collectionAddress = "resource_address",
-                                    localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_02>"),
-                                    iconMetadataItem = null
-                                ),
-                                Resource.NonFungibleResource.Item(
-                                    collectionAddress = "resource_address",
-                                    localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_03>"),
-                                    iconMetadataItem = null
-                                )
-                            )
+            val allFungibles = List(1115) {
+                Resource.FungibleResource(
+                    resourceAddress = "resource_address",
+                    amount = BigDecimal.valueOf(237659),
+                    nameMetadataItem = NameMetadataItem("AWE"),
+                    symbolMetadataItem = SymbolMetadataItem("AWE"),
+                    iconUrlMetadataItem = IconUrlMetadataItem(
+                        url = Uri.parse(
+                            "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
                         )
                     )
+                )
+            }
+
+            val nonFungibles = listOf(
+                Resource.NonFungibleResource(
+                    resourceAddress = "resource_address1",
+                    amount = 1117,
+                    nameMetadataItem = NameMetadataItem("F1"),
+                    items = List(1117) {
+                        Resource.NonFungibleResource.Item(
+                            collectionAddress = "resource_address1",
+                            localId = Resource.NonFungibleResource.Item.ID.from("<f1_$it>"),
+                            iconMetadataItem = null
+                        )
+                    }
+                ),
+                Resource.NonFungibleResource(
+                    resourceAddress = "resource_address2",
+                    amount = 3,
+                    nameMetadataItem = NameMetadataItem("NBA"),
+                    items = List(3) {
+                        Resource.NonFungibleResource.Item(
+                            collectionAddress = "resource_address2",
+                            localId = Resource.NonFungibleResource.Item.ID.from("<nba_$it>"),
+                            iconMetadataItem = null
+                        )
+                    }
+                )
+            )
+
+            AccountAssetsRow(
+                resources = Resources(
+                    fungibleResources = allFungibles,
+                    nonFungibleResources = nonFungibles
                 ),
                 isLoading = false
             )
