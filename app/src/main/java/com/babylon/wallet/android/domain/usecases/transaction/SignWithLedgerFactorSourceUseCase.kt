@@ -14,8 +14,8 @@ import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.model.pernetwork.updateLastUsed
 import rdx.works.profile.data.repository.ProfileRepository
@@ -31,7 +31,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         ledgerFactorSource: FactorSource,
-        signers: List<SigningEntity>,
+        signers: List<Entity>,
         signRequest: SignRequest,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
@@ -57,7 +57,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signTransaction(
-        signers: List<SigningEntity>,
+        signers: List<Entity>,
         ledgerFactorSource: FactorSource,
         dataToSign: ByteArray,
         signingPurpose: SigningPurpose
@@ -83,7 +83,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signAuth(
-        signers: List<SigningEntity>,
+        signers: List<Entity>,
         ledgerFactorSource: FactorSource,
         request: SignRequest.SignAuthChallengeRequest,
         signingPurpose: SigningPurpose
@@ -111,7 +111,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signCommon(
-        signers: List<SigningEntity>,
+        signers: List<Entity>,
         ledgerFactorSource: FactorSource,
         signingPurpose: SigningPurpose,
         signaturesProvider: SignatureProviderCall

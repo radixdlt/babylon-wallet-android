@@ -89,7 +89,7 @@ data class Network(
          */
         @SerialName("securityState")
         override val securityState: SecurityState
-    ) : SigningEntity {
+    ) : Entity {
 
         companion object {
             fun initAccountWithDeviceFactorSource(
@@ -198,7 +198,7 @@ data class Network(
          */
         @SerialName("securityState")
         override val securityState: SecurityState
-    ) : SigningEntity {
+    ) : Entity {
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
@@ -476,7 +476,7 @@ fun Profile.addAccount(
 }
 
 fun Profile.addAuthSigningFactorInstanceForEntity(
-    entity: SigningEntity,
+    entity: Entity,
     authSigningFactorInstance: FactorInstance
 ): Profile {
     val updatedNetworks =

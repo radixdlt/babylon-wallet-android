@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.SigningEntity
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
 import rdx.works.profile.domain.signing.SignWithDeviceFactorSourceUseCase
@@ -23,7 +23,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     val signingEvent: Flow<SigningEvent?> = _signingEvent.asSharedFlow()
 
     suspend operator fun invoke(
-        signers: List<SigningEntity>,
+        signers: List<Entity>,
         signRequest: SignRequest,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {

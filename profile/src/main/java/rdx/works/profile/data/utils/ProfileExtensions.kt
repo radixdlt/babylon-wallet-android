@@ -3,9 +3,9 @@ package rdx.works.profile.data.utils
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -22,7 +22,7 @@ fun Network.Persona.personaFactorSourceId(): FactorSource.ID? {
     return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning?.factorSourceId
 }
 
-fun SigningEntity.hasAuthSigning(): Boolean {
+fun Entity.hasAuthSigning(): Boolean {
     return when (val state = securityState) {
         is SecurityState.Unsecured -> {
             state.unsecuredEntityControl.authenticationSigning != null
@@ -30,7 +30,7 @@ fun SigningEntity.hasAuthSigning(): Boolean {
     }
 }
 
-fun SigningEntity.networkId() {
+fun Entity.networkId() {
     this.networkID
 }
 

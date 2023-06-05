@@ -1,6 +1,6 @@
 package rdx.works.profile.data.model.pernetwork
 
-sealed interface SigningEntity {
+sealed interface Entity {
     val networkID: Int
     val address: String
     val securityState: SecurityState

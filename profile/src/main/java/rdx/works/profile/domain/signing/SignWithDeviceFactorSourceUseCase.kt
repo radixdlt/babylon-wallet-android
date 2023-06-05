@@ -4,8 +4,8 @@ import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.deriveExtendedKey
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.model.pernetwork.updateLastUsed
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -21,7 +21,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
 
     suspend operator fun invoke(
         deviceFactorSource: FactorSource,
-        signers: List<SigningEntity>,
+        signers: List<Entity>,
         dataToSign: ByteArray,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): List<SignatureWithPublicKey> {

@@ -43,8 +43,8 @@ import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -321,7 +321,7 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<SigningEntity> {
+    suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<Entity> {
         val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         return result.getOrNull()?.let { analyzeManifestResponse ->

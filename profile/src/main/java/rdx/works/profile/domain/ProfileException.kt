@@ -1,8 +1,8 @@
 package rdx.works.profile.domain
 
-import rdx.works.profile.data.model.pernetwork.SigningEntity
+import rdx.works.profile.data.model.pernetwork.Entity
 
 sealed class ProfileException : Exception() {
-    data class AuthenticationSigningAlreadyExist(val signingEntity: SigningEntity) :
-        Exception("Signing Entity $signingEntity already has authenticationSigning")
+    data class AuthenticationSigningAlreadyExist(val entity: Entity) :
+        Exception("Signing Entity $entity already has authenticationSigning")
 }

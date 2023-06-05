@@ -8,9 +8,9 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.repository.MnemonicRepository
 import javax.inject.Inject
 
@@ -19,12 +19,12 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository
 ) {
 
-    suspend operator fun invoke(signingEntity: SigningEntity): FactorInstance {
+    suspend operator fun invoke(entity: Entity): FactorInstance {
         val factorSourceId: FactorSource.ID
-        val authSigningDerivationPath = when (val securityState = signingEntity.securityState) {
+        val authSigningDerivationPath = when (val securityState = entity.securityState) {
             is SecurityState.Unsecured -> {
                 if (securityState.unsecuredEntityControl.authenticationSigning != null) {
-                    throw ProfileException.AuthenticationSigningAlreadyExist(signingEntity)
+                    throw ProfileException.AuthenticationSigningAlreadyExist(entity)
                 }
                 val transactionSigning = securityState.unsecuredEntityControl.transactionSigning
                 val signingEntityDerivationPath = transactionSigning.derivationPath

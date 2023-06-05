@@ -10,9 +10,9 @@ import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import rdx.works.core.decodeHex
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.domain.GenerateAuthSigningFactorInstanceUseCase
 import javax.inject.Inject
@@ -23,38 +23,39 @@ class ROLAClient @Inject constructor(
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
 
-    suspend fun generateAuthSigningFactorInstance(signingEntity: SigningEntity): FactorInstance {
-        return generateAuthSigningFactorInstanceUseCase(signingEntity)
+    @Suppress("RedundantSuspendModifier")
+    suspend fun generateAuthSigningFactorInstance(entity: Entity): FactorInstance {
+        return generateAuthSigningFactorInstanceUseCase(entity)
     }
 
     suspend fun createAuthKeyManifestWithStringInstructions(
-        signingEntity: SigningEntity,
+        entity: Entity,
         authSigningFactorInstance: FactorInstance
     ): TransactionManifest? {
         var resultManifest: TransactionManifest? = null
-        val transactionSigningKey = when (val state = signingEntity.securityState) {
+        val transactionSigningKey = when (val state = entity.securityState) {
             is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
         }
-        entityRepository.getEntityOwnerKeys(signingEntity.address, true).onValue { ownerKeys ->
+        entityRepository.getEntityOwnerKeys(entity.address, true).onValue { ownerKeys ->
             val publicKeys = ownerKeys?.toPublicKeys().orEmpty().toMutableList()
             publicKeys.add(authSigningFactorInstance.publicKey)
             if (!publicKeys.contains(transactionSigningKey)) {
                 publicKeys.add(transactionSigningKey)
             }
-            resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(signingEntity.address, publicKeys).build()
+            resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(entity.address, publicKeys).build()
         }
-        return resultManifest?.convertManifestInstructionsToString(signingEntity.networkID)?.getOrNull()
+        return resultManifest?.convertManifestInstructionsToString(entity.networkID)?.getOrNull()
     }
 
     suspend fun signAuthChallenge(
-        signingEntity: SigningEntity,
+        entity: Entity,
         challengeHex: String,
         dAppDefinitionAddress: String,
         origin: String
     ): Result<SignatureWithPublicKey> {
         val dataToSign = payloadToHash(challengeHex, dAppDefinitionAddress, origin)
         return collectSignersSignaturesUseCase(
-            signers = listOf(signingEntity),
+            signers = listOf(entity),
             signRequest = SignRequest.SignAuthChallengeRequest(
                 data = dataToSign,
                 origin = origin,
@@ -66,7 +67,7 @@ class ROLAClient @Inject constructor(
                 signatures.first()
             } else {
                 throw DappRequestFailure.FailedToSignAuthChallenge(
-                    msg = "Failed to sign challenge $challengeHex by entity: ${signingEntity.address}"
+                    msg = "Failed to sign challenge $challengeHex by entity: ${entity.address}"
                 )
             }
         }

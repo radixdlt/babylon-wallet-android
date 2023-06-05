@@ -2,8 +2,8 @@ package rdx.works.profile.domain.signing
 
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningEntity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSource
 import javax.inject.Inject
@@ -13,9 +13,9 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        signers: List<SigningEntity>
-    ): Map<FactorSource, List<SigningEntity>> {
-        val result = mutableMapOf<FactorSource, List<SigningEntity>>()
+        signers: List<Entity>
+    ): Map<FactorSource, List<Entity>> {
+        val result = mutableMapOf<FactorSource, List<Entity>>()
         signers.forEach { signer ->
             when (val securityState = signer.securityState) {
                 is SecurityState.Unsecured -> {
